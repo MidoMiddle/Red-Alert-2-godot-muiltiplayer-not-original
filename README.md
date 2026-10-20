@@ -35,4 +35,4 @@ git clone git@github.com:MidoMiddle/Red-Alert-2-godot-muiltiplayer-not-original.
 
 ## License
 
-To be decided.
+Code is licensed under the [GNU General Public License v3.0](LICENSE). Asset licensing will be defined separately.
