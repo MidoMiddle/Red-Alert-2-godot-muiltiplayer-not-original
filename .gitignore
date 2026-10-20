@@ -1,0 +1,38 @@
+# Godot 4
+.godot/
+/android/
+export_credentials.cfg
+*.translation
+
+# Godot builds / exports
+/build/
+/export/
+*.pck
+*.zip
+*.dmg
+*.exe
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+mono_crash.*.json
+.mono/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Blender autosaves
+*.blend1
+*.blend2
+
+# Original RA2 files must never be committed (see docs/00_concept.md, block 15)
+*.mix
