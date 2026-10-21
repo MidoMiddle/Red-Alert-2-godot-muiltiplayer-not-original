@@ -119,6 +119,32 @@ public sealed class MapReplayTests
     }
 
     [Fact]
+    public void Map_objects_and_their_damage_survive_the_replay()
+    {
+        var map = LandTypes();
+        var objects = new List<MapObjectState>
+        {
+            MapObjectState.New(MapObjectKind.Boulder, new CellPos(0, 9), 3),
+            MapObjectState.New(MapObjectKind.FenceWood, new CellPos(22, 11), 1),
+            new(MapObjectKind.PineTree, new CellPos(23, 11), 2, 0, true),
+            new(MapObjectKind.WallStone, new CellPos(21, 11), 0, 700, false),
+            MapObjectState.New(MapObjectKind.LampPost, new CellPos(20, 11), 0),
+        };
+        var grid = MapGrid.FromLayers(map.Grid.Width, map.Grid.Height, map.Grid.LandBytes(), map.Grid.BlockedBytes(), map.Grid.Heights.LevelBytes(),
+            [.. map.Grid.ObjectStates(), .. objects]);
+        var replay = RecordOnMap(map with { Grid = grid }, ticks: 60);
+
+        var bytes = ReplayFormat.Write(replay);
+        var read = ReplayFormat.Read(bytes);
+
+        Assert.True(read.Settings.Map!.ContentEquals(grid));
+        Assert.Equal(bytes, ReplayFormat.Write(read));
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Contains(read.Settings.Map.Objects, o => o is { Kind: MapObjectKind.PineTree, Destroyed: true });
+        Assert.Contains(read.Settings.Map.Objects, o => o is { Kind: MapObjectKind.WallStone, Hp: 700 });
+    }
+
+    [Fact]
     public void Replay_without_a_map_has_the_flag_cleared()
     {
         var replay = new Replay(SimulationVersion.Current, new SimulationSettings(9), 0, [], []);

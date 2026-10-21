@@ -6,5 +6,5 @@ namespace Rts.Simulation;
 /// </summary>
 public static class SimulationVersion
 {
-    public const uint Current = 15;
+    public const uint Current = 16;
 }

@@ -142,11 +142,11 @@ public sealed class MapDefinition
     public LandType LandAt(CellPos cell) => Land[cell.Y * Width + cell.X];
 
     /// <summary>
-    /// The map as the simulation plays it: corner heights and land as they are, and every cell with an object of a type in
-    /// <paramref name="blockingObjects"/> marked as an obstacle (trees now; the full table of map objects comes in M7 step 5).
-    /// Texture and variants stay out: they are visual.
+    /// The map as the simulation plays it: corner heights and land as they are, and the map objects by the table of
+    /// <see cref="MapObjectTypes"/> (M7 step 5), at full hit points, in the order of <see cref="Objects"/>. The texture stays out:
+    /// it is visual. Throws on an object type the table does not know.
     /// </summary>
-    public MapGrid ToMapGrid(System.Collections.Generic.IReadOnlyCollection<string> blockingObjects)
+    public MapGrid ToMapGrid()
     {
         var land = new byte[Width * Height];
         for (var i = 0; i < land.Length; i++)
@@ -154,16 +154,19 @@ public sealed class MapDefinition
             land[i] = (byte)Land[i];
         }
 
-        var blocked = new byte[Width * Height];
-        foreach (var placement in Objects)
+        var objects = new MapObjectState[Objects.Length];
+        for (var i = 0; i < objects.Length; i++)
         {
-            if (blockingObjects.Contains(placement.Type))
+            var placement = Objects[i];
+            if (!MapObjectTypes.TryGetById(placement.Type, out var type))
             {
-                blocked[placement.Cell.Y * Width + placement.Cell.X] = 1;
+                throw new ArgumentException($"Unknown map object '{placement.Type}' at {placement.Cell.X},{placement.Cell.Y}.");
             }
+
+            objects[i] = MapObjectState.New(type.Kind, placement.Cell, placement.Variant);
         }
 
-        return MapGrid.FromLayers(Width, Height, land, blocked, Heights.AsSpan());
+        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects);
     }
 
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>

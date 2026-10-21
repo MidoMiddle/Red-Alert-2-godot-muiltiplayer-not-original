@@ -6,43 +6,103 @@ using Rts.Simulation.Map;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// Symbolic obstacles on the ground (docs/implementation/conventions.md, section 12): a dark green cone on a trunk for
-/// every tree, a grey block for every rock cell, so impassable cells look like walls. One MultiMesh per shape.
+/// Symbolic map objects on the ground (docs/implementation/conventions.md, section 12; M7_maps.md, 4.7): a dark green cone on
+/// a trunk for a tree and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a tall
+/// stone block for a wall, a dark pole with a yellow lamp for a lamp post, and a grey block for every rock cell. One
+/// MultiMesh per shape. Rebuilt whenever the map changes (a tree felled, a fence crushed), which is rare.
 /// </summary>
-public static class MapObjects
+public partial class MapObjects : Node3D
 {
     private const float RockHeight = 0.5f;
     private const float TrunkHeight = 0.25f;
     private const float CrownHeight = 0.8f;
 
-    public static void Build(Node3D parent, MapGrid map, TerrainHeights heights)
+    private MapGrid _map = null!;
+    private TerrainHeights _heights = null!;
+    private int _builtVersion = -1;
+    private MapGrid? _builtMap;
+
+    public void Show(MapGrid map, TerrainHeights heights)
     {
-        var trees = new List<Vector3>();
-        var rocks = new List<Vector3>();
-        for (var y = 0; y < map.Height; y++)
+        _map = map;
+        _heights = heights;
+        Rebuild();
+    }
+
+    public override void _Process(double delta)
+    {
+        // The host may start a new match (another map object) or the match may change this one.
+        var map = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World.Map;
+        if (map is not null && (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion))
         {
-            for (var x = 0; x < map.Width; x++)
+            _map = map;
+            Rebuild();
+        }
+    }
+
+    private void Rebuild()
+    {
+        foreach (var child in GetChildren())
+        {
+            child.QueueFree();
+        }
+
+        _builtMap = _map;
+        _builtVersion = _map.Version;
+        var trees = new List<Vector3>();
+        var stumps = new List<Vector3>();
+        var boulders = new List<Vector3>();
+        var fences = new List<Vector3>();
+        var walls = new List<Vector3>();
+        var posts = new List<Vector3>();
+        var rocks = new List<Vector3>();
+        for (var y = 0; y < _map.Height; y++)
+        {
+            for (var x = 0; x < _map.Width; x++)
             {
-                var cell = new CellPos(x, y);
-                var ground = new Vector3(x + 0.5f, heights.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
-                if (map.IsBlocked(cell))
+                if (_map.LandAt(new CellPos(x, y)) == LandType.Rock)
                 {
-                    trees.Add(ground);
-                }
-                else if (map.LandAt(cell) == LandType.Rock)
-                {
-                    rocks.Add(ground);
+                    rocks.Add(Ground(x, y));
                 }
             }
         }
 
-        AddInstances(parent, "Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
-        AddInstances(parent, "TreeTrunks", new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = TrunkHeight }, new Color(0.35f, 0.24f, 0.15f), trees, TrunkHeight / 2);
-        AddInstances(parent, "TreeCrowns", new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = CrownHeight }, new Color(0.12f, 0.32f, 0.16f), trees, TrunkHeight + CrownHeight / 2);
+        foreach (var mapObject in _map.Objects)
+        {
+            var at = Ground(mapObject.Cell.X, mapObject.Cell.Y);
+            var list = (mapObject.Kind, mapObject.Destroyed) switch
+            {
+                (MapObjectKind.PineTree, false) => trees,
+                (MapObjectKind.PineTree, true) => stumps,
+                (MapObjectKind.Boulder, _) => boulders,
+                (MapObjectKind.FenceWood, false) => fences,
+                (MapObjectKind.WallStone, false) => walls,
+                (MapObjectKind.LampPost, false) => posts,
+                _ => null,
+            };
+            list?.Add(at);
+        }
+
+        AddInstances("Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
+        AddInstances("TreeTrunks", new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = TrunkHeight }, new Color(0.35f, 0.24f, 0.15f), trees, TrunkHeight / 2);
+        AddInstances("TreeCrowns", new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = CrownHeight }, new Color(0.12f, 0.32f, 0.16f), trees, TrunkHeight + CrownHeight / 2);
+        AddInstances("Stumps", new CylinderMesh { TopRadius = 0.08f, BottomRadius = 0.09f, Height = 0.08f }, new Color(0.42f, 0.3f, 0.18f), stumps, 0.04f);
+        AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f);
+        AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f);
+        AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f);
+        AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f);
+        AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
     }
 
-    private static void AddInstances(Node3D parent, string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift)
+    private Vector3 Ground(int x, int y) => new(x + 0.5f, _heights.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
+
+    private void AddInstances(string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift)
     {
+        if (positions.Count == 0)
+        {
+            return;
+        }
+
         mesh.Material = new StandardMaterial3D { AlbedoColor = color };
         var multiMesh = new MultiMesh
         {
@@ -55,6 +115,6 @@ public static class MapObjects
             multiMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity, positions[i] + new Vector3(0, lift, 0)));
         }
 
-        parent.AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
+        AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
     }
 }

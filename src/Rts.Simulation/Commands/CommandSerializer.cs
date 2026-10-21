@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v3, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v4, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -19,15 +19,16 @@ namespace Rts.Simulation.Commands;
 /// AttackMove:    u8 queue | units | i32 x | i32 y
 /// Waypoints:     u8 loop | units | u8 pointCount | (i32 x | i32 y) × pointCount
 /// Scatter:       units
+/// DamageMapObject: i32 cellX | i32 cellY | i32 amount
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
-/// Stop, AttackMove, Waypoints and Scatter.
+/// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 3;
+    public const int FormatVersion = 4;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -41,6 +42,7 @@ public static class CommandSerializer
         StopCommand stop => HeaderSize + UnitsSize(stop),
         ScatterCommand scatter => HeaderSize + UnitsSize(scatter),
         WaypointsCommand route => HeaderSize + 1 + UnitsSize(route) + 1 + PositionSize * route.Points.Length,
+        DamageMapObjectCommand => HeaderSize + PositionSize + 4,
         _ => throw UnknownCommand(command),
     };
 
@@ -89,6 +91,11 @@ public static class CommandSerializer
                     offset += PositionSize;
                 }
 
+                break;
+            case DamageMapObjectCommand damage:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, damage.Cell.X);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[4..], damage.Cell.Y);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[8..], damage.Amount);
                 break;
         }
 
@@ -161,6 +168,15 @@ public static class CommandSerializer
 
                 bytesRead = HeaderSize + offset + PositionSize * count;
                 return new WaypointsCommand(player, tick, sequence, units, points.MoveToImmutable(), loop);
+            }
+
+            case CommandType.DamageMapObject:
+            {
+                // Any cell and amount are read as they are; CommandProcessor decides whether they are allowed.
+                Require(payload, PositionSize + 4);
+                bytesRead = HeaderSize + PositionSize + 4;
+                var cell = new CellPos(BinaryPrimitives.ReadInt32LittleEndian(payload), BinaryPrimitives.ReadInt32LittleEndian(payload[4..]));
+                return new DamageMapObjectCommand(player, tick, sequence, cell, BinaryPrimitives.ReadInt32LittleEndian(payload[8..]));
             }
 
             default:

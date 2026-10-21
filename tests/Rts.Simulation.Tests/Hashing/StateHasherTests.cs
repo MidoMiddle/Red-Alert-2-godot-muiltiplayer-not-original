@@ -156,12 +156,19 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(MapGrid), new[]
     {
-        "_land", "_blocked", "_heights", "<Width>k__BackingField", "<Height>k__BackingField",
+        "_land", "_blocked", "_heights", "_objects", "<Width>k__BackingField", "<Height>k__BackingField",
+        // An index of the objects by cell, built from the list above.
+        "_objectsByCell",
         // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of
         // every locomotor on every cell (M7 step 3).
         "_digest", "<Version>k__BackingField", "_passability",
     })]
     [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
+    [InlineData(typeof(MapObject), new[]
+    {
+        "<Id>k__BackingField", "<Kind>k__BackingField", "<Cell>k__BackingField", "<Variant>k__BackingField", "<Hp>k__BackingField",
+        "<Destroyed>k__BackingField",
+    })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {

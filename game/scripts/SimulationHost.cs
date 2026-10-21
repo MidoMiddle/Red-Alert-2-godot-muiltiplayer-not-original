@@ -227,6 +227,10 @@ public partial class SimulationHost : Node
     public void IssueScatter(IReadOnlyList<EntityId> units) =>
         IssueTo(units, ordered => new ScatterCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
 
+    /// <summary>Debug (M7 step 5): takes <paramref name="amount"/> hit points off the map object on the cell.</summary>
+    public void IssueDamage(CellPos cell, int amount) =>
+        Issue(new DamageMapObjectCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, cell, amount));
+
     public void IssueSpawn(WorldPos position) =>
         Issue(new SpawnTestUnitCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, SpawnType, position));
 
@@ -299,7 +303,7 @@ public partial class SimulationHost : Node
         // A map of the M7 format: trees are the obstacles for now (map objects come in M7 step 5), units are debug squads
         // at the starts until skirmish starts exist.
         var definition = RtsMapReader.Read(text);
-        var grid = definition.ToMapGrid([TestMapConverter.PineTree]);
+        var grid = definition.ToMapGrid();
         return new TestMap(grid, StartSquads.Place(definition, grid));
     }
 

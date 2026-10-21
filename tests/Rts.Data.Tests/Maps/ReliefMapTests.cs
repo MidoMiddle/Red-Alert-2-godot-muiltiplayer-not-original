@@ -10,7 +10,7 @@ public sealed class ReliefMapTests
 {
     private static string ReliefPath => Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap");
 
-    private static MapGrid Relief() => RtsMapReader.Read(File.ReadAllText(ReliefPath)).ToMapGrid([]);
+    private static MapGrid Relief() => RtsMapReader.Read(File.ReadAllText(ReliefPath)).ToMapGrid();
 
     [Fact]
     public void The_committed_relief_map_is_what_the_generator_writes()
@@ -22,7 +22,7 @@ public sealed class ReliefMapTests
     public void Heights_reach_the_simulation_corner_by_corner()
     {
         var map = RtsMapReader.Read(File.ReadAllText(ReliefPath));
-        var grid = map.ToMapGrid([]);
+        var grid = map.ToMapGrid();
 
         for (var y = 0; y <= map.Height; y++)
         {
@@ -65,17 +65,32 @@ public sealed class ReliefMapTests
     }
 
     [Fact]
-    public void Trees_of_the_sandbox_become_obstacles_and_land_stays()
+    public void Map_objects_reach_the_simulation_by_the_table_of_types()
     {
         var map = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));
 
-        var grid = map.ToMapGrid([TestMapConverter.PineTree]);
-        var noTrees = map.ToMapGrid([]);
+        var grid = map.ToMapGrid();
 
-        Assert.All(map.Objects, tree => Assert.True(grid.IsBlocked(tree.Cell)));
-        Assert.Equal(map.Objects.Length, Enumerable.Range(0, 64 * 64).Count(i => grid.IsBlocked(new CellPos(i % 64, i / 64))));
-        Assert.DoesNotContain(Enumerable.Range(0, 64 * 64), i => noTrees.IsBlocked(new CellPos(i % 64, i / 64)));
+        Assert.Equal(map.Objects.Select(o => (o.Type, o.Cell, o.Variant)), grid.Objects.Select(o => (o.Type.Id, o.Cell, o.Variant)));
+        Assert.All(grid.Objects, o => Assert.Equal(o.Type.MaxHp, o.Hp));
+        Assert.All(grid.Objects.Where(o => o.Kind == MapObjectKind.PineTree), tree => Assert.False(grid.CanEnter(tree.Cell, Locomotor.Track)));
+        Assert.All(grid.Objects.Where(o => o.Kind == MapObjectKind.FenceWood), fence =>
+        {
+            Assert.True(grid.CanEnter(fence.Cell, Locomotor.Track));
+            Assert.False(grid.CanEnter(fence.Cell, Locomotor.Foot));
+        });
         Assert.Equal(map.LandAt(new CellPos(33, 32)), grid.LandAt(new CellPos(33, 32)));
+    }
+
+    [Fact]
+    public void An_object_type_the_table_does_not_know_is_an_error()
+    {
+        var text = RtsMapWriter.Write(SampleMaps.Full()).Replace("type: pine_tree, cell: [1, 3]", "type: palm_tree, cell: [1, 3]");
+        var map = RtsMapReader.Read(text);
+
+        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid());
+
+        Assert.Contains("palm_tree", error.Message);
     }
 
     [Fact]

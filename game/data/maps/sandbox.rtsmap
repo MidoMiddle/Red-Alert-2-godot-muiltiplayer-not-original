@@ -279,6 +279,24 @@ layers:
     ................................................................
     ................................................................
 objects:
+  - { type: boulder, cell: [3, 21], variant: 0 }
+  - { type: boulder, cell: [4, 21], variant: 1 }
+  - { type: boulder, cell: [11, 21], variant: 2 }
+  - { type: boulder, cell: [12, 21], variant: 3 }
+  - { type: fence_wood, cell: [4, 38], variant: 0 }
+  - { type: fence_wood, cell: [5, 38], variant: 0 }
+  - { type: fence_wood, cell: [6, 38], variant: 0 }
+  - { type: fence_wood, cell: [7, 38], variant: 0 }
+  - { type: fence_wood, cell: [8, 38], variant: 0 }
+  - { type: fence_wood, cell: [9, 38], variant: 0 }
+  - { type: fence_wood, cell: [10, 38], variant: 0 }
+  - { type: fence_wood, cell: [11, 38], variant: 0 }
+  - { type: lamp_post, cell: [34, 40], variant: 0 }
+  - { type: lamp_post, cell: [34, 42], variant: 0 }
+  - { type: lamp_post, cell: [34, 44], variant: 0 }
+  - { type: lamp_post, cell: [34, 46], variant: 0 }
+  - { type: lamp_post, cell: [34, 48], variant: 0 }
+  - { type: lamp_post, cell: [34, 50], variant: 0 }
   - { type: pine_tree, cell: [15, 9], variant: 0 }
   - { type: pine_tree, cell: [16, 9], variant: 3 }
   - { type: pine_tree, cell: [17, 9], variant: 2 }
@@ -367,5 +385,10 @@ objects:
   - { type: pine_tree, cell: [41, 26], variant: 1 }
   - { type: pine_tree, cell: [42, 26], variant: 0 }
   - { type: pine_tree, cell: [43, 26], variant: 3 }
+  - { type: wall_stone, cell: [6, 42], variant: 0 }
+  - { type: wall_stone, cell: [7, 42], variant: 0 }
+  - { type: wall_stone, cell: [8, 42], variant: 0 }
+  - { type: wall_stone, cell: [9, 42], variant: 0 }
+  - { type: wall_stone, cell: [10, 42], variant: 0 }
 bridges: []
 structures: []

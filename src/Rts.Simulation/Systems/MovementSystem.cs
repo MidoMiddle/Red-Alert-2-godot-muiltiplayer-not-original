@@ -184,6 +184,9 @@ public static class MovementSystem
             unit.Subcell = subcell;
             unit.Position = next;
             unit.Replans = 0;
+
+            // Driving into a cell flattens what this unit crushes there: a fence under tracks, a lamp post under anyone (M7 step 5).
+            world.CrushMapObjects(cell, unit.Archetype.Locomotor, events);
             return MoveResult.Moved;
         }
 

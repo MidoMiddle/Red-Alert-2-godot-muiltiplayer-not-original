@@ -219,6 +219,7 @@ YamlDotNet по умолчанию разбирает числа через `dou
 | `UnitArchetypes` | `union/units.yaml` (тестовые типы удаляются) |
 | Таблица `Locomotor` | `locomotors.yaml` |
 | Типы земли и множители | `terrain.yaml` (с M7: 6 типов передвижения — `foot`, `track`, `wheel`, `amphibious`, `naval`, `hover` — и множители склона; сейчас в `LocomotorRules`) |
+| Объекты карты (с M7) | `climates/winter/map_objects.yaml`: тип, маска «кого не пускает», прочность, кто давит, пень (сейчас в `MapObjectTypes`) |
 
 Тесты симуляции, которым не нужен YAML, собирают правила через `RulesBuilder` в коде — быстрее и независимо от файлов.
 

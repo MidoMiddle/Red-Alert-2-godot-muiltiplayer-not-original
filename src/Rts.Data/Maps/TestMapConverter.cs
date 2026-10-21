@@ -8,8 +8,9 @@ namespace Rts.Data.Maps;
 
 /// <summary>
 /// The temporary ASCII maps of M2 (<see cref="TestMapParser"/>) as <c>.rtsmap</c> maps: flat (every corner at level 0), the
-/// same land, every tree as a <see cref="PineTree"/> object, a winter texture picked by the land. The units of the old format
-/// have no place in a map file (starts and units come with M6) and are left out; the players are the owners found there.
+/// same land, the same map objects (trees and the <c>object</c> lines, M7 step 5), a winter texture picked by the land. The
+/// units of the old format have no place in a map file (starts and units come with M6) and are left out; the players are
+/// the owners found there.
 /// </summary>
 public static class TestMapConverter
 {
@@ -40,12 +41,12 @@ public static class TestMapConverter
                 var cell = new CellPos(x, y);
                 land.Add(grid.LandAt(cell));
                 texture.Add(TextureOf(grid.LandAt(cell)));
-                if (grid.IsBlocked(cell))
-                {
-                    // Four tree models, spread so neighbours rarely look the same.
-                    objects.Add(new MapObjectPlacement(PineTree, cell, (x * 7 + y * 3) % 4));
-                }
             }
+        }
+
+        foreach (var mapObject in grid.Objects)
+        {
+            objects.Add(new MapObjectPlacement(mapObject.Type.Id, mapObject.Cell, mapObject.Variant));
         }
 
         var players = test.Units.Count == 0 ? 2 : IntMath.Max(2, test.Units.Max(u => u.Owner.Value));

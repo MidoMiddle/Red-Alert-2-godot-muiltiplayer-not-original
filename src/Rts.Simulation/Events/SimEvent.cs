@@ -22,6 +22,9 @@ public sealed record UnitPathFound(int Tick, EntityId Unit, PathStatus Status, i
 /// <summary>The unit stopped in front of a cell it cannot enter and plans its way again from there.</summary>
 public sealed record UnitBlocked(int Tick, EntityId Unit, WorldPos Position) : SimEvent(Tick);
 
+/// <summary>A map object fell: a tree to a stump, a fence crushed by tracks, a post knocked over, a wall shot down.</summary>
+public sealed record MapObjectDestroyed(int Tick, int ObjectId, Map.MapObjectKind Kind, CellPos Cell) : SimEvent(Tick);
+
 /// <summary>The map changed in the cells from <paramref name="From"/> to <paramref name="To"/> (inclusive): the client redraws them.</summary>
 public sealed record MapChanged(int Tick, CellPos From, CellPos To) : SimEvent(Tick);
 

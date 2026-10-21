@@ -21,8 +21,9 @@ public sealed record TestMap(MapGrid Grid, IReadOnlyList<TestMapUnit> Units);
 /// . , = b ~ W # i T
 /// unit heavy_tank 3 5 player=1
 /// </code>
-/// Codes are the land types of docs/implementation/M7_maps.md, 4.3, plus <c>T</c> for a tree (clear land with an obstacle).
-/// A <c>unit</c> line takes a unit id of <see cref="UnitArchetypes"/>, the cell x and y, and the owner.
+/// Codes are the land types of docs/implementation/M7_maps.md, 4.3, plus <c>T</c> for a tree (a <c>pine_tree</c> map object on
+/// clear land). A <c>unit</c> line takes a unit id of <see cref="UnitArchetypes"/>, the cell x and y, and the owner; an
+/// <c>object</c> line a map object id of <see cref="MapObjectTypes"/>, the cell x and y, and optionally the model variant.
 /// Every error names the line and the column.
 /// </summary>
 public static class TestMapParser
@@ -33,6 +34,7 @@ public static class TestMapParser
     {
         var rows = new List<(int Line, LandType[] Land, bool[] Trees)>();
         var unitLines = new List<(int Line, string Text)>();
+        var objectLines = new List<(int Line, string Text)>();
 
         var lines = text.Replace("\r\n", "\n").Split('\n');
         for (var i = 0; i < lines.Length; i++)
@@ -50,6 +52,12 @@ public static class TestMapParser
                 continue;
             }
 
+            if (line.StartsWith("object ", StringComparison.Ordinal))
+            {
+                objectLines.Add((lineNumber, lines[i]));
+                continue;
+            }
+
             rows.Add(ParseRow(lineNumber, lines[i]));
         }
 
@@ -59,7 +67,8 @@ public static class TestMapParser
         }
 
         var width = rows[0].Land.Length;
-        var grid = new MapGrid(width, rows.Count);
+        var landLayer = new byte[width * rows.Count];
+        var objects = new List<MapObjectState>();
         for (var y = 0; y < rows.Count; y++)
         {
             var (line, land, trees) = rows[y];
@@ -70,11 +79,21 @@ public static class TestMapParser
 
             for (var x = 0; x < width; x++)
             {
-                var cell = new CellPos(x, y);
-                grid.SetLand(cell, land[x]);
-                grid.SetBlocked(cell, trees[x]);
+                landLayer[y * width + x] = (byte)land[x];
+                if (trees[x])
+                {
+                    // Every tree is a pine; four models, spread so neighbours rarely look the same.
+                    objects.Add(MapObjectState.New(MapObjectKind.PineTree, new CellPos(x, y), (x * 7 + y * 3) % 4));
+                }
             }
         }
+
+        foreach (var (line, objectText) in objectLines)
+        {
+            objects.Add(ParseObject(line, objectText, width, rows.Count));
+        }
+
+        var grid = MapGrid.FromLayers(width, rows.Count, landLayer, new byte[landLayer.Length], default, objects);
 
         var units = new List<TestMapUnit>();
         foreach (var (line, unitText) in unitLines)
@@ -139,6 +158,35 @@ public static class TestMapParser
         }
 
         return (lineNumber, land.ToArray(), trees.ToArray());
+    }
+
+    // object <type> <x> <y> [variant]
+    private static MapObjectState ParseObject(int lineNumber, string line, int width, int height)
+    {
+        var parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length is not (4 or 5))
+        {
+            throw Error(lineNumber, 1, "expected 'object <type> <x> <y> [variant]'");
+        }
+
+        if (!MapObjectTypes.TryGetById(parts[1], out var type))
+        {
+            throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown map object '{parts[1]}'");
+        }
+
+        var cell = new CellPos(ParseNumber(lineNumber, line, parts[2]), ParseNumber(lineNumber, line, parts[3]));
+        if (cell.X >= width || cell.Y >= height)
+        {
+            throw Error(lineNumber, ColumnOf(line, parts[2]), $"cell ({cell.X}, {cell.Y}) is outside the {width}x{height} map");
+        }
+
+        var variant = parts.Length == 5 ? ParseNumber(lineNumber, line, parts[4]) : 0;
+        if (variant > 255)
+        {
+            throw Error(lineNumber, ColumnOf(line, parts[4]), $"variant must be 0…255, got {variant}");
+        }
+
+        return MapObjectState.New(type.Kind, cell, variant);
     }
 
     // unit <id> <x> <y> player=<n>

@@ -14,7 +14,7 @@ if (args.Length == 2 && args[0] == "check")
         Console.WriteLine($"{map.Id} \"{map.Name}\" {map.Width}x{map.Height}, climate {map.Climate}, {map.Players} players, {map.Starts.Length} starts");
         Console.WriteLine($"objects {map.Objects.Length} · bridges {map.Bridges.Length} · structures {map.Structures.Length} · " +
                           $"highest level {map.Heights.Max()} · ore cells {map.Ore.Count(o => o > 0)}");
-        var grid = map.ToMapGrid([TestMapConverter.PineTree]);
+        var grid = map.ToMapGrid();
         var shapes = Cells(map).Select(cell => grid.Heights.ShapeAt(cell)).ToList();
         Console.WriteLine($"cells: flat {shapes.Count(s => s == CellShape.Flat)} · slope {shapes.Count(s => s == CellShape.Slope)} · cliff {shapes.Count(s => s == CellShape.Cliff)}");
         Console.WriteLine($"hash {MapHasher.Hash(map)}");
@@ -26,7 +26,7 @@ if (args.Length == 2 && args[0] == "shapes")
 {
     return Run(args[1], map =>
     {
-        var heights = map.ToMapGrid([]).Heights;
+        var heights = map.ToMapGrid().Heights;
         Console.WriteLine("shape: . flat  / slope  # cliff          level of each cell (its lowest corner, 0-9 a-e)");
         for (var y = 0; y < map.Height; y++)
         {
@@ -56,7 +56,7 @@ if (args.Length == 3 && args[0] == "passability")
 
     return Run(args[1], map =>
     {
-        var grid = map.ToMapGrid([TestMapConverter.PineTree]);
+        var grid = map.ToMapGrid();
         Console.WriteLine($"{locomotor}: # impassable  . 100 %  digit = tens of percent when slower  + faster");
         for (var y = 0; y < map.Height; y++)
         {

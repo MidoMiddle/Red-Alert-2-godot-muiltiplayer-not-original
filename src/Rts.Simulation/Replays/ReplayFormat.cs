@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using Rts.Simulation.Commands;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
 
@@ -18,17 +19,21 @@ namespace Rts.Simulation.Replays;
 /// u32 checksumCount | (i32 tick, u64 value) × checksumCount
 /// </code>
 /// History: v2 (M2 step 2) marks command format v2 inside; v3 (M2 step 4) adds the map layers; v4 (M2 step 12) marks command format v3 inside;
-/// v5 (M7 step 2) adds the corner heights, (W+1) × (H+1) bytes after the cell layers.
+/// v5 (M7 step 2) adds the corner heights, (W+1) × (H+1) bytes after the cell layers; v6 (M7 step 5) adds the map objects after
+/// them (u32 count, then u8 kind | u16 x | u16 y | u8 variant | i32 hp | u8 destroyed each) and marks command format v4.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 5;
+    public const ushort FormatVersion = 6;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
 
     private const int HeaderSize = 4 + 2 + 4 + 8 + 4 * 5;
     private const int ChecksumSize = 4 + 8;
+
+    // u8 kind | u16 x | u16 y | u8 variant | i32 hp | u8 destroyed.
+    private const int ObjectSize = 1 + 2 + 2 + 1 + 4 + 1;
 
     // 512 × 512 cells: far above any map we plan, small enough to reject garbage sizes before allocating.
     private const long MaxMapCells = 512 * 512;
@@ -37,7 +42,7 @@ public static class ReplayFormat
     {
         var commands = CommandSerializer.WriteAll(replay.Commands);
         var map = replay.Settings.Map;
-        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height + (map.Width + 1) * (map.Height + 1));
+        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height + (map.Width + 1) * (map.Height + 1) + 4 + ObjectSize * map.Objects.Count);
         var buffer = new byte[HeaderSize + mapSize + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
         var span = buffer.AsSpan();
 
@@ -61,6 +66,18 @@ public static class ReplayFormat
             offset += map.Width * map.Height;
             map.Heights.LevelBytes().CopyTo(span[offset..]);
             offset += (map.Width + 1) * (map.Height + 1);
+            BinaryPrimitives.WriteUInt32LittleEndian(span[offset..], (uint)map.Objects.Count);
+            offset += 4;
+            foreach (var mapObject in map.Objects)
+            {
+                span[offset] = (byte)mapObject.Kind;
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 1)..], (ushort)mapObject.Cell.X);
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 3)..], (ushort)mapObject.Cell.Y);
+                span[offset + 5] = (byte)mapObject.Variant;
+                BinaryPrimitives.WriteInt32LittleEndian(span[(offset + 6)..], mapObject.Hp);
+                span[offset + 10] = mapObject.Destroyed ? (byte)1 : (byte)0;
+                offset += ObjectSize;
+            }
         }
 
         commands.CopyTo(span[offset..]);
@@ -120,17 +137,42 @@ public static class ReplayFormat
 
             var cells = width * height;
             var corners = (width + 1) * (height + 1);
-            Require(source[offset..], 2 * cells + corners);
+            Require(source[offset..], 2 * cells + corners + 4);
+            var objectCount = BinaryPrimitives.ReadUInt32LittleEndian(source[(offset + 2 * cells + corners)..]);
+            if (objectCount > (uint)cells * 4)
+            {
+                throw new InvalidDataException($"Invalid map object count {objectCount}.");
+            }
+
+            var objectsStart = offset + 2 * cells + corners + 4;
+            Require(source[objectsStart..], ObjectSize * (int)objectCount);
+            var objects = new MapObjectState[objectCount];
+            for (var i = 0; i < objects.Length; i++)
+            {
+                var at = source[(objectsStart + ObjectSize * i)..];
+                if (at[10] > 1)
+                {
+                    throw new InvalidDataException($"Invalid destroyed flag {at[10]} of map object {i + 1}.");
+                }
+
+                objects[i] = new MapObjectState(
+                    (MapObjectKind)at[0],
+                    new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(at[1..]), BinaryPrimitives.ReadUInt16LittleEndian(at[3..])),
+                    at[5],
+                    BinaryPrimitives.ReadInt32LittleEndian(at[6..]),
+                    at[10] == 1);
+            }
+
             try
             {
-                map = MapGrid.FromLayers(width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners));
+                map = MapGrid.FromLayers(width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners), objects);
             }
             catch (ArgumentException error)
             {
                 throw new InvalidDataException($"Invalid map data: {error.Message}", error);
             }
 
-            offset += 2 * cells + corners;
+            offset = objectsStart + ObjectSize * (int)objectCount;
         }
 
         var settings = (map is null ? new SimulationSettings(seed) : new SimulationSettings(seed, map)) with

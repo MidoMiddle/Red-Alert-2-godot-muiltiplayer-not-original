@@ -20,7 +20,7 @@ public partial class DebugOverlay : CanvasLayer
     private const string SharedControls =
         "Drag LMB box select · Shift+click add/remove · double click same type · Ctrl+1…9 group · 1…9 select (twice: camera) · Shift+1…9 add · " +
         "Shift+order queue · Ctrl+Shift+order attack-move · Z+orders waypoints, then order without Z · S stop · X scatter\n" +
-        "Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "K damage map object (debug) · Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
         "arrows/edge/wheel camera · F1…F4 bookmark (Ctrl: save)\n" +
         "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph";
 
@@ -84,7 +84,18 @@ public partial class DebugOverlay : CanvasLayer
             return "cell -";
         }
 
-        var land = map.IsBlocked(cell) ? $"{map.LandAt(cell)} + tree" : map.LandAt(cell).ToString();
+        var land = map.LandAt(cell).ToString();
+        foreach (var mapObject in map.ObjectsAt(cell))
+        {
+            // The map object and its hit points (M7 step 5): "pine_tree 200/400", "stump", "boulder".
+            land += mapObject switch
+            {
+                { Destroyed: true, Kind: MapObjectKind.PineTree } => " + stump",
+                { Destroyed: true } => "",
+                { Type.Destructible: false } => $" + {mapObject.Type.Id}",
+                _ => $" + {mapObject.Type.Id} {mapObject.Hp}/{mapObject.Type.MaxHp}",
+            };
+        }
         var foot = map.SpeedPercent(cell, Locomotor.Foot);
         var track = map.SpeedPercent(cell, Locomotor.Track);
         var wheel = map.SpeedPercent(cell, Locomotor.Wheel);

@@ -41,6 +41,14 @@ public sealed class CommandSerializerTests
             Convert.ToHexString(Serialize(Waypoints(player: 1, tick: 5, sequence: 7, units: [9], points: [(256, 512), (16, 32)], loop: true))));
     }
 
+    [Fact]
+    public void Damage_has_the_exact_v4_byte_layout()
+    {
+        var bytes = Serialize(new DamageMapObjectCommand(new PlayerId(1), 5, 7, new CellPos(12, 300), 200));
+
+        Assert.Equal("07" + "01000000" + "05000000" + "07000000" + "0C000000" + "2C010000" + "C8000000", Convert.ToHexString(bytes));
+    }
+
     public static TheoryData<Command> RoundTripCases => new()
     {
         Spawn(player: 1, tick: 0, sequence: 0),
@@ -58,6 +66,9 @@ public sealed class CommandSerializerTests
         Scatter(player: 5, tick: 12, sequence: 6, units: [2, 4]),
         Waypoints(player: 6, tick: 2, sequence: 2, units: [1], points: [(10, 20)]),
         Waypoints(player: 6, tick: 2, sequence: 3, units: [1, 2], points: Enumerable.Range(0, WaypointsCommand.MaxPoints).Select(i => (i * 100, -i)).ToArray(), loop: true),
+        new DamageMapObjectCommand(new PlayerId(2), 7, 1, new CellPos(3, 4), 400),
+        // Any cell and amount round-trip: the processor rejects what is out of range.
+        new DamageMapObjectCommand(new PlayerId(8), 0, 0, new CellPos(-1, int.MaxValue), -5),
     };
 
     [Theory]
@@ -144,6 +155,7 @@ public sealed class CommandSerializerTests
             Scatter(player: 1, tick: 0, sequence: 0, units: [1, 2]),
             AttackMove(player: 1, tick: 0, sequence: 0, units: [1, 2]),
             Waypoints(player: 1, tick: 0, sequence: 0, units: [1, 2], points: [(1, 2), (3, 4)]),
+            new DamageMapObjectCommand(new PlayerId(1), 0, 0, new CellPos(1, 2), 3),
         ];
         foreach (var command in commands)
         {

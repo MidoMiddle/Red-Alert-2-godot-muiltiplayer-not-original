@@ -11,4 +11,5 @@ public enum CommandType : byte
     AttackMove = 4,
     Waypoints = 5,
     Scatter = 6,
+    DamageMapObject = 7,
 }

@@ -19,7 +19,7 @@ public sealed class SandboxMapTests
     }
 
     [Fact]
-    public void Land_matches_cell_by_cell_and_trees_become_objects()
+    public void Land_matches_cell_by_cell_and_objects_carry_over()
     {
         var old = OldSandbox().Grid;
         var map = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));
@@ -30,9 +30,13 @@ public sealed class SandboxMapTests
             {
                 var cell = new CellPos(x, y);
                 Assert.Equal(old.LandAt(cell), map.LandAt(cell));
-                Assert.Equal(old.IsBlocked(cell), map.Objects.Any(o => o.Cell == cell && o.Type == TestMapConverter.PineTree));
             }
         }
+
+        // Trees and the object lines of the ASCII map become map objects of the same types, cells and variants.
+        Assert.Equal(
+            old.Objects.Select(o => (o.Type.Id, o.Cell, o.Variant)).OrderBy(o => o.Id, StringComparer.Ordinal).ThenBy(o => o.Cell.Y).ThenBy(o => o.Cell.X),
+            map.Objects.Select(o => (o.Type, o.Cell, o.Variant)));
 
         Assert.All(map.Heights, h => Assert.Equal(0, h));
     }
@@ -43,6 +47,34 @@ public sealed class SandboxMapTests
         // Golden value: the canonical text and SHA-256 must not depend on the OS or the runtime.
         var map = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));
 
-        Assert.Equal("6b62f7cf4c4a9a50fa01505531a7303ef3ccb4f97896e45d83c7958feae267ac", MapHasher.Hash(map));
+        Assert.Equal("96033965d88d9732e93fae069764d09a877a8bffd1b09526a8cb65fbbaca3480", MapHasher.Hash(map));
+    }
+
+    [Fact]
+    public void On_the_sandbox_a_tank_crushes_the_fence_and_a_conscript_goes_round_it()
+    {
+        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
+        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid));
+        var blue = new Rts.Simulation.World.PlayerId(1);
+        simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(blue, 0, 0, Rts.Simulation.World.UnitType.HeavyTank, new CellPos(7, 36).Center));
+        simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(blue, 0, 1, Rts.Simulation.World.UnitType.Conscript, new CellPos(9, 36).Center));
+        simulation.Step();
+        var units = simulation.World.Entities.OfType<Rts.Simulation.World.Unit>().ToList();
+        var (tank, conscript) = (units[0], units[1]);
+        simulation.Enqueue(new Rts.Simulation.Commands.MoveCommand(blue, simulation.CurrentTick, 2, [tank.Id], new CellPos(7, 40).Center));
+        simulation.Enqueue(new Rts.Simulation.Commands.MoveCommand(blue, simulation.CurrentTick, 3, [conscript.Id], new CellPos(9, 40).Center));
+        var conscriptCells = new HashSet<CellPos>();
+        var crushed = false;
+        for (var tick = 0; tick < 1500; tick++)
+        {
+            simulation.Step();
+            conscriptCells.Add(conscript.Position.ToCell());
+            crushed |= simulation.LastTickEvents.OfType<Rts.Simulation.Events.MapObjectDestroyed>().Any(e => e.Kind == MapObjectKind.FenceWood);
+        }
+
+        Assert.True(crushed, "The tank crushed the fence.");
+        Assert.Equal(new CellPos(7, 40), tank.Position.ToCell());
+        Assert.Equal(new CellPos(9, 40), conscript.Position.ToCell());
+        Assert.DoesNotContain(conscriptCells, cell => cell.Y == 38 && cell.X is >= 4 and <= 11 && cell.X != 7);
     }
 }

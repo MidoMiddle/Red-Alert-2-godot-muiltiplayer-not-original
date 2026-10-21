@@ -33,6 +33,8 @@ public static class CommandProcessor
             WaypointsCommand route => ApplyRoute(world, route, route.Points, route.Loop, append: false, attackMove: false, events),
             StopCommand stop => ApplyStop(world, stop),
             ScatterCommand scatter => ApplyScatter(world, scatter, events),
+            DamageMapObjectCommand damage => damage.Amount is >= 1 and <= DamageMapObjectCommand.MaxAmount
+                && world.Map.Contains(damage.Cell) && world.DamageMapObject(damage.Cell, damage.Amount, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
     }

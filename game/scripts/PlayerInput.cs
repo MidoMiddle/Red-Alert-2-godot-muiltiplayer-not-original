@@ -21,6 +21,9 @@ namespace Rts.Client;
 /// </summary>
 public partial class PlayerInput : Node
 {
+    /// <summary>Hit points one press of the debug damage key takes off a map object: a tree falls on the second press.</summary>
+    private const int DebugDamage = 200;
+
     /// <summary>Screen distance in pixels within which a click picks a unit.</summary>
     private const float PickRadius = 22f;
 
@@ -212,6 +215,11 @@ public partial class PlayerInput : Node
         {
             // T: the units of the type of the first selected unit on the field; a second T within 400 ms takes the whole map.
             SelectSameType(Selection.Units[0], false, _typeTaps.Press(TypeSelectKey, Time.GetTicksMsec()));
+        }
+        else if (key.IsActionPressed("debug_damage", false, true) && CellUnderPointer is { } damaged)
+        {
+            // Debug (M7 step 5): a blow at the map object under the cursor, until the weapons of M4.
+            _host.IssueDamage(damaged, DebugDamage);
         }
         else if (key.IsActionPressed("select_all", false, true))
         {

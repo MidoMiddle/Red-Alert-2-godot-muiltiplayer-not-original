@@ -136,6 +136,54 @@ public sealed class GameWorld
         events?.Add(new Events.MapChanged(CurrentTick, from, to));
     }
 
+    /// <summary>
+    /// Damages the first destructible standing map object on the cell (debug command now, weapons in M4). At 0 hit points it is
+    /// destroyed through <see cref="ChangeMap"/>, so paths learn about the opened cell; reports <see cref="Events.MapObjectDestroyed"/>.
+    /// Returns false when there is nothing on the cell that can be damaged.
+    /// </summary>
+    internal bool DamageMapObject(CellPos cell, int amount, List<Events.SimEvent>? events)
+    {
+        foreach (var mapObject in Map.ObjectsAt(cell))
+        {
+            if (mapObject.IsAlive && mapObject.Type.Destructible)
+            {
+                if (mapObject.Hp > amount)
+                {
+                    Map.SetObjectHp(mapObject.Id, mapObject.Hp - amount);
+                }
+                else
+                {
+                    DestroyMapObject(mapObject, events);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// A unit entered <paramref name="cell"/>: it crushes the standing objects there that its locomotor flattens (a fence under
+    /// tracks, a lamp post under anyone).
+    /// </summary>
+    internal void CrushMapObjects(CellPos cell, Locomotor locomotor, List<Events.SimEvent>? events)
+    {
+        foreach (var mapObject in Map.ObjectsAt(cell))
+        {
+            if (mapObject.IsAlive && mapObject.Type.CrushedBy(locomotor))
+            {
+                DestroyMapObject(mapObject, events);
+            }
+        }
+    }
+
+    private void DestroyMapObject(MapObject mapObject, List<Events.SimEvent>? events)
+    {
+        ChangeMap([new DestroyObjectEdit(mapObject.Id)], events);
+        events?.Add(new Events.MapObjectDestroyed(CurrentTick, mapObject.Id, mapObject.Kind, mapObject.Cell));
+    }
+
     /// <summary>True when a cell of the path still ahead of the unit lies in the area and is closed to it now.</summary>
     private bool CrossesClosedCell(Unit unit, Pathfinding.CellPath path, CellPos from, CellPos to)
     {

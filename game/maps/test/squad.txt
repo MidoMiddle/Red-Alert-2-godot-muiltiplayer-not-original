@@ -70,6 +70,29 @@ unit heavy_tank 44 44 player=2
 unit support_vehicle 46 44 player=2
 unit conscript 48 44 player=2
 unit rocketeer 44 46 player=2
+object fence_wood 4 38
+object fence_wood 5 38
+object fence_wood 6 38
+object fence_wood 7 38
+object fence_wood 8 38
+object fence_wood 9 38
+object fence_wood 10 38
+object fence_wood 11 38
+object wall_stone 6 42
+object wall_stone 7 42
+object wall_stone 8 42
+object wall_stone 9 42
+object wall_stone 10 42
+object boulder 3 21 0
+object boulder 4 21 1
+object boulder 11 21 2
+object boulder 12 21 3
+object lamp_post 34 40
+object lamp_post 34 42
+object lamp_post 34 44
+object lamp_post 34 46
+object lamp_post 34 48
+object lamp_post 34 50
 unit heavy_tank 18 19 player=1
 unit heavy_tank 19 19 player=1
 unit heavy_tank 20 19 player=1

@@ -31,6 +31,14 @@ public sealed record SetObstacleEdit(CellPos Cell, bool Blocked) : MapEdit
     internal override void Apply(MapGrid map) => map.SetBlocked(Cell, Blocked);
 }
 
+/// <summary>A map object is destroyed (shot down or crushed): the cell opens to whoever it blocked.</summary>
+public sealed record DestroyObjectEdit(int ObjectId) : MapEdit
+{
+    internal override (CellPos From, CellPos To) Area(MapGrid map) => (map.Objects[ObjectId - 1].Cell, map.Objects[ObjectId - 1].Cell);
+
+    internal override void Apply(MapGrid map) => map.DestroyObject(ObjectId);
+}
+
 /// <summary>A corner gets another height level (destructible relief, later; tests now).</summary>
 public sealed record SetCornerLevelEdit(int X, int Y, int Level) : MapEdit
 {
