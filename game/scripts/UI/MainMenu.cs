@@ -11,6 +11,8 @@ namespace Rts.Client.UI;
 /// section 2.3. An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with
 /// Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10. Credits has no step yet.
 /// Skirmish opens its setup screen (step 7, no match start yet), and Settings opens the settings screen (step 5).
+/// Test Sandbox is a temporary entry: it opens the debug scene <c>Main</c> with everything that is ready (M0 simulation,
+/// M1 camera and lighting) until a real match can be started from the skirmish screen. F10 there returns to this menu.
 /// </summary>
 public partial class MainMenu : Control
 {
@@ -20,6 +22,7 @@ public partial class MainMenu : Control
     private const float ExitSpacerHeight = 32f;
     private const string SkirmishSetupScene = "res://scenes/ui/SkirmishSetup.tscn";
     private const string SettingsScene = "res://scenes/ui/Settings.tscn";
+    private const string SandboxScene = "res://scenes/Main.tscn";
 
     private VBoxContainer _entries = null!;
     private ConfirmationDialog _exitDialog = null!;
@@ -36,6 +39,7 @@ public partial class MainMenu : Control
         _entries.AddThemeConstantOverride("separation", EntrySeparation);
 
         // Entries without an action are not ready yet. Each step that adds a screen passes its action here.
+        AddEntry("UI_MAIN_SANDBOX", OpenSandbox);
         AddEntry("UI_MAIN_SKIRMISH", OpenSkirmishSetup);
         AddEntry("UI_MAIN_MULTIPLAYER", null);
         AddEntry("UI_MAIN_ONLINE", null);
@@ -85,6 +89,11 @@ public partial class MainMenu : Control
     private void OpenSkirmishSetup()
     {
         SceneRouter.Instance?.GoTo(SkirmishSetupScene);
+    }
+
+    private void OpenSandbox()
+    {
+        SceneRouter.Instance?.GoTo(SandboxScene);
     }
 
     private void OpenSettings()

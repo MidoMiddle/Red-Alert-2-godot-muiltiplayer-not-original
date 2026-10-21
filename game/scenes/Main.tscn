@@ -59,10 +59,10 @@ script = ExtResource("6_overlay")
 [node name="Label" type="Label" parent="DebugOverlay"]
 offset_left = 12.0
 offset_top = 10.0
-offset_right = 1268.0
-offset_bottom = 140.0
+offset_right = 1900.0
+offset_bottom = 220.0
 theme_override_colors/font_color = Color(0.95, 0.95, 0.9, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 15
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 22
 text = "..."

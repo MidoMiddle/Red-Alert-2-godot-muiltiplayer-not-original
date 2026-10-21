@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Godot;
+using Rts.Client.App;
 using Rts.Simulation;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
@@ -16,6 +17,7 @@ namespace Rts.Client;
 public partial class Main : Node3D
 {
     private const int SmokeTicks = 300;
+    private const string MainMenuScene = "res://scenes/ui/MainMenu.tscn";
 
     /// <summary>Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward.</summary>
     private static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
@@ -50,6 +52,16 @@ public partial class Main : Node3D
         else if (args.Contains("--check-camera"))
         {
             CallDeferred(MethodName.RunCameraCheck);
+        }
+    }
+
+    /// <summary>F10 leaves the test sandbox for the main menu.</summary>
+    public override void _UnhandledInput(InputEvent inputEvent)
+    {
+        if (inputEvent is InputEventKey { Pressed: true, Echo: false, Keycode: Key.F10 } && SceneRouter.Instance is { } router)
+        {
+            router.GoTo(MainMenuScene);
+            GetViewport().SetInputAsHandled();
         }
     }
 

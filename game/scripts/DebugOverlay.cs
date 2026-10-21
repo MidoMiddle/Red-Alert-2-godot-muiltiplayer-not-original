@@ -12,7 +12,7 @@ public partial class DebugOverlay : CanvasLayer
     private const string ClassicControls = "Classic: LMB select / order · RMB click cancel · RMB drag camera";
     private const string ModernControls = "Modern: LMB select · RMB order · LMB empty ground cancel · MMB drag camera";
     private const string SharedControls =
-        "Shift+LMB spawn · Esc cancel · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "Shift+LMB spawn · Esc cancel · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · F10 menu · " +
         "WASD/arrows/edge/wheel camera";
 
     private SimulationHost _host = null!;

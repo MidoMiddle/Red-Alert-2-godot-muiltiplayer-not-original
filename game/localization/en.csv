@@ -7,6 +7,7 @@ UI_EXIT_TITLE,Exit
 UI_EXIT_CONFIRM_TEXT,Exit the game?
 UI_VERSION,Version {0}
 UI_MENU_ITEM_SOON,{0} (coming soon)
+UI_MAIN_SANDBOX,Test Sandbox
 UI_MAIN_SKIRMISH,Skirmish
 UI_MAIN_MULTIPLAYER,Multiplayer
 UI_MAIN_ONLINE,Online
