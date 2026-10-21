@@ -17,6 +17,8 @@ public partial class ScreenStub : Control
 
     public override void _Ready()
     {
+        ScreenshotCapture.AttachIfRequested(this);
+
         var args = SceneRouter.Instance?.Args;
         if (args is not null && args.TryGetValue(LevelKey, out var level) && level is int known)
         {

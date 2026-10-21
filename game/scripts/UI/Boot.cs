@@ -5,9 +5,9 @@ using Rts.Client.App;
 namespace Rts.Client.UI;
 
 /// <summary>
-/// Entry scene. Shows a short splash, then opens the first screen.
-/// Debug arguments skip the splash: <c>--smoke</c> and <c>--screenshot</c> go to <c>Main</c>
-/// so the M0 checks keep working, and <c>--ui-showcase</c> goes to the component showcase.
+/// Entry scene. Shows a short splash, then opens the first screen. Debug arguments skip the splash:
+/// <c>--sandbox</c>, <c>--smoke</c> and <c>--screenshot</c> go to <c>Main</c>, so the M0 checks and the
+/// manual checklist keep working; <c>--ui-showcase</c> and <c>--ui-stub</c> open UI screens for visual checks.
 /// </summary>
 public partial class Boot : Control
 {
@@ -26,7 +26,11 @@ public partial class Boot : Control
         {
             OpenDebugScene(ShowcaseScene);
         }
-        else if (args.Contains("--smoke") || args.Contains("--screenshot"))
+        else if (args.Contains("--ui-stub"))
+        {
+            OpenDebugScene(FirstScreen);
+        }
+        else if (args.Contains("--sandbox") || args.Contains("--smoke") || args.Contains("--screenshot"))
         {
             OpenDebugScene(MainScene);
         }
@@ -46,9 +50,19 @@ public partial class Boot : Control
         }
     }
 
+    /// <summary>A click skips the splash. The root is a Control, so clicks arrive here, not in <c>_UnhandledInput</c>.</summary>
+    public override void _GuiInput(InputEvent @event)
+    {
+        if (!_finished && @event is InputEventMouseButton { Pressed: true })
+        {
+            Finish();
+        }
+    }
+
+    /// <summary>A key skips the splash.</summary>
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (!_finished && @event is (InputEventKey { Pressed: true } or InputEventMouseButton { Pressed: true }))
+        if (!_finished && @event is InputEventKey { Pressed: true })
         {
             Finish();
         }
