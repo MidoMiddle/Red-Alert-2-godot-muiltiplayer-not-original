@@ -1,12 +1,15 @@
 using System;
+using System.Linq;
 using Godot;
 using Rts.Client.App;
 
 namespace Rts.Client.UI;
 
 /// <summary>
-/// Main menu (docs/menu/README.md, sections 2.3 and 3.2). An entry is shown only when its screen exists:
-/// at this step only Exit is ready. Settings comes with step 5, Skirmish with step 7, Replays with step 15.
+/// Main menu (docs/menu/README.md, sections 2.3 and 3.2). All entries are shown in the order of section 2.3.
+/// An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with step 5,
+/// Skirmish with step 7, Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10.
+/// Credits has no step yet.
 /// </summary>
 public partial class MainMenu : Control
 {
@@ -26,7 +29,16 @@ public partial class MainMenu : Control
 
         _entries = GetNode<VBoxContainer>("Entries");
         _entries.AddThemeConstantOverride("separation", EntrySeparation);
-        AddEntry("Exit", "UI_MAIN_EXIT", ShowExitDialog);
+
+        // Entries without an action are not ready yet. Each step that adds a screen passes its action here.
+        AddEntry("UI_MAIN_SKIRMISH", null);
+        AddEntry("UI_MAIN_MULTIPLAYER", null);
+        AddEntry("UI_MAIN_ONLINE", null);
+        AddEntry("UI_MAIN_MAP_EDITOR", null);
+        AddEntry("UI_MAIN_REPLAYS", null);
+        AddEntry("UI_MAIN_SETTINGS", null);
+        AddEntry("UI_MAIN_CREDITS", null);
+        AddEntry("UI_MAIN_EXIT", ShowExitDialog);
 
         _exitDialog = new ConfirmationDialog
         {
@@ -36,19 +48,32 @@ public partial class MainMenu : Control
         _exitDialog.Confirmed += OnExitConfirmed;
         AddChild(_exitDialog);
 
-        _entries.GetChild<Button>(0).GrabFocus();
+        FocusFirstReadyEntry();
     }
 
-    private void AddEntry(string name, string key, Action onPressed)
+    /// <summary>Adds an entry. Without an action it is disabled and says "coming soon".</summary>
+    private void AddEntry(string key, Action? onPressed)
     {
+        var ready = onPressed is not null;
         var button = new Button
         {
-            Name = name,
-            Text = Tr(key),
+            Name = key,
+            Text = ready ? Tr(key) : string.Format(Tr("UI_MENU_ITEM_SOON"), Tr(key)),
+            Disabled = !ready,
             CustomMinimumSize = new Vector2(EntryWidth, EntryHeight),
         };
-        button.Pressed += onPressed;
+        if (onPressed is not null)
+        {
+            button.Pressed += onPressed;
+        }
+
         _entries.AddChild(button);
+    }
+
+    private void FocusFirstReadyEntry()
+    {
+        var first = _entries.GetChildren().OfType<Button>().FirstOrDefault(button => !button.Disabled);
+        first?.GrabFocus();
     }
 
     private void ShowExitDialog()

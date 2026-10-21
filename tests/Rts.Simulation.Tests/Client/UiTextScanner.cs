@@ -27,6 +27,9 @@ internal static class UiTextScanner
 
     private static readonly Regex TrCall = new(@"\bTr\(""([^""]+)""\)", RegexOptions.CultureInvariant);
 
+    // A key passed on as an argument, for example to a helper that calls Tr itself.
+    private static readonly Regex KeyLiteral = new(@"""(UI_[A-Z0-9_]+)""", RegexOptions.CultureInvariant);
+
     public static bool IsKey(string text) => KeyPattern.IsMatch(text);
 
     /// <summary>Violations in a scene: literal text in a player-visible property that is not a key.</summary>
@@ -64,9 +67,9 @@ internal static class UiTextScanner
         }
     }
 
-    /// <summary>Keys used as <c>Tr("KEY")</c> in code.</summary>
+    /// <summary>Keys used in code: <c>Tr("KEY")</c> and <c>"UI_..."</c> literals passed on as arguments.</summary>
     public static IEnumerable<string> KeysInCode(string text) =>
-        TrCall.Matches(text).Select(match => match.Groups[1].Value);
+        TrCall.Matches(text).Concat(KeyLiteral.Matches(text)).Select(match => match.Groups[1].Value);
 
     /// <summary>Keys written as text in a scene.</summary>
     public static IEnumerable<string> KeysInScene(string text) =>
