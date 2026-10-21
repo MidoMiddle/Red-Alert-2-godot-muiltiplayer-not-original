@@ -1,0 +1,140 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/Hud/Sidebar.cs" id="1_sidebar"]
+[ext_resource type="PackedScene" path="res://scenes/hud/Minimap.tscn" id="2_minimap"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_tabs"]
+
+[node name="Sidebar" type="Control"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -230.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_sidebar")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Column" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="CreditsBar" type="PanelContainer" parent="Column"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="Credits" type="Label" parent="Column/CreditsBar"]
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MenuRow" type="HBoxContainer" parent="Column"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="MenuButton" type="Button" parent="Column/MenuRow"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="StatsButton" type="Button" parent="Column/MenuRow"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="Minimap" parent="Column" instance=ExtResource("2_minimap")]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="SellRepairRow" type="HBoxContainer" parent="Column"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RepairButton" type="Button" parent="Column/SellRepairRow"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+disabled = true
+
+[node name="SellButton" type="Button" parent="Column/SellRepairRow"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+disabled = true
+
+[node name="TabGrid" type="GridContainer" parent="Column"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+
+[node name="TabBuildings" type="Button" parent="Column/TabGrid"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_tabs")
+
+[node name="TabDefense" type="Button" parent="Column/TabGrid"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+toggle_mode = true
+button_group = SubResource("ButtonGroup_tabs")
+
+[node name="TabInfantry" type="Button" parent="Column/TabGrid"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+toggle_mode = true
+button_group = SubResource("ButtonGroup_tabs")
+
+[node name="TabVehicles" type="Button" parent="Column/TabGrid"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+toggle_mode = true
+button_group = SubResource("ButtonGroup_tabs")
+
+[node name="Items" type="ScrollContainer" parent="Column"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Grid" type="GridContainer" parent="Column/Items"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4

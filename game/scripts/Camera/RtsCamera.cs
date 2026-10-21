@@ -7,9 +7,9 @@ namespace Rts.Client;
 /// RA2 camera (docs/implementation/M1_visual_spike.md, 4.1): orthographic, yaw 45°, pitch 30° down,
 /// so a 1×1 ground cell looks like a 2:1 diamond. World X runs right-down on screen, world Y (Godot Z) left-down.
 /// The rig only slides over the ground; the angle never changes.
-/// Moves with the camera key actions, with the mouse at the window edge (setting <c>EdgeScroll</c>) and with a drag
+/// Moves with the camera key actions, with the mouse at the edge of the field (setting <c>EdgeScroll</c>) and with a drag
 /// of the camera button that <see cref="PlayerInput"/> passes in (setting <c>CameraDrag</c>, docs/implementation/M6_menus_skirmish.md).
-/// Zooms with the mouse wheel.
+/// Zooms with the mouse wheel. The sidebar covers <see cref="ReservedRight"/> on the right, so the rig point sits in the middle of the field.
 /// </summary>
 public partial class RtsCamera : Node3D
 {
@@ -41,6 +41,9 @@ public partial class RtsCamera : Node3D
 
     public Camera3D Camera => _camera;
 
+    /// <summary>Width in design pixels of the strip on the right that the sidebar covers. The field is the view without it.</summary>
+    public float ReservedRight { get; set; }
+
     public override void _Ready()
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
@@ -69,6 +72,7 @@ public partial class RtsCamera : Node3D
         }
 
         _camera.Size = Mathf.Lerp(_camera.Size, _targetSize, 1f - Mathf.Exp(-ZoomSmoothing * dt));
+        _camera.Position = new Vector3(FieldCentreShift(), 0f, CameraDistance);
     }
 
     public override void _UnhandledInput(InputEvent inputEvent)
@@ -119,6 +123,16 @@ public partial class RtsCamera : Node3D
     /// <summary>Screen position of a world point.</summary>
     public Vector2 UnprojectPosition(Vector3 world) => _camera.UnprojectPosition(world);
 
+    /// <summary>The part of the view where the field shows: the view without the strip the sidebar covers.</summary>
+    public Rect2 FieldRect()
+    {
+        var view = GetViewport().GetVisibleRect();
+        return new Rect2(view.Position, new Vector2(view.Size.X - ReservedRight, view.Size.Y));
+    }
+
+    /// <summary>Moves the view to a ground point, for example to a click on the minimap.</summary>
+    public void CenterOn(Vector3 ground) => MoveOverGround(new Vector3(ground.X, 0f, ground.Z) - Position);
+
     // Screen-space velocity in cells per second: x to the right, y downwards.
     private Vector2 KeyboardScroll(float dt)
     {
@@ -147,24 +161,28 @@ public partial class RtsCamera : Node3D
         }
 
         var viewport = GetViewport();
-        var rect = viewport.GetVisibleRect();
+        var field = FieldRect();
         var mouse = viewport.GetMousePosition();
-        if (!rect.HasPoint(mouse))
+        if (!field.HasPoint(mouse))
         {
             return Vector2.Zero;
         }
 
         var velocity = Vector2.Zero;
-        velocity.X -= EdgeStrength(mouse.X - rect.Position.X);
-        velocity.X += EdgeStrength(rect.End.X - mouse.X);
-        velocity.Y -= EdgeStrength(mouse.Y - rect.Position.Y);
-        velocity.Y += EdgeStrength(rect.End.Y - mouse.Y);
+        velocity.X -= EdgeStrength(mouse.X - field.Position.X);
+        velocity.X += EdgeStrength(field.End.X - mouse.X);
+        velocity.Y -= EdgeStrength(mouse.Y - field.Position.Y);
+        velocity.Y += EdgeStrength(field.End.Y - mouse.Y);
         return velocity * ScrollSpeed;
     }
 
     // 0 outside the band, growing to 1 at the very edge.
     private static float EdgeStrength(float distanceToEdge) =>
         distanceToEdge >= EdgeBand ? 0f : 1f - Mathf.Max(0f, distanceToEdge) / EdgeBand;
+
+    // The rig point should sit in the middle of the field, not of the view, so the camera moves right by half the strip under the sidebar.
+    // The camera keeps the view height, so one design pixel is Size / view height world units.
+    private float FieldCentreShift() => ReservedRight / 2f * _camera.Size / GetViewport().GetVisibleRect().Size.Y;
 
     private Vector3 GroundRight() => Flatten(_camera.GlobalBasis.X);
 

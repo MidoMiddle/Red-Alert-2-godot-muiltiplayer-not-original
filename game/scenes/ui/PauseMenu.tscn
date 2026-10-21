@@ -6,16 +6,6 @@
 layer = 10
 script = ExtResource("1_pause")
 
-[node name="MenuButton" type="Button" parent="."]
-layout_mode = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -184.0
-offset_top = 12.0
-offset_right = -12.0
-offset_bottom = 60.0
-grow_horizontal = 0
-
 [node name="Overlay" type="Control" parent="."]
 visible = false
 layout_mode = 1

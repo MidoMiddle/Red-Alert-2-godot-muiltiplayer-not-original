@@ -4,15 +4,14 @@ using Rts.Client.App;
 namespace Rts.Client.UI;
 
 /// <summary>
-/// Pause menu of the game, opened by the Menu button or by Esc (docs/menu/README.md, 3.4; docs/implementation/M6_menus_skirmish.md,
-/// 4.15). It stops the game tree, so the simulation, the camera and the player input stop with it. Quit to Main Menu asks first and
-/// leaves the match unsaved. Resume and Esc close the menu.
+/// Pause menu of the game, opened by the Menu button in the sidebar or by Esc (docs/menu/README.md, 3.4;
+/// docs/implementation/M6_menus_skirmish.md, 4.15). It stops the game tree, so the simulation, the camera and the player input
+/// stop with it. Quit to Main Menu asks first and leaves the match unsaved. Resume and Esc close the menu.
 /// </summary>
 public partial class PauseMenu : CanvasLayer
 {
     private const string MainMenuScene = "res://scenes/ui/MainMenu.tscn";
 
-    private Button _menuButton = null!;
     private Control _overlay = null!;
     private Button _resume = null!;
     private ConfirmationDialog _leaveDialog = null!;
@@ -23,17 +22,14 @@ public partial class PauseMenu : CanvasLayer
         // The menu has to keep working while the game tree is paused.
         ProcessMode = ProcessModeEnum.Always;
 
-        _menuButton = GetNode<Button>("MenuButton");
         _overlay = GetNode<Control>("Overlay");
         _resume = GetNode<Button>("Overlay/Panel/Column/Resume");
         var quit = GetNode<Button>("Overlay/Panel/Column/QuitToMenu");
 
-        _menuButton.Text = Tr("UI_BUTTON_MENU");
         GetNode<Label>("Overlay/Panel/Column/Title").Text = Tr("UI_PAUSE_TITLE");
         _resume.Text = Tr("UI_PAUSE_RESUME");
         quit.Text = Tr("UI_PAUSE_QUIT");
 
-        _menuButton.Pressed += Open;
         _resume.Pressed += Close;
         quit.Pressed += () => _leaveDialog.PopupCentered();
 
