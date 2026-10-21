@@ -13,7 +13,9 @@ A real-time strategy game inspired by Red Alert 2, built with Godot 4 (.NET / C#
 
 ## Status
 
-Concept stage. All design documentation lives in [docs/](docs/README.md); start with the [top-level concept](docs/00_concept.md).
+Milestone M0 (foundation) in progress on the `m0/foundation` branch: deterministic simulation core and a debug Godot client. All design documentation lives in [docs/](docs/README.md); start with the [top-level concept](docs/00_concept.md).
+
+**How to run the game for testing:** [docs/how_to_run.md](docs/how_to_run.md).
 
 > Design documents are currently written in Russian.
 
