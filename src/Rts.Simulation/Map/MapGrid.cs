@@ -14,6 +14,7 @@ public sealed class MapGrid
 {
     private readonly LandType[] _land;
     private readonly bool[] _blocked;
+    private CornerHeightGrid _heights;
     private ulong? _digest;
 
     /// <summary>A map of <paramref name="width"/> × <paramref name="height"/> clear cells.</summary>
@@ -29,13 +30,15 @@ public sealed class MapGrid
         _land = new LandType[width * height];
         Array.Fill(_land, LandType.Clear);
         _blocked = new bool[width * height];
+        _heights = new CornerHeightGrid(width, height);
     }
 
     /// <summary>
-    /// A map from raw layers, one byte per cell in index order: land type values and obstacle flags (0 or 1).
-    /// Used by the replay reader; throws on unknown land types or flags.
+    /// A map from raw layers, one byte per cell in index order: land type values and obstacle flags (0 or 1), and the corner
+    /// levels (<c>(W+1) × (H+1)</c>; an empty layer means flat ground). Used by the replay reader and the map loader; throws on
+    /// unknown land types, flags or levels.
     /// </summary>
-    public static MapGrid FromLayers(int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked)
+    public static MapGrid FromLayers(int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked, ReadOnlySpan<byte> heights = default)
     {
         var grid = new MapGrid(width, height);
         if (land.Length != grid._land.Length || blocked.Length != grid._blocked.Length)
@@ -55,6 +58,11 @@ public sealed class MapGrid
             grid._blocked[i] = blocked[i] == 1;
         }
 
+        if (!heights.IsEmpty)
+        {
+            grid._heights = CornerHeightGrid.FromLayer(width, height, heights);
+        }
+
         grid._digest = null;
         grid.Version++;
         return grid;
@@ -68,6 +76,9 @@ public sealed class MapGrid
 
     public LandType LandAt(CellPos cell) => _land[IndexOf(cell)];
 
+    /// <summary>The corner heights (docs/implementation/M7_maps.md, 4.1). Read only from outside; the match changes them through the map.</summary>
+    public CornerHeightGrid Heights => _heights;
+
     /// <summary>True when a static obstacle (a tree) stands on the cell.</summary>
     public bool IsBlocked(CellPos cell) => _blocked[IndexOf(cell)];
 
@@ -79,14 +90,15 @@ public sealed class MapGrid
     public bool CanEnter(CellPos cell, Locomotor locomotor) => SpeedPercent(cell, locomotor) > 0;
 
     /// <summary>An independent copy: the match changes its own map, never the one in the settings.</summary>
-    public MapGrid Clone() => FromLayers(Width, Height, LandBytes(), BlockedBytes());
+    public MapGrid Clone() => FromLayers(Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes());
 
     /// <summary>True when both maps have the same size and the same cells.</summary>
     public bool ContentEquals(MapGrid other) =>
         Width == other.Width
         && Height == other.Height
         && _land.AsSpan().SequenceEqual(other._land)
-        && _blocked.AsSpan().SequenceEqual(other._blocked);
+        && _blocked.AsSpan().SequenceEqual(other._blocked)
+        && _heights.ContentEquals(other._heights);
 
     /// <summary>Land layer as bytes in cell index order, the replay layout.</summary>
     public byte[] LandBytes()
@@ -131,11 +143,19 @@ public sealed class MapGrid
         Version++;
     }
 
+    /// <summary>Sets the level of one corner (tests now; destructible relief later).</summary>
+    internal void SetCornerLevel(int x, int y, int level)
+    {
+        _heights.SetCornerLevel(x, y, level);
+        _digest = null;
+        Version++;
+    }
+
     /// <summary>Grows whenever a cell changes, so caches built from the map (step costs of A*) know they are stale.</summary>
     internal int Version { get; private set; }
 
     /// <summary>
-    /// FNV-1a of the land layer and then the obstacle layer, in cell index order, for the state hash. Computed once and kept
+    /// FNV-1a of the land layer, the obstacle layer and the corner heights, in index order, for the state hash. Computed once and kept
     /// until a cell changes, so the per-tick hash does not walk the whole map (docs/implementation/M2_unit_control.md, 4.15).
     /// </summary>
     internal ulong Digest => _digest ??= ComputeDigest();
@@ -158,6 +178,9 @@ public sealed class MapGrid
         {
             hash.Add(blocked);
         }
+
+        // Rules v13 (M7 step 2): the corner heights follow the cell layers.
+        hash.Add(_heights.Levels);
 
         return hash.Value;
     }

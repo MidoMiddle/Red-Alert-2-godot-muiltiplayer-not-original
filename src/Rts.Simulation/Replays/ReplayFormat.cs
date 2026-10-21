@@ -17,11 +17,12 @@ namespace Rts.Simulation.Replays;
 /// command batch (u32 count + commands, format of CommandSerializer)
 /// u32 checksumCount | (i32 tick, u64 value) × checksumCount
 /// </code>
-/// History: v2 (M2 step 2) marks command format v2 inside; v3 (M2 step 4) adds the map layers; v4 (M2 step 12) marks command format v3 inside.
+/// History: v2 (M2 step 2) marks command format v2 inside; v3 (M2 step 4) adds the map layers; v4 (M2 step 12) marks command format v3 inside;
+/// v5 (M7 step 2) adds the corner heights, (W+1) × (H+1) bytes after the cell layers.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 4;
+    public const ushort FormatVersion = 5;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -36,7 +37,7 @@ public static class ReplayFormat
     {
         var commands = CommandSerializer.WriteAll(replay.Commands);
         var map = replay.Settings.Map;
-        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height);
+        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height + (map.Width + 1) * (map.Height + 1));
         var buffer = new byte[HeaderSize + mapSize + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
         var span = buffer.AsSpan();
 
@@ -58,6 +59,8 @@ public static class ReplayFormat
             offset += map.Width * map.Height;
             map.BlockedBytes().CopyTo(span[offset..]);
             offset += map.Width * map.Height;
+            map.Heights.LevelBytes().CopyTo(span[offset..]);
+            offset += (map.Width + 1) * (map.Height + 1);
         }
 
         commands.CopyTo(span[offset..]);
@@ -116,17 +119,18 @@ public static class ReplayFormat
             }
 
             var cells = width * height;
-            Require(source[offset..], 2 * cells);
+            var corners = (width + 1) * (height + 1);
+            Require(source[offset..], 2 * cells + corners);
             try
             {
-                map = MapGrid.FromLayers(width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells));
+                map = MapGrid.FromLayers(width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners));
             }
             catch (ArgumentException error)
             {
                 throw new InvalidDataException($"Invalid map data: {error.Message}", error);
             }
 
-            offset += 2 * cells;
+            offset += 2 * cells + corners;
         }
 
         var settings = (map is null ? new SimulationSettings(seed) : new SimulationSettings(seed, map)) with

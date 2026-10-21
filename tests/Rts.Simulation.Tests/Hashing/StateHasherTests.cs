@@ -34,7 +34,7 @@ public sealed class StateHasherTests
     {
         "tick", "random", "next id", "owner", "alive", "position x", "position y",
         "target removed", "target added", "target x", "target y", "speed", "entity count",
-        "type", "turn rate", "facing", "turret facing", "land", "obstacle",
+        "type", "turn rate", "facing", "turret facing", "land", "obstacle", "height",
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
@@ -71,6 +71,7 @@ public sealed class StateHasherTests
             case "turret facing": moving.TurretFacing = BAngle.FromUnits(1); break;
             case "land": world.Map.SetLand(new CellPos(63, 0), LandType.Ice); break;
             case "obstacle": world.Map.SetBlocked(new CellPos(0, 63), true); break;
+            case "height": world.Map.SetCornerLevel(64, 64, 1); break;
             case "path pending": moving.PathPending = true; break;
             case "path": moving.Path = AStar.FindPath(world.Map, new CellPos(0, 0), new CellPos(2, 1), Locomotor.Foot); break;
             case "path index": moving.PathIndex = 3; break;
@@ -155,10 +156,11 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(MapGrid), new[]
     {
-        "_land", "_blocked", "<Width>k__BackingField", "<Height>k__BackingField",
+        "_land", "_blocked", "_heights", "<Width>k__BackingField", "<Height>k__BackingField",
         // Caches of the layers above: their digest for the hash, and a stamp for A* step costs (M2 step 15).
         "_digest", "<Version>k__BackingField",
     })]
+    [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {

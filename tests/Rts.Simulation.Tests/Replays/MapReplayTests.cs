@@ -8,7 +8,7 @@ using Rts.Simulation.World;
 
 namespace Rts.Simulation.Tests.Replays;
 
-/// <summary>Matches on a map: settings carry it, the replay (format v3) stores it, playback uses it.</summary>
+/// <summary>Matches on a map: settings carry it, the replay (format v3, heights since v5) stores it, playback uses it.</summary>
 public sealed class MapReplayTests
 {
     // "RTSR" | u16 format | u32 rules | u64 seed | 5 × i32.
@@ -101,6 +101,24 @@ public sealed class MapReplayTests
     }
 
     [Fact]
+    public void Corner_heights_survive_the_replay()
+    {
+        var map = LandTypes();
+        var grid = map.Grid.Clone();
+        grid.SetCornerLevel(0, 0, 14);
+        grid.SetCornerLevel(5, 3, 2);
+        grid.SetCornerLevel(24, 12, 7);
+        var replay = RecordOnMap(map with { Grid = grid }, ticks: 30);
+
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay));
+
+        Assert.True(read.Settings.Map!.ContentEquals(grid));
+        Assert.Equal(14, read.Settings.Map.Heights.CornerLevel(0, 0));
+        Assert.Equal(7, read.Settings.Map.Heights.CornerLevel(24, 12));
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+    }
+
+    [Fact]
     public void Replay_without_a_map_has_the_flag_cleared()
     {
         var replay = new Replay(SimulationVersion.Current, new SimulationSettings(9), 0, [], []);
@@ -116,6 +134,8 @@ public sealed class MapReplayTests
     [InlineData("land")]
     [InlineData("obstacle")]
     [InlineData("truncated")]
+    [InlineData("height")]
+    [InlineData("no heights")]
     public void Damaged_map_data_is_rejected(string damage)
     {
         var bytes = ReplayFormat.Write(RecordOnMap(LandTypes(), ticks: 10));
@@ -126,6 +146,8 @@ public sealed class MapReplayTests
             case "land": bytes[MapFlagOffset + 1] = 0; break;
             case "obstacle": bytes[MapFlagOffset + 1 + cells] = 7; break;
             case "truncated": bytes = bytes[..(MapFlagOffset + 1 + cells)]; break;
+            case "height": bytes[MapFlagOffset + 1 + 2 * cells] = 15; break;
+            case "no heights": bytes = bytes[..(MapFlagOffset + 1 + 2 * cells + 5)]; break;
         }
 
         Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(bytes));

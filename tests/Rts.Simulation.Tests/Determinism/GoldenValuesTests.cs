@@ -188,11 +188,12 @@ public sealed class GoldenValuesTests
         // Rules v10 (M2 step 12): routes, Stop, AttackMove, Waypoints, Scatter; the scenario now issues all of them.
         // Rules v11 (M2 step 15): the same states, hashed with the map and paths as digests and only the taken places.
         // Rules v12 (M2, after closing): units of a group swap places; the first difference comes after tick 500.
+        // Rules v13 (M7 step 2): the map digest covers the corner heights; the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0xfa0ec6b34b7caf26UL),
-            new(500, 0xa226b36482f40b0cUL),
-            new(1000, 0xbfc8e499fe903428UL),
+            new(100, 0x7e2d5740d996348fUL),
+            new(500, 0xa7bbaa3d24c53b91UL),
+            new(1000, 0x11124bb1674a767fUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -223,6 +224,8 @@ public sealed class GoldenValuesTests
         // Replay format v4, command format v3 (M2 step 12): new commands in the scenario, the queue byte in moves.
         // Rules v11 (M2 step 15): the version and the recorded checksums change, the commands do not.
         // Rules v12 (M2, after closing): place swaps change the checksums from tick 500 on.
-        Assert.Equal((23365, 3713066551263171578UL), (bytes.Length, hash.Value));
+        // Replay format v5, rules v13 (M7 step 2): the format version, the rules version and the checksums change; the
+        // scenario has no map of its own, so no height layer is written.
+        Assert.Equal((23365, 10861810662162214840UL), (bytes.Length, hash.Value));
     }
 }

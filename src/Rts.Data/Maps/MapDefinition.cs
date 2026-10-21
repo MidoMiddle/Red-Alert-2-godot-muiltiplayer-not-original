@@ -141,6 +141,31 @@ public sealed class MapDefinition
 
     public LandType LandAt(CellPos cell) => Land[cell.Y * Width + cell.X];
 
+    /// <summary>
+    /// The map as the simulation plays it: corner heights and land as they are, and every cell with an object of a type in
+    /// <paramref name="blockingObjects"/> marked as an obstacle (trees now; the full table of map objects comes in M7 step 5).
+    /// Texture and variants stay out: they are visual.
+    /// </summary>
+    public MapGrid ToMapGrid(System.Collections.Generic.IReadOnlyCollection<string> blockingObjects)
+    {
+        var land = new byte[Width * Height];
+        for (var i = 0; i < land.Length; i++)
+        {
+            land[i] = (byte)Land[i];
+        }
+
+        var blocked = new byte[Width * Height];
+        foreach (var placement in Objects)
+        {
+            if (blockingObjects.Contains(placement.Type))
+            {
+                blocked[placement.Cell.Y * Width + placement.Cell.X] = 1;
+            }
+        }
+
+        return MapGrid.FromLayers(Width, Height, land, blocked, Heights.AsSpan());
+    }
+
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>
     public bool ContentEquals(MapDefinition other) =>
         Id == other.Id && Name == other.Name && Author == other.Author && Description == other.Description

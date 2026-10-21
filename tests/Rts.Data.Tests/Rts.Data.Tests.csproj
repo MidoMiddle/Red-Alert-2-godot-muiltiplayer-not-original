@@ -23,4 +23,9 @@
     <ProjectReference Include="../../src/Rts.Data/Rts.Data.csproj" />
   </ItemGroup>
 
+  <!-- The relief test map generator of the map tool (docs/implementation/M7_maps.md, step 2), checked against the committed file. -->
+  <ItemGroup>
+    <Compile Include="../../tools/Rts.MapTool/ReliefTestMap.cs" Link="Tools/ReliefTestMap.cs" />
+  </ItemGroup>
+
 </Project>
