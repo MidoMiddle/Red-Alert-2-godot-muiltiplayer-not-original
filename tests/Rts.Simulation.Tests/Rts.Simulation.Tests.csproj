@@ -35,6 +35,7 @@
     <Compile Include="../../game/scripts/Hud/SidebarLayout.cs" Link="Client/Hud/SidebarLayout.cs" />
     <Compile Include="../../game/scripts/Hud/MinimapMath.cs" Link="Client/Hud/MinimapMath.cs" />
     <Compile Include="../../game/scripts/Hud/HudFormat.cs" Link="Client/Hud/HudFormat.cs" />
+    <Compile Include="../../game/scripts/Terrain/TerrainHeights.cs" Link="Client/Terrain/TerrainHeights.cs" />
   </ItemGroup>
 
 </Project>

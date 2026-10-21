@@ -45,9 +45,9 @@ public partial class UnitRenderer : Node3D
             }
 
             view.MaterialOverride = MaterialFor(unit.Owner.Value, _input.Selection.Contains(unit.Id));
-            var current = WorldCoords.ToGodot(unit.Position, CubeSize / 2);
+            var current = WorldCoords.ToGodotOnGround(unit.Position, CubeSize / 2);
             var previous = _host.TryGetPreviousPosition(unit.Id, out var before)
-                ? WorldCoords.ToGodot(before, CubeSize / 2)
+                ? WorldCoords.ToGodotOnGround(before, CubeSize / 2)
                 : current;
             view.Position = previous.Lerp(current, _host.Alpha);
             _alive.Add(unit.Id);

@@ -105,7 +105,7 @@ public partial class RtsCamera : Node3D
 
     public void EndDrag() => _dragAnchor = null;
 
-    /// <summary>Point on the ground plane (y = 0) under a screen position. Terrain heights come in step 3.</summary>
+    /// <summary>Point on the ground under a screen position: on the terrain when there is one, else on the plane y = 0.</summary>
     public bool TryGroundAt(Vector2 screen, out Vector3 ground)
     {
         ground = default;
@@ -114,6 +114,20 @@ public partial class RtsCamera : Node3D
         if (direction.Y >= 0f)
         {
             return false;
+        }
+
+        if (WorldCoords.Terrain is { } terrain)
+        {
+            if (!terrain.TryIntersectRay(
+                    new System.Numerics.Vector3(origin.X, origin.Y, origin.Z),
+                    new System.Numerics.Vector3(direction.X, direction.Y, direction.Z),
+                    out var hit))
+            {
+                return false;
+            }
+
+            ground = new Vector3(hit.X, hit.Y, hit.Z);
+            return true;
         }
 
         ground = origin + direction * (-origin.Y / direction.Y);

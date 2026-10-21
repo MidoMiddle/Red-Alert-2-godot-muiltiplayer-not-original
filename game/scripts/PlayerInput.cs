@@ -171,7 +171,7 @@ public partial class PlayerInput : Node
                 continue;
             }
 
-            var screen = _camera.UnprojectPosition(WorldCoords.ToGodot(unit.Position, UnitHeight));
+            var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight));
             var distance = at.DistanceTo(new ScreenPoint(screen.X, screen.Y));
             if (distance <= nearestDistance)
             {

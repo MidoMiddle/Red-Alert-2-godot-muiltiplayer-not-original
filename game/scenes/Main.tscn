@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
 [ext_resource type="Script" path="res://scripts/SimulationHost.cs" id="2_host"]
@@ -6,16 +6,10 @@
 [ext_resource type="Script" path="res://scripts/UnitRenderer.cs" id="4_units"]
 [ext_resource type="Script" path="res://scripts/PlayerInput.cs" id="5_input"]
 [ext_resource type="Script" path="res://scripts/DebugOverlay.cs" id="6_overlay"]
-[ext_resource type="Shader" path="res://shaders/grid.gdshader" id="7_grid"]
+[ext_resource type="Script" path="res://scripts/Terrain/TerrainBuilder.cs" id="7_terrain"]
 [ext_resource type="Environment" path="res://assets/environments/winter.tres" id="8_winter"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="9_pause"]
 [ext_resource type="PackedScene" path="res://scenes/hud/Hud.tscn" id="10_hud"]
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
-size = Vector2(64, 64)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ground"]
-shader = ExtResource("7_grid")
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -44,10 +38,8 @@ directional_shadow_max_distance = 110.0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("8_winter")
 
-[node name="Ground" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 32)
-mesh = SubResource("PlaneMesh_ground")
-surface_material_override/0 = SubResource("ShaderMaterial_ground")
+[node name="Terrain" type="Node3D" parent="."]
+script = ExtResource("7_terrain")
 
 [node name="UnitsRoot" type="Node3D" parent="."]
 script = ExtResource("4_units")

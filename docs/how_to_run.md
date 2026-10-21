@@ -156,6 +156,12 @@ dotnet test RtsGame.sln
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path game -- --check-camera
 ```
 
+Только проверка рельефа (клик по склону холма попадает в точку под курсором):
+
+```bash
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path game -- --check-terrain
+```
+
 ---
 
 ## 8. Если что-то не так

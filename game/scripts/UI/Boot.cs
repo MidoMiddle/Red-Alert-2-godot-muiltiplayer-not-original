@@ -6,7 +6,7 @@ namespace Rts.Client.UI;
 
 /// <summary>
 /// Entry scene. Shows a short splash, then opens the main menu. Debug arguments skip the splash:
-/// <c>--sandbox</c>, <c>--smoke</c>, <c>--check-camera</c> and <c>--screenshot</c> go to <c>Main</c>, so the M0 checks and the manual
+/// <c>--sandbox</c>, <c>--smoke</c>, <c>--check-camera</c>, <c>--check-terrain</c> and <c>--screenshot</c> go to <c>Main</c>, so the M0 checks and the manual
 /// checklist keep working; <c>--ui-menu</c>, <c>--ui-skirmish</c>, <c>--ui-settings</c>, <c>--ui-stub</c> and
 /// <c>--ui-showcase</c> open UI screens for visual checks.
 /// </summary>
@@ -48,7 +48,7 @@ public partial class Boot : Control
         {
             OpenDebugScene(StubScene);
         }
-        else if (args.Contains("--sandbox") || args.Contains("--smoke") || args.Contains("--screenshot") || args.Contains("--check-camera"))
+        else if (args.Contains("--sandbox") || args.Contains("--smoke") || args.Contains("--screenshot") || args.Contains("--check-camera") || args.Contains("--check-terrain"))
         {
             OpenDebugScene(MainScene);
         }

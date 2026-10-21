@@ -11,6 +11,7 @@ namespace Rts.Client;
 /// Scene root. Besides normal play it supports service modes, passed after <c>--</c> on the command line:
 /// <c>--smoke</c> runs a scripted session, saves and replays it, and exits with 0 or 1;
 /// <c>--check-camera</c> verifies the RA2 camera angle (a cell projects to a 2:1 diamond) and exits with 0 or 1;
+/// <c>--check-terrain</c> clicks points on hill slopes and verifies the camera ray finds them on the terrain, exits with 0 or 1;
 /// <c>--screenshot &lt;path&gt; [--frames N]</c> saves frame N as PNG and exits.
 /// </summary>
 public partial class Main : Node3D
@@ -50,6 +51,10 @@ public partial class Main : Node3D
         else if (args.Contains("--check-camera"))
         {
             CallDeferred(MethodName.RunCameraCheck);
+        }
+        else if (args.Contains("--check-terrain"))
+        {
+            CallDeferred(MethodName.RunTerrainCheck);
         }
     }
 
@@ -97,15 +102,64 @@ public partial class Main : Node3D
         return ok;
     }
 
+    private void RunTerrainCheck()
+    {
+        var ok = CheckTerrain();
+        GetTree().Quit(ok ? 0 : 1);
+    }
+
+    /// <summary>
+    /// "A click on a slope gives the right point" (docs/implementation/M1_visual_spike.md, step 3): each sample point on the
+    /// hill slopes is projected to the screen and clicked through the camera; the ground point found must be the sample point
+    /// (within 0.05 cell), and the points must really lie on slopes.
+    /// </summary>
+    private bool CheckTerrain()
+    {
+        var terrain = WorldCoords.Terrain;
+        if (terrain is null)
+        {
+            GD.Print("[terrain] FAILED: no terrain in the scene");
+            return false;
+        }
+
+        (float X, float Z)[] samples =
+        [
+            (59f, 32f), (49f, 32f), (54f, 27f), (54f, 37f),
+            (16.5f, 42f), (7.5f, 42f), (12f, 46.5f), (12f, 37.5f),
+            (44f, 12f), (36f, 12f), (40f, 16f), (40f, 8f),
+        ];
+        var camera = GetNode<RtsCamera>("CameraRig");
+        var worstError = 0f;
+        var lowest = float.MaxValue;
+        var missed = 0;
+        foreach (var (x, z) in samples)
+        {
+            var point = new Vector3(x, terrain.HeightAt(x, z), z);
+            lowest = Math.Min(lowest, point.Y);
+            if (!camera.TryGroundAt(camera.UnprojectPosition(point), out var hit))
+            {
+                missed++;
+                continue;
+            }
+
+            worstError = Math.Max(worstError, new Vector2(hit.X - x, hit.Z - z).Length());
+        }
+
+        var ok = missed == 0 && worstError <= 0.05f && lowest > 0.1f;
+        GD.Print($"[terrain] {(ok ? "OK" : "FAILED")}: {samples.Length} slope points, lowest {lowest:0.00}, " +
+                 $"worst click error {worstError:0.0000} cell, missed {missed}");
+        return ok;
+    }
+
     /// <summary>
     /// Scripted check through the same host API the player uses: spawn, order a move, play,
     /// save the replay, play it back and compare every checksum.
     /// </summary>
     private void RunSmoke()
     {
-        if (!CheckCamera())
+        if (!CheckCamera() || !CheckTerrain())
         {
-            GD.Print("[smoke] FAILED: camera check");
+            GD.Print("[smoke] FAILED: camera or terrain check");
             GetTree().Quit(1);
             return;
         }
