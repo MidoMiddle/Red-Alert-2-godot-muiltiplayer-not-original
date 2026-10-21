@@ -15,7 +15,7 @@ A real-time strategy game inspired by Red Alert 2, built with Godot 4 (.NET / C#
 
 ## Status
 
-Milestone M0 (foundation) in progress on the `m0/foundation` branch: deterministic simulation core and a debug Godot client. All design documentation lives in [docs/](docs/README.md); start with the [top-level concept](docs/00_concept.md).
+Milestone **M0 (foundation) is complete**: deterministic simulation core (fixed-point math, commands, state checksums, replays) verified bit for bit on Linux, macOS and Windows, plus a debug Godot client. Next: M1, visual spike. All design documentation lives in [docs/](docs/README.md); start with the [top-level concept](docs/00_concept.md).
 
 **How to run the game for testing:** [docs/how_to_run.md](docs/how_to_run.md).
 
@@ -30,12 +30,33 @@ Milestone M0 (foundation) in progress on the `m0/foundation` branch: determinist
 
 ## Getting started
 
-Requirements: [Godot 4.7 .NET](https://godotengine.org/download), [.NET SDK 8+](https://dotnet.microsoft.com/download), [Git LFS](https://git-lfs.com).
+Requirements: [Godot 4.7 .NET](https://godotengine.org/download), [.NET SDK 10](https://dotnet.microsoft.com/download) (the projects target .NET 8; the SDK version is pinned in `global.json`), [Git LFS](https://git-lfs.com).
 
 ```bash
 git lfs install
 git clone git@github.com:MidoMiddle/Red-Alert-2-godot-muiltiplayer-not-original.git
 ```
+
+Build and test everything:
+
+```bash
+dotnet build RtsGame.sln
+dotnet test RtsGame.sln
+```
+
+Run the game: open `game/project.godot` in Godot 4.7 .NET and press F5, or from the repository root:
+
+```bash
+/Applications/Godot_mono.app/Contents/MacOS/Godot --path game
+```
+
+Scripted smoke check without a window (exit code 0 on success):
+
+```bash
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path game -- --smoke
+```
+
+Step-by-step guide with controls and a test checklist (in Russian): [docs/how_to_run.md](docs/how_to_run.md).
 
 ## License
 

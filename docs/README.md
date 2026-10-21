@@ -47,7 +47,7 @@
 |---|---|---|
 | — | [Сквозные соглашения](implementation/conventions.md) | согласован |
 | — | [Сводный список открытых вопросов](implementation/open_questions.md) | согласован, 4 вопроса 🟥 открыты |
-| M0 | [Фундамент](implementation/M0_foundation.md) | согласован, шаг 0 выполнен |
+| M0 | [Фундамент](implementation/M0_foundation.md) | **готово** (2026-10-21) |
 | M1 | [Визуальная проба](implementation/M1_visual_spike.md) | согласован, есть вопросы 🟥 |
 | M2 | [Управление юнитами](implementation/M2_unit_control.md) | согласован |
 | M3 | [База и экономика](implementation/M3_base_economy.md) | согласован |

@@ -14,15 +14,17 @@
 | **.NET SDK 10** | В Терминале `dotnet --version` выводит `10.0.…` | `brew install --cask dotnet-sdk` (спросит пароль) |
 | **Код проекта** | Папка `red_alert_2_godot` на диске | `git clone git@github.com:MidoMiddle/Red-Alert-2-godot-muiltiplayer-not-original.git` |
 
-**Важно про ветку.** Пока веха M0 не слита в `main`, весь код живёт в ветке `m0/foundation`. В папке проекта выполни в Терминале:
+**Ветка.** Готовые вехи лежат в `main`. Чтобы получить последнюю версию, в папке проекта выполни в Терминале:
 
 ```bash
-git checkout m0/foundation
+git checkout main
 ```
 
 ```bash
 git pull
 ```
+
+Работа над следующей вехой идёт в отдельной ветке (например, `m1/visual-spike`); на неё переключаются так же, через `git checkout`.
 
 ---
 
