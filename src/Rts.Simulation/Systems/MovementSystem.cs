@@ -30,7 +30,8 @@ namespace Rts.Simulation.Systems;
 /// <item>No endless jams: after <see cref="StallTicks"/> ticks without moving the unit asks for a path around every taken cell
 /// nearby; after <see cref="MaxReplans"/> such paths (or detours around standing units) without reaching a new cell it stops
 /// where it is. Waiting behind moving units never counts: a queue at a narrow pass keeps its place.</item>
-/// <item>Interim rule kept as a safety net: a step into a cell the locomotor cannot enter stops the unit (<see cref="UnitBlocked"/>).</item>
+/// <item>A step into a cell the locomotor cannot enter (the unit is off the line its path was planned on) makes it plan again
+/// from where it stands (<see cref="UnitBlocked"/>), counted like the other replans.</item>
 /// </list>
 /// </summary>
 public static class MovementSystem
@@ -164,9 +165,10 @@ public static class MovementSystem
 
         if (!world.Map.CanEnter(cell, unit.Archetype.Locomotor))
         {
-            unit.MoveTarget = null;
-            unit.Path = null;
+            // Off the line its path was planned on (it gave way, came back to its place), the straight way to the next
+            // waypoint can clip an obstacle: plan again from where it stands (M2 step 15; it used to stop for good).
             events.Add(new UnitBlocked(world.CurrentTick, unit.Id, unit.Position));
+            Replan(world, unit, [], events);
             return MoveResult.Stopped;
         }
 

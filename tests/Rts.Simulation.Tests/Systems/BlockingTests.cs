@@ -9,7 +9,8 @@ using static Rts.Simulation.Tests.Commands.CommandFactory;
 namespace Rts.Simulation.Tests.Systems;
 
 /// <summary>
-/// Interim rule until pathfinding (M2 steps 5–8): units stop in front of cells they cannot enter, and cannot spawn on them.
+/// Units never enter cells they cannot enter, and cannot spawn on them. A unit driving straight at such a cell (here the
+/// tests set a target without a path) stops in front of it and plans a path from there (M2 step 15; before, it gave up).
 /// Row 0 of all_land_types.txt: clear 0–2, rough 3–5, road 6–7, beach 8–9, shallow 10–11, deep 12–13, shallow 14–15,
 /// beach 16–17, rock 18–19, ice 20–21, clear 22–23. Trees stand at (1, 2), (2, 2), (1, 3), (2, 3).
 /// </summary>
@@ -19,21 +20,30 @@ public sealed class BlockingTests
 
     private static GameWorld LandTypesWorld() => new(seed: 1, TestMapParserTests.Load("all_land_types.txt").Grid);
 
-    /// <summary>Runs movement until the unit has no order; returns the events.</summary>
+    /// <summary>Runs movement until the unit has no order or waits for a path; returns the events.</summary>
     private static List<SimEvent> RunUntilStopped(GameWorld world, Unit unit)
     {
         var events = new List<SimEvent>();
-        for (var tick = 0; tick < 2000 && unit.MoveTarget is not null; tick++)
+        for (var tick = 0; tick < 2000 && unit.MoveTarget is not null && !unit.PathPending; tick++)
         {
             MovementSystem.Update(world, events);
         }
 
-        Assert.Null(unit.MoveTarget);
+        Assert.True(unit.MoveTarget is null || unit.PathPending);
         return events;
     }
 
+    /// <summary>The unit stopped in front of the cell and asked for a path from where it stands.</summary>
+    private static void AssertAsksForAPath(GameWorld world, Unit unit, WorldPos target)
+    {
+        Assert.True(unit.PathPending);
+        Assert.Equal(target, unit.MoveTarget);
+        var request = Assert.Single(world.PathRequests.Requests);
+        Assert.Equal((unit.Id, unit.Position.ToCell(), target.ToCell()), (request.Unit, request.Start, request.Goal));
+    }
+
     [Fact]
-    public void Infantry_stops_at_the_waters_edge()
+    public void Infantry_stops_at_the_waters_edge_and_asks_for_a_path()
     {
         var world = LandTypesWorld();
         var conscript = world.SpawnUnit(Player1, UnitType.Conscript, new CellPos(8, 0).Center);
@@ -44,10 +54,11 @@ public sealed class BlockingTests
         Assert.Equal(new CellPos(9, 0), conscript.Position.ToCell());
         var blocked = Assert.IsType<UnitBlocked>(Assert.Single(events));
         Assert.Equal(conscript.Position, blocked.Position);
+        AssertAsksForAPath(world, conscript, new CellPos(13, 0).Center);
     }
 
     [Fact]
-    public void Tank_stops_in_front_of_the_trees()
+    public void Tank_stops_in_front_of_the_trees_and_asks_for_a_path()
     {
         var world = LandTypesWorld();
         var tank = world.SpawnUnit(Player1, UnitType.HeavyTank, new CellPos(0, 2).Center);
@@ -57,10 +68,11 @@ public sealed class BlockingTests
 
         Assert.Equal(new CellPos(0, 2), tank.Position.ToCell());
         Assert.IsType<UnitBlocked>(Assert.Single(events));
+        AssertAsksForAPath(world, tank, new CellPos(2, 2).Center);
     }
 
     [Fact]
-    public void Vehicle_stops_before_rock()
+    public void Vehicle_stops_before_rock_and_asks_for_a_path()
     {
         var world = LandTypesWorld();
         var jeep = world.SpawnUnit(Player1, UnitType.SupportVehicle, new CellPos(23, 0).Center);
@@ -69,6 +81,21 @@ public sealed class BlockingTests
         RunUntilStopped(world, jeep);
 
         Assert.Equal(new CellPos(20, 0), jeep.Position.ToCell());
+        AssertAsksForAPath(world, jeep, new CellPos(17, 0).Center);
+    }
+
+    [Fact]
+    public void A_unit_that_keeps_hitting_an_obstacle_gives_up_after_the_replans()
+    {
+        var world = LandTypesWorld();
+        var tank = world.SpawnUnit(Player1, UnitType.HeavyTank, new CellPos(0, 2).Center);
+        tank.MoveTarget = new CellPos(2, 2).Center;
+        tank.Replans = MovementSystem.MaxReplans;
+
+        RunUntilStopped(world, tank);
+
+        Assert.Null(tank.MoveTarget);
+        Assert.Empty(world.PathRequests.Requests);
     }
 
     [Fact]
