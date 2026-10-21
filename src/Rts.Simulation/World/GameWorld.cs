@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.Random;
 
 namespace Rts.Simulation.World;
 
 /// <summary>
-/// Complete simulation state: tick number, entities, id counter, random generator and map bounds.
+/// Complete simulation state: tick number, entities, id counter, random generator and the map.
 /// Entities are kept sorted by id; iterating <see cref="Entities"/> is always in id order,
 /// which keeps every system deterministic.
 /// </summary>
@@ -15,15 +16,16 @@ public sealed class GameWorld
     private readonly List<Entity> _entities = new();
     private int _nextEntityId = 1;
 
+    /// <summary>A world on a map of clear land.</summary>
     public GameWorld(ulong seed, int widthCells, int heightCells)
+        : this(seed, new MapGrid(widthCells, heightCells))
     {
-        if (widthCells <= 0 || heightCells <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(widthCells), $"Map size must be positive, got {widthCells}x{heightCells}.");
-        }
+    }
 
-        WidthCells = widthCells;
-        HeightCells = heightCells;
+    /// <summary>A world on the given map. Maps from settings and replays arrive in M2 step 4; tests use this now.</summary>
+    internal GameWorld(ulong seed, MapGrid map)
+    {
+        Map = map;
         Random = new DeterministicRandom(seed);
     }
 
@@ -31,9 +33,11 @@ public sealed class GameWorld
 
     public DeterministicRandom Random { get; }
 
-    public int WidthCells { get; }
+    public MapGrid Map { get; }
 
-    public int HeightCells { get; }
+    public int WidthCells => Map.Width;
+
+    public int HeightCells => Map.Height;
 
     /// <summary>Id the next spawned entity will get. Part of the state hash.</summary>
     public EntityId NextEntityId => new(_nextEntityId);

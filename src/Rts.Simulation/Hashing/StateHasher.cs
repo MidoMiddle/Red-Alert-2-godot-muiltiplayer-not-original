@@ -1,4 +1,5 @@
 using System;
+using Rts.Simulation.Map;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Hashing;
@@ -26,6 +27,8 @@ public static class StateHasher
         var random = world.Random.State;
         hash.Add(random.State);
         hash.Add(random.Increment);
+
+        AddMap(hash, world.Map);
 
         hash.Add(world.Entities.Count);
         foreach (var entity in world.Entities)
@@ -62,6 +65,20 @@ public static class StateHasher
             default:
                 // A new entity type must be added here explicitly, never silently skipped.
                 throw new InvalidOperationException($"StateHasher does not know entity type {entity.GetType().Name}.");
+        }
+    }
+
+    private static void AddMap(Fnv1a64 hash, MapGrid map)
+    {
+        // Width and height are already in the world part; the layers follow in cell index order.
+        foreach (var land in map.LandCells)
+        {
+            hash.Add((byte)land);
+        }
+
+        foreach (var blocked in map.BlockedCells)
+        {
+            hash.Add(blocked);
         }
     }
 

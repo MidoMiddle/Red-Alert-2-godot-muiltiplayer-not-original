@@ -39,6 +39,22 @@ public static class UnitArchetypes
         ? ByType[(int)type - 1]
         : throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown unit type.");
 
+    /// <summary>Finds a type by its data id (<c>heavy_tank</c>), as map files and data name it.</summary>
+    public static bool TryGetById(string id, out UnitArchetype archetype)
+    {
+        foreach (var candidate in ByType)
+        {
+            if (string.Equals(candidate.Id, id, StringComparison.Ordinal))
+            {
+                archetype = candidate;
+                return true;
+            }
+        }
+
+        archetype = null!;
+        return false;
+    }
+
     public static int SpeedFromRa2(int ra2Speed) => ra2Speed * SpeedScale;
 
     public static int TurnRateFromRa2(int ra2Rot) => (int)IntMath.DivRound((long)ra2Rot * TurnRateForRot5, 5);

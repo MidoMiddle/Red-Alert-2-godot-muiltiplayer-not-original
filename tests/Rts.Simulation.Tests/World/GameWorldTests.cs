@@ -1,4 +1,5 @@
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Tests.World;
@@ -132,5 +133,29 @@ public sealed class GameWorldTests
         Assert.Equal(8, PlayerId.MaxPlayers);
         Assert.Equal("Neutral", PlayerId.Neutral.ToString());
         Assert.Equal("P3", new PlayerId(3).ToString());
+    }
+
+    [Fact]
+    public void Default_map_is_clear_land_of_the_world_size()
+    {
+        var world = new GameWorld(seed: 1, widthCells: 6, heightCells: 4);
+
+        Assert.Equal((6, 4), (world.Map.Width, world.Map.Height));
+        Assert.Equal((6, 4), (world.WidthCells, world.HeightCells));
+        Assert.All(world.Map.LandCells.ToArray(), land => Assert.Equal(LandType.Clear, land));
+        Assert.DoesNotContain(true, world.Map.BlockedCells.ToArray());
+    }
+
+    [Fact]
+    public void World_can_start_on_a_given_map()
+    {
+        var map = TestMapParser.Parse(". . #\n= T .").Grid;
+
+        var world = new GameWorld(seed: 1, map);
+
+        Assert.Same(map, world.Map);
+        Assert.Equal((3, 2), (world.WidthCells, world.HeightCells));
+        Assert.True(world.Contains(new WorldPos(3 * 256 - 1, 2 * 256 - 1)));
+        Assert.False(world.Contains(new WorldPos(3 * 256, 0)));
     }
 }

@@ -1,0 +1,8 @@
+// A corridor one cell wide between rocks, 16 x 5: two units meeting head-on (M2 step 8).
+# # # # # # # # # # # # # # # #
+. . . # # # # # # # # # # . . .
+. . . . . . . . . . . . . . . .
+. . . # # # # # # # # # # . . .
+# # # # # # # # # # # # # # # #
+unit heavy_tank 0 2 player=1
+unit heavy_tank 15 2 player=1

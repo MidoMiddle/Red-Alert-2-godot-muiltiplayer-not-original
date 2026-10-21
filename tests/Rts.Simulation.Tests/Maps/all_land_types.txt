@@ -1,0 +1,23 @@
+// Every land type of M2 (docs/implementation/M7_maps.md, 4.3) and trees, 24 x 12.
+// Codes: . clear  , rough  = road  b beach  ~ shallow  W deep  # rock  i ice  T tree
+// Bands from left to right, a road across, a forest and a frozen lake.
+. . . , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+. . . , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+. T T , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+. T T , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+= = = = = = = = = = = = = = = = = = = = = = = =
+. . . , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+. T . T , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+. . T . , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+T T T T , , = = . . . . . . . . . . # # i i . .
+T . . T , , = = . i i i i i i . . . . . . . . .
+T . . T , , = = . i i i i i i . . . . . . . . .
+T T T T , , = = . . . . . . . . . . . . . . . .
+unit conscript 0 0 player=1
+unit rocketeer 3 0 player=1
+unit engineer 0 1 player=1
+unit heavy_tank 22 0 player=1
+unit support_vehicle 22 2 player=1
+unit harvester 7 0 player=1
+unit mcv 1 5 player=1
+unit tesla_tank 22 6 player=2

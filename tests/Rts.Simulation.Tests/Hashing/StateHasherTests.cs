@@ -1,6 +1,7 @@
 using System.Reflection;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Random;
 using Rts.Simulation.World;
@@ -32,7 +33,7 @@ public sealed class StateHasherTests
     {
         "tick", "random", "next id", "owner", "alive", "position x", "position y",
         "target removed", "target added", "target x", "target y", "speed", "entity count",
-        "type", "turn rate", "facing", "turret facing",
+        "type", "turn rate", "facing", "turret facing", "land", "obstacle",
     };
 
     [Theory]
@@ -64,6 +65,8 @@ public sealed class StateHasherTests
             case "turn rate": moving.TurnRate++; break;
             case "facing": moving.Facing = BAngle.FromUnits(1); break;
             case "turret facing": moving.TurretFacing = BAngle.FromUnits(1); break;
+            case "land": world.Map.SetLand(new CellPos(63, 0), LandType.Ice); break;
+            case "obstacle": world.Map.SetBlocked(new CellPos(0, 63), true); break;
             default: throw new ArgumentException(mutation);
         }
 
@@ -83,9 +86,9 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(GameWorld), new[]
     {
-        "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField",
-        "<WidthCells>k__BackingField", "<HeightCells>k__BackingField",
+        "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField",
     })]
+    [InlineData(typeof(MapGrid), new[] { "_land", "_blocked", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {

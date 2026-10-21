@@ -1,0 +1,11 @@
+// A river of deep water with a single road crossing, 12 x 7: a group squeezing through a narrow gap (M2 step 8).
+. . . . . b W b . . . .
+. . . . . b W b . . . .
+. . . . . b W b . . . .
+. . . . . = = = . . . .
+. . . . . b W b . . . .
+. . . . . b W b . . . .
+. . . . . b W b . . . .
+unit heavy_tank 1 3 player=1
+unit support_vehicle 1 1 player=1
+unit conscript 1 5 player=1

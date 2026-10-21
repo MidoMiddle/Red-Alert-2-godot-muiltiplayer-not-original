@@ -54,6 +54,19 @@ public sealed class UnitArchetypesTests
         Assert.Throws<ArgumentOutOfRangeException>(() => UnitArchetypes.Get((UnitType)type));
     }
 
+    [Fact]
+    public void Types_are_found_by_data_id()
+    {
+        foreach (var archetype in UnitArchetypes.All)
+        {
+            Assert.True(UnitArchetypes.TryGetById(archetype.Id, out var found));
+            Assert.Same(archetype, found);
+        }
+
+        Assert.False(UnitArchetypes.TryGetById("Heavy_Tank", out _));
+        Assert.False(UnitArchetypes.TryGetById("", out _));
+    }
+
     [Theory]
     [InlineData(4, 24)]
     [InlineData(6, 36)]
