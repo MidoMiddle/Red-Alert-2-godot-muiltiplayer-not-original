@@ -1,5 +1,6 @@
 using System;
 using Rts.Simulation.Map;
+using Rts.Simulation.Pathfinding;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Hashing;
@@ -29,6 +30,7 @@ public static class StateHasher
         hash.Add(random.Increment);
 
         AddMap(hash, world.Map);
+        AddPathRequests(hash, world.PathRequests);
 
         hash.Add(world.Entities.Count);
         foreach (var entity in world.Entities)
@@ -60,6 +62,9 @@ public static class StateHasher
                 hash.Add(unit.TurnRate);
                 hash.Add((int)unit.Facing.Value);
                 hash.Add((int)unit.TurretFacing.Value);
+                hash.Add(unit.PathPending);
+                hash.Add(unit.PathIndex);
+                AddPath(hash, unit.Path);
                 break;
 
             default:
@@ -79,6 +84,45 @@ public static class StateHasher
         foreach (var blocked in map.BlockedCells)
         {
             hash.Add(blocked);
+        }
+    }
+
+    private static void AddPath(Fnv1a64 hash, CellPath? path)
+    {
+        hash.Add(path is not null);
+        if (path is null)
+        {
+            return;
+        }
+
+        hash.Add((byte)path.Status);
+        hash.Add(path.Cost);
+        hash.Add(path.Expanded);
+        hash.Add(path.Cells.Length);
+        foreach (var cell in path.Cells)
+        {
+            hash.Add(cell.X);
+            hash.Add(cell.Y);
+        }
+    }
+
+    // The search arrays are not hashed: given the map, the request fields and the number of expanded nodes,
+    // a deterministic search is always in the same state.
+    private static void AddPathRequests(Fnv1a64 hash, PathRequestQueue queue)
+    {
+        hash.Add(queue.Budget);
+        hash.Add(queue.ExpandedLastTick);
+        hash.Add(queue.Requests.Count);
+        foreach (var request in queue.Requests)
+        {
+            hash.Add(request.Unit.Value);
+            hash.Add(request.RequestTick);
+            hash.Add(request.Start.X);
+            hash.Add(request.Start.Y);
+            hash.Add(request.Goal.X);
+            hash.Add(request.Goal.Y);
+            hash.Add((byte)request.Locomotor);
+            hash.Add(request.Expanded);
         }
     }
 

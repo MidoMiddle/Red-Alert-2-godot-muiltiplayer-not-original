@@ -8,9 +8,9 @@ using Rts.Simulation.World;
 namespace Rts.Client.Debug;
 
 /// <summary>
-/// Debug view of A* (docs/implementation/M2_unit_control.md, step 5): F3 toggles a line from the selected unit to the cell
-/// under the pointer, yellow when the goal is reached, orange when it is not. Calls the pathfinder directly on the client,
-/// outside the simulation, so it never changes the match.
+/// Debug view of A* (docs/implementation/M2_unit_control.md, steps 5–6): F3 toggles a line for the selected unit, yellow when
+/// the goal is reached, orange when it is not. While the unit drives, the line is its own path from the simulation; otherwise
+/// it is a preview to the cell under the pointer, computed on the client outside the simulation, so it never changes the match.
 /// </summary>
 public partial class PathPreview : Node3D
 {
@@ -23,6 +23,7 @@ public partial class PathPreview : Node3D
     private PlayerInput _input = null!;
     private Pathfinder? _pathfinder;
     private (EntityId Unit, CellPos From, CellPos To)? _lastQuery;
+    private bool _following;
 
     public bool Enabled { get; private set; }
 
@@ -30,7 +31,7 @@ public partial class PathPreview : Node3D
     public CellPath? Path { get; private set; }
 
     /// <summary>The line for the debug panel.</summary>
-    public string Description => PathText.Describe(Enabled, _input.Selection.Units.Count, Path);
+    public string Description => PathText.Describe(Enabled, _input.Selection.Units.Count, Path, _following);
 
     public override void _Ready()
     {
@@ -63,8 +64,27 @@ public partial class PathPreview : Node3D
         if (!Enabled
             || _input.Selection.Units.Count != 1
             || !world.TryGet(_input.Selection.Units[0], out var entity)
-            || entity is not Unit { IsAlive: true } unit
-            || _input.CellUnderPointer is not { } target)
+            || entity is not Unit { IsAlive: true } unit)
+        {
+            Clear();
+            return;
+        }
+
+        if (unit.Path is { } ownPath)
+        {
+            if (!_following || !ReferenceEquals(Path, ownPath))
+            {
+                _following = true;
+                _lastQuery = null;
+                Path = ownPath;
+                Draw(ownPath);
+            }
+
+            return;
+        }
+
+        _following = false;
+        if (_input.CellUnderPointer is not { } target)
         {
             Clear();
             return;
@@ -110,13 +130,14 @@ public partial class PathPreview : Node3D
 
     private void Clear()
     {
-        if (Path is null && _lastQuery is null)
+        if (Path is null && _lastQuery is null && !_following)
         {
             return;
         }
 
         Path = null;
         _lastQuery = null;
+        _following = false;
         _mesh.ClearSurfaces();
     }
 }

@@ -62,6 +62,10 @@ public static class CommandProcessor
                 && unit.Owner == command.Player)
             {
                 unit.MoveTarget = command.Target;
+                unit.Path = null;
+                unit.PathIndex = 0;
+                unit.PathPending = true;
+                world.PathRequests.Request(unit, world.CurrentTick, command.Target.ToCell());
                 events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, command.Target));
                 changed = true;
             }

@@ -1,5 +1,6 @@
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.World;
 using static Rts.Simulation.Tests.Commands.CommandFactory;
@@ -55,9 +56,15 @@ public sealed class GameSimulationTests
         simulation.Step();
         Assert.Equal([new UnitSpawned(0, new EntityId(1), new PlayerId(1), UnitType.Conscript, new WorldPos(128, 128))], simulation.LastTickEvents);
 
-        // Tick 1: the order is applied, then the conscript turns at once and walks 24 of 48 leptons.
+        // Tick 1: the order is applied, the path is found within the same tick (one cell: start and goal share it),
+        // then the conscript turns at once and walks 24 of 48 leptons.
         simulation.Step();
-        Assert.Equal([new UnitMoveStarted(1, new EntityId(1), new WorldPos(176, 128))], simulation.LastTickEvents);
+        Assert.Equal(
+            [
+                new UnitMoveStarted(1, new EntityId(1), new WorldPos(176, 128)),
+                new UnitPathFound(1, new EntityId(1), PathStatus.Found, 1),
+            ],
+            simulation.LastTickEvents);
 
         simulation.Step();
         Assert.Equal([new UnitArrived(2, new EntityId(1), new WorldPos(176, 128))], simulation.LastTickEvents);

@@ -16,5 +16,12 @@ public sealed class PathTextTests
         Assert.Equal("path: select one unit", PathText.Describe(enabled: true, selectedUnits: 2, path));
         Assert.Equal("path: point at the map", PathText.Describe(enabled: true, selectedUnits: 1, path: null));
         Assert.Equal("path Unreachable · 2 cells · cost 141 · 12 nodes", PathText.Describe(enabled: true, selectedUnits: 1, path));
+        Assert.Equal("unit path Unreachable · 2 cells · cost 141 · 12 nodes", PathText.Describe(enabled: true, selectedUnits: 1, path, following: true));
+    }
+
+    [Fact]
+    public void Describes_the_path_queue()
+    {
+        Assert.Equal("paths queue 2 · nodes 4120/6000 this tick", PathText.DescribeQueue(2, 4120, 6000));
     }
 }

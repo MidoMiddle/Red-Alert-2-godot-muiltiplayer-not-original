@@ -313,6 +313,16 @@ public sealed class PathSearch
         return false;
     }
 
+    /// <summary>Stops an unfinished search and gives its buffers back; the search never finishes after this.</summary>
+    internal void Cancel()
+    {
+        if (_buffers is { } b)
+        {
+            _buffers = null;
+            _owner.Return(b);
+        }
+    }
+
     private bool Finish(PathStatus status, int endIndex)
     {
         var b = _buffers!;

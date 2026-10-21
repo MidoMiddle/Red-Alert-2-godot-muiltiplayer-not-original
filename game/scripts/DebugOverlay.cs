@@ -52,6 +52,7 @@ public partial class DebugOverlay : CanvasLayer
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   spawn {UnitArchetypes.Get(_host.SpawnType).Id}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             DescribeCell(simulation.World.Map, _input.CellUnderPointer) + "\n" +
+            PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;

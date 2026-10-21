@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Random;
 
 namespace Rts.Simulation.World;
@@ -27,6 +28,7 @@ public sealed class GameWorld
     {
         Map = map;
         Random = new DeterministicRandom(seed);
+        PathRequests = new PathRequestQueue(map);
     }
 
     public int CurrentTick { get; internal set; }
@@ -34,6 +36,9 @@ public sealed class GameWorld
     public DeterministicRandom Random { get; }
 
     public MapGrid Map { get; }
+
+    /// <summary>Path searches waiting for their share of the per-tick node budget.</summary>
+    public PathRequestQueue PathRequests { get; }
 
     public int WidthCells => Map.Width;
 

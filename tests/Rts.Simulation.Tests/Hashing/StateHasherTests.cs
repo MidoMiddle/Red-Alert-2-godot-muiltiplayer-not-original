@@ -2,6 +2,7 @@ using System.Reflection;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
+using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Math;
 using Rts.Simulation.Random;
 using Rts.Simulation.World;
@@ -34,6 +35,7 @@ public sealed class StateHasherTests
         "tick", "random", "next id", "owner", "alive", "position x", "position y",
         "target removed", "target added", "target x", "target y", "speed", "entity count",
         "type", "turn rate", "facing", "turret facing", "land", "obstacle",
+        "path pending", "path", "path index", "path request", "path search progress", "path budget",
     };
 
     [Theory]
@@ -67,6 +69,18 @@ public sealed class StateHasherTests
             case "turret facing": moving.TurretFacing = BAngle.FromUnits(1); break;
             case "land": world.Map.SetLand(new CellPos(63, 0), LandType.Ice); break;
             case "obstacle": world.Map.SetBlocked(new CellPos(0, 63), true); break;
+            case "path pending": moving.PathPending = true; break;
+            case "path": moving.Path = AStar.FindPath(world.Map, new CellPos(0, 0), new CellPos(2, 1), Locomotor.Foot); break;
+            case "path index": moving.PathIndex = 3; break;
+            case "path request": world.PathRequests.Request(idle, 0, new CellPos(5, 5)); break;
+            case "path search progress":
+                // Same request in both worlds would be a different test; here progress alone must change the hash.
+                world.PathRequests.Request(idle, 0, new CellPos(40, 40));
+                var baselineWithRequest = StateHasher.Compute(world);
+                world.PathRequests.Requests[0].Search.Advance(3);
+                Assert.NotEqual(baselineWithRequest, StateHasher.Compute(world));
+                break;
+            case "path budget": world.PathRequests.Budget = 1; break;
             default: throw new ArgumentException(mutation);
         }
 
@@ -83,10 +97,18 @@ public sealed class StateHasherTests
     {
         "<Archetype>k__BackingField", "<Position>k__BackingField", "<MoveTarget>k__BackingField", "<Speed>k__BackingField",
         "<TurnRate>k__BackingField", "<Facing>k__BackingField", "<TurretFacing>k__BackingField",
+        "<PathPending>k__BackingField", "<Path>k__BackingField", "<PathIndex>k__BackingField",
     })]
     [InlineData(typeof(GameWorld), new[]
     {
         "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField",
+        "<PathRequests>k__BackingField",
+    })]
+    [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]
+    [InlineData(typeof(PathRequest), new[]
+    {
+        "<Unit>k__BackingField", "<RequestTick>k__BackingField", "<Start>k__BackingField", "<Goal>k__BackingField",
+        "<Locomotor>k__BackingField", "<Search>k__BackingField",
     })]
     [InlineData(typeof(MapGrid), new[] { "_land", "_blocked", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]

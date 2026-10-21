@@ -1,5 +1,6 @@
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
+using Rts.Simulation.Pathfinding;
 
 namespace Rts.Simulation.World;
 
@@ -42,4 +43,13 @@ public sealed class Unit : Entity
     /// (<see cref="UnitArchetype.HasTurret"/>) keep it too, the client just does not draw it.
     /// </summary>
     public BAngle TurretFacing { get; internal set; }
+
+    /// <summary>True while the unit waits for its path search (docs/implementation/M2_unit_control.md, 4.4).</summary>
+    public bool PathPending { get; internal set; }
+
+    /// <summary>The path the unit drives along, or null when it has none (standing, or moving straight in tests).</summary>
+    public CellPath? Path { get; internal set; }
+
+    /// <summary>Index in <see cref="Path"/> of the cell the unit drives to next.</summary>
+    public int PathIndex { get; internal set; }
 }

@@ -3,6 +3,7 @@ using System.Linq;
 using Godot;
 using Rts.Client.Debug;
 using Rts.Simulation;
+using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
 
@@ -18,6 +19,7 @@ namespace Rts.Client;
 public partial class Main : Node3D
 {
     private const int SmokeTicks = 300;
+    private const int SmokeDetourTicks = 600;
 
     /// <summary>Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward.</summary>
     private static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
@@ -179,6 +181,19 @@ public partial class Main : Node3D
 
         var blueUnits = host.Simulation.World.Entities.OfType<Unit>().Where(u => u.Owner == SimulationHost.LocalPlayer).ToList();
         var arrived = blueUnits.Count > 0 && blueUnits.All(u => u.Position == target && u.MoveTarget is null);
+
+        // Second leg: past the forest north of the blue base. The straight line crosses the trees, so every unit
+        // must drive around them along its path (M2 step 6) and never get stopped by an obstacle.
+        var behindForest = new CellPos(22, 5).Center;
+        host.IssueMove(behindForest);
+        var blocked = 0;
+        for (var i = 0; i < SmokeDetourTicks; i++)
+        {
+            host.StepOnce();
+            blocked += host.Simulation.LastTickEvents.Count(e => e is UnitBlocked);
+        }
+
+        var detoured = blocked == 0 && blueUnits.All(u => u.Position == behindForest && u.MoveTarget is null);
         var liveChecksum = host.Simulation.LastChecksum;
 
         host.SaveReplay();
@@ -189,10 +204,10 @@ public partial class Main : Node3D
         }
 
         var sameFinalState = host.Simulation.LastChecksum == liveChecksum;
-        var ok = arrived && host.PlaybackVerified && sameFinalState;
+        var ok = arrived && detoured && host.PlaybackVerified && sameFinalState;
         GD.Print(ok
-            ? $"[smoke] OK: {blueUnits.Count} units arrived, replay verified, final checksum {liveChecksum}"
-            : $"[smoke] FAILED: arrived={arrived}, replayVerified={host.PlaybackVerified}, sameFinalState={sameFinalState}, status={host.ReplayStatus}");
+            ? $"[smoke] OK: {blueUnits.Count} units arrived and drove around the forest, replay verified, final checksum {liveChecksum}"
+            : $"[smoke] FAILED: arrived={arrived}, detoured={detoured} (blocked {blocked}), replayVerified={host.PlaybackVerified}, sameFinalState={sameFinalState}, status={host.ReplayStatus}");
         GetTree().Quit(ok ? 0 : 1);
     }
 }

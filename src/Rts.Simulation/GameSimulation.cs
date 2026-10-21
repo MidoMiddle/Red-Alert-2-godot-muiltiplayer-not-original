@@ -64,7 +64,8 @@ public sealed class GameSimulation
             CommandProcessor.Apply(World, command, _events);
         }
 
-        // 2. Systems in fixed order.
+        // 2. Path searches within the node budget, then movement (docs/implementation/M2_unit_control.md, 4.12).
+        World.PathRequests.Process(World, _events);
         MovementSystem.Update(World, _events);
 
         // 3. Entities that died this tick leave the world.
