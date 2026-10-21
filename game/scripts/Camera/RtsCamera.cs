@@ -1,4 +1,5 @@
 using Godot;
+using Rts.Client.App;
 
 namespace Rts.Client;
 
@@ -6,14 +7,16 @@ namespace Rts.Client;
 /// RA2 camera (docs/implementation/M1_visual_spike.md, 4.1): orthographic, yaw 45°, pitch 30° down,
 /// so a 1×1 ground cell looks like a 2:1 diamond. World X runs right-down on screen, world Y (Godot Z) left-down.
 /// The rig only slides over the ground; the angle never changes.
-/// Scroll: screen edges, WASD/arrows, holding the right mouse button (RA2 style); zoom: mouse wheel.
+/// Moves with the camera key actions, with the mouse at the window edge (setting <c>EdgeScroll</c>) and with a drag
+/// of the camera button that <see cref="PlayerInput"/> passes in (setting <c>CameraDrag</c>, docs/implementation/M6_menus_skirmish.md).
+/// Zooms with the mouse wheel.
 /// </summary>
 public partial class RtsCamera : Node3D
 {
     public const float YawDegrees = 45f;
     public const float PitchDegrees = 30f;
 
-    /// <summary>Vertical view extent in world units: a cell is about 60 px wide at a 1080 px tall window.</summary>
+    /// <summary>Vertical view extent in world units: a cell is about 60 px wide at the 1080 px base height.</summary>
     public const float DefaultSize = 25.5f;
 
     private const float MinZoom = 0.7f;
@@ -22,18 +25,19 @@ public partial class RtsCamera : Node3D
     private const float ZoomSmoothing = 12f;
     private const float CameraDistance = 100f;
 
-    private const float ScrollSpeed = 14f; // cells per second at default zoom
+    private const float ScrollSpeed = 14f; // cells per second at default zoom and the neutral speed setting
+    private const float NeutralScrollSpeed = 5f; // the default of the scroll speed setting (1–10)
     private const float KeyAcceleration = 1.5f; // extra speed multiplier gained per second of holding
     private const float MaxKeyBoost = 2.5f;
     private const int EdgeBand = 8; // pixels
-    private const float DragSpeedPerPixel = 0.12f; // cells per second per pixel of drag offset
-    private const float DragDeadZone = 4f;
 
     private Camera3D _camera = null!;
     private SimulationHost _host = null!;
     private float _targetSize = DefaultSize;
     private float _keyHoldTime;
-    private Vector2? _dragAnchor;
+
+    /// <summary>The ground point held under the pointer during a drag, or null when no drag is running.</summary>
+    private Vector3? _dragAnchor;
 
     public Camera3D Camera => _camera;
 
@@ -56,56 +60,73 @@ public partial class RtsCamera : Node3D
     public override void _Process(double delta)
     {
         var dt = (float)delta;
-        var screenVelocity = KeyboardScroll(dt) + EdgeScroll() + DragScroll();
+        var settings = AppSettings.Instance?.Values ?? SettingsValues.Defaults;
+        var screenVelocity = KeyboardScroll(dt) + (settings.EdgeScroll ? EdgeScroll() : Vector2.Zero);
         if (screenVelocity != Vector2.Zero)
         {
-            var zoomScale = _camera.Size / DefaultSize;
-            MoveOverGround(GroundRight() * screenVelocity.X * zoomScale * dt + GroundUp() * -screenVelocity.Y * zoomScale * dt);
+            var scale = _camera.Size / DefaultSize * (settings.ScrollSpeed / NeutralScrollSpeed) * dt;
+            MoveOverGround(GroundRight() * screenVelocity.X * scale + GroundUp() * -screenVelocity.Y * scale);
         }
 
         _camera.Size = Mathf.Lerp(_camera.Size, _targetSize, 1f - Mathf.Exp(-ZoomSmoothing * dt));
-        ClampToMap();
     }
 
     public override void _UnhandledInput(InputEvent inputEvent)
     {
-        switch (inputEvent)
+        if (inputEvent is InputEventMouseButton { Pressed: true } wheel)
         {
-            case InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, Pressed: true }:
+            if (wheel.ButtonIndex == MouseButton.WheelUp)
+            {
                 _targetSize = Mathf.Max(DefaultSize * MinZoom, _targetSize / ZoomStep);
-                break;
-            case InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, Pressed: true }:
+            }
+            else if (wheel.ButtonIndex == MouseButton.WheelDown)
+            {
                 _targetSize = Mathf.Min(DefaultSize * MaxZoom, _targetSize * ZoomStep);
-                break;
-            case InputEventMouseButton { ButtonIndex: MouseButton.Right } right:
-                _dragAnchor = right.Pressed ? right.Position : null;
-                break;
+            }
         }
     }
 
-    /// <summary>Point on the ground plane (y = 0) under a screen position. Terrain heights come in step 3.</summary>
-    public bool TryScreenToGround(Vector2 screenPosition, out Vector3 point)
+    /// <summary>The camera button went down at <paramref name="screen"/>: the ground point under the pointer is held from now on.</summary>
+    public void BeginDrag(Vector2 screen) => _dragAnchor = TryGroundAt(screen, out var ground) ? ground : null;
+
+    /// <summary>The pointer moved during a drag: the rig moves so that the held ground point stays under the pointer.</summary>
+    public void DragTo(Vector2 screen)
     {
-        point = default;
-        var origin = _camera.ProjectRayOrigin(screenPosition);
-        var direction = _camera.ProjectRayNormal(screenPosition);
+        if (_dragAnchor is { } anchor && TryGroundAt(screen, out var current))
+        {
+            // With an orthographic camera, moving the rig shifts every ground point under the screen by the same offset.
+            MoveOverGround(anchor - current);
+        }
+    }
+
+    public void EndDrag() => _dragAnchor = null;
+
+    /// <summary>Point on the ground plane (y = 0) under a screen position. Terrain heights come in step 3.</summary>
+    public bool TryGroundAt(Vector2 screen, out Vector3 ground)
+    {
+        ground = default;
+        var origin = _camera.ProjectRayOrigin(screen);
+        var direction = _camera.ProjectRayNormal(screen);
         if (direction.Y >= 0f)
         {
             return false;
         }
 
-        point = origin + direction * (-origin.Y / direction.Y);
+        ground = origin + direction * (-origin.Y / direction.Y);
         return true;
     }
+
+    /// <summary>Screen position of a world point.</summary>
+    public Vector2 UnprojectPosition(Vector3 world) => _camera.UnprojectPosition(world);
 
     // Screen-space velocity in cells per second: x to the right, y downwards.
     private Vector2 KeyboardScroll(float dt)
     {
         var direction = Vector2.Zero;
-        if (Input.IsKeyPressed(Key.W) || Input.IsKeyPressed(Key.Up)) direction.Y -= 1f;
-        if (Input.IsKeyPressed(Key.S) || Input.IsKeyPressed(Key.Down)) direction.Y += 1f;
-        if (Input.IsKeyPressed(Key.A) || Input.IsKeyPressed(Key.Left)) direction.X -= 1f;
-        if (Input.IsKeyPressed(Key.D) || Input.IsKeyPressed(Key.Right)) direction.X += 1f;
+        if (Input.IsActionPressed("camera_up")) direction.Y -= 1f;
+        if (Input.IsActionPressed("camera_down")) direction.Y += 1f;
+        if (Input.IsActionPressed("camera_left")) direction.X -= 1f;
+        if (Input.IsActionPressed("camera_right")) direction.X += 1f;
 
         if (direction == Vector2.Zero)
         {
@@ -145,17 +166,6 @@ public partial class RtsCamera : Node3D
     private static float EdgeStrength(float distanceToEdge) =>
         distanceToEdge >= EdgeBand ? 0f : 1f - Mathf.Max(0f, distanceToEdge) / EdgeBand;
 
-    private Vector2 DragScroll()
-    {
-        if (_dragAnchor is not { } anchor)
-        {
-            return Vector2.Zero;
-        }
-
-        var offset = GetViewport().GetMousePosition() - anchor;
-        return offset.Length() <= DragDeadZone ? Vector2.Zero : offset * DragSpeedPerPixel;
-    }
-
     private Vector3 GroundRight() => Flatten(_camera.GlobalBasis.X);
 
     // Screen "up" on the ground: the camera's forward direction without its downward tilt.
@@ -163,14 +173,14 @@ public partial class RtsCamera : Node3D
 
     private static Vector3 Flatten(Vector3 vector) => new Vector3(vector.X, 0f, vector.Z).Normalized();
 
-    private void MoveOverGround(Vector3 offset) => Position += offset;
-
-    private void ClampToMap()
+    /// <summary>Moves the rig over the ground and keeps its centre on the map.</summary>
+    private void MoveOverGround(Vector3 offset)
     {
         var world = _host.Simulation.World;
+        var target = Position + offset;
         Position = new Vector3(
-            Mathf.Clamp(Position.X, 0f, world.WidthCells),
+            Mathf.Clamp(target.X, 0f, world.WidthCells),
             0f,
-            Mathf.Clamp(Position.Z, 0f, world.HeightCells));
+            Mathf.Clamp(target.Z, 0f, world.HeightCells));
     }
 }

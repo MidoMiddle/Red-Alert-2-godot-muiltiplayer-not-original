@@ -23,4 +23,14 @@
     <ProjectReference Include="../../src/Rts.Simulation/Rts.Simulation.csproj" />
   </ItemGroup>
 
+  <!-- The client rules without Godot types are tested here too (docs/implementation/M6_menus_skirmish.md, 6). -->
+  <ItemGroup>
+    <Compile Include="../../game/scripts/App/SettingsValues.cs" Link="Client/SettingsValues.cs" />
+    <Compile Include="../../game/scripts/App/ResolutionChange.cs" Link="Client/ResolutionChange.cs" />
+    <Compile Include="../../game/scripts/Input/ControlScheme.cs" Link="Client/Controls/ControlScheme.cs" />
+    <Compile Include="../../game/scripts/Input/InputInterpreter.cs" Link="Client/Controls/InputInterpreter.cs" />
+    <Compile Include="../../game/scripts/Input/KeyBindings.cs" Link="Client/Controls/KeyBindings.cs" />
+    <Compile Include="../../game/scripts/Input/SelectionSet.cs" Link="Client/Controls/SelectionSet.cs" />
+  </ItemGroup>
+
 </Project>

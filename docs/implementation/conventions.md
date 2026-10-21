@@ -17,7 +17,7 @@
 | `tools/Rts.TrigGen` | Консоль | M2 | — | Генерирует таблицы тригонометрии, результат коммитится |
 | `Rts.Simulation.Benchmarks` | BenchmarkDotNet | M2 | Simulation | — |
 | `Rts.Data` (+ `.Tests`) | Библиотека | M3 | Simulation | Да (разбор чисел без `float`) |
-| `Rts.AI` (+ `.Tests`) | Библиотека | M5 | Simulation | Да |
+| `Rts.AI` (+ `.Tests`) | Библиотека | M5 | Simulation, Data | Да |
 | `Rts.MapGen` (+ `.Tests`) | Библиотека | M7 | Simulation, Data | Да |
 | `tools/Rts.Arena` (+ `.Tests`) | Консоль | M8 | Simulation, Data, AI, MapGen | — |
 | `Rts.Net` (+ `.Tests`) | Библиотека | M9 | Simulation | Нет (транспорт), но команды детерминированы |

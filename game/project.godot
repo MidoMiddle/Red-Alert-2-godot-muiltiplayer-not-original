@@ -11,13 +11,26 @@ config_version=5
 [application]
 
 config/name="RTS (working title)"
-run/main_scene="res://scenes/Main.tscn"
+run/main_scene="res://scenes/Boot.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[autoload]
+
+SceneRouter="*res://scripts/App/SceneRouter.cs"
+AppSettings="*res://scripts/App/AppSettings.cs"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://theme/ra2_theme.tres"
 
 [dotnet]
 

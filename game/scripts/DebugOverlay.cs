@@ -1,23 +1,30 @@
 using System.Linq;
 using Godot;
+using Rts.Client.App;
+using Rts.Client.Controls;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
 
-/// <summary>Debug panel: mode, tick, rates, entity count, last checksum, replay check and controls.</summary>
+/// <summary>Debug panel: mode, tick, rates, entity count, last checksum, replay check and the controls of the current scheme.</summary>
 public partial class DebugOverlay : CanvasLayer
 {
-    private const string Controls =
-        "LMB move all blue · Shift+LMB spawn · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session\n" +
-        "Camera: screen edges · WASD/arrows · hold RMB and move the mouse · wheel zoom";
+    private const string ClassicControls = "Classic: LMB select / order · RMB click cancel · RMB drag camera";
+    private const string ModernControls = "Modern: LMB select · RMB order · LMB empty ground cancel · MMB drag camera";
+    private const string SharedControls =
+        "Shift+LMB spawn · Esc cancel · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "WASD/arrows/edge/wheel camera";
 
     private SimulationHost _host = null!;
     private Label _label = null!;
+    private string _controls = string.Empty;
 
     public override void _Ready()
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
         _label = GetNode<Label>("Label");
+        var scheme = AppSettings.Instance?.Values.Scheme ?? ControlScheme.Classic;
+        _controls = (scheme == ControlScheme.Classic ? ClassicControls : ModernControls) + "\n" + SharedControls;
     }
 
     public override void _Process(double delta)
@@ -32,6 +39,6 @@ public partial class DebugOverlay : CanvasLayer
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
-            Controls;
+            _controls;
     }
 }

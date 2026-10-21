@@ -155,6 +155,19 @@ public partial class SimulationHost : Node
         }
     }
 
+    /// <summary>Orders the given units to move. Units that are dead or not the player's are left out.</summary>
+    public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target)
+    {
+        var ordered = units
+            .Where(id => Simulation.World.TryGet(id, out var entity) && entity is TestUnit && entity.IsAlive && entity.Owner == LocalPlayer)
+            .Take(MoveUnitsCommand.MaxUnits)
+            .ToImmutableArray();
+        if (!ordered.IsEmpty)
+        {
+            Issue(new MoveUnitsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+        }
+    }
+
     public void IssueSpawn(WorldPos position) =>
         Issue(new SpawnTestUnitCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, position));
 

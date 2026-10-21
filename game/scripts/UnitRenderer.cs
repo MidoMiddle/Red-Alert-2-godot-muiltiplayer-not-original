@@ -6,7 +6,7 @@ namespace Rts.Client;
 
 /// <summary>
 /// Draws every test unit as a cube, interpolated between the previous and the current tick so that
-/// 15 ticks per second still look smooth at 60+ frames per second. Views are pooled.
+/// 15 ticks per second still look smooth at 60+ frames per second. Views are pooled. Selected units glow.
 /// </summary>
 public partial class UnitRenderer : Node3D
 {
@@ -16,12 +16,17 @@ public partial class UnitRenderer : Node3D
     private readonly Stack<MeshInstance3D> _pool = new();
     private readonly HashSet<EntityId> _alive = new();
     private readonly List<EntityId> _gone = new();
-    private readonly Dictionary<int, StandardMaterial3D> _materials = new();
+    private readonly Dictionary<(int Owner, bool Selected), StandardMaterial3D> _materials = new();
     private readonly BoxMesh _mesh = new() { Size = new Vector3(CubeSize, CubeSize, CubeSize) };
 
     private SimulationHost _host = null!;
+    private PlayerInput _input = null!;
 
-    public override void _Ready() => _host = GetNode<SimulationHost>("../SimulationHost");
+    public override void _Ready()
+    {
+        _host = GetNode<SimulationHost>("../SimulationHost");
+        _input = GetNode<PlayerInput>("../PlayerInput");
+    }
 
     public override void _Process(double delta)
     {
@@ -39,7 +44,7 @@ public partial class UnitRenderer : Node3D
                 _views.Add(unit.Id, view);
             }
 
-            view.MaterialOverride = MaterialFor(unit.Owner);
+            view.MaterialOverride = MaterialFor(unit.Owner.Value, _input.Selection.Contains(unit.Id));
             var current = WorldCoords.ToGodot(unit.Position, CubeSize / 2);
             var previous = _host.TryGetPreviousPosition(unit.Id, out var before)
                 ? WorldCoords.ToGodot(before, CubeSize / 2)
@@ -83,19 +88,26 @@ public partial class UnitRenderer : Node3D
         _pool.Push(view);
     }
 
-    private StandardMaterial3D MaterialFor(PlayerId owner)
+    private StandardMaterial3D MaterialFor(int owner, bool selected)
     {
-        if (!_materials.TryGetValue(owner.Value, out var material))
+        if (!_materials.TryGetValue((owner, selected), out var material))
         {
-            var color = owner.Value switch
+            var color = owner switch
             {
                 0 => new Color(0.6f, 0.6f, 0.6f),
                 1 => new Color(0.2f, 0.45f, 0.95f),
                 2 => new Color(0.9f, 0.25f, 0.2f),
-                _ => Color.FromHsv(owner.Value * 0.13f % 1f, 0.7f, 0.9f),
+                _ => Color.FromHsv(owner * 0.13f % 1f, 0.7f, 0.9f),
             };
             material = new StandardMaterial3D { AlbedoColor = color };
-            _materials.Add(owner.Value, material);
+            if (selected)
+            {
+                material.EmissionEnabled = true;
+                material.Emission = color;
+                material.EmissionEnergyMultiplier = 0.8f;
+            }
+
+            _materials.Add((owner, selected), material);
         }
 
         return material;
