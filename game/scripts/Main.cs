@@ -175,7 +175,7 @@ public partial class Main : Node3D
             host.StepOnce();
         }
 
-        var blueUnits = host.Simulation.World.Entities.OfType<TestUnit>().Where(u => u.Owner == SimulationHost.LocalPlayer).ToList();
+        var blueUnits = host.Simulation.World.Entities.OfType<Unit>().Where(u => u.Owner == SimulationHost.LocalPlayer).ToList();
         var arrived = blueUnits.Count > 0 && blueUnits.All(u => u.Position == target && u.MoveTarget is null);
         var liveChecksum = host.Simulation.LastChecksum;
 

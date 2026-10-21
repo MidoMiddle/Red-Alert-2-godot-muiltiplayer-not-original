@@ -50,17 +50,17 @@ public sealed class GameSimulationTests
     {
         var simulation = NewSimulation();
         simulation.Enqueue(Spawn(player: 1, tick: 0, sequence: 0, x: 128, y: 128));
-        simulation.Enqueue(Move(player: 1, tick: 1, sequence: 1, units: [1], x: 128 + 64, y: 128));
+        simulation.Enqueue(Move(player: 1, tick: 1, sequence: 1, units: [1], x: 128 + 48, y: 128));
 
         simulation.Step();
-        Assert.Equal([new UnitSpawned(0, new EntityId(1), new PlayerId(1), new WorldPos(128, 128))], simulation.LastTickEvents);
+        Assert.Equal([new UnitSpawned(0, new EntityId(1), new PlayerId(1), UnitType.Conscript, new WorldPos(128, 128))], simulation.LastTickEvents);
 
-        // Tick 1: the order is applied, then the unit moves 32 of 64 leptons.
+        // Tick 1: the order is applied, then the conscript turns at once and walks 24 of 48 leptons.
         simulation.Step();
-        Assert.Equal([new UnitMoveStarted(1, new EntityId(1), new WorldPos(192, 128))], simulation.LastTickEvents);
+        Assert.Equal([new UnitMoveStarted(1, new EntityId(1), new WorldPos(176, 128))], simulation.LastTickEvents);
 
         simulation.Step();
-        Assert.Equal([new UnitArrived(2, new EntityId(1), new WorldPos(192, 128))], simulation.LastTickEvents);
+        Assert.Equal([new UnitArrived(2, new EntityId(1), new WorldPos(176, 128))], simulation.LastTickEvents);
 
         simulation.Step();
         Assert.Empty(simulation.LastTickEvents);
@@ -76,8 +76,8 @@ public sealed class GameSimulationTests
         simulation.Step();
         simulation.Step();
 
-        var unit = Assert.IsType<TestUnit>(Assert.Single(simulation.World.Entities));
-        Assert.Equal(new WorldPos(128 + TestUnit.DefaultSpeed, 128), unit.Position);
+        var unit = Assert.IsType<Unit>(Assert.Single(simulation.World.Entities));
+        Assert.Equal(new WorldPos(128 + UnitArchetypes.Get(UnitType.Conscript).Speed, 128), unit.Position);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public sealed class GameSimulationTests
     }
 
     private static List<string> Describe(GameSimulation simulation) => simulation.World.Entities
-        .Cast<TestUnit>()
+        .Cast<Unit>()
         .Select(u => $"{u.Id} {u.Owner} {u.Position} {u.MoveTarget}")
         .ToList();
 }

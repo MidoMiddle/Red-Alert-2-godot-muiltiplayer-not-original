@@ -8,17 +8,17 @@ namespace Rts.Simulation.Tests.Commands;
 public sealed class CommandSerializerTests
 {
     [Fact]
-    public void Spawn_has_the_exact_v1_byte_layout()
+    public void Spawn_has_the_exact_v2_byte_layout()
     {
-        var bytes = Serialize(Spawn(player: 1, tick: 5, sequence: 7, x: 256, y: -1));
+        var bytes = Serialize(Spawn(player: 1, tick: 5, sequence: 7, x: 256, y: -1, type: UnitType.HeavyTank));
 
         Assert.Equal(
-            "01" + "01000000" + "05000000" + "07000000" + "00010000" + "FFFFFFFF",
+            "01" + "01000000" + "05000000" + "07000000" + "07" + "00010000" + "FFFFFFFF",
             Convert.ToHexString(bytes));
     }
 
     [Fact]
-    public void Move_has_the_exact_v1_byte_layout()
+    public void Move_has_the_exact_v2_byte_layout()
     {
         var bytes = Serialize(Move(player: 2, tick: 10, sequence: 3, units: [1, 300], x: 128, y: 640));
 
@@ -30,7 +30,9 @@ public sealed class CommandSerializerTests
     public static TheoryData<Command> RoundTripCases => new()
     {
         Spawn(player: 1, tick: 0, sequence: 0),
-        Spawn(player: 8, tick: int.MaxValue, sequence: uint.MaxValue, x: -5, y: int.MinValue),
+        Spawn(player: 8, tick: int.MaxValue, sequence: uint.MaxValue, x: -5, y: int.MinValue, type: UnitType.TeslaTank),
+        // An unknown unit type still round-trips: rejecting it is the processor's job, not the format's.
+        Spawn(player: 2, tick: 3, sequence: 4, type: (UnitType)200),
         Move(player: 3, tick: 42, sequence: 9, units: []),
         Move(player: 3, tick: 42, sequence: 9, units: [7]),
         Move(player: 1, tick: 1, sequence: 1, units: Enumerable.Range(1, MoveUnitsCommand.MaxUnits).ToArray(), x: -100, y: 99999),
@@ -60,7 +62,7 @@ public sealed class CommandSerializerTests
             var tick = random.NextInt(1000);
             if (random.NextInt(2) == 0)
             {
-                commands.Add(Spawn(player, tick, (uint)i, random.NextInt(20000), random.NextInt(20000)));
+                commands.Add(Spawn(player, tick, (uint)i, random.NextInt(20000), random.NextInt(20000), (UnitType)(1 + random.NextInt(8))));
             }
             else
             {
@@ -174,7 +176,7 @@ public sealed class CommandSerializerTests
     }
 
     private static List<string> Describe(GameWorld world) => world.Entities
-        .Cast<TestUnit>()
+        .Cast<Unit>()
         .Select(u => $"{u.Id} {u.Owner} {u.Position} {u.MoveTarget}")
         .ToList();
 }

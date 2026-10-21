@@ -40,7 +40,7 @@ public partial class Minimap : Control
 
         foreach (var entity in _host.Simulation.World.Entities)
         {
-            if (entity is TestUnit { IsAlive: true } unit)
+            if (entity is Unit { IsAlive: true } unit)
             {
                 var cell = WorldCoords.ToGodot(unit.Position);
                 DrawCircle(ToMinimap(cell.X, cell.Z), 2.5f, OwnerColor(unit.Owner.Value));

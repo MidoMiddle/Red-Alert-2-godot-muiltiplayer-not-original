@@ -120,11 +120,12 @@ public sealed class GoldenValuesTests
 
         StateChecksum[] actual = [checksums[99], checksums[499], checksums[999]];
 
+        // Rules v2 (M2 step 2): typed units that turn before driving.
         StateChecksum[] expected =
         [
-            new(100, 0xae487f7644eafb1bUL),
-            new(500, 0xce1bc327d136e200UL),
-            new(1000, 0xe221143de17e79e4UL),
+            new(100, 0x5b699421e8515894UL),
+            new(500, 0xd2e5af21073d40c0UL),
+            new(1000, 0x70ace5dc23835978UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -149,6 +150,7 @@ public sealed class GoldenValuesTests
         var hash = new Fnv1a64();
         hash.Add(bytes);
 
-        Assert.Equal((22124, 5244884938992613639UL), (bytes.Length, hash.Value));
+        // Replay and command format v2 (M2 step 2): the spawn command carries the unit type.
+        Assert.Equal((22345, 469925886153568073UL), (bytes.Length, hash.Value));
     }
 }

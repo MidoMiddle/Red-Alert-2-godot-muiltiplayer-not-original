@@ -8,17 +8,18 @@ using Rts.Simulation.Hashing;
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v1, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v2, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion
 /// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 tickCount
 /// command batch (u32 count + commands, format of CommandSerializer)
 /// u32 checksumCount | (i32 tick, u64 value) × checksumCount
 /// </code>
+/// The layout is unchanged since v1; v2 (M2 step 2) marks command format v2 inside.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 1;
+    public const ushort FormatVersion = 2;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

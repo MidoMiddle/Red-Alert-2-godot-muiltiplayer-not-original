@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Godot;
+using Rts.Client.Units;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -28,7 +29,18 @@ public partial class SimulationHost : Node
 
     private static readonly double[] SpeedMultipliers = [0.25, 0.5, 1, 2, 4];
 
-    private readonly Dictionary<EntityId, WorldPos> _previousPositions = new();
+    // One of every type for the player; a small mixed group for the opponent.
+    private static readonly UnitType[] LocalGroup =
+    [
+        UnitType.HeavyTank, UnitType.TeslaTank, UnitType.SupportVehicle,
+        UnitType.Mcv, UnitType.Harvester, UnitType.Conscript,
+        UnitType.Rocketeer, UnitType.Engineer,
+    ];
+
+    private static readonly UnitType[] OpponentGroup =
+        [UnitType.HeavyTank, UnitType.SupportVehicle, UnitType.Conscript, UnitType.Rocketeer];
+
+    private readonly Dictionary<EntityId, UnitPose> _previousPoses = new();
     private double _accumulator;
     private int _speedIndex = 2;
     private uint _nextSequence;
@@ -56,6 +68,9 @@ public partial class SimulationHost : Node
     /// <summary>Human-readable state of the replay check, shown on the debug panel.</summary>
     public string ReplayStatus { get; private set; } = "";
 
+    /// <summary>Type that Shift + click spawns; the debug key cycles through all types.</summary>
+    public UnitType SpawnType { get; private set; } = UnitType.HeavyTank;
+
     public bool PlaybackFinished => _playback is not null && Simulation.CurrentTick >= _playback.TickCount;
 
     /// <summary>True once playback reached the end with every recorded checksum reproduced.</summary>
@@ -73,8 +88,8 @@ public partial class SimulationHost : Node
         ReplayStatus = "";
 
         // Starting units are commands too, so they end up in the replay.
-        SpawnGroup(LocalPlayer, new CellPos(20, 20), count: 6);
-        SpawnGroup(new PlayerId(2), new CellPos(44, 44), count: 4);
+        SpawnGroup(LocalPlayer, new CellPos(20, 20), LocalGroup);
+        SpawnGroup(new PlayerId(2), new CellPos(44, 44), OpponentGroup);
         GD.Print("[host] live session started");
     }
 
@@ -145,7 +160,7 @@ public partial class SimulationHost : Node
     public void IssueMove(WorldPos target)
     {
         var units = Simulation.World.Entities
-            .Where(e => e is TestUnit && e.IsAlive && e.Owner == LocalPlayer)
+            .Where(e => e is Unit && e.IsAlive && e.Owner == LocalPlayer)
             .Select(e => e.Id)
             .Take(MoveUnitsCommand.MaxUnits)
             .ToImmutableArray();
@@ -159,7 +174,7 @@ public partial class SimulationHost : Node
     public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target)
     {
         var ordered = units
-            .Where(id => Simulation.World.TryGet(id, out var entity) && entity is TestUnit && entity.IsAlive && entity.Owner == LocalPlayer)
+            .Where(id => Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer)
             .Take(MoveUnitsCommand.MaxUnits)
             .ToImmutableArray();
         if (!ordered.IsEmpty)
@@ -169,7 +184,15 @@ public partial class SimulationHost : Node
     }
 
     public void IssueSpawn(WorldPos position) =>
-        Issue(new SpawnTestUnitCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, position));
+        Issue(new SpawnTestUnitCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, SpawnType, position));
+
+    /// <summary>Switches the Shift + click type to the next one, wrapping around.</summary>
+    public void NextSpawnType()
+    {
+        var all = UnitArchetypes.All;
+        SpawnType = all[((int)SpawnType) % all.Count].Type;
+        GD.Print($"[host] spawn type {UnitArchetypes.Get(SpawnType).Id}");
+    }
 
     public void ChangeSpeed(int direction) =>
         _speedIndex = Math.Clamp(_speedIndex + direction, 0, SpeedMultipliers.Length - 1);
@@ -192,8 +215,8 @@ public partial class SimulationHost : Node
         return LastReplayPath;
     }
 
-    public bool TryGetPreviousPosition(EntityId id, out WorldPos position) =>
-        _previousPositions.TryGetValue(id, out position);
+    /// <summary>Where the unit was and how it was turned on the previous tick, for interpolation.</summary>
+    public bool TryGetPreviousPose(EntityId id, out UnitPose pose) => _previousPoses.TryGetValue(id, out pose);
 
     private void Issue(Command command)
     {
@@ -203,23 +226,24 @@ public partial class SimulationHost : Node
         }
     }
 
-    private void SpawnGroup(PlayerId owner, CellPos center, int count)
+    private void SpawnGroup(PlayerId owner, CellPos center, UnitType[] types)
     {
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < types.Length; i++)
         {
             var cell = new CellPos(center.X + i % 3 * 2, center.Y + i / 3 * 2);
-            Simulation.Enqueue(new SpawnTestUnitCommand(owner, 0, owner == LocalPlayer ? _nextSequence++ : (uint)i, cell.Center));
+            var sequence = owner == LocalPlayer ? _nextSequence++ : (uint)i;
+            Simulation.Enqueue(new SpawnTestUnitCommand(owner, 0, sequence, types[i], cell.Center));
         }
     }
 
     private void StepSimulation()
     {
-        _previousPositions.Clear();
+        _previousPoses.Clear();
         foreach (var entity in Simulation.World.Entities)
         {
-            if (entity is TestUnit unit)
+            if (entity is Unit unit)
             {
-                _previousPositions[unit.Id] = unit.Position;
+                _previousPoses[unit.Id] = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             }
         }
 
@@ -267,7 +291,7 @@ public partial class SimulationHost : Node
     private void ResetClock()
     {
         _accumulator = 0;
-        _previousPositions.Clear();
+        _previousPoses.Clear();
         Alpha = 1f;
     }
 

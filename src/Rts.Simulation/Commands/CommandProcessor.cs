@@ -33,13 +33,13 @@ public static class CommandProcessor
 
     private static bool ApplySpawn(GameWorld world, SpawnTestUnitCommand command, List<SimEvent>? events)
     {
-        if (!world.Contains(command.Position))
+        if (!world.Contains(command.Position) || !UnitArchetypes.IsKnown(command.UnitType))
         {
             return false;
         }
 
-        var unit = world.SpawnTestUnit(command.Player, command.Position, TestUnit.DefaultSpeed);
-        events?.Add(new UnitSpawned(world.CurrentTick, unit.Id, unit.Owner, unit.Position));
+        var unit = world.SpawnUnit(command.Player, command.UnitType, command.Position);
+        events?.Add(new UnitSpawned(world.CurrentTick, unit.Id, unit.Owner, unit.Type, unit.Position));
         return true;
     }
 
@@ -55,7 +55,7 @@ public static class CommandProcessor
         foreach (var id in command.Units)
         {
             if (world.TryGet(id, out var entity)
-                && entity is TestUnit unit
+                && entity is Unit unit
                 && unit.IsAlive
                 && unit.Owner == command.Player)
             {

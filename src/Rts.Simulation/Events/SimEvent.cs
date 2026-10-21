@@ -9,7 +9,7 @@ namespace Rts.Simulation.Events;
 /// </summary>
 public abstract record SimEvent(int Tick);
 
-public sealed record UnitSpawned(int Tick, EntityId Unit, PlayerId Owner, WorldPos Position) : SimEvent(Tick);
+public sealed record UnitSpawned(int Tick, EntityId Unit, PlayerId Owner, UnitType Type, WorldPos Position) : SimEvent(Tick);
 
 public sealed record UnitMoveStarted(int Tick, EntityId Unit, WorldPos Target) : SimEvent(Tick);
 

@@ -9,7 +9,7 @@ public sealed class GameWorldTests
 
     private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64);
 
-    private static TestUnit Spawn(GameWorld world) => world.SpawnTestUnit(Player1, new WorldPos(128, 128), speed: 10);
+    private static Unit Spawn(GameWorld world) => world.SpawnForTest(Player1, new WorldPos(128, 128), speed: 10);
 
     [Fact]
     public void Ids_start_at_one_and_increase()
@@ -97,7 +97,7 @@ public sealed class GameWorldTests
     {
         var world = NewWorld();
 
-        var unit = world.SpawnTestUnit(Player1, new WorldPos(300, 400), speed: 25);
+        var unit = world.SpawnForTest(Player1, new WorldPos(300, 400), speed: 25);
 
         Assert.Equal(Player1, unit.Owner);
         Assert.Equal(new WorldPos(300, 400), unit.Position);

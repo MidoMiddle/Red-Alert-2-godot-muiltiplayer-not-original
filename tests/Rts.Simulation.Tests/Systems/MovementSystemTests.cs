@@ -3,6 +3,7 @@ using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
 using Rts.Simulation.Systems;
 using Rts.Simulation.World;
+using Rts.Simulation.Tests.World;
 
 namespace Rts.Simulation.Tests.Systems;
 
@@ -13,7 +14,7 @@ public sealed class MovementSystemTests
     private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64);
 
     /// <summary>Runs movement until the unit stops; returns the number of ticks it took.</summary>
-    private static int RunUntilArrived(GameWorld world, TestUnit unit, int maxTicks = 10_000)
+    private static int RunUntilArrived(GameWorld world, Unit unit, int maxTicks = 10_000)
     {
         var events = new List<SimEvent>();
         for (var tick = 1; tick <= maxTicks; tick++)
@@ -32,7 +33,7 @@ public sealed class MovementSystemTests
     public void Straight_move_arrives_exactly_after_distance_over_speed_ticks()
     {
         var world = NewWorld();
-        var unit = world.SpawnTestUnit(Player1, new WorldPos(128, 128), speed: 32);
+        var unit = world.SpawnForTest(Player1, new WorldPos(128, 128), speed: 32);
         unit.MoveTarget = new WorldPos(128 + 320, 128);
 
         var ticks = RunUntilArrived(world, unit);
@@ -50,7 +51,7 @@ public sealed class MovementSystemTests
     public void Any_move_arrives_exactly_at_target_without_overshooting(int fromX, int fromY, int toX, int toY, int speed)
     {
         var world = NewWorld();
-        var unit = world.SpawnTestUnit(Player1, new WorldPos(fromX, fromY), speed);
+        var unit = world.SpawnForTest(Player1, new WorldPos(fromX, fromY), speed);
         var target = new WorldPos(toX, toY);
         unit.MoveTarget = target;
         var events = new List<SimEvent>();
@@ -76,7 +77,7 @@ public sealed class MovementSystemTests
     public void Diagonal_move_takes_about_distance_over_speed_ticks()
     {
         var world = NewWorld();
-        var unit = world.SpawnTestUnit(Player1, new WorldPos(0, 0), speed: 32);
+        var unit = world.SpawnForTest(Player1, new WorldPos(0, 0), speed: 32);
         unit.MoveTarget = new WorldPos(3000, 4000); // distance 5000
 
         var ticks = RunUntilArrived(world, unit);
@@ -91,7 +92,7 @@ public sealed class MovementSystemTests
     public void Move_to_own_position_arrives_immediately()
     {
         var world = NewWorld();
-        var unit = world.SpawnTestUnit(Player1, new WorldPos(500, 500), speed: 32);
+        var unit = world.SpawnForTest(Player1, new WorldPos(500, 500), speed: 32);
         unit.MoveTarget = unit.Position;
         var events = new List<SimEvent>();
 
@@ -105,8 +106,8 @@ public sealed class MovementSystemTests
     public void Dead_and_idle_units_do_not_move()
     {
         var world = NewWorld();
-        var idle = world.SpawnTestUnit(Player1, new WorldPos(100, 100), speed: 32);
-        var dead = world.SpawnTestUnit(Player1, new WorldPos(100, 100), speed: 32);
+        var idle = world.SpawnForTest(Player1, new WorldPos(100, 100), speed: 32);
+        var dead = world.SpawnForTest(Player1, new WorldPos(100, 100), speed: 32);
         dead.MoveTarget = new WorldPos(2000, 100);
         dead.MarkDead();
         var events = new List<SimEvent>();

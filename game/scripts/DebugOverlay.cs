@@ -12,7 +12,7 @@ public partial class DebugOverlay : CanvasLayer
     private const string ClassicControls = "Classic: LMB select / order · RMB click cancel · RMB drag camera";
     private const string ModernControls = "Modern: LMB select · RMB order · LMB empty ground cancel · MMB drag camera";
     private const string SharedControls =
-        "Shift+LMB spawn · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "Shift+LMB spawn · T spawn type · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
         "WASD/arrows/edge/wheel camera";
 
     private SimulationHost _host = null!;
@@ -32,14 +32,14 @@ public partial class DebugOverlay : CanvasLayer
     public override void _Process(double delta)
     {
         var simulation = _host.Simulation;
-        var units = simulation.World.Entities.Count(e => e is TestUnit);
+        var units = simulation.World.Entities.Count(e => e is Unit);
         var state = _host.Paused ? "PAUSED" : $"x{_host.SpeedMultiplier:0.##}";
         var mode = _host.IsPlayback ? "REPLAY" : "LIVE";
 
         _label.Text =
             $"{mode}  {state}\n" +
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
-            $"units {units}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
+            $"units {units}   spawn {UnitArchetypes.Get(_host.SpawnType).Id}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
     }

@@ -106,6 +106,10 @@ public partial class PlayerInput : Node
         {
             _host.StartLiveSession();
         }
+        else if (key.IsActionPressed("spawn_type"))
+        {
+            _host.NextSpawnType();
+        }
     }
 
     /// <summary>Carries out the intents: the selection changes here, orders and spawns go to the host, drags to the camera.</summary>
@@ -166,7 +170,7 @@ public partial class PlayerInput : Node
         var nearestDistance = PickRadius;
         foreach (var entity in _host.Simulation.World.Entities)
         {
-            if (entity is not TestUnit { IsAlive: true } unit)
+            if (entity is not Unit { IsAlive: true } unit)
             {
                 continue;
             }

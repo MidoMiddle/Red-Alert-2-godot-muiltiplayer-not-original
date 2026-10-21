@@ -39,6 +39,7 @@ public sealed class KeyBindings
         new KeyAction("save_replay", "UI_KEY_SAVE_REPLAY", "F5"),
         new KeyAction("load_replay", "UI_KEY_LOAD_REPLAY", "F9"),
         new KeyAction("new_session", "UI_KEY_NEW_SESSION", "R"),
+        new KeyAction("spawn_type", "UI_KEY_SPAWN_TYPE", "T"),
         new KeyAction("cancel_selection", "UI_KEY_CANCEL_SELECTION", "Escape"),
     };
 

@@ -12,7 +12,8 @@ namespace Rts.Simulation.Hashing;
 /// </summary>
 public static class StateHasher
 {
-    private const byte TestUnitTag = 1;
+    // Tags are only for the hash; the M0 TestUnit was 1.
+    private const byte UnitTag = 2;
 
     public static ulong Compute(GameWorld world)
     {
@@ -39,9 +40,10 @@ public static class StateHasher
     {
         switch (entity)
         {
-            case TestUnit unit:
-                hash.Add(TestUnitTag);
+            case Unit unit:
+                hash.Add(UnitTag);
                 AddCommon(hash, unit);
+                hash.Add((byte)unit.Type);
                 hash.Add(unit.Position.X);
                 hash.Add(unit.Position.Y);
                 hash.Add(unit.MoveTarget.HasValue);
@@ -52,6 +54,9 @@ public static class StateHasher
                 }
 
                 hash.Add(unit.Speed);
+                hash.Add(unit.TurnRate);
+                hash.Add((int)unit.Facing.Value);
+                hash.Add((int)unit.TurretFacing.Value);
                 break;
 
             default:

@@ -80,9 +80,9 @@ public sealed class GameWorld
         return false;
     }
 
-    internal TestUnit SpawnTestUnit(PlayerId owner, WorldPos position, int speed)
+    internal Unit SpawnUnit(PlayerId owner, UnitType type, WorldPos position)
     {
-        var unit = new TestUnit(AllocateId(), owner, position, speed);
+        var unit = new Unit(AllocateId(), owner, UnitArchetypes.Get(type), position);
         _entities.Add(unit);
         return unit;
     }

@@ -24,7 +24,7 @@ internal static class ReferenceScenario
 
     /// <summary>
     /// Commands for <paramref name="ticks"/> ticks: each tick, each player issues a command with
-    /// probability 1/4 — a spawn (1/3) or a move of 1–12 unit ids (2/3) to a random point on the map.
+    /// probability 1/4 — a spawn of a random unit type (1/3) or a move of 1–12 unit ids (2/3) to a random point on the map.
     /// </summary>
     public static IReadOnlyList<Command> Commands(int ticks)
     {
@@ -45,7 +45,8 @@ internal static class ReferenceScenario
                 var point = new WorldPos(random.NextInt(MapLeptons), random.NextInt(MapLeptons));
                 if (random.NextInt(3) == 0)
                 {
-                    commands.Add(new SpawnTestUnitCommand(owner, tick, sequences[player]++, point));
+                    var type = (UnitType)(1 + random.NextInt(UnitArchetypes.All.Count));
+                    commands.Add(new SpawnTestUnitCommand(owner, tick, sequences[player]++, type, point));
                 }
                 else
                 {

@@ -9,25 +9,27 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v1, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v2, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
 /// MoveUnits:     u16 count | i32 × count ids | i32 x | i32 y
-/// SpawnTestUnit: i32 x | i32 y
+/// SpawnTestUnit: u8 unitType | i32 x | i32 y
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
+/// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 1;
+    public const int FormatVersion = 2;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
+    private const int SpawnSize = 1 + PositionSize;
 
     public static int GetSize(Command command) => command switch
     {
-        SpawnTestUnitCommand => HeaderSize + PositionSize,
+        SpawnTestUnitCommand => HeaderSize + SpawnSize,
         MoveUnitsCommand move => HeaderSize + 2 + 4 * move.Units.Length + PositionSize,
         _ => throw UnknownCommand(command),
     };
@@ -50,7 +52,8 @@ public static class CommandSerializer
         switch (command)
         {
             case SpawnTestUnitCommand spawn:
-                WritePosition(payload, spawn.Position);
+                payload[0] = (byte)spawn.UnitType;
+                WritePosition(payload[1..], spawn.Position);
                 break;
             case MoveUnitsCommand move:
                 BinaryPrimitives.WriteUInt16LittleEndian(payload, (ushort)move.Units.Length);
@@ -82,9 +85,10 @@ public static class CommandSerializer
         {
             case CommandType.SpawnTestUnit:
             {
-                Require(payload, PositionSize);
-                bytesRead = HeaderSize + PositionSize;
-                return new SpawnTestUnitCommand(player, tick, sequence, ReadPosition(payload));
+                // Any type byte is read as is; whether the type exists is a rules question for CommandProcessor.
+                Require(payload, SpawnSize);
+                bytesRead = HeaderSize + SpawnSize;
+                return new SpawnTestUnitCommand(player, tick, sequence, (UnitType)payload[0], ReadPosition(payload[1..]));
             }
 
             case CommandType.MoveUnits:
