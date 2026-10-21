@@ -57,11 +57,14 @@
 
 ```
 /
+├── global.json                     версия .NET SDK (одинаковая локально и в CI)
 ├── RtsGame.sln                     решение, включает все проекты
 ├── Directory.Build.props           общие настройки C# для всех проектов
+├── Directory.Build.targets         анализаторы для проектов с RtsDeterministic=true
 ├── BannedSymbols.txt               запрещённые API для симуляции
 ├── .editorconfig                   стиль кода
 ├── src/
+│   ├── Rts.Analyzers/              свой Roslyn-анализатор детерминизма (RTS0001, RTS0002)
 │   └── Rts.Simulation/             симуляция: чистый C#, без Godot
 │       ├── Rts.Simulation.csproj
 │       ├── Math/                   Fixed, IntMath
@@ -76,6 +79,7 @@
 │       ├── Simulation.cs           главный класс: тик
 │       └── SimulationSettings.cs   константы и параметры партии
 ├── tests/
+│   ├── Rts.Analyzers.Tests/        xUnit: правила анализатора
 │   └── Rts.Simulation.Tests/       xUnit
 ├── game/                           Godot-проект (клиент)
 │   ├── project.godot
@@ -117,7 +121,14 @@
 | `HashCode`, `object.GetHashCode` для строк | Рандомизируется при каждом запуске процесса | Собственный хеш |
 | Перечисление `Dictionary`/`HashSet` | Порядок не гарантирован | `List`, сортировка по ID, `SortedDictionary` |
 
-**Проверка на шаге 1:** убеждаемся, что анализатор действительно ловит ключевые слова `float`/`double`. Если нет — запасной вариант: тест, который сканирует исходники симуляции и падает при нахождении запрещённых токенов.
+**Результат проверки на шаге 1:** BannedApiAnalyzers ловит запрещённые типы и члены по имени (`Random`, `Math`, `DateTime.Now`, `Guid.NewGuid`, `string.GetHashCode`, `Task`), но **не ловит** ключевые слова `float`/`double`/`decimal`, дробные литералы и перебор `Dictionary`/`HashSet` (`foreach` вызывает `GetEnumerator` неявно). Поэтому вместо теста-сканера сделан **собственный Roslyn-анализатор `Rts.Analyzers`**, он подключается к тем же проектам через `Directory.Build.targets`:
+
+| Правило | Что ловит |
+|---|---|
+| `RTS0001` | Любое ключевое слово `float`/`double`/`decimal` и любой дробный литерал (`var x = 0.5`) |
+| `RTS0002` | `foreach` по `Dictionary`, его `Keys`/`Values`, `HashSet`, а также передачу их как `IEnumerable` (LINQ, конструкторы коллекций) |
+
+Поиск по ключу (`TryGetValue`, `ContainsKey`, `Contains`) разрешён — он детерминирован. Правила покрыты тестами `Rts.Analyzers.Tests`.
 
 ### 4.3. Фиксированная точка: `Fixed`
 
@@ -425,7 +436,7 @@ alpha = accumulator / длительность_тика   — для интер�
 
 | Риск | Вероятность | Что делаем |
 |---|---|---|
-| BannedApiAnalyzers не ловит ключевые слова `float`/`double` | Средняя | Проверяем на шаге 1; запасной вариант — тест-сканер исходников |
+| BannedApiAnalyzers не ловит ключевые слова `float`/`double` | **Сбылся** (шаг 1) | Закрыт собственным анализатором `Rts.Analyzers` (RTS0001, RTS0002), см. 4.2 |
 | Godot 4.7 .NET не дружит с решением в корне или с `ProjectReference` | Низкая | Проверяем на шаге 1 пустым проектом; запасной вариант — решение внутри `game/` |
 | `Int128` медленный на горячих путях | Низкая | Для M0 неважно; профилируем в M2 при 300+ юнитах |
 | Разработка только на Mac — Windows проверяется лишь в CI | Средняя | «Золотые» тесты в CI; периодический запуск клиента на реальном Windows-ПК |
@@ -446,7 +457,7 @@ alpha = accumulator / длительность_тика   — для интер�
 | Шаг | Статус | Заметки |
 |---|---|---|
 | 0. Окружение | готово | .NET SDK 10.0.402 (`/usr/local/share/dotnet`, в PATH через `/etc/paths.d`), Godot 4.7.2.stable.mono. Перенос Godot в `/Applications` — вручную (macOS не даёт переносить приложения из терминала) |
-| 1. Каркас решения | — | |
+| 1. Каркас решения | готово | `RtsGame.sln` (классический .sln), `global.json` (SDK 10.0.402), `Directory.Build.props/.targets`. Пакеты: BannedApiAnalyzers 5.6.0, xUnit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1, Microsoft.CodeAnalysis.CSharp 4.14.0 (анализатор). Анализатор BannedApi не ловит ключевые слова → добавлен свой `Rts.Analyzers` (4.2). Godot 4.7.2 нашёл решение в корне (`solution_directory="../"`), собрал C#, сцена печатает `Simulation v1`. Тесты: 21 зелёный |
 | 2. `Fixed` и `IntMath` | — | |
 | 3. `DeterministicRandom` | — | |
 | 4. Мир и сущности | — | |

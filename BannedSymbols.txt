@@ -1,0 +1,25 @@
+T:System.Single;Floating point is not deterministic across CPUs. Use Fixed or integers.
+T:System.Double;Floating point is not deterministic across CPUs. Use Fixed or integers.
+T:System.Decimal;Keep one numeric model in the simulation. Use Fixed or integers.
+T:System.Math;Works with floating point. Use IntMath or Fixed methods.
+T:System.MathF;Works with floating point. Use IntMath or Fixed methods.
+T:System.Random;Algorithm is not guaranteed across .NET versions. Use DeterministicRandom.
+P:System.DateTime.Now;Time is not deterministic. Use the tick number.
+P:System.DateTime.UtcNow;Time is not deterministic. Use the tick number.
+P:System.DateTimeOffset.Now;Time is not deterministic. Use the tick number.
+P:System.DateTimeOffset.UtcNow;Time is not deterministic. Use the tick number.
+T:System.Diagnostics.Stopwatch;Time is not deterministic. Use the tick number.
+P:System.Environment.TickCount;Time is not deterministic. Use the tick number.
+P:System.Environment.TickCount64;Time is not deterministic. Use the tick number.
+T:System.Threading.Tasks.Parallel;Execution order is not deterministic. Keep simulation code sequential.
+T:System.Threading.Tasks.Task;Execution order is not deterministic. Keep simulation code sequential.
+T:System.Threading.Tasks.Task`1;Execution order is not deterministic. Keep simulation code sequential.
+T:System.Threading.Tasks.TaskFactory;Execution order is not deterministic. Keep simulation code sequential.
+T:System.Threading.ThreadPool;Execution order is not deterministic. Keep simulation code sequential.
+M:System.Guid.NewGuid;Random. Use EntityId from the world counter.
+T:System.HashCode;Randomized per process. Use the simulation's own hashing.
+M:System.String.GetHashCode;Randomized per process. Use the simulation's own hashing.
+M:System.Collections.Generic.Dictionary`2.GetEnumerator;Enumeration order is not guaranteed. Use List, sort by id, or SortedDictionary.
+M:System.Collections.Generic.Dictionary`2.KeyCollection.GetEnumerator;Enumeration order is not guaranteed. Use List, sort by id, or SortedDictionary.
+M:System.Collections.Generic.Dictionary`2.ValueCollection.GetEnumerator;Enumeration order is not guaranteed. Use List, sort by id, or SortedDictionary.
+M:System.Collections.Generic.HashSet`1.GetEnumerator;Enumeration order is not guaranteed. Use List, sort by id, or SortedSet.

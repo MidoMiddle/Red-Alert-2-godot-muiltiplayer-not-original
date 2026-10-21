@@ -1,0 +1,16 @@
+<Project>
+  <!--
+    Projects that run inside the deterministic simulation set <RtsDeterministic>true</RtsDeterministic>.
+    They get the banned-API analyzer with the shared BannedSymbols.txt
+    (see docs/implementation/M0_foundation.md, section 4.2).
+    This lives in .targets, not .props, so the flag set in the project body is already visible here.
+  -->
+  <ItemGroup Condition="'$(RtsDeterministic)' == 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+    <!-- Own analyzer: floating point via keywords/literals and unordered enumeration (RTS0001, RTS0002). -->
+    <ProjectReference Include="$(MSBuildThisFileDirectory)src/Rts.Analyzers/Rts.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Rts.Simulation</RootNamespace>
+    <!-- Every API used in the simulation must be visible in the file that uses it. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Enables the banned-API analyzer, see Directory.Build.targets. -->
+    <RtsDeterministic>true</RtsDeterministic>
+  </PropertyGroup>
+
+</Project>

@@ -13,6 +13,7 @@
 | `Rts.Simulation` | Библиотека | M0 | — | Да |
 | `Rts.Client` (`game/`) | Godot-проект | M0 | Simulation, Data, AI, Net | Нет (отображение) |
 | `Rts.Simulation.Tests` | xUnit | M0 | Simulation | — |
+| `Rts.Analyzers` (+ `.Tests`) | Roslyn-анализатор | M0 | — | Подключается ко всем проектам с правилами детерминизма |
 | `tools/Rts.TrigGen` | Консоль | M2 | — | Генерирует таблицы тригонометрии, результат коммитится |
 | `Rts.Simulation.Benchmarks` | BenchmarkDotNet | M2 | Simulation | — |
 | `Rts.Data` (+ `.Tests`) | Библиотека | M3 | Simulation | Да (разбор чисел без `float`) |
@@ -24,7 +25,7 @@
 | `Rts.Server` (+ `.Tests`) | Консоль → ASP.NET Core | M9 → M10 | Net, Online.Contracts | — |
 | `Rts.Online.Contracts` | Библиотека | M10 | — | — |
 
-«Правила детерминизма» означает: к проекту подключён анализатор запрещённых API с общим `BannedSymbols.txt` (M0, раздел 4.2), и проект не ссылается на Godot.
+«Правила детерминизма» означает: в csproj стоит `<RtsDeterministic>true</RtsDeterministic>`, поэтому `Directory.Build.targets` подключает анализатор запрещённых API с общим `BannedSymbols.txt` и собственный анализатор `Rts.Analyzers` (M0, раздел 4.2), и проект не ссылается на Godot.
 
 ---
 
