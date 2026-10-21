@@ -6,16 +6,18 @@ using Rts.Client.App;
 namespace Rts.Client.UI;
 
 /// <summary>
-/// Main menu (docs/menu/README.md, sections 2.3 and 3.2). All entries are shown in the order of section 2.3.
-/// An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with step 5,
-/// Skirmish with step 7, Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10.
+/// Main menu, laid out after the classic RA2 menu (docs/menu/README.md, section 3.2): a large screen with the
+/// title on the left, a column with the header and the entries on the right. All entries are shown in the order of
+/// section 2.3. An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with
+/// step 5, Skirmish with step 7, Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10.
 /// Credits has no step yet.
 /// </summary>
 public partial class MainMenu : Control
 {
-    private const float EntryWidth = 420f;
+    private const float EntryWidth = 360f;
     private const float EntryHeight = 56f;
     private const int EntrySeparation = 12;
+    private const float ExitSpacerHeight = 32f;
 
     private VBoxContainer _entries = null!;
     private ConfirmationDialog _exitDialog = null!;
@@ -24,10 +26,11 @@ public partial class MainMenu : Control
     {
         ScreenshotCapture.AttachIfRequested(this);
 
-        GetNode<Label>("Title").Text = Tr("UI_GAME_TITLE");
-        GetNode<Label>("Version").Text = string.Format(Tr("UI_VERSION"), GameInfo.Version);
+        GetNode<Label>("Screen/Title").Text = Tr("UI_GAME_TITLE");
+        GetNode<Label>("Column/Header/HeaderLabel").Text = Tr("UI_MAIN_MENU");
+        GetNode<Label>("Column/Version").Text = string.Format(Tr("UI_VERSION"), GameInfo.Version);
 
-        _entries = GetNode<VBoxContainer>("Entries");
+        _entries = GetNode<VBoxContainer>("Column/Entries");
         _entries.AddThemeConstantOverride("separation", EntrySeparation);
 
         // Entries without an action are not ready yet. Each step that adds a screen passes its action here.
@@ -38,6 +41,7 @@ public partial class MainMenu : Control
         AddEntry("UI_MAIN_REPLAYS", null);
         AddEntry("UI_MAIN_SETTINGS", null);
         AddEntry("UI_MAIN_CREDITS", null);
+        _entries.AddChild(new Control { Name = "ExitSpacer", CustomMinimumSize = new Vector2(0f, ExitSpacerHeight) });
         AddEntry("UI_MAIN_EXIT", ShowExitDialog);
 
         _exitDialog = new ConfirmationDialog

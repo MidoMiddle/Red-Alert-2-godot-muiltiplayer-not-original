@@ -1,6 +1,7 @@
 keys,en
 UI_BUTTON_BACK,Back
 UI_GAME_TITLE,RTS (working title)
+UI_MAIN_MENU,Main Menu
 UI_MAIN_EXIT,Exit
 UI_EXIT_TITLE,Exit
 UI_EXIT_CONFIRM_TEXT,Exit the game?
