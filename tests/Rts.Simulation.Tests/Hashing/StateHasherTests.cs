@@ -157,8 +157,9 @@ public sealed class StateHasherTests
     [InlineData(typeof(MapGrid), new[]
     {
         "_land", "_blocked", "_heights", "<Width>k__BackingField", "<Height>k__BackingField",
-        // Caches of the layers above: their digest for the hash, and a stamp for A* step costs (M2 step 15).
-        "_digest", "<Version>k__BackingField",
+        // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of
+        // every locomotor on every cell (M7 step 3).
+        "_digest", "<Version>k__BackingField", "_passability",
     })]
     [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]

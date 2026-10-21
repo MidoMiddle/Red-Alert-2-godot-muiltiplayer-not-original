@@ -289,7 +289,14 @@ dotnet run --project tools/Rts.MapTool -- convert game/maps/test/sandbox.txt gam
 dotnet run --project tools/Rts.MapTool -- shapes game/data/maps/relief_test.rtsmap
 ```
 
+Куда может пройти тип передвижения и с какой скоростью (`#` нельзя, `.` 100 %, цифра — десятки процента, если медленнее, `+` быстрее); типы: `foot`, `track`, `wheel`, `amphibious`, `naval`, `hover`:
+
+```bash
+dotnet run --project tools/Rts.MapTool -- passability game/data/maps/relief_test.rtsmap track
+```
+
 Что проверить:
+- [ ] `passability` для `track`: рампы — `7` (75 %), стены и кромки обрывов — `#`, плато и площадка — `.`; для `foot` рампы — `8`, для `wheel` — `6`. На песочнице для `naval` открыта только глубокая вода озера, для `wheel` дороги — `+`.
 - [ ] `check` печатает `sandbox "Sandbox" 64x64 … objects 88 …` и хеш `6b62f7cf…`.
 - [ ] `shapes` на карте рельефа: слева вверху плато уровня 4 в кольце `#` с рампами `/` на восток и на юг, справа вверху площадка уровня 2 в рамке обрывов, справа внизу холм из склонов до уровня 6, слева внизу яма с плоским дном уровня 0 и выездом вниз, наверху посередине угловая рампа из четырёх `/`.
 - [ ] Поменяй в слое `height` одну цифру (например, в середине плато `4` на `6`) — `shapes` показывает обрывы вокруг этого угла.

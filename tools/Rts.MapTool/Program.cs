@@ -5,6 +5,7 @@ using Rts.Simulation.Map;
 // dotnet run --project tools/Rts.MapTool -- canon <map.rtsmap>               rewrite the file in canonical form
 // dotnet run --project tools/Rts.MapTool -- convert <test.txt> <out.rtsmap>  convert an ASCII test map of M2
 // dotnet run --project tools/Rts.MapTool -- shapes <map.rtsmap>              cell shapes and cell levels as text
+// dotnet run --project tools/Rts.MapTool -- passability <map.rtsmap> <type>  where a locomotor goes and how fast
 // dotnet run --project tools/Rts.MapTool -- relief-test <out.rtsmap>         write the relief test map of step 2
 if (args.Length == 2 && args[0] == "check")
 {
@@ -45,6 +46,34 @@ if (args.Length == 2 && args[0] == "shapes")
     });
 }
 
+if (args.Length == 3 && args[0] == "passability")
+{
+    if (!Enum.TryParse<Locomotor>(args[2], ignoreCase: true, out var locomotor) || !LocomotorRules.IsKnown(locomotor))
+    {
+        Console.Error.WriteLine($"unknown type '{args[2]}': foot, track, wheel, amphibious, naval or hover");
+        return 2;
+    }
+
+    return Run(args[1], map =>
+    {
+        var grid = map.ToMapGrid([TestMapConverter.PineTree]);
+        Console.WriteLine($"{locomotor}: # impassable  . 100 %  digit = tens of percent when slower  + faster");
+        for (var y = 0; y < map.Height; y++)
+        {
+            var line = new char[map.Width];
+            for (var x = 0; x < map.Width; x++)
+            {
+                var percent = grid.SpeedPercent(new Rts.Simulation.Geometry.CellPos(x, y), locomotor);
+                line[x] = percent == 0 ? '#' : percent == 100 ? '.' : percent > 100 ? '+' : (char)('0' + percent / 10);
+            }
+
+            Console.WriteLine(new string(line));
+        }
+
+        return 0;
+    });
+}
+
 if (args.Length == 2 && args[0] == "relief-test")
 {
     var relief = Rts.MapTool.ReliefTestMap.Build();
@@ -72,7 +101,7 @@ if (args.Length == 3 && args[0] == "convert")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap>");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap>");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

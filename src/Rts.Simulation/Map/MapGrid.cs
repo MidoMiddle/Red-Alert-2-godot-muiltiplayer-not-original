@@ -15,6 +15,7 @@ public sealed class MapGrid
     private readonly LandType[] _land;
     private readonly bool[] _blocked;
     private CornerHeightGrid _heights;
+    private Passability _passability;
     private ulong? _digest;
 
     /// <summary>A map of <paramref name="width"/> × <paramref name="height"/> clear cells.</summary>
@@ -31,6 +32,7 @@ public sealed class MapGrid
         Array.Fill(_land, LandType.Clear);
         _blocked = new bool[width * height];
         _heights = new CornerHeightGrid(width, height);
+        _passability = new Passability(this);
     }
 
     /// <summary>
@@ -63,6 +65,7 @@ public sealed class MapGrid
             grid._heights = CornerHeightGrid.FromLayer(width, height, heights);
         }
 
+        grid._passability = new Passability(grid);
         grid._digest = null;
         grid.Version++;
         return grid;
@@ -82,11 +85,14 @@ public sealed class MapGrid
     /// <summary>True when a static obstacle (a tree) stands on the cell.</summary>
     public bool IsBlocked(CellPos cell) => _blocked[IndexOf(cell)];
 
-    /// <summary>Speed multiplier in percent for <paramref name="locomotor"/> on the cell; 0 when it cannot enter.</summary>
+    /// <summary>
+    /// Speed multiplier in percent for <paramref name="locomotor"/> on the cell, slopes included; 0 when it cannot enter
+    /// (outside the map, a cliff, impassable land, an obstacle). See <see cref="LocomotorRules.CellPercent"/>.
+    /// </summary>
     public int SpeedPercent(CellPos cell, Locomotor locomotor) =>
-        !Contains(cell) || IsBlocked(cell) ? 0 : LocomotorRules.SpeedPercent(locomotor, LandAt(cell));
+        Contains(cell) ? _passability.Percent(cell.Y * Width + cell.X, locomotor) : 0;
 
-    /// <summary>True when a unit with <paramref name="locomotor"/> may stand on the cell: inside the map, no obstacle, passable land.</summary>
+    /// <summary>True when a unit with <paramref name="locomotor"/> may stand on the cell: inside the map, not a cliff, passable land, no obstacle.</summary>
     public bool CanEnter(CellPos cell, Locomotor locomotor) => SpeedPercent(cell, locomotor) > 0;
 
     /// <summary>An independent copy: the match changes its own map, never the one in the settings.</summary>
@@ -132,6 +138,7 @@ public sealed class MapGrid
         }
 
         _land[IndexOf(cell)] = land;
+        _passability.Update(this, cell);
         _digest = null;
         Version++;
     }
@@ -139,6 +146,7 @@ public sealed class MapGrid
     internal void SetBlocked(CellPos cell, bool blocked)
     {
         _blocked[IndexOf(cell)] = blocked;
+        _passability.Update(this, cell);
         _digest = null;
         Version++;
     }
@@ -147,6 +155,19 @@ public sealed class MapGrid
     internal void SetCornerLevel(int x, int y, int level)
     {
         _heights.SetCornerLevel(x, y, level);
+
+        // A corner belongs to up to four cells.
+        for (var cy = y - 1; cy <= y; cy++)
+        {
+            for (var cx = x - 1; cx <= x; cx++)
+            {
+                if (Contains(new CellPos(cx, cy)))
+                {
+                    _passability.Update(this, new CellPos(cx, cy));
+                }
+            }
+        }
+
         _digest = null;
         Version++;
     }

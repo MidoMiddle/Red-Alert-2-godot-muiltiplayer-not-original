@@ -226,6 +226,7 @@ public sealed class GoldenValuesTests
         // Rules v12 (M2, after closing): place swaps change the checksums from tick 500 on.
         // Replay format v5, rules v13 (M7 step 2): the format version, the rules version and the checksums change; the
         // scenario has no map of its own, so no height layer is written.
-        Assert.Equal((23365, 10861810662162214840UL), (bytes.Length, hash.Value));
+        // Rules v14 (M7 step 3): slopes and cliffs in passability; the scenario is on flat ground, so only the version changes.
+        Assert.Equal((23365, 16569252163257045333UL), (bytes.Length, hash.Value));
     }
 }

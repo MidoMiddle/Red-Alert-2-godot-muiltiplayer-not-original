@@ -70,8 +70,8 @@ public static class AStar
 
     private static int[,] BuildStepCosts()
     {
-        var costs = new int[3 * 8, 2];
-        foreach (var locomotor in new[] { Locomotor.Foot, Locomotor.Track, Locomotor.Wheel })
+        var costs = new int[LocomotorRules.Count * 8, 2];
+        for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             for (var land = LandType.Clear; land <= LandType.Ice; land++)
             {
@@ -87,8 +87,8 @@ public static class AStar
 
     private static (int, int)[] BuildMinCosts()
     {
-        var result = new (int, int)[3];
-        foreach (var locomotor in new[] { Locomotor.Foot, Locomotor.Track, Locomotor.Wheel })
+        var result = new (int, int)[LocomotorRules.Count];
+        for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             var straight = int.MaxValue;
             var diagonal = int.MaxValue;
@@ -119,7 +119,7 @@ public static class AStar
 public sealed class Pathfinder
 {
     private readonly Stack<SearchBuffers> _pool = new();
-    private readonly StepCostLayer?[] _costs = new StepCostLayer?[3];
+    private readonly StepCostLayer?[] _costs = new StepCostLayer?[LocomotorRules.Count];
 
     public Pathfinder(MapGrid map) => Map = map;
 
@@ -165,7 +165,8 @@ public sealed class Pathfinder
 
 /// <summary>
 /// The cost of stepping into each cell for one locomotor, straight and diagonal, 0 where it cannot enter (outside the map
-/// does not occur: callers check bounds). The same numbers as <see cref="AStar.StepCost"/> and <see cref="MapGrid.CanEnter"/>,
+/// does not occur: callers check bounds). From <see cref="MapGrid.SpeedPercent"/>, so slopes cost more and cliffs are closed;
+/// on flat land the same numbers as <see cref="AStar.StepCost"/>,
 /// read from flat arrays in the inner loop of the search instead of through the land tables (M2 step 15).
 /// </summary>
 internal sealed class StepCostLayer
@@ -179,11 +180,12 @@ internal sealed class StepCostLayer
         {
             for (var x = 0; x < map.Width; x++)
             {
-                var cell = new CellPos(x, y);
-                if (map.CanEnter(cell, locomotor))
+                // From the cell's speed, slopes included (M7 step 3): on flat land the same numbers as AStar.StepCost.
+                var percent = map.SpeedPercent(new CellPos(x, y), locomotor);
+                if (percent > 0)
                 {
-                    Straight[y * map.Width + x] = AStar.StepCost(locomotor, map.LandAt(cell), diagonal: false);
-                    Diagonal[y * map.Width + x] = AStar.StepCost(locomotor, map.LandAt(cell), diagonal: true);
+                    Straight[y * map.Width + x] = (int)IntMath.DivRound(AStar.StraightCost * 100L, percent);
+                    Diagonal[y * map.Width + x] = (int)IntMath.DivRound(AStar.DiagonalCost * 100L, percent);
                 }
             }
         }
