@@ -31,7 +31,12 @@ public static class StateHasher
 
         AddMap(hash, world.Map);
         AddPathRequests(hash, world.PathRequests);
-        foreach (var owner in world.Reservations.Cells)
+        foreach (var owner in world.Reservations.VehicleCells)
+        {
+            hash.Add(owner);
+        }
+
+        foreach (var owner in world.Reservations.InfantrySpots)
         {
             hash.Add(owner);
         }
@@ -73,6 +78,7 @@ public static class StateHasher
                 hash.Add(unit.Replans);
                 hash.Add(unit.HoldTicks);
                 hash.Add(unit.Returning);
+                hash.Add(unit.Subcell);
                 hash.Add(unit.ResumeTarget.HasValue);
                 if (unit.ResumeTarget is { } resume)
                 {

@@ -42,7 +42,7 @@ internal static class GivingWay
     {
         for (var i = way.Length - 2; i >= 0; i--)
         {
-            if (world.TryGet(world.Reservations.OwnerOf(way[i]), out var entity) && entity is Unit unit)
+            if (world.TryGet(world.Reservations.Blocker(way[i]), out var entity) && entity is Unit unit)
             {
                 UnitOrders.MakeRoom(world, unit, [way[i], way[i + 1]]);
             }
@@ -70,7 +70,7 @@ internal static class GivingWay
             }
 
             var cell = new CellPos(index % map.Width, index / map.Width);
-            if (index != startIndex && !keepClear.Contains(index) && world.Reservations.IsFree(cell))
+            if (index != startIndex && !keepClear.Contains(index) && world.Reservations.HasRoomFor(cell, unit))
             {
                 // Among the nearest pockets, the most open one: stepping aside into a narrow pass would plug it.
                 var openness = Openness(map, cell, locomotor);
@@ -98,8 +98,8 @@ internal static class GivingWay
                 }
 
                 var nextIndex = next.Y * map.Width + next.X;
-                var owner = world.Reservations.OwnerOf(next);
-                if (parent.ContainsKey(nextIndex) || (owner != EntityId.None && owner != unit.Id && !(throughOwnIdle && IsOwnIdle(world, owner, unit.Owner))))
+                if (parent.ContainsKey(nextIndex)
+                    || (!world.Reservations.HasRoomFor(next, unit) && !(throughOwnIdle && IsSingleOwnIdle(world, next, unit.Owner))))
                 {
                     continue;
                 }
@@ -137,8 +137,7 @@ internal static class GivingWay
         for (var head = 0; head < queue.Count; head++)
         {
             var (cell, depth) = queue[head];
-            var owner = world.Reservations.OwnerOf(cell);
-            if (cell != goal && map.CanEnter(cell, locomotor) && (owner == EntityId.None || owner == unit.Id))
+            if (cell != goal && map.CanEnter(cell, locomotor) && world.Reservations.HasRoomFor(cell, unit))
             {
                 return cell;
             }
@@ -193,8 +192,15 @@ internal static class GivingWay
         return cells;
     }
 
-    private static bool IsOwnIdle(GameWorld world, EntityId id, PlayerId owner) =>
-        world.TryGet(id, out var entity) && entity is Unit { MoveTarget: null } other && other.Owner == owner;
+    /// <summary>One idle unit of <paramref name="owner"/> stands in the cell, nobody else: the crowd can shift it along.</summary>
+    private static bool IsSingleOwnIdle(GameWorld world, CellPos cell, PlayerId owner)
+    {
+        var reservations = world.Reservations;
+        var single = reservations.VehicleAt(cell) != EntityId.None
+            ? reservations.InfantryCount(cell) == 0
+            : reservations.InfantryCount(cell) == 1;
+        return single && world.TryGet(reservations.Blocker(cell), out var entity) && entity is Unit { MoveTarget: null } other && other.Owner == owner;
+    }
 
     private static ImmutableArray<CellPos> BuildWay(Dictionary<int, int> parent, int end, int width)
     {

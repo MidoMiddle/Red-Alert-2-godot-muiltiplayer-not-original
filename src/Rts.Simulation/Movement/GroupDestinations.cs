@@ -8,17 +8,19 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Movement;
 
 /// <summary>
-/// A cell of its own near the target for every unit of a group order (docs/implementation/M2_unit_control.md, 4.6), so the
+/// A place of its own near the target for every unit of a group order (docs/implementation/M2_unit_control.md, 4.6 and 4.8):
+/// a cell for a vehicle, a spot (subcell) for a soldier, up to five soldiers per cell and never a vehicle with them. So the
 /// group arrives as a blob instead of fighting over one cell, and keeps its shape: who was on the left stands on the left.
 /// <list type="number">
 /// <item>Anchor: the clicked cell, or the nearest cell the group can actually reach (its connected region) when the click is on
 /// water, rock or an island.</item>
 /// <item>Candidates: cells reached by a breadth-first search from the anchor over enterable cells (no corner cutting), so a
 /// cell across a river is never offered; cells where units outside the group stand still are skipped.</item>
-/// <item>Shape: each unit's offset from the group centre in cells, squeezed toward the centre when the group is wider than
-/// ⌈√n⌉ cells, so a long column arrives as a compact blob.</item>
-/// <item>Assignment: units by distance to the target, then id; each takes the free candidate its locomotor can enter that is
-/// nearest to anchor + offset, ties going to the earlier candidate.</item>
+/// <item>Shape: each unit's offset from the group centre, squeezed toward the centre when the group is wider than ⌈√cells⌉,
+/// where cells = vehicles + ⌈soldiers / 5⌉, so a long column arrives as a compact blob; soldiers' offsets are halved more,
+/// because they stand closer together.</item>
+/// <item>Assignment: units by distance to the target, then id; a vehicle takes the free cell nearest to anchor + offset, a
+/// soldier the free spot nearest to that point; ties go to the earlier candidate and the lower spot.</item>
 /// </list>
 /// Integer math and fixed orders only. A single unit drives to the clicked point itself, and so does the unit given the clicked cell.
 /// </summary>
@@ -66,9 +68,17 @@ internal static class GroupDestinations
             return result;
         }
 
-        var candidates = Candidates(world, anchor, locomotors, members, units.Count);
-        var radius = (int)IntMath.Sqrt(units.Count);
-        radius += radius * radius < units.Count ? 1 : 0;
+        // A vehicle needs a cell; five soldiers share one.
+        var vehicles = 0;
+        foreach (var unit in units)
+        {
+            vehicles += unit.Archetype.Placement == UnitPlacement.Cell ? 1 : 0;
+        }
+
+        var neededCells = vehicles + (units.Count - vehicles + Reservations.SubcellsPerCell - 1) / Reservations.SubcellsPerCell;
+        var candidates = Candidates(world, anchor, locomotors, members, neededCells);
+        var radius = (int)IntMath.Sqrt(neededCells);
+        radius += radius * radius < neededCells ? 1 : 0;
 
         // Group centre and the widest offset, in cells.
         long sumX = 0, sumY = 0;
@@ -79,13 +89,12 @@ internal static class GroupDestinations
             sumY += cell.Y;
         }
 
-        var centerX = (int)IntMath.DivRound(sumX, units.Count);
-        var centerY = (int)IntMath.DivRound(sumY, units.Count);
+        var center = new CellPos((int)IntMath.DivRound(sumX, units.Count), (int)IntMath.DivRound(sumY, units.Count));
         var widest = 0;
         foreach (var unit in units)
         {
             var cell = unit.Position.ToCell();
-            widest = IntMath.Max(widest, IntMath.Max(IntMath.Abs(cell.X - centerX), IntMath.Abs(cell.Y - centerY)));
+            widest = IntMath.Max(widest, IntMath.Max(IntMath.Abs(cell.X - center.X), IntMath.Abs(cell.Y - center.Y)));
         }
 
         var ordered = new List<Unit>(units);
@@ -95,47 +104,18 @@ internal static class GroupDestinations
             return byDistance != 0 ? byDistance : a.Id.CompareTo(b.Id);
         });
 
-        var taken = new bool[candidates.Count];
+        var places = new GroupPlaces(world, candidates, members);
         foreach (var unit in ordered)
         {
-            var cell = unit.Position.ToCell();
-            long offsetX = cell.X - centerX;
-            long offsetY = cell.Y - centerY;
-            if (widest > radius)
-            {
-                offsetX = IntMath.DivRound(offsetX * radius, widest);
-                offsetY = IntMath.DivRound(offsetY * radius, widest);
-            }
+            var destination = unit.Archetype.Placement == UnitPlacement.Cell
+                ? places.TakeCell(unit, Squeeze(unit.Position.ToCell().X - center.X, widest, radius) + anchor.X,
+                    Squeeze(unit.Position.ToCell().Y - center.Y, widest, radius) + anchor.Y)
+                : places.TakeSpot(unit, anchor.Center + new WorldPos(
+                    (int)(Squeeze(unit.Position.X - center.Center.X, widest, radius) / 2),
+                    (int)(Squeeze(unit.Position.Y - center.Center.Y, widest, radius) / 2)));
 
-            var wantedX = anchor.X + offsetX;
-            var wantedY = anchor.Y + offsetY;
-            var best = -1;
-            var bestDistance = long.MaxValue;
-            for (var i = 0; i < candidates.Count; i++)
-            {
-                if (taken[i] || !map.CanEnter(candidates[i], unit.Archetype.Locomotor))
-                {
-                    continue;
-                }
-
-                var dx = candidates[i].X - wantedX;
-                var dy = candidates[i].Y - wantedY;
-                var distance = dx * dx + dy * dy;
-                if (distance < bestDistance)
-                {
-                    best = i;
-                    bestDistance = distance;
-                }
-            }
-
-            if (best < 0)
-            {
-                result.Add((unit, target));
-                continue;
-            }
-
-            taken[best] = true;
-            result.Add((unit, candidates[best] == targetCell ? target : candidates[best].Center));
+            // The vehicle given the clicked cell drives to the clicked point itself.
+            result.Add((unit, destination is { } place ? (place == targetCell.Center ? target : place) : target));
         }
 
         result.Sort((a, b) => a.Unit.Id.CompareTo(b.Unit.Id));
@@ -256,12 +236,111 @@ internal static class GroupDestinations
         return candidates;
     }
 
-    /// <summary>Free, or held by a group member, or by a unit that is driving away.</summary>
-    private static bool IsFreeFor(GameWorld world, CellPos cell, HashSet<EntityId> members)
+    /// <summary>An offset squeezed toward the centre when the group is wider than <paramref name="radius"/> cells.</summary>
+    private static long Squeeze(long offset, int widest, int radius) =>
+        widest > radius ? IntMath.DivRound(offset * radius, widest) : offset;
+
+    /// <summary>True when somebody outside the group stands still here: the cell is not offered to the group.</summary>
+    private static bool IsFreeFor(GameWorld world, CellPos cell, HashSet<EntityId> members) =>
+        !IsStandingOutsider(world, world.Reservations.VehicleAt(cell), members)
+        && CountStandingOutsiders(world, cell, members) < Reservations.SubcellsPerCell;
+
+    /// <summary>A unit that is not part of the group and does not drive away: its place stays its own.</summary>
+    internal static bool IsStandingOutsider(GameWorld world, EntityId id, HashSet<EntityId> members) =>
+        id != EntityId.None && !members.Contains(id) && world.TryGet(id, out var entity) && entity is Unit { MoveTarget: null };
+
+    private static int CountStandingOutsiders(GameWorld world, CellPos cell, HashSet<EntityId> members)
     {
-        var owner = world.Reservations.OwnerOf(cell);
-        return owner == EntityId.None
-            || members.Contains(owner)
-            || (world.TryGet(owner, out var entity) && entity is Unit { MoveTarget: not null });
+        var count = 0;
+        for (var spot = 0; spot < Reservations.SubcellsPerCell; spot++)
+        {
+            count += IsStandingOutsider(world, world.Reservations.InfantryAt(cell, spot), members) ? 1 : 0;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Places handed out so far: a candidate cell goes either to one vehicle of the group or to up to five of its soldiers,
+    /// never to both, and never over a unit outside the group that stands still.
+    /// </summary>
+    private sealed class GroupPlaces(GameWorld world, List<CellPos> candidates, HashSet<EntityId> members)
+    {
+        private readonly bool[] _vehicle = new bool[candidates.Count];
+        private readonly bool[] _spots = new bool[candidates.Count * Reservations.SubcellsPerCell];
+        private readonly int[] _soldiers = new int[candidates.Count];
+
+        /// <summary>The free cell nearest to (<paramref name="wantedX"/>, <paramref name="wantedY"/>) for a vehicle, as its centre.</summary>
+        public WorldPos? TakeCell(Unit unit, long wantedX, long wantedY)
+        {
+            var best = -1;
+            var bestDistance = long.MaxValue;
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                var cell = candidates[i];
+                if (_vehicle[i] || _soldiers[i] > 0 || !world.Map.CanEnter(cell, unit.Archetype.Locomotor)
+                    || IsStandingOutsider(world, world.Reservations.VehicleAt(cell), members) || CountStandingOutsiders(world, cell, members) > 0)
+                {
+                    continue;
+                }
+
+                var dx = cell.X - wantedX;
+                var dy = cell.Y - wantedY;
+                if (dx * dx + dy * dy < bestDistance)
+                {
+                    best = i;
+                    bestDistance = dx * dx + dy * dy;
+                }
+            }
+
+            if (best < 0)
+            {
+                return null;
+            }
+
+            _vehicle[best] = true;
+            return candidates[best].Center;
+        }
+
+        /// <summary>The free soldier spot nearest to <paramref name="wanted"/>, as its point.</summary>
+        public WorldPos? TakeSpot(Unit unit, WorldPos wanted)
+        {
+            var best = -1;
+            var bestDistance = long.MaxValue;
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                var cell = candidates[i];
+                if (_vehicle[i] || !world.Map.CanEnter(cell, unit.Archetype.Locomotor)
+                    || IsStandingOutsider(world, world.Reservations.VehicleAt(cell), members))
+                {
+                    continue;
+                }
+
+                for (var spot = 0; spot < Reservations.SubcellsPerCell; spot++)
+                {
+                    var index = i * Reservations.SubcellsPerCell + spot;
+                    if (_spots[index] || IsStandingOutsider(world, world.Reservations.InfantryAt(cell, spot), members))
+                    {
+                        continue;
+                    }
+
+                    var distance = (Reservations.SubcellPoint(cell, spot) - wanted).LengthSquared;
+                    if (distance < bestDistance)
+                    {
+                        best = index;
+                        bestDistance = distance;
+                    }
+                }
+            }
+
+            if (best < 0)
+            {
+                return null;
+            }
+
+            _spots[best] = true;
+            _soldiers[best / Reservations.SubcellsPerCell]++;
+            return Reservations.SubcellPoint(candidates[best / Reservations.SubcellsPerCell], best % Reservations.SubcellsPerCell);
+        }
     }
 }

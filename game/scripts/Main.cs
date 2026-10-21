@@ -181,7 +181,7 @@ public partial class Main : Node3D
             host.StepOnce();
         }
 
-        // Group destinations (M2 step 9): every unit stops in a cell of its own, all within SmokeSpread cells of the point.
+        // Group destinations (M2 steps 9–10): every unit stops on a place of its own, all within SmokeSpread cells of the point.
         var blueUnits = host.Simulation.World.Entities.OfType<Unit>().Where(u => u.Owner == SimulationHost.LocalPlayer).ToList();
         var arrived = blueUnits.Count > 0 && blueUnits.All(u => u.MoveTarget is null && Near(u, target)) && OwnCells(blueUnits);
         if (!arrived)
@@ -228,5 +228,13 @@ public partial class Main : Node3D
         return Math.Max(Math.Abs(cell.X - target.X), Math.Abs(cell.Y - target.Y)) <= SmokeSpread;
     }
 
-    private static bool OwnCells(List<Unit> units) => units.Select(u => u.Position.ToCell()).Distinct().Count() == units.Count;
+    /// <summary>Every unit on a place of its own: vehicles in their own cells, soldiers on their own spots, never sharing with vehicles.</summary>
+    private static bool OwnCells(List<Unit> units)
+    {
+        var vehicleCells = units.Where(u => u.Archetype.Placement == UnitPlacement.Cell).Select(u => u.Position.ToCell()).ToList();
+        var soldiers = units.Where(u => u.Archetype.Placement == UnitPlacement.Subcell).ToList();
+        return vehicleCells.Distinct().Count() == vehicleCells.Count
+            && soldiers.Select(u => u.Position).Distinct().Count() == soldiers.Count
+            && !soldiers.Any(u => vehicleCells.Contains(u.Position.ToCell()));
+    }
 }

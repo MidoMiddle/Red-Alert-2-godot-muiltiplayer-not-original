@@ -15,6 +15,14 @@ internal static class UnitOrders
         unit.ResumeTarget = null;
         unit.HoldTicks = 0;
         unit.Returning = false;
+        var cell = unit.Position.ToCell();
+        if (unit.Archetype.Placement == UnitPlacement.Subcell && target.ToCell() == cell && world.Contains(unit.Position))
+        {
+            // Ordered within its own cell, a soldier moves to the free spot nearest to the click.
+            world.Reservations.Leave(cell, unit);
+            unit.Subcell = world.Reservations.TryEnter(cell, unit, target);
+        }
+
         RequestPath(world, unit, target, default);
     }
 

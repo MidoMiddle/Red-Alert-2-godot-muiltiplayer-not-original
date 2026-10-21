@@ -51,23 +51,27 @@ public sealed class GameSimulationTests
     {
         var simulation = NewSimulation();
         simulation.Enqueue(Spawn(player: 1, tick: 0, sequence: 0, x: 128, y: 128));
-        simulation.Enqueue(Move(player: 1, tick: 1, sequence: 1, units: [1], x: 128 + 48, y: 128));
+        simulation.Enqueue(Move(player: 1, tick: 1, sequence: 1, units: [1], x: 128 + 48, y: 128 + 48));
 
         simulation.Step();
         Assert.Equal([new UnitSpawned(0, new EntityId(1), new PlayerId(1), UnitType.Conscript, new WorldPos(128, 128))], simulation.LastTickEvents);
 
-        // Tick 1: the order is applied, the path is found within the same tick (one cell: start and goal share it),
-        // then the conscript turns at once and walks 24 of 48 leptons.
+        // Tick 1: the order is applied and the path is found within the same tick (one cell: start and goal share it).
+        // A soldier stops on the spot nearest to the click: the south-east corner (192, 192), 91 leptons away.
         simulation.Step();
         Assert.Equal(
             [
-                new UnitMoveStarted(1, new EntityId(1), new WorldPos(176, 128)),
+                new UnitMoveStarted(1, new EntityId(1), new WorldPos(176, 176)),
                 new UnitPathFound(1, new EntityId(1), PathStatus.Found, 1),
             ],
             simulation.LastTickEvents);
 
+        // Ticks 1–3 walk 24 leptons each, tick 4 covers the last 19.
         simulation.Step();
-        Assert.Equal([new UnitArrived(2, new EntityId(1), new WorldPos(176, 128))], simulation.LastTickEvents);
+        simulation.Step();
+        Assert.Empty(simulation.LastTickEvents);
+        simulation.Step();
+        Assert.Equal([new UnitArrived(4, new EntityId(1), new WorldPos(192, 192))], simulation.LastTickEvents);
 
         simulation.Step();
         Assert.Empty(simulation.LastTickEvents);
@@ -163,7 +167,8 @@ public sealed class GameSimulationTests
         var a = NewSimulation();
         var b = NewSimulation();
         a.Enqueue(Spawn(player: 1, tick: 0, sequence: 0, x: 100, y: 100));
-        b.Enqueue(Spawn(player: 1, tick: 0, sequence: 0, x: 101, y: 100));
+        // Another cell: within one cell a soldier is put on the same spot either way.
+        b.Enqueue(Spawn(player: 1, tick: 0, sequence: 0, x: 400, y: 100));
 
         a.Step();
         b.Step();

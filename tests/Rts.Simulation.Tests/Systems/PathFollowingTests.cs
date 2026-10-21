@@ -45,7 +45,8 @@ public sealed class PathFollowingTests
 
         Drive(world, conscript, target);
 
-        Assert.Equal(target, conscript.Position);
+        // A soldier stops on the spot of the last cell nearest to the click: here the centre.
+        Assert.Equal(new CellPos(12, 6).Center, conscript.Position);
     }
 
     [Fact]
@@ -109,6 +110,7 @@ public sealed class PathFollowingTests
 
         Drive(world, conscript, target);
 
-        Assert.Equal(target, conscript.Position);
+        // The spot nearest to the click within its own cell: south-east (64, 64).
+        Assert.Equal(new CellPos(3, 3).Center + new WorldPos(64, 64), conscript.Position);
     }
 }

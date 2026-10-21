@@ -37,12 +37,12 @@ public static class CommandProcessor
         if (!world.Contains(command.Position)
             || !UnitArchetypes.IsKnown(command.UnitType)
             || !world.Map.CanEnter(command.Position.ToCell(), UnitArchetypes.Get(command.UnitType).Locomotor)
-            || !world.Reservations.IsFree(command.Position.ToCell()))
+            || !world.Reservations.HasRoomFor(command.Position.ToCell(), UnitArchetypes.Get(command.UnitType).Placement, EntityId.None))
         {
             return false;
         }
 
-        var unit = world.SpawnUnit(command.Player, command.UnitType, command.Position);
+        var unit = world.SpawnUnit(command.Player, command.UnitType, command.Position, snapToSubcell: true);
         events?.Add(new UnitSpawned(world.CurrentTick, unit.Id, unit.Owner, unit.Type, unit.Position));
         return true;
     }

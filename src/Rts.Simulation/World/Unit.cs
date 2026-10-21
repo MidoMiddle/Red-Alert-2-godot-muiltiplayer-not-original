@@ -35,6 +35,9 @@ public sealed class Unit : Entity
     /// <summary>Hull turn speed in <c>BAngle</c> units per tick; 0 turns instantly (infantry).</summary>
     public int TurnRate { get; internal set; }
 
+    /// <summary>Spot of a soldier in its cell (0 centre, 1–4 corners, see <see cref="Movement.Reservations"/>); 0 for vehicles.</summary>
+    public int Subcell { get; internal set; }
+
     /// <summary>Where the hull points. A new unit faces north.</summary>
     public BAngle Facing { get; internal set; }
 

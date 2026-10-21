@@ -37,6 +37,7 @@ public sealed class StateHasherTests
         "type", "turn rate", "facing", "turret facing", "land", "obstacle",
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
+        "soldier spot", "subcell",
     };
 
     [Theory]
@@ -87,7 +88,15 @@ public sealed class StateHasherTests
             case "returning": idle.Returning = true; break;
             case "hold ticks": idle.HoldTicks = 5; break;
             case "resume target": idle.ResumeTarget = new WorldPos(10, 10); break;
-            case "occupied cell": world.Reservations.TryOccupy(new CellPos(60, 60), new EntityId(99)); break;
+            case "occupied cell": world.Reservations.SetVehicle(new CellPos(60, 60), new EntityId(99)); break;
+            case "soldier spot":
+                var soldier = world.SpawnForTest(Player1, new CellPos(50, 50).Center, speed: 1);
+                var withSoldier = StateHasher.Compute(world);
+                world.Reservations.Leave(new CellPos(50, 50), soldier);
+                world.Reservations.TryEnter(new CellPos(50, 50), soldier, new CellPos(50, 50).Center + new WorldPos(64, 64));
+                Assert.NotEqual(withSoldier, StateHasher.Compute(world));
+                break;
+            case "subcell": idle.Subcell = (idle.Subcell + 1) % 5; break;
             case "path request avoid":
                 world.PathRequests.Request(idle, 0, new CellPos(5, 5));
                 var withoutAvoid = StateHasher.Compute(world);
@@ -112,14 +121,14 @@ public sealed class StateHasherTests
         "<TurnRate>k__BackingField", "<Facing>k__BackingField", "<TurretFacing>k__BackingField",
         "<PathPending>k__BackingField", "<Path>k__BackingField", "<PathIndex>k__BackingField",
         "<WaitTicks>k__BackingField", "<Replans>k__BackingField", "<ResumeTarget>k__BackingField", "<HoldTicks>k__BackingField",
-        "<Returning>k__BackingField",
+        "<Returning>k__BackingField", "<Subcell>k__BackingField",
     })]
     [InlineData(typeof(GameWorld), new[]
     {
         "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField",
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
     })]
-    [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_owner", "<Width>k__BackingField", "<Height>k__BackingField" })]
+    [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_vehicle", "_infantry", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]
     [InlineData(typeof(PathRequest), new[]
     {

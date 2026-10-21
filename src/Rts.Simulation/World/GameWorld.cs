@@ -94,14 +94,24 @@ public sealed class GameWorld
         return false;
     }
 
-    internal Unit SpawnUnit(PlayerId owner, UnitType type, WorldPos position)
+    /// <param name="snapToSubcell">Put a soldier on the spot it takes (commands); tests keep the exact position.</param>
+    internal Unit SpawnUnit(PlayerId owner, UnitType type, WorldPos position, bool snapToSubcell = false)
     {
         var unit = new Unit(AllocateId(), owner, UnitArchetypes.Get(type), position);
         _entities.Add(unit);
-        // Commands never spawn on a taken cell; a test that places two units in one cell gets an unregistered second one.
+        // Commands never spawn where there is no room; a test that places two units in one cell gets an unregistered second one.
         if (Contains(position))
         {
-            Reservations.TryOccupy(position.ToCell(), unit.Id);
+            var cell = position.ToCell();
+            var subcell = Reservations.TryEnter(cell, unit, position);
+            if (subcell >= 0)
+            {
+                unit.Subcell = subcell;
+                if (snapToSubcell && unit.Archetype.Placement == UnitPlacement.Subcell)
+                {
+                    unit.Position = Reservations.SubcellPoint(cell, subcell);
+                }
+            }
         }
 
         return unit;
@@ -114,7 +124,7 @@ public sealed class GameWorld
         {
             if (entity is Unit { IsAlive: false } unit && Contains(unit.Position))
             {
-                Reservations.Release(unit.Position.ToCell(), unit.Id);
+                Reservations.Leave(unit.Position.ToCell(), unit);
             }
         }
 

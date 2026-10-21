@@ -47,28 +47,43 @@ public sealed class ReservationTests
         return (events, ticks);
     }
 
-    /// <summary>Every living unit owns the cell it stands in, no cell has two units, no unit stands on impassable land.</summary>
+    /// <summary>
+    /// Every living unit holds its place where it stands (a vehicle its cell, a soldier its spot), places held = units,
+    /// no cell has a vehicle and soldiers or more than five soldiers, nobody stands on impassable land.
+    /// </summary>
     internal static void AssertOccupancy(GameWorld world)
     {
         var units = world.Entities.OfType<Unit>().Where(u => u.IsAlive).ToList();
-        Assert.Equal(units.Count, units.Select(u => u.Position.ToCell()).Distinct().Count());
+        var reservations = world.Reservations;
         foreach (var unit in units)
         {
             var cell = unit.Position.ToCell();
-            Assert.Equal(unit.Id, world.Reservations.OwnerOf(cell));
+            if (unit.Archetype.Placement == UnitPlacement.Cell)
+            {
+                Assert.Equal(unit.Id, reservations.VehicleAt(cell));
+            }
+            else
+            {
+                Assert.Equal(unit.Id, reservations.InfantryAt(cell, unit.Subcell));
+            }
+
             Assert.True(world.Map.CanEnter(cell, unit.Archetype.Locomotor), $"{unit.Id} stands on {cell}.");
         }
 
-        var owned = 0;
+        var held = 0;
         for (var y = 0; y < world.Map.Height; y++)
         {
             for (var x = 0; x < world.Map.Width; x++)
             {
-                owned += world.Reservations.IsFree(new CellPos(x, y)) ? 0 : 1;
+                var cell = new CellPos(x, y);
+                var soldiers = reservations.InfantryCount(cell);
+                var vehicle = reservations.VehicleAt(cell) != EntityId.None;
+                Assert.False(vehicle && soldiers > 0, $"Vehicle and soldiers share {cell}.");
+                held += soldiers + (vehicle ? 1 : 0);
             }
         }
 
-        Assert.Equal(units.Count, owned);
+        Assert.Equal(units.Count, held);
     }
 
     [Fact]

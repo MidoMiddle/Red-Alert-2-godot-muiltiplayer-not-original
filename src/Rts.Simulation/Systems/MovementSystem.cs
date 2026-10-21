@@ -18,9 +18,10 @@ namespace Rts.Simulation.Systems;
 /// remains, the unit stands, like an RA2 tank turning on the spot. Waiting for a path, it turns toward the target.</item>
 /// <item>Driving: straight from waypoint to waypoint of the smoothed path; leftover speed carries on past a waypoint. Without a
 /// path (tests set a target directly) it drives straight. Integer steps <c>delta * speed / |delta|</c>, never overshooting.</item>
-/// <item>One unit per cell (<see cref="Reservations"/>). When the next cell is taken: if it is the last cell and its unit stands,
-/// the mover heads for the nearest free cell next to the goal, or stops where it is if there is none ("arrived as far as possible"); a unit coming head-on makes the one with the larger id give way
-/// into a pocket; a unit that is giving way is simply waited for; another moving unit is waited for, and after
+/// <item>One unit per cell, or five soldiers (<see cref="Reservations"/>). When the next cell is taken: if it is the last cell
+/// and its unit stands, one of ours makes room, otherwise the mover heads for the nearest free cell next to the goal, or stops
+/// where it is if there is none ("arrived as far as possible"); a unit coming head-on makes the one with the larger id give way
+/// into a pocket; a unit that is giving way is waited for (only the stall rule counts); another moving unit is waited for, and after
 /// <see cref="WaitBeforeDetour"/> ticks driven around; a standing
 /// unit of the same player is first driven around, and if there is no way around, asked to step aside into a pocket (it comes
 /// back to its place later); when its own idle units
@@ -169,9 +170,13 @@ public static class MovementSystem
             return MoveResult.Stopped;
         }
 
-        if (world.Reservations.TryOccupy(cell, unit.Id))
+        // A soldier takes the spot nearest to where it stops in its last cell, elsewhere the one nearest to where it comes in.
+        var finalPoint = FinalPoint(unit);
+        var subcell = world.Reservations.TryEnter(cell, unit, cell == finalPoint.ToCell() ? finalPoint : next);
+        if (subcell >= 0)
         {
-            world.Reservations.Release(current, unit.Id);
+            world.Reservations.Leave(current, unit);
+            unit.Subcell = subcell;
             unit.Position = next;
             unit.Replans = 0;
             return MoveResult.Moved;
@@ -182,14 +187,25 @@ public static class MovementSystem
 
     private static MoveResult HandleTakenCell(GameWorld world, Unit unit, CellPos cell, List<SimEvent> events)
     {
-        world.TryGet(world.Reservations.OwnerOf(cell), out var entity);
+        world.TryGet(world.Reservations.Blocker(cell), out var entity);
         var other = (Unit)entity;
         var otherMoving = other.MoveTarget is not null;
 
         if (!otherMoving && cell == FinalPoint(unit).ToCell())
         {
-            // Somebody stands on the goal: take the nearest free cell next to it instead of pushing units along in a chain.
-            // Stopping right here could plug a narrow pass for everybody behind.
+            // One of ours stands on the goal: most likely it was pushed off its own place, so it makes room (and later
+            // looks for a place of its own politely). Otherwise take the nearest free cell next to the goal; stopping right
+            // here could plug a narrow pass for everybody behind.
+            if (other.Owner == unit.Owner && !unit.Returning)
+            {
+                var room = GivingWay.FindPocket(world, other, GivingWay.RemainingCells(world, unit));
+                if (!room.IsDefault)
+                {
+                    UnitOrders.MakeRoom(world, other, room);
+                    return MoveResult.Blocked;
+                }
+            }
+
             var nearGoal = GivingWay.NearestFreeCell(world, unit, cell);
             if (nearGoal is { } free && unit.Replans < MaxReplans)
             {
@@ -206,8 +222,8 @@ public static class MovementSystem
         {
             if (other.ResumeTarget is not null)
             {
-                // It is giving way (maybe to us): wait for it without counting toward a detour or a stall.
-                unit.WaitTicks = 0;
+                // It is giving way (maybe to us): wait for it rather than drive around. The stall rule still counts, so a
+                // unit that gives way and gets stuck itself cannot hold anybody forever.
                 return MoveResult.Blocked;
             }
 
@@ -299,7 +315,7 @@ public static class MovementSystem
             for (var x = center.X - StallAvoidRadius; x <= center.X + StallAvoidRadius; x++)
             {
                 var cell = new CellPos(x, y);
-                if (world.Map.Contains(cell) && world.Reservations.OwnerOf(cell) is var owner && owner != EntityId.None && owner != unit.Id)
+                if (world.Map.Contains(cell) && cell != center && !world.Reservations.HasRoomFor(cell, unit))
                 {
                     taken.Add(cell);
                 }
@@ -363,8 +379,14 @@ public static class MovementSystem
     }
 
     /// <summary>Where the unit stops: the ordered point, or the centre of the last cell when the goal was unreachable.</summary>
-    private static WorldPos FinalPoint(Unit unit) =>
-        unit.Path is { Status: not PathStatus.Found } path ? path.End.Center : unit.MoveTarget ?? unit.Position;
+    /// <remarks>A soldier with a path, once inside its last cell, stops on the spot it holds there.</remarks>
+    private static WorldPos FinalPoint(Unit unit)
+    {
+        var point = unit.Path is { Status: not PathStatus.Found } path ? path.End.Center : unit.MoveTarget ?? unit.Position;
+        return unit.Path is not null && unit.Archetype.Placement == UnitPlacement.Subcell && unit.Position.ToCell() == point.ToCell()
+            ? Reservations.SubcellPoint(point.ToCell(), unit.Subcell)
+            : point;
+    }
 
     private static bool IsFinal(Unit unit) => unit.Path is not { } path || unit.PathIndex >= path.Waypoints.Length - 1;
 
