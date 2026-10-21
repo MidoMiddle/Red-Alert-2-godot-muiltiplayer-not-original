@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../src/Rts.Simulation/Rts.Simulation.csproj" />
+    <ProjectReference Include="../src/Rts.Data/Rts.Data.csproj" />
   </ItemGroup>
 
 </Project>

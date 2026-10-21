@@ -22,8 +22,10 @@ public partial class TerrainBuilder : Node3D
 
     public override void _Ready()
     {
-        var world = GetNode<SimulationHost>("../SimulationHost").Simulation.World;
-        Heights = TerrainHeights.Showcase(world.WidthCells, world.HeightCells);
+        var host = GetNode<SimulationHost>("../SimulationHost");
+        var world = host.Simulation.World;
+        // A .rtsmap map brings its heights as rules (M7 step 4); the ASCII maps keep the visual hills of M1.
+        Heights = host.HeightsFromRules ? TerrainHeights.FromRules(world.Map.Heights) : TerrainHeights.Showcase(world.WidthCells, world.HeightCells);
         WorldCoords.Terrain = Heights;
 
         var material = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShader) };

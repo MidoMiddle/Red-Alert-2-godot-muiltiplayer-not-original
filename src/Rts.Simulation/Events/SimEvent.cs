@@ -22,6 +22,9 @@ public sealed record UnitPathFound(int Tick, EntityId Unit, PathStatus Status, i
 /// <summary>The unit stopped in front of a cell it cannot enter and plans its way again from there.</summary>
 public sealed record UnitBlocked(int Tick, EntityId Unit, WorldPos Position) : SimEvent(Tick);
 
+/// <summary>The map changed in the cells from <paramref name="From"/> to <paramref name="To"/> (inclusive): the client redraws them.</summary>
+public sealed record MapChanged(int Tick, CellPos From, CellPos To) : SimEvent(Tick);
+
 /// <summary>
 /// <paramref name="Unit"/>, blocked by <paramref name="Other"/> of the same player standing nearer its place, gave it that place
 /// and takes the other's spot instead, so a group fills its places from the inside.

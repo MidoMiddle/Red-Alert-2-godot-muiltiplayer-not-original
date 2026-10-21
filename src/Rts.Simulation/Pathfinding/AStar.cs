@@ -158,6 +158,21 @@ public sealed class Pathfinder
         return layer;
     }
 
+    /// <summary>
+    /// The map changed in the cells from <paramref name="from"/> to <paramref name="to"/>: layers that were up to date before the
+    /// change (<paramref name="versionBefore"/>) are patched in that area only; older ones are rebuilt when next used.
+    /// </summary>
+    internal void MapChanged(int versionBefore, CellPos from, CellPos to)
+    {
+        for (var slot = 0; slot < _costs.Length; slot++)
+        {
+            if (_costs[slot] is { } layer && layer.MapVersion == versionBefore)
+            {
+                layer.Patch(Map, (Locomotor)(slot + 1), from, to);
+            }
+        }
+    }
+
     internal SearchBuffers Rent() => _pool.Count > 0 ? _pool.Pop() : new SearchBuffers(Map.Width * Map.Height);
 
     internal void Return(SearchBuffers buffers) => _pool.Push(buffers);
@@ -173,25 +188,30 @@ internal sealed class StepCostLayer
 {
     public StepCostLayer(MapGrid map, Locomotor locomotor)
     {
-        MapVersion = map.Version;
         Straight = new int[map.Width * map.Height];
         Diagonal = new int[map.Width * map.Height];
-        for (var y = 0; y < map.Height; y++)
+        Patch(map, locomotor, new CellPos(0, 0), new CellPos(map.Width - 1, map.Height - 1));
+    }
+
+    public int MapVersion { get; private set; }
+
+    /// <summary>Works out the cells from <paramref name="from"/> to <paramref name="to"/> again and takes the map's version.</summary>
+    public void Patch(MapGrid map, Locomotor locomotor, CellPos from, CellPos to)
+    {
+        for (var y = from.Y; y <= to.Y; y++)
         {
-            for (var x = 0; x < map.Width; x++)
+            for (var x = from.X; x <= to.X; x++)
             {
                 // From the cell's speed, slopes included (M7 step 3): on flat land the same numbers as AStar.StepCost.
                 var percent = map.SpeedPercent(new CellPos(x, y), locomotor);
-                if (percent > 0)
-                {
-                    Straight[y * map.Width + x] = (int)IntMath.DivRound(AStar.StraightCost * 100L, percent);
-                    Diagonal[y * map.Width + x] = (int)IntMath.DivRound(AStar.DiagonalCost * 100L, percent);
-                }
+                var index = y * map.Width + x;
+                Straight[index] = percent > 0 ? (int)IntMath.DivRound(AStar.StraightCost * 100L, percent) : 0;
+                Diagonal[index] = percent > 0 ? (int)IntMath.DivRound(AStar.DiagonalCost * 100L, percent) : 0;
             }
         }
-    }
 
-    public int MapVersion { get; }
+        MapVersion = map.Version;
+    }
 
     public int[] Straight { get; }
 
@@ -295,6 +315,9 @@ public sealed class PathSearch
     public CellPath? Result { get; private set; }
 
     public bool IsDone => Result is not null;
+
+    /// <summary>True once the search took its first step, so it holds state worked out on the map as it was then.</summary>
+    internal bool IsStarted => _started;
 
     /// <summary>Expands at most <paramref name="maxNodes"/> nodes. Returns true when the search has finished.</summary>
     public bool Advance(int maxNodes)

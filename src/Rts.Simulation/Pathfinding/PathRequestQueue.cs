@@ -39,7 +39,14 @@ public sealed class PathRequest
     /// <summary>Nodes expanded so far. Together with the fields above and the map it fully describes the search state.</summary>
     public int Expanded => Search.Expanded;
 
-    internal PathSearch Search { get; }
+    internal PathSearch Search { get; private set; }
+
+    /// <summary>Drops the search worked out so far and starts it again with the same request, after the map changed.</summary>
+    internal void Restart(Pathfinder pathfinder)
+    {
+        Search.Cancel();
+        Search = pathfinder.StartSearch(Start, Goal, Locomotor, AStar.DefaultMaxExpansions, Avoid);
+    }
 }
 
 /// <summary>
@@ -90,6 +97,21 @@ public sealed class PathRequestQueue
         }
 
         _requests.Insert(index, request);
+    }
+
+    /// <summary>
+    /// The map changed: searches already under way worked on the old map and start again, keeping their place in the queue.
+    /// Searches not started yet read the map when they start.
+    /// </summary>
+    internal void MapChanged()
+    {
+        foreach (var request in _requests)
+        {
+            if (request.Search.IsStarted && !request.Search.IsDone)
+            {
+                request.Restart(_pathfinder);
+            }
+        }
     }
 
     internal void Cancel(EntityId unit)

@@ -45,7 +45,7 @@
 
 `Rts` — нейтральное кодовое имя, не зависит от будущего названия игры. Детали реализации — в [implementation/M0_foundation.md](implementation/M0_foundation.md).
 
-**Реализовано в M0:** `Rts.Simulation`, `Rts.Analyzers`, `Rts.Client`, проекты тестов. **В M2:** `Rts.Simulation.Benchmarks` (замеры). **В M7:** `Rts.Data` — пока формат карт `.rtsmap` (YamlDotNet, правила детерминизма), утилита `tools/Rts.MapTool`. Остальные появляются в своих вехах ([implementation/conventions.md](implementation/conventions.md), раздел 1).
+**Реализовано в M0:** `Rts.Simulation`, `Rts.Analyzers`, `Rts.Client`, проекты тестов. **В M2:** `Rts.Simulation.Benchmarks` (замеры). **В M7:** `Rts.Data` — пока формат карт `.rtsmap` (YamlDotNet, правила детерминизма), утилита `tools/Rts.MapTool`; клиент читает карты через `Rts.Data`. Остальные появляются в своих вехах ([implementation/conventions.md](implementation/conventions.md), раздел 1).
 
 ---
 

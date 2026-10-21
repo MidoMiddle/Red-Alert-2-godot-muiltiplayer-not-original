@@ -10,7 +10,8 @@ namespace Rts.MapTool;
 /// game/data/maps/relief_test.rtsmap; a test checks the file against this generator. On it: a level-4 plateau with ramps on
 /// two sides and cliff walls elsewhere, a level-2 shelf with cliff edges, a stepped hill up to level 6, a pit sloping down to
 /// a flat level-0 bottom inside level-2 ground (which a ramp joins to the south edge), and a corner ramp (one raised corner).
-/// Cliff cells get the rock texture, everything else snow.
+/// Cliff cells get the rock texture, everything else snow. Starts (step 4): slot 1 on the flat strip north of the hill, slot
+/// 2 on the flat bottom of the pit.
 /// </summary>
 public static class ReliefTestMap
 {
@@ -26,6 +27,8 @@ public static class ReliefTestMap
     public static readonly CellPos PitCell = new(5, 17);
     public static readonly CellPos PitRampCell = new(5, 23);
     public static readonly CellPos CornerRampCell = new(11, 1);
+    public static readonly CellPos BlueStart = new(13, 8);
+    public static readonly CellPos RedStart = new(4, 16);
 
     public static MapDefinition Build()
     {
@@ -104,7 +107,7 @@ public static class ReliefTestMap
             Size,
             "winter",
             2,
-            [],
+            [new MapStart(1, BlueStart), new MapStart(2, RedStart)],
             [new('k', "rock"), new('s', "snow")],
             [.. corners],
             [.. Enumerable.Repeat(LandType.Clear, Size * Size)],

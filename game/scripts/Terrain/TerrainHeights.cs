@@ -35,6 +35,24 @@ public sealed class TerrainHeights
     public static TerrainHeights Flat(int widthCells, int heightCells) => new(widthCells, heightCells);
 
     /// <summary>
+    /// The relief of the rules (docs/implementation/M7_maps.md, 4.1): every corner at its level × 104 / 256 units, so the mesh,
+    /// the units and the clicks stand where the simulation's heights put them (both blend the corners bilinearly).
+    /// </summary>
+    public static TerrainHeights FromRules(Rts.Simulation.Map.CornerHeightGrid heights)
+    {
+        var terrain = new TerrainHeights(heights.Width, heights.Height);
+        for (var z = 0; z <= heights.Height; z++)
+        {
+            for (var x = 0; x <= heights.Width; x++)
+            {
+                terrain.SetVertex(x, z, heights.CornerLevel(x, z) * Rts.Simulation.Map.CornerHeightGrid.LevelHeight / (float)Rts.Simulation.Geometry.WorldPos.LeptonsPerCell);
+            }
+        }
+
+        return terrain;
+    }
+
+    /// <summary>
     /// The M1 showcase relief, set in code as the plan says (the map format comes in M7): five smooth hills of 2–5 levels,
     /// while the two base sites stay flat so the starting units never stand on a slope: the blue group occupies cells 20–24 × 20–22
     /// and the red group cells 44–48 × 44–46 (<c>SimulationHost</c>), so the flat circles are centred on those groups.

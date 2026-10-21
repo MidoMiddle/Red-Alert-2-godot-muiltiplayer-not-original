@@ -7,6 +7,7 @@ using Godot;
 using Rts.Client.Controls;
 using Rts.Client.Debug;
 using Rts.Client.Units;
+using Rts.Data.Maps;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -39,8 +40,9 @@ public partial class SimulationHost : Node
     public const string LoadMapPath = "res://maps/test/load128.txt";
 
     /// <summary>
-    /// The map of a live session: <c>--map NAME</c> plays res://maps/test/NAME.txt (for example <c>squad</c>, the 60-unit squad
-    /// of the M2 definition of done), <c>--perf</c> the load map, otherwise the sandbox.
+    /// The map of a live session: <c>--map NAME</c> plays res://data/maps/NAME.rtsmap when there is one (M7: heights in the
+    /// rules), otherwise res://maps/test/NAME.txt (for example <c>squad</c>, the 60-unit squad of the M2 definition of done);
+    /// <c>--perf</c> plays the load map, otherwise the sandbox.
     /// </summary>
     public static string MapPath
     {
@@ -50,12 +52,19 @@ public partial class SimulationHost : Node
             var index = Array.IndexOf(args, "--map");
             if (index >= 0 && index + 1 < args.Length)
             {
-                return $"res://maps/test/{args[index + 1]}.txt";
+                var rtsmap = $"res://data/maps/{args[index + 1]}.rtsmap";
+                return Godot.FileAccess.FileExists(rtsmap) ? rtsmap : $"res://maps/test/{args[index + 1]}.txt";
             }
 
             return args.Contains("--perf") ? LoadMapPath : SandboxMapPath;
         }
     }
+
+    /// <summary>
+    /// True when the map's heights are rules (a <c>.rtsmap</c> map): the terrain is built from them. The ASCII maps keep the
+    /// visual hills of M1.
+    /// </summary>
+    public bool HeightsFromRules { get; private set; }
 
     private readonly Dictionary<EntityId, UnitPose> _previousPoses = new();
     private double _accumulator;
@@ -102,6 +111,7 @@ public partial class SimulationHost : Node
     {
         QueueHistory.Clear();
         var map = LoadMap(MapPath);
+        HeightsFromRules = MapPath.EndsWith(".rtsmap", StringComparison.Ordinal);
         Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid));
         _recorder = new ReplayRecorder(Simulation);
         _playback = null;
@@ -281,7 +291,16 @@ public partial class SimulationHost : Node
             throw new InvalidOperationException($"Cannot read {path}: {Godot.FileAccess.GetOpenError()}.");
         }
 
-        return TestMapParser.Parse(text);
+        if (!path.EndsWith(".rtsmap", StringComparison.Ordinal))
+        {
+            return TestMapParser.Parse(text);
+        }
+
+        // A map of the M7 format: trees are the obstacles for now (map objects come in M7 step 5), units are debug squads
+        // at the starts until skirmish starts exist.
+        var definition = RtsMapReader.Read(text);
+        var grid = definition.ToMapGrid([TestMapConverter.PineTree]);
+        return new TestMap(grid, StartSquads.Place(definition, grid));
     }
 
     private void SpawnMapUnits(IReadOnlyList<TestMapUnit> units)

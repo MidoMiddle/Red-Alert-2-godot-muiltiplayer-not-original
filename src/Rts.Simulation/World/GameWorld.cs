@@ -100,6 +100,59 @@ public sealed class GameWorld
     }
 
     /// <param name="snapToSubcell">Put a soldier on the spot it takes (commands); tests keep the exact position.</param>
+    /// <summary>
+    /// Changes the map during a match (docs/implementation/M7_maps.md, 4.4): applies the edits, patches the A* step costs in the
+    /// changed area only, restarts path searches already under way, and sends every unit whose remaining path now crosses a
+    /// cell it cannot enter to look for a new one (not counted as a replan). A cell that opens up does not disturb units on
+    /// their way, as in RA2: the next search finds it. Reports <see cref="Events.MapChanged"/> with the changed area.
+    /// </summary>
+    internal void ChangeMap(IReadOnlyList<MapEdit> edits, List<Events.SimEvent>? events)
+    {
+        if (edits.Count == 0)
+        {
+            return;
+        }
+
+        var versionBefore = Map.Version;
+        var (from, to) = edits[0].Area(Map);
+        foreach (var edit in edits)
+        {
+            var (editFrom, editTo) = edit.Area(Map);
+            from = new CellPos(Math.IntMath.Min(from.X, editFrom.X), Math.IntMath.Min(from.Y, editFrom.Y));
+            to = new CellPos(Math.IntMath.Max(to.X, editTo.X), Math.IntMath.Max(to.Y, editTo.Y));
+            edit.Apply(Map);
+        }
+
+        PathRequests.Pathfinder.MapChanged(versionBefore, from, to);
+        PathRequests.MapChanged();
+        foreach (var entity in _entities)
+        {
+            if (entity is Unit { IsAlive: true, Path: { } path, MoveTarget: { } target } unit && CrossesClosedCell(unit, path, from, to))
+            {
+                Movement.UnitOrders.RequestPath(this, unit, target, default);
+            }
+        }
+
+        events?.Add(new Events.MapChanged(CurrentTick, from, to));
+    }
+
+    /// <summary>True when a cell of the path still ahead of the unit lies in the area and is closed to it now.</summary>
+    private bool CrossesClosedCell(Unit unit, Pathfinding.CellPath path, CellPos from, CellPos to)
+    {
+        var here = unit.Position.ToCell();
+        var start = path.Cells.IndexOf(here);
+        for (var i = start < 0 ? 0 : start; i < path.Cells.Length; i++)
+        {
+            var cell = path.Cells[i];
+            if (cell.X >= from.X && cell.X <= to.X && cell.Y >= from.Y && cell.Y <= to.Y && !Map.CanEnter(cell, unit.Archetype.Locomotor))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     internal Unit SpawnUnit(PlayerId owner, UnitType type, WorldPos position, bool snapToSubcell = false)
     {
         var unit = new Unit(AllocateId(), owner, UnitArchetypes.Get(type), position);
