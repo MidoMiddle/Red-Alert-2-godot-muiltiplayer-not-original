@@ -5,16 +5,17 @@ using Rts.Client.App;
 namespace Rts.Client.UI;
 
 /// <summary>
-/// Entry scene. Shows a short splash, then opens the first screen. Debug arguments skip the splash:
-/// <c>--sandbox</c>, <c>--smoke</c> and <c>--screenshot</c> go to <c>Main</c>, so the M0 checks and the
-/// manual checklist keep working; <c>--ui-showcase</c> and <c>--ui-stub</c> open UI screens for visual checks.
+/// Entry scene. Shows a short splash, then opens the main menu. Debug arguments skip the splash:
+/// <c>--sandbox</c>, <c>--smoke</c> and <c>--screenshot</c> go to <c>Main</c>, so the M0 checks and the manual
+/// checklist keep working; <c>--ui-menu</c>, <c>--ui-stub</c> and <c>--ui-showcase</c> open UI screens for visual checks.
 /// </summary>
 public partial class Boot : Control
 {
     private const double SplashSeconds = 1.5;
-    private const string MainScene = "res://scenes/Main.tscn";
-    private const string FirstScreen = "res://scenes/ui/ScreenStub.tscn";
+    private const string MainMenuScene = "res://scenes/ui/MainMenu.tscn";
+    private const string StubScene = "res://scenes/ui/ScreenStub.tscn";
     private const string ShowcaseScene = "res://scenes/ui/ThemeShowcase.tscn";
+    private const string MainScene = "res://scenes/Main.tscn";
 
     private double _elapsed;
     private bool _finished;
@@ -28,9 +29,13 @@ public partial class Boot : Control
         {
             OpenDebugScene(ShowcaseScene);
         }
+        else if (args.Contains("--ui-menu"))
+        {
+            OpenDebugScene(MainMenuScene);
+        }
         else if (args.Contains("--ui-stub"))
         {
-            OpenDebugScene(FirstScreen);
+            OpenDebugScene(StubScene);
         }
         else if (args.Contains("--sandbox") || args.Contains("--smoke") || args.Contains("--screenshot"))
         {
@@ -85,6 +90,6 @@ public partial class Boot : Control
             return;
         }
 
-        SceneRouter.Instance.Replace(FirstScreen);
+        SceneRouter.Instance.Replace(MainMenuScene);
     }
 }

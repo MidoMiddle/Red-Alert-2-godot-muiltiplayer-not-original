@@ -1,5 +1,10 @@
 keys,en
 UI_BUTTON_BACK,Back
+UI_GAME_TITLE,RTS (working title)
+UI_MAIN_EXIT,Exit
+UI_EXIT_TITLE,Exit
+UI_EXIT_CONFIRM_TEXT,Exit the game?
+UI_VERSION,Version {0}
 UI_BUTTON_NEXT,Next
 UI_STUB_TITLE,Placeholder screen
 UI_SHOWCASE_TITLE,Theme showcase

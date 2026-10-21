@@ -17,7 +17,7 @@ internal static class UiTextScanner
 
     // Text = ...; and similar assignments in code.
     private static readonly Regex CodeAssignment = new(
-        @"\b(?:Text|TooltipText|PlaceholderText|Title)\s*=\s*([^;]+);",
+        @"\b(?:Text|TooltipText|PlaceholderText|Title|DialogText|OkButtonText|CancelButtonText)\s*=\s*([^;]+);",
         RegexOptions.CultureInvariant);
 
     // .AddItem(...); .SetItemText(...); .SetTabTitle(...); in code.
