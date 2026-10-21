@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Rts.Client.Debug;
+using Rts.Client.Orders;
 using Rts.Simulation;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
@@ -36,6 +37,8 @@ public partial class Main : Node3D
         // RA2 lighting: shadows fall right-down on screen, i.e. towards world +X, from a sun about 50° high.
         GetNode<DirectionalLight3D>("Sun").Basis = Basis.LookingAt(SunDirection, Vector3.Up);
         AddChild(new PathPreview { Name = "PathPreview" });
+        AddChild(new OrderMarkers { Name = "OrderMarkers" });
+        AddChild(new RouteLines { Name = "RouteLines" });
 
         var args = OS.GetCmdlineUserArgs();
         var screenshotIndex = Array.IndexOf(args, "--screenshot");

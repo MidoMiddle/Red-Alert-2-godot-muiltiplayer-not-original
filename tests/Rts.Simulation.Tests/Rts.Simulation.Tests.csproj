@@ -42,6 +42,9 @@
     <Compile Include="../../game/scripts/Input/KeyBindings.cs" Link="Client/Controls/KeyBindings.cs" />
     <Compile Include="../../game/scripts/Input/SelectionSet.cs" Link="Client/Controls/SelectionSet.cs" />
     <Compile Include="../../game/scripts/Input/BoxSelection.cs" Link="Client/Controls/BoxSelection.cs" />
+    <Compile Include="../../game/scripts/Input/ControlGroups.cs" Link="Client/Controls/ControlGroups.cs" />
+    <Compile Include="../../game/scripts/Input/WaypointDraft.cs" Link="Client/Controls/WaypointDraft.cs" />
+    <Compile Include="../../game/scripts/Input/CursorChoice.cs" Link="Client/Controls/CursorChoice.cs" />
     <Compile Include="../../game/scripts/App/Faction.cs" Link="Client/Faction.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarLayout.cs" Link="Client/Hud/SidebarLayout.cs" />
     <Compile Include="../../game/scripts/Hud/MinimapMath.cs" Link="Client/Hud/MinimapMath.cs" />

@@ -8,7 +8,7 @@ namespace Rts.Client;
 /// <summary>
 /// Draws every unit with its symbolic <see cref="UnitView"/>, interpolated between the previous and the current tick so that
 /// 15 ticks per second still look smooth at 60+ frames per second: position along a line, hull and turret along the
-/// shorter arc. Views are pooled per unit type. Selected units glow.
+/// shorter arc. Views are pooled per unit type. Selected units glow; the unit under the pointer glows faintly (M2 step 13).
 /// </summary>
 public partial class UnitRenderer : Node3D
 {
@@ -16,10 +16,17 @@ public partial class UnitRenderer : Node3D
     private readonly Dictionary<UnitType, Stack<UnitView>> _pool = new();
     private readonly HashSet<EntityId> _alive = new();
     private readonly List<EntityId> _gone = new();
-    private readonly Dictionary<(int Owner, bool Selected), StandardMaterial3D> _materials = new();
+    private readonly Dictionary<(int Owner, Glow Glow), StandardMaterial3D> _materials = new();
 
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
+
+    private enum Glow
+    {
+        None,
+        Hovered,
+        Selected,
+    }
 
     public override void _Ready()
     {
@@ -43,7 +50,8 @@ public partial class UnitRenderer : Node3D
                 _views.Add(unit.Id, view);
             }
 
-            view.SetMaterial(MaterialFor(unit.Owner.Value, _input.Selection.Contains(unit.Id)));
+            var glow = _input.Selection.Contains(unit.Id) ? Glow.Selected : unit.Id == _input.Hovered ? Glow.Hovered : Glow.None;
+            view.SetMaterial(MaterialFor(unit.Owner.Value, glow));
             var current = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before : current;
             var alpha = _host.Alpha;
@@ -96,9 +104,9 @@ public partial class UnitRenderer : Node3D
         pool.Push(view);
     }
 
-    private StandardMaterial3D MaterialFor(int owner, bool selected)
+    private StandardMaterial3D MaterialFor(int owner, Glow glow)
     {
-        if (!_materials.TryGetValue((owner, selected), out var material))
+        if (!_materials.TryGetValue((owner, glow), out var material))
         {
             var color = owner switch
             {
@@ -108,14 +116,14 @@ public partial class UnitRenderer : Node3D
                 _ => Color.FromHsv(owner * 0.13f % 1f, 0.7f, 0.9f),
             };
             material = new StandardMaterial3D { AlbedoColor = color };
-            if (selected)
+            if (glow != Glow.None)
             {
                 material.EmissionEnabled = true;
                 material.Emission = color;
-                material.EmissionEnergyMultiplier = 0.8f;
+                material.EmissionEnergyMultiplier = glow == Glow.Selected ? 0.8f : 0.3f;
             }
 
-            _materials.Add((owner, selected), material);
+            _materials.Add((owner, glow), material);
         }
 
         return material;

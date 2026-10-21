@@ -41,7 +41,20 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <param name="Shift">Whether Shift is held: Shift and a left click add a unit to the selection or take it out, Shift and a box add.</param>
 /// <param name="HasSelection">Whether any unit is selected.</param>
 /// <param name="Alt">Whether Alt is held: Alt and a left click on the ground spawn a test unit (debug).</param>
-public readonly record struct PointerContext(WorldPos? Ground, PointerTarget Target, bool Shift, bool HasSelection, bool Alt = false);
+/// <param name="Ctrl">Whether Ctrl (or Command) is held: Ctrl + Shift and an order give an attack-move.</param>
+/// <param name="DoubleClick">Whether this press is the second one of a double click.</param>
+/// <param name="WaypointMode">Whether the waypoint key (Z) is held: an order adds a waypoint instead.</param>
+/// <param name="HasWaypoints">Whether waypoints are laid out and not sent yet: an order without Z sends them.</param>
+public readonly record struct PointerContext(
+    WorldPos? Ground,
+    PointerTarget Target,
+    bool Shift,
+    bool HasSelection,
+    bool Alt = false,
+    bool Ctrl = false,
+    bool DoubleClick = false,
+    bool WaypointMode = false,
+    bool HasWaypoints = false);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
@@ -65,7 +78,23 @@ public sealed record BoxCancelled : Intent;
 
 public sealed record ClearSelection : Intent;
 
-public sealed record OrderMove(WorldPos Target) : Intent;
+/// <summary>Select every own unit of the clicked unit's type on screen (double click); add them when <paramref name="Add"/> (Shift).</summary>
+public sealed record SelectSameType(EntityId Unit, bool Add) : Intent;
+
+/// <summary>Move the selection; <paramref name="Queue"/> (Shift) adds the point to the end of the route.</summary>
+public sealed record OrderMove(WorldPos Target, bool Queue = false) : Intent;
+
+/// <summary>Attack-move the selection (Ctrl + Shift and an order).</summary>
+public sealed record OrderAttackMove(WorldPos Target) : Intent;
+
+/// <summary>Lay out one more waypoint (an order with Z held); nothing is sent yet.</summary>
+public sealed record AddWaypoint(WorldPos Point) : Intent;
+
+/// <summary>The last waypoint (an order without Z after waypoints): send the route.</summary>
+public sealed record FinishWaypoints(WorldPos Point) : Intent;
+
+/// <summary>Drop the waypoints laid out so far (Escape).</summary>
+public sealed record CancelWaypoints : Intent;
 
 public sealed record SpawnUnit(WorldPos Position) : Intent;
 
@@ -83,6 +112,8 @@ public sealed record OpenMenu : Intent;
 /// events give different intents in Classic and Modern.
 /// The left button is followed until it is released (M2 step 12): released in place it is a click (select, Shift + click to
 /// add or remove, order or cancel on the ground); dragged past <see cref="ClickSlop"/> it draws a selection box.
+/// Orders follow RA2 in both schemes (M2 step 13, docs/implementation/M2_unit_control.md, 4.14): Shift queues a move,
+/// Ctrl + Shift attack-moves, Z lays out waypoints and the next order without Z sends them; a double click selects the type.
 /// </summary>
 public sealed class InputInterpreter
 {
@@ -139,9 +170,7 @@ public sealed class InputInterpreter
             case PointerButton.Right when _scheme == ControlScheme.Classic:
                 return Track(button, at);
             case PointerButton.Right:
-                return context.HasSelection && context.Ground is { } order
-                    ? new Intent[] { new OrderMove(order) }
-                    : Array.Empty<Intent>();
+                return Order(context);
             case PointerButton.Middle when _scheme == ControlScheme.Modern:
                 return Track(button, at);
             default:
@@ -233,8 +262,14 @@ public sealed class InputInterpreter
     /// The cancel key (Escape) was pressed. With units selected it clears the selection. Without them it opens the pause menu,
     /// which takes all input, so a button still held down is never released in the game: the press is dropped here.
     /// </summary>
-    public IReadOnlyList<Intent> EscapePressed(bool hasSelection)
+    public IReadOnlyList<Intent> EscapePressed(bool hasSelection, bool hasWaypoints = false)
     {
+        if (hasWaypoints && _tracked is null)
+        {
+            // Escape first drops the waypoints laid out so far; the selection stays.
+            return new Intent[] { new CancelWaypoints() };
+        }
+
         if (_tracked == PointerButton.Left)
         {
             // Escape gives up a pressed left button; a box being drawn disappears.
@@ -269,19 +304,49 @@ public sealed class InputInterpreter
     /// <summary>A left click released in place.</summary>
     private IReadOnlyList<Intent> ClickLeft(PointerContext context)
     {
+        if (_scheme == ControlScheme.Classic && IsGroundOrder(context))
+        {
+            // Z or Ctrl + Shift give a point on the ground even over a unit.
+            return Order(context);
+        }
+
         switch (context.Target.Kind)
         {
+            case PointerTargetKind.OwnUnit when context.DoubleClick:
+                return new Intent[] { new SelectSameType(context.Target.Unit, context.Shift) };
             case PointerTargetKind.OwnUnit when context.Shift:
                 return new Intent[] { new ToggleUnit(context.Target.Unit) };
             case PointerTargetKind.OwnUnit:
                 return new Intent[] { new SelectUnit(context.Target.Unit) };
             case PointerTargetKind.Ground when _scheme == ControlScheme.Modern:
                 return context.Ground is null ? Array.Empty<Intent>() : new Intent[] { new ClearSelection() };
-            case PointerTargetKind.Ground when context.HasSelection && context.Ground is { } order:
-                return new Intent[] { new OrderMove(order) };
+            case PointerTargetKind.Ground:
+                return Order(context);
             default:
                 return Array.Empty<Intent>();
         }
+    }
+
+    /// <summary>The order modifiers that make a click a point on the ground whatever is under the cursor.</summary>
+    private static bool IsGroundOrder(PointerContext context) =>
+        context.HasSelection && (context.WaypointMode || (context.Ctrl && context.Shift));
+
+    /// <summary>An order on the ground with the scheme's order button: waypoints, attack-move, a queued or a plain move.</summary>
+    private static IReadOnlyList<Intent> Order(PointerContext context)
+    {
+        if (!context.HasSelection || context.Ground is not { } point)
+        {
+            return Array.Empty<Intent>();
+        }
+
+        Intent intent = context switch
+        {
+            { WaypointMode: true } => new AddWaypoint(point),
+            { HasWaypoints: true } => new FinishWaypoints(point),
+            { Ctrl: true, Shift: true } => new OrderAttackMove(point),
+            _ => new OrderMove(point, context.Shift),
+        };
+        return new Intent[] { intent };
     }
 
     /// <summary>The camera button went down: follow it until it is released. Modern starts the drag at once, Classic after a move.</summary>

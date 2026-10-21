@@ -32,6 +32,11 @@ public partial class AppSettings : Node
         var raw = ReadFile();
         Values = SettingsValues.Parse(raw);
         Keys = KeyBindings.Parse(raw, IsKnownKey);
+        foreach (var actionId in Keys.Unbound())
+        {
+            GD.PushWarning($"[settings] action {actionId} has no key: its default key is used by another action");
+        }
+
         ApplyWindowMode(Values.WindowMode);
         ApplyResolution(Values.Resolution);
         ApplyVSync(Values.VSync);

@@ -114,11 +114,109 @@ public sealed class KeyBindingsTests
     [Fact]
     public void ADuplicateKeyInTheFileFallsBackToTheDefault()
     {
-        var raw = new Dictionary<string, string> { ["keys/step"] = "P" };
+        var raw = new Dictionary<string, string> { ["keys/pause"] = "P", ["keys/step"] = "P" };
 
         var loaded = KeyBindings.Parse(raw, _ => true);
 
         Assert.Equal("P", loaded.KeyOf("pause"));
         Assert.Equal("N", loaded.KeyOf("step"));
+    }
+
+    [Fact]
+    public void TheDefaultsAreTheRa2Layout()
+    {
+        var bindings = new KeyBindings();
+
+        Assert.Equal(["Up", "Down", "Left", "Right"], new[] { "camera_up", "camera_down", "camera_left", "camera_right" }.Select(bindings.KeyOf));
+        Assert.Equal("S", bindings.KeyOf("stop"));
+        Assert.Equal("X", bindings.KeyOf("scatter"));
+        Assert.Equal("Z", bindings.KeyOf("waypoint_mode"));
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("1")]
+    [InlineData("9")]
+    public void DigitsBelongToTheControlGroups(string key)
+    {
+        Assert.Equal(RebindStatus.Refused, new KeyBindings().Rebind("pause", key).Status);
+    }
+
+    [Fact]
+    public void AnOldFileWithTheWasdCameraGetsTheArrowsAndTheOrderKeys()
+    {
+        var raw = new Dictionary<string, string>
+        {
+            ["keys/camera_up"] = "W",
+            ["keys/camera_down"] = "S",
+            ["keys/camera_left"] = "A",
+            ["keys/camera_right"] = "D",
+            ["keys/pause"] = "O",
+        };
+
+        var loaded = KeyBindings.Parse(raw, _ => true);
+
+        Assert.Equal("Up", loaded.KeyOf("camera_up"));
+        Assert.Equal("Down", loaded.KeyOf("camera_down"));
+        Assert.Equal("S", loaded.KeyOf("stop"));
+        Assert.Equal("O", loaded.KeyOf("pause"));
+        Assert.Empty(loaded.Unbound());
+    }
+
+    [Fact]
+    public void AnOldFileKeepsCameraKeysThePlayerChose()
+    {
+        var raw = new Dictionary<string, string> { ["keys/camera_up"] = "I" };
+
+        Assert.Equal("I", KeyBindings.Parse(raw, _ => true).KeyOf("camera_up"));
+    }
+
+    [Fact]
+    public void ANewFileKeepsWasdForTheCamera()
+    {
+        var bindings = new KeyBindings();
+        bindings.Rebind("camera_up", "W");
+
+        Assert.Equal("W", KeyBindings.Parse(bindings.ToRaw(), _ => true).KeyOf("camera_up"));
+    }
+
+    [Fact]
+    public void AFileKeyTakesTheDefaultOfANewActionWhichIsLeftWithoutAKey()
+    {
+        // An M6 file where pause is on X: scatter, new in M2 step 13, cannot have X.
+        var raw = new Dictionary<string, string> { ["keys/pause"] = "X" };
+
+        var loaded = KeyBindings.Parse(raw, _ => true);
+
+        Assert.Equal("X", loaded.KeyOf("pause"));
+        Assert.Equal(string.Empty, loaded.KeyOf("scatter"));
+        Assert.Equal(["scatter"], loaded.Unbound());
+    }
+
+    [Fact]
+    public void NoTwoActionsEverShareAKeyFromAFile()
+    {
+        var random = new System.Random(13);
+        var keys = new[] { "P", "N", "S", "X", "Z", "Up", "Down", "W", "E", "T", "F3", "F5" };
+        for (var round = 0; round < 200; round++)
+        {
+            var raw = new Dictionary<string, string>();
+            if (random.Next(2) == 0)
+            {
+                raw["keys/layout"] = "2";
+            }
+
+            foreach (var action in KeyBindings.Actions)
+            {
+                if (random.Next(3) == 0)
+                {
+                    raw["keys/" + action.Id] = keys[random.Next(keys.Length)];
+                }
+            }
+
+            var loaded = KeyBindings.Parse(raw, _ => true);
+            var bound = KeyBindings.Actions.Select(action => loaded.KeyOf(action.Id)).Where(key => key.Length > 0).ToList();
+            Assert.Equal(bound.Count, bound.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        }
     }
 }

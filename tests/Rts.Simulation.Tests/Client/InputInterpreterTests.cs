@@ -254,6 +254,95 @@ public sealed class InputInterpreterTests
         Assert.Empty(input.Release(PointerButton.Middle));
     }
 
+    // M2 step 13: the RA2 orders (docs/implementation/M2_unit_control.md, 4.14).
+
+    [Fact]
+    public void ADoubleClickOnAnOwnUnitSelectsItsTypeAndShiftAdds()
+    {
+        foreach (var scheme in new[] { ControlScheme.Classic, ControlScheme.Modern })
+        {
+            var input = new InputInterpreter(scheme, cameraDrag: true);
+
+            Assert.Equal(new Intent[] { new SelectSameType(Blue, false) }, LeftClick(input, Context(OwnUnit) with { DoubleClick = true }));
+            Assert.Equal(
+                new Intent[] { new SelectSameType(Blue, true) },
+                LeftClick(input, Context(OwnUnit, hasSelection: true, shift: true) with { DoubleClick = true }));
+        }
+    }
+
+    [Fact]
+    public void ADoubleClickOnTheGroundIsAnOrdinaryClick()
+    {
+        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+
+        Assert.Equal(new Intent[] { new OrderMove(Spot) }, LeftClick(input, Context(Ground, hasSelection: true) with { DoubleClick = true }));
+    }
+
+    [Fact]
+    public void ShiftQueuesAMoveAndCtrlShiftAttackMovesInBothSchemes()
+    {
+        var classic = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        var modern = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        var queued = Context(Ground, hasSelection: true, shift: true);
+        var attack = queued with { Ctrl = true };
+
+        Assert.Equal(new Intent[] { new OrderMove(Spot, Queue: true) }, LeftClick(classic, queued));
+        Assert.Equal(new Intent[] { new OrderAttackMove(Spot) }, LeftClick(classic, attack));
+        Assert.Equal(new Intent[] { new OrderMove(Spot, Queue: true) }, modern.Press(PointerButton.Right, Here, queued));
+        Assert.Equal(new Intent[] { new OrderAttackMove(Spot) }, modern.Press(PointerButton.Right, Here, attack));
+    }
+
+    [Fact]
+    public void CtrlShiftOverAUnitStillAttackMovesInClassic()
+    {
+        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+
+        Assert.Equal(
+            new Intent[] { new OrderAttackMove(Spot) },
+            LeftClick(input, Context(OwnUnit, hasSelection: true, shift: true) with { Ctrl = true }));
+    }
+
+    [Fact]
+    public void CtrlAloneIsAPlainMove()
+    {
+        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+
+        Assert.Equal(new Intent[] { new OrderMove(Spot) }, LeftClick(input, Context(Ground, hasSelection: true) with { Ctrl = true }));
+    }
+
+    [Fact]
+    public void OrdersWithZAddWaypointsAndTheNextOrderWithoutZSendsThem()
+    {
+        var classic = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        var modern = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        var laying = Context(Ground, hasSelection: true) with { WaypointMode = true };
+        var finishing = Context(Ground, hasSelection: true) with { HasWaypoints = true };
+
+        Assert.Equal(new Intent[] { new AddWaypoint(Spot) }, LeftClick(classic, laying));
+        Assert.Equal(new Intent[] { new AddWaypoint(Spot) }, LeftClick(classic, laying with { HasWaypoints = true, Target = OwnUnit }));
+        Assert.Equal(new Intent[] { new FinishWaypoints(Spot) }, LeftClick(classic, finishing));
+        Assert.Equal(new Intent[] { new AddWaypoint(Spot) }, modern.Press(PointerButton.Right, Here, laying));
+        Assert.Equal(new Intent[] { new FinishWaypoints(Spot) }, modern.Press(PointerButton.Right, Here, finishing));
+    }
+
+    [Fact]
+    public void WaypointsNeedASelectionAndTheGround()
+    {
+        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+
+        Assert.Empty(LeftClick(input, Context(Ground) with { WaypointMode = true }));
+        Assert.Empty(LeftClick(input, new PointerContext(null, Ground, false, true, WaypointMode: true)));
+    }
+
+    [Fact]
+    public void EscapeFirstDropsTheWaypointsThenTheSelection()
+    {
+        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+
+        Assert.Equal(new Intent[] { new CancelWaypoints() }, input.EscapePressed(hasSelection: true, hasWaypoints: true));
+        Assert.Equal(new Intent[] { new ClearSelection() }, input.EscapePressed(hasSelection: true, hasWaypoints: false));
+    }
+
     private static PointerContext Context(PointerTarget target, bool hasSelection = false, bool shift = false, bool alt = false) =>
         new(Spot, target, shift, hasSelection, alt);
 

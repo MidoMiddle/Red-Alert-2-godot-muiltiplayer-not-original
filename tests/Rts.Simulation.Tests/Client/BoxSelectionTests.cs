@@ -49,4 +49,21 @@ public sealed class BoxSelectionTests
         selection.AddAll([new EntityId(2), new EntityId(5), new EntityId(3)]);
         Assert.Equal([new EntityId(2), new EntityId(5), new EntityId(3)], selection.Units);
     }
+
+    [Fact]
+    public void A_double_click_picks_units_of_the_type_on_screen_only()
+    {
+        (EntityId, UnitType, ScreenPoint)[] units =
+        [
+            (new EntityId(1), UnitType.HeavyTank, new ScreenPoint(10, 10)),
+            (new EntityId(2), UnitType.Conscript, new ScreenPoint(20, 20)),
+            (new EntityId(3), UnitType.HeavyTank, new ScreenPoint(800, 600)),
+            (new EntityId(4), UnitType.HeavyTank, new ScreenPoint(801, 10)),
+            (new EntityId(5), UnitType.HeavyTank, new ScreenPoint(-1, 10)),
+        ];
+
+        Assert.Equal(
+            [new EntityId(1), new EntityId(3)],
+            BoxSelection.SameTypeOnScreen(units, UnitType.HeavyTank, new ScreenPoint(800, 600)));
+    }
 }

@@ -5,16 +5,12 @@ namespace Rts.Client.Controls;
 
 /// <summary>
 /// Puts the key bindings into Godot's input map, so the game reads actions and not keys (docs/implementation/M6_menus_skirmish.md,
-/// 4.6). The arrows and the numpad keep working next to the bound key.
+/// 4.6). The numpad keeps working next to the bound speed keys.
 /// </summary>
 public static class InputMapper
 {
     private static readonly Dictionary<string, Key[]> FixedKeys = new()
     {
-        ["camera_up"] = new[] { Key.Up },
-        ["camera_down"] = new[] { Key.Down },
-        ["camera_left"] = new[] { Key.Left },
-        ["camera_right"] = new[] { Key.Right },
         ["speed_up"] = new[] { Key.Plus, Key.KpAdd },
         ["speed_down"] = new[] { Key.KpSubtract },
     };

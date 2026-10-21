@@ -163,18 +163,30 @@ public partial class SimulationHost : Node
         }
     }
 
-    /// <summary>Orders the given units to move. Units that are dead or not the player's are left out.</summary>
-    public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target)
+    /// <summary>
+    /// Orders the given units to move; <paramref name="queue"/> adds the point to the end of their routes. Units that are dead
+    /// or not the player's are left out, here and in the other orders.
+    /// </summary>
+    public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target, bool queue = false) =>
+        IssueTo(units, ordered => new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, queue));
+
+    public void IssueAttackMove(IReadOnlyList<EntityId> units, WorldPos target) =>
+        IssueTo(units, ordered => new AttackMoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+
+    /// <summary>Sends a route of 1…32 points; <paramref name="loop"/> makes it a patrol.</summary>
+    public void IssueWaypoints(IReadOnlyList<EntityId> units, ImmutableArray<WorldPos> points, bool loop)
     {
-        var ordered = units
-            .Where(id => Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer)
-            .Take(MoveCommand.MaxUnits)
-            .ToImmutableArray();
-        if (!ordered.IsEmpty)
+        if (!points.IsEmpty)
         {
-            Issue(new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+            IssueTo(units, ordered => new WaypointsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, points, loop));
         }
     }
+
+    public void IssueStop(IReadOnlyList<EntityId> units) =>
+        IssueTo(units, ordered => new StopCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
+
+    public void IssueScatter(IReadOnlyList<EntityId> units) =>
+        IssueTo(units, ordered => new ScatterCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
 
     public void IssueSpawn(WorldPos position) =>
         Issue(new SpawnTestUnitCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, SpawnType, position));
@@ -210,6 +222,19 @@ public partial class SimulationHost : Node
 
     /// <summary>Where the unit was and how it was turned on the previous tick, for interpolation.</summary>
     public bool TryGetPreviousPose(EntityId id, out UnitPose pose) => _previousPoses.TryGetValue(id, out pose);
+
+    /// <summary>Issues the command made for the living own units among <paramref name="units"/>, when there are any.</summary>
+    private void IssueTo(IReadOnlyList<EntityId> units, Func<ImmutableArray<EntityId>, Command> make)
+    {
+        var ordered = units
+            .Where(id => Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer)
+            .Take(UnitsCommand.MaxUnits)
+            .ToImmutableArray();
+        if (!ordered.IsEmpty)
+        {
+            Issue(make(ordered));
+        }
+    }
 
     private void Issue(Command command)
     {
