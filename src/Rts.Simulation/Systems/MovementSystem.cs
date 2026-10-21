@@ -51,6 +51,9 @@ public static class MovementSystem
     /// <summary>Ticks a unit that gave way waits in its pocket before heading for its target again.</summary>
     public const int PocketHoldTicks = 15;
 
+    /// <summary>How near its place (in cells, either axis) a standing unit must be for a blocked unit to swap places with it.</summary>
+    public const int SwapRadius = 8;
+
     /// <summary>Radius in cells of the taken cells avoided after a stall.</summary>
     private const int StallAvoidRadius = 2;
 
@@ -198,7 +201,7 @@ public static class MovementSystem
             // One of ours stands on the goal: most likely it was pushed off its own place, so it makes room (and later
             // looks for a place of its own politely). Otherwise take the nearest free cell next to the goal; stopping right
             // here could plug a narrow pass for everybody behind.
-            if (other.Owner == unit.Owner && !unit.Returning)
+            if (other.Owner == unit.Owner && !unit.Returning && !IsSettled(other, unit))
             {
                 var room = GivingWay.FindPocket(world, other, GivingWay.RemainingCells(world, unit));
                 if (!room.IsDefault)
@@ -245,6 +248,11 @@ public static class MovementSystem
             return MoveResult.Blocked;
         }
 
+        if (TrySwapPlaces(world, unit, other, events))
+        {
+            return MoveResult.Blocked;
+        }
+
         if (other.Owner == unit.Owner && unit.Replans == 0)
         {
             // First try to drive around our own standing unit, like around anything else: on open ground nobody needs to
@@ -277,6 +285,52 @@ public static class MovementSystem
         Replan(world, unit, [cell], events);
         return MoveResult.Blocked;
     }
+
+    /// <summary>
+    /// A unit blocked by one of ours that already stands nearer the unit's place gives it that place and takes the standing one's
+    /// spot instead (M2, after the closing): the standing one moves one step deeper, and if it is blocked in turn, it swaps
+    /// again. So a late unit of a group never has to get through the units already standing around its place — before, they
+    /// stepped aside and came back, which in a big group turned into a long shuffle at the target. Only for units of the same
+    /// kind of place (vehicle with vehicle, soldier with soldier), on the last leg of a route, near the place
+    /// (<see cref="SwapRadius"/>), and with a standing unit that is not giving way or going back. The place always moves to a
+    /// unit strictly nearer to it, so swaps cannot go round in circles.
+    /// </summary>
+    private static bool TrySwapPlaces(GameWorld world, Unit unit, Unit other, List<SimEvent> events)
+    {
+        if (other.Owner != unit.Owner || other.Archetype.Placement != unit.Archetype.Placement
+            || other.MoveTarget is not null || other.PathPending || other.HoldTicks > 0 || other.ResumeTarget is not null || other.Returning
+            || unit.Returning || unit.ResumeTarget is not null || unit.MoveTarget is not { } place
+            || (unit.Orders.Length > 0 && (unit.LoopOrders || unit.OrderIndex != unit.Orders.Length - 1)))
+        {
+            return false;
+        }
+
+        var placeCell = place.ToCell();
+        var otherDistance = Chebyshev(other.Position.ToCell(), placeCell);
+        if (otherDistance >= Chebyshev(unit.Position.ToCell(), placeCell) || otherDistance > SwapRadius)
+        {
+            return false;
+        }
+
+        var attackMove = unit.Orders.Length > 0 && unit.Orders[unit.OrderIndex].AttackMove;
+        UnitOrders.GiveRoute(world, other, [new UnitOrder(place, attackMove)], loop: false, append: false);
+        var spot = other.Position;
+        if (unit.Orders.Length > 0)
+        {
+            unit.Orders = unit.Orders.SetItem(unit.OrderIndex, new UnitOrder(spot, attackMove));
+        }
+
+        UnitOrders.MoveTo(world, unit, spot);
+        events.Add(new UnitPlacesSwapped(world.CurrentTick, unit.Id, other.Id));
+        return true;
+    }
+
+    /// <summary>Stands still of its own accord, with the same kind of place: it keeps it, the newcomer stands next to it.</summary>
+    private static bool IsSettled(Unit other, Unit unit) =>
+        other.Archetype.Placement == unit.Archetype.Placement && other.MoveTarget is null && !other.PathPending
+        && other.HoldTicks == 0 && other.ResumeTarget is null && !other.Returning;
+
+    private static int Chebyshev(CellPos a, CellPos b) => IntMath.Max(IntMath.Abs(a.X - b.X), IntMath.Abs(a.Y - b.Y));
 
     /// <summary>Drives into the nearest pocket off the other unit's way, remembering where to go afterwards.</summary>
     private static void GiveWay(GameWorld world, Unit unit, HashSet<int> keepClear)

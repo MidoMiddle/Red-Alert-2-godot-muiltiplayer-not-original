@@ -13,10 +13,8 @@ namespace Rts.Simulation.Tests.Load;
 /// </summary>
 public sealed class LoadScenarioTests(ITestOutputHelper output)
 {
-    private const int MaxTicks = 3000;
-
-    /// <summary>Measured at step 15: 285 of 300 on their own cell, the rest pushed aside by the crowd at the goal, at most 4 cells.</summary>
-    private const int MinExact = 280;
+    /// <summary>Measured: 90 % stand at tick 1414, the last at 1639; 282 of 300 places taken, nobody farther than a cell.</summary>
+    private const int MinTaken = 280;
     private const int MaxOff = 4;
 
     [Fact]
@@ -32,28 +30,16 @@ public sealed class LoadScenarioTests(ITestOutputHelper output)
     {
         var map = LoadScenario.LoadMap(ClientFiles.RepoRoot);
         var simulation = LoadScenario.Start(map);
-        Assert.Equal(300, simulation.World.Entities.OfType<Unit>().Count());
+        var units = simulation.World.Entities.OfType<Unit>().ToList();
+        Assert.Equal(300, units.Count);
         LoadScenario.OrderAcrossTheMap(simulation);
-        simulation.Step();
-        var places = simulation.World.Entities.OfType<Unit>().ToDictionary(u => u.Id, u => u.Orders[^1].Point.ToCell());
 
-        var tick = 1;
-        for (; tick < MaxTicks && !AllStand(simulation.World); tick++)
-        {
-            simulation.Step();
-            if (tick % 50 == 0)
-            {
-                ReservationTests.AssertOccupancy(simulation.World);
-            }
-        }
+        var run = GroupRun.Run(simulation, units);
 
-        ReservationTests.AssertOccupancy(simulation.World);
-        var distances = simulation.World.Entities.OfType<Unit>().Select(u => Chebyshev(u.Position.ToCell(), places[u.Id])).ToList();
-        output.WriteLine($"all standing after {tick} ticks; on their own cell {distances.Count(d => d == 0)}, farthest {distances.Max()}");
-
-        Assert.True(AllStand(simulation.World), $"Units still moving after {MaxTicks} ticks.");
-        Assert.True(distances.Count(d => d == 0) >= MinExact, $"Only {distances.Count(d => d == 0)} units on their own cell.");
-        Assert.True(distances.Max() <= MaxOff, $"A unit stands {distances.Max()} cells from its place.");
+        output.WriteLine($"across the map: {run}");
+        Assert.True(run.PlacesTaken >= MinTaken, $"Only {run.PlacesTaken} of 300 places taken.");
+        Assert.True(run.FarthestOff <= MaxOff, $"A unit stands {run.FarthestOff} cells from any place.");
+        Assert.True(run.TickAll * 4 <= run.Tick90 * 5, $"The last unit stood at tick {run.TickAll}, 90 % at {run.Tick90}.");
     }
 
     [Fact]
@@ -77,9 +63,4 @@ public sealed class LoadScenarioTests(ITestOutputHelper output)
 
         return checksums;
     }
-
-    private static bool AllStand(GameWorld world) =>
-        world.Entities.OfType<Unit>().All(u => u.MoveTarget is null && !u.PathPending && u.Path is null);
-
-    private static int Chebyshev(CellPos a, CellPos b) => System.Math.Max(System.Math.Abs(a.X - b.X), System.Math.Abs(a.Y - b.Y));
 }

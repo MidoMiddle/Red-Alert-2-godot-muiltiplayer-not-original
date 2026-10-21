@@ -1,10 +1,8 @@
-using System.Collections.Immutable;
 using Rts.Simulation.Benchmarks;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Tests.Client;
-using Rts.Simulation.Tests.Systems;
 using Rts.Simulation.World;
 using Xunit.Abstractions;
 
@@ -12,16 +10,12 @@ namespace Rts.Simulation.Tests.Load;
 
 /// <summary>
 /// The squad of the M2 definition of done (docs/implementation/M2_unit_control.md, section 7): 40 tanks and 20 infantry go
-/// around the forest and stand as a blob at the target, and all of them pass a gap of one cell. Thresholds as measured at
-/// step 16 (see the journal): around the forest 56 of 60 on their own cell, through the gap 55; the rest within 2 cells.
-/// Known: most of the squad stands by tick 600, but the last tanks, whose places are inside the blob, shuffle with their
-/// neighbours until about tick 1900.
+/// around the forest and stand as a blob at the target, and all of them pass a gap of one cell. Thresholds as measured
+/// (see the journal): around the forest 90 % stand at tick 860 and the last at 947, through the gap 607 and 720; at least 56
+/// of 60 places taken, nobody farther than a cell from one.
 /// </summary>
 public sealed class SquadTests(ITestOutputHelper output)
 {
-    private const int MaxTicks = 4000;
-    private const int MinExact = 54;
-    private const int MaxOff = 2;
     private static readonly PlayerId Blue = new(1);
 
     [Fact]
@@ -38,12 +32,11 @@ public sealed class SquadTests(ITestOutputHelper output)
     {
         var (simulation, squad) = Start();
 
-        var (ticks, distances) = OrderAndRun(simulation, squad, new CellPos(24, 4));
+        var run = GroupRun.Order(simulation, squad, new CellPos(24, 4).Center);
 
-        output.WriteLine($"around the forest: all standing after {ticks} ticks, on their own cell {distances.Count(d => d == 0)}/60, farthest {distances.Max()}");
+        output.WriteLine($"around the forest: {run}");
         Assert.All(squad, unit => Assert.True(unit.Position.ToCell().Y < 9, $"{unit.Id} stayed south of the forest at {unit.Position.ToCell()}."));
-        Assert.True(distances.Count(d => d == 0) >= MinExact, $"Only {distances.Count(d => d == 0)} of 60 on their own cell.");
-        Assert.True(distances.Max() <= MaxOff, $"A unit stands {distances.Max()} cells from its place.");
+        AssertSettled(run);
     }
 
     [Fact]
@@ -51,12 +44,19 @@ public sealed class SquadTests(ITestOutputHelper output)
     {
         var (simulation, squad) = Start();
 
-        var (ticks, distances) = OrderAndRun(simulation, squad, new CellPos(SquadMap.GapColumn, 46));
+        var run = GroupRun.Order(simulation, squad, new CellPos(SquadMap.GapColumn, 46).Center);
 
-        output.WriteLine($"through the gap: all standing after {ticks} ticks, on their own cell {distances.Count(d => d == 0)}/60, farthest {distances.Max()}");
+        output.WriteLine($"through the gap: {run}");
         Assert.All(squad, unit => Assert.True(unit.Position.ToCell().Y > SquadMap.WallRow, $"{unit.Id} stayed before the wall at {unit.Position.ToCell()}."));
-        Assert.True(distances.Count(d => d == 0) >= MinExact, $"Only {distances.Count(d => d == 0)} of 60 on their own cell.");
-        Assert.True(distances.Max() <= MaxOff, $"A unit stands {distances.Max()} cells from its place.");
+        AssertSettled(run);
+    }
+
+    private static void AssertSettled(GroupRun run)
+    {
+        Assert.True(run.PlacesTaken >= 56, $"Only {run.PlacesTaken} of 60 places taken.");
+        Assert.True(run.FarthestOff <= 2, $"A unit stands {run.FarthestOff} cells from any place.");
+        // No long shuffle at the target: the last unit stands soon after most of the group (before the place swaps: 1.55x).
+        Assert.True(run.TickAll * 4 <= run.Tick90 * 5, $"The last unit stood at tick {run.TickAll}, 90 % at {run.Tick90}.");
     }
 
     private static (GameSimulation Simulation, List<Unit> Squad) Start()
@@ -73,28 +73,5 @@ public sealed class SquadTests(ITestOutputHelper output)
         var squad = simulation.World.Entities.OfType<Unit>().Where(u => u.Owner == Blue).ToList();
         Assert.Equal(SquadMap.Tanks + SquadMap.Conscripts, squad.Count);
         return (simulation, squad);
-    }
-
-    /// <summary>Orders the squad to <paramref name="target"/>, runs until everyone stands; distances of each from its place.</summary>
-    private static (int Ticks, List<int> Distances) OrderAndRun(GameSimulation simulation, List<Unit> squad, CellPos target)
-    {
-        simulation.Enqueue(new MoveCommand(Blue, simulation.CurrentTick, 100, squad.Select(u => u.Id).ToImmutableArray(), target.Center));
-        simulation.Step();
-        var places = squad.ToDictionary(u => u.Id, u => u.Orders[^1].Point.ToCell());
-        var tick = 1;
-        for (; tick < MaxTicks && squad.Any(u => u.MoveTarget is not null || u.PathPending || u.Path is not null || u.HoldTicks > 0); tick++)
-        {
-            simulation.Step();
-            if (tick % 50 == 0)
-            {
-                ReservationTests.AssertOccupancy(simulation.World);
-            }
-        }
-
-        Assert.True(tick < MaxTicks, $"The squad still moves after {MaxTicks} ticks.");
-        ReservationTests.AssertOccupancy(simulation.World);
-        var distances = squad.Select(u => System.Math.Max(
-            System.Math.Abs(u.Position.ToCell().X - places[u.Id].X), System.Math.Abs(u.Position.ToCell().Y - places[u.Id].Y))).ToList();
-        return (tick, distances);
     }
 }

@@ -19,5 +19,11 @@ public sealed record UnitArrived(int Tick, EntityId Unit, WorldPos Position) : S
 /// <summary>The path search for the unit finished; it starts driving along the path.</summary>
 public sealed record UnitPathFound(int Tick, EntityId Unit, PathStatus Status, int Cells) : SimEvent(Tick);
 
-/// <summary>The unit stopped in front of a cell it cannot enter and dropped its order (interim rule until pathfinding).</summary>
+/// <summary>The unit stopped in front of a cell it cannot enter and plans its way again from there.</summary>
 public sealed record UnitBlocked(int Tick, EntityId Unit, WorldPos Position) : SimEvent(Tick);
+
+/// <summary>
+/// <paramref name="Unit"/>, blocked by <paramref name="Other"/> of the same player standing nearer its place, gave it that place
+/// and takes the other's spot instead, so a group fills its places from the inside.
+/// </summary>
+public sealed record UnitPlacesSwapped(int Tick, EntityId Unit, EntityId Other) : SimEvent(Tick);
