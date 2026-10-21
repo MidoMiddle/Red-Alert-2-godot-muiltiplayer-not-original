@@ -1,5 +1,7 @@
 # RA2 Godot (working title)
 
+[![CI](https://github.com/MidoMiddle/Red-Alert-2-godot-muiltiplayer-not-original/actions/workflows/ci.yml/badge.svg)](https://github.com/MidoMiddle/Red-Alert-2-godot-muiltiplayer-not-original/actions/workflows/ci.yml)
+
 A real-time strategy game inspired by Red Alert 2, built with Godot 4 (.NET / C#). It plays like the original and looks like a 2026 remaster. Runs natively on macOS and Windows, with skirmish against bots and online multiplayer.
 
 > Unofficial fan project. It does not use any original Command & Conquer assets and is not affiliated with or endorsed by Electronic Arts.
