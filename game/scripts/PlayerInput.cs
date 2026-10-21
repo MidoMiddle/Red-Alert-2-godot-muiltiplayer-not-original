@@ -10,12 +10,12 @@ namespace Rts.Client;
 public partial class PlayerInput : Node
 {
     private SimulationHost _host = null!;
-    private Camera3D _camera = null!;
+    private RtsCamera _camera = null!;
 
     public override void _Ready()
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
-        _camera = GetNode<Camera3D>("../Camera3D");
+        _camera = GetNode<RtsCamera>("../CameraRig");
     }
 
     public override void _UnhandledInput(InputEvent inputEvent)
@@ -76,18 +76,15 @@ public partial class PlayerInput : Node
         }
     }
 
-    /// <summary>Intersects the camera ray with the ground plane y = 0 and keeps points inside the map.</summary>
+    /// <summary>Ground point under the cursor, kept only if it is inside the map.</summary>
     private bool TryGetGroundPoint(Vector2 screenPosition, out WorldPos point)
     {
         point = default;
-        var origin = _camera.ProjectRayOrigin(screenPosition);
-        var direction = _camera.ProjectRayNormal(screenPosition);
-        if (direction.Y >= 0f)
+        if (!_camera.TryScreenToGround(screenPosition, out var hit))
         {
             return false;
         }
 
-        var hit = origin + direction * (-origin.Y / direction.Y);
         point = WorldCoords.FromGodot(hit);
         return _host.Simulation.World.Contains(point);
     }

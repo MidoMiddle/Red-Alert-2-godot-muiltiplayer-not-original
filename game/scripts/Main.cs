@@ -8,8 +8,9 @@ using Rts.Simulation.World;
 namespace Rts.Client;
 
 /// <summary>
-/// Scene root. Besides normal play it supports two service modes, passed after <c>--</c> on the command line:
+/// Scene root. Besides normal play it supports service modes, passed after <c>--</c> on the command line:
 /// <c>--smoke</c> runs a scripted session, saves and replays it, and exits with 0 or 1;
+/// <c>--check-camera</c> verifies the RA2 camera angle (a cell projects to a 2:1 diamond) and exits with 0 or 1;
 /// <c>--screenshot &lt;path&gt; [--frames N]</c> saves frame N as PNG and exits.
 /// </summary>
 public partial class Main : Node3D
@@ -42,6 +43,10 @@ public partial class Main : Node3D
         {
             CallDeferred(MethodName.RunSmoke);
         }
+        else if (args.Contains("--check-camera"))
+        {
+            CallDeferred(MethodName.RunCameraCheck);
+        }
     }
 
     public override void _Process(double delta)
@@ -56,12 +61,51 @@ public partial class Main : Node3D
         GetTree().Quit(error == Error.Ok ? 0 : 1);
     }
 
+    private void RunCameraCheck()
+    {
+        var ok = CheckCamera();
+        GetTree().Quit(ok ? 0 : 1);
+    }
+
+    /// <summary>
+    /// Projects the corners of one ground cell to the screen: the diamond must be twice as wide as it is tall
+    /// (±1 %), world X must run right-down and world Y (Godot Z) left-down, as in RA2.
+    /// </summary>
+    private bool CheckCamera()
+    {
+        var camera = GetNode<RtsCamera>("CameraRig").Camera;
+        var origin = camera.UnprojectPosition(new Vector3(32f, 0f, 32f));
+        var alongX = camera.UnprojectPosition(new Vector3(33f, 0f, 32f)) - origin;
+        var alongZ = camera.UnprojectPosition(new Vector3(32f, 0f, 33f)) - origin;
+        var opposite = camera.UnprojectPosition(new Vector3(33f, 0f, 33f)) - origin;
+
+        float[] xs = [0f, alongX.X, alongZ.X, opposite.X];
+        float[] ys = [0f, alongX.Y, alongZ.Y, opposite.Y];
+        var width = xs.Max() - xs.Min();
+        var height = ys.Max() - ys.Min();
+        var ratio = width / height;
+
+        var ratioOk = Math.Abs(ratio - 2f) <= 0.02f;
+        var directionsOk = alongX.X > 0f && alongX.Y > 0f && alongZ.X < 0f && alongZ.Y > 0f;
+        var ok = ratioOk && directionsOk;
+        GD.Print($"[camera] {(ok ? "OK" : "FAILED")}: diamond {width:0.0}x{height:0.0} px, ratio {ratio:0.000}, " +
+                 $"world X on screen {alongX}, world Y on screen {alongZ}");
+        return ok;
+    }
+
     /// <summary>
     /// Scripted check through the same host API the player uses: spawn, order a move, play,
     /// save the replay, play it back and compare every checksum.
     /// </summary>
     private void RunSmoke()
     {
+        if (!CheckCamera())
+        {
+            GD.Print("[smoke] FAILED: camera check");
+            GetTree().Quit(1);
+            return;
+        }
+
         var host = GetNode<SimulationHost>("SimulationHost");
         host.Paused = true;
         host.StepOnce(); // tick 0: starting units

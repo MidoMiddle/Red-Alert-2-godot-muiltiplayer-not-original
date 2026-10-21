@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
 [ext_resource type="Script" path="res://scripts/SimulationHost.cs" id="2_host"]
-[ext_resource type="Script" path="res://scripts/CameraController.cs" id="3_camera"]
+[ext_resource type="Script" path="res://scripts/Camera/RtsCamera.cs" id="3_camera"]
 [ext_resource type="Script" path="res://scripts/UnitRenderer.cs" id="4_units"]
 [ext_resource type="Script" path="res://scripts/PlayerInput.cs" id="5_input"]
 [ext_resource type="Script" path="res://scripts/DebugOverlay.cs" id="6_overlay"]
@@ -27,8 +27,15 @@ script = ExtResource("1_main")
 [node name="SimulationHost" type="Node" parent="."]
 script = ExtResource("2_host")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="CameraRig" type="Node3D" parent="."]
 script = ExtResource("3_camera")
+
+[node name="Pivot" type="Node3D" parent="CameraRig"]
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/Pivot"]
+projection = 1
+size = 25.5
+current = true
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 shadow_enabled = true

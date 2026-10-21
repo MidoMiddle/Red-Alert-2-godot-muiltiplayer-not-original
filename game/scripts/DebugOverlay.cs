@@ -8,7 +8,8 @@ namespace Rts.Client;
 public partial class DebugOverlay : CanvasLayer
 {
     private const string Controls =
-        "LMB move all blue · Shift+LMB spawn · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · WASD/wheel camera";
+        "LMB move all blue · Shift+LMB spawn · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session\n" +
+        "Camera: screen edges · WASD/arrows · hold RMB and move the mouse · wheel zoom";
 
     private SimulationHost _host = null!;
     private Label _label = null!;
