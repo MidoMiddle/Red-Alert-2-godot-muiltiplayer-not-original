@@ -31,6 +31,7 @@
 | Веха | Документ | Статус |
 |---|---|---|
 | — | [Сквозные соглашения](implementation/conventions.md) | на согласовании |
+| — | [Сводный список открытых вопросов](implementation/open_questions.md) | на согласовании |
 | M0 | [Фундамент](implementation/M0_foundation.md) | согласован, шаг 0 выполнен |
 | M1 | [Визуальная проба](implementation/M1_visual_spike.md) | на согласовании |
 | M2 | [Управление юнитами](implementation/M2_unit_control.md) | на согласовании |
