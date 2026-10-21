@@ -46,6 +46,7 @@
     <Compile Include="../../game/scripts/Hud/MinimapMath.cs" Link="Client/Hud/MinimapMath.cs" />
     <Compile Include="../../game/scripts/Hud/HudFormat.cs" Link="Client/Hud/HudFormat.cs" />
     <Compile Include="../../game/scripts/Terrain/TerrainHeights.cs" Link="Client/Terrain/TerrainHeights.cs" />
+    <Compile Include="../../game/scripts/Terrain/LandColors.cs" Link="Client/Terrain/LandColors.cs" />
     <Compile Include="../../game/scripts/Units/UnitFacing.cs" Link="Client/Units/UnitFacing.cs" />
   </ItemGroup>
 

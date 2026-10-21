@@ -33,7 +33,9 @@ public static class CommandProcessor
 
     private static bool ApplySpawn(GameWorld world, SpawnTestUnitCommand command, List<SimEvent>? events)
     {
-        if (!world.Contains(command.Position) || !UnitArchetypes.IsKnown(command.UnitType))
+        if (!world.Contains(command.Position)
+            || !UnitArchetypes.IsKnown(command.UnitType)
+            || !world.Map.CanEnter(command.Position.ToCell(), UnitArchetypes.Get(command.UnitType).Locomotor))
         {
             return false;
         }

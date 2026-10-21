@@ -13,6 +13,8 @@ namespace Rts.Simulation.Systems;
 /// Moving: <see cref="Unit.Speed"/> leptons per tick, pure integer math: the step is <c>delta * speed / |delta|</c>
 /// with an integer square root and round-to-nearest components, so every platform lands on the same lepton and
 /// diagonal moves keep the full speed. A rounded component never exceeds the remaining delta, so units never overshoot.
+/// Interim rule until pathfinding (M2 steps 5–8): a unit whose next step would take it into a cell its locomotor cannot
+/// enter (water, rock, a tree) stops where it is and drops the order, so nobody drives through obstacles.
 /// </summary>
 public static class MovementSystem
 {
@@ -58,7 +60,11 @@ public static class MovementSystem
 
         if (distanceSquared <= speed * speed)
         {
-            Arrive(world, unit, target, events);
+            if (TryEnter(world, unit, target, events))
+            {
+                Arrive(world, unit, target, events);
+            }
+
             return;
         }
 
@@ -80,11 +86,30 @@ public static class MovementSystem
             }
         }
 
-        unit.Position += new WorldPos((int)stepX, (int)stepY);
+        if (!TryEnter(world, unit, unit.Position + new WorldPos((int)stepX, (int)stepY), events))
+        {
+            return;
+        }
+
         if (unit.Position == target)
         {
             Arrive(world, unit, target, events);
         }
+    }
+
+    /// <summary>Moves the unit to <paramref name="next"/>, or stops it when that is a new cell it cannot enter.</summary>
+    private static bool TryEnter(GameWorld world, Unit unit, WorldPos next, List<SimEvent> events)
+    {
+        var cell = next.ToCell();
+        if (cell != unit.Position.ToCell() && !world.Map.CanEnter(cell, unit.Archetype.Locomotor))
+        {
+            unit.MoveTarget = null;
+            events.Add(new UnitBlocked(world.CurrentTick, unit.Id, unit.Position));
+            return false;
+        }
+
+        unit.Position = next;
+        return true;
     }
 
     private static void Arrive(GameWorld world, Unit unit, WorldPos target, List<SimEvent> events)

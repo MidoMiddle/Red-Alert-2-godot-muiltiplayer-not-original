@@ -4,22 +4,24 @@ using System.Collections.Generic;
 using System.IO;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Map;
 
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v2, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v3, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion
 /// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 tickCount
+/// u8 hasMap | (u8 land × width·height | u8 obstacle × width·height) when hasMap = 1
 /// command batch (u32 count + commands, format of CommandSerializer)
 /// u32 checksumCount | (i32 tick, u64 value) × checksumCount
 /// </code>
-/// The layout is unchanged since v1; v2 (M2 step 2) marks command format v2 inside.
+/// History: v2 (M2 step 2) marks command format v2 inside; v3 (M2 step 4) adds the map layers.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 2;
+    public const ushort FormatVersion = 3;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -27,10 +29,15 @@ public static class ReplayFormat
     private const int HeaderSize = 4 + 2 + 4 + 8 + 4 * 5;
     private const int ChecksumSize = 4 + 8;
 
+    // 512 × 512 cells: far above any map we plan, small enough to reject garbage sizes before allocating.
+    private const long MaxMapCells = 512 * 512;
+
     public static byte[] Write(Replay replay)
     {
         var commands = CommandSerializer.WriteAll(replay.Commands);
-        var buffer = new byte[HeaderSize + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
+        var map = replay.Settings.Map;
+        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height);
+        var buffer = new byte[HeaderSize + mapSize + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
         var span = buffer.AsSpan();
 
         Magic.CopyTo(span);
@@ -44,6 +51,15 @@ public static class ReplayFormat
         BinaryPrimitives.WriteInt32LittleEndian(span[34..], replay.TickCount);
 
         var offset = HeaderSize;
+        span[offset++] = map is null ? (byte)0 : (byte)1;
+        if (map is not null)
+        {
+            map.LandBytes().CopyTo(span[offset..]);
+            offset += map.Width * map.Height;
+            map.BlockedBytes().CopyTo(span[offset..]);
+            offset += map.Width * map.Height;
+        }
+
         commands.CopyTo(span[offset..]);
         offset += commands.Length;
 
@@ -74,13 +90,9 @@ public static class ReplayFormat
         }
 
         var simVersion = BinaryPrimitives.ReadUInt32LittleEndian(source[6..]);
-        var settings = new SimulationSettings(BinaryPrimitives.ReadUInt64LittleEndian(source[10..]))
-        {
-            TicksPerSecond = BinaryPrimitives.ReadInt32LittleEndian(source[18..]),
-            MapWidthCells = BinaryPrimitives.ReadInt32LittleEndian(source[22..]),
-            MapHeightCells = BinaryPrimitives.ReadInt32LittleEndian(source[26..]),
-            HashInterval = BinaryPrimitives.ReadInt32LittleEndian(source[30..]),
-        };
+        var seed = BinaryPrimitives.ReadUInt64LittleEndian(source[10..]);
+        var width = BinaryPrimitives.ReadInt32LittleEndian(source[22..]);
+        var height = BinaryPrimitives.ReadInt32LittleEndian(source[26..]);
         var tickCount = BinaryPrimitives.ReadInt32LittleEndian(source[34..]);
         if (tickCount < 0)
         {
@@ -88,6 +100,43 @@ public static class ReplayFormat
         }
 
         var offset = HeaderSize;
+        Require(source[offset..], 1);
+        var hasMap = source[offset++];
+        if (hasMap > 1)
+        {
+            throw new InvalidDataException($"Invalid map flag {hasMap}.");
+        }
+
+        MapGrid? map = null;
+        if (hasMap == 1)
+        {
+            if (width <= 0 || height <= 0 || (long)width * height > MaxMapCells)
+            {
+                throw new InvalidDataException($"Invalid map size {width}x{height}.");
+            }
+
+            var cells = width * height;
+            Require(source[offset..], 2 * cells);
+            try
+            {
+                map = MapGrid.FromLayers(width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells));
+            }
+            catch (ArgumentException error)
+            {
+                throw new InvalidDataException($"Invalid map data: {error.Message}", error);
+            }
+
+            offset += 2 * cells;
+        }
+
+        var settings = (map is null ? new SimulationSettings(seed) : new SimulationSettings(seed, map)) with
+        {
+            TicksPerSecond = BinaryPrimitives.ReadInt32LittleEndian(source[18..]),
+            MapWidthCells = width,
+            MapHeightCells = height,
+            HashInterval = BinaryPrimitives.ReadInt32LittleEndian(source[30..]),
+        };
+
         var commands = CommandSerializer.ReadBatch(source[offset..], out var commandBytes);
         offset += commandBytes;
 

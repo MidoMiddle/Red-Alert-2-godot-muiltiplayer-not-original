@@ -152,6 +152,7 @@ public sealed class GoldenValuesTests
 
         // Replay and command format v2 (M2 step 2): the spawn command carries the unit type.
         // Rules v3 (M2 step 3): same bytes except the recorded checksums, which now include the map.
-        Assert.Equal((22345, 11440862028938672357UL), (bytes.Length, hash.Value));
+        // Replay format v3, rules v4 (M2 step 4): one more byte, the "no map" flag; checksums unchanged on clear land.
+        Assert.Equal((22346, 13300773026730530715UL), (bytes.Length, hash.Value));
     }
 }

@@ -9,6 +9,7 @@ using Rts.Simulation;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Map;
 using Rts.Simulation.Replays;
 using Rts.Simulation.World;
 
@@ -29,16 +30,8 @@ public partial class SimulationHost : Node
 
     private static readonly double[] SpeedMultipliers = [0.25, 0.5, 1, 2, 4];
 
-    // One of every type for the player; a small mixed group for the opponent.
-    private static readonly UnitType[] LocalGroup =
-    [
-        UnitType.HeavyTank, UnitType.TeslaTank, UnitType.SupportVehicle,
-        UnitType.Mcv, UnitType.Harvester, UnitType.Conscript,
-        UnitType.Rocketeer, UnitType.Engineer,
-    ];
-
-    private static readonly UnitType[] OpponentGroup =
-        [UnitType.HeavyTank, UnitType.SupportVehicle, UnitType.Conscript, UnitType.Rocketeer];
+    /// <summary>The sandbox map with every land type and its starting units (docs/implementation/M2_unit_control.md, 4.3).</summary>
+    public const string SandboxMapPath = "res://maps/test/sandbox.txt";
 
     private readonly Dictionary<EntityId, UnitPose> _previousPoses = new();
     private double _accumulator;
@@ -80,7 +73,8 @@ public partial class SimulationHost : Node
 
     public void StartLiveSession()
     {
-        Simulation = new GameSimulation(new SimulationSettings(MatchSeed));
+        var map = LoadSandboxMap();
+        Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid));
         _recorder = new ReplayRecorder(Simulation);
         _playback = null;
         _nextSequence = 0;
@@ -88,8 +82,7 @@ public partial class SimulationHost : Node
         ReplayStatus = "";
 
         // Starting units are commands too, so they end up in the replay.
-        SpawnGroup(LocalPlayer, new CellPos(20, 20), LocalGroup);
-        SpawnGroup(new PlayerId(2), new CellPos(44, 44), OpponentGroup);
+        SpawnMapUnits(map.Units);
         GD.Print("[host] live session started");
     }
 
@@ -226,13 +219,34 @@ public partial class SimulationHost : Node
         }
     }
 
-    private void SpawnGroup(PlayerId owner, CellPos center, UnitType[] types)
+    private static TestMap LoadSandboxMap()
     {
-        for (var i = 0; i < types.Length; i++)
+        var text = Godot.FileAccess.GetFileAsString(SandboxMapPath);
+        if (string.IsNullOrEmpty(text))
         {
-            var cell = new CellPos(center.X + i % 3 * 2, center.Y + i / 3 * 2);
-            var sequence = owner == LocalPlayer ? _nextSequence++ : (uint)i;
-            Simulation.Enqueue(new SpawnTestUnitCommand(owner, 0, sequence, types[i], cell.Center));
+            throw new InvalidOperationException($"Cannot read {SandboxMapPath}: {Godot.FileAccess.GetOpenError()}.");
+        }
+
+        return TestMapParser.Parse(text);
+    }
+
+    private void SpawnMapUnits(IReadOnlyList<TestMapUnit> units)
+    {
+        var otherSequences = new Dictionary<PlayerId, uint>();
+        foreach (var unit in units)
+        {
+            uint sequence;
+            if (unit.Owner == LocalPlayer)
+            {
+                sequence = _nextSequence++;
+            }
+            else
+            {
+                otherSequences.TryGetValue(unit.Owner, out sequence);
+                otherSequences[unit.Owner] = sequence + 1;
+            }
+
+            Simulation.Enqueue(new SpawnTestUnitCommand(unit.Owner, 0, sequence, unit.Type, unit.Cell.Center));
         }
     }
 

@@ -2,11 +2,16 @@ using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Controls;
+using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
 
-/// <summary>Debug panel: mode, tick, rates, entity count, last checksum, replay check and the controls of the current scheme.</summary>
+/// <summary>
+/// Debug panel: mode, tick, rates, entity count, last checksum, replay check, the map cell under the pointer with its
+/// speed for each locomotor, and the controls of the current scheme.
+/// </summary>
 public partial class DebugOverlay : CanvasLayer
 {
     private const string ClassicControls = "Classic: LMB select / order · RMB click cancel · RMB drag camera";
@@ -16,6 +21,7 @@ public partial class DebugOverlay : CanvasLayer
         "WASD/arrows/edge/wheel camera";
 
     private SimulationHost _host = null!;
+    private PlayerInput _input = null!;
     private Label _label = null!;
     private string _controls = string.Empty;
 
@@ -24,6 +30,7 @@ public partial class DebugOverlay : CanvasLayer
         // Keeps updating while the pause menu stops the game, so the tick on screen stops with it.
         ProcessMode = ProcessModeEnum.Always;
         _host = GetNode<SimulationHost>("../SimulationHost");
+        _input = GetNode<PlayerInput>("../PlayerInput");
         _label = GetNode<Label>("Label");
         var scheme = AppSettings.Instance?.Values.Scheme ?? ControlScheme.Classic;
         _controls = (scheme == ControlScheme.Classic ? ClassicControls : ModernControls) + "\n" + SharedControls;
@@ -40,7 +47,25 @@ public partial class DebugOverlay : CanvasLayer
             $"{mode}  {state}\n" +
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   spawn {UnitArchetypes.Get(_host.SpawnType).Id}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
+            DescribeCell(simulation.World.Map, _input.CellUnderPointer) + "\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
+    }
+
+    /// <summary><c>cell 12,30 Rough · foot 90 track 90 wheel 75</c>; a tree or impassable land shows as such.</summary>
+    private static string DescribeCell(MapGrid map, CellPos? pointer)
+    {
+        if (pointer is not { } cell)
+        {
+            return "cell -";
+        }
+
+        var land = map.IsBlocked(cell) ? $"{map.LandAt(cell)} + tree" : map.LandAt(cell).ToString();
+        var foot = map.SpeedPercent(cell, Locomotor.Foot);
+        var track = map.SpeedPercent(cell, Locomotor.Track);
+        var wheel = map.SpeedPercent(cell, Locomotor.Wheel);
+        return foot == 0 && track == 0 && wheel == 0
+            ? $"cell {cell.X},{cell.Y} {land} · impassable"
+            : $"cell {cell.X},{cell.Y} {land} · foot {foot} track {track} wheel {wheel}";
     }
 }

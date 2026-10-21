@@ -29,6 +29,9 @@ public partial class PlayerInput : Node
     /// <summary>The units the player has selected. The unit renderer shows them.</summary>
     public SelectionSet Selection { get; } = new();
 
+    /// <summary>Map cell under the mouse pointer, or null off the map. Shown on the debug panel.</summary>
+    public CellPos? CellUnderPointer { get; private set; }
+
     public override void _Ready()
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
@@ -42,6 +45,8 @@ public partial class PlayerInput : Node
     {
         // A unit that died leaves the selection.
         Selection.RemoveWhere(unit => !_host.Simulation.World.TryGet(unit, out var entity) || !entity.IsAlive);
+        // Every frame, not on mouse motion: the camera can move under a still pointer.
+        CellUnderPointer = GroundAt(ToScreen(GetViewport().GetMousePosition()))?.ToCell();
     }
 
     public override void _UnhandledInput(InputEvent inputEvent)

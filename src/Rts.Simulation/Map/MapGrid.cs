@@ -29,6 +29,33 @@ public sealed class MapGrid
         _blocked = new bool[width * height];
     }
 
+    /// <summary>
+    /// A map from raw layers, one byte per cell in index order: land type values and obstacle flags (0 or 1).
+    /// Used by the replay reader; throws on unknown land types or flags.
+    /// </summary>
+    public static MapGrid FromLayers(int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked)
+    {
+        var grid = new MapGrid(width, height);
+        if (land.Length != grid._land.Length || blocked.Length != grid._blocked.Length)
+        {
+            throw new ArgumentException($"Layers must have {grid._land.Length} cells, got {land.Length} and {blocked.Length}.");
+        }
+
+        for (var i = 0; i < land.Length; i++)
+        {
+            var type = (LandType)land[i];
+            if (!LocomotorRules.IsKnown(type) || blocked[i] > 1)
+            {
+                throw new ArgumentException($"Cell {i} has an unknown land type {land[i]} or obstacle flag {blocked[i]}.");
+            }
+
+            grid._land[i] = type;
+            grid._blocked[i] = blocked[i] == 1;
+        }
+
+        return grid;
+    }
+
     public int Width { get; }
 
     public int Height { get; }
@@ -46,6 +73,40 @@ public sealed class MapGrid
 
     /// <summary>True when a unit with <paramref name="locomotor"/> may stand on the cell: inside the map, no obstacle, passable land.</summary>
     public bool CanEnter(CellPos cell, Locomotor locomotor) => SpeedPercent(cell, locomotor) > 0;
+
+    /// <summary>An independent copy: the match changes its own map, never the one in the settings.</summary>
+    public MapGrid Clone() => FromLayers(Width, Height, LandBytes(), BlockedBytes());
+
+    /// <summary>True when both maps have the same size and the same cells.</summary>
+    public bool ContentEquals(MapGrid other) =>
+        Width == other.Width
+        && Height == other.Height
+        && _land.AsSpan().SequenceEqual(other._land)
+        && _blocked.AsSpan().SequenceEqual(other._blocked);
+
+    /// <summary>Land layer as bytes in cell index order, the replay layout.</summary>
+    public byte[] LandBytes()
+    {
+        var bytes = new byte[_land.Length];
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] = (byte)_land[i];
+        }
+
+        return bytes;
+    }
+
+    /// <summary>Obstacle layer as bytes (0 or 1) in cell index order, the replay layout.</summary>
+    public byte[] BlockedBytes()
+    {
+        var bytes = new byte[_blocked.Length];
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] = _blocked[i] ? (byte)1 : (byte)0;
+        }
+
+        return bytes;
+    }
 
     internal void SetLand(CellPos cell, LandType land)
     {

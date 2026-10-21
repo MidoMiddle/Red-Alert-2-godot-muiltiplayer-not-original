@@ -1,9 +1,9 @@
-// Ground of M0: flat colour with a line every cell and a stronger line every 8 cells.
+// Ground of M2: every cell takes the flat colour of its land type from the simulation map (one texel per cell),
+// with a faint line every cell and a stronger line every 8 cells. Symbolic look, docs/implementation/conventions.md, section 12.
 shader_type spatial;
 
-uniform vec3 base_color : source_color = vec3(0.34, 0.36, 0.32);
-uniform vec3 line_color : source_color = vec3(0.27, 0.29, 0.26);
-uniform vec3 major_color : source_color = vec3(0.19, 0.2, 0.18);
+uniform sampler2D land_map : source_color, filter_nearest;
+uniform vec3 fallback_color : source_color = vec3(0.34, 0.36, 0.32);
 
 varying vec3 world_position;
 
@@ -18,9 +18,14 @@ float grid(vec2 position, float spacing) {
 }
 
 void fragment() {
-	vec3 color = base_color;
-	color = mix(line_color, color, grid(world_position.xz, 1.0));
-	color = mix(major_color, color, grid(world_position.xz, 8.0));
+	ivec2 size = textureSize(land_map, 0);
+	vec3 color = fallback_color;
+	if (size.x > 1) {
+		ivec2 cell = clamp(ivec2(floor(world_position.xz)), ivec2(0), size - 1);
+		color = texelFetch(land_map, cell, 0).rgb;
+	}
+	color *= mix(0.85, 1.0, grid(world_position.xz, 1.0));
+	color *= mix(0.7, 1.0, grid(world_position.xz, 8.0));
 	ALBEDO = color;
 	ROUGHNESS = 0.95;
 }

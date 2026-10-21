@@ -22,7 +22,7 @@ public sealed class GameSimulation
     {
         settings.Validate();
         Settings = settings;
-        World = new GameWorld(settings.Seed, settings.MapWidthCells, settings.MapHeightCells);
+        World = new GameWorld(settings.Seed, settings.CreateMap());
         _commands = new CommandQueue(firstTick: World.CurrentTick);
     }
 

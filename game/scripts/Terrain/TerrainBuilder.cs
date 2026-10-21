@@ -6,6 +6,8 @@ namespace Rts.Client.Terrain;
 /// Builds the visual terrain mesh from <see cref="TerrainHeights"/> (docs/implementation/M1_visual_spike.md, 4.4):
 /// chunks of 16×16 cells, smooth normals, UV0 = world XZ for texture tiling, UV1 = position on the whole map for the
 /// layer mask of step 4. Registers the heights in <see cref="WorldCoords.Terrain"/> so the camera, units and picking follow them.
+/// Since M2 step 4 the ground is coloured by the land types of the simulation map, with trees and rocks on top
+/// (<see cref="LandLayer"/>, <see cref="MapObjects"/>). The hills stay visual until heights become rules in M7.
 /// </summary>
 public partial class TerrainBuilder : Node3D
 {
@@ -22,6 +24,7 @@ public partial class TerrainBuilder : Node3D
         WorldCoords.Terrain = Heights;
 
         var material = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShader) };
+        material.SetShaderParameter("land_map", LandLayer.CreateTexture(world.Map));
         for (var chunkZ = 0; chunkZ < world.HeightCells; chunkZ += ChunkCells)
         {
             for (var chunkX = 0; chunkX < world.WidthCells; chunkX += ChunkCells)
@@ -35,6 +38,8 @@ public partial class TerrainBuilder : Node3D
                 });
             }
         }
+
+        MapObjects.Build(this, world.Map, Heights);
     }
 
     public override void _ExitTree()

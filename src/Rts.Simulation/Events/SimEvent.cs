@@ -14,3 +14,6 @@ public sealed record UnitSpawned(int Tick, EntityId Unit, PlayerId Owner, UnitTy
 public sealed record UnitMoveStarted(int Tick, EntityId Unit, WorldPos Target) : SimEvent(Tick);
 
 public sealed record UnitArrived(int Tick, EntityId Unit, WorldPos Position) : SimEvent(Tick);
+
+/// <summary>The unit stopped in front of a cell it cannot enter and dropped its order (interim rule until pathfinding).</summary>
+public sealed record UnitBlocked(int Tick, EntityId Unit, WorldPos Position) : SimEvent(Tick);
