@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 [autoload]
 
 SceneRouter="*res://scripts/App/SceneRouter.cs"
+AppSettings="*res://scripts/App/AppSettings.cs"
 
 [display]
 

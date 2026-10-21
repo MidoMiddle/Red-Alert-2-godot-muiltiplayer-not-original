@@ -9,8 +9,8 @@ namespace Rts.Client.UI;
 /// Main menu, laid out after the classic RA2 menu (docs/menu/README.md, section 3.2): a large screen with the
 /// title on the left, a column with the header and the entries on the right. All entries are shown in the order of
 /// section 2.3. An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with
-/// step 5, Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10.
-/// Credits has no step yet. Skirmish opens its setup screen (step 7), which has no match start yet.
+/// Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10. Credits has no step yet.
+/// Skirmish opens its setup screen (step 7, no match start yet), and Settings opens the settings screen (step 5).
 /// </summary>
 public partial class MainMenu : Control
 {
@@ -19,6 +19,7 @@ public partial class MainMenu : Control
     private const int EntrySeparation = 12;
     private const float ExitSpacerHeight = 32f;
     private const string SkirmishSetupScene = "res://scenes/ui/SkirmishSetup.tscn";
+    private const string SettingsScene = "res://scenes/ui/Settings.tscn";
 
     private VBoxContainer _entries = null!;
     private ConfirmationDialog _exitDialog = null!;
@@ -40,7 +41,7 @@ public partial class MainMenu : Control
         AddEntry("UI_MAIN_ONLINE", null);
         AddEntry("UI_MAIN_MAP_EDITOR", null);
         AddEntry("UI_MAIN_REPLAYS", null);
-        AddEntry("UI_MAIN_SETTINGS", null);
+        AddEntry("UI_MAIN_SETTINGS", OpenSettings);
         AddEntry("UI_MAIN_CREDITS", null);
         _entries.AddChild(new Control { Name = "ExitSpacer", CustomMinimumSize = new Vector2(0f, ExitSpacerHeight) });
         AddEntry("UI_MAIN_EXIT", ShowExitDialog);
@@ -84,6 +85,11 @@ public partial class MainMenu : Control
     private void OpenSkirmishSetup()
     {
         SceneRouter.Instance?.GoTo(SkirmishSetupScene);
+    }
+
+    private void OpenSettings()
+    {
+        SceneRouter.Instance?.GoTo(SettingsScene);
     }
 
     private void ShowExitDialog()

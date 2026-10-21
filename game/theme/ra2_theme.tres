@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=7 format=3]
+[gd_resource type="Theme" load_steps=11 format=3]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.165, 0.176, 0.2, 1)
@@ -92,6 +92,60 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_panel"]
+bg_color = Color(0.063, 0.071, 0.086, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.431, 0.455, 0.49, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_selected"]
+bg_color = Color(0.702, 0.071, 0.11, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.227, 0.024, 0.031, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_unselected"]
+bg_color = Color(0.165, 0.176, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.294, 0.314, 0.345, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_hovered"]
+bg_color = Color(0.24, 0.25, 0.28, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.957, 0.784, 0.263, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
 [resource]
 default_font_size = 22
 Label/colors/font_color = Color(0.918, 0.902, 0.847, 1)
@@ -110,3 +164,12 @@ Button/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
 Button/styles/focus = SubResource("StyleBoxFlat_focus")
 CheckBox/colors/font_color = Color(0.918, 0.902, 0.847, 1)
+AcceptDialog/styles/panel = SubResource("StyleBoxFlat_panel")
+TabContainer/font_sizes/font_size = 24
+TabContainer/colors/font_selected_color = Color(0.918, 0.902, 0.847, 1)
+TabContainer/colors/font_unselected_color = Color(0.612, 0.639, 0.678, 1)
+TabContainer/colors/font_hovered_color = Color(0.918, 0.902, 0.847, 1)
+TabContainer/styles/panel = SubResource("StyleBoxFlat_tab_panel")
+TabContainer/styles/tab_selected = SubResource("StyleBoxFlat_tab_selected")
+TabContainer/styles/tab_unselected = SubResource("StyleBoxFlat_tab_unselected")
+TabContainer/styles/tab_hovered = SubResource("StyleBoxFlat_tab_hovered")

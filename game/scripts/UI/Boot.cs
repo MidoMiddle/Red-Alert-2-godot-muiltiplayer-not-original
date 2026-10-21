@@ -7,14 +7,15 @@ namespace Rts.Client.UI;
 /// <summary>
 /// Entry scene. Shows a short splash, then opens the main menu. Debug arguments skip the splash:
 /// <c>--sandbox</c>, <c>--smoke</c> and <c>--screenshot</c> go to <c>Main</c>, so the M0 checks and the manual
-/// checklist keep working; <c>--ui-menu</c>, <c>--ui-skirmish</c>, <c>--ui-stub</c> and <c>--ui-showcase</c>
-/// open UI screens for visual checks.
+/// checklist keep working; <c>--ui-menu</c>, <c>--ui-skirmish</c>, <c>--ui-settings</c>, <c>--ui-stub</c> and
+/// <c>--ui-showcase</c> open UI screens for visual checks.
 /// </summary>
 public partial class Boot : Control
 {
     private const double SplashSeconds = 1.5;
     private const string MainMenuScene = "res://scenes/ui/MainMenu.tscn";
     private const string SkirmishScene = "res://scenes/ui/SkirmishSetup.tscn";
+    private const string SettingsScene = "res://scenes/ui/Settings.tscn";
     private const string StubScene = "res://scenes/ui/ScreenStub.tscn";
     private const string ShowcaseScene = "res://scenes/ui/ThemeShowcase.tscn";
     private const string MainScene = "res://scenes/Main.tscn";
@@ -38,6 +39,10 @@ public partial class Boot : Control
         else if (args.Contains("--ui-skirmish"))
         {
             OpenDebugScene(SkirmishScene);
+        }
+        else if (args.Contains("--ui-settings"))
+        {
+            OpenDebugScene(SettingsScene);
         }
         else if (args.Contains("--ui-stub"))
         {
