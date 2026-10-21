@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Controls;
+using Rts.Client.UI;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
 
@@ -23,6 +24,7 @@ public partial class PlayerInput : Node
     private SimulationHost _host = null!;
     private RtsCamera _camera = null!;
     private InputInterpreter _interpreter = null!;
+    private PauseMenu _pauseMenu = null!;
 
     /// <summary>The units the player has selected. The unit renderer shows them.</summary>
     public SelectionSet Selection { get; } = new();
@@ -31,6 +33,7 @@ public partial class PlayerInput : Node
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
         _camera = GetNode<RtsCamera>("../CameraRig");
+        _pauseMenu = GetNode<PauseMenu>("../PauseMenu");
         var settings = AppSettings.Instance?.Values ?? SettingsValues.Defaults;
         _interpreter = new InputInterpreter(settings.Scheme, settings.CameraDrag);
     }
@@ -71,7 +74,9 @@ public partial class PlayerInput : Node
     {
         if (key.IsActionPressed("cancel_selection"))
         {
-            Apply(_interpreter.CancelSelection());
+            Apply(_interpreter.EscapePressed(!Selection.IsEmpty));
+            // The pause menu must not also see this Escape.
+            GetViewport().SetInputAsHandled();
         }
         else if (key.IsActionPressed("pause"))
         {
@@ -143,6 +148,9 @@ public partial class PlayerInput : Node
                     break;
                 case CameraDragEnded:
                     _camera.EndDrag();
+                    break;
+                case OpenMenu:
+                    _pauseMenu.Open();
                     break;
             }
         }

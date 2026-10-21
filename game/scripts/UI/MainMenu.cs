@@ -12,7 +12,8 @@ namespace Rts.Client.UI;
 /// Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10. Credits has no step yet.
 /// Skirmish opens its setup screen (step 7, no match start yet), and Settings opens the settings screen (step 5).
 /// Test Sandbox is a temporary entry: it opens the debug scene <c>Main</c> with everything that is ready (M0 simulation,
-/// M1 camera and lighting) until a real match can be started from the skirmish screen. F10 there returns to this menu.
+/// M1 camera and lighting) until a real match can be started from the skirmish screen. In it, Esc or the Menu button
+/// opens the pause menu, which returns to this menu.
 /// </summary>
 public partial class MainMenu : Control
 {

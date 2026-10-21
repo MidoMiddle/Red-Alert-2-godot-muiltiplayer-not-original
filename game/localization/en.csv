@@ -132,7 +132,12 @@ UI_KEY_SPEED_DOWN,Speed down
 UI_KEY_SAVE_REPLAY,Save replay
 UI_KEY_LOAD_REPLAY,Play last replay
 UI_KEY_NEW_SESSION,New session
-UI_KEY_CANCEL_SELECTION,Cancel selection
+UI_KEY_CANCEL_SELECTION,Cancel selection or menu
 UI_KEY_WAITING,Press a key...
 UI_KEYS_SWAPPED,{0} was used by {1}. {1} now uses {2}.
 UI_KEYS_REFUSED,This key cannot be used.
+UI_BUTTON_MENU,Menu
+UI_PAUSE_TITLE,Paused
+UI_PAUSE_RESUME,Resume
+UI_PAUSE_QUIT,Quit to Main Menu
+UI_PAUSE_LEAVE_TEXT,Leave this match?

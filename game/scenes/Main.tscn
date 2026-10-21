@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
 [ext_resource type="Script" path="res://scripts/SimulationHost.cs" id="2_host"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/DebugOverlay.cs" id="6_overlay"]
 [ext_resource type="Shader" path="res://shaders/grid.gdshader" id="7_grid"]
 [ext_resource type="Environment" path="res://assets/environments/winter.tres" id="8_winter"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="9_pause"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 size = Vector2(64, 64)
@@ -66,3 +67,5 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 22
 text = "..."
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_pause")]

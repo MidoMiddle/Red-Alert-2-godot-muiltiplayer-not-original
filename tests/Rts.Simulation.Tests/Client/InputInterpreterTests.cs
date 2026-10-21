@@ -158,14 +158,27 @@ public sealed class InputInterpreterTests
     }
 
     [Fact]
-    public void EscapeClearsTheSelectionInBothSchemes()
+    public void EscapeClearsTheSelectionOrOpensTheMenuInBothSchemes()
     {
         foreach (var scheme in new[] { ControlScheme.Classic, ControlScheme.Modern })
         {
             var input = new InputInterpreter(scheme, cameraDrag: true);
 
-            Assert.Equal(new Intent[] { new ClearSelection() }, input.CancelSelection());
+            Assert.Equal(new Intent[] { new ClearSelection() }, input.EscapePressed(hasSelection: true));
+            Assert.Equal(new Intent[] { new OpenMenu() }, input.EscapePressed(hasSelection: false));
         }
+    }
+
+    [Fact]
+    public void EscapeEndsACameraDragAndTheNextClickWorks()
+    {
+        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        input.Press(PointerButton.Right, Here, Context(Ground, hasSelection: true));
+        input.Move(Far);
+
+        Assert.Equal(new Intent[] { new CameraDragEnded(), new OpenMenu() }, input.EscapePressed(hasSelection: false));
+        input.Press(PointerButton.Right, Here, Context(Ground, hasSelection: true));
+        Assert.Equal(new Intent[] { new ClearSelection() }, input.Release(PointerButton.Right));
     }
 
     [Fact]

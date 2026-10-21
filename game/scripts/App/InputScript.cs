@@ -29,7 +29,8 @@ public partial class InputScript : Node
             return;
         }
 
-        var script = new InputScript();
+        // Keeps the script running while the pause menu stops the game.
+        var script = new InputScript { ProcessMode = ProcessModeEnum.Always };
         foreach (var raw in File.ReadAllLines(args[index + 1]))
         {
             var line = raw.Trim();

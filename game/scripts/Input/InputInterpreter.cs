@@ -59,6 +59,8 @@ public sealed record CameraDragMoved(ScreenPoint To) : Intent;
 
 public sealed record CameraDragEnded : Intent;
 
+public sealed record OpenMenu : Intent;
+
 /// <summary>
 /// Turns mouse events into intents for the chosen scheme (docs/implementation/M6_menus_skirmish.md, 4.6). The game reports
 /// presses, releases and pointer moves with what is under the cursor, and the interpreter answers with intents. The same
@@ -170,8 +172,29 @@ public sealed class InputInterpreter
         return Array.Empty<Intent>();
     }
 
-    /// <summary>The cancel key (Escape) was pressed.</summary>
-    public IReadOnlyList<Intent> CancelSelection() => new Intent[] { new ClearSelection() };
+    /// <summary>
+    /// The cancel key (Escape) was pressed. With units selected it clears the selection. Without them it opens the pause menu,
+    /// which takes all input, so a button still held down is never released in the game: the press is dropped here.
+    /// </summary>
+    public IReadOnlyList<Intent> EscapePressed(bool hasSelection)
+    {
+        if (hasSelection)
+        {
+            return new Intent[] { new ClearSelection() };
+        }
+
+        var intents = new List<Intent>();
+        if (_dragging)
+        {
+            intents.Add(new CameraDragEnded());
+        }
+
+        _tracked = null;
+        _dragging = false;
+        _moved = false;
+        intents.Add(new OpenMenu());
+        return intents;
+    }
 
     private IReadOnlyList<Intent> PressLeft(PointerContext context)
     {
