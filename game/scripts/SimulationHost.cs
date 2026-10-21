@@ -35,6 +35,12 @@ public partial class SimulationHost : Node
     /// <summary>The sandbox map with every land type and its starting units (docs/implementation/M2_unit_control.md, 4.3).</summary>
     public const string SandboxMapPath = "res://maps/test/sandbox.txt";
 
+    /// <summary>The load map of 300 units (docs/implementation/M2_unit_control.md, 4.15), played with <c>--perf</c>.</summary>
+    public const string LoadMapPath = "res://maps/test/load128.txt";
+
+    /// <summary>The map of a live session: the load map under <c>--perf</c>, the sandbox otherwise.</summary>
+    public static string MapPath => OS.GetCmdlineUserArgs().Contains("--perf") ? LoadMapPath : SandboxMapPath;
+
     private readonly Dictionary<EntityId, UnitPose> _previousPoses = new();
     private double _accumulator;
     private int _speedIndex = 2;
@@ -79,7 +85,7 @@ public partial class SimulationHost : Node
     public void StartLiveSession()
     {
         QueueHistory.Clear();
-        var map = LoadSandboxMap();
+        var map = LoadMap(MapPath);
         Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid));
         _recorder = new ReplayRecorder(Simulation);
         _playback = null;
@@ -251,12 +257,12 @@ public partial class SimulationHost : Node
         }
     }
 
-    private static TestMap LoadSandboxMap()
+    private static TestMap LoadMap(string path)
     {
-        var text = Godot.FileAccess.GetFileAsString(SandboxMapPath);
+        var text = Godot.FileAccess.GetFileAsString(path);
         if (string.IsNullOrEmpty(text))
         {
-            throw new InvalidOperationException($"Cannot read {SandboxMapPath}: {Godot.FileAccess.GetOpenError()}.");
+            throw new InvalidOperationException($"Cannot read {path}: {Godot.FileAccess.GetOpenError()}.");
         }
 
         return TestMapParser.Parse(text);

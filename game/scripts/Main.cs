@@ -58,6 +58,10 @@ public partial class Main : Node3D
         {
             CallDeferred(MethodName.RunSmoke);
         }
+        else if (args.Contains("--perf"))
+        {
+            CallDeferred(MethodName.RunPerf);
+        }
         else if (args.Contains("--check-camera"))
         {
             CallDeferred(MethodName.RunCameraCheck);
@@ -70,6 +74,7 @@ public partial class Main : Node3D
 
     public override void _Process(double delta)
     {
+        TrackPerf(delta);
         if (_screenshotPath is null || ++_frame < _screenshotFrame)
         {
             return;
@@ -78,6 +83,79 @@ public partial class Main : Node3D
         var error = GetViewport().GetTexture().GetImage().SavePng(_screenshotPath);
         GD.Print($"[main] screenshot {_screenshotPath}: {error}, FPS {Engine.GetFramesPerSecond():0}");
         GetTree().Quit(error == Error.Ok ? 0 : 1);
+    }
+
+    /// <summary>
+    /// <c>--perf</c> (docs/implementation/M2_unit_control.md, 4.15): the load map with 300 units, the camera zoomed out over
+    /// the start, the four groups ordered across the map as in the benchmarks; frame times are logged for
+    /// <see cref="PerfSeconds"/> seconds, then the game quits. Exit code 0 when the average reaches 60 FPS.
+    /// </summary>
+    private void RunPerf()
+    {
+        var camera = GetNode<RtsCamera>("CameraRig");
+        camera.CenterOn(new Vector3(24f, 0f, 64f));
+        camera.ZoomOutFully();
+        _perfFrames = new List<double>();
+    }
+
+    /// <summary>The orders of the performance run, once the map's units have spawned (on the first tick).</summary>
+    private bool OrderPerfGroups()
+    {
+        var host = GetNode<SimulationHost>("SimulationHost");
+        var units = host.Simulation.World.Entities
+            .Where(e => e is Unit { IsAlive: true } && e.Owner == SimulationHost.LocalPlayer)
+            .Select(e => e.Id)
+            .ToList();
+        (int X, int Y)[] targets = [(100, 50), (104, 66), (100, 82), (96, 96)];
+        for (var group = 0; group < targets.Length; group++)
+        {
+            var members = units.Skip(group * PerfGroupSize).Take(PerfGroupSize).ToList();
+            host.IssueMove(members, new CellPos(targets[group].X, targets[group].Y).Center);
+        }
+
+        GD.Print($"[perf] {units.Count} units ordered across the map, window {GetViewport().GetVisibleRect().Size}");
+        return units.Count > 0;
+    }
+
+    private const int PerfGroupSize = 75;
+    private const double PerfSeconds = 20;
+    private List<double>? _perfFrames;
+    private bool _perfOrdered;
+
+    /// <summary>Collects frame times of the performance run and prints the result at the end.</summary>
+    private void TrackPerf(double delta)
+    {
+        if (_perfFrames is null)
+        {
+            return;
+        }
+
+        if (!_perfOrdered)
+        {
+            if (GetNode<SimulationHost>("SimulationHost").Simulation.World.Entities.Count > 0)
+            {
+                _perfOrdered = OrderPerfGroups();
+            }
+
+            return;
+        }
+
+        _perfFrames.Add(delta);
+        if (_perfFrames.Sum() < PerfSeconds)
+        {
+            return;
+        }
+
+        // The first frames include loading and the order tick; the steady part is what the target is about.
+        var frames = _perfFrames.Skip(30).ToList();
+        var sorted = frames.OrderByDescending(t => t).ToList();
+        var average = frames.Count / frames.Sum();
+        var worst = 1.0 / sorted[0];
+        var low1 = 1.0 / sorted.Take(Math.Max(1, sorted.Count / 100)).Average();
+        var info = RenderingServer.GetRenderingInfo(RenderingServer.RenderingInfo.TotalDrawCallsInFrame);
+        GD.Print($"[perf] {frames.Count} frames: average {average:0.0} FPS, 1% low {low1:0.0} FPS, worst {worst:0.0} FPS, draw calls {info}");
+        _perfFrames = null;
+        GetTree().Quit(average >= 60 ? 0 : 1);
     }
 
     private void RunCameraCheck()

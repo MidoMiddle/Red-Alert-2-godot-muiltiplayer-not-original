@@ -111,6 +111,9 @@ public partial class RtsCamera : Node3D
 
     public void EndDrag() => _dragAnchor = null;
 
+    /// <summary>Zooms out as far as the wheel can, for the performance run with all units on screen.</summary>
+    public void ZoomOutFully() => _targetSize = DefaultSize * MaxZoom;
+
     /// <summary>Point on the ground under a screen position: on the terrain when there is one, else on the plane y = 0.</summary>
     public bool TryGroundAt(Vector2 screen, out Vector3 ground)
     {
