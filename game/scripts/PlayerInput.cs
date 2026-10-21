@@ -28,6 +28,11 @@ public partial class PlayerInput : Node
     private PauseMenu _pauseMenu = null!;
 
     /// <summary>The units the player has selected. The unit renderer shows them.</summary>
+    /// <summary>How far from the ground point under the pointer a unit can be and still be picked: 2 cells covers a unit's height on screen.</summary>
+    private const int PickSearchLeptons = 2 * Rts.Simulation.Geometry.WorldPos.LeptonsPerCell;
+
+    private readonly List<EntityId> _candidates = new();
+
     public SelectionSet Selection { get; } = new();
 
     /// <summary>Map cell under the mouse pointer, or null off the map. Shown on the debug panel.</summary>
@@ -177,13 +182,27 @@ public partial class PlayerInput : Node
         new(GroundAt(at), PickTarget(at), shift, !Selection.IsEmpty);
 
     /// <summary>The unit nearest to the pointer within <see cref="PickRadius"/>, or the ground when none is that close.</summary>
+    /// <remarks>
+    /// Candidates come from the spatial index around the ground point under the pointer (M2 step 11); off the map, from all units.
+    /// </remarks>
     private PointerTarget PickTarget(ScreenPoint at)
     {
         PointerTarget? nearest = null;
         var nearestDistance = PickRadius;
-        foreach (var entity in _host.Simulation.World.Entities)
+        var world = _host.Simulation.World;
+        _candidates.Clear();
+        if (GroundAt(at) is { } ground)
         {
-            if (entity is not Unit { IsAlive: true } unit)
+            world.Spatial.QueryRadius(world, ground, PickSearchLeptons, _candidates);
+        }
+        else
+        {
+            _candidates.AddRange(world.Entities.Select(e => e.Id));
+        }
+
+        foreach (var id in _candidates)
+        {
+            if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit)
             {
                 continue;
             }

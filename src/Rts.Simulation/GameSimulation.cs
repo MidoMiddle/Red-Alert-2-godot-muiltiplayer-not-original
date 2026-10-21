@@ -67,6 +67,7 @@ public sealed class GameSimulation
         // 2. Path searches within the node budget, then movement (docs/implementation/M2_unit_control.md, 4.12).
         World.PathRequests.Process(World, _events);
         MovementSystem.Update(World, _events);
+        World.Spatial.Sync(World);
 
         // 3. Entities that died this tick leave the world.
         World.RemoveDead();

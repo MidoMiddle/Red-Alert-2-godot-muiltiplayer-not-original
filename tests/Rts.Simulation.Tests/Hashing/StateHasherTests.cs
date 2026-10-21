@@ -127,6 +127,8 @@ public sealed class StateHasherTests
     {
         "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField",
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
+        // Derived from unit positions and rebuilt from them; not hashed (docs/implementation/M2_unit_control.md, 4.9).
+        "<Spatial>k__BackingField",
     })]
     [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_vehicle", "_infantry", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]

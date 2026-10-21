@@ -5,6 +5,7 @@ using Rts.Simulation.Map;
 using Rts.Simulation.Movement;
 using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Random;
+using Rts.Simulation.Spatial;
 
 namespace Rts.Simulation.World;
 
@@ -31,6 +32,7 @@ public sealed class GameWorld
         Random = new DeterministicRandom(seed);
         PathRequests = new PathRequestQueue(map);
         Reservations = new Reservations(map.Width, map.Height);
+        Spatial = new SpatialIndex(map.Width, map.Height);
     }
 
     public int CurrentTick { get; internal set; }
@@ -44,6 +46,9 @@ public sealed class GameWorld
 
     /// <summary>Which unit stands in which cell: one unit per cell.</summary>
     public Reservations Reservations { get; }
+
+    /// <summary>Units by area, for "who is near" queries. Derived from positions, not part of the state hash.</summary>
+    public SpatialIndex Spatial { get; }
 
     public int WidthCells => Map.Width;
 
@@ -99,6 +104,7 @@ public sealed class GameWorld
     {
         var unit = new Unit(AllocateId(), owner, UnitArchetypes.Get(type), position);
         _entities.Add(unit);
+        Spatial.Add(unit);
         // Commands never spawn where there is no room; a test that places two units in one cell gets an unregistered second one.
         if (Contains(position))
         {
@@ -122,9 +128,13 @@ public sealed class GameWorld
     {
         foreach (var entity in _entities)
         {
-            if (entity is Unit { IsAlive: false } unit && Contains(unit.Position))
+            if (entity is Unit { IsAlive: false } unit)
             {
-                Reservations.Leave(unit.Position.ToCell(), unit);
+                Spatial.Remove(unit.Id);
+                if (Contains(unit.Position))
+                {
+                    Reservations.Leave(unit.Position.ToCell(), unit);
+                }
             }
         }
 
