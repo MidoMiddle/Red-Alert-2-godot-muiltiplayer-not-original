@@ -30,7 +30,19 @@
 
 | Веха | Документ | Статус |
 |---|---|---|
-| M0 | [Фундамент](implementation/M0_foundation.md) | в работе |
+| — | [Сквозные соглашения](implementation/conventions.md) | на согласовании |
+| M0 | [Фундамент](implementation/M0_foundation.md) | согласован, шаг 0 выполнен |
+| M1 | [Визуальная проба](implementation/M1_visual_spike.md) | на согласовании |
+| M2 | [Управление юнитами](implementation/M2_unit_control.md) | на согласовании |
+| M3 | [База и экономика](implementation/M3_base_economy.md) | на согласовании |
+| M4 | [Бой](implementation/M4_combat.md) | на согласовании |
+| M5 | [Первый бот](implementation/M5_first_bot.md) | на согласовании |
+| M6 | [Меню и скирмиш](implementation/M6_menus_skirmish.md) | на согласовании |
+| M7 | [Карты](implementation/M7_maps.md) | на согласовании |
+| M8 | [ИИ: сложности и характеры](implementation/M8_ai_difficulty.md) | на согласовании |
+| M9 | [Сеть](implementation/M9_network.md) | на согласовании |
+| M10 | [Онлайн](implementation/M10_online.md) | на согласовании |
+| M11 | [Контент](implementation/M11_content.md) | на согласовании |
 
 ## Правила ведения
 
