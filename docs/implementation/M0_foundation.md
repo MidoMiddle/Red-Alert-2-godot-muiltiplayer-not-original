@@ -75,8 +75,8 @@
 │       ├── Systems/                MovementSystem
 │       ├── Events/                 события симуляции
 │       ├── Hashing/                StateHasher
-│       ├── Replay/                 формат, запись, чтение, проигрыватель
-│       ├── Simulation.cs           главный класс: тик
+│       ├── Replays/                формат, запись, чтение, проигрыватель
+│       ├── GameSimulation.cs       главный класс: тик
 │       └── SimulationSettings.cs   константы и параметры партии
 ├── tests/
 │   ├── Rts.Analyzers.Tests/        xUnit: правила анализатора
@@ -260,17 +260,22 @@ u32  sequence
 
 ```
 magic          "RTSR" (4 байта)
-formatVersion  u16
+formatVersion  u16          — 1
 simVersion     u32          — версия правил симуляции
-settings       seed, ticksPerSecond, mapSize
-commandCount   u32
-commands       × commandCount  (формат 4.7)
+settings       u64 seed, i32 ticksPerSecond, i32 mapWidth, i32 mapHeight, i32 hashInterval
+tickCount      i32          — сколько тиков сыграно
+commands       пакет команд (u32 count + команды, формат 4.7)
 checksumCount  u32
 checksums      × (i32 tick, u64 hash) — для проверки
 ```
 
-- **`ReplayRecorder`** — копит все применённые команды и контрольные суммы во время игры.
-- **`ReplayPlayer`** — создаёт симуляцию с теми же настройками, подаёт команды по тикам, сверяет суммы. Результат: «совпало» или «первое расхождение на тике N».
+Повтор хранит **ввод** (команды), а не состояние: мир всегда восстанавливается из настроек и команд. Код — в `Rts.Simulation.Replays` (папка `Replays/`, а не `Replay/`: класс `Replay` не должен совпадать с именем пространства имён).
+
+- **`GameSimulation.ExecutedCommands`** — журнал всех команд, взятых из очереди, в порядке исполнения. Команды на ещё не сыгранные тики в повтор не попадают.
+- **`ReplayRecorder`** — вызывается после каждого шага (`AfterStep`) и раз в 15 тиков (раз в секунду) сохраняет контрольную сумму; интервал должен быть кратен `HashInterval`. `Build()` собирает `Replay` в любой момент. 600 тиков дают 40 контрольных сумм — повтор остаётся маленьким.
+- **`ReplayFormat`** — запись и чтение файла; неверная сигнатура, версия формата, обрезанные данные, лишние байты и отрицательное число тиков — `InvalidDataException`.
+- **`ReplayPlayer.Verify`** — проигрывает повтор без графики и сверяет каждую сохранённую сумму. Результат: «совпало» (с итоговой суммой), «расхождение на тике N» (ожидалось / получилось) или «несовместимая версия правил».
+- **`ReplayPlayer.CreateSimulation`** — симуляция со всеми командами повтора, которую клиент шагает сам (просмотр, F9).
 - Работает без Godot — используется и в тестах, и в будущем в CI, и в инструментах рассинхрона ([13_tools.md](../13_tools.md)).
 
 ### 4.11. Godot-клиент
@@ -466,7 +471,7 @@ alpha = accumulator / длительность_тика   — для интер�
 | 5. Команды | готово | `Commands/`: `Command` (record), `SpawnTestUnitCommand`, `MoveUnitsCommand` (`ImmutableArray<EntityId>`, лимит 256, сравнение по содержимому), `CommandQueue` (порядок `(Player, Sequence)`, тики строго по очереди, дубликаты отвергаются), `CommandProcessor` (проверка и применение), `CommandSerializer` (формат v1 + пакеты). `TestUnit.DefaultSpeed = 32`. Тесты: точные байты формата, туда-обратно, ошибки чтения, сквозной тест «сериализация → перемешанная очередь → одинаковые миры». Всего 136 (Debug) / 135 (Release) |
 | 6. Тик и движение | готово | `GameSimulation` (вместо `Simulation`, см. 4.8), `SimulationSettings`, `Systems/MovementSystem`, `Events/SimEvent` (`UnitSpawned`, `UnitMoveStarted`, `UnitArrived`; их выдаёт и `CommandProcessor`). Тесты нашли и закрыли две недоработки движения: лишний тик ожидания при точном попадании в цель и замедление по диагонали из-за обрезки компонент (добавлен `IntMath.DivRound`). Тест детерминизма: две симуляции, 300 тиков случайных команд — одинаковые миры и события на каждом тике. Всего 163 (Debug) / 162 (Release) в `Rts.Simulation.Tests` |
 | 7. Контрольная сумма | готово | `Hashing/Fnv1a64` (совпадает с эталонными векторами FNV-1a 64), `StateHasher` (мир: тик, размер карты, счётчик ID, состояние ГСЧ; сущности по ID со всеми полями; неизвестный тип сущности — исключение), `StateChecksum`. `GameSimulation.LastChecksum` считается после шага на тиках, кратных `HashInterval`, и описывает состояние на начало нового тика. Тест-охранник полей проверен вручную: временно добавленное поле `Health` сразу роняет тест с указанием поля. Не входят в хеш: события и очередь будущих команд. Всего 188 (Debug) / 187 (Release) в `Rts.Simulation.Tests` |
-| 8. Повторы | — | |
+| 8. Повторы | готово | `Replays/`: `Replay`, `ReplayFormat` (v1, добавлены `hashInterval` и `tickCount`), `ReplayRecorder` (сумма раз в 15 тиков), `ReplayPlayer` (`Verify`, `CreateSimulation`), `ReplayVerification`. В `GameSimulation` — журнал `ExecutedCommands`; в `CommandSerializer` — `ReadBatch`. Тесты: запись → байты → чтение → проверка совпадает с живой игрой; подменённая команда и подменённая сумма ловятся как рассинхрон; другая версия правил — несовместимость; повреждённые файлы отвергаются. Всего 203 (Debug) / 202 (Release) в `Rts.Simulation.Tests` |
 | 9. Тесты детерминизма | — | |
 | 10. Godot-клиент | — | |
 | 11. CI | — | |

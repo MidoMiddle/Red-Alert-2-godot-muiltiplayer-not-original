@@ -16,6 +16,7 @@ public sealed class GameSimulation
 {
     private readonly CommandQueue _commands;
     private readonly List<SimEvent> _events = new();
+    private readonly List<Command> _executedCommands = new();
 
     public GameSimulation(SimulationSettings settings)
     {
@@ -41,6 +42,12 @@ public sealed class GameSimulation
     /// <summary>Events of the last executed tick; replaced on every <see cref="Step"/>.</summary>
     public IReadOnlyList<SimEvent> LastTickEvents => _events;
 
+    /// <summary>
+    /// Every command taken from the queue so far, in execution order. This input log is what a replay
+    /// stores; the state can always be rebuilt from settings plus this list.
+    /// </summary>
+    public IReadOnlyList<Command> ExecutedCommands => _executedCommands;
+
     /// <summary>Schedules a command. Its tick must not have been executed yet.</summary>
     public void Enqueue(Command command) => _commands.Enqueue(command);
 
@@ -53,6 +60,7 @@ public sealed class GameSimulation
         // 1. Commands of tick T, ordered by (Player, Sequence), validated and applied.
         foreach (var command in _commands.TakeForTick(tick))
         {
+            _executedCommands.Add(command);
             CommandProcessor.Apply(World, command, _events);
         }
 

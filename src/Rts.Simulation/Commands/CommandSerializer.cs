@@ -136,6 +136,18 @@ public static class CommandSerializer
     /// <summary>Reads a batch written by <see cref="WriteAll"/>. Trailing bytes are an error.</summary>
     public static IReadOnlyList<Command> ReadAll(ReadOnlySpan<byte> source)
     {
+        var commands = ReadBatch(source, out var bytesRead);
+        if (bytesRead != source.Length)
+        {
+            throw new InvalidDataException($"{source.Length - bytesRead} unexpected bytes after {commands.Count} commands.");
+        }
+
+        return commands;
+    }
+
+    /// <summary>Reads a batch from the start of <paramref name="source"/>; data after it is left for the caller.</summary>
+    public static IReadOnlyList<Command> ReadBatch(ReadOnlySpan<byte> source, out int bytesRead)
+    {
         Require(source, 4);
         var count = BinaryPrimitives.ReadUInt32LittleEndian(source);
         var commands = new List<Command>();
@@ -146,11 +158,7 @@ public static class CommandSerializer
             offset += read;
         }
 
-        if (offset != source.Length)
-        {
-            throw new InvalidDataException($"{source.Length - offset} unexpected bytes after {count} commands.");
-        }
-
+        bytesRead = offset;
         return commands;
     }
 
