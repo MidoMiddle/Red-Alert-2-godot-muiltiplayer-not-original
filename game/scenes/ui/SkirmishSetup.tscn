@@ -64,72 +64,91 @@ grow_vertical = 2
 color = Color(0.031, 0.035, 0.043, 1)
 
 [node name="Screen" type="Panel" parent="."]
-layout_mode = 0
-offset_left = 56.0
-offset_top = 40.0
-offset_right = 1400.0
-offset_bottom = 1040.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_screen")
-
-[node name="Content" type="VBoxContainer" parent="Screen"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 56.0
+offset_top = 40.0
+offset_right = -520.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_screen")
+
+[node name="Scroll" type="ScrollContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
 offset_top = 56.0
-offset_right = -56.0
+offset_right = -40.0
 offset_bottom = -56.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Content" type="VBoxContainer" parent="Screen/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 24
 
 [node name="Column" type="Panel" parent="."]
-layout_mode = 0
-offset_left = 1440.0
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -480.0
 offset_top = 40.0
-offset_right = 1864.0
-offset_bottom = 1040.0
+offset_right = -56.0
+offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_column")
 
-[node name="Header" type="PanelContainer" parent="Column"]
-layout_mode = 0
+[node name="Scroll" type="ScrollContainer" parent="Column"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 408.0
-offset_bottom = 80.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="Stack" type="VBoxContainer" parent="Column/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Header" type="PanelContainer" parent="Column/Scroll/Stack"]
+layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_header")
 
-[node name="HeaderLabel" type="Label" parent="Column/Header"]
+[node name="HeaderLabel" type="Label" parent="Column/Scroll/Stack/Header"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.957, 0.784, 0.263, 1)
 theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MapLabel" type="Label" parent="Column"]
-layout_mode = 0
-offset_left = 32.0
-offset_top = 104.0
-offset_right = 392.0
-offset_bottom = 136.0
+[node name="MapLabel" type="Label" parent="Column/Scroll/Stack"]
+layout_mode = 2
 
-[node name="MapBox" type="VBoxContainer" parent="Column"]
-layout_mode = 0
-offset_left = 32.0
-offset_top = 144.0
-offset_right = 392.0
-offset_bottom = 200.0
+[node name="MapBox" type="VBoxContainer" parent="Column/Scroll/Stack"]
+layout_mode = 2
 
-[node name="Preview" type="Panel" parent="Column"]
-layout_mode = 0
-offset_left = 32.0
-offset_top = 224.0
-offset_right = 392.0
-offset_bottom = 424.0
+[node name="Preview" type="Panel" parent="Column/Scroll/Stack"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 200)
 theme_override_styles/panel = SubResource("StyleBoxFlat_preview")
 
-[node name="PreviewLabel" type="Label" parent="Column/Preview"]
+[node name="PreviewLabel" type="Label" parent="Column/Scroll/Stack/Preview"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -139,17 +158,13 @@ grow_vertical = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MapInfo" type="Label" parent="Column"]
-layout_mode = 0
-offset_left = 32.0
-offset_top = 432.0
-offset_right = 392.0
-offset_bottom = 464.0
+[node name="MapInfo" type="Label" parent="Column/Scroll/Stack"]
+layout_mode = 2
 
-[node name="Actions" type="VBoxContainer" parent="Column"]
-layout_mode = 0
-offset_left = 32.0
-offset_top = 800.0
-offset_right = 392.0
-offset_bottom = 980.0
+[node name="Spacer" type="Control" parent="Column/Scroll/Stack"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Actions" type="VBoxContainer" parent="Column/Scroll/Stack"]
+layout_mode = 2
 theme_override_constants/separation = 12

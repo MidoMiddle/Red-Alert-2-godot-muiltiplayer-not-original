@@ -32,7 +32,7 @@ public partial class MainMenu : Control
         GetNode<Label>("Column/Header/HeaderLabel").Text = Tr("UI_MAIN_MENU");
         GetNode<Label>("Column/Version").Text = string.Format(Tr("UI_VERSION"), GameInfo.Version);
 
-        _entries = GetNode<VBoxContainer>("Column/Entries");
+        _entries = GetNode<VBoxContainer>("Column/Scroll/Entries");
         _entries.AddThemeConstantOverride("separation", EntrySeparation);
 
         // Entries without an action are not ready yet. Each step that adds a screen passes its action here.

@@ -26,20 +26,20 @@ public partial class SkirmishSetup : Control
     {
         ScreenshotCapture.AttachIfRequested(this);
 
-        GetNode<Label>("Column/Header/HeaderLabel").Text = Tr("UI_SKIRMISH_HEADER");
-        GetNode<Label>("Column/MapLabel").Text = Tr("UI_SKIRMISH_MAP");
-        GetNode<VBoxContainer>("Column/MapBox").AddChild(DisabledOption(ActionWidth, 0, Tr("UI_MAP_NONE")));
-        GetNode<Label>("Column/Preview/PreviewLabel").Text = Tr("UI_MAP_PREVIEW");
-        GetNode<Label>("Column/MapInfo").Text = Tr("UI_MAP_INFO_NONE");
+        GetNode<Label>("Column/Scroll/Stack/Header/HeaderLabel").Text = Tr("UI_SKIRMISH_HEADER");
+        GetNode<Label>("Column/Scroll/Stack/MapLabel").Text = Tr("UI_SKIRMISH_MAP");
+        GetNode<VBoxContainer>("Column/Scroll/Stack/MapBox").AddChild(DisabledOption(ActionWidth, 0, Tr("UI_MAP_NONE")));
+        GetNode<Label>("Column/Scroll/Stack/Preview/PreviewLabel").Text = Tr("UI_MAP_PREVIEW");
+        GetNode<Label>("Column/Scroll/Stack/MapInfo").Text = Tr("UI_MAP_INFO_NONE");
 
-        var content = GetNode<VBoxContainer>("Screen/Content");
+        var content = GetNode<VBoxContainer>("Screen/Scroll/Content");
         content.AddChild(Caption(Tr("UI_SKIRMISH_PLAYERS")));
         content.AddChild(BuildPlayers());
         content.AddChild(new Control { SizeFlagsVertical = SizeFlags.ExpandFill });
         content.AddChild(Caption(Tr("UI_SKIRMISH_OPTIONS")));
         content.AddChild(BuildOptions());
 
-        var actions = GetNode<VBoxContainer>("Column/Actions");
+        var actions = GetNode<VBoxContainer>("Column/Scroll/Stack/Actions");
         actions.AddChild(new Button
         {
             Text = string.Format(Tr("UI_MENU_ITEM_SOON"), Tr("UI_SKIRMISH_START_GAME")),

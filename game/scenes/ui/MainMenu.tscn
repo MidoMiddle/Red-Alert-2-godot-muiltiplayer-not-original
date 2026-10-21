@@ -52,11 +52,16 @@ grow_vertical = 2
 color = Color(0.031, 0.035, 0.043, 1)
 
 [node name="Screen" type="Panel" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 56.0
 offset_top = 40.0
-offset_right = 1400.0
-offset_bottom = 1040.0
+offset_right = -520.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_screen")
 
 [node name="Title" type="Label" parent="Screen"]
@@ -77,11 +82,16 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Column" type="Panel" parent="."]
-layout_mode = 0
-offset_left = 1440.0
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -480.0
 offset_top = 40.0
-offset_right = 1864.0
-offset_bottom = 1040.0
+offset_right = -56.0
+offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_column")
 
 [node name="Header" type="PanelContainer" parent="Column"]
@@ -99,12 +109,19 @@ theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Entries" type="VBoxContainer" parent="Column"]
-layout_mode = 0
+[node name="Scroll" type="ScrollContainer" parent="Column"]
+layout_mode = 1
+anchor_bottom = 1.0
 offset_left = 32.0
 offset_top = 120.0
 offset_right = 392.0
-offset_bottom = 800.0
+offset_bottom = -200.0
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="Entries" type="VBoxContainer" parent="Column/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="Version" type="Label" parent="Column"]
 layout_mode = 1
