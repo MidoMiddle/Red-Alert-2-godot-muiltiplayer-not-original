@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Godot;
+using Rts.Client.Controls;
 using Rts.Client.Units;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
@@ -226,15 +227,15 @@ public partial class SimulationHost : Node
     /// <summary>Issues the command made for the living own units among <paramref name="units"/>, when there are any.</summary>
     private void IssueTo(IReadOnlyList<EntityId> units, Func<ImmutableArray<EntityId>, Command> make)
     {
-        var ordered = units
-            .Where(id => Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer)
-            .Take(UnitsCommand.MaxUnits)
-            .ToImmutableArray();
+        var ordered = OrderTargets.Pick(units, IsOwnLiving).ToImmutableArray();
         if (!ordered.IsEmpty)
         {
             Issue(make(ordered));
         }
     }
+
+    private bool IsOwnLiving(EntityId id) =>
+        Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer;
 
     private void Issue(Command command)
     {

@@ -22,16 +22,16 @@ public sealed record RebindResult(RebindStatus Status, string? OtherAction = nul
 /// change. Keys are Godot key names ("W", "F5", "Equal"), and the game maps them to its input map. A new key that another action
 /// uses is swapped with that action's key. Escape, the interface keys, the digits (control groups) and the modifiers cannot be
 /// bound. The layout is the RA2 one (docs/implementation/M2_unit_control.md, 4.14): the camera on the arrows, S / X / Z for
-/// orders.
+/// orders, T selects units of a type, B spawns a test unit, G guards and D deploys (both wait for M4 and M3).
 /// </summary>
 public sealed class KeyBindings
 {
     private const string KeyPrefix = "keys/";
 
-    /// <summary>Marks a file written with the RA2 layout. Files without it come from M6, where the camera was on W / S / A / D.</summary>
+    /// <summary>Marks a file written with the layout of this step. Files without it keep their keys, but not the old ones (see <see cref="OldCameraKeys"/>).</summary>
     private const string LayoutKey = KeyPrefix + "layout";
 
-    private const string Layout = "2";
+    private const string Layout = "3";
 
     /// <summary>The camera keys of the M6 layout. A file without the layout mark that still has them gets the arrows.</summary>
     private static readonly Dictionary<string, string> OldCameraKeys = new(StringComparer.Ordinal)
@@ -55,7 +55,10 @@ public sealed class KeyBindings
         new KeyAction("save_replay", "UI_KEY_SAVE_REPLAY", "F5"),
         new KeyAction("load_replay", "UI_KEY_LOAD_REPLAY", "F9"),
         new KeyAction("new_session", "UI_KEY_NEW_SESSION", "R"),
-        new KeyAction("spawn_type", "UI_KEY_SPAWN_TYPE", "T"),
+        new KeyAction("type_select", "UI_KEY_TYPE_SELECT", "T"),
+        new KeyAction("spawn", "UI_KEY_SPAWN", "B"),
+        new KeyAction("guard", "UI_KEY_GUARD", "G"),
+        new KeyAction("deploy", "UI_KEY_DEPLOY", "D"),
         new KeyAction("debug_path", "UI_KEY_DEBUG_PATH", "F3"),
         new KeyAction("select_all", "UI_KEY_SELECT_ALL", "E"),
         new KeyAction("stop", "UI_KEY_STOP", "S"),
@@ -145,7 +148,8 @@ public sealed class KeyBindings
 
     /// <summary>
     /// Reads the keys from the file contents. A missing, unknown, refused or unknown-to-the-game key gets its default. A file
-    /// without the layout mark keeps its own keys, except the old W / S / A / D camera keys, which give way to the arrows. Keys
+    /// without the current layout mark keeps its own keys, except the old W / S / A / D camera keys, which give way to the arrows.
+    /// A key of an action that no longer exists (spawn_type, before the layout 3) is ignored, so T goes to type select. Keys
     /// from the file come first: a file key that an earlier action already has falls back to the default, and a default that
     /// is already taken leaves the action without a key (empty), so no two actions ever share one.
     /// </summary>

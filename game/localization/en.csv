@@ -132,7 +132,10 @@ UI_KEY_SPEED_DOWN,Speed down
 UI_KEY_SAVE_REPLAY,Save replay
 UI_KEY_LOAD_REPLAY,Play last replay
 UI_KEY_NEW_SESSION,New session
-UI_KEY_SPAWN_TYPE,Next spawn unit type
+UI_KEY_TYPE_SELECT,Select units of the same type (twice: whole map)
+UI_KEY_SPAWN,Spawn a test unit (press, then click)
+UI_KEY_GUARD,Guard (with the stance of M4)
+UI_KEY_DEPLOY,Deploy (with M3)
 UI_KEY_DEBUG_PATH,Show path of the selected unit
 UI_KEY_SELECT_ALL,Select all own units
 UI_KEY_STOP,Stop
@@ -158,3 +161,11 @@ UI_TAB_VEHICLES,Vehicles
 UI_STATS_TITLE,Statistics
 UI_STATS_BUILT,Built {0}
 UI_STATS_CAPTURED,Captured {0}
+UI_CMD_TYPE_ON_SCREEN,Select the units of this type on the field
+UI_CMD_TYPE_ON_MAP,Select the units of this type on the whole map
+UI_CMD_SELECT_COMBAT,Select all combat units on the field
+UI_CMD_SCATTER,Scatter the selected units
+UI_CMD_GUARD,Guard
+UI_CMD_STOP,Stop the selected units
+UI_CMD_WAYPOINTS,Waypoints: lay out a route on the field
+UI_CMD_BUG,Report a bug

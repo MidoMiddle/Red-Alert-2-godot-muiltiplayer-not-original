@@ -5,9 +5,10 @@ using Rts.Client.UI;
 namespace Rts.Client.Hud;
 
 /// <summary>
-/// The HUD of the match scene: the sidebar and the statistics panel, wired to the rest of the scene. The Menu button opens the
-/// pause menu, the Stats button shows the statistics, the minimap moves the camera, and the camera keeps the strip under the sidebar
-/// out of the field. The money and the statistics are placeholders until M3 and M11.
+/// The HUD of the match scene: the sidebar, the statistics panel and the command bar, wired to the rest of the scene. The Menu button
+/// opens the pause menu, the Stats button shows the statistics, the minimap moves the camera, the command bar runs its commands on the
+/// selection, and the camera keeps the strips under the sidebar and the bar out of the field. The money and the statistics are
+/// placeholders until M3 and M11.
 /// </summary>
 public partial class MatchHud : CanvasLayer
 {
@@ -23,13 +24,18 @@ public partial class MatchHud : CanvasLayer
     {
         var sidebar = GetNode<Sidebar>("Sidebar");
         var stats = GetNode<StatsPanel>("StatsPanel");
+        var bar = GetNode<CommandBar>("CommandBar");
         var camera = GetNode<RtsCamera>("../CameraRig");
+        var player = GetNode<PlayerInput>("../PlayerInput");
 
         camera.ReservedRight = SidebarLayout.Width;
+        camera.ReservedBottom = CommandBarLayout.Height;
         sidebar.Minimap.Bind(GetNode<SimulationHost>("../SimulationHost"), camera);
         sidebar.MenuRequested += GetNode<PauseMenu>("../PauseMenu").Open;
         sidebar.StatsRequested += stats.Toggle;
         sidebar.Setup(PlayerFaction, Credits);
         stats.Setup(0, 0);
+        bar.Bind(player);
+        bar.Requested += button => player.RunCommand((CommandBarButton)button);
     }
 }

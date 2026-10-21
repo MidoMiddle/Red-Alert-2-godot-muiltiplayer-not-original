@@ -1,5 +1,6 @@
 using Godot;
 using Rts.Client.App;
+using Rts.Client.Hud;
 
 namespace Rts.Client;
 
@@ -44,6 +45,9 @@ public partial class RtsCamera : Node3D
     /// <summary>Width in design pixels of the strip on the right that the sidebar covers. The field is the view without it.</summary>
     public float ReservedRight { get; set; }
 
+    /// <summary>Height in design pixels of the strip at the bottom that the command bar covers. The field is the view without it.</summary>
+    public float ReservedBottom { get; set; }
+
     public override void _Ready()
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
@@ -72,7 +76,9 @@ public partial class RtsCamera : Node3D
         }
 
         _camera.Size = Mathf.Lerp(_camera.Size, _targetSize, 1f - Mathf.Exp(-ZoomSmoothing * dt));
-        _camera.Position = new Vector3(FieldCentreShift(), 0f, CameraDistance);
+        // The rig point sits in the middle of the field: the view without the strips that the sidebar and the command bar cover.
+        var (shiftX, shiftY) = CommandBarLayout.CentreOffset(ReservedRight, ReservedBottom, _camera.Size, GetViewport().GetVisibleRect().Size.Y);
+        _camera.Position = new Vector3(shiftX, shiftY, CameraDistance);
     }
 
     public override void _UnhandledInput(InputEvent inputEvent)
@@ -141,7 +147,7 @@ public partial class RtsCamera : Node3D
     public Rect2 FieldRect()
     {
         var view = GetViewport().GetVisibleRect();
-        return new Rect2(view.Position, new Vector2(view.Size.X - ReservedRight, view.Size.Y));
+        return new Rect2(view.Position, new Vector2(view.Size.X - ReservedRight, view.Size.Y - ReservedBottom));
     }
 
     /// <summary>Moves the view to a ground point, for example to a click on the minimap.</summary>
@@ -193,10 +199,6 @@ public partial class RtsCamera : Node3D
     // 0 outside the band, growing to 1 at the very edge.
     private static float EdgeStrength(float distanceToEdge) =>
         distanceToEdge >= EdgeBand ? 0f : 1f - Mathf.Max(0f, distanceToEdge) / EdgeBand;
-
-    // The rig point should sit in the middle of the field, not of the view, so the camera moves right by half the strip under the sidebar.
-    // The camera keeps the view height, so one design pixel is Size / view height world units.
-    private float FieldCentreShift() => ReservedRight / 2f * _camera.Size / GetViewport().GetVisibleRect().Size.Y;
 
     private Vector3 GroundRight() => Flatten(_camera.GlobalBasis.X);
 

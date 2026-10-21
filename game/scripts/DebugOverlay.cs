@@ -20,7 +20,7 @@ public partial class DebugOverlay : CanvasLayer
     private const string SharedControls =
         "Drag LMB box select · Shift+click add/remove · double click same type · Ctrl+1…9 group · 1…9 select (twice: camera) · Shift+1…9 add · " +
         "Shift+order queue · Ctrl+Shift+order attack-move · Z+orders waypoints, then order without Z · S stop · X scatter\n" +
-        "Alt+LMB spawn · T spawn type · E select all · F3 path · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · F3 path · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
         "arrows/edge/wheel camera";
 
     private SimulationHost _host = null!;

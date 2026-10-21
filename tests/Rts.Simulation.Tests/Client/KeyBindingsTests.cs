@@ -219,4 +219,32 @@ public sealed class KeyBindingsTests
             Assert.Equal(bound.Count, bound.Distinct(StringComparer.OrdinalIgnoreCase).Count());
         }
     }
+
+    [Fact]
+    public void TypeSelectIsT_SpawnIsB_AndGuardAndDeployAreBound()
+    {
+        var bindings = new KeyBindings();
+
+        Assert.Equal("T", bindings.KeyOf("type_select"));
+        Assert.Equal("B", bindings.KeyOf("spawn"));
+        Assert.Equal("G", bindings.KeyOf("guard"));
+        Assert.Equal("D", bindings.KeyOf("deploy"));
+        Assert.Empty(bindings.Unbound());
+    }
+
+    [Fact]
+    public void AnOlderFileWithSpawnOnTKeepsTypeSelectOnT()
+    {
+        var raw = new Dictionary<string, string>
+        {
+            ["keys/layout"] = "2",
+            ["keys/spawn_type"] = "T",
+        };
+
+        var loaded = KeyBindings.Parse(raw, _ => true);
+
+        Assert.Equal("T", loaded.KeyOf("type_select"));
+        Assert.Equal("B", loaded.KeyOf("spawn"));
+        Assert.Empty(loaded.Unbound());
+    }
 }

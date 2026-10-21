@@ -14,11 +14,10 @@ public sealed class ControlGroups
     public const int Count = 10;
 
     /// <summary>Milliseconds within which a second press of the same digit is a double tap.</summary>
-    public const ulong DoubleTapMs = 400;
+    public const ulong DoubleTapMs = DoubleTap.WindowMs;
 
     private readonly List<EntityId>[] _groups = new List<EntityId>[Count];
-    private int _lastDigit = -1;
-    private ulong _lastTapAt;
+    private readonly DoubleTap _taps = new();
 
     public ControlGroups()
     {
@@ -57,10 +56,7 @@ public sealed class ControlGroups
     public bool Tap(int digit, ulong nowMs)
     {
         CheckDigit(digit);
-        var isDouble = digit == _lastDigit && nowMs - _lastTapAt <= DoubleTapMs;
-        _lastDigit = isDouble ? -1 : digit;
-        _lastTapAt = nowMs;
-        return isDouble;
+        return _taps.Press(digit, nowMs);
     }
 
     private static int CheckDigit(int digit) =>

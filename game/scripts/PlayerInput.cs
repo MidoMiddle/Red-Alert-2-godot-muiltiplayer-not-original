@@ -4,6 +4,7 @@ using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Controls;
+using Rts.Client.Hud;
 using Rts.Client.Orders;
 using Rts.Client.UI;
 using Rts.Simulation.Geometry;
@@ -37,6 +38,12 @@ public partial class PlayerInput : Node
 
     private readonly List<EntityId> _candidates = new();
 
+    /// <summary>The double tap of the type select key: a second T within the window takes the whole map.</summary>
+    private readonly DoubleTap _typeTaps = new();
+
+    /// <summary>The number the double tap counts the type select key by.</summary>
+    private const int TypeSelectKey = 1;
+
     /// <summary>The selection box on screen: a thin green frame, symbolic (docs/implementation/conventions.md, section 12).</summary>
     private readonly ReferenceRect _box = new()
     {
@@ -52,8 +59,14 @@ public partial class PlayerInput : Node
 
     public ControlGroups Groups { get; } = new();
 
-    /// <summary>Waypoints laid out with Z and not sent yet. The route lines show them.</summary>
+    /// <summary>Waypoints laid out with Z or the waypoints button and not sent yet. The route lines show them.</summary>
     public WaypointDraft Waypoints { get; } = new();
+
+    /// <summary>
+    /// Whether the waypoints mode is on: the flag of the command bar. Clicks on the field lay out points until the flag is pressed
+    /// again or Escape is pressed.
+    /// </summary>
+    public bool WaypointArmed { get; private set; }
 
     /// <summary>The unit under the pointer, if any. The unit renderer makes it glow faintly.</summary>
     public EntityId? Hovered { get; private set; }
@@ -77,6 +90,16 @@ public partial class PlayerInput : Node
     {
         // A unit that died leaves the selection.
         Selection.RemoveWhere(unit => !_host.Simulation.World.TryGet(unit, out var entity) || !entity.IsAlive);
+        // The waypoints mode lays out orders for units: with none selected it ends.
+        if (Selection.IsEmpty)
+        {
+            WaypointArmed = false;
+        }
+        // A gesture whose release never arrived (a control took it) ends here, as the release would have ended it.
+        Apply(_interpreter.SyncButtons(
+            Input.IsMouseButtonPressed(MouseButton.Left),
+            Input.IsMouseButtonPressed(MouseButton.Right),
+            Input.IsMouseButtonPressed(MouseButton.Middle)));
         // Every frame, not on mouse motion: the camera can move under a still pointer.
         var at = ToScreen(GetViewport().GetMousePosition());
         var context = Context(
@@ -90,15 +113,29 @@ public partial class PlayerInput : Node
         CursorSet.Show(GetViewport().GuiGetHoveredControl() is null ? CursorChoice.For(context, AnyCanEnter(context.Ground)) : CursorKind.Normal);
     }
 
+    /// <summary>
+    /// Releases and motion come here, before the GUI, so a release is seen even when a control took the press. Presses stay in
+    /// <see cref="_UnhandledInput"/>: a press on the sidebar or the command bar never starts a gesture on the field.
+    /// </summary>
+    public override void _Input(InputEvent inputEvent)
+    {
+        switch (inputEvent)
+        {
+            case InputEventMouseButton { Pressed: false, ButtonIndex: MouseButton.Left or MouseButton.Right or MouseButton.Middle } release:
+                Apply(_interpreter.Release(ToPointerButton(release.ButtonIndex)));
+                break;
+            case InputEventMouseMotion motion:
+                Apply(_interpreter.Move(ToScreen(motion.Position)));
+                break;
+        }
+    }
+
     public override void _UnhandledInput(InputEvent inputEvent)
     {
         switch (inputEvent)
         {
-            case InputEventMouseButton { ButtonIndex: MouseButton.Left or MouseButton.Right or MouseButton.Middle } mouse:
-                HandleButton(mouse);
-                break;
-            case InputEventMouseMotion motion:
-                Apply(_interpreter.Move(ToScreen(motion.Position)));
+            case InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right or MouseButton.Middle } press:
+                HandlePress(press);
                 break;
             case InputEventKey key:
                 HandleKey(key);
@@ -106,17 +143,11 @@ public partial class PlayerInput : Node
         }
     }
 
-    private void HandleButton(InputEventMouseButton mouse)
+    private void HandlePress(InputEventMouseButton mouse)
     {
-        var pointer = ToPointerButton(mouse.ButtonIndex);
         var at = ToScreen(mouse.Position);
-        var intents = mouse.Pressed
-            ? _interpreter.Press(
-                pointer,
-                at,
-                Context(at, mouse.ShiftPressed, mouse.AltPressed, mouse.CtrlPressed || mouse.MetaPressed) with { DoubleClick = mouse.DoubleClick })
-            : _interpreter.Release(pointer);
-        Apply(intents);
+        var context = Context(at, mouse.ShiftPressed, mouse.AltPressed, mouse.CtrlPressed || mouse.MetaPressed) with { DoubleClick = mouse.DoubleClick };
+        Apply(_interpreter.Press(ToPointerButton(mouse.ButtonIndex), at, context));
     }
 
     private void HandleKey(InputEventKey key)
@@ -125,62 +156,149 @@ public partial class PlayerInput : Node
         {
             HandleGroupKey((int)(key.Keycode - Key.Key0), key.CtrlPressed || key.MetaPressed, key.ShiftPressed);
         }
-        else if (key.IsActionPressed("cancel_selection"))
+        else if (key.IsActionPressed("cancel_selection", false, true))
         {
-            Apply(_interpreter.EscapePressed(!Selection.IsEmpty, !Waypoints.IsEmpty));
+            Apply(_interpreter.EscapePressed(!Selection.IsEmpty, WaypointArmed || !Waypoints.IsEmpty));
             // The pause menu must not also see this Escape.
             GetViewport().SetInputAsHandled();
         }
-        else if (key.IsActionPressed("pause"))
+        else if (key.IsActionPressed("pause", false, true))
         {
             _host.Paused = !_host.Paused;
         }
-        else if (key.IsActionPressed("step") && _host.Paused)
+        else if (key.IsActionPressed("step", false, true) && _host.Paused)
         {
             _host.StepOnce();
         }
-        else if (key.IsActionPressed("speed_up"))
+        else if (SpeedKey(key, "speed_up"))
         {
             _host.ChangeSpeed(+1);
         }
-        else if (key.IsActionPressed("speed_down"))
+        else if (SpeedKey(key, "speed_down"))
         {
             _host.ChangeSpeed(-1);
         }
-        else if (key.IsActionPressed("save_replay"))
+        else if (key.IsActionPressed("save_replay", false, true))
         {
             _host.SaveReplay();
         }
-        else if (key.IsActionPressed("load_replay"))
+        else if (key.IsActionPressed("load_replay", false, true))
         {
             _host.StartPlayback();
         }
-        else if (key.IsActionPressed("new_session"))
+        else if (key.IsActionPressed("new_session", false, true))
         {
             _host.StartLiveSession();
         }
-        else if (key.IsActionPressed("spawn_type"))
+        else if (key.IsActionPressed("spawn", false, true))
         {
-            _host.NextSpawnType();
+            // B arms the debug spawn; B again while it is armed changes the unit type.
+            if (_interpreter.SpawnArmed)
+            {
+                _host.NextSpawnType();
+            }
+            else
+            {
+                _interpreter.ArmSpawn();
+            }
         }
-        else if (key.IsActionPressed("select_all"))
+        else if (key.IsActionPressed("type_select", false, true) && !Selection.IsEmpty)
+        {
+            // T: the units of the type of the first selected unit on the field; a second T within 400 ms takes the whole map.
+            SelectSameType(Selection.Units[0], false, _typeTaps.Press(TypeSelectKey, Time.GetTicksMsec()));
+        }
+        else if (key.IsActionPressed("select_all", false, true))
         {
             // Debug: every living unit of the player, to try group orders.
             ChangeSelection(() => Selection.ReplaceAll(_host.Simulation.World.Entities
                 .Where(e => e is Unit { IsAlive: true } && e.Owner == SimulationHost.LocalPlayer)
                 .Select(e => e.Id)));
         }
-        else if (key.IsActionPressed("stop") && !Selection.IsEmpty)
+        else if (key.IsActionPressed("stop", false, true) && !Selection.IsEmpty)
         {
-            Voice("stopping");
-            _host.IssueStop(Selection.Units);
+            StopSelection();
         }
-        else if (key.IsActionPressed("scatter") && !Selection.IsEmpty)
+        else if (key.IsActionPressed("scatter", false, true) && !Selection.IsEmpty)
         {
-            Voice("scattering");
-            _host.IssueScatter(Selection.Units);
+            ScatterSelection();
         }
     }
+
+    /// <summary>Runs a command of the command bar: the one its key runs. The buttons that wait for a milestone do nothing.</summary>
+    public void RunCommand(CommandBarButton button)
+    {
+        if (!CommandBarLayout.Enabled(button, !Selection.IsEmpty))
+        {
+            return;
+        }
+
+        switch (button)
+        {
+            case CommandBarButton.TypeOnScreen:
+                SelectSameType(Selection.Units[0], false, wholeMap: false);
+                break;
+            case CommandBarButton.TypeOnMap:
+                SelectSameType(Selection.Units[0], false, wholeMap: true);
+                break;
+            case CommandBarButton.Scatter:
+                ScatterSelection();
+                break;
+            case CommandBarButton.Stop:
+                StopSelection();
+                break;
+            case CommandBarButton.Waypoints:
+                ToggleWaypointMode();
+                break;
+        }
+    }
+
+    /// <summary>The selected units stop: the S key, or the Stop button.</summary>
+    private void StopSelection()
+    {
+        Voice("stopping");
+        _host.IssueStop(Selection.Units);
+    }
+
+    /// <summary>The selected units scatter: the X key, or the Scatter button.</summary>
+    private void ScatterSelection()
+    {
+        Voice("scattering");
+        _host.IssueScatter(Selection.Units);
+    }
+
+    /// <summary>
+    /// The waypoints button. The first press turns the mode on, and clicks on the field lay out points. The next press sends the
+    /// points laid out so far and turns the mode off. Escape turns it off and drops them.
+    /// </summary>
+    private void ToggleWaypointMode()
+    {
+        if (!WaypointArmed)
+        {
+            // Playback only shows recorded orders, so there is nothing to lay out.
+            WaypointArmed = !_host.IsPlayback;
+            return;
+        }
+
+        if (!Waypoints.IsEmpty && !_host.IsPlayback)
+        {
+            SendWaypoints(null);
+        }
+
+        WaypointArmed = false;
+        Waypoints.Clear();
+    }
+
+    /// <summary>Sends the laid-out waypoints to the selected units, ending at <paramref name="last"/> when there is one.</summary>
+    private void SendWaypoints(WorldPos? last)
+    {
+        var (points, loop) = Waypoints.Finish(last);
+        Voice(loop ? $"on patrol, {points.Length} points" : $"following {points.Length} waypoints");
+        _host.IssueWaypoints(Selection.Units, points, loop);
+    }
+
+    /// <summary>A speed key. Shift is allowed, because the + sign is Shift with the equal key; Ctrl, Alt and Meta make another key.</summary>
+    private static bool SpeedKey(InputEventKey key, string action) =>
+        key.IsActionPressed(action) && !key.CtrlPressed && !key.AltPressed && !key.MetaPressed;
 
     /// <summary>Ctrl + digit assigns the group, Shift + digit adds it, the digit selects it; twice quickly also moves the camera there.</summary>
     private void HandleGroupKey(int digit, bool ctrl, bool shift)
@@ -236,12 +354,15 @@ public partial class PlayerInput : Node
                     _box.Visible = true;
                     break;
                 case BoxMoved box:
-                    _box.Position = new Vector2(MathF.Min(box.From.X, box.To.X), MathF.Min(box.From.Y, box.To.Y));
-                    _box.Size = new Vector2(MathF.Abs(box.To.X - box.From.X), MathF.Abs(box.To.Y - box.From.Y));
+                    // The frame is drawn over the field only: a box dragged onto the sidebar stops at its edge.
+                    var (shownFrom, shownTo) = BoxSelection.ClipToField(box.From, box.To, FieldScreenRect());
+                    _box.Position = new Vector2(MathF.Min(shownFrom.X, shownTo.X), MathF.Min(shownFrom.Y, shownTo.Y));
+                    _box.Size = new Vector2(MathF.Abs(shownTo.X - shownFrom.X), MathF.Abs(shownTo.Y - shownFrom.Y));
                     break;
                 case BoxSelect box:
                     _box.Visible = false;
-                    var inside = BoxSelection.Pick(OwnUnitsOnScreen().Select(u => (u.Unit, u.Point)), box.From, box.To);
+                    var (clippedFrom, clippedTo) = BoxSelection.ClipToField(box.From, box.To, FieldScreenRect());
+                    var inside = BoxSelection.Pick(OwnUnitsOnScreen().Select(u => (u.Unit, u.Point)), clippedFrom, clippedTo);
                     ChangeSelection(() =>
                     {
                         if (box.Add)
@@ -276,12 +397,11 @@ public partial class PlayerInput : Node
                     break;
                 case FinishWaypoints finish when !_host.IsPlayback:
                     // A last point nobody can reach is left out; the points laid out so far still go.
-                    var (points, loop) = Waypoints.Finish(CanOrder(finish.Point) ? finish.Point : null);
-                    Voice(loop ? $"on patrol, {points.Length} points" : $"following {points.Length} waypoints");
-                    _host.IssueWaypoints(Selection.Units, points, loop);
+                    SendWaypoints(CanOrder(finish.Point) ? finish.Point : null);
                     break;
                 case CancelWaypoints:
                     Waypoints.Clear();
+                    WaypointArmed = false;
                     break;
                 case SpawnUnit spawn:
                     if (!_host.IsPlayback)
@@ -355,19 +475,32 @@ public partial class PlayerInput : Node
         Waypoints.Clear();
     }
 
-    /// <summary>A double click: every own unit of the clicked unit's type on screen.</summary>
-    private void SelectSameTypeOnScreen(SelectSameType same)
+    /// <summary>A double click on a unit: every own unit of its type on the field; with Shift they are added.</summary>
+    private void SelectSameTypeOnScreen(SelectSameType same) => SelectSameType(same.Unit, same.Add, wholeMap: false);
+
+    /// <summary>
+    /// Selects the own living units of the type of <paramref name="reference"/>: on the field, or on the whole map (at most one
+    /// command's worth of units). They replace the selection, or are added to it. Without any of the type on the field, the selection
+    /// stays, so the second press can still take the whole map.
+    /// </summary>
+    private void SelectSameType(EntityId reference, bool add, bool wholeMap)
     {
-        if (!_host.Simulation.World.TryGet(same.Unit, out var entity) || entity is not Unit unit)
+        if (!_host.Simulation.World.TryGet(reference, out var entity) || entity is not Unit unit)
         {
             return;
         }
 
-        var size = GetViewport().GetVisibleRect().Size;
-        var picked = BoxSelection.SameTypeOnScreen(OwnUnitsOnScreen(), unit.Type, new ScreenPoint(size.X, size.Y));
+        var picked = wholeMap
+            ? BoxSelection.SameTypeOnMap(OwnLivingUnits(), unit.Type, Rts.Simulation.Commands.UnitsCommand.MaxUnits)
+            : BoxSelection.SameTypeInField(OwnUnitsOnScreen(), unit.Type, FieldScreenRect());
+        if (!wholeMap && picked.Count == 0)
+        {
+            return;
+        }
+
         ChangeSelection(() =>
         {
-            if (same.Add)
+            if (add)
             {
                 Selection.AddAll(picked);
             }
@@ -376,6 +509,25 @@ public partial class PlayerInput : Node
                 Selection.ReplaceAll(picked);
             }
         });
+    }
+
+    /// <summary>Living units of the player with their type, in id order: the whole-map type select reads them.</summary>
+    private IEnumerable<(EntityId Unit, UnitType Type)> OwnLivingUnits()
+    {
+        foreach (var entity in _host.Simulation.World.Entities)
+        {
+            if (entity is Unit { IsAlive: true } unit && unit.Owner == SimulationHost.LocalPlayer)
+            {
+                yield return (unit.Id, unit.Type);
+            }
+        }
+    }
+
+    /// <summary>The field in the view's design pixels: what a selection on screen may reach, without the sidebar and the bar.</summary>
+    private ScreenRect FieldScreenRect()
+    {
+        var field = _camera.FieldRect();
+        return new ScreenRect(field.Position.X, field.Position.Y, field.End.X, field.End.Y);
     }
 
     /// <summary>
@@ -432,8 +584,13 @@ public partial class PlayerInput : Node
             !Selection.IsEmpty,
             alt,
             ctrl,
-            WaypointMode: Input.IsActionPressed("waypoint_mode"),
+            WaypointMode: WaypointArmed || WaypointHeld(),
             HasWaypoints: !Waypoints.IsEmpty);
+
+    /// <summary>Whether Z is held on its own: with Ctrl, Shift, Alt or Meta it is not the waypoint key.</summary>
+    private static bool WaypointHeld() =>
+        Input.IsActionPressed("waypoint_mode") && !Input.IsKeyPressed(Key.Shift) && !Input.IsKeyPressed(Key.Ctrl)
+        && !Input.IsKeyPressed(Key.Alt) && !Input.IsKeyPressed(Key.Meta);
 
     /// <summary>The unit nearest to the pointer within <see cref="PickRadius"/>, or the ground when none is that close.</summary>
     /// <remarks>

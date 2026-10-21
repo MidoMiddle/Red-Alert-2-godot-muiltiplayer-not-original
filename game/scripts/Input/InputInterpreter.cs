@@ -43,7 +43,7 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <param name="Alt">Whether Alt is held: Alt and a left click on the ground spawn a test unit (debug).</param>
 /// <param name="Ctrl">Whether Ctrl (or Command) is held: Ctrl + Shift and an order give an attack-move.</param>
 /// <param name="DoubleClick">Whether this press is the second one of a double click.</param>
-/// <param name="WaypointMode">Whether the waypoint key (Z) is held: an order adds a waypoint instead.</param>
+/// <param name="WaypointMode">Whether the waypoints mode is on (the command bar's flag, or Z held): an order adds a waypoint instead.</param>
 /// <param name="HasWaypoints">Whether waypoints are laid out and not sent yet: an order without Z sends them.</param>
 public readonly record struct PointerContext(
     WorldPos? Ground,
@@ -93,7 +93,7 @@ public sealed record AddWaypoint(WorldPos Point) : Intent;
 /// <summary>The last waypoint (an order without Z after waypoints): send the route.</summary>
 public sealed record FinishWaypoints(WorldPos Point) : Intent;
 
-/// <summary>Drop the waypoints laid out so far (Escape).</summary>
+/// <summary>Leave the waypoints mode and drop the waypoints laid out so far (Escape).</summary>
 public sealed record CancelWaypoints : Intent;
 
 public sealed record SpawnUnit(WorldPos Position) : Intent;
@@ -144,12 +144,42 @@ public sealed class InputInterpreter
     /// <summary>A button went down at <paramref name="at"/>.</summary>
     public IReadOnlyList<Intent> Press(PointerButton button, ScreenPoint at, PointerContext context)
     {
-        if (_tracked is not null)
+        if (_tracked == button)
         {
-            return Array.Empty<Intent>();
+            // The same button went down again: its release never came (a control took it). The old gesture ends here,
+            // and this press starts over.
+            var intents = new List<Intent>(EndGesture());
+            intents.AddRange(Start(button, at, context));
+            return intents;
         }
 
-        if (context.Alt && button == PointerButton.Left)
+        return _tracked is null ? Start(button, at, context) : Array.Empty<Intent>();
+    }
+
+    /// <summary>A gesture whose release was lost ends: a box is cancelled, a camera drag stops. The state is cleared.</summary>
+    private IReadOnlyList<Intent> EndGesture()
+    {
+        var intents = new List<Intent>();
+        if (_boxing)
+        {
+            intents.Add(new BoxCancelled());
+        }
+        else if (_dragging)
+        {
+            intents.Add(new CameraDragEnded());
+        }
+
+        _tracked = null;
+        _dragging = false;
+        _boxing = false;
+        _moved = false;
+        return intents;
+    }
+
+    /// <summary>The start of a press: a spawn while the debug spawn is armed or Alt is held, else the button's own gesture.</summary>
+    private IReadOnlyList<Intent> Start(PointerButton button, ScreenPoint at, PointerContext context)
+    {
+        if ((context.Alt || SpawnArmed) && button == PointerButton.Left)
         {
             return context.Ground is { } spawnAt && context.Target.Kind == PointerTargetKind.Ground
                 ? new Intent[] { new SpawnUnit(spawnAt) }
@@ -259,14 +289,47 @@ public sealed class InputInterpreter
     }
 
     /// <summary>
-    /// The cancel key (Escape) was pressed. With units selected it clears the selection. Without them it opens the pause menu,
-    /// which takes all input, so a button still held down is never released in the game: the press is dropped here.
+    /// The buttons held right now, read once per frame. A gesture whose button is up here lost its release (a control took it),
+    /// so it ends now, as its release would have ended it.
+    /// </summary>
+    public IReadOnlyList<Intent> SyncButtons(bool leftHeld, bool rightHeld, bool middleHeld)
+    {
+        if (_tracked is not { } tracked)
+        {
+            return Array.Empty<Intent>();
+        }
+
+        var held = tracked switch
+        {
+            PointerButton.Left => leftHeld,
+            PointerButton.Right => rightHeld,
+            _ => middleHeld,
+        };
+        return held ? Array.Empty<Intent>() : Release(tracked);
+    }
+
+    /// <summary>Whether the debug spawn is armed (B): a left click on the ground places a test unit until Escape.</summary>
+    public bool SpawnArmed { get; private set; }
+
+    /// <summary>Arms the debug spawn (B). PlayerInput cycles the unit type when B is pressed again.</summary>
+    public void ArmSpawn() => SpawnArmed = true;
+
+    /// <summary>
+    /// The cancel key (Escape) was pressed. An armed spawn is disarmed first and nothing else happens. Otherwise, with units
+    /// selected it clears the selection. Without them it opens the pause menu, which takes all input, so a button still held down
+    /// is never released in the game: the press is dropped here.
     /// </summary>
     public IReadOnlyList<Intent> EscapePressed(bool hasSelection, bool hasWaypoints = false)
     {
+        if (SpawnArmed)
+        {
+            SpawnArmed = false;
+            return Array.Empty<Intent>();
+        }
+
         if (hasWaypoints && _tracked is null)
         {
-            // Escape first drops the waypoints laid out so far; the selection stays.
+            // Escape first leaves the waypoints mode and drops the waypoints laid out so far; the selection stays.
             return new Intent[] { new CancelWaypoints() };
         }
 

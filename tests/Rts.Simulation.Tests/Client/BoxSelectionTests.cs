@@ -51,7 +51,7 @@ public sealed class BoxSelectionTests
     }
 
     [Fact]
-    public void A_double_click_picks_units_of_the_type_on_screen_only()
+    public void A_type_select_on_screen_picks_units_of_the_type_inside_the_field_only()
     {
         (EntityId, UnitType, ScreenPoint)[] units =
         [
@@ -64,6 +64,36 @@ public sealed class BoxSelectionTests
 
         Assert.Equal(
             [new EntityId(1), new EntityId(3)],
-            BoxSelection.SameTypeOnScreen(units, UnitType.HeavyTank, new ScreenPoint(800, 600)));
+            BoxSelection.SameTypeInField(units, UnitType.HeavyTank, new ScreenRect(0, 0, 800, 600)));
+    }
+
+    [Fact]
+    public void A_whole_map_type_select_keeps_the_first_units_of_the_type_up_to_the_limit()
+    {
+        (EntityId, UnitType)[] units =
+        [
+            (new EntityId(1), UnitType.HeavyTank),
+            (new EntityId(2), UnitType.Conscript),
+            (new EntityId(3), UnitType.HeavyTank),
+            (new EntityId(4), UnitType.HeavyTank),
+        ];
+
+        Assert.Equal([new EntityId(1), new EntityId(3)], BoxSelection.SameTypeOnMap(units, UnitType.HeavyTank, 2));
+        Assert.Equal([new EntityId(1), new EntityId(3), new EntityId(4)], BoxSelection.SameTypeOnMap(units, UnitType.HeavyTank, 256));
+    }
+
+    [Fact]
+    public void A_box_dragged_over_the_sidebar_is_clipped_to_the_field_and_misses_what_is_hidden()
+    {
+        var field = new ScreenRect(0, 0, 1690, 1008);
+        var (from, to) = BoxSelection.ClipToField(new ScreenPoint(1000, 100), new ScreenPoint(1800, 300), field);
+        (EntityId, ScreenPoint)[] behindSidebar =
+        [
+            (new EntityId(8), new ScreenPoint(1500, 200)),
+            (new EntityId(9), new ScreenPoint(1750, 200)),
+        ];
+
+        Assert.Equal(new ScreenPoint(1690, 300), to);
+        Assert.Equal([new EntityId(8)], BoxSelection.Pick(behindSidebar, from, to));
     }
 }
