@@ -70,7 +70,7 @@
 │       ├── Math/                   Fixed, IntMath
 │       ├── Geometry/               WorldPos, CellPos
 │       ├── Random/                 DeterministicRandom
-│       ├── World/                  EntityId, Entity, TestUnit, World
+│       ├── World/                  EntityId, PlayerId, Entity, TestUnit, GameWorld
 │       ├── Commands/               Command, команды, очередь, сериализатор
 │       ├── Systems/                MovementSystem
 │       ├── Events/                 события симуляции
@@ -179,11 +179,11 @@
 
 ### 4.6. Мир и сущности
 
-- `EntityId` — `int`, выдаётся счётчиком мира по возрастанию, никогда не переиспользуется.
+- `EntityId` — структура над `int`, выдаётся счётчиком мира по возрастанию с 1, никогда не переиспользуется. `PlayerId` — отдельная структура: `0` — нейтральный, `1…8` — игроки ([conventions.md](conventions.md), раздел 4).
 - Сущности хранятся в `List`, **отсортированном по ID** (новые добавляются в конец — порядок сохраняется автоматически). Поиск по ID — бинарный поиск.
 - Удаление: сущность помечается мёртвой, физически удаляется в конце тика. Внутри тика список не меняется.
 - **`TestUnit`** — единственный тип сущности в M0: `Id`, `Owner`, `Position`, `MoveTarget?`, `Speed` (лептонов/тик).
-- `World` хранит: текущий тик, сущности, счётчик ID, ГСЧ.
+- `GameWorld` хранит: текущий тик, сущности, счётчик ID, ГСЧ, размер карты. Класс назван `GameWorld`, а не `World`, чтобы не совпадать с пространством имён `Rts.Simulation.World`.
 
 ### 4.7. Команды
 
@@ -460,7 +460,7 @@ alpha = accumulator / длительность_тика   — для интер�
 | 1. Каркас решения | готово | `RtsGame.sln` (классический .sln), `global.json` (SDK 10.0.402), `Directory.Build.props/.targets`. Пакеты: BannedApiAnalyzers 5.6.0, xUnit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1, Microsoft.CodeAnalysis.CSharp 4.14.0 (анализатор). Анализатор BannedApi не ловит ключевые слова → добавлен свой `Rts.Analyzers` (4.2). Godot 4.7.2 нашёл решение в корне (`solution_directory="../"`), собрал C#, сцена печатает `Simulation v1`. Тесты: 21 зелёный |
 | 2. `Fixed` и `IntMath` | готово | `Math/Fixed.cs` (Q47.16, `Int128` для `*` и `/`), `Math/IntMath.cs` (`DivFloor`, побитовый `Sqrt` для `long`/`ulong`/`UInt128`). Правила округления 4.3 закреплены тестами с точными raw-значениями, корень проверен свойством на 10 000 значений. Добавлено: `ToIntFloor`/`ToIntTruncate` с проверкой диапазона `int`, `ToString` без культуры (5 знаков, обрезка). Тесты: 70 (Debug) / 69 (Release, без теста переполнения) в `Rts.Simulation.Tests` + 19 анализатора |
 | 3. `DeterministicRandom` | готово | PCG32 XSH-RR, бит-в-бит как эталонная реализация (тест на вектор `pcg32-demo`: seed 42, stream 54). Сверх плана: **потоки** (`stream`, независимые последовательности при одном seed — для ботов) и `RandomState` + `FromState` для хеша и повторов. `NextInt` без смещения (`pcg32_boundedrand_r`), `NextFixed` в [0, 1). Тесты: 84 (Debug) / 83 (Release) в `Rts.Simulation.Tests` |
-| 4. Мир и сущности | — | |
+| 4. Мир и сущности | готово | `Geometry/WorldPos`, `CellPos` (256 лептонов на клетку, `ToCell` через `DivFloor`); `World/EntityId`, `PlayerId` (0 — нейтральный), `Entity`, `TestUnit`, `GameWorld` (сущности по возрастанию ID, бинарный поиск, удаление мёртвых в конце тика). Отклонения: класс `GameWorld` вместо `World`, отдельный тип `PlayerId`, размер карты в мире (нужен для проверки команд на шаге 5). Тесты: 104 (Debug) / 103 (Release) |
 | 5. Команды | — | |
 | 6. Тик и движение | — | |
 | 7. Контрольная сумма | — | |

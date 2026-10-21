@@ -9,4 +9,9 @@
     <RtsDeterministic>true</RtsDeterministic>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Tests may set up state directly; game code changes state only through the simulation. -->
+    <InternalsVisibleTo Include="Rts.Simulation.Tests" />
+  </ItemGroup>
+
 </Project>
