@@ -104,6 +104,13 @@ public static class StateHasher
             hash.Add(cell.X);
             hash.Add(cell.Y);
         }
+
+        hash.Add(path.Waypoints.Length);
+        foreach (var waypoint in path.Waypoints)
+        {
+            hash.Add(waypoint.X);
+            hash.Add(waypoint.Y);
+        }
     }
 
     // The search arrays are not hashed: given the map, the request fields and the number of expanded nodes,

@@ -150,18 +150,47 @@ public sealed class GoldenValuesTests
     }
 
     [Fact]
+    public void Smoothed_paths()
+    {
+        var landTypes = TestMapParserTests.Load("all_land_types.txt").Grid;
+        var maze = TestMapParserTests.Load("paths/maze.txt").Grid;
+        (MapGrid Map, int Sx, int Sy, int Gx, int Gy, Locomotor Locomotor)[] searches =
+        [
+            (landTypes, 0, 0, 23, 11, Locomotor.Wheel),
+            (landTypes, 23, 11, 0, 0, Locomotor.Foot),
+            (maze, 0, 0, 14, 14, Locomotor.Foot),
+        ];
+
+        var hash = new Fnv1a64();
+        var counts = new List<int>();
+        foreach (var (map, sx, sy, gx, gy, locomotor) in searches)
+        {
+            var path = PathSmoother.Smooth(map, AStar.FindPath(map, new CellPos(sx, sy), new CellPos(gx, gy), locomotor), locomotor);
+            counts.Add(path.Waypoints.Length);
+            foreach (var waypoint in path.Waypoints)
+            {
+                hash.Add(waypoint.X);
+                hash.Add(waypoint.Y);
+            }
+        }
+
+        Assert.Equal(4334713273682822449UL, hash.Value);
+        Assert.Equal([4, 5, 15], counts);
+    }
+
+    [Fact]
     public void Reference_scenario_checksums()
     {
         var checksums = ReferenceScenario.Run(ReferenceScenario.Commands(ScenarioTicks), ScenarioTicks);
 
         StateChecksum[] actual = [checksums[99], checksums[499], checksums[999]];
 
-        // Rules v5 (M2 step 6): orders go through the path queue and units drive along the found paths.
+        // Rules v6 (M2 step 7): units drive along smoothed paths, straight lines on clear land.
         StateChecksum[] expected =
         [
-            new(100, 0x843600629a880232UL),
-            new(500, 0x71c202398491a012UL),
-            new(1000, 0x57086481af20b2cfUL),
+            new(100, 0x6213cdcf17113b9fUL),
+            new(500, 0xf41a6875731033feUL),
+            new(1000, 0xfa4e39d1320ab573UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -189,7 +218,7 @@ public sealed class GoldenValuesTests
         // Replay and command format v2 (M2 step 2): the spawn command carries the unit type.
         // Rules v3 (M2 step 3): same bytes except the recorded checksums, which now include the map.
         // Replay format v3, rules v4 (M2 step 4): one more byte, the "no map" flag; checksums unchanged on clear land.
-        // Rules v5 (M2 step 6): same layout, new recorded checksums.
-        Assert.Equal((22346, 16533060175125683169UL), (bytes.Length, hash.Value));
+        // Rules v5 (M2 step 6) and v6 (step 7): same layout, new recorded checksums.
+        Assert.Equal((22346, 10794063590400182780UL), (bytes.Length, hash.Value));
     }
 }

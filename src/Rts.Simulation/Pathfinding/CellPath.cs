@@ -17,9 +17,19 @@ public enum PathStatus : byte
 
 /// <summary>
 /// Result of a path search: cells from the start to the end, both included, the cost of the whole path in
-/// <see cref="AStar"/> units, and how many nodes the search expanded.
+/// <see cref="AStar"/> units, and how many nodes the search expanded. <see cref="Waypoints"/> are the cells a unit
+/// actually drives to after <see cref="PathSmoother"/>; before smoothing they are all the cells.
 /// </summary>
 public sealed record CellPath(PathStatus Status, ImmutableArray<CellPos> Cells, int Cost, int Expanded)
 {
+    private readonly ImmutableArray<CellPos> _waypoints;
+
     public CellPos End => Cells[^1];
+
+    /// <summary>Corners of the smoothed path: a subset of <see cref="Cells"/> in order, with the same first and last cell.</summary>
+    public ImmutableArray<CellPos> Waypoints
+    {
+        get => _waypoints.IsDefault ? Cells : _waypoints;
+        init => _waypoints = value;
+    }
 }

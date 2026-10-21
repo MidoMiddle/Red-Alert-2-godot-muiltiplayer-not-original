@@ -20,7 +20,7 @@ public static class PathText
 
         return path is null
             ? "path: point at the map"
-            : $"{(following ? "unit path" : "path")} {path.Status} · {path.Cells.Length} cells · cost {path.Cost} · {path.Expanded} nodes";
+            : $"{(following ? "unit path" : "path")} {path.Status} · {path.Cells.Length} cells · {path.Waypoints.Length} waypoints · cost {path.Cost} · {path.Expanded} nodes";
     }
 
     /// <summary><c>paths queue 2 · nodes 4120/6000 this tick</c>.</summary>

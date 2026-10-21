@@ -9,14 +9,16 @@ namespace Rts.Client.Debug;
 
 /// <summary>
 /// Debug view of A* (docs/implementation/M2_unit_control.md, steps 5–6): F3 toggles a line for the selected unit, yellow when
-/// the goal is reached, orange when it is not. While the unit drives, the line is its own path from the simulation; otherwise
-/// it is a preview to the cell under the pointer, computed on the client outside the simulation, so it never changes the match.
+/// the goal is reached, orange when it is not, through the waypoints of the smoothed path; a thin grey line shows the cells A*
+/// found before smoothing. While the unit drives, the lines are its own path from the simulation; otherwise they are a preview
+/// to the cell under the pointer, computed on the client outside the simulation, so it never changes the match.
 /// </summary>
 public partial class PathPreview : Node3D
 {
     private const float Lift = 0.15f;
     private static readonly Color FoundColor = new(1f, 0.9f, 0.2f);
     private static readonly Color PartialColor = new(1f, 0.5f, 0.1f);
+    private static readonly Color CellsColor = new(0.55f, 0.55f, 0.55f);
 
     private readonly ImmediateMesh _mesh = new();
     private SimulationHost _host = null!;
@@ -103,7 +105,8 @@ public partial class PathPreview : Node3D
         }
 
         _lastQuery = query;
-        Path = _pathfinder.FindPath(query.Item2, target, unit.Archetype.Locomotor);
+        var locomotor = unit.Archetype.Locomotor;
+        Path = PathSmoother.Smooth(world.Map, _pathfinder.FindPath(query.Item2, target, locomotor), locomotor);
         Draw(Path);
     }
 
@@ -115,14 +118,19 @@ public partial class PathPreview : Node3D
             return;
         }
 
-        var color = path.Status == PathStatus.Found ? FoundColor : PartialColor;
+        AddLine(path.Cells, CellsColor, Lift * 0.5f);
+        AddLine(path.Waypoints, path.Status == PathStatus.Found ? FoundColor : PartialColor, Lift);
+    }
+
+    private void AddLine(System.Collections.Immutable.ImmutableArray<CellPos> cells, Color color, float lift)
+    {
         _mesh.SurfaceBegin(Mesh.PrimitiveType.LineStrip);
-        foreach (var cell in path.Cells)
+        foreach (var cell in cells)
         {
             var x = cell.X + 0.5f;
             var z = cell.Y + 0.5f;
             _mesh.SurfaceSetColor(color);
-            _mesh.SurfaceAddVertex(new Vector3(x, (WorldCoords.Terrain?.HeightAt(x, z) ?? 0f) + Lift, z));
+            _mesh.SurfaceAddVertex(new Vector3(x, (WorldCoords.Terrain?.HeightAt(x, z) ?? 0f) + lift, z));
         }
 
         _mesh.SurfaceEnd();

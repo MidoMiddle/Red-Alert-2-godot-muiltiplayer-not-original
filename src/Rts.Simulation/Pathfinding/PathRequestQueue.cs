@@ -118,7 +118,7 @@ public sealed class PathRequestQueue
                 break;
             }
 
-            var path = request.Search.Result!;
+            var path = PathSmoother.Smooth(world.Map, request.Search.Result!, request.Locomotor);
             unit.Path = path;
             unit.PathIndex = 1;
             unit.PathPending = false;

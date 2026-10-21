@@ -11,8 +11,8 @@ namespace Rts.Simulation.Systems;
 /// Turns units toward where they go, then moves them (docs/implementation/M2_unit_control.md, 4.2 and 4.12).
 /// Turning: the hull rotates by at most <see cref="Unit.TurnRate"/> per tick (0 is instant). While more than
 /// <see cref="MaxDriveAngle"/> remains after the turn, the unit stands still, like an RA2 tank turning on the spot.
-/// Waiting for a path: the unit turns toward its target and stands. With a path: it drives from cell centre to cell centre
-/// and ends on the ordered point, or on the centre of the last cell when the goal was unreachable. Speed left over at a
+/// Waiting for a path: the unit turns toward its target and stands. With a path: it drives straight from waypoint to waypoint
+/// of the smoothed path (cell centres) and ends on the ordered point, or on the centre of the last cell when the goal was unreachable. Speed left over at a
 /// waypoint carries on to the next one in the same tick, so corners do not slow the unit down. Without a path (tests set
 /// a target directly) it drives straight. Steps are pure integer math: <c>delta * speed / |delta|</c> with an integer
 /// square root and round-to-nearest components, never overshooting.
@@ -102,7 +102,7 @@ public static class MovementSystem
         return IntMath.Abs(BAngle.Difference(unit.Facing, wanted)) <= MaxDriveAngle;
     }
 
-    /// <summary>Centre of the next path cell; on the last cell the ordered point, or the cell centre if the goal was unreachable.</summary>
+    /// <summary>Centre of the next waypoint; on the last one the ordered point, or the cell centre if the goal was unreachable.</summary>
     private static WorldPos NextWaypoint(Unit unit, WorldPos target)
     {
         if (unit.Path is not { } path)
@@ -110,15 +110,15 @@ public static class MovementSystem
             return target;
         }
 
-        if (unit.PathIndex < path.Cells.Length - 1)
+        if (unit.PathIndex < path.Waypoints.Length - 1)
         {
-            return path.Cells[unit.PathIndex].Center;
+            return path.Waypoints[unit.PathIndex].Center;
         }
 
         return path.Status == PathStatus.Found ? target : path.End.Center;
     }
 
-    private static bool IsFinal(Unit unit, WorldPos target) => unit.Path is not { } path || unit.PathIndex >= path.Cells.Length - 1;
+    private static bool IsFinal(Unit unit, WorldPos target) => unit.Path is not { } path || unit.PathIndex >= path.Waypoints.Length - 1;
 
     /// <summary>Moves <paramref name="speed"/> leptons along <paramref name="delta"/>, which is longer than that.</summary>
     private static void Step(GameWorld world, Unit unit, WorldPos delta, long speed, List<SimEvent> events)

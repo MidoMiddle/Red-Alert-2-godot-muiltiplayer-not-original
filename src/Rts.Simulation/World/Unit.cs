@@ -50,6 +50,6 @@ public sealed class Unit : Entity
     /// <summary>The path the unit drives along, or null when it has none (standing, or moving straight in tests).</summary>
     public CellPath? Path { get; internal set; }
 
-    /// <summary>Index in <see cref="Path"/> of the cell the unit drives to next.</summary>
+    /// <summary>Index in the <see cref="CellPath.Waypoints"/> of <see cref="Path"/> that the unit drives to next.</summary>
     public int PathIndex { get; internal set; }
 }
