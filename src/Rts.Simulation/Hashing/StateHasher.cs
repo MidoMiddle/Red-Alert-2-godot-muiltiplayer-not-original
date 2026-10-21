@@ -31,6 +31,10 @@ public static class StateHasher
 
         AddMap(hash, world.Map);
         AddPathRequests(hash, world.PathRequests);
+        foreach (var owner in world.Reservations.Cells)
+        {
+            hash.Add(owner);
+        }
 
         hash.Add(world.Entities.Count);
         foreach (var entity in world.Entities)
@@ -65,6 +69,15 @@ public static class StateHasher
                 hash.Add(unit.PathPending);
                 hash.Add(unit.PathIndex);
                 AddPath(hash, unit.Path);
+                hash.Add(unit.WaitTicks);
+                hash.Add(unit.Replans);
+                hash.Add(unit.HoldTicks);
+                hash.Add(unit.ResumeTarget.HasValue);
+                if (unit.ResumeTarget is { } resume)
+                {
+                    hash.Add(resume.X);
+                    hash.Add(resume.Y);
+                }
                 break;
 
             default:
@@ -130,6 +143,12 @@ public static class StateHasher
             hash.Add(request.Goal.Y);
             hash.Add((byte)request.Locomotor);
             hash.Add(request.Expanded);
+            hash.Add(request.Avoid.Length);
+            foreach (var cell in request.Avoid)
+            {
+                hash.Add(cell.X);
+                hash.Add(cell.Y);
+            }
         }
     }
 

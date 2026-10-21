@@ -185,12 +185,12 @@ public sealed class GoldenValuesTests
 
         StateChecksum[] actual = [checksums[99], checksums[499], checksums[999]];
 
-        // Rules v6 (M2 step 7): units drive along smoothed paths, straight lines on clear land.
+        // Rules v7 (M2 step 8): one unit per cell, waiting, giving way, detours; speed depends on the land.
         StateChecksum[] expected =
         [
-            new(100, 0x6213cdcf17113b9fUL),
-            new(500, 0xf41a6875731033feUL),
-            new(1000, 0xfa4e39d1320ab573UL),
+            new(100, 0xae531d728953ae5bUL),
+            new(500, 0x315e94ac15fb2790UL),
+            new(1000, 0x4604f255a51e78d2UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -218,7 +218,7 @@ public sealed class GoldenValuesTests
         // Replay and command format v2 (M2 step 2): the spawn command carries the unit type.
         // Rules v3 (M2 step 3): same bytes except the recorded checksums, which now include the map.
         // Replay format v3, rules v4 (M2 step 4): one more byte, the "no map" flag; checksums unchanged on clear land.
-        // Rules v5 (M2 step 6) and v6 (step 7): same layout, new recorded checksums.
-        Assert.Equal((22346, 10794063590400182780UL), (bytes.Length, hash.Value));
+        // Rules v5–v7 (M2 steps 6–8): same layout, new recorded checksums.
+        Assert.Equal((22346, 8033246555324803772UL), (bytes.Length, hash.Value));
     }
 }

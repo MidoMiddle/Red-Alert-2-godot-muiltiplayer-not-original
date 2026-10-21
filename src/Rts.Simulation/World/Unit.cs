@@ -52,4 +52,16 @@ public sealed class Unit : Entity
 
     /// <summary>Index in the <see cref="CellPath.Waypoints"/> of <see cref="Path"/> that the unit drives to next.</summary>
     public int PathIndex { get; internal set; }
+
+    /// <summary>Ticks in a row the unit had an order but did not move (docs/implementation/M2_unit_control.md, 4.7).</summary>
+    public int WaitTicks { get; internal set; }
+
+    /// <summary>Paths asked for around other units since the unit last entered a new cell; after 3 it gives up.</summary>
+    public int Replans { get; internal set; }
+
+    /// <summary>Where the unit goes again after giving way in a side pocket; null when it is not giving way.</summary>
+    public WorldPos? ResumeTarget { get; internal set; }
+
+    /// <summary>Ticks left to wait in the pocket before heading for <see cref="ResumeTarget"/> again.</summary>
+    public int HoldTicks { get; internal set; }
 }

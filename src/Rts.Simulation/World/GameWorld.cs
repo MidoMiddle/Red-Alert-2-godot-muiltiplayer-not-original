@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Movement;
 using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Random;
 
@@ -29,6 +30,7 @@ public sealed class GameWorld
         Map = map;
         Random = new DeterministicRandom(seed);
         PathRequests = new PathRequestQueue(map);
+        Reservations = new Reservations(map.Width, map.Height);
     }
 
     public int CurrentTick { get; internal set; }
@@ -39,6 +41,9 @@ public sealed class GameWorld
 
     /// <summary>Path searches waiting for their share of the per-tick node budget.</summary>
     public PathRequestQueue PathRequests { get; }
+
+    /// <summary>Which unit stands in which cell: one unit per cell.</summary>
+    public Reservations Reservations { get; }
 
     public int WidthCells => Map.Width;
 
@@ -93,11 +98,28 @@ public sealed class GameWorld
     {
         var unit = new Unit(AllocateId(), owner, UnitArchetypes.Get(type), position);
         _entities.Add(unit);
+        // Commands never spawn on a taken cell; a test that places two units in one cell gets an unregistered second one.
+        if (Contains(position))
+        {
+            Reservations.TryOccupy(position.ToCell(), unit.Id);
+        }
+
         return unit;
     }
 
-    /// <summary>Physically removes entities marked dead. Called once at the end of a tick.</summary>
-    internal void RemoveDead() => _entities.RemoveAll(entity => !entity.IsAlive);
+    /// <summary>Physically removes entities marked dead and frees their cells. Called once at the end of a tick.</summary>
+    internal void RemoveDead()
+    {
+        foreach (var entity in _entities)
+        {
+            if (entity is Unit { IsAlive: false } unit && Contains(unit.Position))
+            {
+                Reservations.Release(unit.Position.ToCell(), unit.Id);
+            }
+        }
+
+        _entities.RemoveAll(entity => !entity.IsAlive);
+    }
 
     private EntityId AllocateId() => new(_nextEntityId++);
 }

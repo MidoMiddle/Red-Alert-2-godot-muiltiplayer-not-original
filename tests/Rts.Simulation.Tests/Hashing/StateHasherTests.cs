@@ -36,6 +36,7 @@ public sealed class StateHasherTests
         "target removed", "target added", "target x", "target y", "speed", "entity count",
         "type", "turn rate", "facing", "turret facing", "land", "obstacle",
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
+        "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid",
     };
 
     [Theory]
@@ -81,6 +82,17 @@ public sealed class StateHasherTests
                 Assert.NotEqual(baselineWithRequest, StateHasher.Compute(world));
                 break;
             case "path budget": world.PathRequests.Budget = 1; break;
+            case "wait ticks": moving.WaitTicks = 4; break;
+            case "replans": moving.Replans = 1; break;
+            case "hold ticks": idle.HoldTicks = 5; break;
+            case "resume target": idle.ResumeTarget = new WorldPos(10, 10); break;
+            case "occupied cell": world.Reservations.TryOccupy(new CellPos(60, 60), new EntityId(99)); break;
+            case "path request avoid":
+                world.PathRequests.Request(idle, 0, new CellPos(5, 5));
+                var withoutAvoid = StateHasher.Compute(world);
+                world.PathRequests.Request(idle, 0, new CellPos(5, 5), [new CellPos(4, 4)]);
+                Assert.NotEqual(withoutAvoid, StateHasher.Compute(world));
+                break;
             default: throw new ArgumentException(mutation);
         }
 
@@ -98,17 +110,19 @@ public sealed class StateHasherTests
         "<Archetype>k__BackingField", "<Position>k__BackingField", "<MoveTarget>k__BackingField", "<Speed>k__BackingField",
         "<TurnRate>k__BackingField", "<Facing>k__BackingField", "<TurretFacing>k__BackingField",
         "<PathPending>k__BackingField", "<Path>k__BackingField", "<PathIndex>k__BackingField",
+        "<WaitTicks>k__BackingField", "<Replans>k__BackingField", "<ResumeTarget>k__BackingField", "<HoldTicks>k__BackingField",
     })]
     [InlineData(typeof(GameWorld), new[]
     {
         "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField",
-        "<PathRequests>k__BackingField",
+        "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
     })]
+    [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_owner", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]
     [InlineData(typeof(PathRequest), new[]
     {
         "<Unit>k__BackingField", "<RequestTick>k__BackingField", "<Start>k__BackingField", "<Goal>k__BackingField",
-        "<Locomotor>k__BackingField", "<Search>k__BackingField",
+        "<Locomotor>k__BackingField", "<Search>k__BackingField", "<Avoid>k__BackingField",
     })]
     [InlineData(typeof(MapGrid), new[] { "_land", "_blocked", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]

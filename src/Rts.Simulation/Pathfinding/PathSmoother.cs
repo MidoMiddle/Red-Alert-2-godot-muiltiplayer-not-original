@@ -72,8 +72,10 @@ public static class GridLine
 /// </summary>
 public static class PathSmoother
 {
-    public static CellPath Smooth(MapGrid map, CellPath path, Locomotor locomotor)
+    /// <param name="avoid">Cells the search kept out of (taken by other units); a shortcut must keep out of them too.</param>
+    public static CellPath Smooth(MapGrid map, CellPath path, Locomotor locomotor, ImmutableArray<CellPos> avoid = default)
     {
+        var avoidSet = new HashSet<CellPos>(avoid.IsDefault ? [] : avoid);
         var cells = path.Cells;
         if (cells.Length <= 2)
         {
@@ -88,7 +90,7 @@ public static class PathSmoother
         for (var k = 2; k < cells.Length; k++)
         {
             var slowestWithK = IntMath.Min(slowest, map.SpeedPercent(cells[k], locomotor));
-            if (IsClear(map, cells[anchor], cells[k], locomotor, slowestWithK, line))
+            if (IsClear(map, cells[anchor], cells[k], locomotor, slowestWithK, line, avoidSet))
             {
                 slowest = slowestWithK;
                 continue;
@@ -111,15 +113,16 @@ public static class PathSmoother
     /// the unit already is.
     /// </summary>
     public static bool IsClear(MapGrid map, CellPos from, CellPos to, Locomotor locomotor, int minPercent) =>
-        IsClear(map, from, to, locomotor, minPercent, new List<CellPos>());
+        IsClear(map, from, to, locomotor, minPercent, new List<CellPos>(), new HashSet<CellPos>());
 
-    private static bool IsClear(MapGrid map, CellPos from, CellPos to, Locomotor locomotor, int minPercent, List<CellPos> line)
+    private static bool IsClear(
+        MapGrid map, CellPos from, CellPos to, Locomotor locomotor, int minPercent, List<CellPos> line, HashSet<CellPos> avoid)
     {
         GridLine.Walk(from, to, line);
         for (var i = 1; i < line.Count; i++)
         {
             var percent = map.SpeedPercent(line[i], locomotor);
-            if (percent == 0 || percent < minPercent)
+            if (percent == 0 || percent < minPercent || avoid.Contains(line[i]))
             {
                 return false;
             }

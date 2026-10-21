@@ -134,7 +134,7 @@ public sealed class CommandSerializerTests
         {
             Spawn(player: 1, tick: 0, sequence: 0, x: 100, y: 100),
             Spawn(player: 2, tick: 0, sequence: 0, x: 900, y: 900),
-            Spawn(player: 1, tick: 0, sequence: 1, x: 200, y: 100),
+            Spawn(player: 1, tick: 0, sequence: 1, x: 300, y: 100),
             Move(player: 1, tick: 1, sequence: 2, units: [1, 2, 3], x: 5000, y: 5000),
             Move(player: 2, tick: 1, sequence: 1, units: [2], x: 300, y: 300),
             Spawn(player: 2, tick: 2, sequence: 2, x: 400, y: 400),

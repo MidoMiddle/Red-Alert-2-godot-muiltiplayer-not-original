@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
@@ -127,11 +129,15 @@ public sealed class Pathfinder
         return search.Result!;
     }
 
-    /// <summary>A search that runs only when <see cref="PathSearch.Advance"/> is called, as many nodes as allowed each time.</summary>
-    public PathSearch StartSearch(CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = AStar.DefaultMaxExpansions)
+    /// <summary>
+    /// A search that runs only when <see cref="PathSearch.Advance"/> is called, as many nodes as allowed each time.
+    /// <paramref name="avoid"/> are cells treated as impassable for this search only, e.g. cells taken by other units.
+    /// </summary>
+    public PathSearch StartSearch(
+        CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = AStar.DefaultMaxExpansions, ImmutableArray<CellPos> avoid = default)
     {
         var buffers = _pool.Count > 0 ? _pool.Pop() : new SearchBuffers(Map.Width * Map.Height);
-        return new PathSearch(this, buffers, start, goal, locomotor, maxExpansions);
+        return new PathSearch(this, buffers, start, goal, locomotor, maxExpansions, avoid);
     }
 
     internal void Return(SearchBuffers buffers) => _pool.Push(buffers);
@@ -188,11 +194,13 @@ public sealed class PathSearch
     private readonly int _maxExpansions;
     private readonly int _startIndex;
     private readonly int _goalIndex;
+    private readonly int[] _avoid;
     private SearchBuffers? _buffers;
     private int _bestIndex;
     private int _bestH;
 
-    internal PathSearch(Pathfinder owner, SearchBuffers buffers, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions)
+    internal PathSearch(
+        Pathfinder owner, SearchBuffers buffers, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions, ImmutableArray<CellPos> avoid)
     {
         var map = owner.Map;
         if (!map.Contains(start))
@@ -217,6 +225,7 @@ public sealed class PathSearch
         _maxExpansions = maxExpansions;
         _startIndex = start.Y * map.Width + start.X;
         _goalIndex = goal.Y * map.Width + goal.X;
+        _avoid = avoid.IsDefaultOrEmpty ? [] : avoid.Where(map.Contains).Select(cell => cell.Y * map.Width + cell.X).Order().ToArray();
 
         _buffers = buffers;
         buffers.BeginSearch();
@@ -291,7 +300,7 @@ public sealed class PathSearch
 
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
                 var nextIndex = next.Y * width + next.X;
-                if (b.Closed[nextIndex] == b.Generation)
+                if (b.Closed[nextIndex] == b.Generation || (_avoid.Length > 0 && Array.BinarySearch(_avoid, nextIndex) >= 0))
                 {
                     continue;
                 }

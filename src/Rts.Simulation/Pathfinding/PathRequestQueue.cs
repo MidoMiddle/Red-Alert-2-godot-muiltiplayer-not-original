@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
@@ -10,8 +11,10 @@ namespace Rts.Simulation.Pathfinding;
 /// <summary>A unit's wait for a path: who asked, when, from where to where, and the search in progress.</summary>
 public sealed class PathRequest
 {
-    internal PathRequest(EntityId unit, int requestTick, CellPos start, CellPos goal, Locomotor locomotor, PathSearch search)
+    internal PathRequest(
+        EntityId unit, int requestTick, CellPos start, CellPos goal, Locomotor locomotor, ImmutableArray<CellPos> avoid, PathSearch search)
     {
+        Avoid = avoid.IsDefault ? [] : avoid;
         Unit = unit;
         RequestTick = requestTick;
         Start = start;
@@ -30,6 +33,9 @@ public sealed class PathRequest
 
     public Locomotor Locomotor { get; }
 
+    /// <summary>Cells this search treats as impassable (taken by other units when the unit asked for a way around them).</summary>
+    public ImmutableArray<CellPos> Avoid { get; }
+
     /// <summary>Nodes expanded so far. Together with the fields above and the map it fully describes the search state.</summary>
     public int Expanded => Search.Expanded;
 
@@ -41,6 +47,7 @@ public sealed class PathRequest
 /// request here, and every tick the queue spends at most <see cref="Budget"/> expanded nodes on the requests in
 /// (request tick, unit id) order. A search that runs out of budget continues on the next tick from where it stopped,
 /// so a big order spreads over several ticks instead of stalling one. One request per unit: a new order replaces the old one.
+/// A search around taken cells that cannot reach the goal is asked again without them: units move, terrain does not.
 /// </summary>
 public sealed class PathRequestQueue
 {
@@ -61,13 +68,17 @@ public sealed class PathRequestQueue
     /// <summary>Nodes expanded during the last <see cref="Process"/>, for the debug panel.</summary>
     public int ExpandedLastTick { get; private set; }
 
-    /// <summary>Asks for a path for <paramref name="unit"/> from its current cell; replaces its previous request.</summary>
-    internal void Request(Unit unit, int tick, CellPos goal)
+    /// <summary>
+    /// Asks for a path for <paramref name="unit"/> from its current cell; replaces its previous request.
+    /// <paramref name="avoid"/> are cells to keep out of, for a way around other units.
+    /// </summary>
+    internal void Request(Unit unit, int tick, CellPos goal, ImmutableArray<CellPos> avoid = default)
     {
         Cancel(unit.Id);
         var start = unit.Position.ToCell();
         var locomotor = unit.Archetype.Locomotor;
-        var request = new PathRequest(unit.Id, tick, start, goal, locomotor, _pathfinder.StartSearch(start, goal, locomotor));
+        var search = _pathfinder.StartSearch(start, goal, locomotor, AStar.DefaultMaxExpansions, avoid);
+        var request = new PathRequest(unit.Id, tick, start, goal, locomotor, avoid, search);
 
         var index = _requests.Count;
         while (index > 0 && Before(request, _requests[index - 1]))
@@ -118,9 +129,19 @@ public sealed class PathRequestQueue
                 break;
             }
 
-            var path = PathSmoother.Smooth(world.Map, request.Search.Result!, request.Locomotor);
+            if (request.Avoid.Length > 0 && request.Search.Result!.Status != PathStatus.Found)
+            {
+                // No way around the taken cells: they are only units, so ask for the plain path and queue up behind them.
+                _requests.RemoveAt(i);
+                Request(unit, world.CurrentTick, request.Goal);
+                continue;
+            }
+
+            var path = PathSmoother.Smooth(world.Map, request.Search.Result!, request.Locomotor, request.Avoid);
             unit.Path = path;
-            unit.PathIndex = 1;
+            // Segments are checked between cell centres: a unit that stopped off the centre of its cell (say, at the edge,
+            // in front of another unit) first goes back to the centre, so its first segment cannot clip a neighbouring cell.
+            unit.PathIndex = unit.Position == path.Cells[0].Center ? 1 : 0;
             unit.PathPending = false;
             events.Add(new UnitPathFound(world.CurrentTick, unit.Id, path.Status, path.Cells.Length));
             _requests.RemoveAt(i);

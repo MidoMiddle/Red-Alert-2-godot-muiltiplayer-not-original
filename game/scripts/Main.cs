@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Rts.Client.Debug;
@@ -18,8 +19,9 @@ namespace Rts.Client;
 /// </summary>
 public partial class Main : Node3D
 {
-    private const int SmokeTicks = 300;
+    private const int SmokeTicks = 600;
     private const int SmokeDetourTicks = 600;
+    private const int SmokeSpread = 3;
 
     /// <summary>Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward.</summary>
     private static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
@@ -179,8 +181,17 @@ public partial class Main : Node3D
             host.StepOnce();
         }
 
+        // One unit per cell (M2 step 8): the group stops around the point; every unit in its own cell. Until the group
+        // destinations of step 9, "around" means within SmokeSpread cells.
         var blueUnits = host.Simulation.World.Entities.OfType<Unit>().Where(u => u.Owner == SimulationHost.LocalPlayer).ToList();
-        var arrived = blueUnits.Count > 0 && blueUnits.All(u => u.Position == target && u.MoveTarget is null);
+        var arrived = blueUnits.Count > 0 && blueUnits.All(u => u.MoveTarget is null && Near(u, target)) && OwnCells(blueUnits);
+        if (!arrived)
+        {
+            foreach (var u in blueUnits)
+            {
+                GD.Print($"[smoke] {u.Id} {u.Type} at {u.Position.ToCell()} target {u.MoveTarget?.ToCell()} resume {u.ResumeTarget?.ToCell()} hold {u.HoldTicks} wait {u.WaitTicks} replans {u.Replans} pending {u.PathPending}");
+            }
+        }
 
         // Second leg: past the forest north of the blue base. The straight line crosses the trees, so every unit
         // must drive around them along its path (M2 step 6) and never get stopped by an obstacle.
@@ -193,7 +204,7 @@ public partial class Main : Node3D
             blocked += host.Simulation.LastTickEvents.Count(e => e is UnitBlocked);
         }
 
-        var detoured = blocked == 0 && blueUnits.All(u => u.Position == behindForest && u.MoveTarget is null);
+        var detoured = blocked == 0 && blueUnits.All(u => u.MoveTarget is null && Near(u, behindForest)) && OwnCells(blueUnits);
         var liveChecksum = host.Simulation.LastChecksum;
 
         host.SaveReplay();
@@ -210,4 +221,13 @@ public partial class Main : Node3D
             : $"[smoke] FAILED: arrived={arrived}, detoured={detoured} (blocked {blocked}), replayVerified={host.PlaybackVerified}, sameFinalState={sameFinalState}, status={host.ReplayStatus}");
         GetTree().Quit(ok ? 0 : 1);
     }
+
+    private static bool Near(Unit unit, WorldPos point)
+    {
+        var cell = unit.Position.ToCell();
+        var target = point.ToCell();
+        return Math.Max(Math.Abs(cell.X - target.X), Math.Abs(cell.Y - target.Y)) <= SmokeSpread;
+    }
+
+    private static bool OwnCells(List<Unit> units) => units.Select(u => u.Position.ToCell()).Distinct().Count() == units.Count;
 }

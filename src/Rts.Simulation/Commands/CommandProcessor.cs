@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Rts.Simulation.Events;
+using Rts.Simulation.Movement;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Commands;
@@ -35,7 +36,8 @@ public static class CommandProcessor
     {
         if (!world.Contains(command.Position)
             || !UnitArchetypes.IsKnown(command.UnitType)
-            || !world.Map.CanEnter(command.Position.ToCell(), UnitArchetypes.Get(command.UnitType).Locomotor))
+            || !world.Map.CanEnter(command.Position.ToCell(), UnitArchetypes.Get(command.UnitType).Locomotor)
+            || !world.Reservations.IsFree(command.Position.ToCell()))
         {
             return false;
         }
@@ -61,11 +63,7 @@ public static class CommandProcessor
                 && unit.IsAlive
                 && unit.Owner == command.Player)
             {
-                unit.MoveTarget = command.Target;
-                unit.Path = null;
-                unit.PathIndex = 0;
-                unit.PathPending = true;
-                world.PathRequests.Request(unit, world.CurrentTick, command.Target.ToCell());
+                UnitOrders.MoveTo(world, unit, command.Target);
                 events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, command.Target));
                 changed = true;
             }

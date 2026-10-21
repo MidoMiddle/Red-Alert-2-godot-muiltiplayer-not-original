@@ -54,9 +54,16 @@ public partial class DebugOverlay : CanvasLayer
             DescribeCell(simulation.World.Map, _input.CellUnderPointer) + "\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
+            UnitStateText.Describe(SelectedUnit(simulation.World)) + "\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
     }
+
+    /// <summary>The selected unit when exactly one is selected and alive.</summary>
+    private Unit? SelectedUnit(GameWorld world) =>
+        _input.Selection.Units.Count == 1 && world.TryGet(_input.Selection.Units[0], out var entity) && entity is Unit { IsAlive: true } unit
+            ? unit
+            : null;
 
     /// <summary><c>cell 12,30 Rough · foot 90 track 90 wheel 75</c>; a tree or impassable land shows as such.</summary>
     private static string DescribeCell(MapGrid map, CellPos? pointer)
