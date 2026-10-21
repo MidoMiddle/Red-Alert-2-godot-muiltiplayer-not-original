@@ -49,7 +49,7 @@
 | Веха | Документ | Статус |
 |---|---|---|
 | — | [Сквозные соглашения](implementation/conventions.md) | согласован |
-| — | [Сводный список открытых вопросов](implementation/open_questions.md) | согласован, 4 вопроса 🟥 открыты |
+| — | [Сводный список открытых вопросов](implementation/open_questions.md) | согласован, 5 вопросов 🟥 открыты |
 | M0 | [Фундамент](implementation/M0_foundation.md) | **готово** (2026-10-21) |
 | M1 | [Визуальная проба](implementation/M1_visual_spike.md) | согласован, есть вопросы 🟥 |
 | M2 | [Управление юнитами](implementation/M2_unit_control.md) | согласован |
