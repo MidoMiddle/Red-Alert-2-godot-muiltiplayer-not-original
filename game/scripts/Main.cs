@@ -19,9 +19,9 @@ namespace Rts.Client;
 /// </summary>
 public partial class Main : Node3D
 {
-    private const int SmokeTicks = 600;
+    private const int SmokeTicks = 300;
     private const int SmokeDetourTicks = 600;
-    private const int SmokeSpread = 3;
+    private const int SmokeSpread = 2;
 
     /// <summary>Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward.</summary>
     private static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
@@ -181,8 +181,7 @@ public partial class Main : Node3D
             host.StepOnce();
         }
 
-        // One unit per cell (M2 step 8): the group stops around the point; every unit in its own cell. Until the group
-        // destinations of step 9, "around" means within SmokeSpread cells.
+        // Group destinations (M2 step 9): every unit stops in a cell of its own, all within SmokeSpread cells of the point.
         var blueUnits = host.Simulation.World.Entities.OfType<Unit>().Where(u => u.Owner == SimulationHost.LocalPlayer).ToList();
         var arrived = blueUnits.Count > 0 && blueUnits.All(u => u.MoveTarget is null && Near(u, target)) && OwnCells(blueUnits);
         if (!arrived)

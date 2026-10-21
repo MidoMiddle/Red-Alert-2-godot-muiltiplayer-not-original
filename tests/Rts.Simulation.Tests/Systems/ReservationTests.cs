@@ -145,12 +145,16 @@ public sealed class ReservationTests
         var mover = world.SpawnUnit(Player1, UnitType.HeavyTank, new CellPos(0, 2).Center);
         var standing = world.SpawnUnit(Player1, UnitType.Conscript, new CellPos(8, 2).Center);
         Order(world, mover, new CellPos(15, 2));
+        var steppedAside = false;
 
-        Run(world, maxTicks: 1500);
+        Run(world, maxTicks: 1500, _ => steppedAside |= standing.Position.ToCell() != new CellPos(8, 2));
 
+        // It made room, let the mover through and came back to its place.
         Assert.Equal(new CellPos(15, 2).Center, mover.Position);
-        Assert.NotEqual(new CellPos(8, 2), standing.Position.ToCell());
+        Assert.True(steppedAside);
+        Assert.Equal(new CellPos(8, 2).Center, standing.Position);
         Assert.Null(standing.ResumeTarget);
+        Assert.False(standing.Returning);
     }
 
     [Fact]

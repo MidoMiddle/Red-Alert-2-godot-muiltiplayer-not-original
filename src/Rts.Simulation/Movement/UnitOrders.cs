@@ -14,6 +14,7 @@ internal static class UnitOrders
         unit.Replans = 0;
         unit.ResumeTarget = null;
         unit.HoldTicks = 0;
+        unit.Returning = false;
         RequestPath(world, unit, target, default);
     }
 
@@ -25,6 +26,18 @@ internal static class UnitOrders
         unit.PathIndex = 0;
         unit.PathPending = true;
         world.PathRequests.Request(unit, world.CurrentTick, target.ToCell(), avoid);
+    }
+
+    /// <summary>A standing unit is moved off its place: it will come back after the pocket wait, politely.</summary>
+    public static void MakeRoom(GameWorld world, Unit unit, ImmutableArray<CellPos> cells)
+    {
+        if (unit.ResumeTarget is null)
+        {
+            unit.ResumeTarget = unit.Position;
+            unit.Returning = true;
+        }
+
+        FollowCells(world, unit, cells);
     }
 
     /// <summary>Sends the unit along <paramref name="cells"/> (neighbouring cells, the first one its own) to the centre of the last.</summary>

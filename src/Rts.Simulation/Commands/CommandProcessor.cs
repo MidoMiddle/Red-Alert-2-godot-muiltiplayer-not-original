@@ -47,7 +47,7 @@ public static class CommandProcessor
         return true;
     }
 
-    // Invalid target rejects the whole command; foreign, dead or unknown units are skipped one by one.
+    // Invalid target rejects the whole command; foreign, dead, unknown or repeated units are skipped one by one.
     private static bool ApplyMove(GameWorld world, MoveUnitsCommand command, List<SimEvent>? events)
     {
         if (!world.Contains(command.Target))
@@ -55,20 +55,26 @@ public static class CommandProcessor
             return false;
         }
 
-        var changed = false;
+        var units = new List<Unit>();
         foreach (var id in command.Units)
         {
             if (world.TryGet(id, out var entity)
                 && entity is Unit unit
                 && unit.IsAlive
-                && unit.Owner == command.Player)
+                && unit.Owner == command.Player
+                && !units.Contains(unit))
             {
-                UnitOrders.MoveTo(world, unit, command.Target);
-                events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, command.Target));
-                changed = true;
+                units.Add(unit);
             }
         }
 
-        return changed;
+        // Each unit of a group gets a cell of its own near the target (docs/implementation/M2_unit_control.md, 4.6).
+        foreach (var (unit, destination) in GroupDestinations.Assign(world, units, command.Target))
+        {
+            UnitOrders.MoveTo(world, unit, destination);
+            events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, destination));
+        }
+
+        return units.Count > 0;
     }
 }

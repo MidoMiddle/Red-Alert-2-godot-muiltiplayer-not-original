@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Controls;
@@ -114,6 +115,13 @@ public partial class PlayerInput : Node
         else if (key.IsActionPressed("spawn_type"))
         {
             _host.NextSpawnType();
+        }
+        else if (key.IsActionPressed("select_all"))
+        {
+            // Debug until the selection box of M2 step 13: every living unit of the player, to try group orders.
+            Selection.ReplaceAll(_host.Simulation.World.Entities
+                .Where(e => e is Unit { IsAlive: true } && e.Owner == SimulationHost.LocalPlayer)
+                .Select(e => e.Id));
         }
     }
 

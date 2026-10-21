@@ -22,6 +22,19 @@ public sealed class SelectionSet
         _units.Add(unit);
     }
 
+    /// <summary>Selects exactly <paramref name="units"/>, in the given order, without repeats.</summary>
+    public void ReplaceAll(IEnumerable<EntityId> units)
+    {
+        _units.Clear();
+        foreach (var unit in units)
+        {
+            if (!_units.Contains(unit))
+            {
+                _units.Add(unit);
+            }
+        }
+    }
+
     public void Clear() => _units.Clear();
 
     /// <summary>Drops the units for which <paramref name="gone"/> is true, for example the dead ones.</summary>

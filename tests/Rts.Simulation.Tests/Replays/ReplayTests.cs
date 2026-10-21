@@ -82,7 +82,8 @@ public sealed class ReplayTests
     public void Changed_command_is_reported_as_desync_on_the_first_affected_checksum()
     {
         var (replay, _) = RecordMatch();
-        var index = replay.Commands.ToList().FindIndex(c => c is MoveUnitsCommand { ExecuteTick: > 100 });
+        // The last move: no later order to the same units can overwrite the change before a checksum sees it.
+        var index = replay.Commands.ToList().FindLastIndex(c => c is MoveUnitsCommand { ExecuteTick: > 100 });
         var original = (MoveUnitsCommand)replay.Commands[index];
         var tampered = new MoveUnitsCommand(original.Player, original.ExecuteTick, original.Sequence, original.Units, new WorldPos(1, 1));
         var commands = replay.Commands.ToList();

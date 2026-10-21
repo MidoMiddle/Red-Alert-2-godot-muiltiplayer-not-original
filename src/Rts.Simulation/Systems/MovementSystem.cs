@@ -22,8 +22,10 @@ namespace Rts.Simulation.Systems;
 /// the mover heads for the nearest free cell next to the goal, or stops where it is if there is none ("arrived as far as possible"); a unit coming head-on makes the one with the larger id give way
 /// into a pocket; a unit that is giving way is simply waited for; another moving unit is waited for, and after
 /// <see cref="WaitBeforeDetour"/> ticks driven around; a standing
-/// unit of the same player is asked to step aside into a pocket, and when its own idle units hem it in, the line of them
-/// shifts one cell toward the nearest free cell; a standing enemy is driven around at once.</item>
+/// unit of the same player is first driven around, and if there is no way around, asked to step aside into a pocket (it comes
+/// back to its place later); when its own idle units
+/// hem it in, the line of them shifts one cell toward the nearest free cell; a unit only going back to its place never asks
+/// others to make room; a standing enemy is driven around at once.</item>
 /// <item>No endless jams: after <see cref="StallTicks"/> ticks without moving the unit asks for a path around every taken cell
 /// nearby; after <see cref="MaxReplans"/> such paths (or detours around standing units) without reaching a new cell it stops
 /// where it is. Waiting behind moving units never counts: a queue at a narrow pass keeps its place.</item>
@@ -225,14 +227,23 @@ public static class MovementSystem
             return MoveResult.Blocked;
         }
 
-        if (other.Owner == unit.Owner)
+        if (other.Owner == unit.Owner && unit.Replans == 0)
+        {
+            // First try to drive around our own standing unit, like around anything else: on open ground nobody needs to
+            // move. Only when that comes back to the same cell (no way around) is the unit asked to make room.
+            Replan(world, unit, [cell], events);
+            return MoveResult.Blocked;
+        }
+
+        if (other.Owner == unit.Owner && !unit.Returning)
         {
             var keepClear = GivingWay.RemainingCells(world, unit);
             var pocket = GivingWay.FindPocket(world, other, keepClear);
             if (!pocket.IsDefault)
             {
-                // A standing unit of ours steps aside; it keeps any target it was going back to after giving way itself.
-                UnitOrders.FollowCells(world, other, pocket);
+                // A standing unit of ours steps aside and comes back to its place afterwards (or to the target it was already
+                // going back to), so a group keeps the cells it was given.
+                UnitOrders.MakeRoom(world, other, pocket);
                 return MoveResult.Blocked;
             }
 
@@ -391,6 +402,10 @@ public static class MovementSystem
         {
             // In the pocket: wait a little, then go back to the original target.
             unit.HoldTicks = PocketHoldTicks;
+        }
+        else
+        {
+            unit.Returning = false;
         }
 
         events.Add(new UnitArrived(world.CurrentTick, unit.Id, position));

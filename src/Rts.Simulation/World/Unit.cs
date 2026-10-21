@@ -64,4 +64,10 @@ public sealed class Unit : Entity
 
     /// <summary>Ticks left to wait in the pocket before heading for <see cref="ResumeTarget"/> again.</summary>
     public int HoldTicks { get; internal set; }
+
+    /// <summary>
+    /// True while the unit only goes back to the place it was moved off to make room. Such a move is polite: it never asks
+    /// others to make room in turn, so two units cannot keep moving each other off their places.
+    /// </summary>
+    public bool Returning { get; internal set; }
 }

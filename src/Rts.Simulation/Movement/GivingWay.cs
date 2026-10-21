@@ -36,6 +36,7 @@ internal static class GivingWay
     /// <summary>
     /// Moves every unit standing on <paramref name="way"/> one cell forward along it, the one nearest to the free end first
     /// in effect: each only drives once the cell ahead is free. The first cell is the unit that was asked to make room.
+    /// Each comes back to its place after the pocket wait.
     /// </summary>
     public static void ShiftChain(GameWorld world, ImmutableArray<CellPos> way)
     {
@@ -43,7 +44,7 @@ internal static class GivingWay
         {
             if (world.TryGet(world.Reservations.OwnerOf(way[i]), out var entity) && entity is Unit unit)
             {
-                UnitOrders.FollowCells(world, unit, [way[i], way[i + 1]]);
+                UnitOrders.MakeRoom(world, unit, [way[i], way[i + 1]]);
             }
         }
     }

@@ -72,6 +72,7 @@ public static class StateHasher
                 hash.Add(unit.WaitTicks);
                 hash.Add(unit.Replans);
                 hash.Add(unit.HoldTicks);
+                hash.Add(unit.Returning);
                 hash.Add(unit.ResumeTarget.HasValue);
                 if (unit.ResumeTarget is { } resume)
                 {
