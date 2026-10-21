@@ -458,7 +458,7 @@ alpha = accumulator / длительность_тика   — для интер�
 |---|---|---|
 | 0. Окружение | готово | .NET SDK 10.0.402 (`/usr/local/share/dotnet`, в PATH через `/etc/paths.d`), Godot 4.7.2.stable.mono. Перенос Godot в `/Applications` — вручную (macOS не даёт переносить приложения из терминала) |
 | 1. Каркас решения | готово | `RtsGame.sln` (классический .sln), `global.json` (SDK 10.0.402), `Directory.Build.props/.targets`. Пакеты: BannedApiAnalyzers 5.6.0, xUnit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1, Microsoft.CodeAnalysis.CSharp 4.14.0 (анализатор). Анализатор BannedApi не ловит ключевые слова → добавлен свой `Rts.Analyzers` (4.2). Godot 4.7.2 нашёл решение в корне (`solution_directory="../"`), собрал C#, сцена печатает `Simulation v1`. Тесты: 21 зелёный |
-| 2. `Fixed` и `IntMath` | — | |
+| 2. `Fixed` и `IntMath` | готово | `Math/Fixed.cs` (Q47.16, `Int128` для `*` и `/`), `Math/IntMath.cs` (`DivFloor`, побитовый `Sqrt` для `long`/`ulong`/`UInt128`). Правила округления 4.3 закреплены тестами с точными raw-значениями, корень проверен свойством на 10 000 значений. Добавлено: `ToIntFloor`/`ToIntTruncate` с проверкой диапазона `int`, `ToString` без культуры (5 знаков, обрезка). Тесты: 70 (Debug) / 69 (Release, без теста переполнения) в `Rts.Simulation.Tests` + 19 анализатора |
 | 3. `DeterministicRandom` | — | |
 | 4. Мир и сущности | — | |
 | 5. Команды | — | |
