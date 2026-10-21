@@ -1,0 +1,25 @@
+[gd_resource type="Environment" format=3]
+
+; Winter climate look (docs/implementation/M1_visual_spike.md, 4.3). Tuned against the reference in step 12.
+[resource]
+background_mode = 1
+background_color = Color(0.56, 0.62, 0.7, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.7, 0.78, 0.9, 1)
+ambient_light_energy = 0.7
+tonemap_mode = 4
+ssao_enabled = true
+ssao_radius = 0.5
+ssao_intensity = 1.6
+ssao_power = 1.4
+glow_enabled = true
+glow_hdr_threshold = 1.5
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.8, 0.85, 0.92, 1)
+fog_density = 0.35
+fog_depth_begin = 45.0
+fog_depth_end = 100.0
+adjustment_enabled = true
+adjustment_contrast = 1.05
+adjustment_saturation = 0.95

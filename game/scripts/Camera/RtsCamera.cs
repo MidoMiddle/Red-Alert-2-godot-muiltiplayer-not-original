@@ -23,7 +23,7 @@ public partial class RtsCamera : Node3D
     private const float MaxZoom = 1.6f;
     private const float ZoomStep = 1.12f;
     private const float ZoomSmoothing = 12f;
-    private const float CameraDistance = 100f;
+    private const float CameraDistance = 50f; // close enough that the ground stays well inside the sun shadow distance
 
     private const float ScrollSpeed = 14f; // cells per second at default zoom and the neutral speed setting
     private const float NeutralScrollSpeed = 5f; // the default of the scroll speed setting (1–10)

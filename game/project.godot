@@ -36,3 +36,7 @@ theme/custom="res://theme/ra2_theme.tres"
 
 project/assembly_name="Rts.Client"
 project/solution_directory="../"
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2

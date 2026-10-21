@@ -17,6 +17,9 @@ public partial class Main : Node3D
 {
     private const int SmokeTicks = 300;
 
+    /// <summary>Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward.</summary>
+    private static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
+
     private string? _screenshotPath;
     private int _screenshotFrame = 60;
     private int _frame;
@@ -24,7 +27,8 @@ public partial class Main : Node3D
     public override void _Ready()
     {
         GD.Print($"Simulation v{SimulationVersion.Current}");
-        GetNode<DirectionalLight3D>("Sun").RotationDegrees = new Vector3(-55f, 35f, 0f);
+        // RA2 lighting: shadows fall right-down on screen, i.e. towards world +X, from a sun about 50° high.
+        GetNode<DirectionalLight3D>("Sun").Basis = Basis.LookingAt(SunDirection, Vector3.Up);
 
         var args = OS.GetCmdlineUserArgs();
         var screenshotIndex = Array.IndexOf(args, "--screenshot");
@@ -57,7 +61,7 @@ public partial class Main : Node3D
         }
 
         var error = GetViewport().GetTexture().GetImage().SavePng(_screenshotPath);
-        GD.Print($"[main] screenshot {_screenshotPath}: {error}");
+        GD.Print($"[main] screenshot {_screenshotPath}: {error}, FPS {Engine.GetFramesPerSecond():0}");
         GetTree().Quit(error == Error.Ok ? 0 : 1);
     }
 
