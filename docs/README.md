@@ -52,7 +52,7 @@
 | — | [Сводный список открытых вопросов](implementation/open_questions.md) | согласован, 5 вопросов 🟥 открыты |
 | M0 | [Фундамент](implementation/M0_foundation.md) | **готово** (2026-10-21) |
 | M1 | [Визуальная проба](implementation/M1_visual_spike.md) | ⏸ **приостановлена** после шага 3, остальное — в финальном визуале |
-| M2 | [Управление юнитами](implementation/M2_unit_control.md) | согласован |
+| M2 | [Управление юнитами](implementation/M2_unit_control.md) | **в работе** |
 | M3 | [База и экономика](implementation/M3_base_economy.md) | согласован |
 | M4 | [Бой](implementation/M4_combat.md) | согласован |
 | M5 | [Первый бот](implementation/M5_first_bot.md) | согласован |
