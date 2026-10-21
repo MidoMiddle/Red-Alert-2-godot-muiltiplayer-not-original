@@ -83,9 +83,9 @@ public sealed class ReplayTests
     {
         var (replay, _) = RecordMatch();
         // The last move: no later order to the same units can overwrite the change before a checksum sees it.
-        var index = replay.Commands.ToList().FindLastIndex(c => c is MoveUnitsCommand { ExecuteTick: > 100 });
-        var original = (MoveUnitsCommand)replay.Commands[index];
-        var tampered = new MoveUnitsCommand(original.Player, original.ExecuteTick, original.Sequence, original.Units, new WorldPos(1, 1));
+        var index = replay.Commands.ToList().FindLastIndex(c => c is MoveCommand { ExecuteTick: > 100 });
+        var original = (MoveCommand)replay.Commands[index];
+        var tampered = new MoveCommand(original.Player, original.ExecuteTick, original.Sequence, original.Units, new WorldPos(1, 1));
         var commands = replay.Commands.ToList();
         commands[index] = tampered;
 

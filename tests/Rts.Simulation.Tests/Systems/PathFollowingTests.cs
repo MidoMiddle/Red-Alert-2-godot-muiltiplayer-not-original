@@ -20,7 +20,7 @@ public sealed class PathFollowingTests
     /// <summary>Orders the unit to <paramref name="target"/> and runs queue and movement until it stops; checks every tick.</summary>
     private static (List<SimEvent> Events, int Ticks) Drive(GameWorld world, Unit unit, WorldPos target)
     {
-        CommandProcessor.Apply(world, new MoveUnitsCommand(Player1, world.CurrentTick, 0, [unit.Id], target));
+        CommandProcessor.Apply(world, new MoveCommand(Player1, world.CurrentTick, 0, [unit.Id], target));
         var events = new List<SimEvent>();
         var ticks = 0;
         while (unit.MoveTarget is not null)

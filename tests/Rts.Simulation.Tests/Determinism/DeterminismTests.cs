@@ -19,7 +19,13 @@ public sealed class DeterminismTests
     {
         Assert.InRange(Commands.Count, 300, 700);
         Assert.Contains(Commands, c => c is SpawnTestUnitCommand);
-        Assert.Contains(Commands, c => c is MoveUnitsCommand);
+        Assert.Contains(Commands, c => c is MoveCommand { Queue: false });
+        Assert.Contains(Commands, c => c is MoveCommand { Queue: true });
+        Assert.Contains(Commands, c => c is AttackMoveCommand);
+        Assert.Contains(Commands, c => c is WaypointsCommand { Loop: true });
+        Assert.Contains(Commands, c => c is WaypointsCommand { Loop: false });
+        Assert.Contains(Commands, c => c is StopCommand);
+        Assert.Contains(Commands, c => c is ScatterCommand);
     }
 
     [Fact]

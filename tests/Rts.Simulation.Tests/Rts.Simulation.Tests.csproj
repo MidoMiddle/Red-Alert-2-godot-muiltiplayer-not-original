@@ -41,6 +41,7 @@
     <Compile Include="../../game/scripts/Input/InputInterpreter.cs" Link="Client/Controls/InputInterpreter.cs" />
     <Compile Include="../../game/scripts/Input/KeyBindings.cs" Link="Client/Controls/KeyBindings.cs" />
     <Compile Include="../../game/scripts/Input/SelectionSet.cs" Link="Client/Controls/SelectionSet.cs" />
+    <Compile Include="../../game/scripts/Input/BoxSelection.cs" Link="Client/Controls/BoxSelection.cs" />
     <Compile Include="../../game/scripts/App/Faction.cs" Link="Client/Faction.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarLayout.cs" Link="Client/Hud/SidebarLayout.cs" />
     <Compile Include="../../game/scripts/Hud/MinimapMath.cs" Link="Client/Hud/MinimapMath.cs" />

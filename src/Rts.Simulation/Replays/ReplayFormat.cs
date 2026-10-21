@@ -9,7 +9,7 @@ using Rts.Simulation.Map;
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v3, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v4, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion
 /// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 tickCount
@@ -17,11 +17,11 @@ namespace Rts.Simulation.Replays;
 /// command batch (u32 count + commands, format of CommandSerializer)
 /// u32 checksumCount | (i32 tick, u64 value) × checksumCount
 /// </code>
-/// History: v2 (M2 step 2) marks command format v2 inside; v3 (M2 step 4) adds the map layers.
+/// History: v2 (M2 step 2) marks command format v2 inside; v3 (M2 step 4) adds the map layers; v4 (M2 step 12) marks command format v3 inside.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 3;
+    public const ushort FormatVersion = 4;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

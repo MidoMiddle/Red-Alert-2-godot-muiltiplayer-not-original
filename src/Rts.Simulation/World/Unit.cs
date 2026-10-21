@@ -35,6 +35,21 @@ public sealed class Unit : Entity
     /// <summary>Hull turn speed in <c>BAngle</c> units per tick; 0 turns instantly (infantry).</summary>
     public int TurnRate { get; internal set; }
 
+    /// <summary>
+    /// The unit's route (docs/implementation/M2_unit_control.md, 4.10): legs in order, empty when it has no orders.
+    /// The current leg is <see cref="OrderIndex"/>; arriving moves on to the next one.
+    /// </summary>
+    public System.Collections.Immutable.ImmutableArray<UnitOrder> Orders { get; internal set; } = [];
+
+    /// <summary>Index in <see cref="Orders"/> of the leg the unit is on.</summary>
+    public int OrderIndex { get; internal set; }
+
+    /// <summary>True for a patrol: after the last leg the route starts over.</summary>
+    public bool LoopOrders { get; internal set; }
+
+    /// <summary>True when the current leg is an attack-move.</summary>
+    public bool IsAttackMoving => OrderIndex < Orders.Length && Orders[OrderIndex].AttackMove;
+
     /// <summary>Spot of a soldier in its cell (0 centre, 1–4 corners, see <see cref="Movement.Reservations"/>); 0 for vehicles.</summary>
     public int Subcell { get; internal set; }
 

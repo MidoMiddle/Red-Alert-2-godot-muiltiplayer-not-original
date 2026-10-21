@@ -19,7 +19,7 @@ public sealed class PathRequestQueueTests
     private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid);
 
     private static void Order(GameWorld world, Unit unit, CellPos goal) =>
-        CommandProcessor.Apply(world, new MoveUnitsCommand(Player1, world.CurrentTick, 0, [unit.Id], goal.Center));
+        CommandProcessor.Apply(world, new MoveCommand(Player1, world.CurrentTick, 0, [unit.Id], goal.Center));
 
     /// <summary>Runs only the queue, tick after tick, until every request is answered; returns the paths by unit.</summary>
     private static Dictionary<EntityId, CellPath> RunQueue(GameWorld world, List<int>? expandedPerTick = null)

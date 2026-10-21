@@ -6,5 +6,9 @@ namespace Rts.Simulation.Commands;
 public enum CommandType : byte
 {
     SpawnTestUnit = 1,
-    MoveUnits = 2,
+    Move = 2,
+    Stop = 3,
+    AttackMove = 4,
+    Waypoints = 5,
+    Scatter = 6,
 }

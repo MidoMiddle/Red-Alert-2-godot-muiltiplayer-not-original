@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -33,6 +34,16 @@ public partial class PlayerInput : Node
 
     private readonly List<EntityId> _candidates = new();
 
+    /// <summary>The selection box on screen: a thin green frame, symbolic (docs/implementation/conventions.md, section 12).</summary>
+    private readonly ReferenceRect _box = new()
+    {
+        EditorOnly = false,
+        BorderColor = new Color(0.4f, 1f, 0.4f),
+        BorderWidth = 1.5f,
+        MouseFilter = Control.MouseFilterEnum.Ignore,
+        Visible = false,
+    };
+
     public SelectionSet Selection { get; } = new();
 
     /// <summary>Map cell under the mouse pointer, or null off the map. Shown on the debug panel.</summary>
@@ -45,6 +56,9 @@ public partial class PlayerInput : Node
         _pauseMenu = GetNode<PauseMenu>("../PauseMenu");
         var settings = AppSettings.Instance?.Values ?? SettingsValues.Defaults;
         _interpreter = new InputInterpreter(settings.Scheme, settings.CameraDrag);
+        var boxLayer = new CanvasLayer { Name = "SelectionBox", Layer = 5 };
+        boxLayer.AddChild(_box);
+        AddChild(boxLayer);
     }
 
     public override void _Process(double delta)
@@ -76,7 +90,7 @@ public partial class PlayerInput : Node
         var pointer = ToPointerButton(mouse.ButtonIndex);
         var at = ToScreen(mouse.Position);
         var intents = mouse.Pressed
-            ? _interpreter.Press(pointer, at, Context(at, mouse.ShiftPressed))
+            ? _interpreter.Press(pointer, at, Context(at, mouse.ShiftPressed, mouse.AltPressed))
             : _interpreter.Release(pointer);
         Apply(intents);
     }
@@ -145,6 +159,32 @@ public partial class PlayerInput : Node
                 case SelectUnit select:
                     Selection.Replace(select.Unit);
                     break;
+                case ToggleUnit toggle:
+                    Selection.Toggle(toggle.Unit);
+                    break;
+                case BoxStarted:
+                    _box.Visible = true;
+                    break;
+                case BoxMoved box:
+                    _box.Position = new Vector2(MathF.Min(box.From.X, box.To.X), MathF.Min(box.From.Y, box.To.Y));
+                    _box.Size = new Vector2(MathF.Abs(box.To.X - box.From.X), MathF.Abs(box.To.Y - box.From.Y));
+                    break;
+                case BoxSelect box:
+                    _box.Visible = false;
+                    var inside = BoxSelection.Pick(OwnUnitsOnScreen(), box.From, box.To);
+                    if (box.Add)
+                    {
+                        Selection.AddAll(inside);
+                    }
+                    else
+                    {
+                        Selection.ReplaceAll(inside);
+                    }
+
+                    break;
+                case BoxCancelled:
+                    _box.Visible = false;
+                    break;
                 case ClearSelection:
                     Selection.Clear();
                     break;
@@ -178,8 +218,21 @@ public partial class PlayerInput : Node
         }
     }
 
-    private PointerContext Context(ScreenPoint at, bool shift) =>
-        new(GroundAt(at), PickTarget(at), shift, !Selection.IsEmpty);
+    /// <summary>Living units of the player with the screen point the picking uses, in id order.</summary>
+    private IEnumerable<(EntityId Unit, ScreenPoint Point)> OwnUnitsOnScreen()
+    {
+        foreach (var entity in _host.Simulation.World.Entities)
+        {
+            if (entity is Unit { IsAlive: true } unit && unit.Owner == SimulationHost.LocalPlayer)
+            {
+                var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight));
+                yield return (unit.Id, new ScreenPoint(screen.X, screen.Y));
+            }
+        }
+    }
+
+    private PointerContext Context(ScreenPoint at, bool shift, bool alt) =>
+        new(GroundAt(at), PickTarget(at), shift, !Selection.IsEmpty, alt);
 
     /// <summary>The unit nearest to the pointer within <see cref="PickRadius"/>, or the ground when none is that close.</summary>
     /// <remarks>

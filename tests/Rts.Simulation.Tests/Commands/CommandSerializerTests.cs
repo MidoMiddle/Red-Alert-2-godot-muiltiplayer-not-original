@@ -8,7 +8,7 @@ namespace Rts.Simulation.Tests.Commands;
 public sealed class CommandSerializerTests
 {
     [Fact]
-    public void Spawn_has_the_exact_v2_byte_layout()
+    public void Spawn_has_the_exact_v3_byte_layout()
     {
         var bytes = Serialize(Spawn(player: 1, tick: 5, sequence: 7, x: 256, y: -1, type: UnitType.HeavyTank));
 
@@ -18,13 +18,27 @@ public sealed class CommandSerializerTests
     }
 
     [Fact]
-    public void Move_has_the_exact_v2_byte_layout()
+    public void Move_has_the_exact_v3_byte_layout()
     {
-        var bytes = Serialize(Move(player: 2, tick: 10, sequence: 3, units: [1, 300], x: 128, y: 640));
+        var bytes = Serialize(Move(player: 2, tick: 10, sequence: 3, units: [1, 300], x: 128, y: 640, queue: true));
 
         Assert.Equal(
-            "02" + "02000000" + "0A000000" + "03000000" + "0200" + "01000000" + "2C010000" + "80000000" + "80020000",
+            "02" + "02000000" + "0A000000" + "03000000" + "01" + "0200" + "01000000" + "2C010000" + "80000000" + "80020000",
             Convert.ToHexString(bytes));
+    }
+
+    [Fact]
+    public void New_commands_have_the_exact_v3_byte_layout()
+    {
+        const string Header = "01000000" + "05000000" + "07000000";
+        Assert.Equal("03" + Header + "0100" + "09000000", Convert.ToHexString(Serialize(Stop(player: 1, tick: 5, sequence: 7, units: [9]))));
+        Assert.Equal("06" + Header + "0100" + "09000000", Convert.ToHexString(Serialize(Scatter(player: 1, tick: 5, sequence: 7, units: [9]))));
+        Assert.Equal(
+            "04" + Header + "00" + "0100" + "09000000" + "00010000" + "00020000",
+            Convert.ToHexString(Serialize(AttackMove(player: 1, tick: 5, sequence: 7, units: [9], x: 256, y: 512))));
+        Assert.Equal(
+            "05" + Header + "01" + "0100" + "09000000" + "02" + "00010000" + "00020000" + "10000000" + "20000000",
+            Convert.ToHexString(Serialize(Waypoints(player: 1, tick: 5, sequence: 7, units: [9], points: [(256, 512), (16, 32)], loop: true))));
     }
 
     public static TheoryData<Command> RoundTripCases => new()
@@ -35,7 +49,15 @@ public sealed class CommandSerializerTests
         Spawn(player: 2, tick: 3, sequence: 4, type: (UnitType)200),
         Move(player: 3, tick: 42, sequence: 9, units: []),
         Move(player: 3, tick: 42, sequence: 9, units: [7]),
-        Move(player: 1, tick: 1, sequence: 1, units: Enumerable.Range(1, MoveUnitsCommand.MaxUnits).ToArray(), x: -100, y: 99999),
+        Move(player: 1, tick: 1, sequence: 1, units: Enumerable.Range(1, MoveCommand.MaxUnits).ToArray(), x: -100, y: 99999),
+        Move(player: 2, tick: 3, sequence: 4, units: [5, 6], queue: true),
+        AttackMove(player: 3, tick: 9, sequence: 1, units: [1, 2, 3], x: 70, y: -70, queue: true),
+        AttackMove(player: 3, tick: 9, sequence: 2, units: []),
+        Stop(player: 4, tick: 0, sequence: 0, units: [8]),
+        Stop(player: 4, tick: 0, sequence: 0, units: Enumerable.Range(1, UnitsCommand.MaxUnits).ToArray()),
+        Scatter(player: 5, tick: 12, sequence: 6, units: [2, 4]),
+        Waypoints(player: 6, tick: 2, sequence: 2, units: [1], points: [(10, 20)]),
+        Waypoints(player: 6, tick: 2, sequence: 3, units: [1, 2], points: Enumerable.Range(0, WaypointsCommand.MaxPoints).Select(i => (i * 100, -i)).ToArray(), loop: true),
     };
 
     [Theory]
@@ -107,10 +129,59 @@ public sealed class CommandSerializerTests
     public void Too_many_units_are_rejected_when_reading()
     {
         var bytes = Serialize(Move(player: 1, tick: 0, sequence: 0, units: []));
-        bytes[13] = 0x01; // count = 257 (little-endian 0x0101)
-        bytes[14] = 0x01;
+        bytes[14] = 0x01; // count = 257 (little-endian 0x0101), after the queue byte
+        bytes[15] = 0x01;
 
         Assert.Throws<InvalidDataException>(() => CommandSerializer.Read(bytes, out _));
+    }
+
+    [Fact]
+    public void Every_command_rejects_truncated_data()
+    {
+        Command[] commands =
+        [
+            Stop(player: 1, tick: 0, sequence: 0, units: [1, 2]),
+            Scatter(player: 1, tick: 0, sequence: 0, units: [1, 2]),
+            AttackMove(player: 1, tick: 0, sequence: 0, units: [1, 2]),
+            Waypoints(player: 1, tick: 0, sequence: 0, units: [1, 2], points: [(1, 2), (3, 4)]),
+        ];
+        foreach (var command in commands)
+        {
+            var bytes = Serialize(command);
+            for (var length = 0; length < bytes.Length; length++)
+            {
+                var truncated = bytes[..length];
+                Assert.Throws<InvalidDataException>(() => CommandSerializer.Read(truncated, out _));
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(33)]
+    public void Waypoint_count_outside_1_to_32_is_rejected_when_reading(int count)
+    {
+        var bytes = Serialize(Waypoints(player: 1, tick: 0, sequence: 0, units: [1], points: [(1, 2)]));
+        bytes[13 + 1 + 2 + 4] = (byte)count;
+
+        Assert.Throws<InvalidDataException>(() => CommandSerializer.Read(bytes, out _));
+    }
+
+    [Fact]
+    public void Flag_bytes_other_than_0_and_1_are_rejected()
+    {
+        var bytes = Serialize(Move(player: 1, tick: 0, sequence: 0, units: [1]));
+        bytes[13] = 2;
+
+        Assert.Throws<InvalidDataException>(() => CommandSerializer.Read(bytes, out _));
+    }
+
+    [Fact]
+    public void Waypoints_need_1_to_32_points_when_creating()
+    {
+        Assert.Throws<ArgumentException>(() => Waypoints(player: 1, tick: 0, sequence: 0, units: [1], points: []));
+        Assert.Throws<ArgumentException>(() => Waypoints(player: 1, tick: 0, sequence: 0, units: [1], points: new (int, int)[33]));
+        Assert.Throws<ArgumentException>(() => Stop(player: 1, tick: 0, sequence: 0, units: Enumerable.Range(1, 257).ToArray()));
     }
 
     [Fact]

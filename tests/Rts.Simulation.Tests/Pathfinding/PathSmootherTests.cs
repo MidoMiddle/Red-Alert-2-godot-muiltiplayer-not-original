@@ -274,7 +274,7 @@ public sealed class PathSmootherTests
         var player = new PlayerId(1);
         var conscript = world.SpawnUnit(player, UnitType.Conscript, new CellPos(0, 0).Center);
         var target = new CellPos(9, 5).Center;
-        CommandProcessor.Apply(world, new MoveUnitsCommand(player, 0, 0, [conscript.Id], target));
+        CommandProcessor.Apply(world, new MoveCommand(player, 0, 0, [conscript.Id], target));
 
         var events = new List<SimEvent>();
         var ticks = 0;

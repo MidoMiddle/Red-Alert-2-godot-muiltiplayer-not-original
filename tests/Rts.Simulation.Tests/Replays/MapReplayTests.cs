@@ -28,8 +28,8 @@ public sealed class MapReplayTests
         }
 
         var all = Enumerable.Range(1, map.Units.Count).Select(id => new EntityId(id)).ToImmutableArray();
-        simulation.Enqueue(new MoveUnitsCommand(new PlayerId(1), 1, sequences[1]++, all, new CellPos(13, 6).Center));
-        simulation.Enqueue(new MoveUnitsCommand(new PlayerId(1), 150, sequences[1]++, all, new CellPos(1, 10).Center));
+        simulation.Enqueue(new MoveCommand(new PlayerId(1), 1, sequences[1]++, all, new CellPos(13, 6).Center));
+        simulation.Enqueue(new MoveCommand(new PlayerId(1), 150, sequences[1]++, all, new CellPos(1, 10).Center));
 
         for (var tick = 0; tick < ticks; tick++)
         {

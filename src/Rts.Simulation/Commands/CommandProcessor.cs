@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Rts.Simulation.Events;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.Movement;
+using Rts.Simulation.Pathfinding;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Commands;
@@ -25,7 +28,11 @@ public static class CommandProcessor
         return command switch
         {
             SpawnTestUnitCommand spawn => ApplySpawn(world, spawn, events),
-            MoveUnitsCommand move => ApplyMove(world, move, events),
+            MoveCommand move => ApplyRoute(world, move, [move.Target], loop: false, move.Queue, attackMove: false, events),
+            AttackMoveCommand attack => ApplyRoute(world, attack, [attack.Target], loop: false, attack.Queue, attackMove: true, events),
+            WaypointsCommand route => ApplyRoute(world, route, route.Points, route.Loop, append: false, attackMove: false, events),
+            StopCommand stop => ApplyStop(world, stop),
+            ScatterCommand scatter => ApplyScatter(world, scatter, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
     }
@@ -47,14 +54,94 @@ public static class CommandProcessor
         return true;
     }
 
-    // Invalid target rejects the whole command; foreign, dead, unknown or repeated units are skipped one by one.
-    private static bool ApplyMove(GameWorld world, MoveUnitsCommand command, List<SimEvent>? events)
+    // A point outside the map rejects the whole command; foreign, dead, unknown or repeated units are skipped one by one.
+    private static bool ApplyRoute(
+        GameWorld world, UnitsCommand command, ImmutableArray<WorldPos> points, bool loop, bool append, bool attackMove, List<SimEvent>? events)
     {
-        if (!world.Contains(command.Target))
+        foreach (var point in points)
+        {
+            if (!world.Contains(point))
+            {
+                return false;
+            }
+        }
+
+        var units = OwnUnits(world, command);
+        if (units.Count == 0)
         {
             return false;
         }
 
+        // Each unit of a group gets a place of its own at every point, laid out now in the group's current shape
+        // (docs/implementation/M2_unit_control.md, 4.6 and 4.10).
+        var legs = new Dictionary<EntityId, ImmutableArray<UnitOrder>.Builder>();
+        foreach (var unit in units)
+        {
+            legs[unit.Id] = ImmutableArray.CreateBuilder<UnitOrder>(points.Length);
+        }
+
+        foreach (var point in points)
+        {
+            foreach (var (unit, destination) in GroupDestinations.Assign(world, units, point))
+            {
+                legs[unit.Id].Add(new UnitOrder(destination, attackMove));
+            }
+        }
+
+        foreach (var unit in units)
+        {
+            var route = legs[unit.Id].ToImmutable();
+            UnitOrders.GiveRoute(world, unit, route, loop, append);
+            events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, route[0].Point));
+        }
+
+        return true;
+    }
+
+    private static bool ApplyStop(GameWorld world, StopCommand command)
+    {
+        var units = OwnUnits(world, command);
+        foreach (var unit in units)
+        {
+            UnitOrders.Stop(world, unit);
+        }
+
+        return units.Count > 0;
+    }
+
+    // Units in id order, each drawing from the simulation's generator: a random free neighbouring cell it can step to.
+    private static bool ApplyScatter(GameWorld world, ScatterCommand command, List<SimEvent>? events)
+    {
+        var units = OwnUnits(world, command);
+        foreach (var unit in units)
+        {
+            var cell = unit.Position.ToCell();
+            var free = new List<CellPos>();
+            foreach (var (dx, dy) in AStar.Directions)
+            {
+                var next = new CellPos(cell.X + dx, cell.Y + dy);
+                if (AStar.CanStep(world.Map, cell, dx, dy, unit.Archetype.Locomotor) && world.Reservations.HasRoomFor(next, unit))
+                {
+                    free.Add(next);
+                }
+            }
+
+            if (free.Count == 0)
+            {
+                continue;
+            }
+
+            var target = free[world.Random.NextInt(free.Count)].Center;
+            UnitOrders.GiveRoute(world, unit, [new UnitOrder(target, AttackMove: false)], loop: false, append: false);
+            events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, target));
+        }
+
+        return units.Count > 0;
+    }
+
+    /// <summary>The command's living units of its player, each once, in id order.</summary>
+    private static List<Unit> OwnUnits(GameWorld world, UnitsCommand command)
+    {
         var units = new List<Unit>();
         foreach (var id in command.Units)
         {
@@ -68,13 +155,7 @@ public static class CommandProcessor
             }
         }
 
-        // Each unit of a group gets a cell of its own near the target (docs/implementation/M2_unit_control.md, 4.6).
-        foreach (var (unit, destination) in GroupDestinations.Assign(world, units, command.Target))
-        {
-            UnitOrders.MoveTo(world, unit, destination);
-            events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, destination));
-        }
-
-        return units.Count > 0;
+        units.Sort((a, b) => a.Id.CompareTo(b.Id));
+        return units;
     }
 }

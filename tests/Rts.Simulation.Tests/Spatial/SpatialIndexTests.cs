@@ -67,7 +67,7 @@ public sealed class SpatialIndexTests
                 {
                     var unit = units[random.NextInt(units.Count)];
                     var target = new WorldPos(random.NextInt(width * 256), random.NextInt(height * 256));
-                    CommandProcessor.Apply(world, new MoveUnitsCommand(unit.Owner, tick, sequence++, [unit.Id], target));
+                    CommandProcessor.Apply(world, new MoveCommand(unit.Owner, tick, sequence++, [unit.Id], target));
                 }
 
                 if (units.Count > 3 && random.NextInt(10) == 0)

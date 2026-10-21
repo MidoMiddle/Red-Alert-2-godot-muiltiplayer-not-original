@@ -420,6 +420,7 @@ public static class MovementSystem
         unit.PathIndex = 0;
         unit.WaitTicks = 0;
         unit.Replans = 0;
+        events.Add(new UnitArrived(world.CurrentTick, unit.Id, position));
         if (unit.ResumeTarget is not null)
         {
             // In the pocket: wait a little, then go back to the original target.
@@ -428,8 +429,7 @@ public static class MovementSystem
         else
         {
             unit.Returning = false;
+            UnitOrders.NextLeg(world, unit);
         }
-
-        events.Add(new UnitArrived(world.CurrentTick, unit.Id, position));
     }
 }

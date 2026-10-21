@@ -167,7 +167,7 @@ public sealed class GroupDestinationsTests
         }
 
         var ids = Enumerable.Range(1, 40).Select(i => new EntityId(i)).ToImmutableArray();
-        simulation.Enqueue(new MoveUnitsCommand(Player1, 1, sequence++, ids, new CellPos(40, 36).Center));
+        simulation.Enqueue(new MoveCommand(Player1, 1, sequence++, ids, new CellPos(40, 36).Center));
 
         simulation.Step();
         simulation.Step();

@@ -20,6 +20,14 @@ public sealed class UnitStateTextTests
         unit.Replans = 1;
         Assert.Equal("unit moving · wait 3 · replans 1", UnitStateText.Describe(unit));
 
+        unit.Orders = [new UnitOrder(new CellPos(2, 2).Center, false), new UnitOrder(new CellPos(3, 3).Center, true), new UnitOrder(new CellPos(4, 4).Center, false)];
+        unit.OrderIndex = 1;
+        unit.LoopOrders = true;
+        Assert.Equal("unit moving · wait 3 · replans 1 · order 2/3 · patrol · attack-move", UnitStateText.Describe(unit));
+        unit.Orders = [];
+        unit.OrderIndex = 0;
+        unit.LoopOrders = false;
+
         unit.PathPending = true;
         Assert.Equal("unit waiting for path", UnitStateText.Describe(unit));
 

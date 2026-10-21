@@ -185,12 +185,12 @@ public sealed class GoldenValuesTests
 
         StateChecksum[] actual = [checksums[99], checksums[499], checksums[999]];
 
-        // Rules v9 (M2 step 10): five soldiers per cell on spots; vehicles and infantry never share a cell.
+        // Rules v10 (M2 step 12): routes, Stop, AttackMove, Waypoints, Scatter; the scenario now issues all of them.
         StateChecksum[] expected =
         [
-            new(100, 0x7b8bfa793af42b2bUL),
-            new(500, 0x12a64b5cc2e35b86UL),
-            new(1000, 0xfb8beb5317062097UL),
+            new(100, 0xf5c4b0587ccb3ea5UL),
+            new(500, 0xd25f8f925eb89a81UL),
+            new(1000, 0x9c229014c4cdb948UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -218,7 +218,7 @@ public sealed class GoldenValuesTests
         // Replay and command format v2 (M2 step 2): the spawn command carries the unit type.
         // Rules v3 (M2 step 3): same bytes except the recorded checksums, which now include the map.
         // Replay format v3, rules v4 (M2 step 4): one more byte, the "no map" flag; checksums unchanged on clear land.
-        // Rules v5–v9 (M2 steps 6–10): same layout, new recorded checksums.
-        Assert.Equal((22346, 18101602135131719477UL), (bytes.Length, hash.Value));
+        // Replay format v4, command format v3 (M2 step 12): new commands in the scenario, the queue byte in moves.
+        Assert.Equal((23365, 2571158560162506041UL), (bytes.Length, hash.Value));
     }
 }

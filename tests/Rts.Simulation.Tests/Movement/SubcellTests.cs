@@ -108,7 +108,7 @@ public sealed class SubcellTests
         var target = new CellPos(10, 10);
         foreach (var soldier in soldiers)
         {
-            CommandProcessor.Apply(world, new MoveUnitsCommand(Player1, world.CurrentTick, 0, [soldier.Id], target.Center));
+            CommandProcessor.Apply(world, new MoveCommand(Player1, world.CurrentTick, 0, [soldier.Id], target.Center));
         }
 
         Run(world);
@@ -131,7 +131,7 @@ public sealed class SubcellTests
         }
 
         var walker = Place(world, Player1, UnitType.Conscript, new CellPos(0, 2).Center);
-        CommandProcessor.Apply(world, new MoveUnitsCommand(Player1, 0, 0, [walker.Id], new CellPos(15, 2).Center));
+        CommandProcessor.Apply(world, new MoveCommand(Player1, 0, 0, [walker.Id], new CellPos(15, 2).Center));
 
         var ticks = Run(world);
 
@@ -146,7 +146,7 @@ public sealed class SubcellTests
         var world = new GameWorld(seed: 1, TestMapParser.Parse(string.Join("\n", Enumerable.Repeat(". . . . . . . . . .", 5))).Grid);
         Place(world, Player2, UnitType.Conscript, new CellPos(5, 2).Center);
         var tank = Place(world, Player1, UnitType.HeavyTank, new CellPos(0, 2).Center);
-        CommandProcessor.Apply(world, new MoveUnitsCommand(Player1, 0, 0, [tank.Id], new CellPos(9, 2).Center));
+        CommandProcessor.Apply(world, new MoveCommand(Player1, 0, 0, [tank.Id], new CellPos(9, 2).Center));
 
         Run(world);
 
@@ -163,7 +163,7 @@ public sealed class SubcellTests
             var units = Enumerable.Range(0, 15).Select(i => Place(world, Player1, type, new CellPos(i % 13, i / 13).Center)).ToList();
             for (var i = 0; i < units.Count; i++)
             {
-                CommandProcessor.Apply(world, new MoveUnitsCommand(Player1, 0, (uint)i, [units[i].Id], new CellPos(i % 13, 5 + i / 13).Center));
+                CommandProcessor.Apply(world, new MoveCommand(Player1, 0, (uint)i, [units[i].Id], new CellPos(i % 13, 5 + i / 13).Center));
             }
 
             var ticks = Run(world, maxTicks: 4000);

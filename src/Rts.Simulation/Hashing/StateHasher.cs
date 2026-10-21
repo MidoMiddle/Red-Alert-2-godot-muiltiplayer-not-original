@@ -79,6 +79,16 @@ public static class StateHasher
                 hash.Add(unit.HoldTicks);
                 hash.Add(unit.Returning);
                 hash.Add(unit.Subcell);
+                hash.Add(unit.Orders.Length);
+                foreach (var order in unit.Orders)
+                {
+                    hash.Add(order.Point.X);
+                    hash.Add(order.Point.Y);
+                    hash.Add(order.AttackMove);
+                }
+
+                hash.Add(unit.OrderIndex);
+                hash.Add(unit.LoopOrders);
                 hash.Add(unit.ResumeTarget.HasValue);
                 if (unit.ResumeTarget is { } resume)
                 {

@@ -38,14 +38,30 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <summary>What the interpreter knows about a press besides the button.</summary>
 /// <param name="Ground">The point on the ground under the cursor, or null when the cursor is off the map.</param>
 /// <param name="Target">What is under the cursor.</param>
-/// <param name="Shift">Whether Shift is held: Shift and a left click spawn a test unit.</param>
+/// <param name="Shift">Whether Shift is held: Shift and a left click add a unit to the selection or take it out, Shift and a box add.</param>
 /// <param name="HasSelection">Whether any unit is selected.</param>
-public readonly record struct PointerContext(WorldPos? Ground, PointerTarget Target, bool Shift, bool HasSelection);
+/// <param name="Alt">Whether Alt is held: Alt and a left click on the ground spawn a test unit (debug).</param>
+public readonly record struct PointerContext(WorldPos? Ground, PointerTarget Target, bool Shift, bool HasSelection, bool Alt = false);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
 
 public sealed record SelectUnit(EntityId Unit) : Intent;
+
+/// <summary>Add the unit to the selection, or take it out if it is selected (Shift + click).</summary>
+public sealed record ToggleUnit(EntityId Unit) : Intent;
+
+/// <summary>A selection box started at <paramref name="From"/>: the left button was dragged past <see cref="InputInterpreter.ClickSlop"/>.</summary>
+public sealed record BoxStarted(ScreenPoint From) : Intent;
+
+/// <summary>The selection box now spans from <paramref name="From"/> to <paramref name="To"/>.</summary>
+public sealed record BoxMoved(ScreenPoint From, ScreenPoint To) : Intent;
+
+/// <summary>The box was released: select own units inside it, or add them to the selection when <paramref name="Add"/> (Shift).</summary>
+public sealed record BoxSelect(ScreenPoint From, ScreenPoint To, bool Add) : Intent;
+
+/// <summary>The box was given up (Escape).</summary>
+public sealed record BoxCancelled : Intent;
 
 public sealed record ClearSelection : Intent;
 
@@ -65,6 +81,8 @@ public sealed record OpenMenu : Intent;
 /// Turns mouse events into intents for the chosen scheme (docs/implementation/M6_menus_skirmish.md, 4.6). The game reports
 /// presses, releases and pointer moves with what is under the cursor, and the interpreter answers with intents. The same
 /// events give different intents in Classic and Modern.
+/// The left button is followed until it is released (M2 step 12): released in place it is a click (select, Shift + click to
+/// add or remove, order or cancel on the ground); dragged past <see cref="ClickSlop"/> it draws a selection box.
 /// </summary>
 public sealed class InputInterpreter
 {
@@ -77,8 +95,11 @@ public sealed class InputInterpreter
     /// <summary>The button whose press is followed until its release: the camera button, or the right button in Classic.</summary>
     private PointerButton? _tracked;
     private ScreenPoint _pressedAt;
+    private ScreenPoint _lastAt;
     private bool _moved;
     private bool _dragging;
+    private bool _boxing;
+    private PointerContext _leftContext;
 
     public InputInterpreter(ControlScheme scheme, bool cameraDrag)
     {
@@ -97,7 +118,7 @@ public sealed class InputInterpreter
             return Array.Empty<Intent>();
         }
 
-        if (context.Shift && button == PointerButton.Left)
+        if (context.Alt && button == PointerButton.Left)
         {
             return context.Ground is { } spawnAt && context.Target.Kind == PointerTargetKind.Ground
                 ? new Intent[] { new SpawnUnit(spawnAt) }
@@ -107,7 +128,14 @@ public sealed class InputInterpreter
         switch (button)
         {
             case PointerButton.Left:
-                return PressLeft(context);
+                // Click or box: decided when the button is released or the pointer moves away.
+                _tracked = button;
+                _pressedAt = at;
+                _lastAt = at;
+                _moved = false;
+                _boxing = false;
+                _leftContext = context;
+                return Array.Empty<Intent>();
             case PointerButton.Right when _scheme == ControlScheme.Classic:
                 return Track(button, at);
             case PointerButton.Right:
@@ -121,7 +149,10 @@ public sealed class InputInterpreter
         }
     }
 
-    /// <summary>A button went up. Ends a camera drag, or cancels the selection after a right click in Classic.</summary>
+    /// <summary>
+    /// A button went up. The left button finishes its click or box; the camera button ends a drag, or cancels the selection
+    /// after a right click in Classic.
+    /// </summary>
     public IReadOnlyList<Intent> Release(PointerButton button)
     {
         if (_tracked != button)
@@ -130,10 +161,19 @@ public sealed class InputInterpreter
         }
 
         var dragging = _dragging;
+        var boxing = _boxing;
         var click = !_moved;
         _tracked = null;
         _dragging = false;
+        _boxing = false;
         _moved = false;
+
+        if (button == PointerButton.Left)
+        {
+            return boxing
+                ? new Intent[] { new BoxSelect(_pressedAt, _lastAt, _leftContext.Shift) }
+                : ClickLeft(_leftContext);
+        }
 
         if (dragging)
         {
@@ -158,6 +198,23 @@ public sealed class InputInterpreter
             _moved = true;
         }
 
+        if (_tracked == PointerButton.Left)
+        {
+            _lastAt = at;
+            if (_boxing)
+            {
+                return new Intent[] { new BoxMoved(_pressedAt, at) };
+            }
+
+            if (!_moved)
+            {
+                return Array.Empty<Intent>();
+            }
+
+            _boxing = true;
+            return new Intent[] { new BoxStarted(_pressedAt), new BoxMoved(_pressedAt, at) };
+        }
+
         if (_dragging)
         {
             return new Intent[] { new CameraDragMoved(at) };
@@ -178,6 +235,19 @@ public sealed class InputInterpreter
     /// </summary>
     public IReadOnlyList<Intent> EscapePressed(bool hasSelection)
     {
+        if (_tracked == PointerButton.Left)
+        {
+            // Escape gives up a pressed left button; a box being drawn disappears.
+            var boxing = _boxing;
+            _tracked = null;
+            _boxing = false;
+            _moved = false;
+            if (boxing)
+            {
+                return new Intent[] { new BoxCancelled() };
+            }
+        }
+
         if (hasSelection)
         {
             return new Intent[] { new ClearSelection() };
@@ -196,10 +266,13 @@ public sealed class InputInterpreter
         return intents;
     }
 
-    private IReadOnlyList<Intent> PressLeft(PointerContext context)
+    /// <summary>A left click released in place.</summary>
+    private IReadOnlyList<Intent> ClickLeft(PointerContext context)
     {
         switch (context.Target.Kind)
         {
+            case PointerTargetKind.OwnUnit when context.Shift:
+                return new Intent[] { new ToggleUnit(context.Target.Unit) };
             case PointerTargetKind.OwnUnit:
                 return new Intent[] { new SelectUnit(context.Target.Unit) };
             case PointerTargetKind.Ground when _scheme == ControlScheme.Modern:

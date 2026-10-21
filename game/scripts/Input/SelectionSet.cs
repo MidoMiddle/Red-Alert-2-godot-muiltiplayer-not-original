@@ -35,6 +35,27 @@ public sealed class SelectionSet
         }
     }
 
+    /// <summary>Adds the unit, or removes it if it is selected already (Shift + click).</summary>
+    public void Toggle(EntityId unit)
+    {
+        if (!_units.Remove(unit))
+        {
+            _units.Add(unit);
+        }
+    }
+
+    /// <summary>Adds the units that are not selected yet, keeping the current ones first (Shift + box).</summary>
+    public void AddAll(IEnumerable<EntityId> units)
+    {
+        foreach (var unit in units)
+        {
+            if (!_units.Contains(unit))
+            {
+                _units.Add(unit);
+            }
+        }
+    }
+
     public void Clear() => _units.Clear();
 
     /// <summary>Drops the units for which <paramref name="gone"/> is true, for example the dead ones.</summary>

@@ -37,7 +37,7 @@ public sealed class StateHasherTests
         "type", "turn rate", "facing", "turret facing", "land", "obstacle",
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
-        "soldier spot", "subcell",
+        "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
     };
 
     [Theory]
@@ -97,6 +97,21 @@ public sealed class StateHasherTests
                 Assert.NotEqual(withSoldier, StateHasher.Compute(world));
                 break;
             case "subcell": idle.Subcell = (idle.Subcell + 1) % 5; break;
+            case "route": idle.Orders = [new UnitOrder(new WorldPos(5, 5), false)]; break;
+            case "route point":
+                idle.Orders = [new UnitOrder(new WorldPos(5, 5), false)];
+                var withRoute = StateHasher.Compute(world);
+                idle.Orders = [new UnitOrder(new WorldPos(5, 6), false)];
+                Assert.NotEqual(withRoute, StateHasher.Compute(world));
+                break;
+            case "attack-move":
+                idle.Orders = [new UnitOrder(new WorldPos(5, 5), false)];
+                var plain = StateHasher.Compute(world);
+                idle.Orders = [new UnitOrder(new WorldPos(5, 5), true)];
+                Assert.NotEqual(plain, StateHasher.Compute(world));
+                break;
+            case "order index": idle.OrderIndex = 1; break;
+            case "loop": idle.LoopOrders = true; break;
             case "path request avoid":
                 world.PathRequests.Request(idle, 0, new CellPos(5, 5));
                 var withoutAvoid = StateHasher.Compute(world);
@@ -122,6 +137,7 @@ public sealed class StateHasherTests
         "<PathPending>k__BackingField", "<Path>k__BackingField", "<PathIndex>k__BackingField",
         "<WaitTicks>k__BackingField", "<Replans>k__BackingField", "<ResumeTarget>k__BackingField", "<HoldTicks>k__BackingField",
         "<Returning>k__BackingField", "<Subcell>k__BackingField",
+        "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField",
     })]
     [InlineData(typeof(GameWorld), new[]
     {

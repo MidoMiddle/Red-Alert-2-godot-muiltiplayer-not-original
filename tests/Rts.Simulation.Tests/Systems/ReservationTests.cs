@@ -23,7 +23,7 @@ public sealed class ReservationTests
     private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid);
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
-        CommandProcessor.Apply(world, new MoveUnitsCommand(unit.Owner, world.CurrentTick, 0, [unit.Id], target.Center));
+        CommandProcessor.Apply(world, new MoveCommand(unit.Owner, world.CurrentTick, 0, [unit.Id], target.Center));
 
     private static bool Busy(GameWorld world) =>
         world.Entities.OfType<Unit>().Any(u => u.IsAlive && (u.MoveTarget is not null || u.HoldTicks > 0 || u.PathPending));

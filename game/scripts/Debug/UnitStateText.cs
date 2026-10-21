@@ -22,6 +22,14 @@ public static class UnitStateText
             return unit.HoldTicks > 0 ? $"unit giving way · hold {unit.HoldTicks}" : "unit giving way";
         }
 
-        return unit.MoveTarget is null ? "unit idle" : $"unit moving · wait {unit.WaitTicks} · replans {unit.Replans}";
+        return unit.MoveTarget is null ? "unit idle" : $"unit moving · wait {unit.WaitTicks} · replans {unit.Replans}" + Route(unit);
+    }
+
+    /// <summary><c> · order 2/3 · patrol · attack-move</c> for a unit with a route of several legs; empty for a single order.</summary>
+    private static string Route(Unit unit)
+    {
+        var text = unit.Orders.Length > 1 ? $" · order {unit.OrderIndex + 1}/{unit.Orders.Length}" : "";
+        text += unit.LoopOrders ? " · patrol" : "";
+        return text + (unit.IsAttackMoving ? " · attack-move" : "");
     }
 }

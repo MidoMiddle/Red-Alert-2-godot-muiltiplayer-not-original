@@ -26,6 +26,73 @@ internal static class UnitOrders
         RequestPath(world, unit, target, default);
     }
 
+    /// <summary>
+    /// A route from the player: replaces the old one, or with <paramref name="append"/> goes on after it. An idle unit, or one
+    /// whose route is replaced, starts on the first new leg at once.
+    /// </summary>
+    public static void GiveRoute(GameWorld world, Unit unit, ImmutableArray<UnitOrder> legs, bool loop, bool append)
+    {
+        if (append && unit.Orders.Length > 0)
+        {
+            // Added to a running route; a patrol that gets more legs becomes a plain route.
+            unit.Orders = unit.Orders.AddRange(legs);
+            unit.LoopOrders = false;
+            if (unit.MoveTarget is null && unit.HoldTicks == 0)
+            {
+                MoveTo(world, unit, unit.Orders[unit.OrderIndex].Point);
+            }
+
+            return;
+        }
+
+        unit.Orders = legs;
+        unit.OrderIndex = 0;
+        unit.LoopOrders = loop;
+        MoveTo(world, unit, legs[0].Point);
+    }
+
+    /// <summary>The unit arrived at the end of its leg: on to the next leg, round again for a patrol, or done.</summary>
+    public static void NextLeg(GameWorld world, Unit unit)
+    {
+        if (unit.Orders.Length == 0)
+        {
+            return;
+        }
+
+        unit.OrderIndex++;
+        if (unit.OrderIndex >= unit.Orders.Length)
+        {
+            if (!unit.LoopOrders)
+            {
+                unit.Orders = [];
+                unit.OrderIndex = 0;
+                return;
+            }
+
+            unit.OrderIndex = 0;
+        }
+
+        MoveTo(world, unit, unit.Orders[unit.OrderIndex].Point);
+    }
+
+    /// <summary>Stops the unit where it is: no path, no route, no giving way.</summary>
+    public static void Stop(GameWorld world, Unit unit)
+    {
+        world.PathRequests.Cancel(unit.Id);
+        unit.MoveTarget = null;
+        unit.Path = null;
+        unit.PathIndex = 0;
+        unit.PathPending = false;
+        unit.Orders = [];
+        unit.OrderIndex = 0;
+        unit.LoopOrders = false;
+        unit.ResumeTarget = null;
+        unit.HoldTicks = 0;
+        unit.Returning = false;
+        unit.WaitTicks = 0;
+        unit.Replans = 0;
+    }
+
     /// <summary>Asks for a path to <paramref name="target"/>, keeping out of <paramref name="avoid"/>; the unit waits meanwhile.</summary>
     public static void RequestPath(GameWorld world, Unit unit, WorldPos target, ImmutableArray<CellPos> avoid)
     {

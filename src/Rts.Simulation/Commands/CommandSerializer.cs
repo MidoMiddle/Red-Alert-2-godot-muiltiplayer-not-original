@@ -9,19 +9,25 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v2, little-endian regardless of the CPU. The same bytes go to the network
-/// and into replays (docs/implementation/M0_foundation.md, 4.7):
+/// Binary command format v3, little-endian regardless of the CPU. The same bytes go to the network
+/// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
-/// MoveUnits:     u16 count | i32 × count ids | i32 x | i32 y
 /// SpawnTestUnit: u8 unitType | i32 x | i32 y
+/// Move:          u8 queue | units | i32 x | i32 y
+/// Stop:          units
+/// AttackMove:    u8 queue | units | i32 x | i32 y
+/// Waypoints:     u8 loop | units | u8 pointCount | (i32 x | i32 y) × pointCount
+/// Scatter:       units
+/// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
-/// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit.
+/// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
+/// Stop, AttackMove, Waypoints and Scatter.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 2;
+    public const int FormatVersion = 3;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -30,7 +36,11 @@ public static class CommandSerializer
     public static int GetSize(Command command) => command switch
     {
         SpawnTestUnitCommand => HeaderSize + SpawnSize,
-        MoveUnitsCommand move => HeaderSize + 2 + 4 * move.Units.Length + PositionSize,
+        MoveCommand move => HeaderSize + 1 + UnitsSize(move) + PositionSize,
+        AttackMoveCommand attack => HeaderSize + 1 + UnitsSize(attack) + PositionSize,
+        StopCommand stop => HeaderSize + UnitsSize(stop),
+        ScatterCommand scatter => HeaderSize + UnitsSize(scatter),
+        WaypointsCommand route => HeaderSize + 1 + UnitsSize(route) + 1 + PositionSize * route.Points.Length,
         _ => throw UnknownCommand(command),
     };
 
@@ -55,16 +65,30 @@ public static class CommandSerializer
                 payload[0] = (byte)spawn.UnitType;
                 WritePosition(payload[1..], spawn.Position);
                 break;
-            case MoveUnitsCommand move:
-                BinaryPrimitives.WriteUInt16LittleEndian(payload, (ushort)move.Units.Length);
-                var offset = 2;
-                foreach (var id in move.Units)
+            case MoveCommand move:
+                payload[0] = move.Queue ? (byte)1 : (byte)0;
+                WritePosition(payload[(1 + WriteUnits(payload[1..], move))..], move.Target);
+                break;
+            case AttackMoveCommand attack:
+                payload[0] = attack.Queue ? (byte)1 : (byte)0;
+                WritePosition(payload[(1 + WriteUnits(payload[1..], attack))..], attack.Target);
+                break;
+            case StopCommand stop:
+                WriteUnits(payload, stop);
+                break;
+            case ScatterCommand scatter:
+                WriteUnits(payload, scatter);
+                break;
+            case WaypointsCommand route:
+                payload[0] = route.Loop ? (byte)1 : (byte)0;
+                var offset = 1 + WriteUnits(payload[1..], route);
+                payload[offset++] = (byte)route.Points.Length;
+                foreach (var point in route.Points)
                 {
-                    BinaryPrimitives.WriteInt32LittleEndian(payload[offset..], id.Value);
-                    offset += 4;
+                    WritePosition(payload[offset..], point);
+                    offset += PositionSize;
                 }
 
-                WritePosition(payload[offset..], move.Target);
                 break;
         }
 
@@ -91,25 +115,52 @@ public static class CommandSerializer
                 return new SpawnTestUnitCommand(player, tick, sequence, (UnitType)payload[0], ReadPosition(payload[1..]));
             }
 
-            case CommandType.MoveUnits:
+            case CommandType.Move:
+            case CommandType.AttackMove:
             {
-                Require(payload, 2);
-                int count = BinaryPrimitives.ReadUInt16LittleEndian(payload);
-                if (count > MoveUnitsCommand.MaxUnits)
+                Require(payload, 1);
+                var queue = ReadFlag(payload[0]);
+                var units = ReadUnits(payload[1..], out var unitsSize);
+                Require(payload, 1 + unitsSize + PositionSize);
+                var target = ReadPosition(payload[(1 + unitsSize)..]);
+                bytesRead = HeaderSize + 1 + unitsSize + PositionSize;
+                return type == CommandType.Move
+                    ? new MoveCommand(player, tick, sequence, units, target, queue)
+                    : new AttackMoveCommand(player, tick, sequence, units, target, queue);
+            }
+
+            case CommandType.Stop:
+            case CommandType.Scatter:
+            {
+                var units = ReadUnits(payload, out var unitsSize);
+                bytesRead = HeaderSize + unitsSize;
+                return type == CommandType.Stop
+                    ? new StopCommand(player, tick, sequence, units)
+                    : new ScatterCommand(player, tick, sequence, units);
+            }
+
+            case CommandType.Waypoints:
+            {
+                Require(payload, 1);
+                var loop = ReadFlag(payload[0]);
+                var units = ReadUnits(payload[1..], out var unitsSize);
+                var offset = 1 + unitsSize;
+                Require(payload, offset + 1);
+                int count = payload[offset++];
+                if (count is 0 or > WaypointsCommand.MaxPoints)
                 {
-                    throw new InvalidDataException($"MoveUnits with {count} units exceeds the limit of {MoveUnitsCommand.MaxUnits}.");
+                    throw new InvalidDataException($"Waypoints with {count} points, expected 1…{WaypointsCommand.MaxPoints}.");
                 }
 
-                Require(payload, 2 + 4 * count + PositionSize);
-                var units = ImmutableArray.CreateBuilder<EntityId>(count);
+                Require(payload, offset + PositionSize * count);
+                var points = ImmutableArray.CreateBuilder<WorldPos>(count);
                 for (var i = 0; i < count; i++)
                 {
-                    units.Add(new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload[(2 + 4 * i)..])));
+                    points.Add(ReadPosition(payload[(offset + PositionSize * i)..]));
                 }
 
-                var target = ReadPosition(payload[(2 + 4 * count)..]);
-                bytesRead = HeaderSize + 2 + 4 * count + PositionSize;
-                return new MoveUnitsCommand(player, tick, sequence, units.MoveToImmutable(), target);
+                bytesRead = HeaderSize + offset + PositionSize * count;
+                return new WaypointsCommand(player, tick, sequence, units, points.MoveToImmutable(), loop);
             }
 
             default:
@@ -165,6 +216,49 @@ public static class CommandSerializer
         bytesRead = offset;
         return commands;
     }
+
+    private static int UnitsSize(UnitsCommand command) => 2 + 4 * command.Units.Length;
+
+    /// <summary>Writes <c>u16 count | i32 ids</c>; returns the bytes written.</summary>
+    private static int WriteUnits(Span<byte> destination, UnitsCommand command)
+    {
+        BinaryPrimitives.WriteUInt16LittleEndian(destination, (ushort)command.Units.Length);
+        var offset = 2;
+        foreach (var id in command.Units)
+        {
+            BinaryPrimitives.WriteInt32LittleEndian(destination[offset..], id.Value);
+            offset += 4;
+        }
+
+        return offset;
+    }
+
+    private static ImmutableArray<EntityId> ReadUnits(ReadOnlySpan<byte> source, out int size)
+    {
+        Require(source, 2);
+        int count = BinaryPrimitives.ReadUInt16LittleEndian(source);
+        if (count > UnitsCommand.MaxUnits)
+        {
+            throw new InvalidDataException($"Command with {count} units exceeds the limit of {UnitsCommand.MaxUnits}.");
+        }
+
+        size = 2 + 4 * count;
+        Require(source, size);
+        var units = ImmutableArray.CreateBuilder<EntityId>(count);
+        for (var i = 0; i < count; i++)
+        {
+            units.Add(new EntityId(BinaryPrimitives.ReadInt32LittleEndian(source[(2 + 4 * i)..])));
+        }
+
+        return units.MoveToImmutable();
+    }
+
+    private static bool ReadFlag(byte value) => value switch
+    {
+        0 => false,
+        1 => true,
+        _ => throw new InvalidDataException($"Invalid flag byte {value}."),
+    };
 
     private static void WritePosition(Span<byte> destination, WorldPos position)
     {

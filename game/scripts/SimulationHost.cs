@@ -155,11 +155,11 @@ public partial class SimulationHost : Node
         var units = Simulation.World.Entities
             .Where(e => e is Unit && e.IsAlive && e.Owner == LocalPlayer)
             .Select(e => e.Id)
-            .Take(MoveUnitsCommand.MaxUnits)
+            .Take(MoveCommand.MaxUnits)
             .ToImmutableArray();
         if (!units.IsEmpty)
         {
-            Issue(new MoveUnitsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, units, target));
+            Issue(new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, units, target));
         }
     }
 
@@ -168,11 +168,11 @@ public partial class SimulationHost : Node
     {
         var ordered = units
             .Where(id => Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer)
-            .Take(MoveUnitsCommand.MaxUnits)
+            .Take(MoveCommand.MaxUnits)
             .ToImmutableArray();
         if (!ordered.IsEmpty)
         {
-            Issue(new MoveUnitsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+            Issue(new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
         }
     }
 

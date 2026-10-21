@@ -23,8 +23,9 @@ internal static class ReferenceScenario
     public static SimulationSettings Settings(ulong seed = MatchSeed) => new(seed);
 
     /// <summary>
-    /// Commands for <paramref name="ticks"/> ticks: each tick, each player issues a command with
-    /// probability 1/4 — a spawn of a random unit type (1/3) or a move of 1–12 unit ids (2/3) to a random point on the map.
+    /// Commands for <paramref name="ticks"/> ticks: each tick, each player issues a command with probability 1/4 —
+    /// a spawn of a random unit type (5/16), or for 1–12 unit ids a move (5/16, one of them queued), an attack-move,
+    /// a route of 2–3 points (sometimes a patrol), a stop or a scatter (1/16 each), at random points on the map.
     /// </summary>
     public static IReadOnlyList<Command> Commands(int ticks)
     {
@@ -43,18 +44,30 @@ internal static class ReferenceScenario
 
                 var owner = new PlayerId(player);
                 var point = new WorldPos(random.NextInt(MapLeptons), random.NextInt(MapLeptons));
-                if (random.NextInt(3) == 0)
+                var kind = random.NextInt(16);
+                if (kind < 5)
                 {
                     var type = (UnitType)(1 + random.NextInt(UnitArchetypes.All.Count));
                     commands.Add(new SpawnTestUnitCommand(owner, tick, sequences[player]++, type, point));
+                    continue;
                 }
-                else
+
+                var units = Enumerable.Range(0, 1 + random.NextInt(12))
+                    .Select(_ => new EntityId(random.NextInt(1, 200)))
+                    .ToImmutableArray();
+                var sequence = sequences[player]++;
+                commands.Add(kind switch
                 {
-                    var units = Enumerable.Range(0, 1 + random.NextInt(12))
-                        .Select(_ => new EntityId(random.NextInt(1, 200)))
-                        .ToImmutableArray();
-                    commands.Add(new MoveUnitsCommand(owner, tick, sequences[player]++, units, point));
-                }
+                    11 => new AttackMoveCommand(owner, tick, sequence, units, point, Queue: random.NextInt(2) == 0),
+                    12 => new WaypointsCommand(owner, tick, sequence, units,
+                        Enumerable.Range(0, 2 + random.NextInt(2))
+                            .Select(_ => new WorldPos(random.NextInt(MapLeptons), random.NextInt(MapLeptons)))
+                            .ToImmutableArray(),
+                        loop: random.NextInt(2) == 0),
+                    13 => new StopCommand(owner, tick, sequence, units),
+                    14 => new ScatterCommand(owner, tick, sequence, units),
+                    _ => new MoveCommand(owner, tick, sequence, units, point, Queue: kind == 10),
+                });
             }
         }
 
