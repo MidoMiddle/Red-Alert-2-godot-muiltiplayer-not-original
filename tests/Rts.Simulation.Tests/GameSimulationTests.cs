@@ -1,5 +1,6 @@
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Hashing;
 using Rts.Simulation.World;
 using static Rts.Simulation.Tests.Commands.CommandFactory;
 
@@ -116,9 +117,51 @@ public sealed class GameSimulationTests
             b.Step();
             Assert.Equal(Describe(a), Describe(b));
             Assert.Equal(a.LastTickEvents, b.LastTickEvents);
+            Assert.Equal(a.LastChecksum, b.LastChecksum);
         }
 
         Assert.NotEmpty(a.World.Entities);
+    }
+
+    [Fact]
+    public void Checksum_is_computed_after_every_step_by_default()
+    {
+        var simulation = NewSimulation();
+        Assert.Null(simulation.LastChecksum);
+
+        simulation.Step();
+
+        Assert.Equal(1, simulation.LastChecksum!.Value.Tick);
+        Assert.Equal(StateHasher.Compute(simulation.World), simulation.LastChecksum.Value.Value);
+    }
+
+    [Fact]
+    public void Checksum_follows_the_hash_interval()
+    {
+        var simulation = new GameSimulation(new SimulationSettings(1) { HashInterval = 5 });
+        var checksumTicks = new List<int?>();
+
+        for (var i = 0; i < 12; i++)
+        {
+            simulation.Step();
+            checksumTicks.Add(simulation.LastChecksum?.Tick);
+        }
+
+        Assert.Equal([null, null, null, null, 5, 5, 5, 5, 5, 10, 10, 10], checksumTicks);
+    }
+
+    [Fact]
+    public void Different_commands_give_different_checksums()
+    {
+        var a = NewSimulation();
+        var b = NewSimulation();
+        a.Enqueue(Spawn(player: 1, tick: 0, sequence: 0, x: 100, y: 100));
+        b.Enqueue(Spawn(player: 1, tick: 0, sequence: 0, x: 101, y: 100));
+
+        a.Step();
+        b.Step();
+
+        Assert.NotEqual(a.LastChecksum, b.LastChecksum);
     }
 
     [Fact]

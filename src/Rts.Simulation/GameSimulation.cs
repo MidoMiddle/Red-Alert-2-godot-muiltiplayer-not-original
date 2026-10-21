@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
+using Rts.Simulation.Hashing;
 using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
@@ -31,6 +32,12 @@ public sealed class GameSimulation
     /// <summary>Tick that the next <see cref="Step"/> will execute.</summary>
     public int CurrentTick => World.CurrentTick;
 
+    /// <summary>
+    /// Checksum computed at the end of the last step whose new tick is divisible by
+    /// <see cref="SimulationSettings.HashInterval"/>; null before the first one.
+    /// </summary>
+    public StateChecksum? LastChecksum { get; private set; }
+
     /// <summary>Events of the last executed tick; replaced on every <see cref="Step"/>.</summary>
     public IReadOnlyList<SimEvent> LastTickEvents => _events;
 
@@ -55,7 +62,13 @@ public sealed class GameSimulation
         // 3. Entities that died this tick leave the world.
         World.RemoveDead();
 
-        // 4. Next tick. The state checksum (step 7) is computed here.
+        // 4. Next tick.
         World.CurrentTick = tick + 1;
+
+        // 5. State checksum: describes the state at the start of the new tick.
+        if (World.CurrentTick % Settings.HashInterval == 0)
+        {
+            LastChecksum = new StateChecksum(World.CurrentTick, StateHasher.Compute(World));
+        }
     }
 }
