@@ -20,6 +20,22 @@ public sealed class IntMathTests
         Assert.Equal(expected, IntMath.DivFloor(dividend, divisor));
     }
 
+    [Theory]
+    [InlineData(5, 2, 3)]
+    [InlineData(-5, 2, -3)]
+    [InlineData(5, -2, -3)]
+    [InlineData(-5, -2, 3)]
+    [InlineData(7, 3, 2)]
+    [InlineData(8, 3, 3)]
+    [InlineData(-7, 3, -2)]
+    [InlineData(-8, 3, -3)]
+    [InlineData(6, 3, 2)]
+    [InlineData(0, 7, 0)]
+    public void DivRound_rounds_halves_away_from_zero(long dividend, long divisor, long expected)
+    {
+        Assert.Equal(expected, IntMath.DivRound(dividend, divisor));
+    }
+
     [Fact]
     public void DivFloor_by_zero_throws()
     {

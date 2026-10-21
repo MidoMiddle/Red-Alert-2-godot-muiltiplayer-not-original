@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Rts.Simulation.Events;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Commands;
@@ -11,7 +13,8 @@ namespace Rts.Simulation.Commands;
 public static class CommandProcessor
 {
     /// <summary>Applies the command. Returns true if the world changed.</summary>
-    public static bool Apply(GameWorld world, Command command)
+    /// <param name="events">Receives events about what changed; null when the caller does not need them.</param>
+    public static bool Apply(GameWorld world, Command command, List<SimEvent>? events = null)
     {
         if (!IsPlayablePlayer(command.Player))
         {
@@ -20,27 +23,28 @@ public static class CommandProcessor
 
         return command switch
         {
-            SpawnTestUnitCommand spawn => ApplySpawn(world, spawn),
-            MoveUnitsCommand move => ApplyMove(world, move),
+            SpawnTestUnitCommand spawn => ApplySpawn(world, spawn, events),
+            MoveUnitsCommand move => ApplyMove(world, move, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
     }
 
     private static bool IsPlayablePlayer(PlayerId player) => player.Value >= 1 && player.Value <= PlayerId.MaxPlayers;
 
-    private static bool ApplySpawn(GameWorld world, SpawnTestUnitCommand command)
+    private static bool ApplySpawn(GameWorld world, SpawnTestUnitCommand command, List<SimEvent>? events)
     {
         if (!world.Contains(command.Position))
         {
             return false;
         }
 
-        world.SpawnTestUnit(command.Player, command.Position, TestUnit.DefaultSpeed);
+        var unit = world.SpawnTestUnit(command.Player, command.Position, TestUnit.DefaultSpeed);
+        events?.Add(new UnitSpawned(world.CurrentTick, unit.Id, unit.Owner, unit.Position));
         return true;
     }
 
     // Invalid target rejects the whole command; foreign, dead or unknown units are skipped one by one.
-    private static bool ApplyMove(GameWorld world, MoveUnitsCommand command)
+    private static bool ApplyMove(GameWorld world, MoveUnitsCommand command, List<SimEvent>? events)
     {
         if (!world.Contains(command.Target))
         {
@@ -56,6 +60,7 @@ public static class CommandProcessor
                 && unit.Owner == command.Player)
             {
                 unit.MoveTarget = command.Target;
+                events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, command.Target));
                 changed = true;
             }
         }

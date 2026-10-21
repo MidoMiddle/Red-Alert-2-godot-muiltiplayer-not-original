@@ -56,6 +56,20 @@ public static class IntMath
         return hasRemainder && signsDiffer ? quotient - 1 : quotient;
     }
 
+    /// <summary>Division rounded to the nearest integer, halves away from zero (2.5 → 3, -2.5 → -3).</summary>
+    public static long DivRound(long dividend, long divisor)
+    {
+        var quotient = dividend / divisor;
+        var remainder = dividend - quotient * divisor;
+        // |remainder| * 2 >= |divisor| means the fractional part is at least one half.
+        if (Abs(remainder) * 2 >= Abs(divisor))
+        {
+            quotient += (dividend < 0) == (divisor < 0) ? 1 : -1;
+        }
+
+        return quotient;
+    }
+
     /// <summary>Integer square root rounded down. Throws on negative input.</summary>
     public static long Sqrt(long value)
     {
