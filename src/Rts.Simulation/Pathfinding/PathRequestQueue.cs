@@ -59,6 +59,9 @@ public sealed class PathRequestQueue
 
     internal PathRequestQueue(MapGrid map) => _pathfinder = new Pathfinder(map);
 
+    /// <summary>The searches of this world; others (group places) read its step costs.</summary>
+    internal Pathfinder Pathfinder => _pathfinder;
+
     /// <summary>Node budget per tick. A rule of the simulation; tests change it to check that results do not depend on it.</summary>
     public int Budget { get; internal set; } = DefaultBudget;
 

@@ -57,7 +57,8 @@ internal static class GroupDestinations
         }
 
         var targetCell = target.ToCell();
-        var region = Region(map, units[0].Position.ToCell(), locomotors);
+        var steps = new GroupSteps(world.PathRequests.Pathfinder, locomotors);
+        var region = Region(map, units[0].Position.ToCell(), steps);
         if (FindAnchor(map, targetCell, region) is not { } anchor)
         {
             foreach (var unit in units)
@@ -76,7 +77,7 @@ internal static class GroupDestinations
         }
 
         var neededCells = vehicles + (units.Count - vehicles + Reservations.SubcellsPerCell - 1) / Reservations.SubcellsPerCell;
-        var candidates = Candidates(world, anchor, locomotors, members, neededCells);
+        var candidates = Candidates(world, anchor, steps, members, neededCells);
         var radius = (int)IntMath.Sqrt(neededCells);
         radius += radius * radius < neededCells ? 1 : 0;
 
@@ -154,7 +155,7 @@ internal static class GroupDestinations
     }
 
     /// <summary>Every cell reachable from <paramref name="start"/> by the group (8 neighbours, no corner cutting, units ignored), as a flag per cell index.</summary>
-    private static bool[] Region(MapGrid map, CellPos start, List<Locomotor> locomotors)
+    private static bool[] Region(MapGrid map, CellPos start, GroupSteps steps)
     {
         var region = new bool[map.Width * map.Height];
         var queue = new int[map.Width * map.Height];
@@ -163,16 +164,16 @@ internal static class GroupDestinations
         queue[tail++] = start.Y * map.Width + start.X;
         for (var head = 0; head < tail; head++)
         {
-            var cell = new CellPos(queue[head] % map.Width, queue[head] / map.Width);
+            var x = queue[head] % map.Width;
+            var y = queue[head] / map.Width;
             foreach (var (dx, dy) in AStar.Directions)
             {
-                var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (!CanStepAny(map, cell, dx, dy, locomotors))
+                if (!steps.CanStep(x, y, dx, dy))
                 {
                     continue;
                 }
 
-                var index = next.Y * map.Width + next.X;
+                var index = (y + dy) * map.Width + x + dx;
                 if (!region[index])
                 {
                     region[index] = true;
@@ -184,23 +185,51 @@ internal static class GroupDestinations
         return region;
     }
 
-    private static bool CanStepAny(MapGrid map, CellPos from, int dx, int dy, List<Locomotor> locomotors)
+    /// <summary>
+    /// <see cref="AStar.CanStep"/> for any locomotor of the group, read from the step-cost layers of the world's pathfinder
+    /// (M2 step 15: the region search walks the whole map, the slow per-cell lookups made a 300-unit order take milliseconds).
+    /// </summary>
+    private sealed class GroupSteps
     {
-        foreach (var locomotor in locomotors)
+        private readonly int[][] _layers;
+        private readonly int _width;
+        private readonly int _height;
+
+        public GroupSteps(Pathfinder pathfinder, List<Locomotor> locomotors)
         {
-            if (AStar.CanStep(map, from, dx, dy, locomotor))
+            _width = pathfinder.Map.Width;
+            _height = pathfinder.Map.Height;
+            _layers = new int[locomotors.Count][];
+            for (var i = 0; i < locomotors.Count; i++)
             {
-                return true;
+                _layers[i] = pathfinder.CostsFor(locomotors[i]).Straight;
             }
         }
 
-        return false;
+        public bool CanStep(int x, int y, int dx, int dy)
+        {
+            var nx = x + dx;
+            var ny = y + dy;
+            if (nx < 0 || ny < 0 || nx >= _width || ny >= _height)
+            {
+                return false;
+            }
+
+            foreach (var layer in _layers)
+            {
+                if (layer[ny * _width + nx] > 0 && (dx == 0 || dy == 0 || (layer[y * _width + nx] > 0 && layer[ny * _width + x] > 0)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /// <summary>Cells reachable from the anchor in BFS order, enough for the group plus one more ring, skipping cells of standing outsiders.</summary>
-    private static List<CellPos> Candidates(GameWorld world, CellPos anchor, List<Locomotor> locomotors, HashSet<EntityId> members, int needed)
+    private static List<CellPos> Candidates(GameWorld world, CellPos anchor, GroupSteps steps, HashSet<EntityId> members, int needed)
     {
-        var map = world.Map;
         var candidates = new List<CellPos>();
         var seen = new HashSet<CellPos> { anchor };
         var queue = new List<(CellPos Cell, int Depth)> { (anchor, 0) };
@@ -226,7 +255,7 @@ internal static class GroupDestinations
             foreach (var (dx, dy) in AStar.Directions)
             {
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (CanStepAny(map, cell, dx, dy, locomotors) && seen.Add(next))
+                if (steps.CanStep(cell.X, cell.Y, dx, dy) && seen.Add(next))
                 {
                     queue.Add((next, depth + 1));
                 }
@@ -264,22 +293,51 @@ internal static class GroupDestinations
     /// Places handed out so far: a candidate cell goes either to one vehicle of the group or to up to five of its soldiers,
     /// never to both, and never over a unit outside the group that stands still.
     /// </summary>
-    private sealed class GroupPlaces(GameWorld world, List<CellPos> candidates, HashSet<EntityId> members)
+    private sealed class GroupPlaces
     {
-        private readonly bool[] _vehicle = new bool[candidates.Count];
-        private readonly bool[] _spots = new bool[candidates.Count * Reservations.SubcellsPerCell];
-        private readonly int[] _soldiers = new int[candidates.Count];
+        private readonly GameWorld _world;
+        private readonly List<CellPos> _candidates;
+        private readonly bool[] _vehicle;
+        private readonly bool[] _spots;
+        private readonly int[] _soldiers;
+
+        // Who of the outsiders stands where does not change while places are handed out: looked up once per candidate.
+        private readonly bool[] _outsiderVehicle;
+        private readonly bool[] _outsiderSpot;
+        private readonly int[] _outsiderSoldiers;
+
+        public GroupPlaces(GameWorld world, List<CellPos> candidates, HashSet<EntityId> members)
+        {
+            _world = world;
+            _candidates = candidates;
+            _vehicle = new bool[candidates.Count];
+            _spots = new bool[candidates.Count * Reservations.SubcellsPerCell];
+            _soldiers = new int[candidates.Count];
+            _outsiderVehicle = new bool[candidates.Count];
+            _outsiderSpot = new bool[candidates.Count * Reservations.SubcellsPerCell];
+            _outsiderSoldiers = new int[candidates.Count];
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                _outsiderVehicle[i] = IsStandingOutsider(world, world.Reservations.VehicleAt(candidates[i]), members);
+                for (var spot = 0; spot < Reservations.SubcellsPerCell; spot++)
+                {
+                    var outsider = IsStandingOutsider(world, world.Reservations.InfantryAt(candidates[i], spot), members);
+                    _outsiderSpot[i * Reservations.SubcellsPerCell + spot] = outsider;
+                    _outsiderSoldiers[i] += outsider ? 1 : 0;
+                }
+            }
+        }
 
         /// <summary>The free cell nearest to (<paramref name="wantedX"/>, <paramref name="wantedY"/>) for a vehicle, as its centre.</summary>
         public WorldPos? TakeCell(Unit unit, long wantedX, long wantedY)
         {
             var best = -1;
             var bestDistance = long.MaxValue;
-            for (var i = 0; i < candidates.Count; i++)
+            for (var i = 0; i < _candidates.Count; i++)
             {
-                var cell = candidates[i];
-                if (_vehicle[i] || _soldiers[i] > 0 || !world.Map.CanEnter(cell, unit.Archetype.Locomotor)
-                    || IsStandingOutsider(world, world.Reservations.VehicleAt(cell), members) || CountStandingOutsiders(world, cell, members) > 0)
+                var cell = _candidates[i];
+                if (_vehicle[i] || _soldiers[i] > 0 || !_world.Map.CanEnter(cell, unit.Archetype.Locomotor)
+                    || _outsiderVehicle[i] || _outsiderSoldiers[i] > 0)
                 {
                     continue;
                 }
@@ -299,7 +357,7 @@ internal static class GroupDestinations
             }
 
             _vehicle[best] = true;
-            return candidates[best].Center;
+            return _candidates[best].Center;
         }
 
         /// <summary>The free soldier spot nearest to <paramref name="wanted"/>, as its point.</summary>
@@ -307,11 +365,10 @@ internal static class GroupDestinations
         {
             var best = -1;
             var bestDistance = long.MaxValue;
-            for (var i = 0; i < candidates.Count; i++)
+            for (var i = 0; i < _candidates.Count; i++)
             {
-                var cell = candidates[i];
-                if (_vehicle[i] || !world.Map.CanEnter(cell, unit.Archetype.Locomotor)
-                    || IsStandingOutsider(world, world.Reservations.VehicleAt(cell), members))
+                var cell = _candidates[i];
+                if (_vehicle[i] || !_world.Map.CanEnter(cell, unit.Archetype.Locomotor) || _outsiderVehicle[i])
                 {
                     continue;
                 }
@@ -319,7 +376,7 @@ internal static class GroupDestinations
                 for (var spot = 0; spot < Reservations.SubcellsPerCell; spot++)
                 {
                     var index = i * Reservations.SubcellsPerCell + spot;
-                    if (_spots[index] || IsStandingOutsider(world, world.Reservations.InfantryAt(cell, spot), members))
+                    if (_spots[index] || _outsiderSpot[index])
                     {
                         continue;
                     }
@@ -340,7 +397,7 @@ internal static class GroupDestinations
 
             _spots[best] = true;
             _soldiers[best / Reservations.SubcellsPerCell]++;
-            return Reservations.SubcellPoint(candidates[best / Reservations.SubcellsPerCell], best % Reservations.SubcellsPerCell);
+            return Reservations.SubcellPoint(_candidates[best / Reservations.SubcellsPerCell], best % Reservations.SubcellsPerCell);
         }
     }
 }

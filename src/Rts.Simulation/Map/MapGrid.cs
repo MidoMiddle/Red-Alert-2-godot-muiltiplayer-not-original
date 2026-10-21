@@ -1,5 +1,6 @@
 using System;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Hashing;
 
 namespace Rts.Simulation.Map;
 
@@ -13,6 +14,7 @@ public sealed class MapGrid
 {
     private readonly LandType[] _land;
     private readonly bool[] _blocked;
+    private ulong? _digest;
 
     /// <summary>A map of <paramref name="width"/> × <paramref name="height"/> clear cells.</summary>
     public MapGrid(int width, int height)
@@ -53,6 +55,8 @@ public sealed class MapGrid
             grid._blocked[i] = blocked[i] == 1;
         }
 
+        grid._digest = null;
+        grid.Version++;
         return grid;
     }
 
@@ -116,15 +120,47 @@ public sealed class MapGrid
         }
 
         _land[IndexOf(cell)] = land;
+        _digest = null;
+        Version++;
     }
 
-    internal void SetBlocked(CellPos cell, bool blocked) => _blocked[IndexOf(cell)] = blocked;
+    internal void SetBlocked(CellPos cell, bool blocked)
+    {
+        _blocked[IndexOf(cell)] = blocked;
+        _digest = null;
+        Version++;
+    }
+
+    /// <summary>Grows whenever a cell changes, so caches built from the map (step costs of A*) know they are stale.</summary>
+    internal int Version { get; private set; }
+
+    /// <summary>
+    /// FNV-1a of the land layer and then the obstacle layer, in cell index order, for the state hash. Computed once and kept
+    /// until a cell changes, so the per-tick hash does not walk the whole map (docs/implementation/M2_unit_control.md, 4.15).
+    /// </summary>
+    internal ulong Digest => _digest ??= ComputeDigest();
 
     /// <summary>Land of every cell in index order, for the state hash.</summary>
     internal ReadOnlySpan<LandType> LandCells => _land;
 
     /// <summary>Obstacle flag of every cell in index order, for the state hash.</summary>
     internal ReadOnlySpan<bool> BlockedCells => _blocked;
+
+    private ulong ComputeDigest()
+    {
+        var hash = new Fnv1a64();
+        foreach (var land in _land)
+        {
+            hash.Add((byte)land);
+        }
+
+        foreach (var blocked in _blocked)
+        {
+            hash.Add(blocked);
+        }
+
+        return hash.Value;
+    }
 
     private int IndexOf(CellPos cell)
     {

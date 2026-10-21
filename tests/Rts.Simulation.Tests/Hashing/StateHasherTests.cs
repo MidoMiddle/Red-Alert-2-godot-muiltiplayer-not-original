@@ -153,7 +153,12 @@ public sealed class StateHasherTests
         "<Unit>k__BackingField", "<RequestTick>k__BackingField", "<Start>k__BackingField", "<Goal>k__BackingField",
         "<Locomotor>k__BackingField", "<Search>k__BackingField", "<Avoid>k__BackingField",
     })]
-    [InlineData(typeof(MapGrid), new[] { "_land", "_blocked", "<Width>k__BackingField", "<Height>k__BackingField" })]
+    [InlineData(typeof(MapGrid), new[]
+    {
+        "_land", "_blocked", "<Width>k__BackingField", "<Height>k__BackingField",
+        // Caches of the layers above: their digest for the hash, and a stamp for A* step costs (M2 step 15).
+        "_digest", "<Version>k__BackingField",
+    })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {
@@ -164,5 +169,36 @@ public sealed class StateHasherTests
             .ToList();
 
         Assert.Equal(hashedFields.Order().ToList(), actualFields);
+    }
+
+    [Fact]
+    public void A_path_digest_follows_its_content_through_with()
+    {
+        var path = new CellPath(PathStatus.Found, [new CellPos(0, 0), new CellPos(1, 1), new CellPos(2, 2)], 282, 3);
+        var digest = path.Digest;
+        var smoothed = path with { Waypoints = [new CellPos(0, 0), new CellPos(2, 2)] };
+        var fresh = new CellPath(PathStatus.Found, path.Cells, 282, 3) { Waypoints = [new CellPos(0, 0), new CellPos(2, 2)] };
+
+        Assert.Equal(digest, path.Digest);
+        Assert.NotEqual(digest, smoothed.Digest);
+        Assert.Equal(fresh.Digest, smoothed.Digest);
+        Assert.NotEqual(digest, (path with { Cost = 283 }).Digest);
+    }
+
+    [Fact]
+    public void The_map_digest_changes_with_any_cell_and_comes_back_with_it()
+    {
+        var map = new MapGrid(8, 8);
+        var clear = map.Digest;
+
+        map.SetLand(new CellPos(3, 4), LandType.Rough);
+        var rough = map.Digest;
+        map.SetLand(new CellPos(3, 4), LandType.Clear);
+        map.SetBlocked(new CellPos(7, 7), true);
+
+        Assert.NotEqual(clear, rough);
+        Assert.NotEqual(clear, map.Digest);
+        map.SetBlocked(new CellPos(7, 7), false);
+        Assert.Equal(clear, map.Digest);
     }
 }

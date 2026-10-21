@@ -50,6 +50,9 @@ public static class AStar
             || (map.CanEnter(new CellPos(from.X + dx, from.Y), locomotor) && map.CanEnter(new CellPos(from.X, from.Y + dy), locomotor));
     }
 
+    /// <summary>The cheapest straight and diagonal step of the locomotor, the base of <see cref="Heuristic"/>.</summary>
+    internal static (int Straight, int Diagonal) MinStepCosts(Locomotor locomotor) => MinCosts[(int)locomotor - 1];
+
     /// <summary>Octile distance on the cheapest steps of the locomotor: never more than the real cost of any path.</summary>
     public static int Heuristic(Locomotor locomotor, CellPos from, CellPos to)
     {
@@ -108,12 +111,15 @@ public static class AStar
 
 /// <summary>
 /// Path searches on one map. Keeps a pool of per-search buffers so that searches do not allocate map-sized arrays
-/// every time; each search owns its buffers until it finishes, so several searches can be in progress at once (M2 step 6).
+/// every time; each search owns its buffers from its first step until it finishes, so several searches can be in progress
+/// at once (M2 step 6). A search that is only waiting in the queue holds none: 300 units ordered at once would otherwise
+/// take 300 map-sized sets (M2 step 15).
 /// Not thread-safe: one pathfinder per simulation.
 /// </summary>
 public sealed class Pathfinder
 {
     private readonly Stack<SearchBuffers> _pool = new();
+    private readonly StepCostLayer?[] _costs = new StepCostLayer?[3];
 
     public Pathfinder(MapGrid map) => Map = map;
 
@@ -136,11 +142,58 @@ public sealed class Pathfinder
     public PathSearch StartSearch(
         CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = AStar.DefaultMaxExpansions, ImmutableArray<CellPos> avoid = default)
     {
-        var buffers = _pool.Count > 0 ? _pool.Pop() : new SearchBuffers(Map.Width * Map.Height);
-        return new PathSearch(this, buffers, start, goal, locomotor, maxExpansions, avoid);
+        return new PathSearch(this, start, goal, locomotor, maxExpansions, avoid);
     }
 
+    /// <summary>The step costs of every cell for <paramref name="locomotor"/>, built once and again after the map changes.</summary>
+    internal StepCostLayer CostsFor(Locomotor locomotor)
+    {
+        var slot = (int)locomotor - 1;
+        if (_costs[slot] is not { } layer || layer.MapVersion != Map.Version)
+        {
+            layer = new StepCostLayer(Map, locomotor);
+            _costs[slot] = layer;
+        }
+
+        return layer;
+    }
+
+    internal SearchBuffers Rent() => _pool.Count > 0 ? _pool.Pop() : new SearchBuffers(Map.Width * Map.Height);
+
     internal void Return(SearchBuffers buffers) => _pool.Push(buffers);
+}
+
+/// <summary>
+/// The cost of stepping into each cell for one locomotor, straight and diagonal, 0 where it cannot enter (outside the map
+/// does not occur: callers check bounds). The same numbers as <see cref="AStar.StepCost"/> and <see cref="MapGrid.CanEnter"/>,
+/// read from flat arrays in the inner loop of the search instead of through the land tables (M2 step 15).
+/// </summary>
+internal sealed class StepCostLayer
+{
+    public StepCostLayer(MapGrid map, Locomotor locomotor)
+    {
+        MapVersion = map.Version;
+        Straight = new int[map.Width * map.Height];
+        Diagonal = new int[map.Width * map.Height];
+        for (var y = 0; y < map.Height; y++)
+        {
+            for (var x = 0; x < map.Width; x++)
+            {
+                var cell = new CellPos(x, y);
+                if (map.CanEnter(cell, locomotor))
+                {
+                    Straight[y * map.Width + x] = AStar.StepCost(locomotor, map.LandAt(cell), diagonal: false);
+                    Diagonal[y * map.Width + x] = AStar.StepCost(locomotor, map.LandAt(cell), diagonal: true);
+                }
+            }
+        }
+    }
+
+    public int MapVersion { get; }
+
+    public int[] Straight { get; }
+
+    public int[] Diagonal { get; }
 }
 
 /// <summary>Map-sized arrays of one search. A generation stamp marks valid entries, so a new search needs no clearing.</summary>
@@ -152,6 +205,7 @@ internal sealed class SearchBuffers
         Parent = new int[cells];
         Seen = new int[cells];
         Closed = new int[cells];
+        Open = new MinHeap(cells);
     }
 
     public int[] Cost { get; }
@@ -162,7 +216,7 @@ internal sealed class SearchBuffers
 
     public int[] Closed { get; }
 
-    public MinHeap Open { get; } = new();
+    public MinHeap Open { get; }
 
     public int Generation { get; private set; }
 
@@ -196,11 +250,13 @@ public sealed class PathSearch
     private readonly int _goalIndex;
     private readonly int[] _avoid;
     private SearchBuffers? _buffers;
+    private bool _started;
+    private bool _stopped;
     private int _bestIndex;
     private int _bestH;
 
     internal PathSearch(
-        Pathfinder owner, SearchBuffers buffers, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions, ImmutableArray<CellPos> avoid)
+        Pathfinder owner, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions, ImmutableArray<CellPos> avoid)
     {
         var map = owner.Map;
         if (!map.Contains(start))
@@ -226,16 +282,8 @@ public sealed class PathSearch
         _startIndex = start.Y * map.Width + start.X;
         _goalIndex = goal.Y * map.Width + goal.X;
         _avoid = avoid.IsDefaultOrEmpty ? [] : avoid.Where(map.Contains).Select(cell => cell.Y * map.Width + cell.X).Order().ToArray();
-
-        _buffers = buffers;
-        buffers.BeginSearch();
-        var h = AStar.Heuristic(locomotor, start, goal);
-        buffers.Cost[_startIndex] = 0;
-        buffers.Parent[_startIndex] = -1;
-        buffers.Seen[_startIndex] = buffers.Generation;
-        buffers.Open.Push(new PathNode(h, h, _startIndex));
         _bestIndex = _startIndex;
-        _bestH = h;
+        _bestH = AStar.Heuristic(locomotor, start, goal);
     }
 
     /// <summary>Nodes expanded so far.</summary>
@@ -249,32 +297,53 @@ public sealed class PathSearch
     /// <summary>Expands at most <paramref name="maxNodes"/> nodes. Returns true when the search has finished.</summary>
     public bool Advance(int maxNodes)
     {
-        if (_buffers is not { } b)
+        if (_stopped)
         {
             return true;
         }
 
+        if (!_started)
+        {
+            Begin();
+        }
+
+        var b = _buffers!;
+
         var width = _map.Width;
+        var height = _map.Height;
+        var costs = _owner.CostsFor(_locomotor);
+        var straight = costs.Straight;
+        var diagonal = costs.Diagonal;
+        var directions = AStar.Directions;
+        var open = b.Open;
+        var closed = b.Closed;
+        var seen = b.Seen;
+        var costOf = b.Cost;
+        var parent = b.Parent;
+        var generation = b.Generation;
+        var (hStraight, hDiagonal) = AStar.MinStepCosts(_locomotor);
+        var goalX = _goal.X;
+        var goalY = _goal.Y;
         var expandedNow = 0;
         while (expandedNow < maxNodes)
         {
-            if (b.Open.Count == 0)
+            if (open.Count == 0)
             {
                 return Finish(PathStatus.Unreachable, _bestIndex);
             }
 
-            var node = b.Open.Pop();
-            if (b.Closed[node.Index] == b.Generation)
+            var node = open.Pop();
+            if (closed[node.Index] == generation)
             {
                 // A stale entry: the cell was reached again more cheaply and already expanded. Costs no budget.
                 continue;
             }
 
-            b.Closed[node.Index] = b.Generation;
+            closed[node.Index] = generation;
             Expanded++;
             expandedNow++;
-            var cost = b.Cost[node.Index];
-            if (node.H < _bestH || (node.H == _bestH && (cost < b.Cost[_bestIndex] || (cost == b.Cost[_bestIndex] && node.Index < _bestIndex))))
+            var cost = costOf[node.Index];
+            if (node.H < _bestH || (node.H == _bestH && (cost < costOf[_bestIndex] || (cost == costOf[_bestIndex] && node.Index < _bestIndex))))
             {
                 _bestIndex = node.Index;
                 _bestH = node.H;
@@ -290,32 +359,46 @@ public sealed class PathSearch
                 return Finish(PathStatus.LimitReached, _bestIndex);
             }
 
-            var cell = new CellPos(node.Index % width, node.Index / width);
-            foreach (var (dx, dy) in AStar.Directions)
+            var x = node.Index % width;
+            var y = node.Index / width;
+            for (var d = 0; d < directions.Length; d++)
             {
-                if (!AStar.CanStep(_map, cell, dx, dy, _locomotor))
+                // The same test as AStar.CanStep: the cell is enterable and, for a diagonal, both cells beside the corner too.
+                var (dx, dy) = directions[d];
+                var nx = x + dx;
+                var ny = y + dy;
+                if (nx < 0 || ny < 0 || nx >= width || ny >= height)
                 {
                     continue;
                 }
 
-                var next = new CellPos(cell.X + dx, cell.Y + dy);
-                var nextIndex = next.Y * width + next.X;
-                if (b.Closed[nextIndex] == b.Generation || (_avoid.Length > 0 && Array.BinarySearch(_avoid, nextIndex) >= 0))
+                var nextIndex = ny * width + nx;
+                var isDiagonal = dx != 0 && dy != 0;
+                if (straight[nextIndex] == 0 || (isDiagonal && (straight[y * width + nx] == 0 || straight[ny * width + x] == 0)))
                 {
                     continue;
                 }
 
-                var nextCost = cost + AStar.StepCost(_locomotor, _map.LandAt(next), dx != 0 && dy != 0);
-                if (b.Seen[nextIndex] == b.Generation && nextCost >= b.Cost[nextIndex])
+                if (closed[nextIndex] == generation || (_avoid.Length > 0 && Array.BinarySearch(_avoid, nextIndex) >= 0))
                 {
                     continue;
                 }
 
-                b.Seen[nextIndex] = b.Generation;
-                b.Cost[nextIndex] = nextCost;
-                b.Parent[nextIndex] = node.Index;
-                var h = AStar.Heuristic(_locomotor, next, _goal);
-                b.Open.Push(new PathNode(nextCost + h, h, nextIndex));
+                var nextCost = cost + (isDiagonal ? diagonal[nextIndex] : straight[nextIndex]);
+                if (seen[nextIndex] == generation && nextCost >= costOf[nextIndex])
+                {
+                    continue;
+                }
+
+                seen[nextIndex] = generation;
+                costOf[nextIndex] = nextCost;
+                parent[nextIndex] = node.Index;
+
+                // AStar.Heuristic, with the locomotor's step costs looked up once per call of Advance.
+                var hx = nx > goalX ? nx - goalX : goalX - nx;
+                var hy = ny > goalY ? ny - goalY : goalY - ny;
+                var h = hStraight * (hx + hy) + (hDiagonal - 2 * hStraight) * (hx < hy ? hx : hy);
+                open.PushOrDecrease(new PathNode(nextCost + h, h, nextIndex));
             }
         }
 
@@ -325,11 +408,25 @@ public sealed class PathSearch
     /// <summary>Stops an unfinished search and gives its buffers back; the search never finishes after this.</summary>
     internal void Cancel()
     {
+        _stopped = true;
         if (_buffers is { } b)
         {
             _buffers = null;
             _owner.Return(b);
         }
+    }
+
+    /// <summary>The first step: takes buffers and opens the start cell.</summary>
+    private void Begin()
+    {
+        _started = true;
+        var b = _owner.Rent();
+        _buffers = b;
+        b.BeginSearch();
+        b.Cost[_startIndex] = 0;
+        b.Parent[_startIndex] = -1;
+        b.Seen[_startIndex] = b.Generation;
+        b.Open.Push(new PathNode(_bestH, _bestH, _startIndex));
     }
 
     private bool Finish(PathStatus status, int endIndex)
@@ -344,6 +441,7 @@ public sealed class PathSearch
 
         cells.Reverse();
         Result = new CellPath(status, [.. cells], b.Cost[endIndex], Expanded);
+        _stopped = true;
         _buffers = null;
         _owner.Return(b);
         return true;

@@ -186,11 +186,12 @@ public sealed class GoldenValuesTests
         StateChecksum[] actual = [checksums[99], checksums[499], checksums[999]];
 
         // Rules v10 (M2 step 12): routes, Stop, AttackMove, Waypoints, Scatter; the scenario now issues all of them.
+        // Rules v11 (M2 step 15): the same states, hashed with the map and paths as digests and only the taken places.
         StateChecksum[] expected =
         [
-            new(100, 0xf5c4b0587ccb3ea5UL),
-            new(500, 0xd25f8f925eb89a81UL),
-            new(1000, 0x9c229014c4cdb948UL),
+            new(100, 0xfa0ec6b34b7caf26UL),
+            new(500, 0xa226b36482f40b0cUL),
+            new(1000, 0xb37400f5ef4ddf64UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -219,6 +220,7 @@ public sealed class GoldenValuesTests
         // Rules v3 (M2 step 3): same bytes except the recorded checksums, which now include the map.
         // Replay format v3, rules v4 (M2 step 4): one more byte, the "no map" flag; checksums unchanged on clear land.
         // Replay format v4, command format v3 (M2 step 12): new commands in the scenario, the queue byte in moves.
-        Assert.Equal((23365, 2571158560162506041UL), (bytes.Length, hash.Value));
+        // Rules v11 (M2 step 15): the version and the recorded checksums change, the commands do not.
+        Assert.Equal((23365, 2103922727361710982UL), (bytes.Length, hash.Value));
     }
 }

@@ -29,17 +29,11 @@ public static class StateHasher
         hash.Add(random.State);
         hash.Add(random.Increment);
 
-        AddMap(hash, world.Map);
+        // The map and every path come as digests computed once; places as the taken ones only (M2 step 15, 4.15).
+        hash.Add(world.Map.Digest);
         AddPathRequests(hash, world.PathRequests);
-        foreach (var owner in world.Reservations.VehicleCells)
-        {
-            hash.Add(owner);
-        }
-
-        foreach (var owner in world.Reservations.InfantrySpots)
-        {
-            hash.Add(owner);
-        }
+        AddTaken(hash, world.Reservations.VehicleCells);
+        AddTaken(hash, world.Reservations.InfantrySpots);
 
         hash.Add(world.Entities.Count);
         foreach (var entity in world.Entities)
@@ -103,43 +97,32 @@ public static class StateHasher
         }
     }
 
-    private static void AddMap(Fnv1a64 hash, MapGrid map)
+    /// <summary>The number of taken places, then each as (index, owner) in index order; empty places are left out.</summary>
+    private static void AddTaken(Fnv1a64 hash, ReadOnlySpan<int> owners)
     {
-        // Width and height are already in the world part; the layers follow in cell index order.
-        foreach (var land in map.LandCells)
+        var taken = 0;
+        foreach (var owner in owners)
         {
-            hash.Add((byte)land);
+            taken += owner != 0 ? 1 : 0;
         }
 
-        foreach (var blocked in map.BlockedCells)
+        hash.Add(taken);
+        for (var i = 0; i < owners.Length; i++)
         {
-            hash.Add(blocked);
+            if (owners[i] != 0)
+            {
+                hash.Add(i);
+                hash.Add(owners[i]);
+            }
         }
     }
 
     private static void AddPath(Fnv1a64 hash, CellPath? path)
     {
         hash.Add(path is not null);
-        if (path is null)
+        if (path is not null)
         {
-            return;
-        }
-
-        hash.Add((byte)path.Status);
-        hash.Add(path.Cost);
-        hash.Add(path.Expanded);
-        hash.Add(path.Cells.Length);
-        foreach (var cell in path.Cells)
-        {
-            hash.Add(cell.X);
-            hash.Add(cell.Y);
-        }
-
-        hash.Add(path.Waypoints.Length);
-        foreach (var waypoint in path.Waypoints)
-        {
-            hash.Add(waypoint.X);
-            hash.Add(waypoint.Y);
+            hash.Add(path.Digest);
         }
     }
 
