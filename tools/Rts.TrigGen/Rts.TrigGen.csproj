@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Generates the trigonometry tables of the simulation with double precision.
+    Not a deterministic project: it runs on the developer's machine, and only its integer output is committed.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer runtime when only .NET 10 is installed. -->
+    <RollForward>Major</RollForward>
+    <RootNamespace>Rts.TrigGen</RootNamespace>
+  </PropertyGroup>
+
+</Project>

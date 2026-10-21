@@ -23,6 +23,11 @@
     <ProjectReference Include="../../src/Rts.Simulation/Rts.Simulation.csproj" />
   </ItemGroup>
 
+  <!-- The trigonometry generator, to check the committed tables against it (docs/implementation/M2_unit_control.md, 4.1). -->
+  <ItemGroup>
+    <Compile Include="../../tools/Rts.TrigGen/TrigTableGenerator.cs" Link="Tools/TrigTableGenerator.cs" />
+  </ItemGroup>
+
   <!-- The client rules without Godot types are tested here too (docs/implementation/M6_menus_skirmish.md, 6). -->
   <ItemGroup>
     <Compile Include="../../game/scripts/App/SettingsValues.cs" Link="Client/SettingsValues.cs" />

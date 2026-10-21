@@ -75,6 +75,45 @@ public sealed class GoldenValuesTests
     }
 
     [Fact]
+    public void Trigonometry_tables_and_samples()
+    {
+        var tables = new Fnv1a64();
+        foreach (var value in TrigTables.SinQuarter)
+        {
+            tables.Add(value);
+        }
+
+        foreach (var value in TrigTables.Atan)
+        {
+            tables.Add((int)value);
+        }
+
+        long[] actual =
+        [
+            FixedMath.Sin(BAngle.FromUnits(1)).Raw,
+            FixedMath.Sin(BAngle.FromUnits(5461)).Raw,
+            FixedMath.Sin(BAngle.FromUnits(12345)).Raw,
+            FixedMath.Cos(BAngle.FromUnits(40000)).Raw,
+            FixedMath.Sin(BAngle.FromUnits(65535)).Raw,
+            FixedMath.Angle(3, -7).Value,
+            FixedMath.Angle(256, 1).Value,
+            FixedMath.Angle(-12_345, 6_789).Value,
+            FixedMath.Angle(-1, -51_200).Value,
+            FixedMath.Angle(40_000, 39_999).Value,
+        ];
+
+        long[] expected =
+        [
+            6, 32767, 60684, -50404, -6,
+            4223, 16425, 43908,
+            0, // 359.99…° rounds up to a full turn, which is north
+            24576,
+        ];
+        Assert.Equal(140777579128644704UL, tables.Value);
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
     public void Reference_scenario_checksums()
     {
         var checksums = ReferenceScenario.Run(ReferenceScenario.Commands(ScenarioTicks), ScenarioTicks);
