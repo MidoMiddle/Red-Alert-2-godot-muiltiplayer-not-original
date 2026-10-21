@@ -1,0 +1,6 @@
+// Two trees touching diagonally at (2, 1) and (1, 2), 5 x 5: no squeezing between them from (1, 1) to (2, 2).
+. . . . .
+. . T . .
+. T . . .
+. . . . .
+. . . . .

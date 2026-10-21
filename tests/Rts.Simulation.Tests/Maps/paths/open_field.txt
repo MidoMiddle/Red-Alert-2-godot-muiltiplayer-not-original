@@ -1,0 +1,7 @@
+// Open field, 10 x 6: the path is straight lines and diagonals only.
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .

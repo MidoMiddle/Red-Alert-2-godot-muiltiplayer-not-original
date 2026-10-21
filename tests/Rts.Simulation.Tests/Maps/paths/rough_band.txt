@@ -1,0 +1,5 @@
+// A band of rough land, 10 x 4: wheels (75%) go around below it, infantry (90%) walks through, from (0, 0) to (9, 0).
+. . , , , , , , . .
+. . , , , , , , . .
+. . . . . . . . . .
+. . . . . . . . . .

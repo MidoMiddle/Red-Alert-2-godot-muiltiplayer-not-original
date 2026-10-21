@@ -1,0 +1,12 @@
+// An island in deep water, 11 x 11: the centre cannot be reached from the outside.
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . W W W W W W W . .
+. . W . . . . . W . .
+. . W . . . . . W . .
+. . W . . . . . W . .
+. . W . . . . . W . .
+. . W . . . . . W . .
+. . W W W W W W W . .
+. . . . . . . . . . .
+. . . . . . . . . . .

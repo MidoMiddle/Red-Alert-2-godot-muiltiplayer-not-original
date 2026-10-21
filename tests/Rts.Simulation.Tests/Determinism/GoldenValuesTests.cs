@@ -1,7 +1,11 @@
+using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
+using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Random;
 using Rts.Simulation.Replays;
+using Rts.Simulation.Tests.Map;
 
 namespace Rts.Simulation.Tests.Determinism;
 
@@ -111,6 +115,38 @@ public sealed class GoldenValuesTests
         ];
         Assert.Equal(140777579128644704UL, tables.Value);
         Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void Pathfinding_results()
+    {
+        var landTypes = TestMapParserTests.Load("all_land_types.txt").Grid;
+        var maze = TestMapParserTests.Load("paths/maze.txt").Grid;
+        (MapGrid Map, int Sx, int Sy, int Gx, int Gy, Locomotor Locomotor)[] searches =
+        [
+            (landTypes, 0, 0, 23, 11, Locomotor.Wheel),
+            (landTypes, 23, 11, 0, 0, Locomotor.Foot),
+            (landTypes, 7, 0, 12, 6, Locomotor.Track),
+            (maze, 0, 0, 14, 14, Locomotor.Foot),
+            (maze, 14, 0, 0, 14, Locomotor.Wheel),
+        ];
+
+        var hash = new Fnv1a64();
+        var costs = new List<int>();
+        foreach (var (map, sx, sy, gx, gy, locomotor) in searches)
+        {
+            var path = AStar.FindPath(map, new CellPos(sx, sy), new CellPos(gx, gy), locomotor);
+            costs.Add(path.Cost);
+            hash.Add((byte)path.Status);
+            foreach (var cell in path.Cells)
+            {
+                hash.Add(cell.X);
+                hash.Add(cell.Y);
+            }
+        }
+
+        Assert.Equal(15034282284834192112UL, hash.Value);
+        Assert.Equal([2829, 2869, 817, 4000, 3200], costs);
     }
 
     [Fact]

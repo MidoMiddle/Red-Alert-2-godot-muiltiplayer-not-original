@@ -1,0 +1,4 @@
+// A road loop above a straight line, 13 x 3: wheels take the road (+20%), tracks drive straight from (0, 2) to (12, 2).
+. = = = = = = = = = = = .
+. = . . . . . . . . . = .
+. . . . . . . . . . . . .

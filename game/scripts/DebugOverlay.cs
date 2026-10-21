@@ -2,6 +2,7 @@ using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Controls;
+using Rts.Client.Debug;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.World;
@@ -17,11 +18,12 @@ public partial class DebugOverlay : CanvasLayer
     private const string ClassicControls = "Classic: LMB select / order · RMB click cancel · RMB drag camera";
     private const string ModernControls = "Modern: LMB select · RMB order · LMB empty ground cancel · MMB drag camera";
     private const string SharedControls =
-        "Shift+LMB spawn · T spawn type · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "Shift+LMB spawn · T spawn type · F3 path · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
         "WASD/arrows/edge/wheel camera";
 
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
+    private PathPreview? _pathPreview;
     private Label _label = null!;
     private string _controls = string.Empty;
 
@@ -38,6 +40,8 @@ public partial class DebugOverlay : CanvasLayer
 
     public override void _Process(double delta)
     {
+        // Main adds the path preview in its own _Ready, which runs after this one.
+        _pathPreview ??= GetNodeOrNull<PathPreview>("../PathPreview");
         var simulation = _host.Simulation;
         var units = simulation.World.Entities.Count(e => e is Unit);
         var state = _host.Paused ? "PAUSED" : $"x{_host.SpeedMultiplier:0.##}";
@@ -48,6 +52,7 @@ public partial class DebugOverlay : CanvasLayer
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   spawn {UnitArchetypes.Get(_host.SpawnType).Id}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             DescribeCell(simulation.World.Map, _input.CellUnderPointer) + "\n" +
+            (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
     }
