@@ -40,6 +40,17 @@ public sealed class SpatialIndex
     /// <summary>Number of units in the index.</summary>
     public int Count => _bucketOf.Count;
 
+    /// <summary>Number of units in the bucket at <paramref name="column"/>, <paramref name="row"/>; read by the debug overlay.</summary>
+    public int CountIn(int column, int row)
+    {
+        if (column < 0 || row < 0 || column >= Columns || row >= Rows)
+        {
+            throw new ArgumentOutOfRangeException(nameof(column), (column, row), $"Buckets are {Columns}x{Rows}.");
+        }
+
+        return _buckets[row * Columns + column].Count;
+    }
+
     /// <summary>Ids of the units within <paramref name="radius"/> leptons of <paramref name="center"/> (inclusive), sorted.</summary>
     public void QueryRadius(GameWorld world, WorldPos center, long radius, List<EntityId> results)
     {

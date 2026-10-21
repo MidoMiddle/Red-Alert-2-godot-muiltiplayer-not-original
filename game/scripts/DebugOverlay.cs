@@ -20,12 +20,15 @@ public partial class DebugOverlay : CanvasLayer
     private const string SharedControls =
         "Drag LMB box select · Shift+click add/remove · double click same type · Ctrl+1…9 group · 1…9 select (twice: camera) · Shift+1…9 add · " +
         "Shift+order queue · Ctrl+Shift+order attack-move · Z+orders waypoints, then order without Z · S stop · X scatter\n" +
-        "Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · F3 path · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
-        "arrows/edge/wheel camera";
+        "Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "arrows/edge/wheel camera · F1…F4 bookmark (Ctrl: save)\n" +
+        "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph";
 
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
     private PathPreview? _pathPreview;
+    private CellOverlay? _cellOverlay;
+    private readonly QueueGraph _queueGraph = new() { Name = "QueueGraph" };
     private Label _label = null!;
     private string _controls = string.Empty;
 
@@ -38,12 +41,17 @@ public partial class DebugOverlay : CanvasLayer
         _label = GetNode<Label>("Label");
         var scheme = AppSettings.Instance?.Values.Scheme ?? ControlScheme.Classic;
         _controls = (scheme == ControlScheme.Classic ? ClassicControls : ModernControls) + "\n" + SharedControls;
+        _queueGraph.Bind(_host);
+        AddChild(_queueGraph);
     }
 
     public override void _Process(double delta)
     {
         // Main adds the path preview in its own _Ready, which runs after this one.
         _pathPreview ??= GetNodeOrNull<PathPreview>("../PathPreview");
+        _cellOverlay ??= GetNodeOrNull<CellOverlay>("../CellOverlay");
+        // The graph sits under the text, which grows and shrinks with the lines.
+        _queueGraph.Position = new Vector2(_label.Position.X, _label.Position.Y + _label.Size.Y + 6f);
         var simulation = _host.Simulation;
         var units = simulation.World.Entities.Count(e => e is Unit);
         var state = _host.Paused ? "PAUSED" : $"x{_host.SpeedMultiplier:0.##}";
@@ -56,6 +64,7 @@ public partial class DebugOverlay : CanvasLayer
             DescribeCell(simulation.World.Map, _input.CellUnderPointer) + "\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
+            (_cellOverlay is null ? "" : _cellOverlay.Description + "\n") +
             $"selected {_input.Selection.Units.Count}   " + UnitStateText.Describe(SelectedUnit(simulation.World)) + "\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;

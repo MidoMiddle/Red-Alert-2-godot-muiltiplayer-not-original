@@ -37,6 +37,7 @@ public partial class Main : Node3D
         // RA2 lighting: shadows fall right-down on screen, i.e. towards world +X, from a sun about 50° high.
         GetNode<DirectionalLight3D>("Sun").Basis = Basis.LookingAt(SunDirection, Vector3.Up);
         AddChild(new PathPreview { Name = "PathPreview" });
+        AddChild(new CellOverlay { Name = "CellOverlay" });
         AddChild(new OrderMarkers { Name = "OrderMarkers" });
         AddChild(new RouteLines { Name = "RouteLines" });
 

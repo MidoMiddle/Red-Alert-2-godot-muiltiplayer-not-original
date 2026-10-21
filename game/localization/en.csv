@@ -136,7 +136,9 @@ UI_KEY_TYPE_SELECT,Select units of the same type (twice: whole map)
 UI_KEY_SPAWN,Spawn a test unit (press, then click)
 UI_KEY_GUARD,Guard (with the stance of M4)
 UI_KEY_DEPLOY,Deploy (with M3)
-UI_KEY_DEBUG_PATH,Show path of the selected unit
+UI_KEY_DEBUG_PATH,Show paths of the selected units
+UI_KEY_DEBUG_CELLS,Cell overlay (passability / reservations / buckets)
+UI_KEY_DEBUG_QUEUE,Path queue graph
 UI_KEY_SELECT_ALL,Select all own units
 UI_KEY_STOP,Stop
 UI_KEY_SCATTER,Scatter

@@ -59,7 +59,9 @@ public sealed class KeyBindings
         new KeyAction("spawn", "UI_KEY_SPAWN", "B"),
         new KeyAction("guard", "UI_KEY_GUARD", "G"),
         new KeyAction("deploy", "UI_KEY_DEPLOY", "D"),
-        new KeyAction("debug_path", "UI_KEY_DEBUG_PATH", "F3"),
+        new KeyAction("debug_path", "UI_KEY_DEBUG_PATH", "F6"),
+        new KeyAction("debug_cells", "UI_KEY_DEBUG_CELLS", "F7"),
+        new KeyAction("debug_queue", "UI_KEY_DEBUG_QUEUE", "F8"),
         new KeyAction("select_all", "UI_KEY_SELECT_ALL", "E"),
         new KeyAction("stop", "UI_KEY_STOP", "S"),
         new KeyAction("scatter", "UI_KEY_SCATTER", "X"),
@@ -68,12 +70,12 @@ public sealed class KeyBindings
     };
 
     /// <summary>
-    /// Keys that cannot be bound: Escape stops the wait for a key, the digits select control groups, the others are used by the
-    /// interface.
+    /// Keys that cannot be bound: Escape stops the wait for a key, the digits select control groups, F1…F4 are the camera
+    /// bookmarks (M2 step 14), the others are used by the interface.
     /// </summary>
     private static readonly HashSet<string> Reserved = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Escape", "Enter", "KP Enter", "Space", "Tab", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "Escape", "Enter", "KP Enter", "Space", "Tab", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F1", "F2", "F3", "F4",
     };
 
     /// <summary>Modifier keys are held together with other keys; they are not bindings of their own.</summary>

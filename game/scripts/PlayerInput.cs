@@ -59,6 +59,8 @@ public partial class PlayerInput : Node
 
     public ControlGroups Groups { get; } = new();
 
+    public CameraBookmarks Bookmarks { get; } = new();
+
     /// <summary>Waypoints laid out with Z or the waypoints button and not sent yet. The route lines show them.</summary>
     public WaypointDraft Waypoints { get; } = new();
 
@@ -152,7 +154,11 @@ public partial class PlayerInput : Node
 
     private void HandleKey(InputEventKey key)
     {
-        if (key is { Pressed: true, Echo: false } && key.Keycode is >= Key.Key0 and <= Key.Key9)
+        if (key is { Pressed: true, Echo: false } && key.Keycode is >= Key.F1 and <= Key.F4)
+        {
+            HandleBookmarkKey((int)(key.Keycode - Key.F1) + 1, key.CtrlPressed || key.MetaPressed);
+        }
+        else if (key is { Pressed: true, Echo: false } && key.Keycode is >= Key.Key0 and <= Key.Key9)
         {
             HandleGroupKey((int)(key.Keycode - Key.Key0), key.CtrlPressed || key.MetaPressed, key.ShiftPressed);
         }
@@ -299,6 +305,20 @@ public partial class PlayerInput : Node
     /// <summary>A speed key. Shift is allowed, because the + sign is Shift with the equal key; Ctrl, Alt and Meta make another key.</summary>
     private static bool SpeedKey(InputEventKey key, string action) =>
         key.IsActionPressed(action) && !key.CtrlPressed && !key.AltPressed && !key.MetaPressed;
+
+    /// <summary>Ctrl + F1…F4 remembers the middle of the view, F1…F4 moves the camera back there (M2 step 14).</summary>
+    private void HandleBookmarkKey(int slot, bool ctrl)
+    {
+        if (ctrl)
+        {
+            Bookmarks.Save(slot, _camera.Position.X, _camera.Position.Z);
+            GD.Print($"[input] bookmark F{slot} = {_camera.Position.X:0.#}, {_camera.Position.Z:0.#}");
+        }
+        else if (Bookmarks.TryGet(slot, out var point))
+        {
+            _camera.CenterOn(new Vector3(point.X, 0f, point.Z));
+        }
+    }
 
     /// <summary>Ctrl + digit assigns the group, Shift + digit adds it, the digit selects it; twice quickly also moves the camera there.</summary>
     private void HandleGroupKey(int digit, bool ctrl, bool shift)

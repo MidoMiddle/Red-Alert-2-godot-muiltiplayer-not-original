@@ -1,12 +1,14 @@
 using Godot;
+using Rts.Simulation.Map;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Hud;
 
 /// <summary>
 /// The minimap of the sidebar (docs/implementation/M6_menus_skirmish.md, 4.7): the whole map, every living unit as a dot in its
-/// owner's colour, and the frame of the field the camera shows. A click or a drag moves the camera. The ground is plain for now;
-/// fog and radar come later (M3, M4).
+/// owner's colour, and the frame of the field the camera shows. A click or a drag moves the camera. Since M2 step 14 the ground
+/// shows the land of every cell and the trees (<see cref="MinimapImage"/>), and selected units have a white ring. Fog and radar
+/// come later (M3, M4).
 /// </summary>
 public partial class Minimap : Control
 {
@@ -16,12 +18,18 @@ public partial class Minimap : Control
     private RtsCamera? _camera;
     private Color _frameColor = new("#B3121C");
     private bool _dragging;
+    private PlayerInput? _input;
+    private ImageTexture? _ground;
+    private MapGrid? _groundOf;
 
     /// <summary>Connects the minimap to the simulation and to the camera it moves.</summary>
     public void Bind(SimulationHost host, RtsCamera camera)
     {
         _host = host;
         _camera = camera;
+        _input = host.GetNodeOrNull<PlayerInput>("../PlayerInput");
+        // One texel per cell, with sharp cell edges.
+        TextureFilter = TextureFilterEnum.Nearest;
     }
 
     /// <summary>The colour of the frame around the field: the faction accent.</summary>
@@ -38,12 +46,19 @@ public partial class Minimap : Control
             return;
         }
 
+        DrawTextureRect(GroundOf(_host.Simulation.World.Map), new Rect2(Vector2.Zero, new Vector2(side, side)), false);
         foreach (var entity in _host.Simulation.World.Entities)
         {
             if (entity is Unit { IsAlive: true } unit)
             {
                 var cell = WorldCoords.ToGodot(unit.Position);
-                DrawCircle(ToMinimap(cell.X, cell.Z), 2.5f, OwnerColor(unit.Owner.Value));
+                var at = ToMinimap(cell.X, cell.Z);
+                if (_input?.Selection.Contains(unit.Id) == true)
+                {
+                    DrawCircle(at, 3.5f, Colors.White);
+                }
+
+                DrawCircle(at, 2.5f, OwnerColor(unit.Owner.Value));
             }
         }
 
@@ -106,6 +121,19 @@ public partial class Minimap : Control
         var world = _host.Simulation.World;
         var (x, y) = MinimapMath.FromMinimap(local.X, local.Y, world.WidthCells, world.HeightCells, SidebarLayout.MinimapSize);
         _camera.CenterOn(new Vector3(x, 0f, y));
+    }
+
+    /// <summary>The ground texture of the map, made once per map: a new match or a replay brings a new map object.</summary>
+    private ImageTexture GroundOf(MapGrid map)
+    {
+        if (_ground is null || !ReferenceEquals(_groundOf, map))
+        {
+            var image = Image.CreateFromData(map.Width, map.Height, false, Image.Format.Rgb8, MinimapImage.Pixels(map));
+            _ground = ImageTexture.CreateFromImage(image);
+            _groundOf = map;
+        }
+
+        return _ground;
     }
 
     /// <summary>A map point in cells, as a point on the minimap.</summary>

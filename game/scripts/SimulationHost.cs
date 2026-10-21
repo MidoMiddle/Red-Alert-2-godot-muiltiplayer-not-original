@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Godot;
 using Rts.Client.Controls;
+using Rts.Client.Debug;
 using Rts.Client.Units;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
@@ -50,6 +51,9 @@ public partial class SimulationHost : Node
 
     public bool Paused { get; set; }
 
+    /// <summary>The path queue of the last ticks, for the debug graph (F8).</summary>
+    public TickHistory QueueHistory { get; } = new();
+
     /// <summary>Fraction of the next tick already elapsed, for interpolating positions.</summary>
     public float Alpha { get; private set; }
 
@@ -74,6 +78,7 @@ public partial class SimulationHost : Node
 
     public void StartLiveSession()
     {
+        QueueHistory.Clear();
         var map = LoadSandboxMap();
         Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid));
         _recorder = new ReplayRecorder(Simulation);
@@ -89,6 +94,7 @@ public partial class SimulationHost : Node
 
     public void StartPlayback()
     {
+        QueueHistory.Clear();
         if (LastReplayPath is null)
         {
             ReplayStatus = "no replay saved yet (F5)";
@@ -290,6 +296,7 @@ public partial class SimulationHost : Node
         Simulation.Step();
         _recorder?.AfterStep();
         _ticksThisSecond++;
+        QueueHistory.Add(Simulation.World.PathRequests.ExpandedLastTick, Simulation.World.PathRequests.Requests.Count);
 
         foreach (var simEvent in Simulation.LastTickEvents)
         {

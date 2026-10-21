@@ -247,4 +247,34 @@ public sealed class KeyBindingsTests
         Assert.Equal("B", loaded.KeyOf("spawn"));
         Assert.Empty(loaded.Unbound());
     }
+
+    [Theory]
+    [InlineData("F1")]
+    [InlineData("F2")]
+    [InlineData("F3")]
+    [InlineData("F4")]
+    public void F1ToF4BelongToTheCameraBookmarks(string key)
+    {
+        Assert.Equal(RebindStatus.Refused, new KeyBindings().Rebind("pause", key).Status);
+    }
+
+    [Fact]
+    public void TheDebugOverlaysAreOnF6ToF8()
+    {
+        var bindings = new KeyBindings();
+
+        Assert.Equal("F6", bindings.KeyOf("debug_path"));
+        Assert.Equal("F7", bindings.KeyOf("debug_cells"));
+        Assert.Equal("F8", bindings.KeyOf("debug_queue"));
+    }
+
+    [Fact]
+    public void ASavedF3PathKeyMovesToF6()
+    {
+        var bindings = new KeyBindings();
+        var raw = bindings.ToRaw().ToDictionary(pair => pair.Key, pair => pair.Value);
+        raw["keys/debug_path"] = "F3";
+
+        Assert.Equal("F6", KeyBindings.Parse(raw, _ => true).KeyOf("debug_path"));
+    }
 }

@@ -2,20 +2,26 @@ using Rts.Simulation.Pathfinding;
 
 namespace Rts.Client.Debug;
 
-/// <summary>Debug panel line of the path preview (F3). Pure text, tested in Rts.Simulation.Tests.</summary>
+/// <summary>Debug panel line of the path preview (F6). Pure text, tested in Rts.Simulation.Tests.</summary>
 public static class PathText
 {
     /// <param name="following">True when <paramref name="path"/> is the unit's own path in the simulation, false for a preview to the pointer.</param>
-    public static string Describe(bool enabled, int selectedUnits, CellPath? path, bool following = false)
+    /// <param name="drivingUnits">With several units selected: how many of them have a path on screen.</param>
+    public static string Describe(bool enabled, int selectedUnits, CellPath? path, bool following = false, int drivingUnits = 0)
     {
         if (!enabled)
         {
-            return "path off (F3)";
+            return "path off (F6)";
         }
 
-        if (selectedUnits != 1)
+        if (selectedUnits == 0)
         {
-            return "path: select one unit";
+            return "path: select a unit";
+        }
+
+        if (selectedUnits > 1)
+        {
+            return drivingUnits > 0 ? $"paths of {drivingUnits} units" : "paths: no selected unit is driving";
         }
 
         return path is null

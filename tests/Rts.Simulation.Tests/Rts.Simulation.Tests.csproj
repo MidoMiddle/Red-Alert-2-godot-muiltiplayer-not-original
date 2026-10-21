@@ -43,6 +43,10 @@
     <Compile Include="../../game/scripts/Input/SelectionSet.cs" Link="Client/Controls/SelectionSet.cs" />
     <Compile Include="../../game/scripts/Input/BoxSelection.cs" Link="Client/Controls/BoxSelection.cs" />
     <Compile Include="../../game/scripts/Input/ControlGroups.cs" Link="Client/Controls/ControlGroups.cs" />
+    <Compile Include="../../game/scripts/Input/CameraBookmarks.cs" Link="Client/Controls/CameraBookmarks.cs" />
+    <Compile Include="../../game/scripts/Hud/MinimapImage.cs" Link="Client/Hud/MinimapImage.cs" />
+    <Compile Include="../../game/scripts/Debug/OverlayColors.cs" Link="Client/Debug/OverlayColors.cs" />
+    <Compile Include="../../game/scripts/Debug/TickHistory.cs" Link="Client/Debug/TickHistory.cs" />
     <Compile Include="../../game/scripts/Input/DoubleTap.cs" Link="Client/Controls/DoubleTap.cs" />
     <Compile Include="../../game/scripts/Input/OrderTargets.cs" Link="Client/Controls/OrderTargets.cs" />
     <Compile Include="../../game/scripts/Input/WaypointDraft.cs" Link="Client/Controls/WaypointDraft.cs" />

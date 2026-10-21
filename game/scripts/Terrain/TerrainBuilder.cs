@@ -17,6 +17,9 @@ public partial class TerrainBuilder : Node3D
 
     public TerrainHeights Heights { get; private set; } = null!;
 
+    /// <summary>The ground material of every chunk; the debug cell overlay sets its overlay parameters.</summary>
+    public ShaderMaterial GroundMaterial { get; private set; } = null!;
+
     public override void _Ready()
     {
         var world = GetNode<SimulationHost>("../SimulationHost").Simulation.World;
@@ -25,6 +28,7 @@ public partial class TerrainBuilder : Node3D
 
         var material = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShader) };
         material.SetShaderParameter("land_map", LandLayer.CreateTexture(world.Map));
+        GroundMaterial = material;
         for (var chunkZ = 0; chunkZ < world.HeightCells; chunkZ += ChunkCells)
         {
             for (var chunkX = 0; chunkX < world.WidthCells; chunkX += ChunkCells)

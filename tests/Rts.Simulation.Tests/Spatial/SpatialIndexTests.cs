@@ -81,6 +81,18 @@ public sealed class SpatialIndexTests
                 world.RemoveDead();
                 world.CurrentTick++;
 
+                // The bucket counts the debug overlay reads match the units in each 4x4 block.
+                for (var row = 0; row < world.Spatial.Rows; row++)
+                {
+                    for (var column = 0; column < world.Spatial.Columns; column++)
+                    {
+                        var expected = world.Entities.OfType<Unit>().Count(u => u.IsAlive
+                            && u.Position.ToCell().X / Rts.Simulation.Spatial.SpatialIndex.BucketCells == column
+                            && u.Position.ToCell().Y / Rts.Simulation.Spatial.SpatialIndex.BucketCells == row);
+                        Assert.Equal(expected, world.Spatial.CountIn(column, row));
+                    }
+                }
+
                 for (var q = 0; q < 20; q++)
                 {
                     var center = new WorldPos(random.NextInt(width * 256 + 1000) - 500, random.NextInt(height * 256 + 1000) - 500);
