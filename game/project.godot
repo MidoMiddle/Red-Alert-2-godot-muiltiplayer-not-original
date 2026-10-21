@@ -11,8 +11,12 @@ config_version=5
 [application]
 
 config/name="RTS (working title)"
-run/main_scene="res://scenes/Main.tscn"
+run/main_scene="res://scenes/Boot.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[autoload]
+
+SceneRouter="*res://scripts/App/SceneRouter.cs"
 
 [display]
 
