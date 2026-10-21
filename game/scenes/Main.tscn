@@ -1,13 +1,62 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
+[ext_resource type="Script" path="res://scripts/SimulationHost.cs" id="2_host"]
+[ext_resource type="Script" path="res://scripts/CameraController.cs" id="3_camera"]
+[ext_resource type="Script" path="res://scripts/UnitRenderer.cs" id="4_units"]
+[ext_resource type="Script" path="res://scripts/PlayerInput.cs" id="5_input"]
+[ext_resource type="Script" path="res://scripts/DebugOverlay.cs" id="6_overlay"]
+[ext_resource type="Shader" path="res://shaders/grid.gdshader" id="7_grid"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+size = Vector2(64, 64)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ground"]
+shader = ExtResource("7_grid")
+
+[sub_resource type="Environment" id="Environment_m0"]
+background_mode = 1
+background_color = Color(0.11, 0.12, 0.14, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.57, 0.62, 1)
+ambient_light_energy = 0.6
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
 
-[node name="Overlay" type="CanvasLayer" parent="."]
+[node name="SimulationHost" type="Node" parent="."]
+script = ExtResource("2_host")
 
-[node name="Info" type="Label" parent="Overlay"]
-offset_left = 16.0
-offset_top = 16.0
-text = "Simulation v?"
+[node name="Camera3D" type="Camera3D" parent="."]
+script = ExtResource("3_camera")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_m0")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 32)
+mesh = SubResource("PlaneMesh_ground")
+surface_material_override/0 = SubResource("ShaderMaterial_ground")
+
+[node name="UnitsRoot" type="Node3D" parent="."]
+script = ExtResource("4_units")
+
+[node name="PlayerInput" type="Node" parent="."]
+script = ExtResource("5_input")
+
+[node name="DebugOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("6_overlay")
+
+[node name="Label" type="Label" parent="DebugOverlay"]
+offset_left = 12.0
+offset_top = 10.0
+offset_right = 1268.0
+offset_bottom = 140.0
+theme_override_colors/font_color = Color(0.95, 0.95, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 15
+text = "..."
