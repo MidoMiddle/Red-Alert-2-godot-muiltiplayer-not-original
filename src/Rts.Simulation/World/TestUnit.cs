@@ -8,6 +8,9 @@ namespace Rts.Simulation.World;
 /// </summary>
 public sealed class TestUnit : Entity
 {
+    /// <summary>Speed of spawned test units, leptons per tick (~1.9 cells per second at 15 ticks per second).</summary>
+    public const int DefaultSpeed = 32;
+
     internal TestUnit(EntityId id, PlayerId owner, WorldPos position, int speed)
         : base(id, owner)
     {

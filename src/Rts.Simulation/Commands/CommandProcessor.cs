@@ -1,0 +1,65 @@
+using System;
+using Rts.Simulation.World;
+
+namespace Rts.Simulation.Commands;
+
+/// <summary>
+/// Validates and applies commands to the world. Every peer runs exactly the same checks, so an invalid
+/// command is ignored silently and identically everywhere. Never throws for a bad command: a malicious
+/// or stale command must not be able to crash the game.
+/// </summary>
+public static class CommandProcessor
+{
+    /// <summary>Applies the command. Returns true if the world changed.</summary>
+    public static bool Apply(GameWorld world, Command command)
+    {
+        if (!IsPlayablePlayer(command.Player))
+        {
+            return false;
+        }
+
+        return command switch
+        {
+            SpawnTestUnitCommand spawn => ApplySpawn(world, spawn),
+            MoveUnitsCommand move => ApplyMove(world, move),
+            _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
+        };
+    }
+
+    private static bool IsPlayablePlayer(PlayerId player) => player.Value >= 1 && player.Value <= PlayerId.MaxPlayers;
+
+    private static bool ApplySpawn(GameWorld world, SpawnTestUnitCommand command)
+    {
+        if (!world.Contains(command.Position))
+        {
+            return false;
+        }
+
+        world.SpawnTestUnit(command.Player, command.Position, TestUnit.DefaultSpeed);
+        return true;
+    }
+
+    // Invalid target rejects the whole command; foreign, dead or unknown units are skipped one by one.
+    private static bool ApplyMove(GameWorld world, MoveUnitsCommand command)
+    {
+        if (!world.Contains(command.Target))
+        {
+            return false;
+        }
+
+        var changed = false;
+        foreach (var id in command.Units)
+        {
+            if (world.TryGet(id, out var entity)
+                && entity is TestUnit unit
+                && unit.IsAlive
+                && unit.Owner == command.Player)
+            {
+                unit.MoveTarget = command.Target;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+}
