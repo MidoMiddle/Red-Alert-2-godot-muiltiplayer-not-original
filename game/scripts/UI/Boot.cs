@@ -21,6 +21,8 @@ public partial class Boot : Control
 
     public override void _Ready()
     {
+        Localization.Load();
+
         var args = OS.GetCmdlineUserArgs();
         if (args.Contains("--ui-showcase"))
         {

@@ -1,0 +1,50 @@
+using Godot;
+
+namespace Rts.Client.App;
+
+/// <summary>
+/// Loads <c>localization/en.csv</c> into the <see cref="TranslationServer"/> at startup and sets the locale.
+/// The CSV is read at runtime instead of through Godot's import: the imported <c>*.translation</c> files are
+/// git-ignored and cannot be listed in project settings, so a clean clone would fail to load them.
+/// Only English ships for now.
+/// </summary>
+public static class Localization
+{
+    /// <summary>The only locale that ships for now.</summary>
+    public const string Locale = "en";
+
+    private const string CsvPath = "res://localization/en.csv";
+
+    public static void Load()
+    {
+        var file = FileAccess.Open(CsvPath, FileAccess.ModeFlags.Read);
+        if (file is null)
+        {
+            GD.PushError($"[i18n] cannot open {CsvPath}: {FileAccess.GetOpenError()}");
+            return;
+        }
+
+        var translation = new Translation { Locale = Locale };
+        var isHeader = true;
+        while (!file.EofReached())
+        {
+            var line = file.GetLine();
+            if (isHeader)
+            {
+                isHeader = false;
+                continue;
+            }
+
+            var comma = line.IndexOf(',');
+            if (comma <= 0)
+            {
+                continue;
+            }
+
+            translation.AddMessage(line[..comma], line[(comma + 1)..]);
+        }
+
+        TranslationServer.AddTranslation(translation);
+        TranslationServer.SetLocale(Locale);
+    }
+}

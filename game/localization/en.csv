@@ -1,0 +1,16 @@
+keys,en
+UI_BUTTON_BACK,Back
+UI_BUTTON_NEXT,Next
+UI_STUB_TITLE,Placeholder screen
+UI_SHOWCASE_TITLE,Theme showcase
+UI_SHOWCASE_BUTTON,Button
+UI_SHOWCASE_BUTTON_SELECTED,Selected
+UI_SHOWCASE_BUTTON_LOCKED,Locked
+UI_SHOWCASE_PANEL_TEXT,Panel with a label inside
+UI_SHOWCASE_CHECKBOX,Checkbox
+UI_SHOWCASE_OPTION_FIRST,First option
+UI_SHOWCASE_OPTION_SECOND,Second option
+UI_SHOWCASE_TAB_FIRST,First tab
+UI_SHOWCASE_TAB_SECOND,Second tab
+UI_SHOWCASE_TAB_TEXT,Content of the first tab
+UI_SHOWCASE_SCROLL_TEXT,This text is long enough to wrap across several lines in the second tab and show the scroll area
