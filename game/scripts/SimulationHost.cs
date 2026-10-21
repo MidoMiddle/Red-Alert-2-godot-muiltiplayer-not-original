@@ -38,8 +38,24 @@ public partial class SimulationHost : Node
     /// <summary>The load map of 300 units (docs/implementation/M2_unit_control.md, 4.15), played with <c>--perf</c>.</summary>
     public const string LoadMapPath = "res://maps/test/load128.txt";
 
-    /// <summary>The map of a live session: the load map under <c>--perf</c>, the sandbox otherwise.</summary>
-    public static string MapPath => OS.GetCmdlineUserArgs().Contains("--perf") ? LoadMapPath : SandboxMapPath;
+    /// <summary>
+    /// The map of a live session: <c>--map NAME</c> plays res://maps/test/NAME.txt (for example <c>squad</c>, the 60-unit squad
+    /// of the M2 definition of done), <c>--perf</c> the load map, otherwise the sandbox.
+    /// </summary>
+    public static string MapPath
+    {
+        get
+        {
+            var args = OS.GetCmdlineUserArgs();
+            var index = Array.IndexOf(args, "--map");
+            if (index >= 0 && index + 1 < args.Length)
+            {
+                return $"res://maps/test/{args[index + 1]}.txt";
+            }
+
+            return args.Contains("--perf") ? LoadMapPath : SandboxMapPath;
+        }
+    }
 
     private readonly Dictionary<EntityId, UnitPose> _previousPoses = new();
     private double _accumulator;

@@ -15,7 +15,7 @@ A real-time strategy game inspired by Red Alert 2, built with Godot 4 (.NET / C#
 
 ## Status
 
-Milestone **M0 (foundation) is complete**: deterministic simulation core (fixed-point math, commands, state checksums, replays) verified bit for bit on Linux, macOS and Windows, plus a debug Godot client. Next: M1, visual spike. All design documentation lives in [docs/](docs/README.md); start with the [top-level concept](docs/00_concept.md).
+Milestones **M0 (foundation)** and **M2 (unit control)** are complete: a deterministic simulation core verified bit for bit on Linux, macOS and Windows, and units that move like in a good RTS — turning, A* pathfinding with smoothing, cell and infantry-spot reservations, group destinations, giving way, waypoints and patrols — with RA2-style selection, control groups, cursors, a minimap and debug overlays in a symbolic debug client. 300 units cross a 128×128 map at under 0.2 ms per tick. Next: M7, maps. All design documentation lives in [docs/](docs/README.md); start with the [top-level concept](docs/00_concept.md).
 
 **How to run the game for testing:** [docs/how_to_run.md](docs/how_to_run.md).
 
@@ -54,6 +54,12 @@ Scripted smoke check without a window (exit code 0 on success):
 
 ```bash
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path game -- --smoke
+```
+
+Performance of the load scenario (300 units) and BenchmarkDotNet benchmarks:
+
+```bash
+dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --load
 ```
 
 Step-by-step guide with controls and a test checklist (in Russian): [docs/how_to_run.md](docs/how_to_run.md).
