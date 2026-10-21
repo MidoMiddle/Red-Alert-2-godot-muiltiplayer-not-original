@@ -20,6 +20,9 @@ obj/
 mono_crash.*.json
 .mono/
 
+# BenchmarkDotNet reports (docs/implementation/M2_unit_control.md, 4.15: results go to the journal)
+BenchmarkDotNet.Artifacts/
+
 # IDE
 .vs/
 .vscode/

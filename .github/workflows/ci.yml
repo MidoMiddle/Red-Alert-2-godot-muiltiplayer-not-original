@@ -56,3 +56,8 @@ jobs:
 
       - name: Build the whole solution, including the Godot client
         run: dotnet build RtsGame.sln -c Debug
+
+      # The load scenario with a stopwatch (docs/implementation/M2_unit_control.md, 4.15): only that it runs, no time limits,
+      # since CI machines differ. The numbers that count are measured by hand and kept in the M2 journal.
+      - name: Benchmark harness smoke run
+        run: dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --load

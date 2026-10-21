@@ -12,6 +12,8 @@
   <ItemGroup>
     <!-- Tests may set up state directly; game code changes state only through the simulation. -->
     <InternalsVisibleTo Include="Rts.Simulation.Tests" />
+    <!-- The benchmarks time the phases of a tick one by one (docs/implementation/M2_unit_control.md, 4.15). -->
+    <InternalsVisibleTo Include="Rts.Simulation.Benchmarks" />
   </ItemGroup>
 
 </Project>

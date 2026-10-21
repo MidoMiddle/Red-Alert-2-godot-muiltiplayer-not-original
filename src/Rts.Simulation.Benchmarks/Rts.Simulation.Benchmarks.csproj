@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Benchmarks and the load scenario of docs/implementation/M2_unit_control.md, 4.15. Not part of the simulation: it measures
+    it from outside, so the determinism analyzers do not apply. Run by hand in Release; CI only builds it.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer runtime when only .NET 10 is installed. -->
+    <RollForward>Major</RollForward>
+    <RootNamespace>Rts.Simulation.Benchmarks</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Rts.Simulation/Rts.Simulation.csproj" />
+  </ItemGroup>
+
+</Project>
