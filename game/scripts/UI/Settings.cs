@@ -1,7 +1,9 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using Godot;
 using Rts.Client.App;
+using Rts.Client.Controls;
 
 namespace Rts.Client.UI;
 
@@ -26,10 +28,14 @@ public partial class Settings : Control
     private const int RowSeparation = 24;
     private const int PageSeparation = 14;
     private const float ActionWidth = 360f;
+    private const string KeyBindingsScene = "res://scenes/ui/KeyBindings.tscn";
 
     /// <summary>The theme's disabled text colour (#7D838C).</summary>
     private static readonly Color LockedText = new(0.49f, 0.514f, 0.549f);
     private static readonly Color LockedTint = new(1f, 1f, 1f, 0.5f);
+
+    /// <summary>The tab shown last, so that coming back from the key bindings returns to it.</summary>
+    private static int _lastTab;
 
     private readonly ResolutionChange _change = new();
     private TabContainer _tabs = null!;
@@ -45,6 +51,11 @@ public partial class Settings : Control
     private Label _interfaceScaleValue = null!;
     private HSlider _masterVolume = null!;
     private Label _masterVolumeValue = null!;
+    private OptionButton _scheme = null!;
+    private HSlider _scrollSpeed = null!;
+    private Label _scrollSpeedValue = null!;
+    private CheckBox _edgeScroll = null!;
+    private CheckBox _cameraDrag = null!;
 
     private static AppSettings Store =>
         AppSettings.Instance ?? throw new InvalidOperationException("AppSettings autoload is missing");
@@ -81,9 +92,14 @@ public partial class Settings : Control
         _keepDialog.Canceled += OnKeepCanceled;
         AddChild(_keepDialog);
 
+        _tabs.CurrentTab = _lastTab;
         RefreshControls();
         OpenTabFromArguments();
-        _tabs.TabChanged += _ => UpdateDefaultButton();
+        _tabs.TabChanged += _ =>
+        {
+            _lastTab = _tabs.CurrentTab;
+            UpdateDefaultButton();
+        };
         UpdateDefaultButton();
         back.GrabFocus();
     }
@@ -182,15 +198,35 @@ public partial class Settings : Control
     {
         var rows = AddPage("Controls");
 
-        AddRow(rows, "UI_SETTINGS_SCHEME", NewDropdown(0, Tr("UI_SCHEME_CLASSIC"), Tr("UI_SCHEME_MODERN")), locked: true);
-        AddRow(rows, "UI_SETTINGS_SCROLL_SPEED", NewSlider(1, 10, 1, 5), locked: true);
-        AddRow(rows, "UI_SETTINGS_EDGE_SCROLL", NewCheckBox(true), locked: true);
-        AddRow(rows, "UI_SETTINGS_CAMERA_DRAG", NewCheckBox(true), locked: true);
-        AddRow(rows, "UI_SETTINGS_KEY_BINDINGS", new Button
+        _scheme = NewDropdown(0, Tr("UI_SCHEME_CLASSIC"), Tr("UI_SCHEME_MODERN"));
+        _scheme.ItemSelected += index => Store.SetScheme((ControlScheme)index);
+        AddRow(rows, "UI_SETTINGS_SCHEME", _scheme);
+
+        _scrollSpeed = NewSlider(SettingsValues.MinScrollSpeed, SettingsValues.MaxScrollSpeed, 1, SettingsValues.Defaults.ScrollSpeed);
+        _scrollSpeedValue = NewCountLabel(SettingsValues.Defaults.ScrollSpeed);
+        _scrollSpeed.ValueChanged += value =>
         {
+            Store.SetScrollSpeed((int)value);
+            _scrollSpeedValue.Text = CountText((int)value);
+        };
+        AddRow(rows, "UI_SETTINGS_SCROLL_SPEED", WithValue(_scrollSpeed, _scrollSpeedValue));
+
+        _edgeScroll = NewCheckBox(true);
+        _edgeScroll.Toggled += enabled => Store.SetEdgeScroll(enabled);
+        AddRow(rows, "UI_SETTINGS_EDGE_SCROLL", _edgeScroll);
+
+        _cameraDrag = NewCheckBox(true);
+        _cameraDrag.Toggled += enabled => Store.SetCameraDrag(enabled);
+        AddRow(rows, "UI_SETTINGS_CAMERA_DRAG", _cameraDrag);
+
+        var keys = new Button
+        {
+            Name = "KeyBindings",
             Text = Tr("UI_BUTTON_EDIT"),
             CustomMinimumSize = new Vector2(ActionWidth, FieldHeight),
-        }, locked: true);
+        };
+        keys.Pressed += () => SceneRouter.Instance?.GoTo(KeyBindingsScene);
+        AddRow(rows, "UI_SETTINGS_KEY_BINDINGS", keys);
     }
 
     private void AddGamePage()
@@ -336,6 +372,13 @@ public partial class Settings : Control
             case AudioTab:
                 Store.SetMasterVolume(defaults.MasterVolume);
                 break;
+            case ControlsTab:
+                Store.SetScheme(defaults.Scheme);
+                Store.SetScrollSpeed(defaults.ScrollSpeed);
+                Store.SetEdgeScroll(defaults.EdgeScroll);
+                Store.SetCameraDrag(defaults.CameraDrag);
+                Store.ResetKeys();
+                break;
         }
 
         RefreshControls();
@@ -343,7 +386,7 @@ public partial class Settings : Control
 
     private void UpdateDefaultButton()
     {
-        _default.Disabled = _tabs.CurrentTab is not (GraphicsTab or AudioTab);
+        _default.Disabled = _tabs.CurrentTab is not (GraphicsTab or AudioTab or ControlsTab);
     }
 
     /// <summary>Shows the stored values in the controls. Their signals are not emitted, so nothing is applied twice.</summary>
@@ -365,6 +408,11 @@ public partial class Settings : Control
         _interfaceScaleValue.Text = PercentText(values.InterfaceScale);
         _masterVolume.SetValueNoSignal(values.MasterVolume);
         _masterVolumeValue.Text = PercentText(values.MasterVolume);
+        _scheme.Selected = (int)values.Scheme;
+        _scrollSpeed.SetValueNoSignal(values.ScrollSpeed);
+        _scrollSpeedValue.Text = CountText(values.ScrollSpeed);
+        _edgeScroll.SetPressedNoSignal(values.EdgeScroll);
+        _cameraDrag.SetPressedNoSignal(values.CameraDrag);
     }
 
     /// <summary>Opens the tab named by <c>--tab</c>, so the tabs can be checked from the command line.</summary>
@@ -427,6 +475,18 @@ public partial class Settings : Control
             VerticalAlignment = VerticalAlignment.Center,
         };
     }
+
+    private Label NewCountLabel(int count)
+    {
+        return new Label
+        {
+            Text = CountText(count),
+            CustomMinimumSize = new Vector2(ValueWidth, FieldHeight),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+    }
+
+    private static string CountText(int count) => count.ToString(CultureInfo.InvariantCulture);
 
     private static HBoxContainer WithValue(Control control, Label value)
     {

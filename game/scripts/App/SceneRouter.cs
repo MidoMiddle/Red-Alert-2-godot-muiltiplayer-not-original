@@ -40,6 +40,7 @@ public partial class SceneRouter : Node
         };
         _fade.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         layer.AddChild(_fade);
+        InputScript.AttachIfRequested(this);
     }
 
     /// <summary>Opens a screen and remembers the current one, so <see cref="Back"/> returns to it.</summary>

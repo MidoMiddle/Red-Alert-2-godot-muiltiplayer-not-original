@@ -1,8 +1,9 @@
 using Rts.Client.App;
+using Rts.Client.Controls;
 
 namespace Rts.Simulation.Tests.Client;
 
-/// <summary>Rules of the settings file (docs/implementation/M6_menus_skirmish.md, 4.5): defaults, unknown keys, invalid values.</summary>
+/// <summary>Rules of the settings file (docs/implementation/M6_menus_skirmish.md, 4.5 and 4.6): defaults, unknown keys, invalid values.</summary>
 public sealed class SettingsValuesTests
 {
     [Fact]
@@ -16,6 +17,10 @@ public sealed class SettingsValuesTests
         Assert.Equal(SettingsValues.Unlimited, defaults.FpsLimit);
         Assert.Equal(100, defaults.InterfaceScale);
         Assert.Equal(100, defaults.MasterVolume);
+        Assert.Equal(ControlScheme.Classic, defaults.Scheme);
+        Assert.Equal(5, defaults.ScrollSpeed);
+        Assert.True(defaults.EdgeScroll);
+        Assert.True(defaults.CameraDrag);
     }
 
     [Fact]
@@ -59,6 +64,10 @@ public sealed class SettingsValuesTests
             FpsLimit = 120,
             InterfaceScale = 150,
             MasterVolume = 40,
+            Scheme = ControlScheme.Modern,
+            ScrollSpeed = 8,
+            EdgeScroll = false,
+            CameraDrag = false,
         };
 
         Assert.Equal(values, SettingsValues.Parse(values.ToRaw()));
@@ -138,6 +147,25 @@ public sealed class SettingsValuesTests
     public void InterfaceScaleIsRoundedToAStepAndKeptInItsRange(string text, int expected)
     {
         Assert.Equal(expected, ParseOne("graphics/interface_scale", text).InterfaceScale);
+    }
+
+    [Theory]
+    [InlineData("modern", ControlScheme.Modern)]
+    [InlineData("CLASSIC", ControlScheme.Classic)]
+    [InlineData("left-handed", ControlScheme.Classic)]
+    public void SchemeIsReadByNameOrFallsBackToClassic(string text, ControlScheme expected)
+    {
+        Assert.Equal(expected, ParseOne("controls/scheme", text).Scheme);
+    }
+
+    [Theory]
+    [InlineData("0", 1)]
+    [InlineData("11", 10)]
+    [InlineData("7", 7)]
+    [InlineData("fast", 5)]
+    public void ScrollSpeedIsKeptInItsRange(string text, int expected)
+    {
+        Assert.Equal(expected, ParseOne("controls/scroll_speed", text).ScrollSpeed);
     }
 
     private static SettingsValues ParseOne(string key, string text)

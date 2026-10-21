@@ -119,3 +119,19 @@ UI_HEALTH_BARS_DAMAGED,Selected and damaged
 UI_HEALTH_BARS_SELECTED,Selected only
 UI_SETTINGS_CONFIRM_SELL,Confirm selling
 UI_SETTINGS_HINTS,Hints
+UI_KEYS_HEADER,Key bindings
+UI_KEY_CAMERA_UP,Camera up
+UI_KEY_CAMERA_DOWN,Camera down
+UI_KEY_CAMERA_LEFT,Camera left
+UI_KEY_CAMERA_RIGHT,Camera right
+UI_KEY_PAUSE,Pause
+UI_KEY_STEP,Step while paused
+UI_KEY_SPEED_UP,Speed up
+UI_KEY_SPEED_DOWN,Speed down
+UI_KEY_SAVE_REPLAY,Save replay
+UI_KEY_LOAD_REPLAY,Play last replay
+UI_KEY_NEW_SESSION,New session
+UI_KEY_CANCEL_SELECTION,Cancel selection
+UI_KEY_WAITING,Press a key...
+UI_KEYS_SWAPPED,{0} was used by {1}. {1} now uses {2}.
+UI_KEYS_REFUSED,This key cannot be used.
