@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Game data from files (docs/implementation/M7_maps.md, 4.9; docs/implementation/M3_base_economy.md, section 3): maps now,
+    rules later. What it reads becomes simulation state, so the determinism rules apply here too.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Rts.Data</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RtsDeterministic>true</RtsDeterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Rts.Simulation/Rts.Simulation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rts.Data.Tests" />
+  </ItemGroup>
+
+</Project>

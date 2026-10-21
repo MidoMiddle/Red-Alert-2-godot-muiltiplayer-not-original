@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Console tool for .rtsmap files (docs/implementation/M7_maps.md, step 1): check, write canonically, convert M2 maps. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer runtime when only .NET 10 is installed. -->
+    <RollForward>Major</RollForward>
+    <RootNamespace>Rts.MapTool</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Rts.Data/Rts.Data.csproj" />
+  </ItemGroup>
+
+</Project>

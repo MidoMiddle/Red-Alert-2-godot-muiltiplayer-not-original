@@ -263,6 +263,32 @@ dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --filter '*' --
 dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --write-map
 ```
 
+### Карты `.rtsmap` (M7)
+
+Новый формат карт: текстовый YAML, слои клеток — по строке на ряд. Утилита проверяет карту, печатает сводку и хеш:
+
+```bash
+dotnet run --project tools/Rts.MapTool -- check game/data/maps/sandbox.rtsmap
+```
+
+Переписать файл в канонический вид (порядок ключей и объектов, без комментариев):
+
+```bash
+dotnet run --project tools/Rts.MapTool -- canon game/data/maps/sandbox.rtsmap
+```
+
+Сконвертировать старую тестовую карту M2:
+
+```bash
+dotnet run --project tools/Rts.MapTool -- convert game/maps/test/sandbox.txt game/data/maps/sandbox.rtsmap
+```
+
+Что проверить:
+- [ ] `check` печатает `sandbox "Sandbox" 64x64 … objects 88 …` и хеш `6b62f7cf…`.
+- [ ] Замени в слое `land` одну точку на `?` — `check` пишет `файл:строка:столбец: unknown code '?' in layer 'land'`, и строка со столбцом указывают ровно на этот символ.
+- [ ] Верни символ, добавь в начало файла комментарий `# моя карта` и пустую строку — `check` даёт тот же хеш.
+- [ ] `canon` убирает комментарий: `git diff` пустой.
+
 ---
 
 ## 8. Если что-то не так

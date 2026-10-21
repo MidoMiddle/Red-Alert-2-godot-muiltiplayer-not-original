@@ -58,7 +58,7 @@
 | M4 | [Бой](implementation/M4_combat.md) | согласован |
 | M5 | [Первый бот](implementation/M5_first_bot.md) | согласован |
 | M6 | [Меню и скирмиш](implementation/M6_menus_skirmish.md) | согласован |
-| M7 | [Карты](implementation/M7_maps.md) | согласован |
+| M7 | [Карты](implementation/M7_maps.md) | **в работе** |
 | M8 | [ИИ: сложности и характеры](implementation/M8_ai_difficulty.md) | согласован |
 | M9 | [Сеть](implementation/M9_network.md) | согласован |
 | M10 | [Онлайн](implementation/M10_online.md) | согласован, есть вопросы 🟥 |
