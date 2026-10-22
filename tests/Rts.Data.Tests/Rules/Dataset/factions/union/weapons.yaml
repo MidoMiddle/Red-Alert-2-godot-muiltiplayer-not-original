@@ -1,0 +1,6 @@
+heavy_tank_cannon:
+  kind: weapon
+  name: Heavy Tank Cannon
+  damage: 120
+  range: 5.5
+  reload: 2s

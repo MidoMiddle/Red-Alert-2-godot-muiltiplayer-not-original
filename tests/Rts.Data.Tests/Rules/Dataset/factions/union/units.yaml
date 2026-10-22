@@ -1,0 +1,52 @@
+conscript:
+  kind: unit
+  name: Conscript
+  faction: union
+  category: infantry
+  placement: subcell
+  locomotor: foot
+  cost: 100
+  build_time: 5s
+  hp: 150
+  speed: 24
+  turn_rate: 0
+  sight: 5
+  turret: false
+
+mcv:
+  kind: unit
+  inherits: base_tracked_vehicle
+  name: MCV
+  faction: union
+  cost: 3000
+  build_time: 20s
+  hp: 600
+  speed: 24
+  turret: false
+
+heavy_tank:
+  kind: unit
+  inherits: base_tracked_vehicle
+  name: Heavy Tank
+  faction: union
+  armor: heavy
+  cost: 900
+  build_time: 12s
+  hp: 400
+  speed: 40
+  sight: 8
+  prerequisites: [war_factory]
+  weapons: [heavy_tank_cannon]
+  model: vehicles/heavy_tank
+  icon: heavy_tank
+
+harvester:
+  kind: unit
+  inherits: base_tracked_vehicle
+  name: War Harvester
+  faction: union
+  cost: 1400
+  build_time: 20s
+  hp: 700
+  speed: 24
+  sight: 4

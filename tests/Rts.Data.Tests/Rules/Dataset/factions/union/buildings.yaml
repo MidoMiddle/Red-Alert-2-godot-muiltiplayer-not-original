@@ -1,0 +1,48 @@
+construction_yard:
+  kind: building
+  inherits: base_building
+  name: Construction Yard
+  faction: union
+  cost: 2000
+  build_time: 30s
+  hp: 1000
+  footprint: [3, 3]
+
+reactor:
+  kind: building
+  inherits: base_building
+  name: Reactor
+  faction: union
+  cost: 600
+  build_time: 10s
+  hp: 750
+  footprint: [2, 2]
+  power: 150
+  prerequisites: [construction_yard]
+  model: buildings/reactor
+  icon: reactor
+
+refinery:
+  kind: building
+  inherits: base_building
+  name: Refinery
+  faction: union
+  cost: 2000
+  build_time: 30s
+  hp: 900
+  footprint: [3, 3]
+  power: -50
+  prerequisites: [reactor]
+
+war_factory:
+  kind: building
+  inherits: base_building
+  name: War Factory
+  faction: union
+  cost: 2000
+  build_time: 30s
+  hp: 1000
+  footprint: [3, 4]
+  power: -50
+  prerequisites: [refinery]
+  exit_cell: [1, 3]

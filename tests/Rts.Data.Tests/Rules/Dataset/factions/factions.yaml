@@ -1,0 +1,7 @@
+union:
+  kind: faction
+  name: Union
+  mcv: mcv
+  construction_yard: construction_yard
+  refinery: refinery
+  harvester: harvester

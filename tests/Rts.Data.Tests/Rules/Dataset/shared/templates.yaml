@@ -1,0 +1,17 @@
+# Abstract templates: they create no definitions. A unit or a building that inherits one takes its fields and overrides some of them.
+base_tracked_vehicle:
+  kind: unit
+  abstract: true
+  category: vehicle
+  placement: cell
+  locomotor: track
+  turret: true
+  turn_rate: 2048
+  sight: 6
+
+base_building:
+  kind: building
+  abstract: true
+  category: building
+  build_up: 1.5s
+  power: 0

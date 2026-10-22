@@ -1,0 +1,13 @@
+clear:
+  kind: terrain
+  name: Clear
+  code: "."
+  buildable: true
+  speed: { foot: 100%, track: 100%, wheel: 100% }
+
+road:
+  kind: terrain
+  name: Road
+  code: "="
+  buildable: true
+  speed: { foot: 100%, track: 100%, wheel: 120% }

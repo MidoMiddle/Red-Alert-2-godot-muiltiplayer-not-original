@@ -1,0 +1,14 @@
+foot:
+  kind: locomotor
+  name: Foot
+  slope: 80%
+
+track:
+  kind: locomotor
+  name: Track
+  slope: 75%
+
+wheel:
+  kind: locomotor
+  name: Wheel
+  slope: 65%
