@@ -55,6 +55,12 @@ public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId Target, in
 /// was fired at, or none when that died or a homing shot ran out of time. <paramref name="Weapon"/> is the place of the weapon in the
 /// rules. The damage comes from step 5 on.
 /// </summary>
+/// <summary>A unit or a building lost <paramref name="Amount"/> hit points to a shot of <paramref name="Attacker"/> (M4, 4.9).</summary>
+public sealed record EntityDamaged(int Tick, EntityId Entity, EntityId Attacker, int Amount, int Hp) : SimEvent(Tick);
+
+/// <summary>A shot of <paramref name="Killer"/> destroyed a unit or a building (M4, 4.9); it leaves the world at the end of the tick.</summary>
+public sealed record EntityDestroyed(int Tick, EntityId Entity, EntityId Killer) : SimEvent(Tick);
+
 public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId Shooter, int Weapon, WorldPos Point, EntityId? Target)
     : SimEvent(Tick);
 

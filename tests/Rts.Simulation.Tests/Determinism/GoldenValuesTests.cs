@@ -251,6 +251,7 @@ public sealed class GoldenValuesTests
         // Rules v26 (M4 step 2): versions and checksums change; the hit points of the units are hashed.
         // Rules v27 (M4 step 3): versions and checksums change; the targets and weapons of the units are hashed.
         // Rules v28 (M4 step 4): only the version changes; nobody fires, so there are no projectiles.
-        Assert.Equal((23377, 1202396527928705344UL), (bytes.Length, hash.Value));
+        // Rules v29 (M4 step 5): only the version changes; nobody is hit.
+        Assert.Equal((23377, 10877683662678960167UL), (bytes.Length, hash.Value));
     }
 }

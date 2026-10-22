@@ -87,6 +87,7 @@ public static class ProjectileSystem
     private static void Land(GameWorld world, Projectile projectile, WorldPos point, Entity? target, List<SimEvent>? events)
     {
         events?.Add(new ProjectileImpact(world.CurrentTick, projectile.Id, projectile.Shooter, projectile.Weapon, point, target?.Id));
+        world.Hits.Add(new Hit(projectile.Id, projectile.Shooter, projectile.Owner, projectile.Weapon, point, target?.Id));
         projectile.Position = point;
         projectile.MarkDead();
     }

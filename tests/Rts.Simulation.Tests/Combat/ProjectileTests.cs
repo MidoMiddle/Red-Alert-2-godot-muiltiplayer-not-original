@@ -80,8 +80,9 @@ public sealed class ProjectileTests
         List<WorldPos> Landings(ulong seed)
         {
             var simulation = Match(seed);
+            // A tank takes 2 of a flak hit (10 % of 25): it outlives the 420 ticks.
             var flakTrack = Spawn(simulation, Player1, UnitType.SupportVehicle, new CellPos(10, 10).Center);
-            var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 7).Center);
+            var target = Spawn(simulation, Player2, UnitType.HeavyTank, new CellPos(10, 7).Center);
             flakTrack.Target = target.Id;
             return Play(simulation, 420).Select(impact => impact.Point).ToList();
         }

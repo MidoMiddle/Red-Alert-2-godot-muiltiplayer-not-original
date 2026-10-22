@@ -90,6 +90,12 @@ public sealed class GameWorld
     /// <summary>Units by area, for "who is near" queries. Derived from positions, not part of the state hash.</summary>
     public SpatialIndex Spatial { get; }
 
+    /// <summary>
+    /// The shots that landed this tick (M4 step 5): <see cref="Systems.WeaponSystem"/> and <see cref="Systems.ProjectileSystem"/> add,
+    /// <see cref="Systems.DamageSystem"/> applies and empties it in the same tick, so it is never state.
+    /// </summary>
+    internal List<Combat.Hit> Hits { get; } = [];
+
     public int WidthCells => Map.Width;
 
     public int HeightCells => Map.Height;
@@ -188,6 +194,17 @@ public sealed class GameWorld
     /// Sets the hit points of a building (M4, 4.4) and reports <see cref="Events.DamageStateChanged"/> when that crosses a threshold:
     /// the one way damage and repair change them.
     /// </summary>
+    internal void SetHp(Unit unit, int hp, List<Events.SimEvent>? events)
+    {
+        var before = Combat.DamageStates.Of(unit.Hp, unit.MaxHp);
+        unit.Hp = hp;
+        var after = Combat.DamageStates.Of(hp, unit.MaxHp);
+        if (after != before && after != Combat.DamageState.Destroyed)
+        {
+            events?.Add(new Events.DamageStateChanged(CurrentTick, unit.Id, after));
+        }
+    }
+
     internal void SetHp(Building building, int hp, List<Events.SimEvent>? events)
     {
         var before = Combat.DamageStates.Of(building.Hp, building.MaxHp);
@@ -368,7 +385,7 @@ public sealed class GameWorld
     /// A building falls (docs/implementation/M7_maps.md, 4.8): it dies (leaves the world at the end of the tick) and its
     /// footprint opens at once through <see cref="ChangeMap"/>. No ruins in M7.
     /// </summary>
-    private void DestroyBuilding(Building building, List<Events.SimEvent>? events)
+    internal void DestroyBuilding(Building building, List<Events.SimEvent>? events)
     {
         building.Hp = 0;
         TakeDown(building, events);

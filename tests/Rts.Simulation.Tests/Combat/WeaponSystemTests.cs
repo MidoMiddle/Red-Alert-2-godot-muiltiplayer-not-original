@@ -43,9 +43,10 @@ public sealed class WeaponSystemTests
     [Fact]
     public void A_rhino_fires_at_a_standing_target_once_a_reload()
     {
+        // A construction yard to the east takes 11 shells (40 each against concrete) of its 1000 hit points and still stands.
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(14, 10).Center);
+        var target = simulation.World.CreateBuilding(Player2, TestRules.BuildingDef("construction_yard"), new CellPos(14, 9), true, null);
         tank.Target = target.Id;
 
         var shots = Shots(simulation, tank, 700);

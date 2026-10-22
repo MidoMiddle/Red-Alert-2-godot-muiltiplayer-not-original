@@ -77,6 +77,7 @@ public sealed class GameSimulation
         RepairSystem.Update(World, _events);
         WeaponSystem.Update(World, _events);
         ProjectileSystem.Update(World, _events);
+        DamageSystem.Update(World, _events);
 
         // 4. Movement.
         MovementSystem.Update(World, _events);

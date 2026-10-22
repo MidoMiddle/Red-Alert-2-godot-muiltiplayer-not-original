@@ -215,6 +215,8 @@ public sealed class StateHasherTests
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
         // Derived from unit positions and rebuilt from them; not hashed (docs/implementation/M2_unit_control.md, 4.9).
         "<Spatial>k__BackingField",
+        // The hits of a tick, emptied in the same tick (M4 step 5): never state.
+        "<Hits>k__BackingField",
         // The rules of the match: data, not state; the replay keeps their hash (M3 step 3).
         "<Rules>k__BackingField",
         // The players (M3 step 5): their credits are hashed; the marks that power and technologies need working out are derived.

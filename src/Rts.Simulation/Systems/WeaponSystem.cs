@@ -61,6 +61,7 @@ public static class WeaponSystem
         {
             case ProjectileMotion.Instant:
                 events?.Add(new ProjectileImpact(world.CurrentTick, null, shot.Shooter, shot.Weapon, shot.AimAt, shot.Target));
+                world.Hits.Add(new Hit(shot.Shooter, shot.Shooter, shot.Owner, shot.Weapon, shot.AimAt, shot.Target));
                 break;
             case ProjectileMotion.Ballistic:
                 {
