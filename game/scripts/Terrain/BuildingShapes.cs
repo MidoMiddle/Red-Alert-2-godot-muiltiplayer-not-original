@@ -24,7 +24,7 @@ public readonly record struct BuildingShape(float Height, float Inset, bool Stac
 
     public static BuildingShape Of(BuildingDef def)
     {
-        var wall = def.Footprint is { Width: 1, Height: 1 } && !def.ExtendsBase;
+        var wall = def.Wall;
         var height = wall ? WallHeight
             : def.Category == ProductionCategory.Defense ? DefenseHeight
             : 0.35f + 0.2f * Math.Max(def.Footprint.Width, def.Footprint.Height);

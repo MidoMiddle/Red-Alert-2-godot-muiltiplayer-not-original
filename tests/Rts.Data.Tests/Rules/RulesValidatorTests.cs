@@ -132,6 +132,15 @@ public sealed class RulesValidatorTests
     }
 
     [Fact]
+    public void A_wall_is_one_cell_that_extends_no_base()
+    {
+        var error = Fails(Buildings, "  power: 150\n", "  power: 150\n  wall: true\n");
+
+        Assert.Equal((Buildings, 21, 9), (error.FileName, error.Line, error.Column));
+        Assert.Equal("wall 'reactor' must have a footprint of [1, 1] and extends_base: false", error.Reason);
+    }
+
+    [Fact]
     public void A_secondary_weapon_needs_a_primary_one()
     {
         var error = Fails(Units, "primary: heavy_tank_cannon", "secondary: heavy_tank_cannon");

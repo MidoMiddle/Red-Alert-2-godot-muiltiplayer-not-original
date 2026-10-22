@@ -337,13 +337,14 @@ public partial class SimulationHost : Node
 
     /// <summary>
     /// Debug (M3 steps 6, 11): places the <see cref="BuildIndex"/> building with the centre of its footprint at <paramref name="position"/>.
-    /// A building of one cell with <paramref name="line"/> (Shift) is a line of walls from the last one placed this way.
+    /// A wall with <paramref name="line"/> (Shift) is a line of walls from the last one placed this way.
     /// </summary>
     public void IssuePlaceBuilding(WorldPos position, bool line = false)
     {
         var footprint = Data.Database.Buildings[BuildIndex].Footprint;
         var cell = PlacementPreview.CornerOf(footprint, position);
-        if (footprint.Width == 1 && footprint.Height == 1 && line && _lastWall is { } from)
+        var wall = Data.Database.Buildings[BuildIndex].Wall;
+        if (wall && line && _lastWall is { } from)
         {
             Issue(new PlaceWallsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, PlacementPreview.WallLine(from, cell)));
         }
@@ -352,23 +353,23 @@ public partial class SimulationHost : Node
             Issue(new PlaceBuildingCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, cell));
         }
 
-        _lastWall = footprint.Width == 1 && footprint.Height == 1 ? cell : null;
+        _lastWall = wall ? cell : null;
     }
 
     /// <summary>
-    /// Debug (M3 step 11): after a one-cell building of the debug build is placed, the next one is ordered, so that a Shift + click
+    /// Debug (M3 step 11): after a wall of the debug build is placed, the next one is ordered, so that a Shift + click
     /// soon has a ready one to start the line with, as a wall is dragged in RA2.
     /// </summary>
     private void OrderNextWall()
     {
         var def = Data.Database.Buildings[BuildIndex];
-        if (def.Footprint is { Width: 1, Height: 1 } && Simulation.World.Player(LocalPlayer).Queue(def.Category).Count == 0)
+        if (def.Wall && Simulation.World.Player(LocalPlayer).Queue(def.Category).Count == 0)
         {
             Issue(new ProduceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ProductionKind.Building, BuildIndex, 1));
         }
     }
 
-    // The cell of the last one-cell building placed with the debug build: a Shift + click draws a wall line from it.
+    // The cell of the last wall placed with the debug build: a Shift + click draws a wall line from it.
     private CellPos? _lastWall;
 
     /// <summary>The cell of the last wall placed by a click, where a Shift + click line starts; the preview draws the line from it.</summary>

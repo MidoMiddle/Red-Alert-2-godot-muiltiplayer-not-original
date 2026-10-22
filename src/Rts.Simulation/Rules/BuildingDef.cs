@@ -45,8 +45,20 @@ public sealed record BuildingDef : IDefinition
     /// <summary>How many cells from the player's base the building may stand (RA2 <c>Adjacent</c>, 4.8).</summary>
     public int Adjacent { get; init; } = DefaultAdjacent;
 
-    /// <summary>Whether new buildings may be placed next to this one (RA2 <c>BaseNormal</c>): false for walls.</summary>
+    /// <summary>Whether new buildings may be placed next to this one (RA2 <c>BaseNormal</c>): false for walls and defenses.</summary>
     public bool ExtendsBase { get; init; } = true;
+
+    /// <summary>
+    /// A wall (M4 step 10): placed in lines, a base for walls of its kind, no target of the choice of targets, hurt only by a warhead
+    /// that damages walls. One cell, never extending the base.
+    /// </summary>
+    public bool Wall { get; init; }
+
+    /// <summary>
+    /// Whether it stops working while its owner is low on power (RA2 <c>Powered</c>, M4 step 10) — only if it drains power itself, so a
+    /// defense of power 0 works on.
+    /// </summary>
+    public bool Powered { get; init; }
 
     /// <summary>
     /// Whether the building gives its owner the minimap while there is power (RA2 <c>Radar</c>, 4.17). Only the client reads it.

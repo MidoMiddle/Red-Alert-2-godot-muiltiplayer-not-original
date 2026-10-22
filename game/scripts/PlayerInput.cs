@@ -877,7 +877,7 @@ public partial class PlayerInput : Node
         // M4 step 7: the building on the cell is a target, for an attack when it belongs to another player and is no wall.
         if (GroundAt(at) is { } point && world.BuildingAt(point.ToCell()) is { IsAlive: true } building)
         {
-            var enemy = building.Owner != SimulationHost.LocalPlayer && !building.Owner.IsNeutral && building.Def is not { ExtendsBase: false };
+            var enemy = building.Owner != SimulationHost.LocalPlayer && !building.Owner.IsNeutral && building.Def is not { Wall: true };
             return new PointerTarget(enemy ? PointerTargetKind.OtherBuilding : PointerTargetKind.Ground, Building: building.Id);
         }
 

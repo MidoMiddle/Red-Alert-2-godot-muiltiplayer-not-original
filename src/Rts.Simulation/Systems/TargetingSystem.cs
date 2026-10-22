@@ -20,7 +20,8 @@ namespace Rts.Simulation.Systems;
 /// that holds its position, a harvester and a defense; a guarding unit takes nothing farther than <see cref="PursuitSystem.GuardLeash"/>
 /// cells and its range from its anchor. With nothing in reach it keeps its target only while that is still in reach: a target that
 /// left its sight is dropped. A unit with a target ordered by the player does not look while that stands, nor does a unit on a leg of
-/// a plain move: such a move ignores the enemies until it arrives (4.12). Neutral units and buildings look for nothing. The fog of war
+/// a plain move: such a move ignores the enemies until it arrives (4.12). Neutral units and buildings look for nothing, nor does a defense off for want of
+/// power (<see cref="Defenses.IsOnline"/>, step 10). The fog of war
 /// comes in step 11: until then every enemy counts as seen.
 /// </summary>
 public static class TargetingSystem
@@ -60,6 +61,11 @@ public static class TargetingSystem
                         unit.Target = Best(world, rules, unit, new Area(unit.Position, reach, unit.Anchor, leash), weapons, unit.Target, nearby);
                         break;
                     }
+
+                case Building { IsReady: true } building when building.Weapons.Length > 0 && !Defenses.IsOnline(world, building):
+                    // Off for want of power (step 10): it looks for nothing.
+                    building.Target = null;
+                    break;
 
                 case Building { IsReady: true } building when building.Weapons.Length > 0:
                     {
@@ -166,7 +172,7 @@ public static class TargetingSystem
         world.Spatial.QueryRadius(world, from, area.Reach, nearby);
         foreach (var entity in world.Entities)
         {
-            if (entity is Building { IsAlive: true } building && building.Def is not { ExtendsBase: false }
+            if (entity is Building { IsAlive: true } building && building.Def is not { Wall: true }
                 && DamageCalculator.Distance(from, Aim.NearestPoint(building, from)) <= area.Reach)
             {
                 nearby.Add(building.Id);

@@ -109,7 +109,7 @@ public static class CommandProcessor
 
         var def = buildings[command.DefIndex];
         var player = world.Player(command.Player);
-        if (def.Faction != player.Faction.Id || def.Footprint != new Rules.CellSize(1, 1))
+        if (def.Faction != player.Faction.Id || !def.Wall)
         {
             return false;
         }
@@ -169,7 +169,7 @@ public static class CommandProcessor
     private static bool ApplyAttack(GameWorld world, AttackCommand command)
     {
         if (!world.TryGet(command.Target, out var target) || !target.IsAlive || target is not (Unit or Building)
-            || target is Building { Def.ExtendsBase: false } || target.Owner == command.Player || target.Owner.IsNeutral || !Vision.Sees(world, command.Player, target))
+            || target is Building { Def.Wall: true } || target.Owner == command.Player || target.Owner.IsNeutral || !Vision.Sees(world, command.Player, target))
         {
             return false;
         }

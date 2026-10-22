@@ -121,14 +121,14 @@ public static class PlacementRules
 
     /// <summary>
     /// True when at most <c>adjacent</c> cells lie between the footprint and the footprint of a standing building of the player that
-    /// extends the base, ready or growing (Chebyshev: diagonals count as one). A building that does not extend the base, such as a wall,
-    /// is still a base for buildings of its own kind: a wall goes on from a wall (M3 step 11).
+    /// extends the base, ready or growing (Chebyshev: diagonals count as one). A wall is still a base for walls of its own kind: a wall
+    /// goes on from a wall (M3 step 11). A defense extends no base, not even for its own kind (M4 step 10, RA2 <c>BaseNormal=no</c>).
     /// </summary>
     private static bool NearBase(GameWorld world, PlayerId player, BuildingDef def, CellPos cell, CellPos far)
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is Building { IsAlive: true, Def: { } other } building && building.Owner == player && (other.ExtendsBase || other.Id == def.Id))
+            if (entity is Building { IsAlive: true, Def: { } other } building && building.Owner == player && (other.ExtendsBase || (def.Wall && other.Id == def.Id)))
             {
                 var gapX = IntMath.Max(0, IntMath.Max(building.Cell.X - far.X, cell.X - building.FarCell.X) - 1);
                 var gapY = IntMath.Max(0, IntMath.Max(building.Cell.Y - far.Y, cell.Y - building.FarCell.Y) - 1);

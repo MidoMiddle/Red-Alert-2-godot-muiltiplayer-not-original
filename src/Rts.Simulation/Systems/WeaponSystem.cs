@@ -16,7 +16,8 @@ namespace Rts.Simulation.Systems;
 /// <c>burst_delay</c> apart, the next volley <c>reload</c> after the first shot (<see cref="WeaponFired"/>). The shots of the tick are
 /// launched after the walk over the entities (step 4): an instant one lands at once (<see cref="ProjectileImpact"/>), a ballistic or
 /// homing one becomes a <see cref="Projectile"/> that <see cref="ProjectileSystem"/> flies. A unit forced to attack the ground (step 7)
-/// aims and fires at <see cref="World.Unit.TargetPoint"/> the same way; its shots land there with no target.
+/// aims and fires at <see cref="World.Unit.TargetPoint"/> the same way; its shots land there with no target. A defense off for want of
+/// power (<see cref="Defenses.IsOnline"/>, step 10) does not fire; its reload counts down.
 /// </summary>
 public static class WeaponSystem
 {
@@ -148,7 +149,7 @@ public static class WeaponSystem
     private static void Defense(GameWorld world, GameRules rules, Building building, List<Shot> shots, List<SimEvent>? events)
     {
         CountDown(building.Weapons);
-        if (!TargetOf(world, building.Target, out var target))
+        if (!Defenses.IsOnline(world, building) || !TargetOf(world, building.Target, out var target))
         {
             building.Target = null;
             StopVolleys(building.Weapons);

@@ -181,6 +181,40 @@ public sealed class RulesLoaderTests
     }
 
     [Fact]
+    public void A_wall_and_a_powered_building_read_their_flags_and_others_have_none()
+    {
+        var rules = Read(
+            """
+            post:
+              kind: building
+              name: Post
+              faction: union
+              category: defense
+              cost: 1
+              build_time: 1s
+              hp: 1
+              footprint: [1, 1]
+              extends_base: false
+              wall: true
+            coil:
+              kind: building
+              name: Coil
+              faction: union
+              category: defense
+              cost: 1
+              build_time: 1s
+              hp: 1
+              footprint: [2, 2]
+              powered: true
+            """);
+
+        var post = rules.Buildings.Single(building => building.Id == "post");
+        var coil = rules.Buildings.Single(building => building.Id == "coil");
+        Assert.Equal((true, false), (post.Wall, post.Powered));
+        Assert.Equal((false, true), (coil.Wall, coil.Powered));
+    }
+
+    [Fact]
     public void A_percentage_and_a_duration_read_as_the_fixed_point_and_ticks_do()
     {
         var rules = Dataset();

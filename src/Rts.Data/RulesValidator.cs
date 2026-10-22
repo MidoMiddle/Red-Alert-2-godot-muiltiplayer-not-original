@@ -145,6 +145,11 @@ internal static class RulesValidator
             {
                 Error(building.Id, "adjacent", $"'adjacent' of '{building.Id}' must be 0 to {BuildingDef.MaxAdjacent} cells");
             }
+
+            if (building.Wall && (building.Footprint != new CellSize(1, 1) || building.ExtendsBase))
+            {
+                Error(building.Id, "wall", $"wall '{building.Id}' must have a footprint of [1, 1] and extends_base: false");
+            }
             var (width, height) = (building.Footprint.Width, building.Footprint.Height);
             if (width is < 1 or > MaxFootprint || height is < 1 or > MaxFootprint)
             {

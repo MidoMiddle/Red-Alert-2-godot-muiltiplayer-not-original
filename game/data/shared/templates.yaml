@@ -49,3 +49,5 @@ base_defense:
   inherits: base_building
   armor: steel
   category: defense
+  extends_base: false
+  powered: true

@@ -207,6 +207,8 @@ public sealed class TargetingTests
     {
         var simulation = new GameSimulation(new SimulationSettings(1, new MapGrid(40, 40, TestRules.Standard.Land)), TestRules.Standard);
         var coil = simulation.World.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(10, 10), true, null);
+        // A reactor powers it: without one the coil would be off for want of power (step 10).
+        simulation.World.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(2, 2), true, null);
         var tank = simulation.World.SpawnUnit(Player2, UnitType.HeavyTank, new CellPos(16, 11).Center);
         var fired = false;
         for (var tick = 0; tick < 8 && !fired; tick++)

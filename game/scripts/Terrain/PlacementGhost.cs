@@ -49,7 +49,7 @@ public partial class PlacementGhost : Node3D
         var armed = _input.BuildArmed && _host.BuildIndex >= 0 && _input.PointerGround is not null && WorldCoords.Terrain is not null;
         var def = armed ? _host.Data.Database.Buildings[_host.BuildIndex] : null;
         var corner = def is not null ? PlacementPreview.CornerOf(def.Footprint, _input.PointerGround!.Value) : default;
-        var line = def is { Footprint: { Width: 1, Height: 1 } } && Input.IsKeyPressed(Key.Shift) && _host.LastWall is not null;
+        var line = def is { Wall: true } && Input.IsKeyPressed(Key.Shift) && _host.LastWall is not null;
         var state = (armed, _host.BuildIndex, corner, line, _host.LastWall, world.CurrentTick);
         if (Equals(state, _drawn))
         {

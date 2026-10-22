@@ -259,6 +259,7 @@ public sealed class GoldenValuesTests
         // Rules v31 (M4 step 7): other commands (Attack, ForceAttack, SetStance among them), so other bytes and length.
         // Rules v32 (M4 step 8): the version and the checksums change; the commands are the same.
         // Rules v33 (M4 step 9): only the version changes; no building falls in the scenario.
-        Assert.Equal((22268, 585961811374266443UL), (bytes.Length, hash.Value));
+        // Rules v34 (M4 step 10): only the version changes; the scenario has no defenses.
+        Assert.Equal((22268, 2647507601365307956UL), (bytes.Length, hash.Value));
     }
 }

@@ -183,10 +183,11 @@ internal static class TestRules
         builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with
         {
             ExtendsBase = false,
+            Wall = true,
             Category = ProductionCategory.Defense,
             Armor = "concrete",
         });
-        builder.Add(Defense("sentry_bunker", 1, 1, power: 0, "sentry_machine_gun", "barracks") with { Threat = 20 });
+        builder.Add(Defense("sentry_bunker", 1, 1, power: 0, "sentry_machine_gun", "barracks") with { Threat = 20, Adjacent = 4 });
         builder.Add(Defense("tesla_coil", 2, 2, power: -75, "tesla_coil_bolt", "radar") with { Threat = 40 });
         builder.Add(Defense("flak_cannon", 2, 2, power: -50, "flak_cannon_gun", "radar") with { Threat = 10 });
         builder.Add(new EconomyDef
@@ -244,7 +245,10 @@ internal static class TestRules
         };
 
     private static BuildingDef Defense(string id, int width, int height, int power, string weapon, params string[] prerequisites) =>
-        Def(id, width, height, power, prerequisites) with { Category = ProductionCategory.Defense, Armor = "steel", Primary = weapon };
+        Def(id, width, height, power, prerequisites) with
+        {
+            Category = ProductionCategory.Defense, Armor = "steel", Primary = weapon, ExtendsBase = false, Powered = true,
+        };
 
     // Rounded to the nearest, as the parser of the data files reads "5%".
     private static Fixed Percent(int percent) => Fixed.FromRaw(IntMath.DivRound(percent * Fixed.OneRaw, 100));

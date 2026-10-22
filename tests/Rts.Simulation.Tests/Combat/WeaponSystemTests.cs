@@ -199,6 +199,8 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var coil = simulation.World.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(10, 10), true, null);
+        // A reactor powers it: without one the coil would be off for want of power (step 10).
+        simulation.World.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(2, 2), true, null);
         var target = Spawn(simulation, Nobody, UnitType.HeavyTank, new WorldPos((11 * 256) + (7 * 256) + beyond, 11 * 256));
         coil.Target = target.Id;
 

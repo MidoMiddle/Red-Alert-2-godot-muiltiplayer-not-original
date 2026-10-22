@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using Rts.Simulation.Combat;
 using Rts.Simulation.Events;
 using Rts.Simulation.World;
 
@@ -10,7 +11,8 @@ namespace Rts.Client.Terrain;
 /// others are not rebuilt. A view is a steel-grey block in the owner's band with the marks of its <see cref="BuildingShape"/>. It
 /// rises out of the ground smoothly while the building grows, with dust around it, and sinks back into the ground when the building
 /// is sold. A green cross turns over a building under repair. A destroyed building (M4 step 9) leaves a dark slab of rubble on its
-/// footprint, with a puff of dust, until another building stands on those cells.
+/// footprint, with a puff of dust, until another building stands on those cells. A yellow bolt blinks over a defense off for want of
+/// power (M4 step 10, <see cref="Defenses.IsOnline"/>).
 /// </summary>
 public partial class PlayerBuildings : Node3D
 {
@@ -24,6 +26,7 @@ public partial class PlayerBuildings : Node3D
     private static readonly Color Pad = new(0.95f, 0.8f, 0.15f);
     private static readonly Color RepairColor = new(0.3f, 0.95f, 0.35f);
     private static readonly Color RubbleColor = new(0.17f, 0.16f, 0.15f);
+    private static readonly Color BoltColor = new(1f, 0.85f, 0.1f);
 
     private readonly Dictionary<EntityId, View> _views = new();
     private readonly List<View> _sinking = [];
@@ -78,6 +81,7 @@ public partial class PlayerBuildings : Node3D
             view.Body.Scale = new Vector3(1f, view.Rise(growth), 1f);
             view.Dust.Emitting = growth < 1f;
             view.Repair.Visible = building.Repairing;
+            view.Unpowered.Visible = !Defenses.IsOnline(world, building) && (int)(_time * 2.5) % 2 == 0;
             view.Repair.Rotation = new Vector3(0, (float)(_time * 2.5), 0);
         }
 
@@ -129,6 +133,7 @@ public partial class PlayerBuildings : Node3D
             view.SinkLeft = SinkSeconds;
             view.Dust.Emitting = true;
             view.Repair.Visible = false;
+            view.Unpowered.Visible = false;
             _sinking.Add(view);
         }
         else if (simEvent is BuildingDestroyed destroyed && _views.Remove(destroyed.Building, out var fallen) && _host is not null)
@@ -208,10 +213,17 @@ public partial class PlayerBuildings : Node3D
         Box(repair, new Vector3(0.15f, 0.5f, 0.15f), Vector3.Zero, RepairColor);
         root.AddChild(repair);
 
+        // A zigzag of three bars: the "no power" bolt of RA2, over the building.
+        var unpowered = new Node3D { Position = new Vector3(0, Sink + shape.Height + 0.9f, 0), Visible = false };
+        Box(unpowered, new Vector3(0.12f, 0.35f, 0.12f), new Vector3(0.08f, 0.22f, 0), BoltColor);
+        Box(unpowered, new Vector3(0.3f, 0.1f, 0.12f), Vector3.Zero, BoltColor);
+        Box(unpowered, new Vector3(0.12f, 0.35f, 0.12f), new Vector3(-0.08f, -0.22f, 0), BoltColor);
+        root.AddChild(unpowered);
+
         var dust = Dust(building.Width, building.Height);
         dust.Position = new Vector3(0, Sink + 0.1f, 0);
         root.AddChild(dust);
-        return new View(building, root, body, dust, repair, Sink / full);
+        return new View(building, root, body, dust, repair, unpowered, Sink / full);
     }
 
     /// <summary>Grey dust round the footprint while a building rises or sinks: small cubes that fly up and fade.</summary>
@@ -258,7 +270,7 @@ public partial class PlayerBuildings : Node3D
         }
     }
 
-    private sealed class View(Building source, Node3D root, Node3D body, CpuParticles3D dust, Node3D repair, float buried)
+    private sealed class View(Building source, Node3D root, Node3D body, CpuParticles3D dust, Node3D repair, Node3D unpowered, float buried)
     {
         /// <summary>The scale of the body for a share grown: from the ground (the buried foot) up to the full height.</summary>
         public float Rise(float growth) => Mathf.Max(0.01f, buried + (1f - buried) * growth);
@@ -272,6 +284,8 @@ public partial class PlayerBuildings : Node3D
         public CpuParticles3D Dust { get; } = dust;
 
         public Node3D Repair { get; } = repair;
+
+        public Node3D Unpowered { get; } = unpowered;
 
         public float SinkLeft { get; set; }
     }

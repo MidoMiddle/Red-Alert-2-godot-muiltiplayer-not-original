@@ -97,7 +97,7 @@ public static class DamageSystem
 
     /// <summary>A wall takes damage only from a warhead that damages walls.</summary>
     private static bool Hurts(Entity entity, WarheadDef warhead) =>
-        warhead.WallDamage || entity is not Building { Def.ExtendsBase: false };
+        warhead.WallDamage || entity is not Building { Def.Wall: true };
 
     /// <summary>
     /// The armor number of a unit or a building of a player. A building of the map has no armor in the data yet (M3 step 14a): it counts as
