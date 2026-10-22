@@ -10,6 +10,9 @@ namespace Rts.Simulation.World;
 /// <param name="Speed">Movement speed, leptons per tick.</param>
 /// <param name="TurnRate">Turn speed, <c>BAngle</c> units per tick; 0 turns instantly, like RA2 infantry.</param>
 /// <param name="Sight">Base sight radius in cells; height adds to it (see <c>Visibility.SightRules</c>).</param>
+/// <param name="HarvestCapacity">Credits of ore the unit carries when full; 0 for a unit that does not harvest (M3 step 10).</param>
+/// <param name="HarvestTime">Ticks to take one stage of ore off a cell.</param>
+/// <param name="UnloadRate">Credits unloaded per tick at a dock.</param>
 public sealed record UnitArchetype(
     UnitType Type,
     string Id,
@@ -19,4 +22,11 @@ public sealed record UnitArchetype(
     int Speed,
     int TurnRate,
     bool HasTurret,
-    int Sight);
+    int Sight,
+    int HarvestCapacity = 0,
+    int HarvestTime = 0,
+    int UnloadRate = 0)
+{
+    /// <summary>True for a unit that gathers ore.</summary>
+    public bool Harvests => HarvestCapacity > 0;
+}

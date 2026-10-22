@@ -27,7 +27,7 @@ public static class CommandProcessor
             return false;
         }
 
-        return command switch
+        var applied = command switch
         {
             SpawnTestUnitCommand spawn => ApplySpawn(world, spawn, events),
             MoveCommand move => ApplyRoute(world, move, [move.Target], loop: false, move.Queue, attackMove: false, events),
@@ -43,8 +43,79 @@ public static class CommandProcessor
             PauseProductionCommand pause => ApplyPause(world, pause),
             CancelProductionCommand cancel => ApplyCancel(world, cancel, events),
             SetRallyPointCommand rally => ApplyRallyPoint(world, rally),
+            HarvestCommand harvest => ApplyHarvest(world, harvest),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
+        if (applied && command is UnitsCommand { Type: not CommandType.Harvest } order)
+        {
+            HarvestersFollow(world, order);
+        }
+
+        return applied;
+    }
+
+    /// <summary>The player's harvesters among the units work the field at the cell from now on (4.13).</summary>
+    private static bool ApplyHarvest(GameWorld world, HarvestCommand command)
+    {
+        if (!world.Map.Contains(command.Cell))
+        {
+            return false;
+        }
+
+        var any = false;
+        foreach (var unit in OwnUnits(world, command))
+        {
+            if (unit.Harvester is { } harvester)
+            {
+                harvester.Field = command.Cell;
+                harvester.Target = null;
+                harvester.Refinery = EntityId.None;
+                harvester.Preferred = EntityId.None;
+                harvester.Mode = HarvesterMode.SeekOre;
+                any = true;
+            }
+        }
+
+        return any;
+    }
+
+    /// <summary>
+    /// A harvester given another order leaves its work: sent onto one of the player's refineries with a load, it unloads there;
+    /// otherwise it follows the order and goes back to work by itself after <see cref="Systems.HarvesterSystem.ManualTicks"/>
+    /// (decision 3 of the M3 plan).
+    /// </summary>
+    private static void HarvestersFollow(GameWorld world, UnitsCommand command)
+    {
+        var target = command switch
+        {
+            MoveCommand move => move.Target,
+            AttackMoveCommand attack => attack.Target,
+            _ => (WorldPos?)null,
+        };
+        var refinery = target is { } point && world.Contains(point) && world.BuildingAt(point.ToCell()) is { IsAlive: true, Def.DockCell: not null } building
+            && building.Owner == command.Player
+            ? building
+            : null;
+        foreach (var unit in OwnUnits(world, command))
+        {
+            if (unit.Harvester is not { } harvester)
+            {
+                continue;
+            }
+
+            harvester.Target = null;
+            harvester.Refinery = EntityId.None;
+            if (refinery is not null && harvester.Load > 0)
+            {
+                harvester.Preferred = refinery.Id;
+                harvester.Mode = HarvesterMode.SeekRefinery;
+            }
+            else
+            {
+                harvester.Mode = HarvesterMode.Manual;
+                harvester.WaitTicks = Systems.HarvesterSystem.ManualTicks;
+            }
+        }
     }
 
     private static bool IsPlayablePlayer(PlayerId player) => player.Value >= 1 && player.Value <= PlayerId.MaxPlayers;

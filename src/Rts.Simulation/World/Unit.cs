@@ -17,7 +17,11 @@ public sealed class Unit : Entity
         Position = position;
         Speed = archetype.Speed;
         TurnRate = archetype.TurnRate;
+        Harvester = archetype.Harvests ? new Harvester() : null;
     }
+
+    /// <summary>The work of a unit that gathers ore (M3 step 10); null for every other unit.</summary>
+    public Harvester? Harvester { get; }
 
     /// <summary>Rules of the unit's type. Only <see cref="UnitArchetype.Type"/> is state; the rest is fixed data.</summary>
     public UnitArchetype Archetype { get; }

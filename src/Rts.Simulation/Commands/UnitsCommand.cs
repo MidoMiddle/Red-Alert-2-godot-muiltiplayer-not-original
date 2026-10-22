@@ -116,3 +116,13 @@ public sealed record WaypointsCommand : UnitsCommand
         return hash;
     }
 }
+
+/// <summary>
+/// The harvesters among the units go to work the ore field at <paramref name="Cell"/> (docs/implementation/M3_base_economy.md, 4.13):
+/// their searches start there from now on. Other units ignore it.
+/// </summary>
+public sealed record HarvestCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, CellPos Cell)
+    : UnitsCommand(Player, ExecuteTick, Sequence, Units)
+{
+    public override CommandType Type => CommandType.Harvest;
+}

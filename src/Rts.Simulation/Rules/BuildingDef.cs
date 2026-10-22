@@ -36,6 +36,9 @@ public sealed record BuildingDef : IDefinition
     /// <summary>Where a factory releases its units, relative to the north-west cell of the footprint.</summary>
     public CellPos? ExitCell { get; init; }
 
+    /// <summary>Where a harvester stands to unload, relative to the north-west cell (M3 step 10); null for a building without a dock.</summary>
+    public CellPos? DockCell { get; init; }
+
     /// <summary>What the building produces (RA2 <c>Factory</c>): the construction yard buildings and defenses, barracks infantry.</summary>
     public ImmutableArray<ProductionCategory> Produces { get; init; } = ImmutableArray<ProductionCategory>.Empty;
 

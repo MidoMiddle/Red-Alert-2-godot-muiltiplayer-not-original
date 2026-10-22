@@ -18,12 +18,12 @@ internal static class DefinitionReader
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
-        "placement", "turret", "prerequisites", "weapons", "model", "icon",
+        "placement", "turret", "prerequisites", "weapons", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
     ];
 
     private static readonly string[] BuildingKeys =
     [
-        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces",
+        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell",
         "prerequisites", "model", "icon",
     ];
 
@@ -75,6 +75,9 @@ internal static class DefinitionReader
             Weapons = fields.Optional("weapons", Scalars.IdList, ImmutableArray<string>.Empty),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
+            HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
+            HarvestTime = fields.Optional("harvest_time", Scalars.Ticks, 0),
+            UnloadRate = fields.Optional("unload_rate", Scalars.Int, 0),
         };
     }
 
@@ -94,6 +97,7 @@ internal static class DefinitionReader
             Power = fields.Optional("power", Scalars.Int, 0),
             BuildUp = fields.Optional("build_up", Scalars.Ticks, 0),
             ExitCell = fields.Maybe("exit_cell", Scalars.Cell),
+            DockCell = fields.Maybe("dock_cell", Scalars.Cell),
             Adjacent = fields.Optional("adjacent", Scalars.Int, BuildingDef.DefaultAdjacent),
             ExtendsBase = fields.Optional("extends_base", Scalars.Flag, true),
             Produces = fields.Optional("produces", CategoriesOf, ImmutableArray<ProductionCategory>.Empty),

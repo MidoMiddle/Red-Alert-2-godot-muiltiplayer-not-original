@@ -71,7 +71,12 @@ internal static class TestRules
         Infantry(builder, UnitType.Rocketeer, sight: 5);
         Infantry(builder, UnitType.Engineer, sight: 4);
         Vehicle(builder, UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6);
-        Vehicle(builder, UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4, "war_factory", "refinery");
+        builder.Add(VehicleDef(UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4, "war_factory", "refinery") with
+        {
+            HarvestCapacity = 1000,
+            HarvestTime = 12,
+            UnloadRate = 50,
+        });
         Vehicle(builder, UnitType.SupportVehicle, Locomotor.Wheel, speed: 48, turret: true, sight: 8);
         Vehicle(builder, UnitType.HeavyTank, Locomotor.Track, speed: 36, turret: true, sight: 8);
         Vehicle(builder, UnitType.TeslaTank, Locomotor.Track, speed: 36, turret: true, sight: 8, "war_factory", "tech_center");
@@ -79,7 +84,7 @@ internal static class TestRules
         // The buildings of docs/implementation/M3_base_economy.md, 4.6: id, footprint, power, prerequisites.
         builder.Add(Def("construction_yard", 3, 3, power: 0) with { Produces = [ProductionCategory.Building, ProductionCategory.Defense] });
         Building(builder, "reactor", 2, 2, power: 150, "construction_yard");
-        Building(builder, "refinery", 3, 3, power: -50, "reactor");
+        builder.Add(Def("refinery", 3, 3, power: -50, "reactor") with { DockCell = new CellPos(1, 3) });
         builder.Add(Def("barracks", 2, 2, power: -20, "reactor") with
         {
             Produces = [ProductionCategory.Infantry],
@@ -154,9 +159,12 @@ internal static class TestRules
 
     private static void Vehicle(
         RulesBuilder builder, UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
-        builder.Add(Unit(
+        builder.Add(VehicleDef(type, locomotor, speed, turret, sight, prerequisites));
+
+    private static UnitDef VehicleDef(UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
+        Unit(
             type, UnitCategory.Vehicle, locomotor, UnitPlacement.Cell, speed, turnRate: 2048, turret, sight,
-            prerequisites.Length > 0 ? prerequisites : ["war_factory"]));
+            prerequisites.Length > 0 ? prerequisites : ["war_factory"]);
 
     private static UnitDef Unit(
         UnitType type, UnitCategory category, Locomotor locomotor, UnitPlacement placement, int speed, int turnRate, bool turret, int sight,

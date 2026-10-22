@@ -145,7 +145,7 @@ public static class ProductionSystem
     /// that nobody stands in, other than the exit: units that came out before may stand at the point, and a unit sent to its own cell
     /// would stay in the exit and close the factory. Null when there is none.
     /// </summary>
-    private static CellPos? FreeCellNear(GameWorld world, CellPos point, CellPos exit, UnitArchetype archetype)
+    internal static CellPos? FreeCellNear(GameWorld world, CellPos point, CellPos exit, UnitArchetype archetype)
     {
         for (var ring = 0; ring <= 8; ring++)
         {

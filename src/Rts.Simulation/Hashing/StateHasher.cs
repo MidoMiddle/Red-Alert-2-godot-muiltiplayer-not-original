@@ -67,6 +67,30 @@ public static class StateHasher
         return hash.Value;
     }
 
+    private static void AddHarvester(Fnv1a64 hash, Harvester harvester)
+    {
+        hash.Add((byte)harvester.Mode);
+        AddCell(hash, harvester.Field);
+        AddCell(hash, harvester.Target);
+        hash.Add(harvester.Refinery.Value);
+        hash.Add(harvester.Preferred.Value);
+        hash.Add(harvester.Load);
+        hash.Add(harvester.Timer);
+        hash.Add(harvester.WaitTicks);
+        hash.Add(harvester.WaitingForRefinery);
+        hash.Add(harvester.QueueTick);
+    }
+
+    private static void AddCell(Fnv1a64 hash, Geometry.CellPos? cell)
+    {
+        hash.Add(cell.HasValue);
+        if (cell is { } value)
+        {
+            hash.Add(value.X);
+            hash.Add(value.Y);
+        }
+    }
+
     private static void AddEntity(Fnv1a64 hash, Entity entity)
     {
         switch (entity)
@@ -112,6 +136,14 @@ public static class StateHasher
                     hash.Add(resume.X);
                     hash.Add(resume.Y);
                 }
+
+                // Rules v23 (M3 step 10): the work of a harvester.
+                hash.Add(unit.Harvester is not null);
+                if (unit.Harvester is { } harvester)
+                {
+                    AddHarvester(hash, harvester);
+                }
+
                 break;
 
             case Building building:

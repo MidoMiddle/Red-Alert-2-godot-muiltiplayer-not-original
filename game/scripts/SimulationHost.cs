@@ -245,8 +245,27 @@ public partial class SimulationHost : Node
     /// Orders the given units to move; <paramref name="queue"/> adds the point to the end of their routes. Units that are dead
     /// or not the player's are left out, here and in the other orders.
     /// </summary>
-    public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target, bool queue = false) =>
-        IssueTo(units, ordered => new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, queue));
+    /// <summary>
+    /// A move order. Onto ore (M3 step 10), the selected harvesters go to work that field instead, and the others move.
+    /// </summary>
+    public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target, bool queue = false)
+    {
+        var world = Simulation.World;
+        var cell = target.ToCell();
+        var harvesters = world.Map.OreAt(cell).IsEmpty
+            ? []
+            : units.Where(id => world.TryGet(id, out var entity) && entity is Unit { Harvester: not null }).ToList();
+        if (harvesters.Count > 0)
+        {
+            IssueTo(harvesters, ordered => new HarvestCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, cell));
+            units = units.Except(harvesters).ToList();
+        }
+
+        if (units.Count > 0)
+        {
+            IssueTo(units, ordered => new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, queue));
+        }
+    }
 
     public void IssueAttackMove(IReadOnlyList<EntityId> units, WorldPos target) =>
         IssueTo(units, ordered => new AttackMoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
@@ -505,9 +524,21 @@ public partial class SimulationHost : Node
             ProductionCancelled cancelled when cancelled.Player == LocalPlayer =>
                 $"cancelled {ProductionRules.IdOf(Data.Database, cancelled.Kind, cancelled.DefIndex)}, {cancelled.Refund} back",
             LowPower low when low.Player == LocalPlayer => "LOW POWER",
+            HarvesterUnloading unloading when Simulation.World.TryGet(unloading.Harvester, out var harvester) && harvester.Owner == LocalPlayer =>
+                "harvester unloading",
+            OreDepleted depleted when Simulation.CurrentTick - _lastDepletedNotice >= 75 => DepletedNotice(),
             PowerRestored restored when restored.Player == LocalPlayer => "power restored",
             _ => null,
         };
+    }
+
+    // The tick of the last "ore field depleted" notice: cells empty one after another, the notice comes once in 5 seconds at most.
+    private int _lastDepletedNotice = -1000;
+
+    private string DepletedNotice()
+    {
+        _lastDepletedNotice = Simulation.CurrentTick;
+        return "a cell of ore is depleted";
     }
 
     private static string ProblemText(PlacementProblem problem) => problem switch

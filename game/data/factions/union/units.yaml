@@ -51,6 +51,10 @@ harvester:  # War Miner
   hp: 1000
   speed: 24
   sight: 4
+  # Carries 1000 credits of ore (40 stages), takes a stage in 0.8 s and unloads 50 credits a tick.
+  harvest_capacity: 1000
+  harvest_time: 0.8s
+  unload_rate: 50
   prerequisites: [war_factory, refinery]
 
 support_vehicle:  # Flak Track

@@ -110,6 +110,8 @@ public sealed class CommandSerializerTests
         new PauseProductionCommand(new PlayerId(3), 8, 1, ProductionKind.Unit, 2),
         new CancelProductionCommand(new PlayerId(3), 8, 2, ProductionKind.Building, 7),
         new SetRallyPointCommand(new PlayerId(5), 1, 1, new EntityId(33), new WorldPos(-4, 9000)),
+        new HarvestCommand(new PlayerId(2), 4, 4, [new EntityId(3), new EntityId(9)], new CellPos(17, -2)),
+        new HarvestCommand(new PlayerId(2), 4, 5, [], new CellPos(0, 0)),
     };
 
     [Theory]

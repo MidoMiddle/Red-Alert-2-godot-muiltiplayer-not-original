@@ -81,3 +81,9 @@ public sealed record InsufficientFunds(int Tick, PlayerId Player, Rules.Producti
 
 /// <summary>An item left its queue, and <paramref name="Refund"/> credits, all that was paid for it, went back.</summary>
 public sealed record ProductionCancelled(int Tick, PlayerId Player, ProductionKind Kind, int DefIndex, int Refund) : SimEvent(Tick);
+
+/// <summary>A harvester took the last stage of ore off <paramref name="Cell"/> (docs/implementation/M3_base_economy.md, 4.13).</summary>
+public sealed record OreDepleted(int Tick, CellPos Cell) : SimEvent(Tick);
+
+/// <summary>A harvester stands in the dock of <paramref name="Refinery"/> and starts to unload.</summary>
+public sealed record HarvesterUnloading(int Tick, EntityId Harvester, EntityId Refinery) : SimEvent(Tick);

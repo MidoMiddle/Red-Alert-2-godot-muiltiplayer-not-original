@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0x819d6c216c20ebdcUL, GameDataFiles.Current.Hash);
+        Assert.Equal(0x3d1d4af4ab980808UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -134,6 +134,18 @@ public sealed class GameDataTests
         var error = Assert.Single(ErrorsWith("factions/union/buildings.yaml", text, replacement));
 
         Assert.Contains(reason, error.Reason);
+    }
+
+    [Theory]
+    [InlineData("factions/union/units.yaml", "  harvest_capacity: 1000\n", "", "'harvester' is the harvester of 'union', so it needs a harvest_capacity")]
+    [InlineData("factions/union/buildings.yaml", "  dock_cell: [1, 3]\n", "", "'refinery' is the refinery of 'union', so it needs a dock_cell")]
+    [InlineData("factions/union/buildings.yaml", "dock_cell: [1, 3]", "dock_cell: [1, 9]", "the dock cell [1, 9] of 'refinery' must be in its footprint or next to it")]
+    [InlineData("factions/union/units.yaml", "unload_rate: 50", "unload_rate: 0", "'unload_rate' of 'harvester' must be above zero")]
+    public void The_harvester_and_the_refinery_need_their_keys(string fileName, string text, string replacement, string reason)
+    {
+        var error = Assert.Single(ErrorsWith(fileName, text, replacement));
+
+        Assert.Equal(reason, error.Reason);
     }
 
     [Fact]

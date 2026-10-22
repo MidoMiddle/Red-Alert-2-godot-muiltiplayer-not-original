@@ -47,6 +47,15 @@ public sealed record UnitDef : IDefinition
 
     public ImmutableArray<string> Prerequisites { get; init; } = ImmutableArray<string>.Empty;
 
+    /// <summary>Credits of ore the unit carries when full (M3 step 10); 0 for a unit that does not harvest.</summary>
+    public int HarvestCapacity { get; init; }
+
+    /// <summary>Ticks to take one stage of ore off a cell.</summary>
+    public int HarvestTime { get; init; }
+
+    /// <summary>Credits the unit unloads per tick at the dock of a refinery.</summary>
+    public int UnloadRate { get; init; }
+
     /// <summary>Ids of the weapons; they do damage from M4 on.</summary>
     public ImmutableArray<string> Weapons { get; init; } = ImmutableArray<string>.Empty;
 

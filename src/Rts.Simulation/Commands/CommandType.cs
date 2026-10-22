@@ -18,4 +18,5 @@ public enum CommandType : byte
     PauseProduction = 11,
     CancelProduction = 12,
     SetRallyPoint = 13,
+    Harvest = 14,
 }

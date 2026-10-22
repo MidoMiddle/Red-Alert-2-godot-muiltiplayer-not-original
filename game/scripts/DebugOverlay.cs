@@ -72,6 +72,8 @@ public partial class DebugOverlay : CanvasLayer
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
             (_cellOverlay is null ? "" : _cellOverlay.Description + "\n") +
             $"selected {_input.Selection.Units.Count}   " + UnitStateText.Describe(SelectedUnit(simulation.World)) +
+            (SelectedUnit(simulation.World) is { Harvester: { } harvester } carrier
+                ? $" · harvester {harvester.Mode} {harvester.Load}/{carrier.Archetype.HarvestCapacity}" : "") +
             (SelectedUnit(simulation.World) is { } selected ? " · " + UnitStateText.DescribeSight(selected, simulation.World.Map) : "") + "\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
@@ -154,6 +156,10 @@ public partial class DebugOverlay : CanvasLayer
         {
             var (id, maxHp) = building.Def is { } def ? (def.Id, def.Hp) : (building.Type.Id, building.Type.MaxHp);
             land += $" + {id} {building.Hp}/{maxHp} ({building.Owner})" + (building.IsReady ? "" : $" growing {building.BuildUpPermille / 10}%");
+            if (building.Def?.DockCell is not null)
+            {
+                land += Rts.Simulation.Systems.HarvesterSystem.DockFree(world, building) ? " · dock free" : " · dock busy";
+            }
         }
 
         // Ore (M3 step 9): "ore 7 · 200 cr", "gems 3 · 200 cr".

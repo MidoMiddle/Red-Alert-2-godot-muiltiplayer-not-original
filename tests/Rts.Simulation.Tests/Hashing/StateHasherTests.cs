@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "credits", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage",
+        "credits", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode",
     };
 
     [Theory]
@@ -115,6 +115,18 @@ public sealed class StateHasherTests
             case "order index": idle.OrderIndex = 1; break;
             case "loop": idle.LoopOrders = true; break;
             case "credits": world.Player(Player1).Credits--; break;
+            case "harvester load":
+                var carrier = world.SpawnForTest(Player1, new WorldPos(2000, 2000), speed: 0, UnitType.Harvester);
+                var empty = StateHasher.Compute(world);
+                carrier.Harvester!.Load = 25;
+                Assert.NotEqual(empty, StateHasher.Compute(world));
+                break;
+            case "harvester mode":
+                var miner = world.SpawnForTest(Player1, new WorldPos(2000, 2000), speed: 0, UnitType.Harvester);
+                var seeking = StateHasher.Compute(world);
+                miner.Harvester!.Mode = HarvesterMode.Waiting;
+                Assert.NotEqual(seeking, StateHasher.Compute(world));
+                break;
             case "ore": world.Map.SetOre(new CellPos(5, 5), new OreCell(OreKind.Ore, 0)); break;
             case "ore stage":
                 world.Map.SetOre(new CellPos(5, 5), new OreCell(OreKind.Ore, 3));
@@ -165,7 +177,7 @@ public sealed class StateHasherTests
     [InlineData(typeof(Entity), new[] { "<Id>k__BackingField", "<Owner>k__BackingField", "<IsAlive>k__BackingField" })]
     [InlineData(typeof(Unit), new[]
     {
-        "<Archetype>k__BackingField", "<Position>k__BackingField", "<MoveTarget>k__BackingField", "<Speed>k__BackingField",
+        "<Archetype>k__BackingField", "<Harvester>k__BackingField", "<Position>k__BackingField", "<MoveTarget>k__BackingField", "<Speed>k__BackingField",
         "<TurnRate>k__BackingField", "<Facing>k__BackingField", "<TurretFacing>k__BackingField",
         "<PathPending>k__BackingField", "<Path>k__BackingField", "<PathIndex>k__BackingField",
         "<WaitTicks>k__BackingField", "<Replans>k__BackingField", "<ResumeTarget>k__BackingField", "<HoldTicks>k__BackingField",
@@ -182,6 +194,14 @@ public sealed class StateHasherTests
         "<Rules>k__BackingField",
         // The players (M3 step 5): their credits are hashed; the marks that power and technologies need working out are derived.
         "_players", "<PowerDirty>k__BackingField", "<TechDirty>k__BackingField",
+    })]
+    [InlineData(typeof(Harvester), new[]
+    {
+        "<Mode>k__BackingField", "<Field>k__BackingField", "<Target>k__BackingField", "<Refinery>k__BackingField", "<Preferred>k__BackingField",
+        "<Load>k__BackingField", "<Timer>k__BackingField", "<WaitTicks>k__BackingField", "<WaitingForRefinery>k__BackingField",
+        "<QueueTick>k__BackingField",
+        // A counter for the tests that a harvester does not search every tick; not state.
+        "<Searches>k__BackingField",
     })]
     [InlineData(typeof(ProductionItem), new[]
     {

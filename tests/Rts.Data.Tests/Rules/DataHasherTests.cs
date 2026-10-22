@@ -101,6 +101,10 @@ public sealed class DataHasherTests
         ("building adjacent", Building(b => b with { Adjacent = b.Adjacent + 1 })),
         ("building extends base", Building(b => b with { ExtendsBase = false })),
         ("building produces", Building(b => b with { Produces = [ProductionCategory.Infantry] })),
+        ("building dock", Building(b => b with { DockCell = new CellPos(1, 4) })),
+        ("unit harvest capacity", Unit(u => u with { HarvestCapacity = 1 })),
+        ("unit harvest time", Unit(u => u with { HarvestTime = 1 })),
+        ("unit unload rate", Unit(u => u with { UnloadRate = 1 })),
         ("building exit x", Building(b => b with { ExitCell = new CellPos(2, 3) })),
         ("building exit y", Building(b => b with { ExitCell = new CellPos(1, 4) })),
         ("building no exit", Building(b => b with { ExitCell = null })),
@@ -115,8 +119,9 @@ public sealed class DataHasherTests
     public void The_hash_of_the_dataset_is_pinned()
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
-        // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records.
-        Assert.Equal(0xd4678379802e8592UL, Hash(Files()));
+        // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
+        // step 10: the harvest keys of units and the dock of buildings.
+        Assert.Equal(0xe117f930d67444d2UL, Hash(Files()));
     }
 
     [Fact]

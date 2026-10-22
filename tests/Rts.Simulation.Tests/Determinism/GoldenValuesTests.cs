@@ -195,11 +195,12 @@ public sealed class GoldenValuesTests
         // Rules v19 (M3 step 5): the hash covers the credits of the players; the states are the same.
         // Rules v21 (M3 step 8): the hash covers the production queues (empty here); the states are the same.
         // Rules v22 (M3 step 9): the map digest covers the ore (none here); the states are the same.
+        // Rules v23 (M3 step 10): the hash covers the work of the harvesters, which follow the orders of the scenario.
         StateChecksum[] expected =
         [
-            new(100, 0x02a2fdc561817268UL),
-            new(500, 0x4e2756d1dadb2c1eUL),
-            new(1000, 0x485a415f625d5a6eUL),
+            new(100, 0x4d1cbb5da6219d3eUL),
+            new(500, 0xa774a0c163dccdb4UL),
+            new(1000, 0xc06871f2b9b09a43UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -242,6 +243,7 @@ public sealed class GoldenValuesTests
         // Replay format v11, command format v5, rules v20 (M3 step 6): only the versions change; the scenario has no buildings.
         // Replay format v12, command format v6, rules v21 (M3 step 8): versions and checksums change.
         // Replay format v13, rules v22 (M3 step 9): versions and checksums change; no map, so no ore layer.
-        Assert.Equal((23377, 11880268674163219268UL), (bytes.Length, hash.Value));
+        // Replay format v14, command format v7, rules v23 (M3 step 10): versions and checksums change.
+        Assert.Equal((23377, 12623142371231342605UL), (bytes.Length, hash.Value));
     }
 }

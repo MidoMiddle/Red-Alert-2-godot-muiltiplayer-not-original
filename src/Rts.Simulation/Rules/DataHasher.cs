@@ -64,6 +64,9 @@ public static class DataHasher
             Add(hash, unit.Locomotor);
             hash.Add((byte)unit.Placement);
             hash.Add(unit.Turret);
+            hash.Add(unit.HarvestCapacity);
+            hash.Add(unit.HarvestTime);
+            hash.Add(unit.UnloadRate);
             Add(hash, unit.Prerequisites);
             Add(hash, unit.Weapons);
         }
@@ -81,6 +84,13 @@ public static class DataHasher
             hash.Add(building.Footprint.Height);
             hash.Add(building.Power);
             hash.Add(building.BuildUp);
+            hash.Add(building.DockCell.HasValue);
+            if (building.DockCell is { } dock)
+            {
+                hash.Add(dock.X);
+                hash.Add(dock.Y);
+            }
+
             hash.Add(building.Adjacent);
             hash.Add(building.ExtendsBase);
             hash.Add(building.Produces.Length);

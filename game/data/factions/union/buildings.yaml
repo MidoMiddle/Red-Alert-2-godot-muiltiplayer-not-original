@@ -33,6 +33,8 @@ refinery:  # Ore Refinery; gives a free harvester
   hp: 1000
   footprint: [3, 3]
   power: -50
+  # The harvesters unload standing under the middle of the refinery.
+  dock_cell: [1, 3]
   prerequisites: [reactor]
 
 barracks:  # Barracks

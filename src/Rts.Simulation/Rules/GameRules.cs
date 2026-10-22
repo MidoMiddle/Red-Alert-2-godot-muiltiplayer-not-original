@@ -91,7 +91,10 @@ public sealed class GameRules
                 unit.Speed,
                 unit.TurnRate,
                 unit.Turret,
-                unit.Sight);
+                unit.Sight,
+                unit.HarvestCapacity,
+                unit.HarvestTime,
+                unit.UnloadRate);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -127,6 +130,19 @@ public sealed class GameRules
         if (database.Factions.Length == 0)
         {
             problems.Add(new RulesProblem("", "", "the engine needs a faction for the players, and none is defined"));
+        }
+
+        foreach (var faction in database.Factions)
+        {
+            if (database.TryGetUnit(faction.Harvester, out var harvester) && harvester.HarvestCapacity <= 0)
+            {
+                problems.Add(new RulesProblem(harvester.Id, "harvest_capacity", $"'{harvester.Id}' is the harvester of '{faction.Id}', so it needs a harvest_capacity"));
+            }
+
+            if (database.TryGetBuilding(faction.Refinery, out var refinery) && refinery.DockCell is null)
+            {
+                problems.Add(new RulesProblem(refinery.Id, "", $"'{refinery.Id}' is the refinery of '{faction.Id}', so it needs a dock_cell"));
+            }
         }
 
         if (database.Economies.Length != 1)

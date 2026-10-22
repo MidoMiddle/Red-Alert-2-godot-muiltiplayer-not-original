@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v6, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v7, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -25,16 +25,17 @@ namespace Rts.Simulation.Commands;
 /// Produce:       u8 kind | u16 defIndex | u8 count
 /// PauseProduction, CancelProduction: u8 kind | u16 defIndex
 /// SetRallyPoint: i32 building | i32 x | i32 y
+/// Harvest:       units | i32 cellX | i32 cellY
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
 /// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy; v6 (M3 step 8) added Produce, PauseProduction,
-/// CancelProduction and SetRallyPoint.
+/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 6;
+    public const int FormatVersion = 7;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -57,6 +58,7 @@ public static class CommandSerializer
         ProduceCommand => HeaderSize + ProductSize + 1,
         PauseProductionCommand or CancelProductionCommand => HeaderSize + ProductSize,
         SetRallyPointCommand => HeaderSize + 4 + PositionSize,
+        HarvestCommand harvest => HeaderSize + UnitsSize(harvest) + PositionSize,
         _ => throw UnknownCommand(command),
     };
 
@@ -139,6 +141,11 @@ public static class CommandSerializer
             case SetRallyPointCommand rally:
                 BinaryPrimitives.WriteInt32LittleEndian(payload, rally.Building.Value);
                 WritePosition(payload[4..], rally.Point);
+                break;
+            case HarvestCommand harvest:
+                var unitsEnd = WriteUnits(payload, harvest);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[unitsEnd..], harvest.Cell.X);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[(unitsEnd + 4)..], harvest.Cell.Y);
                 break;
         }
 
@@ -254,6 +261,16 @@ public static class CommandSerializer
                 return type == CommandType.PauseProduction
                     ? new PauseProductionCommand(player, tick, sequence, (ProductionKind)payload[0], ReadIndex(payload))
                     : new CancelProductionCommand(player, tick, sequence, (ProductionKind)payload[0], ReadIndex(payload));
+            }
+
+            case CommandType.Harvest:
+            {
+                var units = ReadUnits(payload, out var unitsSize);
+                Require(payload, unitsSize + PositionSize);
+                bytesRead = HeaderSize + unitsSize + PositionSize;
+                var cell = new CellPos(
+                    BinaryPrimitives.ReadInt32LittleEndian(payload[unitsSize..]), BinaryPrimitives.ReadInt32LittleEndian(payload[(unitsSize + 4)..]));
+                return new HarvestCommand(player, tick, sequence, units, cell);
             }
 
             case CommandType.SetRallyPoint:

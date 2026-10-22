@@ -87,6 +87,12 @@ internal static class RulesValidator
             NotNegative(unit.Id, "speed", unit.Speed);
             NotNegative(unit.Id, "turn_rate", unit.TurnRate);
             NotNegative(unit.Id, "sight", unit.Sight);
+            NotNegative(unit.Id, "harvest_capacity", unit.HarvestCapacity);
+            if (unit.HarvestCapacity > 0)
+            {
+                Positive(unit.Id, "harvest_time", unit.HarvestTime);
+                Positive(unit.Id, "unload_rate", unit.UnloadRate);
+            }
             FactionOf(unit.Id, unit.Faction);
             if (!rules.TryGetLocomotor(unit.Locomotor, out _))
             {
@@ -129,6 +135,14 @@ internal static class RulesValidator
                     building.Id,
                     "exit_cell",
                     $"the exit cell [{exit.X}, {exit.Y}] of '{building.Id}' must be in its footprint or next to it");
+            }
+
+            if (building.DockCell is { } dock && (dock.X < -1 || dock.X > width || dock.Y < -1 || dock.Y > height))
+            {
+                Error(
+                    building.Id,
+                    "dock_cell",
+                    $"the dock cell [{dock.X}, {dock.Y}] of '{building.Id}' must be in its footprint or next to it");
             }
 
             FactionOf(building.Id, building.Faction);
