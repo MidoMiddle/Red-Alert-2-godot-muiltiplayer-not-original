@@ -7,6 +7,7 @@ conscript:  # Conscript
   cost: 100
   build_time: 4.2s
   hp: 125
+  threat: 10
   armor: flak
   primary: conscript_rifle
   sight: 5
@@ -19,6 +20,7 @@ rocketeer:  # Flak Trooper
   cost: 300
   build_time: 12.6s
   hp: 100
+  threat: 15
   primary: rocketeer_rocket
   sight: 5
 
@@ -30,6 +32,7 @@ engineer:  # Engineer
   cost: 500
   build_time: 21s
   hp: 75
+  threat: 5
   sight: 4
 
 mcv:  # MCV
@@ -40,6 +43,7 @@ mcv:  # MCV
   cost: 3000
   build_time: 126s
   hp: 1000
+  threat: 5
   speed: 24
   sight: 6
   turret: false
@@ -52,6 +56,7 @@ harvester:  # War Miner
   cost: 1400
   build_time: 58.8s
   hp: 1000
+  threat: 5
   armor: medium
   primary: harvester_machine_gun
   speed: 24
@@ -70,6 +75,7 @@ support_vehicle:  # Flak Track
   cost: 500
   build_time: 21s
   hp: 180
+  threat: 15
   primary: flak_track_gun
   secondary: flak_track_aa_gun
   locomotor: wheel
@@ -84,6 +90,7 @@ heavy_tank:  # Rhino Tank
   cost: 900
   build_time: 37.8s
   hp: 400
+  threat: 30
   primary: heavy_tank_cannon
   speed: 36
   sight: 8
@@ -96,6 +103,7 @@ tesla_tank:  # Tesla Tank
   cost: 1200
   build_time: 50.4s
   hp: 300
+  threat: 35
   primary: tesla_tank_bolt
   speed: 36
   sight: 8

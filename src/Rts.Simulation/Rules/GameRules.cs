@@ -118,7 +118,8 @@ public sealed class GameRules
                 IntMath.Max(0, database.IndexOfArmor(unit.Armor)),
                 unit.TurretTurnRate ?? unit.TurnRate,
                 database.IndexOfWeapon(unit.Primary),
-                database.IndexOfWeapon(unit.Secondary));
+                database.IndexOfWeapon(unit.Secondary),
+                unit.Threat);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];

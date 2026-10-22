@@ -125,10 +125,10 @@ internal static class TestRules
         }
 
         // Speed in leptons per tick, turn rate in BAngle units per tick, sight in cells: the M2 values of each type.
-        builder.Add(InfantryDef(UnitType.Conscript, sight: 5) with { Armor = "flak", Primary = "conscript_rifle" });
-        builder.Add(InfantryDef(UnitType.Rocketeer, sight: 5) with { Primary = "rocketeer_rocket" });
-        builder.Add(InfantryDef(UnitType.Engineer, sight: 4));
-        Vehicle(builder, UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6);
+        builder.Add(InfantryDef(UnitType.Conscript, sight: 5) with { Armor = "flak", Primary = "conscript_rifle", Threat = 10 });
+        builder.Add(InfantryDef(UnitType.Rocketeer, sight: 5) with { Primary = "rocketeer_rocket", Threat = 15 });
+        builder.Add(InfantryDef(UnitType.Engineer, sight: 4) with { Threat = 5 });
+        builder.Add(VehicleDef(UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6) with { Threat = 5 });
         builder.Add(VehicleDef(UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4, "war_factory", "refinery") with
         {
             HarvestCapacity = 1000,
@@ -136,16 +136,19 @@ internal static class TestRules
             UnloadRate = 50,
             Armor = "medium",
             Primary = "harvester_machine_gun",
+            Threat = 5,
         });
         builder.Add(VehicleDef(UnitType.SupportVehicle, Locomotor.Wheel, speed: 48, turret: true, sight: 8) with
         {
             Primary = "flak_track_gun",
             Secondary = "flak_track_aa_gun",
+            Threat = 15,
         });
-        builder.Add(VehicleDef(UnitType.HeavyTank, Locomotor.Track, speed: 36, turret: true, sight: 8) with { Primary = "heavy_tank_cannon" });
+        builder.Add(VehicleDef(UnitType.HeavyTank, Locomotor.Track, speed: 36, turret: true, sight: 8) with { Primary = "heavy_tank_cannon", Threat = 30 });
         builder.Add(VehicleDef(UnitType.TeslaTank, Locomotor.Track, speed: 36, turret: true, sight: 8, "war_factory", "tech_center") with
         {
             Primary = "tesla_tank_bolt",
+            Threat = 35,
         });
         Combat(builder);
 
@@ -176,9 +179,9 @@ internal static class TestRules
             Category = ProductionCategory.Defense,
             Armor = "concrete",
         });
-        builder.Add(Defense("sentry_bunker", 1, 1, power: 0, "sentry_machine_gun", "barracks"));
-        builder.Add(Defense("tesla_coil", 2, 2, power: -75, "tesla_coil_bolt", "radar"));
-        builder.Add(Defense("flak_cannon", 2, 2, power: -50, "flak_cannon_gun", "radar"));
+        builder.Add(Defense("sentry_bunker", 1, 1, power: 0, "sentry_machine_gun", "barracks") with { Threat = 20 });
+        builder.Add(Defense("tesla_coil", 2, 2, power: -75, "tesla_coil_bolt", "radar") with { Threat = 40 });
+        builder.Add(Defense("flak_cannon", 2, 2, power: -50, "flak_cannon_gun", "radar") with { Threat = 10 });
         builder.Add(new EconomyDef
         {
             Id = "economy",
@@ -325,10 +328,6 @@ internal static class TestRules
         {
             Armor = "none",
         };
-
-    private static void Vehicle(
-        RulesBuilder builder, UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
-        builder.Add(VehicleDef(type, locomotor, speed, turret, sight, prerequisites));
 
     private static UnitDef VehicleDef(UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
         Unit(

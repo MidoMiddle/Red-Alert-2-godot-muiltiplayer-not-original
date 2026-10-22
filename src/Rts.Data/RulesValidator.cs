@@ -98,6 +98,7 @@ internal static class RulesValidator
             NotNegative(unit.Id, "speed", unit.Speed);
             NotNegative(unit.Id, "turn_rate", unit.TurnRate);
             NotNegative(unit.Id, "turret_turn_rate", unit.TurretTurnRate ?? 0);
+            NotNegative(unit.Id, "threat", unit.Threat);
             NotNegative(unit.Id, "sight", unit.Sight);
             NotNegative(unit.Id, "harvest_capacity", unit.HarvestCapacity);
             if (unit.HarvestCapacity > 0)
@@ -128,6 +129,7 @@ internal static class RulesValidator
             Positive(building.Id, "hp", building.Hp);
             Positive(building.Id, "build_time", building.BuildTime);
             NotNegative(building.Id, "build_up", building.BuildUp);
+            NotNegative(building.Id, "threat", building.Threat);
             if (building.Adjacent is < 0 or > BuildingDef.MaxAdjacent)
             {
                 Error(building.Id, "adjacent", $"'adjacent' of '{building.Id}' must be 0 to {BuildingDef.MaxAdjacent} cells");

@@ -59,6 +59,9 @@ public sealed record UnitDef : IDefinition
     /// <summary>Credits the unit unloads per tick at the dock of a refinery.</summary>
     public int UnloadRate { get; init; }
 
+    /// <summary>How dangerous it is, for the choice of targets (RA2 <c>ThreatPosed</c>, M4, 4.10).</summary>
+    public int Threat { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

@@ -16,7 +16,8 @@ namespace Rts.Simulation.Tests.Combat;
 public sealed class WeaponSystemTests
 {
     private static readonly PlayerId Player1 = new(1);
-    private static readonly PlayerId Player2 = new(2);
+    // The targets belong to nobody: they neither fire back nor are chosen by the targeting of step 6, so each test sees one shooter.
+    private static readonly PlayerId Nobody = PlayerId.Neutral;
 
     // The Rhino's cannon of the test rules (game/data): reload 65 ticks, range 5.75 cells = 1472 leptons.
     private const int CannonReload = 65;
@@ -46,7 +47,7 @@ public sealed class WeaponSystemTests
         // A construction yard to the east takes 11 shells (40 each against concrete) of its 1000 hit points and still stands.
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = simulation.World.CreateBuilding(Player2, TestRules.BuildingDef("construction_yard"), new CellPos(14, 9), true, null);
+        var target = simulation.World.CreateBuilding(Nobody, TestRules.BuildingDef("construction_yard"), new CellPos(14, 9), true, null);
         tank.Target = target.Id;
 
         var shots = Shots(simulation, tank, 700);
@@ -63,7 +64,7 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(14, 10).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(14, 10).Center);
         tank.Target = target.Id;
 
         var shots = Shots(simulation, tank, 3);
@@ -78,7 +79,7 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var conscript = Spawn(simulation, Player1, UnitType.Conscript, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 13).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 13).Center);
         conscript.Target = target.Id;
 
         var shots = Shots(simulation, conscript, 1);
@@ -94,7 +95,7 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var conscript = Spawn(simulation, Player1, UnitType.Conscript, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 10).Center + new WorldPos(distance, 0));
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 10).Center + new WorldPos(distance, 0));
         conscript.Target = target.Id;
 
         Assert.Equal(fires, Shots(simulation, conscript, 2).Count > 0);
@@ -106,7 +107,7 @@ public sealed class WeaponSystemTests
     public void The_range_to_a_building_is_to_the_nearest_point_of_its_footprint(int distance, bool fires)
     {
         var simulation = Match();
-        var reactor = simulation.World.CreateBuilding(Player2, TestRules.BuildingDef("reactor"), new CellPos(20, 10), true, null);
+        var reactor = simulation.World.CreateBuilding(Nobody, TestRules.BuildingDef("reactor"), new CellPos(20, 10), true, null);
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new WorldPos((20 * 256) - distance, (10 * 256) + 300));
         tank.TurretFacing = BAngle.East;
         tank.Target = reactor.Id;
@@ -120,7 +121,7 @@ public sealed class WeaponSystemTests
         var rules = TestRules.WithWeapon("heavy_tank_cannon", cannon => cannon with { Burst = 2, BurstDelay = 3 });
         var simulation = Match(rules);
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 6).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 6).Center);
         tank.Target = target.Id;
 
         var shots = Shots(simulation, tank, 140).Select(shot => shot.Tick).ToArray();
@@ -134,7 +135,7 @@ public sealed class WeaponSystemTests
         var rules = TestRules.WithWeapon("heavy_tank_cannon", cannon => cannon with { Burst = 3, BurstDelay = 5 });
         var simulation = Match(rules);
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 6).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 6).Center);
         tank.Target = target.Id;
         Shots(simulation, tank, 2);
         Assert.Equal(2, tank.Weapons[0].BurstLeft);
@@ -152,7 +153,7 @@ public sealed class WeaponSystemTests
         var rules = TestRules.WithWeapon("heavy_tank_cannon", cannon => cannon with { MinRange = Fixed.One });
         var simulation = Match(rules);
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var near = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 10).Center + new WorldPos(0, -255));
+        var near = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 10).Center + new WorldPos(0, -255));
         tank.Target = near.Id;
 
         Assert.Empty(Shots(simulation, tank, 3));
@@ -163,8 +164,8 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var conscript = Spawn(simulation, Player1, UnitType.Conscript, new CellPos(10, 10).Center);
-        var first = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 12).Center);
-        var second = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(11, 12).Center);
+        var first = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 12).Center);
+        var second = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(11, 12).Center);
         conscript.Target = first.Id;
         Assert.Single(Shots(simulation, conscript, 1));
 
@@ -181,7 +182,7 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var flakTrack = Spawn(simulation, Player1, UnitType.SupportVehicle, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 7).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 7).Center);
         flakTrack.Target = target.Id;
 
         var shots = Shots(simulation, flakTrack, 200);
@@ -198,7 +199,7 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var coil = simulation.World.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(10, 10), true, null);
-        var target = Spawn(simulation, Player2, UnitType.HeavyTank, new WorldPos((11 * 256) + (7 * 256) + beyond, 11 * 256));
+        var target = Spawn(simulation, Nobody, UnitType.HeavyTank, new WorldPos((11 * 256) + (7 * 256) + beyond, 11 * 256));
         coil.Target = target.Id;
 
         Assert.Equal(fires, Shots(simulation, coil, 1).Count > 0);
@@ -209,7 +210,7 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var engineer = Spawn(simulation, Player1, UnitType.Engineer, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 11).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 11).Center);
         engineer.Target = target.Id;
 
         Assert.Empty(engineer.Weapons);
@@ -221,7 +222,7 @@ public sealed class WeaponSystemTests
     {
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(14, 10).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(14, 10).Center);
         tank.Target = target.Id;
         simulation.Enqueue(new Rts.Simulation.Commands.MoveCommand(Player1, 0, 0, [tank.Id], new CellPos(10, 20).Center));
 

@@ -18,12 +18,12 @@ internal static class DefinitionReader
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
-        "placement", "turret", "turret_turn_rate", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
+        "placement", "turret", "turret_turn_rate", "threat", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
     ];
 
     private static readonly string[] BuildingKeys =
     [
-        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary",
+        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat",
         "prerequisites", "model", "icon",
     ];
 
@@ -84,6 +84,7 @@ internal static class DefinitionReader
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
             Primary = fields.Optional("primary", Scalars.Id, ""),
             Secondary = fields.Optional("secondary", Scalars.Id, ""),
+            Threat = fields.Optional("threat", Scalars.Int, 0),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -114,6 +115,7 @@ internal static class DefinitionReader
             Radar = fields.Optional("radar", Scalars.Flag, false),
             Armor = fields.Optional("armor", Scalars.Id, ""),
             Primary = fields.Optional("primary", Scalars.Id, ""),
+            Threat = fields.Optional("threat", Scalars.Int, 0),
             Produces = fields.Optional("produces", CategoriesOf, ImmutableArray<ProductionCategory>.Empty),
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
             Model = fields.Optional("model", Scalars.Path, ""),

@@ -78,6 +78,7 @@ public static class DataHasher
             Add(hash, unit.Secondary);
             hash.Add(unit.TurretTurnRate.HasValue);
             hash.Add(unit.TurretTurnRate ?? 0);
+            hash.Add(unit.Threat);
         }
 
         hash.Add(rules.Buildings.Length);
@@ -118,6 +119,7 @@ public static class DataHasher
             Add(hash, building.Prerequisites);
             Add(hash, building.Armor);
             Add(hash, building.Primary);
+            hash.Add(building.Threat);
         }
 
         hash.Add(rules.Factions.Length);

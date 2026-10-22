@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0x93e538b594549e27UL, GameDataFiles.Current.Hash);
+        Assert.Equal(0x6301e29947795055UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -73,17 +73,17 @@ public sealed class GameDataTests
         var test = TestRules.Standard.Database;
 
         Assert.Equal(test.Buildings.Select(Shape), data.Buildings.Select(Shape));
-        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary)),
-            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary)));
+        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat)),
+            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat)));
         Assert.Equal(test.Factions.Single(), data.Factions.Single() with { Name = test.Factions.Single().Name });
 
         Assert.Equal(test.Economies.Single(), data.Economies.Single());
 
-        static (string, string, int, int, int, string, int, int, bool, bool, string, string, string, string, string, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
+        static (string, string, int, int, int, string, int, int, bool, bool, string, string, string, string, string, string, int) Shape(Rts.Simulation.Rules.BuildingDef building) =>
             (building.Id, building.Faction, building.Footprint.Width, building.Footprint.Height, building.Power,
              string.Join(",", building.Prerequisites), building.BuildUp, building.Adjacent, building.ExtendsBase, building.Radar,
              string.Join(",", building.Produces), building.ExitCell?.ToString() ?? "", building.DockCell?.ToString() ?? "",
-             building.Category.ToString(), building.Armor, building.Primary);
+             building.Category.ToString(), building.Armor, building.Primary, building.Threat);
     }
 
     [Fact]

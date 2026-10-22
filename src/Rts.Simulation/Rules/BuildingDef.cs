@@ -56,6 +56,9 @@ public sealed record BuildingDef : IDefinition
     /// <summary>Id of the armor type (M4, 4.2); the checks of the data require it.</summary>
     public string Armor { get; init; } = "";
 
+    /// <summary>How dangerous it is, for the choice of targets (RA2 <c>ThreatPosed</c>, M4, 4.10).</summary>
+    public int Threat { get; init; }
+
     /// <summary>Id of the weapon of a defense (RA2 <c>Primary</c>); empty for a building that does not fight.</summary>
     public string Primary { get; init; } = "";
 

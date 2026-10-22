@@ -113,6 +113,7 @@ sentry_bunker:  # Sentry Gun
   cost: 500
   build_time: 21s
   hp: 400
+  threat: 20
   primary: sentry_machine_gun
   footprint: [1, 1]
   prerequisites: [barracks]
@@ -125,6 +126,7 @@ tesla_coil:  # Tesla Coil
   cost: 1500
   build_time: 63s
   hp: 600
+  threat: 40
   primary: tesla_coil_bolt
   footprint: [2, 2]
   power: -75
@@ -138,6 +140,7 @@ flak_cannon:  # Flak Cannon
   cost: 1000
   build_time: 42s
   hp: 900
+  threat: 10
   primary: flak_cannon_gun
   footprint: [2, 2]
   power: -50

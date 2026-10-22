@@ -18,6 +18,7 @@ namespace Rts.Simulation.World;
 /// <param name="TurretTurnRate"><c>BAngle</c> units per tick the turret turns; 0 turns at once (M4 step 3).</param>
 /// <param name="Primary">The position of the main weapon in <see cref="Rules.RulesDatabase.Weapons"/>; -1 without one (M4 step 3).</param>
 /// <param name="Secondary">The position of the second weapon; -1 without one.</param>
+/// <param name="Threat">How dangerous it is, for the choice of targets (M4 step 6).</param>
 public sealed record UnitArchetype(
     UnitType Type,
     string Id,
@@ -35,7 +36,8 @@ public sealed record UnitArchetype(
     int Armor = 0,
     int TurretTurnRate = 0,
     int Primary = -1,
-    int Secondary = -1)
+    int Secondary = -1,
+    int Threat = 0)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;

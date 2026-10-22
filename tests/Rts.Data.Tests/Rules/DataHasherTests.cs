@@ -95,6 +95,7 @@ public sealed class DataHasherTests
         ("unit cost", Unit(u => u with { Cost = u.Cost + 1 })),
         ("unit build time", Unit(u => u with { BuildTime = u.BuildTime + 1 })),
         ("unit hp", Unit(u => u with { Hp = u.Hp + 1 })),
+        ("unit threat", Unit(u => u with { Threat = u.Threat + 1 })),
         ("unit armor", Unit(u => u with { Armor = "light" })),
         ("unit speed", Unit(u => u with { Speed = u.Speed + 1 })),
         ("unit turn rate", Unit(u => u with { TurnRate = u.TurnRate + 1 })),
@@ -131,6 +132,7 @@ public sealed class DataHasherTests
         ("building cost", Building(b => b with { Cost = b.Cost + 1 })),
         ("building build time", Building(b => b with { BuildTime = b.BuildTime + 1 })),
         ("building hp", Building(b => b with { Hp = b.Hp + 1 })),
+        ("building threat", Building(b => b with { Threat = b.Threat + 1 })),
         ("building width", Building(b => b with { Footprint = b.Footprint with { Width = b.Footprint.Width + 1 } })),
         ("building height", Building(b => b with { Footprint = b.Footprint with { Height = b.Footprint.Height + 1 } })),
         ("building power", Building(b => b with { Power = b.Power + 1 })),
@@ -158,8 +160,8 @@ public sealed class DataHasherTests
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
         // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
-        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets.
-        Assert.Equal(0x9671015e17ca38ddUL, Hash(Files()));
+        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings.
+        Assert.Equal(0x463c7ae52e0c94adUL, Hash(Files()));
     }
 
     [Fact]

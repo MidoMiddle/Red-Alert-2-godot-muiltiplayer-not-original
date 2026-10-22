@@ -18,6 +18,9 @@ public sealed class ProjectileTests
     private static readonly PlayerId Player1 = new(1);
     private static readonly PlayerId Player2 = new(2);
 
+    // A target that belongs to nobody neither fires back nor is chosen by the targeting of step 6.
+    private static readonly PlayerId Nobody = PlayerId.Neutral;
+
     private static GameSimulation Match(ulong seed = 1) =>
         new(new SimulationSettings(seed, new MapGrid(40, 40, TestRules.Standard.Land)), TestRules.Standard);
 
@@ -42,7 +45,7 @@ public sealed class ProjectileTests
     {
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.TeslaTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 7).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 7).Center);
         tank.Target = target.Id;
 
         var impacts = Play(simulation, 1);
@@ -56,7 +59,7 @@ public sealed class ProjectileTests
     {
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(10, 10).Center + new WorldPos(1024, 0));
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(10, 10).Center + new WorldPos(1024, 0));
         tank.TurretFacing = BAngle.East;
         tank.Target = target.Id;
         simulation.Step();
@@ -82,7 +85,7 @@ public sealed class ProjectileTests
             var simulation = Match(seed);
             // A tank takes 2 of a flak hit (10 % of 25): it outlives the 420 ticks.
             var flakTrack = Spawn(simulation, Player1, UnitType.SupportVehicle, new CellPos(10, 10).Center);
-            var target = Spawn(simulation, Player2, UnitType.HeavyTank, new CellPos(10, 7).Center);
+            var target = Spawn(simulation, Nobody, UnitType.HeavyTank, new CellPos(10, 7).Center);
             flakTrack.Target = target.Id;
             return Play(simulation, 420).Select(impact => impact.Point).ToList();
         }
@@ -120,7 +123,7 @@ public sealed class ProjectileTests
             targetAt[simulation.CurrentTick - 1] = target.Position;
         });
 
-        var impact = Assert.Single(impacts);
+        var impact = Assert.Single(impacts, i => i.Shooter == rocketeer.Id);
         Assert.Equal(target.Id, impact.Target);
         // The target moves after the shots in the tick, so it is within a step of where the rocket hit it.
         Assert.InRange(DamageCalculator.Distance(impact.Point, targetAt[impact.Tick]), 0, 64 + 24);
@@ -139,7 +142,7 @@ public sealed class ProjectileTests
         simulation.Step();
         rocketeer.Target = null;
 
-        var impact = Assert.Single(Play(simulation, 100));
+        var impact = Assert.Single(Play(simulation, 100), i => i.Shooter == rocketeer.Id);
 
         Assert.Equal((90, (EntityId?)null), (impact.Tick, impact.Target));    // lifetime 6 s = 90 ticks
     }
@@ -149,7 +152,7 @@ public sealed class ProjectileTests
     {
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(14, 10).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(14, 10).Center);
         tank.TurretFacing = BAngle.East;
         tank.Target = target.Id;
         simulation.Step();
@@ -175,7 +178,7 @@ public sealed class ProjectileTests
         simulation.Step();
         var lastSeen = rocket.LastTargetPoint;
 
-        var impact = Assert.Single(Play(simulation, 80));
+        var impact = Assert.Single(Play(simulation, 80), i => i.Shooter == rocketeer.Id);
 
         Assert.Equal((lastSeen, (EntityId?)null), (impact.Point, impact.Target));
     }
@@ -185,7 +188,7 @@ public sealed class ProjectileTests
     {
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
-        var target = Spawn(simulation, Player2, UnitType.Conscript, new CellPos(14, 10).Center);
+        var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(14, 10).Center);
         tank.TurretFacing = BAngle.East;
         tank.Target = target.Id;
         var next = simulation.World.NextEntityId;
