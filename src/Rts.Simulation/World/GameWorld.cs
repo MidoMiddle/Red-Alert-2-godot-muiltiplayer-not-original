@@ -435,6 +435,14 @@ public sealed class GameWorld
         return unit;
     }
 
+    /// <summary>A shot in flight (M4 step 4): a new entity with the next id; it starts to fly on the next tick.</summary>
+    internal Projectile Launch(PlayerId owner, EntityId shooter, int weapon, EntityId? target, WorldPos origin, WorldPos aimPoint)
+    {
+        var projectile = new Projectile(AllocateId(), owner, shooter, weapon, target, origin, aimPoint, CurrentTick);
+        _entities.Add(projectile);
+        return projectile;
+    }
+
     /// <summary>Physically removes entities marked dead and frees their cells. Called once at the end of a tick.</summary>
     internal void RemoveDead()
     {

@@ -49,6 +49,15 @@ public sealed record DamageStateChanged(int Tick, EntityId Entity, Combat.Damage
 /// </summary>
 public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId Target, int Slot) : SimEvent(Tick);
 
+/// <summary>
+/// A shot landed (M4, 4.8) at <paramref name="Point"/>: an instant one on the tick it was fired (no <paramref name="Projectile"/>),
+/// a ballistic one at its aim point, a homing one on its target or where it fell. <paramref name="Target"/> is the living target it
+/// was fired at, or none when that died or a homing shot ran out of time. <paramref name="Weapon"/> is the place of the weapon in the
+/// rules. The damage comes from step 5 on.
+/// </summary>
+public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId Shooter, int Weapon, WorldPos Point, EntityId? Target)
+    : SimEvent(Tick);
+
 /// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
 public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell) : SimEvent(Tick);
 

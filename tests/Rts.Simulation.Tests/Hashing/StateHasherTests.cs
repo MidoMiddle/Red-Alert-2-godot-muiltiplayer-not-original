@@ -33,7 +33,7 @@ public sealed class StateHasherTests
     public static TheoryData<string> Mutations => new()
     {
         "tick", "random", "next id", "owner", "alive", "position x", "position y",
-        "target removed", "target added", "target x", "target y", "speed", "unit hp", "attack target", "reload", "burst", "burst delay", "entity count",
+        "target removed", "target added", "target x", "target y", "speed", "unit hp", "attack target", "reload", "burst", "burst delay", "projectile", "projectile position", "projectile ticks", "entity count",
         "type", "turn rate", "facing", "turret facing", "land", "obstacle", "height",
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
@@ -70,6 +70,9 @@ public sealed class StateHasherTests
             case "reload": moving.Weapons[0].ReloadLeft = 5; break;
             case "burst": moving.Weapons[0].BurstLeft = 1; break;
             case "burst delay": moving.Weapons[0].BurstDelayLeft = 2; break;
+            case "projectile": world.Launch(Player1, moving.Id, 0, idle.Id, moving.Position, idle.Position); break;
+            case "projectile position": world.Launch(Player1, moving.Id, 0, idle.Id, moving.Position, idle.Position).Position = new WorldPos(1, 1); break;
+            case "projectile ticks": world.Launch(Player1, moving.Id, 0, idle.Id, moving.Position, idle.Position).TicksLeft = 3; break;
             case "entity count": world.SpawnForTest(Player1, new WorldPos(0, 0), speed: 1); break;
             case "type": break;
             case "turn rate": moving.TurnRate++; break;
@@ -195,6 +198,12 @@ public sealed class StateHasherTests
         "<Returning>k__BackingField", "<Subcell>k__BackingField",
         "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField", "<Hp>k__BackingField",
         "<Target>k__BackingField", "<Weapons>k__BackingField",
+    })]
+    [InlineData(typeof(Projectile), new[]
+    {
+        "<Shooter>k__BackingField", "<Weapon>k__BackingField", "<Target>k__BackingField", "<Origin>k__BackingField",
+        "<Position>k__BackingField", "<AimPoint>k__BackingField", "<LastTargetPoint>k__BackingField", "<Facing>k__BackingField",
+        "<FlightTicks>k__BackingField", "<TicksLeft>k__BackingField", "<LaunchTick>k__BackingField",
     })]
     [InlineData(typeof(Rts.Simulation.Combat.WeaponInstance), new[]
     {

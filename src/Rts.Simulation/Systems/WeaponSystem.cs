@@ -13,32 +13,90 @@ namespace Rts.Simulation.Systems;
 /// with a weapon, in id order: the reloads count down, with or without a target; then, with a living target, the first weapon that hits
 /// ground and reaches it is aimed — the turret turns at its rate, a unit without one turns its hull while it stands, infantry and
 /// defenses at once — and fires when it points within <see cref="AimTolerance"/> and is ready: a volley of <c>burst</c> shots
-/// <c>burst_delay</c> apart, the next volley <c>reload</c> after the first shot. A shot is a <see cref="WeaponFired"/> event; the
-/// projectile and the damage come in steps 4 and 5.
+/// <c>burst_delay</c> apart, the next volley <c>reload</c> after the first shot (<see cref="WeaponFired"/>). The shots of the tick are
+/// launched after the walk over the entities (step 4): an instant one lands at once (<see cref="ProjectileImpact"/>), a ballistic or
+/// homing one becomes a <see cref="Projectile"/> that <see cref="ProjectileSystem"/> flies. The damage comes in step 5.
 /// </summary>
 public static class WeaponSystem
 {
     /// <summary>How far off the target a weapon may point and still fire: 8 of 256 parts of a turn (RA2).</summary>
     public const int AimTolerance = BAngle.FullTurn * 8 / 256;
 
+    /// <summary>A shot of this tick, launched after the walk: the list of entities must not change while it is walked.</summary>
+    private readonly record struct Shot(PlayerId Owner, EntityId Shooter, int Weapon, EntityId Target, WorldPos Origin, WorldPos AimAt);
+
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
         var rules = world.Rules;
+        var shots = new List<Shot>();
         foreach (var entity in world.Entities)
         {
             switch (entity)
             {
                 case Unit { IsAlive: true } unit when unit.Weapons.Length > 0:
-                    Unit(world, rules, unit, events);
+                    Unit(world, rules, unit, shots, events);
                     break;
                 case Building { IsAlive: true, IsReady: true } building when building.Weapons.Length > 0:
-                    Defense(world, rules, building, events);
+                    Defense(world, rules, building, shots, events);
                     break;
             }
         }
+
+        foreach (var shot in shots)
+        {
+            Launch(world, rules, shot, events);
+        }
     }
 
-    private static void Unit(GameWorld world, GameRules rules, Unit unit, List<SimEvent>? events)
+    /// <summary>
+    /// Sends a shot on its way (M4, 4.8): an instant one lands now at the nearest point of the target; a ballistic one flies to that
+    /// point scattered by up to <c>inaccuracy</c> (a random angle and distance, in the order of the shooters), in as many ticks as its
+    /// speed needs, rounded up; a homing one heads for the target for its <c>lifetime</c>.
+    /// </summary>
+    private static void Launch(GameWorld world, GameRules rules, Shot shot, List<SimEvent>? events)
+    {
+        var weapon = rules.Database.Weapons[shot.Weapon];
+        rules.Database.TryGetProjectile(weapon.Projectile, out var projectile);
+        switch (projectile.Motion)
+        {
+            case ProjectileMotion.Instant:
+                events?.Add(new ProjectileImpact(world.CurrentTick, null, shot.Shooter, shot.Weapon, shot.AimAt, shot.Target));
+                break;
+            case ProjectileMotion.Ballistic:
+                {
+                    var aimPoint = shot.AimAt + Scatter(world, Aim.Leptons(projectile.Inaccuracy));
+                    var flying = world.Launch(shot.Owner, shot.Shooter, shot.Weapon, shot.Target, shot.Origin, aimPoint);
+                    var distance = DamageCalculator.Distance(shot.Origin, aimPoint);
+                    flying.FlightTicks = IntMath.Max(1, (distance + projectile.Speed - 1) / projectile.Speed);
+                    flying.TicksLeft = flying.FlightTicks;
+                    break;
+                }
+
+            default:
+                {
+                    var flying = world.Launch(shot.Owner, shot.Shooter, shot.Weapon, shot.Target, shot.Origin, shot.AimAt);
+                    flying.Facing = FixedMath.Angle(shot.AimAt.X - shot.Origin.X, shot.AimAt.Y - shot.Origin.Y);
+                    flying.TicksLeft = projectile.Lifetime;
+                    break;
+                }
+        }
+    }
+
+    /// <summary>An offset of a random direction and a random length up to <paramref name="radius"/> leptons.</summary>
+    private static WorldPos Scatter(GameWorld world, int radius)
+    {
+        if (radius <= 0)
+        {
+            return WorldPos.Zero;
+        }
+
+        var angle = BAngle.FromUnits(world.Random.NextInt(BAngle.FullTurn));
+        var length = world.Random.NextInt(radius + 1);
+        var (x, y) = FixedMath.Direction(angle);
+        return new WorldPos((int)((x.Raw * length) >> Fixed.FractionalBits), (int)((y.Raw * length) >> Fixed.FractionalBits));
+    }
+
+    private static void Unit(GameWorld world, GameRules rules, Unit unit, List<Shot> shots, List<SimEvent>? events)
     {
         CountDown(unit.Weapons);
         var archetype = unit.Archetype;
@@ -55,7 +113,7 @@ public static class WeaponSystem
             return;
         }
 
-        var aimAt = NearestPoint(target, unit.Position);
+        var aimAt = Aim.NearestPoint(target, unit.Position);
         var wanted = FixedMath.Angle(aimAt.X - unit.Position.X, aimAt.Y - unit.Position.Y);
         bool aimed;
         if (archetype.HasTurret)
@@ -77,10 +135,13 @@ public static class WeaponSystem
 
         var distance = DamageCalculator.Distance(unit.Position, aimAt);
         int[] slots = [archetype.Primary, archetype.Secondary];
-        Fire(world, rules, unit.Id, target, unit.Weapons, slots, distance, aimed, events);
+        if (Fire(world, rules, unit.Id, target, unit.Weapons, slots, distance, aimed, events) is { } weapon)
+        {
+            shots.Add(new Shot(unit.Owner, unit.Id, weapon, target.Id, unit.Position, aimAt));
+        }
     }
 
-    private static void Defense(GameWorld world, GameRules rules, Building building, List<SimEvent>? events)
+    private static void Defense(GameWorld world, GameRules rules, Building building, List<Shot> shots, List<SimEvent>? events)
     {
         CountDown(building.Weapons);
         if (!TargetOf(world, building.Target, out var target))
@@ -91,17 +152,21 @@ public static class WeaponSystem
         }
 
         // A defense aims at once.
-        var centre = CentreOf(building);
-        var distance = DamageCalculator.Distance(centre, NearestPoint(target, centre));
+        var centre = Aim.CentreOf(building);
+        var aimAt = Aim.NearestPoint(target, centre);
+        var distance = DamageCalculator.Distance(centre, aimAt);
         int[] slots = [rules.WeaponOfBuilding(building.DefIndex)];
-        Fire(world, rules, building.Id, target, building.Weapons, slots, distance, aimed: true, events);
+        if (Fire(world, rules, building.Id, target, building.Weapons, slots, distance, aimed: true, events) is { } weapon)
+        {
+            shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
+        }
     }
 
     /// <summary>
     /// Fires the first weapon that hits ground and reaches <paramref name="distance"/>, when it is aimed and ready; the volley of a
-    /// weapon that cannot fire now is broken off.
+    /// weapon that cannot fire now is broken off. Gives the place of the weapon that fired in the rules, or null.
     /// </summary>
-    private static void Fire(
+    private static int? Fire(
         GameWorld world, GameRules rules, EntityId shooter, Entity target, WeaponInstance[] weapons, int[] slots, int distance, bool aimed,
         List<SimEvent>? events)
     {
@@ -124,7 +189,7 @@ public static class WeaponSystem
 
         if (chosen < 0 || !aimed)
         {
-            return;
+            return null;
         }
 
         var weapon = rules.Database.Weapons[slots[chosen]];
@@ -142,17 +207,16 @@ public static class WeaponSystem
         }
         else
         {
-            return;
+            return null;
         }
 
         events?.Add(new WeaponFired(world.CurrentTick, shooter, target.Id, chosen));
+        return slots[chosen];
     }
 
     /// <summary>Whether the weapon hits ground targets and <paramref name="distance"/> leptons is within its range.</summary>
     private static bool Reaches(WeaponDef weapon, int distance) =>
-        (weapon.Targets & WeaponTargets.Ground) != 0 && distance <= Leptons(weapon.Range) && distance >= Leptons(weapon.MinRange);
-
-    private static long Leptons(Fixed cells) => (cells.Raw * WorldPos.LeptonsPerCell) >> Fixed.FractionalBits;
+        (weapon.Targets & WeaponTargets.Ground) != 0 && distance <= Aim.Leptons(weapon.Range) && distance >= Aim.Leptons(weapon.MinRange);
 
     private static void CountDown(WeaponInstance[] weapons)
     {
@@ -183,26 +247,6 @@ public static class WeaponSystem
         target = null!;
         return false;
     }
-
-    /// <summary>The point of the target nearest to <paramref name="from"/>: a unit's position, the nearest point of a building's footprint.</summary>
-    private static WorldPos NearestPoint(Entity target, WorldPos from)
-    {
-        if (target is not Building building)
-        {
-            return ((World.Unit)target).Position;
-        }
-
-        var left = building.Cell.X * WorldPos.LeptonsPerCell;
-        var top = building.Cell.Y * WorldPos.LeptonsPerCell;
-        var right = ((building.Cell.X + building.Width) * WorldPos.LeptonsPerCell) - 1;
-        var bottom = ((building.Cell.Y + building.Height) * WorldPos.LeptonsPerCell) - 1;
-        return new WorldPos(IntMath.Clamp(from.X, left, right), IntMath.Clamp(from.Y, top, bottom));
-    }
-
-    private static WorldPos CentreOf(Building building) =>
-        new(
-            (building.Cell.X * WorldPos.LeptonsPerCell) + (building.Width * WorldPos.LeptonsPerCell / 2),
-            (building.Cell.Y * WorldPos.LeptonsPerCell) + (building.Height * WorldPos.LeptonsPerCell / 2));
 
     private static BAngle Turn(BAngle current, BAngle wanted, int rate) => rate == 0 ? wanted : BAngle.RotateTowards(current, wanted, rate);
 

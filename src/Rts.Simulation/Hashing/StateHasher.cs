@@ -17,6 +17,7 @@ public static class StateHasher
     // Tags are only for the hash; the M0 TestUnit was 1.
     private const byte UnitTag = 2;
     private const byte BuildingTag = 3;
+    private const byte ProjectileTag = 4;
 
     public static ulong Compute(GameWorld world)
     {
@@ -191,6 +192,28 @@ public static class StateHasher
 
                 // Rules v27 (M4 step 3): the target and the weapon of a defense.
                 AddWeapons(hash, building.Target, building.Weapons);
+                break;
+
+            case Projectile projectile:
+                // Rules v28 (M4 step 4): a shot in flight.
+                hash.Add(ProjectileTag);
+                AddCommon(hash, projectile);
+                hash.Add(projectile.Shooter.Value);
+                hash.Add(projectile.Weapon);
+                hash.Add(projectile.Target.HasValue);
+                hash.Add(projectile.Target?.Value ?? 0);
+                hash.Add(projectile.Origin.X);
+                hash.Add(projectile.Origin.Y);
+                hash.Add(projectile.Position.X);
+                hash.Add(projectile.Position.Y);
+                hash.Add(projectile.AimPoint.X);
+                hash.Add(projectile.AimPoint.Y);
+                hash.Add(projectile.LastTargetPoint.X);
+                hash.Add(projectile.LastTargetPoint.Y);
+                hash.Add((int)projectile.Facing.Value);
+                hash.Add(projectile.FlightTicks);
+                hash.Add(projectile.TicksLeft);
+                hash.Add(projectile.LaunchTick);
                 break;
 
             default:

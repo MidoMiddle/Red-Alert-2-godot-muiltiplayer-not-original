@@ -274,7 +274,7 @@ internal static class TestRules
             Arc = Fixed.One,
             Inaccuracy = Tenths(5),
         });
-        builder.Add(new ProjectileDef { Id = "rocket", Name = "rocket", Motion = ProjectileMotion.Homing, Speed = 30, TurnRate = 2048, Lifetime = 90 });
+        builder.Add(new ProjectileDef { Id = "rocket", Name = "rocket", Motion = ProjectileMotion.Homing, Speed = 30, TurnRate = 8192, Lifetime = 90 });
 
         // Damage, reload in ticks, range in cells (quarters for 5.75 and halves for 5.5), projectile, warhead.
         Weapon(builder, "conscript_rifle", 15, 25, Fixed.FromInt(4), "bullet", "small_arms");

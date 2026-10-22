@@ -32,5 +32,5 @@ rocket:
   name: Rocket
   motion: homing
   speed: 30
-  turn_rate: 2048
+  turn_rate: 8192
   lifetime: 6s
