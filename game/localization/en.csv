@@ -36,6 +36,8 @@ UI_MAP_PREVIEW,Map preview
 UI_MAP_INFO_NONE,No map selected
 UI_MAP_INFO,{0} · {1}×{2} · {3} players
 UI_MAP_PREVIEW_RENDERING,Rendering preview…
+UI_MAP_RANDOM,Random map…
+UI_MAP_RANDOM_HINT,Choose the settings and press Generate · the match starts once the bot is ready
 UI_EDITOR_TITLE,Map Editor
 UI_EDITOR_NEW_MAP,New map
 UI_EDITOR_NEW,New

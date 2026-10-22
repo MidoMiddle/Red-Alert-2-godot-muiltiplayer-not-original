@@ -477,28 +477,13 @@ public partial class MapEditorScene : Node3D, IMapSource
 
     private void BuildRandomMap(VBoxContainer stack)
     {
-        var settings = new Rts.MapGen.MapGenSettings();
-        var seedRow = Row(stack);
-        seedRow.AddChild(new Label { Text = Tr("UI_EDITOR_SEED"), VerticalAlignment = VerticalAlignment.Center });
-        var seed = new SpinBox { MinValue = 0, MaxValue = 999_999, Value = 1, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
-        seedRow.AddChild(seed);
-        var grid = new GridContainer { Columns = 2 };
-        grid.AddThemeConstantOverride("h_separation", 8);
-        stack.AddChild(grid);
-        var sizes = Rts.MapGen.MapGenSettings.Sizes;
-        grid.AddChild(Choice(System.Array.ConvertAll(sizes, size => string.Format(Tr("UI_EDITOR_SIZE_ITEM"), size)), 0, i => settings = settings with { Size = sizes[i] }));
-        grid.AddChild(Choice(
-            [Tr("UI_EDITOR_SYMMETRY_MIRROR"), Tr("UI_EDITOR_SYMMETRY_ROTATE180"), Tr("UI_EDITOR_SYMMETRY_ROTATE90")], 0,
-            i => settings = settings with { Symmetry = (Rts.MapGen.MapSymmetry)i, Players = i == 2 ? 4 : 2 }));
-        grid.AddChild(Choice([Tr("UI_EDITOR_RELIEF_FLAT"), Tr("UI_EDITOR_RELIEF_HILLY"), Tr("UI_EDITOR_RELIEF_MOUNTAINOUS")], 1, i => settings = settings with { Relief = (Rts.MapGen.ReliefKind)i }));
-        grid.AddChild(Choice([Tr("UI_EDITOR_WATER_NONE"), Tr("UI_EDITOR_WATER_RIVERS"), Tr("UI_EDITOR_WATER_LAKES")], 1, i => settings = settings with { Water = (Rts.MapGen.WaterKind)i }));
-        grid.AddChild(Choice([Tr("UI_EDITOR_FOREST_LOW"), Tr("UI_EDITOR_FOREST_MEDIUM"), Tr("UI_EDITOR_FOREST_HIGH")], 1, i => settings = settings with { Forest = (Rts.MapGen.Amount)i }));
-        grid.AddChild(Choice([Tr("UI_EDITOR_ORE_LOW"), Tr("UI_EDITOR_ORE_MEDIUM"), Tr("UI_EDITOR_ORE_HIGH")], 1, i => settings = settings with { Resources = (Rts.MapGen.Amount)i }));
+        var options = new MapGenOptions { Name = "RandomMapOptions" };
+        stack.AddChild(options);
         stack.AddChild(ActionButton("UI_EDITOR_GENERATE", () =>
         {
             try
             {
-                var (map, used) = Rts.MapGen.MapGenerator.Generate(settings with { Seed = (uint)seed.Value });
+                var (map, used) = Rts.MapGen.MapGenerator.Generate(options.Settings);
                 Load(new MapEditSession(EditableMap.FromDefinition(map)));
                 _message = string.Format(Tr("UI_EDITOR_GENERATED"), used);
             }

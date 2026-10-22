@@ -9,7 +9,8 @@ namespace Rts.Client.UI;
 /// Skirmish setup, layout only (docs/menu/README.md, section 3.3; docs/implementation/M6_menus_skirmish.md, 4.3).
 /// Players and options are on the left, the map and the buttons on the right, as in the classic RA2 setup.
 /// The map list works since M7 step 10: every map of <see cref="MapCatalog"/>, with its preview (cached, or drawn in the
-/// background) and a line of information. The rest waits for the bot and the match setup of M5: only Back is active, every
+/// background) and a line of information; its last item, «Random map…» (step 15), shows the generator's settings and a
+/// preview of the map they make. The rest waits for the bot and the match setup of M5: only Back is active, every
 /// other control is disabled and says "Coming soon" on hover.
 /// </summary>
 public partial class SkirmishSetup : Control
@@ -29,6 +30,8 @@ public partial class SkirmishSetup : Control
     private MapPreviewView _preview = null!;
     private Label _previewLabel = null!;
     private Label _mapInfo = null!;
+    private MapEntry? _shown;
+    private VBoxContainer _random = null!;
 
     public override void _Ready()
     {
@@ -105,15 +108,53 @@ public partial class SkirmishSetup : Control
             list.AddItem(entry.Map.Name);
         }
 
-        list.ItemSelected += index => ShowMap((int)index);
+        // The last item makes a random map (M7 step 15): its settings appear below the list.
+        list.AddItem(Tr("UI_MAP_RANDOM"));
+        list.ItemSelected += index => Pick((int)index);
         box.AddChild(list);
-        ShowMap(0);
+        _random = new VBoxContainer { Name = "RandomMap", Visible = false };
+        var options = new MapGenOptions { Name = "RandomMapOptions", Columns = 1, CustomMinimumSize = new Vector2(ActionWidth, 0) };
+        _random.AddChild(options);
+        var generate = new Button { Text = Tr("UI_EDITOR_GENERATE"), CustomMinimumSize = new Vector2(ActionWidth, FieldHeight) };
+        generate.Pressed += () => GenerateRandom(options.Settings);
+        _random.AddChild(generate);
+        box.AddChild(_random);
+        Pick(0);
+    }
+
+    private void Pick(int index)
+    {
+        _random.Visible = index == _maps.Count;
+        if (index < _maps.Count)
+        {
+            ShowMap(_maps[index]);
+            return;
+        }
+
+        _shown = null;
+        _preview.Show(null, null);
+        _previewLabel.Text = Tr("UI_MAP_PREVIEW");
+        _mapInfo.Text = Tr("UI_MAP_RANDOM_HINT");
+    }
+
+    /// <summary>A random map from the settings, checked and shown with its preview; the match itself starts with M5.</summary>
+    private void GenerateRandom(Rts.MapGen.MapGenSettings settings)
+    {
+        try
+        {
+            var (map, _) = Rts.MapGen.MapGenerator.Generate(settings);
+            ShowMap(new MapEntry("random", map, Rts.Data.Maps.MapHasher.Hash(map)));
+        }
+        catch (Rts.MapGen.MapGenException error)
+        {
+            _mapInfo.Text = string.Format(Tr("UI_EDITOR_GENERATE_FAILED"), error.Message);
+        }
     }
 
     /// <summary>Shows the preview of a map: from the cache at once, or a placeholder until the background drawing is done.</summary>
-    private async void ShowMap(int index)
+    private async void ShowMap(MapEntry entry)
     {
-        var entry = _maps[index];
+        _shown = entry;
         var map = entry.Map;
         _mapInfo.Text = string.Format(Tr("UI_MAP_INFO"), map.Name, map.Width, map.Height, map.Players)
             + (map.Description.Length > 0 ? "\n" + map.Description : "");
@@ -123,7 +164,7 @@ public partial class SkirmishSetup : Control
             _preview.Show(null, null);
             _previewLabel.Text = Tr("UI_MAP_PREVIEW_RENDERING");
             texture = await MapPreviews.RenderAsync(entry);
-            if (!IsInsideTree() || _maps.IndexOf(entry) != GetNode<OptionButton>("Column/Scroll/Stack/MapBox/MapList").Selected)
+            if (!IsInsideTree() || !ReferenceEquals(_shown, entry))
             {
                 // The player picked another map meanwhile; the picture is in the cache for later.
                 return;
