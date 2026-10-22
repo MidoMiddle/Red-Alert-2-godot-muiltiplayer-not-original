@@ -61,6 +61,18 @@ public sealed class TestMapParserTests
     }
 
     [Fact]
+    public void Ore_and_gems_lines_fill_their_rectangles_at_the_stage()
+    {
+        var map = TestMapParser.Parse(". . . .\n, , . .\n. . . .\nore 0 0 2 2 5\ngems 3 1 1 2");
+
+        var ore = Enumerable.Range(0, 3).SelectMany(y => Enumerable.Range(0, 4).Select(x => map.Grid.OreAt(new CellPos(x, y)))).ToArray();
+        var o = new OreCell(OreKind.Ore, 5);
+        var g = new OreCell(OreKind.Gems, OreCell.MaxStage);
+        var e = OreCell.Empty;
+        Assert.Equal([o, o, e, e, o, o, e, g, e, e, e, g], ore);
+    }
+
+    [Fact]
     public void All_land_types_map_has_every_element()
     {
         var map = Load("all_land_types.txt");
@@ -97,6 +109,15 @@ public sealed class TestMapParserTests
     [InlineData(". .\nunit conscript 0 0 player=9", "line 2, column 20: player must be 0…8")]
     [InlineData(". .\nunit conscript a 0 player=1", "line 2, column 16: 'a' is not a number")]
     [InlineData(". .\nunit conscript 0 0", "line 2, column 1: expected 'unit <id> <x> <y> player=<n>'")]
+    [InlineData(". .\nore 0 0 1 1 12", "line 2, column 13: stage must be 0…11, got 12")]
+    [InlineData(". .\ngems 1 0 2 1", "line 2, column 6: cells (1, 0)…(2, 0) are outside the 2x1 map")]
+    [InlineData(". .\nore 0 0 0 1", "line 2, column 9: the field must be at least 1x1, got 0x1")]
+    [InlineData(". ~\nore 0 0 2 1", "line 2, column 5: cell (1, 0) cannot take ore")]
+    [InlineData(". T\ngems 0 0 2 1 3", "line 2, column 6: cell (1, 0) cannot take ore")]
+    [InlineData(". .\nore 0 0 1 1\ngems 0 0 1 1", "line 3, column 6: cell (0, 0) cannot take ore")]
+    [InlineData(". .\nore 0 0 1 a", "line 2, column 11: 'a' is not a number")]
+    [InlineData(". .\nore 0 2147483647 1 2147483647", "line 2, column 5: cells (0, 2147483647)")]
+    [InlineData(". .\nore 0 0 1", "line 2, column 1: expected 'ore <x> <y> <width> <height> [stage]'")]
     public void Errors_name_the_line_and_column(string text, string message)
     {
         // With the rules, so that the parser checks where each unit stands.

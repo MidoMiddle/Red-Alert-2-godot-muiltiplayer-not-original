@@ -49,6 +49,13 @@ public static class SquadMap
                 continue;
             }
 
+            if (line.StartsWith("ore ", StringComparison.Ordinal) || line.StartsWith("gems ", StringComparison.Ordinal))
+            {
+                // The ore of the sandbox (M3) is left out: the squad map measures movement, and growing ore would draw from the
+                // world's random generator and change its checksums.
+                continue;
+            }
+
             if (line.StartsWith("unit ", StringComparison.Ordinal))
             {
                 // The red units stay; the blue ones give way to the squad.

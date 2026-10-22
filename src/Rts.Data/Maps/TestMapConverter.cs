@@ -11,7 +11,7 @@ namespace Rts.Data.Maps;
 /// The temporary ASCII maps of M2 (<see cref="TestMapParser"/>) as <c>.rtsmap</c> maps: flat (every corner at level 0), the
 /// same land, the same map objects (trees and the <c>object</c> lines, M7 step 5), bridges (step 6) and buildings (step 7), a winter texture picked by the land. The
 /// units of the old format have no place in a map file (starts and units come with M6) and are left out; the players are
-/// the owners found there.
+/// the owners found there. So are the <c>ore</c> and <c>gems</c> lines (M3): the densities of the map file hold only some of the stages.
 /// </summary>
 public static class TestMapConverter
 {

@@ -282,14 +282,18 @@ public partial class Main : Node3D
         // must drive around them along its path (M2 step 6) and never get stopped by an obstacle.
         var behindForest = new CellPos(22, 5).Center;
         host.IssueMove(behindForest);
+        // The harvester goes back to the sandbox ore once the order runs out (M3, HarvesterSystem.ManualTicks, shorter than this
+        // leg), so a unit counts once it has stood at the point.
         var blocked = 0;
+        var reached = new HashSet<Unit>();
         for (var i = 0; i < SmokeDetourTicks; i++)
         {
             host.StepOnce();
             blocked += host.Simulation.LastTickEvents.Count(e => e is UnitBlocked);
+            reached.UnionWith(blueUnits.Where(u => u.MoveTarget is null && Near(u, behindForest)));
         }
 
-        var detoured = blocked == 0 && blueUnits.All(u => u.MoveTarget is null && Near(u, behindForest)) && OwnCells(blueUnits);
+        var detoured = blocked == 0 && reached.Count == blueUnits.Count && OwnCells(blueUnits);
         var liveChecksum = host.Simulation.LastChecksum;
 
         host.SaveReplay();

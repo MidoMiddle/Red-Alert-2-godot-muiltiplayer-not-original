@@ -33,6 +33,18 @@ public sealed class SandboxMapTests
     }
 
     [Fact]
+    public void Sandbox_has_ore_and_gems_near_the_blue_base()
+    {
+        // The yard of the blue MCV (20, 22) deploys on 19…21, 21…23; RA2 maps put a field within a short drive of the base.
+        var map = Sandbox();
+        var mcv = map.Units.Single(u => u.Owner == new PlayerId(1) && u.Type == UnitType.Mcv).Cell;
+        var near = Cells(map.Grid).Where(c => System.Math.Max(System.Math.Abs(c.X - mcv.X), System.Math.Abs(c.Y - mcv.Y)) <= 16).ToList();
+
+        Assert.True(near.Count(c => map.Grid.OreAt(c).Kind == OreKind.Ore) >= 40, "too little ore near the blue base");
+        Assert.Contains(near, c => map.Grid.OreAt(c).Kind == OreKind.Gems);
+    }
+
+    [Fact]
     public void Smoke_route_from_the_blue_base_to_the_centre_is_passable()
     {
         // --smoke orders every blue unit straight to the centre of cell (32, 32).

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Map;
@@ -24,12 +25,16 @@ public sealed record TestMap(MapGrid Grid, IReadOnlyList<TestMapUnit> Units);
 /// object fence_wood 4 38
 /// bridge bridge_wood_low 2 57 10 57
 /// building neutral_house_a 40 52 0 2
+/// ore 6 24 8 6 8
+/// gems 16 28 3 2
 /// </code>
 /// Codes are the land types of docs/implementation/M7_maps.md, 4.3, plus <c>T</c> for a tree (a <c>pine_tree</c> map object on
 /// clear land). A <c>unit</c> line takes a unit id of <see cref="UnitTypes"/>, the cell x and y, and the owner; an
 /// <c>object</c> line a map object id of <see cref="MapObjectTypes"/>, the cell x and y, and optionally the model variant; a
 /// <c>bridge</c> line a bridge id of <see cref="BridgeTypes"/> and the cells of both ends; a <c>building</c> line a building id of
-/// <see cref="BuildingTypes"/>, the north-west cell, and optionally the owner (0 neutral, the default) and the facing 0…7.
+/// <see cref="BuildingTypes"/>, the north-west cell, and optionally the owner (0 neutral, the default) and the facing 0…7; an
+/// <c>ore</c> or <c>gems</c> line a rectangle by its north-west cell, width and height, and optionally the stage 0…11 of every cell
+/// (default <see cref="OreCell.MaxStage"/>), on cells where ore may grow (<see cref="OreGrowthSystem.CanTakeOre"/>).
 /// Every error names the line and the column.
 /// </summary>
 public static class TestMapParser
@@ -47,6 +52,7 @@ public static class TestMapParser
         var objectLines = new List<(int Line, string Text)>();
         var bridgeLines = new List<(int Line, string Text)>();
         var buildingLines = new List<(int Line, string Text)>();
+        var oreLines = new List<(int Line, string Text)>();
 
         var lines = text.Replace("\r\n", "\n").Split('\n');
         for (var i = 0; i < lines.Length; i++)
@@ -79,6 +85,12 @@ public static class TestMapParser
             if (line.StartsWith("building ", StringComparison.Ordinal))
             {
                 buildingLines.Add((lineNumber, lines[i]));
+                continue;
+            }
+
+            if (line.StartsWith("ore ", StringComparison.Ordinal) || line.StartsWith("gems ", StringComparison.Ordinal))
+            {
+                oreLines.Add((lineNumber, lines[i]));
                 continue;
             }
 
@@ -126,6 +138,11 @@ public static class TestMapParser
         foreach (var (line, buildingText) in buildingLines)
         {
             AddBuilding(line, buildingText, grid);
+        }
+
+        foreach (var (line, oreText) in oreLines)
+        {
+            AddOre(line, oreText, grid);
         }
 
         var units = new List<TestMapUnit>();
@@ -267,6 +284,57 @@ public static class TestMapParser
         }
     }
 
+    // ore|gems <x> <y> <width> <height> [stage]
+    private static void AddOre(int lineNumber, string line, MapGrid grid)
+    {
+        var parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length is not (5 or 6))
+        {
+            throw Error(lineNumber, 1, $"expected '{parts[0]} <x> <y> <width> <height> [stage]'");
+        }
+
+        var x = ParseNumber(lineNumber, line, parts[1], 1);
+        var y = ParseNumber(lineNumber, line, parts[2], 2);
+        var width = ParseNumber(lineNumber, line, parts[3], 3);
+        var height = ParseNumber(lineNumber, line, parts[4], 4);
+        if (width == 0 || height == 0)
+        {
+            throw Error(lineNumber, ColumnOfPart(line, 3), $"the field must be at least 1x1, got {width}x{height}");
+        }
+
+        if (x >= grid.Width || y >= grid.Height || width > grid.Width - x || height > grid.Height - y)
+        {
+            throw Error(
+                lineNumber,
+                ColumnOfPart(line, 1),
+                $"cells ({x}, {y})…({x + (long)width - 1}, {y + (long)height - 1}) are outside the {grid.Width}x{grid.Height} map");
+        }
+
+        var stage = parts.Length == 6 ? ParseNumber(lineNumber, line, parts[5], 5) : OreCell.MaxStage;
+        if (stage > OreCell.MaxStage)
+        {
+            throw Error(lineNumber, ColumnOfPart(line, 5), $"stage must be 0…{OreCell.MaxStage}, got {stage}");
+        }
+
+        var ore = new OreCell(parts[0] == "gems" ? OreKind.Gems : OreKind.Ore, stage);
+        for (var cy = y; cy < y + height; cy++)
+        {
+            for (var cx = x; cx < x + width; cx++)
+            {
+                var cell = new CellPos(cx, cy);
+                if (!OreGrowthSystem.CanTakeOre(grid, cell))
+                {
+                    throw Error(
+                        lineNumber,
+                        ColumnOfPart(line, 1),
+                        $"cell ({cx}, {cy}) cannot take ore: it needs clear or rough land with no ore, building, obstacle, map object or bridge");
+                }
+
+                grid.SetOre(cell, ore);
+            }
+        }
+    }
+
     // unit <id> <x> <y> player=<n>
     private static TestMapUnit ParseUnit(int lineNumber, string line, MapGrid grid, GameRules? rules)
     {
@@ -308,7 +376,35 @@ public static class TestMapParser
             ? value
             : throw Error(lineNumber, ColumnOf(line, text), $"'{text}' is not a number");
 
+    private static int ParseNumber(int lineNumber, string line, string text, int index) =>
+        int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : throw Error(lineNumber, ColumnOfPart(line, index), $"'{text}' is not a number");
+
     private static int ColumnOf(string line, string part) => line.IndexOf(part, StringComparison.Ordinal) + 1;
+
+    // The column of the index-th word of the line, for lines whose words may repeat (the numbers of an ore line).
+    private static int ColumnOfPart(string line, int index)
+    {
+        var column = 0;
+        for (var word = 0; ; word++)
+        {
+            while (line[column] is ' ' or '\t')
+            {
+                column++;
+            }
+
+            if (word == index)
+            {
+                return column + 1;
+            }
+
+            while (column < line.Length && line[column] is not (' ' or '\t'))
+            {
+                column++;
+            }
+        }
+    }
 
     private static InvalidDataException Error(int line, int column, string message) =>
         new(line == 0 ? $"Test map: {message}." : $"Test map, line {line}, column {column}: {message}.");

@@ -119,3 +119,9 @@ building neutral_shed 40 58
 building tech_oil_derrick 46 52
 building tech_hospital 50 56
 building tech_airfield 55 52
+
+// Ore of M3 (docs/implementation/M3_base_economy.md, step 14): a field of ore at stage 8 on the rough land west of the blue
+// base, a few cells from the construction yard (19…21, 21…23), and a small patch of gems between them, so a refinery's
+// harvester earns money. Ore takes no part in movement; both lie west of x = 20, off the --smoke routes.
+ore 6 24 8 6 8
+gems 16 28 3 2
