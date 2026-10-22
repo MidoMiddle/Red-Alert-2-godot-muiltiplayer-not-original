@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Rts.Simulation.Combat;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
@@ -24,13 +25,11 @@ public static class WeaponSystem
     /// <summary>How far off the target a weapon may point and still fire: 8 of 256 parts of a turn (RA2).</summary>
     public const int AimTolerance = BAngle.FullTurn * 8 / 256;
 
-    /// <summary>A shot of this tick, launched after the walk: the list of entities must not change while it is walked.</summary>
-    private readonly record struct Shot(PlayerId Owner, EntityId Shooter, int Weapon, EntityId? Target, WorldPos Origin, WorldPos AimAt);
-
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
         var rules = world.Rules;
-        var shots = new List<Shot>();
+        var shots = world.Shots;
+        shots.Clear();
         foreach (var entity in world.Entities)
         {
             switch (entity)
@@ -48,6 +47,8 @@ public static class WeaponSystem
         {
             Launch(world, rules, shot, events);
         }
+
+        shots.Clear();
     }
 
     /// <summary>
@@ -138,7 +139,7 @@ public static class WeaponSystem
         }
 
         var distance = DamageCalculator.Distance(unit.Position, aimAt);
-        int[] slots = [archetype.Primary, archetype.Secondary];
+        var slots = rules.WeaponsOf(unit.Type);
         EntityId? targetId = hasTarget ? target.Id : null;
         if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, events) is { } weapon)
         {
@@ -160,7 +161,7 @@ public static class WeaponSystem
         var centre = Aim.CentreOf(building);
         var aimAt = Aim.NearestPoint(target, centre);
         var distance = DamageCalculator.Distance(centre, aimAt);
-        int[] slots = [rules.WeaponOfBuilding(building.DefIndex)];
+        var slots = rules.WeaponsOfBuilding(building.DefIndex);
         if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, events) is { } weapon)
         {
             shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
@@ -172,7 +173,7 @@ public static class WeaponSystem
     /// weapon that cannot fire now is broken off. Gives the place of the weapon that fired in the rules, or null.
     /// </summary>
     private static int? Fire(
-        GameWorld world, GameRules rules, EntityId shooter, EntityId? target, WeaponInstance[] weapons, int[] slots, int distance, bool aimed,
+        GameWorld world, GameRules rules, EntityId shooter, EntityId? target, WeaponInstance[] weapons, ImmutableArray<int> slots, int distance, bool aimed,
         List<SimEvent>? events)
     {
         var chosen = -1;
@@ -220,7 +221,7 @@ public static class WeaponSystem
     }
 
     /// <summary>Whether one of the weapons hits ground targets and reaches <paramref name="distance"/> leptons.</summary>
-    internal static bool Reaches(GameRules rules, int[] weapons, int distance)
+    internal static bool Reaches(GameRules rules, ImmutableArray<int> weapons, int distance)
     {
         foreach (var weapon in weapons)
         {

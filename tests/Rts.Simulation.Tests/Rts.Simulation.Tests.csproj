@@ -31,6 +31,8 @@
   <!-- The load scenario of the benchmarks (docs/implementation/M2_unit_control.md, 4.15), run here without timing. -->
   <ItemGroup>
     <Compile Include="../../src/Rts.Simulation.Benchmarks/LoadScenario.cs" Link="Benchmarks/LoadScenario.cs" />
+    <Compile Include="../../src/Rts.Simulation.Benchmarks/BattleScenario.cs" Link="Benchmarks/BattleScenario.cs" />
+    <Compile Include="../../src/Rts.Simulation.Benchmarks/BattleBases.cs" Link="Benchmarks/BattleBases.cs" />
     <Compile Include="../../src/Rts.Simulation.Benchmarks/LoadMapGenerator.cs" Link="Benchmarks/LoadMapGenerator.cs" />
     <Compile Include="../../src/Rts.Simulation.Benchmarks/SquadMap.cs" Link="Benchmarks/SquadMap.cs" />
   </ItemGroup>

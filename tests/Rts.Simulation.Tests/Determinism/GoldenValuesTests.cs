@@ -214,6 +214,24 @@ public sealed class GoldenValuesTests
     }
 
     [Fact]
+    public void Battle_checksums()
+    {
+        var checksums = BattleDeterminismTests.Once.Value;
+
+        StateChecksum[] actual = [.. checksums.Where(c => c.Tick is 1000 or 2000 or 3000)];
+
+        // Rules v37 (M4 step 15): the general battle, 150 against 150 with their bases on the load map — projectiles, damage,
+        // crushing, defenses, power, the fog and the attack notices all in one fight.
+        StateChecksum[] expected =
+        [
+            new(1000, 0x379ec3137256a620UL),
+            new(2000, 0x0e2b385408601166UL),
+            new(3000, 0xd8e7c11d7f8c1922UL),
+        ];
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
     public void Reference_scenario_replay_bytes()
     {
         var live = new GameSimulation(ReferenceScenario.Settings(), TestRules.Standard);

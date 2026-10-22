@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Rts.Simulation.Combat;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
@@ -32,7 +33,7 @@ public static class TargetingSystem
     public static void Update(GameWorld world)
     {
         var rules = world.Rules;
-        var nearby = new List<EntityId>();
+        var nearby = world.Nearby;
         foreach (var entity in world.Entities)
         {
             if (entity is Unit { IsAlive: true, TargetOrder: not TargetOrder.None } ordered)
@@ -49,7 +50,7 @@ public static class TargetingSystem
             {
                 case Unit unit when unit.Weapons.Length > 0 && unit.TargetOrder == TargetOrder.None && !IsMoving(unit):
                     {
-                        var weapons = WeaponsOf(unit);
+                        var weapons = rules.WeaponsOf(unit.Type);
                         var reach = Reach(rules, weapons);
                         if (!unit.Archetype.Harvests && unit.Stance != Stance.HoldPosition)
                         {
@@ -70,7 +71,7 @@ public static class TargetingSystem
 
                 case Building { IsReady: true } building when building.Weapons.Length > 0:
                     {
-                        int[] weapons = [rules.WeaponOfBuilding(building.DefIndex)];
+                        var weapons = rules.WeaponsOfBuilding(building.DefIndex);
                         var centre = Aim.CentreOf(building);
                         building.Target = Best(world, rules, building, new Area(centre, Reach(rules, weapons), centre, -1), weapons, building.Target, nearby);
                         break;
@@ -82,11 +83,9 @@ public static class TargetingSystem
     /// <summary>Whether <paramref name="id"/> looks again on this tick: once in <see cref="Period"/> ticks, spread by id.</summary>
     public static bool IsLookTick(GameWorld world, EntityId id) => (world.CurrentTick + id.Value) % Period == 0;
 
-    /// <summary>The places in the rules of the unit's primary and secondary weapon; -1 for none.</summary>
-    internal static int[] WeaponsOf(Unit unit) => [unit.Archetype.Primary, unit.Archetype.Secondary];
 
     /// <summary>Whether one of the weapons hits ground targets.</summary>
-    internal static bool HitsGround(GameRules rules, int[] weapons)
+    internal static bool HitsGround(GameRules rules, ImmutableArray<int> weapons)
     {
         foreach (var weapon in weapons)
         {
@@ -102,7 +101,7 @@ public static class TargetingSystem
     /// <summary>
     /// The best share in percent of the weapons that hit ground against the candidate's armor; 0 when none can hurt it.
     /// </summary>
-    internal static int BestShare(GameRules rules, int[] weapons, Entity candidate)
+    internal static int BestShare(GameRules rules, ImmutableArray<int> weapons, Entity candidate)
     {
         var armor = candidate switch
         {
@@ -157,7 +156,7 @@ public static class TargetingSystem
     }
 
     /// <summary>The longest range of the weapons, in leptons.</summary>
-    private static int Reach(GameRules rules, int[] weapons)
+    private static int Reach(GameRules rules, ImmutableArray<int> weapons)
     {
         var reach = 0;
         foreach (var weapon in weapons)
@@ -171,7 +170,7 @@ public static class TargetingSystem
         return reach;
     }
 
-    private static EntityId? Best(GameWorld world, GameRules rules, Entity me, Area area, int[] weapons, EntityId? current, List<EntityId> nearby)
+    private static EntityId? Best(GameWorld world, GameRules rules, Entity me, Area area, ImmutableArray<int> weapons, EntityId? current, List<EntityId> nearby)
     {
         var from = area.From;
         world.Spatial.QueryRadius(world, from, area.Reach, nearby);

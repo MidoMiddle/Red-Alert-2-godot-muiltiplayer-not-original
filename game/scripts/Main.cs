@@ -5,6 +5,7 @@ using Godot;
 using Rts.Client.Debug;
 using Rts.Client.Orders;
 using Rts.Simulation;
+using Rts.Simulation.Benchmarks;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
@@ -72,6 +73,10 @@ public partial class Main : Node3D
         {
             CallDeferred(MethodName.RunPerf);
         }
+        else if (SimulationHost.IsBattle)
+        {
+            CallDeferred(MethodName.RunPerfBattle);
+        }
         else if (args.Contains("--check-camera"))
         {
             CallDeferred(MethodName.RunCameraCheck);
@@ -108,6 +113,30 @@ public partial class Main : Node3D
         _perfFrames = new List<double>();
     }
 
+    /// <summary>
+    /// <c>--perf-battle</c> (docs/implementation/M4_combat.md, 4.21, step 15): the general battle of 150 against 150 on the load map,
+    /// the camera zoomed out over the clash — shots, projectiles, explosions, health bars and the fog all at once; measured as
+    /// <c>--perf</c>, from the charge on.
+    /// </summary>
+    private void RunPerfBattle()
+    {
+        var camera = GetNode<RtsCamera>("CameraRig");
+        var middle = (BattleScenario.BlueLeft + BattleScenario.RedLeft + 2 * BattleScenario.Columns) / 2f;
+        camera.CenterOn(new Vector3(middle, 0f, BattleScenario.Top + BattleScenario.Rows));
+        camera.ZoomOutFully();
+        _perfFrames = new List<double>();
+        _perfStart = ChargeBattle;
+    }
+
+    /// <summary>Both armies of the battle charge, once they have spawned (on the first tick).</summary>
+    private bool ChargeBattle()
+    {
+        var simulation = GetNode<SimulationHost>("SimulationHost").Simulation;
+        BattleScenario.Charge(simulation);
+        GD.Print($"[perf] {simulation.World.Entities.Count} units charge, window {GetViewport().GetVisibleRect().Size}");
+        return true;
+    }
+
     /// <summary>The orders of the performance run, once the map's units have spawned (on the first tick).</summary>
     private bool OrderPerfGroups()
     {
@@ -130,6 +159,7 @@ public partial class Main : Node3D
     private const int PerfGroupSize = 75;
     private const double PerfSeconds = 20;
     private List<double>? _perfFrames;
+    private Func<bool>? _perfStart;
     private bool _perfOrdered;
 
     /// <summary>Collects frame times of the performance run and prints the result at the end.</summary>
@@ -144,7 +174,7 @@ public partial class Main : Node3D
         {
             if (GetNode<SimulationHost>("SimulationHost").Simulation.World.Entities.Count > 0)
             {
-                _perfOrdered = OrderPerfGroups();
+                _perfOrdered = (_perfStart ?? OrderPerfGroups)();
             }
 
             return;

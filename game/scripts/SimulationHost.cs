@@ -11,6 +11,7 @@ using Rts.Client.Units;
 using Rts.Data;
 using Rts.Data.Maps;
 using Rts.Simulation;
+using Rts.Simulation.Benchmarks;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
@@ -47,7 +48,10 @@ public partial class SimulationHost : Node
     /// <summary>The sandbox map with every land type and its starting units (docs/implementation/M2_unit_control.md, 4.3).</summary>
     public const string SandboxMapPath = "res://maps/test/sandbox.txt";
 
-    /// <summary>The load map of 300 units (docs/implementation/M2_unit_control.md, 4.15), played with <c>--perf</c>.</summary>
+    /// <summary>
+    /// The load map of 300 units (docs/implementation/M2_unit_control.md, 4.15), played with <c>--perf</c>; its land carries the
+    /// general battle of <c>--perf-battle</c> (M4 step 15).
+    /// </summary>
     public const string LoadMapPath = "res://maps/test/load128.txt";
 
     /// <summary>
@@ -58,6 +62,12 @@ public partial class SimulationHost : Node
     /// </summary>
     /// <summary>The scene router argument with the path of the map to play.</summary>
     public const string MapArgument = "map";
+
+    /// <summary>
+    /// <c>--perf-battle</c>: the live session is the general battle of M4 (<see cref="BattleScenario"/>, both armies without their
+    /// bases) on the land of the load map, instead of the map's own units.
+    /// </summary>
+    public static bool IsBattle => OS.GetCmdlineUserArgs().Contains("--perf-battle");
 
     public static string MapPath
     {
@@ -76,7 +86,7 @@ public partial class SimulationHost : Node
                 return Godot.FileAccess.FileExists(rtsmap) ? rtsmap : $"res://maps/test/{args[index + 1]}.txt";
             }
 
-            return args.Contains("--perf") ? LoadMapPath : SandboxMapPath;
+            return args.Contains("--perf") || IsBattle ? LoadMapPath : SandboxMapPath;
         }
     }
 
@@ -178,7 +188,9 @@ public partial class SimulationHost : Node
     {
         QueueHistory.Clear();
         var map = LoadMap(MapPath);
-        Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid), Data.Rules);
+        Simulation = IsBattle
+            ? BattleScenario.Create(map.Grid, Data.Rules)
+            : new GameSimulation(new SimulationSettings(MatchSeed, map.Grid), Data.Rules);
         _recorder = new ReplayRecorder(Simulation, dataHash: DataHash);
         _playback = null;
         _nextSequence = 0;
@@ -187,7 +199,11 @@ public partial class SimulationHost : Node
         ReplayStatus = "";
 
         // Starting units are commands too, so they end up in the replay.
-        SpawnMapUnits(map.Units);
+        if (!IsBattle)
+        {
+            SpawnMapUnits(map.Units);
+        }
+
         GD.Print("[host] live session started");
     }
 

@@ -77,7 +77,7 @@ public sealed class GameWorld
     public GameRules Rules { get; }
 
     /// <summary>The economy of the players 1…8, in order (docs/implementation/M3_base_economy.md, 4.7).</summary>
-    public IReadOnlyList<PlayerState> Players => _players;
+    public PlayerList Players => new(_players);
 
     /// <summary>
     /// Set when the buildings of a player changed (one is placed, finished growing or destroyed); <see cref="Systems.PowerSystem"/>
@@ -109,6 +109,24 @@ public sealed class GameWorld
     /// </summary>
     internal List<Building> Wrecks { get; } = [];
 
+    /// <summary>
+    /// Lists the systems fill and empty within one call (M4 step 15): kept here so a tick allocates none. Never state, and no system
+    /// relies on what another left in them.
+    /// </summary>
+    internal List<EntityId> Nearby { get; } = [];
+
+    /// <inheritdoc cref="Nearby"/>
+    internal List<EntityId> Area { get; } = [];
+
+    /// <inheritdoc cref="Nearby"/>
+    internal List<Combat.Shot> Shots { get; } = [];
+
+    /// <summary>The ready factories of every player by category and the main one of each (production, M4 step 15): reused every tick.</summary>
+    internal int[,] FactoryCounts { get; } = new int[PlayerId.MaxPlayers, 4];
+
+    /// <inheritdoc cref="FactoryCounts"/>
+    internal Building?[,] MainFactories { get; } = new Building?[PlayerId.MaxPlayers, 4];
+
     public int WidthCells => Map.Width;
 
     public int HeightCells => Map.Height;
@@ -117,7 +135,7 @@ public sealed class GameWorld
     public EntityId NextEntityId => new(_nextEntityId);
 
     /// <summary>All entities in increasing id order, including ones marked dead during the current tick.</summary>
-    public IReadOnlyList<Entity> Entities => _entities;
+    public EntityList Entities => new(_entities);
 
     /// <summary>True when the position is inside the map.</summary>
     public bool Contains(WorldPos position) =>

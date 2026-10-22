@@ -53,6 +53,12 @@ public sealed class GameSimulation
     /// <summary>Schedules a command. Its tick must not have been executed yet.</summary>
     public void Enqueue(Command command) => _commands.Enqueue(command);
 
+    /// <summary>
+    /// Measuring only (M4 step 15, the benchmarks): called after each phase of <see cref="Step"/> with its name, so its time and memory
+    /// can be taken. Null in a match.
+    /// </summary>
+    internal System.Action<string>? Probe { get; set; }
+
     /// <summary>Executes tick <see cref="CurrentTick"/>.</summary>
     public void Step()
     {
@@ -61,16 +67,22 @@ public sealed class GameSimulation
 
         // 0. What appeared between ticks — the buildings of the map, the units of a test — is seen before the commands (M4 step 11).
         VisibilitySystem.Update(World);
+        Probe?.Invoke("vision before");
 
         // 1. Commands of tick T, ordered by (Player, Sequence), validated and applied.
-        foreach (var command in _commands.TakeForTick(tick))
+        // By index: a foreach over the interface would box its enumerator every tick (M4 step 15).
+        var commands = _commands.TakeForTick(tick);
+        for (var i = 0; i < commands.Count; i++)
         {
-            _executedCommands.Add(command);
-            CommandProcessor.Apply(World, command, _events);
+            _executedCommands.Add(commands[i]);
+            CommandProcessor.Apply(World, commands[i], _events);
         }
+
+        Probe?.Invoke("commands");
 
         // 2. Path searches within the node budget (docs/implementation/M2_unit_control.md, 4.12).
         World.PathRequests.Process(World, _events);
+        Probe?.Invoke("paths");
 
         // 3. Power, when the buildings changed (docs/implementation/M3_base_economy.md, 4.15), production, new buildings grow, harvesters work, repairs.
         PowerSystem.Update(World, _events);
@@ -78,24 +90,35 @@ public sealed class GameSimulation
         BuildUpSystem.Update(World, _events);
         HarvesterSystem.Update(World, _events);
         RepairSystem.Update(World, _events);
+        Probe?.Invoke("economy");
         TargetingSystem.Update(World);
+        Probe?.Invoke("targeting");
         PursuitSystem.Update(World);
+        Probe?.Invoke("pursuit");
         WeaponSystem.Update(World, _events);
+        Probe?.Invoke("weapons");
         ProjectileSystem.Update(World, _events);
+        Probe?.Invoke("projectiles");
         DamageSystem.Update(World, _events);
+        Probe?.Invoke("damage");
 
         // 4. Movement.
         MovementSystem.Update(World, _events);
+        Probe?.Invoke("movement");
         World.Spatial.Sync(World);
+        Probe?.Invoke("index");
 
         // 5. Ore grows and spreads (by its interval), then technologies, when the buildings changed.
         OreGrowthSystem.Update(World);
         TechTree.Update(World, _events);
+        Probe?.Invoke("ore and tech");
 
         // 6. The cells of the buildings that fell open (M4 step 9), the players see anew (step 11); entities that died this tick leave the world.
         DeathSystem.Update(World, _events);
         VisibilitySystem.Update(World);
+        Probe?.Invoke("death and vision");
         World.RemoveDead();
+        Probe?.Invoke("remove dead");
 
         // 7. Next tick.
         World.CurrentTick = tick + 1;
@@ -105,5 +128,7 @@ public sealed class GameSimulation
         {
             LastChecksum = new StateChecksum(World.CurrentTick, StateHasher.Compute(World));
         }
+
+        Probe?.Invoke("hash");
     }
 }

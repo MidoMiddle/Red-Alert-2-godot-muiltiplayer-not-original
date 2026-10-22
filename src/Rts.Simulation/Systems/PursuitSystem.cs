@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Rts.Simulation.Combat;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
@@ -50,7 +51,7 @@ public static class PursuitSystem
                 continue;
             }
 
-            var weapons = TargetingSystem.WeaponsOf(unit);
+            var weapons = rules.WeaponsOf(unit.Type);
             var crushing = CrushesOnItsOwn(world, unit);
             if (!crushing && WeaponSystem.Reaches(rules, weapons, DamageCalculator.Distance(unit.Position, goal)))
             {

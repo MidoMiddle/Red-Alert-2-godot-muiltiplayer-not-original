@@ -31,7 +31,7 @@ public static class DamageSystem
 
         world.Hits.Sort(Compare);
         var rules = world.Rules;
-        var area = new List<EntityId>();
+        var area = world.Area;
         foreach (var hit in world.Hits)
         {
             Apply(world, rules, hit, area, events);

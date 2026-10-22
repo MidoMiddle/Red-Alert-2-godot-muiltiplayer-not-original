@@ -12,4 +12,9 @@
     <ProjectReference Include="../src/Rts.MapGen/Rts.MapGen.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The general battle of M4 step 15, played by the perf-battle mode of Main (docs/implementation/M4_combat.md, 4.21). -->
+    <Compile Include="../src/Rts.Simulation.Benchmarks/BattleScenario.cs" Link="Benchmarks/BattleScenario.cs" />
+  </ItemGroup>
+
 </Project>

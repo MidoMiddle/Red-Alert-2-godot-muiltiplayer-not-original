@@ -61,8 +61,7 @@ public sealed class SpatialIndex
         }
 
         var radiusSquared = radius * radius;
-        Collect(world, center.X - radius, center.Y - radius, center.X + radius, center.Y + radius, results,
-            position => (position - center).LengthSquared <= radiusSquared);
+        Collect(world, center.X - radius, center.Y - radius, center.X + radius, center.Y + radius, results, new Circle(center, radiusSquared));
     }
 
     /// <summary>Ids of the units inside the rectangle spanned by two corners (inclusive, in any order), sorted.</summary>
@@ -73,8 +72,7 @@ public sealed class SpatialIndex
         var minY = IntMath.Min(corner.Y, opposite.Y);
         var maxX = IntMath.Max(corner.X, opposite.X);
         var maxY = IntMath.Max(corner.Y, opposite.Y);
-        Collect(world, minX, minY, maxX, maxY, results,
-            position => position.X >= minX && position.X <= maxX && position.Y >= minY && position.Y <= maxY);
+        Collect(world, minX, minY, maxX, maxY, results, new Rect(minX, minY, maxX, maxY));
     }
 
     internal void Add(Unit unit)
@@ -130,7 +128,27 @@ public sealed class SpatialIndex
         }
     }
 
-    private void Collect(GameWorld world, long minX, long minY, long maxX, long maxY, List<EntityId> results, Func<WorldPos, bool> inside)
+    /// <summary>
+    /// The area a query keeps. A struct, so a query allocates nothing (M4 step 15: targeting asks many times a tick); the generic
+    /// <see cref="Collect"/> calls it without boxing.
+    /// </summary>
+    private interface IArea
+    {
+        bool Holds(WorldPos position);
+    }
+
+    private readonly record struct Circle(WorldPos Centre, long RadiusSquared) : IArea
+    {
+        public bool Holds(WorldPos position) => (position - Centre).LengthSquared <= RadiusSquared;
+    }
+
+    private readonly record struct Rect(long MinX, long MinY, long MaxX, long MaxY) : IArea
+    {
+        public bool Holds(WorldPos position) => position.X >= MinX && position.X <= MaxX && position.Y >= MinY && position.Y <= MaxY;
+    }
+
+    private void Collect<TArea>(GameWorld world, long minX, long minY, long maxX, long maxY, List<EntityId> results, TArea inside)
+        where TArea : struct, IArea
     {
         var firstColumn = (int)IntMath.Clamp(IntMath.DivFloor(minX, BucketLeptons), 0, Columns - 1);
         var lastColumn = (int)IntMath.Clamp(IntMath.DivFloor(maxX, BucketLeptons), 0, Columns - 1);
@@ -142,7 +160,7 @@ public sealed class SpatialIndex
             {
                 foreach (var id in _buckets[row * Columns + column])
                 {
-                    if (world.TryGet(id, out var entity) && entity is Unit unit && inside(unit.Position))
+                    if (world.TryGet(id, out var entity) && entity is Unit unit && inside.Holds(unit.Position))
                     {
                         results.Add(id);
                     }

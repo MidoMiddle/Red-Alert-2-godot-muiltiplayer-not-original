@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.World;
@@ -26,6 +27,8 @@ public sealed class GameRules
     private readonly Fixed[] _verses;
     private readonly int[] _buildingArmor;
     private readonly int[] _buildingWeapon;
+    private readonly ImmutableArray<int>[] _unitWeapons;
+    private readonly ImmutableArray<int>[] _buildingWeapons;
 
     private GameRules(
         RulesDatabase database, UnitArchetype[] units, LandSpeeds land, bool[] buildable, Fixed[] verses, int[] buildingArmor, int[] buildingWeapon)
@@ -37,6 +40,10 @@ public sealed class GameRules
         _buildable = buildable;
         _verses = verses;
         _buildingArmor = buildingArmor;
+
+        // The weapons of every unit type and building, laid out once (M4 step 15), so a tick builds no arrays for them.
+        _unitWeapons = System.Array.ConvertAll(units, unit => ImmutableArray.Create(unit.Primary, unit.Secondary));
+        _buildingWeapons = System.Array.ConvertAll(buildingWeapon, weapon => ImmutableArray.Create(weapon));
     }
 
     /// <summary>The definitions the rules are made from.</summary>
@@ -76,6 +83,12 @@ public sealed class GameRules
 
     /// <summary>The weapon of the building at <paramref name="defIndex"/>, its place in <see cref="RulesDatabase.Weapons"/>; -1 without one.</summary>
     public int WeaponOfBuilding(int defIndex) => _buildingWeapon[defIndex];
+
+    /// <summary>The primary and the secondary weapon of a unit type, their places in <see cref="RulesDatabase.Weapons"/>; -1 for none.</summary>
+    public ImmutableArray<int> WeaponsOf(UnitType type) => _unitWeapons[(int)type - 1];
+
+    /// <summary>The weapon of the building at <paramref name="defIndex"/> as a list of one, -1 without one.</summary>
+    public ImmutableArray<int> WeaponsOfBuilding(int defIndex) => _buildingWeapons[defIndex];
 
     public UnitArchetype Unit(UnitType type) => UnitTypes.IsKnown(type)
         ? _units[(int)type - 1]

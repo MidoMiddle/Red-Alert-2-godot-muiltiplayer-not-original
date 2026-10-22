@@ -3,6 +3,7 @@ using Rts.Simulation.Benchmarks;
 
 // dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --load        stopwatch run of the load scenario
 // dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --phases      the same, timed phase by phase
+// dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --battle      stopwatch run of the general battle of M4 step 15
 // dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --write-map   regenerate game/maps/test/load128.txt and squad.txt
 // dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --filter '*'  BenchmarkDotNet
 var root = LoadScenario.RepoRoot(Directory.GetCurrentDirectory());
@@ -18,6 +19,10 @@ if (args.Contains("--write-map"))
 else if (args.Contains("--phases"))
 {
     PhaseRun.Run(root);
+}
+else if (args.Contains("--battle"))
+{
+    BattleRun.Run(root);
 }
 else if (args.Contains("--load"))
 {

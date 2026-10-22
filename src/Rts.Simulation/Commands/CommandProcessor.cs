@@ -177,7 +177,7 @@ public static class CommandProcessor
         var any = false;
         foreach (var unit in OwnUnits(world, command))
         {
-            if (unit.Weapons.Length > 0 && TargetingSystem.BestShare(world.Rules, TargetingSystem.WeaponsOf(unit), target) > 0)
+            if (unit.Weapons.Length > 0 && TargetingSystem.BestShare(world.Rules, world.Rules.WeaponsOf(unit.Type), target) > 0)
             {
                 Order(world, unit, TargetOrder.Attack, target.Id, null);
                 any = true;
@@ -209,7 +209,7 @@ public static class CommandProcessor
         var any = false;
         foreach (var unit in OwnUnits(world, command))
         {
-            if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.HitsGround(world.Rules, TargetingSystem.WeaponsOf(unit)))
+            if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.HitsGround(world.Rules, world.Rules.WeaponsOf(unit.Type)))
             {
                 Order(world, unit, TargetOrder.Force, target?.Id, target is null ? command.Point : null);
                 any = true;

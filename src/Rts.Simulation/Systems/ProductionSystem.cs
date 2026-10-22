@@ -166,11 +166,16 @@ public static class ProductionSystem
         return null;
     }
 
-    /// <summary>For every player and category: how many ready factories it has, and the main one — the last built.</summary>
+    /// <summary>
+    /// For every player and category: how many ready factories it has, and the main one — the last built; in the world's reused
+    /// tables (M4 step 15).
+    /// </summary>
     private static (int[,] Counts, Building?[,] Mains) Factories(GameWorld world)
     {
-        var counts = new int[PlayerId.MaxPlayers, Categories];
-        var mains = new Building?[PlayerId.MaxPlayers, Categories];
+        var counts = world.FactoryCounts;
+        var mains = world.MainFactories;
+        System.Array.Clear(counts);
+        System.Array.Clear(mains);
         foreach (var entity in world.Entities)
         {
             if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && !building.Owner.IsNeutral)
