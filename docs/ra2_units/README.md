@@ -212,6 +212,7 @@
 ra2_units/
 ├── README.md                     этот файл
 ├── generation_requirements.md    общие требования к генерации моделей
+├── unlock_order.md               очерёдность открытия юнитов
 ├── allies/<юнит>/README.md       карточка: роль, характеристики, механики
 ├── allies/<юнит>/appearance.md   внешний вид
 ├── allies/<юнит>/sounds.md       голоса и звуки
@@ -221,6 +222,8 @@ ra2_units/
 ├── soviets/<юнит>/sounds.md
 └── soviets/<юнит>/prompts.md
 ```
+
+Очерёдность открытия юнитов (какие здания нужны и на каком этапе) — в [unlock_order.md](unlock_order.md).
 
 Каждый юнит описан в четырёх документах.
 
