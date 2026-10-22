@@ -33,8 +33,11 @@ public partial class FogOfWar : Node3D
     /// <summary>The texture of the fog for the minimap: black, opaque on the shroud, half on the fog, clear where it is seen.</summary>
     public ImageTexture? MinimapMask { get; private set; }
 
-    /// <summary>True while the whole map is shown (debug).</summary>
+    /// <summary>True while the whole map is shown (debug, and for a player who lost the match).</summary>
     public bool Revealed { get; private set; }
+
+    /// <summary>Shows the whole map from now on: a player who lost the match watches the rest of it (M5 step 10).</summary>
+    public void Reveal() => Revealed = true;
 
     /// <summary>
     /// Whether the local player is to see <paramref name="entity"/> on screen: its own always, another's while seen (step 11), all

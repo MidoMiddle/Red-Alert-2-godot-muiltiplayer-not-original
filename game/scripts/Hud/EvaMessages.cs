@@ -32,6 +32,8 @@ public sealed class EvaMessages
         CannotPlace refused when refused.Player == player => "UI_EVA_CANNOT_PLACE",
         OreDepleted => "UI_EVA_ORE_DEPLETED",
         UnderAttack attack when attack.Player == player => "UI_EVA_UNDER_ATTACK",
+        PlayerDefeated defeated => defeated.Player == player ? "UI_EVA_YOU_ARE_DEFEATED" : "UI_EVA_PLAYER_DEFEATED",
+        MatchEnded ended => ended.Winners.Contains(player) ? "UI_EVA_VICTORY" : "UI_EVA_DEFEAT",
         _ => null,
     };
 

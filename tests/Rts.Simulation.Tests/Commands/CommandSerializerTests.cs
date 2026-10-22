@@ -143,6 +143,7 @@ public sealed class CommandSerializerTests
         new SetStanceCommand(new PlayerId(4), 6, 5, [new EntityId(8)], Stance.Guard),
         // An unknown stance still round-trips: the processor rejects it.
         new SetStanceCommand(new PlayerId(4), 6, 6, [], (Stance)9),
+        new SurrenderCommand(new PlayerId(2), 7, 1),
     };
 
     [Theory]

@@ -77,6 +77,9 @@ public enum DeathCause
 
     /// <summary>Driven over by a crushing vehicle (step 8).</summary>
     Crushed,
+
+    /// <summary>What was left of a player who lost the match (M5 step 10).</summary>
+    Defeat,
 }
 
 /// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
@@ -99,6 +102,12 @@ public sealed record LowPower(int Tick, PlayerId Player) : SimEvent(Tick);
 /// attack". Once in <see cref="Systems.DamageSystem.UnderAttackTicks"/> per player at most, so the notice does not repeat.
 /// </summary>
 public sealed record UnderAttack(int Tick, PlayerId Player, WorldPos Point) : SimEvent(Tick);
+
+/// <summary><paramref name="Player"/> lost the match, by <see cref="Matches.VictorySystem"/> or a surrender (M5, 4.8, step 10).</summary>
+public sealed record PlayerDefeated(int Tick, PlayerId Player) : SimEvent(Tick);
+
+/// <summary>The match is over: <paramref name="Winners"/> are the players of one team still standing; none for a draw (M5 step 10).</summary>
+public sealed record MatchEnded(int Tick, System.Collections.Immutable.ImmutableArray<PlayerId> Winners) : SimEvent(Tick);
 
 /// <summary>The player produces enough power again.</summary>
 public sealed record PowerRestored(int Tick, PlayerId Player) : SimEvent(Tick);

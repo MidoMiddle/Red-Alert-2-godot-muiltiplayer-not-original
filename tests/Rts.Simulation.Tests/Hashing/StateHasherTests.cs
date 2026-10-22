@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "credits", "under attack", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
+        "vision", "explored", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
         "building hp", "building target", "building reload",
     };
 
@@ -69,6 +69,7 @@ public sealed class StateHasherTests
             case "unit hp": moving.Hp--; break;
             case "attack target": moving.Target = idle.Id; break;
             case "under attack": world.Player(new PlayerId(2)).LastUnderAttack = 0; break;
+            case "defeated": world.Player(new PlayerId(2)).DefeatedTick = 0; break;
             case "vision": world.VisionOf(new PlayerId(1)).Reveal(new CellPos(1, 1), 0); world.VisionOf(new PlayerId(1)).Hide(new CellPos(1, 1), 0); world.VisionOf(new PlayerId(2)).Reveal(new CellPos(30, 30), 1); break;
             case "explored": world.VisionOf(new PlayerId(3)).Reveal(new CellPos(2, 2), 0); world.VisionOf(new PlayerId(3)).Hide(new CellPos(2, 2), 0); break;
             case "stance": moving.Stance = Stance.Guard; break;
@@ -260,6 +261,8 @@ public sealed class StateHasherTests
         "<Rules>k__BackingField",
         // The players (M3 step 5): their credits are hashed; the marks that power and technologies need working out are derived.
         "_players", "<PowerDirty>k__BackingField", "<TechDirty>k__BackingField",
+        // The match setup: fixed, the replay keeps it; its result follows from the ticks of defeat (M5 step 10).
+        "<Match>k__BackingField", "<Result>k__BackingField",
     })]
     [InlineData(typeof(Harvester), new[]
     {
@@ -276,7 +279,7 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(PlayerState), new[]
     {
-        "<Credits>k__BackingField", "_queues", "<LastUnderAttack>k__BackingField",
+        "<Credits>k__BackingField", "_queues", "<LastUnderAttack>k__BackingField", "<DefeatedTick>k__BackingField",
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField",
         // Derived from the buildings by PowerSystem and TechTree (M3 step 5).

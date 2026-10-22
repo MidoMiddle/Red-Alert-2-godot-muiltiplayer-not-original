@@ -204,11 +204,12 @@ public sealed class GoldenValuesTests
         // Rules v35 (M4 step 11): the fog of war: the grids of what every player sees are hashed, and units fight only what they see.
         // Rules v36 (M4 step 13): the hash covers the tick of the last attack notice of every player (none here); the states are the same.
         // Rules v37 (M4 step 14): tanks drive over the enemy soldiers within four cells by themselves; the first difference after tick 100.
+        // Rules v38 (M5 step 10): the hash covers the tick every player lost the match on (none here, no match); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x926dcd240a5652e5UL),
-            new(500, 0xca88cafe993d24a0UL),
-            new(1000, 0x588328657cc34d40UL),
+            new(100, 0x56dd6d4938a8583dUL),
+            new(500, 0xdec220a4b8f5ceb8UL),
+            new(1000, 0x4b6f5761746cd9d8UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -222,11 +223,12 @@ public sealed class GoldenValuesTests
 
         // Rules v37 (M4 step 15): the general battle, 150 against 150 with their bases on the load map — projectiles, damage,
         // crushing, defenses, power, the fog and the attack notices all in one fight.
+        // Rules v38 (M5 step 10): the tick of defeat of every player in the hash (none, no match); the battle is the same.
         StateChecksum[] expected =
         [
-            new(1000, 0x379ec3137256a620UL),
-            new(2000, 0x0e2b385408601166UL),
-            new(3000, 0xd8e7c11d7f8c1922UL),
+            new(1000, 0x8ecef56686156ce8UL),
+            new(2000, 0xebb564b18263290eUL),
+            new(3000, 0xddb80a66c7105faaUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -287,6 +289,8 @@ public sealed class GoldenValuesTests
         // Replay format v17 (M5 step 2): one byte more, the "no match setup" flag after the map; the version changes, the commands and
         // checksums do not.
         // Replay format v18 (M5 step 3): the starts of the map in the match setup; there is no setup here, so only the version changes.
-        Assert.Equal((22269, 18068582676711296865UL), (bytes.Length, hash.Value));
+        // Replay format v19, command format v10, rules v38 (M5 step 10): the versions and the checksums change (the tick of defeat in the
+        // hash); no surrender here, so the commands are the same.
+        Assert.Equal((22269, 18352504757230659869UL), (bytes.Length, hash.Value));
     }
 }

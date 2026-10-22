@@ -87,6 +87,16 @@ public sealed class BaseVisualsTests
     }
 
     [Fact]
+    public void The_end_of_a_match_speaks_to_the_loser_the_others_and_the_winners()
+    {
+        Assert.Equal("UI_EVA_YOU_ARE_DEFEATED", EvaMessages.KeyOf(new PlayerDefeated(5, Player1), Player1));
+        Assert.Equal("UI_EVA_PLAYER_DEFEATED", EvaMessages.KeyOf(new PlayerDefeated(5, Player2), Player1));
+        Assert.Equal("UI_EVA_VICTORY", EvaMessages.KeyOf(new MatchEnded(15, [Player1]), Player1));
+        Assert.Equal("UI_EVA_DEFEAT", EvaMessages.KeyOf(new MatchEnded(15, [Player1]), Player2));
+        Assert.Equal("UI_EVA_DEFEAT", EvaMessages.KeyOf(new MatchEnded(15, []), Player1));
+    }
+
+    [Fact]
     public void The_same_notice_waits_before_it_comes_again_and_funds_wait_longer()
     {
         var messages = new EvaMessages();

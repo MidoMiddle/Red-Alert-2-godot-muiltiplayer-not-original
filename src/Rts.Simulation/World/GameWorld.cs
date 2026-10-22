@@ -64,6 +64,7 @@ public sealed class GameWorld
         }
 
         // A match: the factions and the starting units of its players (M5 step 2).
+        Match = match;
         if (match is not null)
         {
             Matches.MatchStart.Apply(this, match);
@@ -75,6 +76,14 @@ public sealed class GameWorld
     }
 
     public int CurrentTick { get; internal set; }
+
+    /// <summary>The match this world plays, or null in the sandbox: victory and defeat only in a match (M5 step 10). Not state.</summary>
+    public Matches.MatchSetup? Match { get; }
+
+    /// <summary>
+    /// How the match ended, or null while it goes on (M5 step 10). Not hashed: it follows from <see cref="PlayerState.DefeatedTick"/>.
+    /// </summary>
+    public Matches.MatchResult? Result { get; internal set; }
 
     public DeterministicRandom Random { get; }
 

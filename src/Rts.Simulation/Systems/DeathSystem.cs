@@ -29,6 +29,13 @@ public static class DeathSystem
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon));
     }
 
+    /// <summary>The building falls without a shot — <see cref="DeathCause.Defeat"/> of its owner (M5 step 10): no killer, no weapon.</summary>
+    public static void Fall(GameWorld world, Building building, DeathCause cause, List<SimEvent>? events)
+    {
+        world.DestroyBuilding(building, events);
+        events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, EntityId.None, cause, -1));
+    }
+
     /// <summary>The end of the tick, before the dead leave: the cells of the buildings that fell this tick open.</summary>
     public static void Update(GameWorld world, List<SimEvent>? events) => world.OpenWrecks(events);
 }

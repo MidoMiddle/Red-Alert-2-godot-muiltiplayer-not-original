@@ -39,6 +39,9 @@ public sealed class PlayerState
     /// <summary>The tick of the player's last <see cref="Events.UnderAttack"/>, or null before the first (M4 step 13). State: hashed.</summary>
     public int? LastUnderAttack { get; internal set; }
 
+    /// <summary>The tick the player lost the match on, or null while they play (M5 step 10). State: hashed.</summary>
+    public int? DefeatedTick { get; internal set; }
+
     /// <summary>The player's buildings that stand, ready or growing, in id order.</summary>
     public IReadOnlyList<EntityId> Buildings => BuildingList;
 

@@ -6,7 +6,8 @@ namespace Rts.Client.UI;
 /// <summary>
 /// Pause menu of the game, opened by the Menu button in the sidebar or by Esc (docs/menu/README.md, 3.4;
 /// docs/implementation/M6_menus_skirmish.md, 4.15). It stops the game tree, so the simulation, the camera and the player input
-/// stop with it. Quit to Main Menu asks first and leaves the match unsaved. Resume and Esc close the menu.
+/// stop with it. Quit to Main Menu asks first and leaves the match unsaved. Resume and Esc close the menu. In a match the player still
+/// in it may surrender (M5 step 10, decision 9.4): asked first, it gives the <c>SurrenderCommand</c> and closes the menu.
 /// </summary>
 public partial class PauseMenu : CanvasLayer
 {
@@ -14,7 +15,10 @@ public partial class PauseMenu : CanvasLayer
 
     private Control _overlay = null!;
     private Button _resume = null!;
+    private Button _surrender = null!;
     private ConfirmationDialog _leaveDialog = null!;
+    private ConfirmationDialog _surrenderDialog = null!;
+    private SimulationHost? _host;
     private bool _open;
 
     public override void _Ready()
@@ -25,10 +29,12 @@ public partial class PauseMenu : CanvasLayer
         _overlay = GetNode<Control>("Overlay");
         _resume = GetNode<Button>("Overlay/Panel/Column/Resume");
         var quit = GetNode<Button>("Overlay/Panel/Column/QuitToMenu");
+        _surrender = GetNode<Button>("Overlay/Panel/Column/Surrender");
 
         GetNode<Label>("Overlay/Panel/Column/Title").Text = Tr("UI_PAUSE_TITLE");
         _resume.Text = Tr("UI_PAUSE_RESUME");
         quit.Text = Tr("UI_PAUSE_QUIT");
+        _surrender.Text = Tr("UI_PAUSE_SURRENDER");
 
         _resume.Pressed += Close;
         quit.Pressed += () => _leaveDialog.PopupCentered();
@@ -40,12 +46,24 @@ public partial class PauseMenu : CanvasLayer
         };
         _leaveDialog.Confirmed += LeaveToMainMenu;
         AddChild(_leaveDialog);
+
+        _surrenderDialog = new ConfirmationDialog
+        {
+            Title = Tr("UI_PAUSE_SURRENDER"),
+            DialogText = Tr("UI_PAUSE_SURRENDER_TEXT"),
+        };
+        _surrenderDialog.Confirmed += Surrender;
+        AddChild(_surrenderDialog);
+        _surrender.Pressed += () => _surrenderDialog.PopupCentered();
     }
+
+    /// <summary>The match the menu gives up: without one there is nothing to surrender.</summary>
+    public void Bind(SimulationHost host) => _host = host;
 
     public override void _UnhandledInput(InputEvent inputEvent)
     {
-        // While the leave dialog is up, Escape belongs to it.
-        if (_open && !_leaveDialog.Visible && inputEvent.IsActionPressed("ui_cancel"))
+        // While a dialog is up, Escape belongs to it.
+        if (_open && !_leaveDialog.Visible && !_surrenderDialog.Visible && inputEvent.IsActionPressed("ui_cancel"))
         {
             Close();
             GetViewport().SetInputAsHandled();
@@ -61,6 +79,7 @@ public partial class PauseMenu : CanvasLayer
         }
 
         _open = true;
+        _surrender.Visible = _host?.CanSurrender == true;
         _overlay.Show();
         GetTree().Paused = true;
         _resume.GrabFocus();
@@ -71,6 +90,12 @@ public partial class PauseMenu : CanvasLayer
         _open = false;
         _overlay.Hide();
         GetTree().Paused = false;
+    }
+
+    private void Surrender()
+    {
+        _host?.Surrender();
+        Close();
     }
 
     private void LeaveToMainMenu()

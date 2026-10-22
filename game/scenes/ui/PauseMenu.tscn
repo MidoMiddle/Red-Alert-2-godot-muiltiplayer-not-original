@@ -50,6 +50,10 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(320, 56)
 layout_mode = 2
 
+[node name="Surrender" type="Button" parent="Overlay/Panel/Column"]
+custom_minimum_size = Vector2(320, 56)
+layout_mode = 2
+
 [node name="QuitToMenu" type="Button" parent="Overlay/Panel/Column"]
 custom_minimum_size = Vector2(320, 56)
 layout_mode = 2

@@ -45,6 +45,9 @@ public static class StateHasher
             // Rules v36 (M4 step 13): the tick of the last notice of an attack.
             hash.Add(player.LastUnderAttack.HasValue);
             hash.Add(player.LastUnderAttack ?? 0);
+            // Rules v38 (M5 step 10): the tick the player lost the match on.
+            hash.Add(player.DefeatedTick.HasValue);
+            hash.Add(player.DefeatedTick ?? 0);
             for (var category = Rules.ProductionCategory.Infantry; category <= Rules.ProductionCategory.Defense; category++)
             {
                 var queue = player.Queue(category);

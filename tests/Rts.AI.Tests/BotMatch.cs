@@ -22,10 +22,11 @@ internal sealed class BotMatch
     private readonly List<(int Tick, string Text)> _timeline = [];
     private uint _personSequence;
 
-    public BotMatch(string mapId = "frozen-crossing", ulong seed = 3)
+    public BotMatch(string mapId = "frozen-crossing", ulong seed = 3, bool shortGame = false)
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(GameDataFiles.Folder, "maps", mapId + ".rtsmap")));
         Setup = MatchSetups.OneOnOne(map, GameDataFiles.Rules.DefaultFaction.Id, seed);
+        Setup = Setup with { Options = Setup.Options with { ShortGame = shortGame } };
         Simulation = new GameSimulation(SimulationSettings.ForMatch(Setup, map.ToMapGrid()), GameDataFiles.Rules);
         foreach (var player in Setup.Players.Where(player => player.Kind == PlayerKind.Ai))
         {

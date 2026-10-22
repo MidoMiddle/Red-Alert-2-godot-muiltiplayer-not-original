@@ -597,6 +597,20 @@ public partial class SimulationHost : Node
     private bool IsOwnLiving(EntityId id) =>
         Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer;
 
+    /// <summary>Whether the person at the keyboard is in a match that goes on and has not lost it: then they may surrender (M5 step 10).</summary>
+    public bool CanSurrender =>
+        Simulation.World.Match?.PlayerOf(LocalPlayer) is not null && Simulation.World.Player(LocalPlayer).DefeatedTick is null
+        && Simulation.World.Result is null;
+
+    /// <summary>The person at the keyboard gives up the match.</summary>
+    public void Surrender()
+    {
+        if (CanSurrender)
+        {
+            Issue(new SurrenderCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++));
+        }
+    }
+
     private void Issue(Command command)
     {
         if (!IsPlayback)

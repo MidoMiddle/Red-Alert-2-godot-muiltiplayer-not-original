@@ -24,13 +24,15 @@ public static class CommandProcessor
     /// <param name="events">Receives events about what changed; null when the caller does not need them.</param>
     public static bool Apply(GameWorld world, Command command, List<SimEvent>? events = null)
     {
-        if (!IsPlayablePlayer(command.Player))
+        // A player who lost the match gives no more commands (M5 step 10).
+        if (!IsPlayablePlayer(command.Player) || world.Player(command.Player).DefeatedTick is not null)
         {
             return false;
         }
 
         var applied = command switch
         {
+            SurrenderCommand surrender => ApplySurrender(world, surrender, events),
             SpawnTestUnitCommand spawn => ApplySpawn(world, spawn, events),
             MoveCommand move => ApplyRoute(world, move, [move.Target], loop: false, move.Queue, attackMove: false, events),
             AttackMoveCommand attack => ApplyRoute(world, attack, [attack.Target], loop: false, attack.Queue, attackMove: true, events),
@@ -317,6 +319,18 @@ public static class CommandProcessor
                 harvester.WaitTicks = Systems.HarvesterSystem.ManualTicks;
             }
         }
+    }
+
+    /// <summary>The player of the match gives up: defeated at once (M5, 4.8, step 10). Refused outside a match or for a player not in it.</summary>
+    private static bool ApplySurrender(GameWorld world, SurrenderCommand command, List<SimEvent>? events)
+    {
+        if (world.Match?.PlayerOf(command.Player) is null || world.Result is not null)
+        {
+            return false;
+        }
+
+        Matches.VictorySystem.Defeat(world, command.Player, events);
+        return true;
     }
 
     private static bool IsPlayablePlayer(PlayerId player) => player.Value >= 1 && player.Value <= PlayerId.MaxPlayers;

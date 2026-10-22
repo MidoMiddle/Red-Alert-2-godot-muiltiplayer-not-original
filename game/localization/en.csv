@@ -236,6 +236,8 @@ UI_PAUSE_TITLE,Paused
 UI_PAUSE_RESUME,Resume
 UI_PAUSE_QUIT,Quit to Main Menu
 UI_PAUSE_LEAVE_TEXT,Leave this match?
+UI_PAUSE_SURRENDER,Surrender
+UI_PAUSE_SURRENDER_TEXT,Surrender this match?
 UI_BUTTON_STATS,Stats
 UI_BUTTON_REPAIR,Repair
 UI_BUTTON_SELL,Sell
@@ -263,6 +265,12 @@ UI_EVA_CANNOT_DEPLOY,Cannot deploy here
 UI_EVA_CANNOT_PLACE,Cannot place building here
 UI_EVA_ORE_DEPLETED,Ore depleted
 UI_EVA_UNDER_ATTACK,Our base is under attack
+UI_EVA_YOU_ARE_DEFEATED,You have been defeated
+UI_EVA_PLAYER_DEFEATED,A player has been defeated
+UI_EVA_VICTORY,Victory
+UI_EVA_DEFEAT,Defeat
+UI_MATCH_VICTORY,VICTORY
+UI_MATCH_DEFEAT,DEFEAT
 UI_STATS_TITLE,Statistics
 UI_STATS_BUILT,Built {0}
 UI_STATS_CAPTURED,Captured {0}

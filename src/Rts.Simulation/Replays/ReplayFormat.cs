@@ -34,11 +34,11 @@ namespace Rts.Simulation.Replays;
 /// setup after the map: u16 length + UTF-8 map id | u8 shortGame | u8 gameSpeed | u8 playerCount, then per player u8 slot | u8 kind |
 /// u8 difficulty | u16 length + UTF-8 faction | u8 colour | u8 team | u8 startIndex | u16 startX | u16 startY; its seed and credits are
 /// those of the header. The commands of a bot are those of an Ai player numbered from <see cref="Ai.AiTurn.FirstSequence"/>; v18 (M5 step 3)
-/// adds every start of the map after the players: u8 count, then u16 x | u16 y each.
+/// adds every start of the map after the players: u8 count, then u16 x | u16 y each; v19 (M5 step 10) command format v10 (Surrender).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 18;
+    public const ushort FormatVersion = 19;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

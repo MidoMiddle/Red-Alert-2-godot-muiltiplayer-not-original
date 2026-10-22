@@ -149,6 +149,10 @@ public sealed class GameSimulation
         TechTree.Update(World, _events);
         Probe?.Invoke("ore and tech");
 
+        // 5a. Victory and defeat, in a match (M5 step 10): what the defeated leave falls before the fallen leave the world.
+        Matches.VictorySystem.Update(World, _events);
+        Probe?.Invoke("victory");
+
         // 6. The cells of the buildings that fell open (M4 step 9), the players see anew (step 11); entities that died this tick leave the world.
         DeathSystem.Update(World, _events);
         VisibilitySystem.Update(World);
@@ -160,6 +164,12 @@ public sealed class GameSimulation
         var bots = _bots.Values;
         for (var i = 0; i < bots.Count; i++)
         {
+            // A defeated player's bot no longer thinks (M5 step 10).
+            if (World.Player(bots[i].Bot.Player).DefeatedTick is not null)
+            {
+                continue;
+            }
+
             bots[i].Turn.Tick = tick;
             bots[i].Bot.Think(bots[i].Turn);
         }
