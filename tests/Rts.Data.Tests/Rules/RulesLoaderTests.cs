@@ -1,5 +1,6 @@
 using Rts.Data.Yaml;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
@@ -162,6 +163,97 @@ public sealed class RulesLoaderTests
         var cannon = rules.Weapons.Single();
         Assert.Equal(360448, cannon.Range.Raw);
         Assert.Equal(30, cannon.Reload);
+    }
+
+    [Fact]
+    public void The_combat_kinds_read_every_key_and_leave_out_nothing_but_defaults()
+    {
+        // M4 step 1: armor, a warhead, a projectile of each motion and a weapon, with every key and with the defaults.
+        var rules = Read(
+            """
+            heavy:
+              kind: armor
+              name: Heavy
+            ap:
+              kind: warhead
+              name: AP
+              verses: { heavy: 100%, none: 25% }
+              spread: 0.5
+              percent_at_max: 40%
+              wall_damage: true
+              affects_air: true
+              infantry_death: explode
+            plain:
+              kind: warhead
+              name: Plain
+              verses: { heavy: 10% }
+            rocket:
+              kind: projectile
+              name: Rocket
+              motion: homing
+              speed: 30
+              turn_rate: 2048
+              lifetime: 6s
+              arc: 1.5
+              inaccuracy: 0.25
+              visual: smoke
+            bullet:
+              kind: projectile
+              name: Bullet
+              motion: instant
+            cannon:
+              kind: weapon
+              name: Cannon
+              damage: 90
+              reload: 4.33s
+              range: 5.75
+              min_range: 1
+              projectile: rocket
+              warhead: ap
+              burst: 2
+              burst_delay: 0.2s
+              targets: [air, ground]
+              report: boom
+            rifle:
+              kind: weapon
+              name: Rifle
+              damage: 15
+              reload: 1s
+              range: 4
+              projectile: bullet
+              warhead: plain
+            """);
+
+        Assert.Equal(["heavy"], rules.Armors.Select(armor => armor.Id));
+        var ap = rules.Warheads.Single(warhead => warhead.Id == "ap");
+        Assert.Equal(["heavy", "none"], ap.Verses.Select(verse => verse.Armor));
+        Assert.Equal((Fixed.One, Fixed.FromRatio(1, 4)), (ap.Verses[0].Percent, ap.Verses[1].Percent));
+        Assert.Equal((Fixed.FromRatio(1, 2), true, true, "explode"), (ap.Spread, ap.WallDamage, ap.AffectsAir, ap.InfantryDeath));
+        var plain = rules.Warheads.Single(warhead => warhead.Id == "plain");
+        Assert.Equal((Fixed.Zero, Fixed.One, false, false, ""), (plain.Spread, plain.PercentAtMax, plain.WallDamage, plain.AffectsAir, plain.InfantryDeath));
+
+        var rocket = rules.Projectiles.Single(projectile => projectile.Id == "rocket");
+        Assert.Equal((ProjectileMotion.Homing, 30, 2048, 90, Fixed.FromRatio(3, 2), Fixed.FromRatio(1, 4), "smoke"),
+            (rocket.Motion, rocket.Speed, rocket.TurnRate, rocket.Lifetime, rocket.Arc, rocket.Inaccuracy, rocket.Visual));
+        Assert.Equal(ProjectileMotion.Instant, rules.Projectiles.Single(projectile => projectile.Id == "bullet").Motion);
+
+        var cannon = rules.Weapons.Single(weapon => weapon.Id == "cannon");
+        Assert.Equal((90, 65, Fixed.FromRatio(23, 4), Fixed.One, "rocket", "ap", 2, 3, WeaponTargets.Ground | WeaponTargets.Air, "boom"),
+            (cannon.Damage, cannon.Reload, cannon.Range, cannon.MinRange, cannon.Projectile, cannon.Warhead, cannon.Burst, cannon.BurstDelay,
+             cannon.Targets, cannon.Report));
+        var rifle = rules.Weapons.Single(weapon => weapon.Id == "rifle");
+        Assert.Equal((Fixed.Zero, 1, 0, WeaponTargets.Ground, ""), (rifle.MinRange, rifle.Burst, rifle.BurstDelay, rifle.Targets, rifle.Report));
+    }
+
+    [Fact]
+    public void A_unit_and_a_building_carry_armor_and_weapons()
+    {
+        var rules = Dataset();
+
+        var heavyTank = rules.Units.Single(unit => unit.Id == "heavy_tank");
+        Assert.Equal(("heavy", "heavy_tank_cannon", ""), (heavyTank.Armor, heavyTank.Primary, heavyTank.Secondary));
+        Assert.Equal("none", rules.Units.Single(unit => unit.Id == "conscript").Armor);
+        Assert.Equal(("steel", ""), (rules.Buildings[0].Armor, rules.Buildings[0].Primary));
     }
 
     [Fact]

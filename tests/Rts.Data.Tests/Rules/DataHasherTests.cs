@@ -54,6 +54,21 @@ public sealed class DataHasherTests
             builder.Add((FactionDef)change(definition));
         }
 
+        foreach (var definition in rules.Armors)
+        {
+            builder.Add((ArmorDef)change(definition));
+        }
+
+        foreach (var definition in rules.Warheads)
+        {
+            builder.Add((WarheadDef)change(definition));
+        }
+
+        foreach (var definition in rules.Projectiles)
+        {
+            builder.Add((ProjectileDef)change(definition));
+        }
+
         return builder.Build();
     }
 
@@ -88,7 +103,28 @@ public sealed class DataHasherTests
         ("unit placement", Unit(u => u with { Placement = UnitPlacement.Subcell })),
         ("unit turret", Unit(u => u with { Turret = false })),
         ("unit prerequisites", Unit(u => u with { Prerequisites = ["war_factory", "reactor"] })),
-        ("unit weapons", Unit(u => u with { Weapons = [] })),
+        ("unit primary", Unit(u => u with { Primary = "" })),
+        ("unit secondary", Unit(u => u with { Secondary = "heavy_tank_cannon" })),
+        ("building armor", Building(b => b with { Armor = "heavy" })),
+        ("building primary", Building(b => b with { Primary = "heavy_tank_cannon" })),
+        ("weapon min range", d => d is WeaponDef w ? w with { MinRange = Fixed.One } : d),
+        ("weapon projectile", d => d is WeaponDef w ? w with { Projectile = "shell2" } : d),
+        ("weapon warhead", d => d is WeaponDef w ? w with { Warhead = "ap_shell2" } : d),
+        ("weapon burst", d => d is WeaponDef w ? w with { Burst = 2 } : d),
+        ("weapon burst delay", d => d is WeaponDef w ? w with { BurstDelay = 3 } : d),
+        ("weapon targets", d => d is WeaponDef w ? w with { Targets = WeaponTargets.Ground | WeaponTargets.Air } : d),
+        ("armor id", d => d is ArmorDef { Id: "steel" } a ? a with { Id = "steel2" } : d),
+        ("warhead verse", d => d is WarheadDef w ? w with { Verses = w.Verses.SetItem(0, w.Verses[0] with { Percent = w.Verses[0].Percent + Fixed.Epsilon }) } : d),
+        ("warhead spread", d => d is WarheadDef w ? w with { Spread = Fixed.One } : d),
+        ("warhead percent at max", d => d is WarheadDef w ? w with { PercentAtMax = Fixed.One } : d),
+        ("warhead wall damage", d => d is WarheadDef w ? w with { WallDamage = false } : d),
+        ("warhead affects air", d => d is WarheadDef w ? w with { AffectsAir = true } : d),
+        ("projectile motion", d => d is ProjectileDef p ? p with { Motion = ProjectileMotion.Homing } : d),
+        ("projectile speed", d => d is ProjectileDef p ? p with { Speed = 41 } : d),
+        ("projectile arc", d => d is ProjectileDef p ? p with { Arc = Fixed.One } : d),
+        ("projectile inaccuracy", d => d is ProjectileDef p ? p with { Inaccuracy = Fixed.One } : d),
+        ("projectile turn rate", d => d is ProjectileDef p ? p with { TurnRate = 1 } : d),
+        ("projectile lifetime", d => d is ProjectileDef p ? p with { Lifetime = 1 } : d),
         ("building faction", Building(b => b with { Faction = "union2" })),
         ("building category", Building(b => b with { Category = ProductionCategory.Defense })),
         ("building cost", Building(b => b with { Cost = b.Cost + 1 })),
@@ -121,8 +157,8 @@ public sealed class DataHasherTests
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
         // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
-        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings.
-        Assert.Equal(0x6dc8be67c1faa5faUL, Hash(Files()));
+        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which.
+        Assert.Equal(0xf858e70c3023cbd3UL, Hash(Files()));
     }
 
     [Fact]
@@ -181,7 +217,10 @@ public sealed class DataHasherTests
         {
             UnitDef unit => unit with { Name = "Other", Model = "other/model", Icon = "other" },
             BuildingDef building => building with { Name = "Other", Model = "other/model", Icon = "other" },
-            WeaponDef weapon => weapon with { Name = "Other" },
+            WeaponDef weapon => weapon with { Name = "Other", Report = "other" },
+            ArmorDef armor => armor with { Name = "Other" },
+            WarheadDef warhead => warhead with { Name = "Other", InfantryDeath = "other" },
+            ProjectileDef projectile => projectile with { Name = "Other", Visual = "other" },
             LocomotorDef locomotor => locomotor with { Name = "Other" },
             TerrainDef terrain => terrain with { Name = "Other" },
             FactionDef faction => faction with { Name = "Other" },

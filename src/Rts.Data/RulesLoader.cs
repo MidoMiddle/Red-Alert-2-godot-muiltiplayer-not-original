@@ -139,6 +139,15 @@ public static class RulesLoader
             case "economy":
                 AddUnlessTemplate(template, DefinitionReader.Economy(entry, !template), definition => builder.Add(definition));
                 break;
+            case "armor":
+                AddUnlessTemplate(template, DefinitionReader.Armor(entry, !template), definition => builder.Add(definition));
+                break;
+            case "warhead":
+                AddUnlessTemplate(template, DefinitionReader.Warhead(entry, !template), definition => builder.Add(definition));
+                break;
+            case "projectile":
+                AddUnlessTemplate(template, DefinitionReader.Projectile(entry, !template), definition => builder.Add(definition));
+                break;
         }
 
         return !template;

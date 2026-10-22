@@ -1,9 +1,20 @@
+using System;
 using Rts.Simulation.Math;
 
 namespace Rts.Simulation.Rules;
 
+/// <summary>What a weapon may fire at (RA2 <c>AG</c> and <c>AA</c>). Values go into the data hash: never renumber.</summary>
+[Flags]
+public enum WeaponTargets : byte
+{
+    None = 0,
+    Ground = 1,
+    Air = 2,
+}
+
 /// <summary>
-/// A weapon from the data. This is a placeholder for M4, where damage, range and reload start to matter (docs/implementation/M3_base_economy.md, 4.1).
+/// A weapon (docs/implementation/M4_combat.md, 4.1, 4.3): how much damage and how often, how far, with which projectile and warhead.
+/// Units and defenses carry them as <c>primary</c> and <c>secondary</c>.
 /// </summary>
 public sealed record WeaponDef : IDefinition
 {
@@ -13,9 +24,29 @@ public sealed record WeaponDef : IDefinition
 
     public int Damage { get; init; }
 
+    /// <summary>Ticks between two shots (RA2 <c>ROF</c>).</summary>
+    public int Reload { get; init; }
+
     /// <summary>Range in cells; fractions are allowed.</summary>
     public Fixed Range { get; init; }
 
-    /// <summary>Ticks between two shots.</summary>
-    public int Reload { get; init; }
+    /// <summary>The nearest a target may be, in cells.</summary>
+    public Fixed MinRange { get; init; }
+
+    /// <summary>Id of the projectile.</summary>
+    public string Projectile { get; init; } = "";
+
+    /// <summary>Id of the warhead.</summary>
+    public string Warhead { get; init; } = "";
+
+    /// <summary>Shots in one volley.</summary>
+    public int Burst { get; init; } = 1;
+
+    /// <summary>Ticks between the shots of a volley.</summary>
+    public int BurstDelay { get; init; }
+
+    public WeaponTargets Targets { get; init; } = WeaponTargets.Ground;
+
+    /// <summary>The sound of a shot, for the client; the simulation does not use it.</summary>
+    public string Report { get; init; } = "";
 }

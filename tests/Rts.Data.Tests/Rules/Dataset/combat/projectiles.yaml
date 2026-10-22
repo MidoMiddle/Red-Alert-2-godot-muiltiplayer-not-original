@@ -1,0 +1,5 @@
+shell:
+  kind: projectile
+  name: Shell
+  motion: ballistic
+  speed: 40

@@ -12,6 +12,9 @@ public sealed class RulesValidatorTests
     private const string Terrain = "shared/terrain.yaml";
     private const string Templates = "shared/templates.yaml";
     private const string Locomotors = "shared/locomotors.yaml";
+    private const string Weapons = "factions/union/weapons.yaml";
+    private const string Warheads = "combat/warheads.yaml";
+    private const string Projectiles = "combat/projectiles.yaml";
 
     /// <summary>The files of the test dataset as (name, text), in the order <see cref="RulesLoader.LoadDirectory"/> reads them.</summary>
     private static List<(string FileName, string Text)> Dataset() =>
@@ -53,7 +56,7 @@ public sealed class RulesValidatorTests
     {
         var error = Fails(Units, "  sight: 8\n", "  sigth: 8\n");
 
-        Assert.Equal((Units, 37, 3), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Units, 38, 3), (error.FileName, error.Line, error.Column));
         Assert.Contains("unknown key 'sigth' in 'heavy_tank'", error.Reason);
     }
 
@@ -71,17 +74,70 @@ public sealed class RulesValidatorTests
     {
         var error = Fails(Units, "prerequisites: [war_factory]", "prerequisites: [heavy_tank_cannon]");
 
-        Assert.Equal((Units, 38, 19), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Units, 39, 19), (error.FileName, error.Line, error.Column));
         Assert.Equal("'heavy_tank' refers to building 'heavy_tank_cannon', but 'heavy_tank_cannon' is weapon", error.Reason);
     }
 
     [Fact]
     public void A_weapon_that_is_not_defined_is_reported()
     {
-        var error = Fails(Units, "weapons: [heavy_tank_cannon]", "weapons: [heavy_tank_gun]");
+        var error = Fails(Units, "primary: heavy_tank_cannon", "primary: heavy_tank_gun");
 
-        Assert.Equal((Units, 39, 13), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Units, 40, 12), (error.FileName, error.Line, error.Column));
         Assert.Contains("weapon 'heavy_tank_gun', which is not defined", error.Reason);
+    }
+
+    [Theory]
+    [InlineData(Weapons, "warhead: ap_shell", "warhead: ap_shel", 8, 12, "'heavy_tank_cannon' refers to warhead 'ap_shel', which is not defined")]
+    [InlineData(Weapons, "projectile: shell", "projectile: shel", 7, 15, "'heavy_tank_cannon' refers to projectile 'shel', which is not defined")]
+    [InlineData(Weapons, "warhead: ap_shell", "warhead: shell", 8, 12, "'heavy_tank_cannon' refers to warhead 'shell', but 'shell' is projectile")]
+    [InlineData(Warheads, "steel: 50%", "stone: 50%", 4, 37, "'ap_shell' refers to armor 'stone', which is not defined")]
+    public void A_combat_reference_that_does_not_lead_to_its_kind_is_reported_where_it_is_written(
+        string fileName, string text, string replacement, int line, int column, string reason)
+    {
+        var errors = Errors(Edited(Dataset(), fileName, text, replacement));
+
+        Assert.Contains(errors, error => (error.FileName, error.Line, error.Column, error.Reason) == (fileName, line, column, reason));
+    }
+
+    [Fact]
+    public void A_warhead_must_give_a_share_against_every_armor_type()
+    {
+        var error = Fails(Warheads, ", steel: 50% }", " }");
+
+        Assert.Equal((Warheads, 4, 11), (error.FileName, error.Line, error.Column));
+        Assert.Equal("the verses of 'ap_shell' have no share against armor 'steel'", error.Reason);
+    }
+
+    [Fact]
+    public void A_unit_or_a_building_needs_armor_that_exists()
+    {
+        var missing = Fails(Units, "  armor: none\n", "");
+        var unknown = Fails(Units, "armor: none", "armor: paper");
+
+        Assert.Equal("'conscript' has no armor", missing.Reason);
+        Assert.Equal((Units, 3, 10, "'conscript' refers to armor 'paper', which is not defined"), (unknown.FileName, unknown.Line, unknown.Column, unknown.Reason));
+    }
+
+    [Fact]
+    public void A_secondary_weapon_needs_a_primary_one()
+    {
+        var error = Fails(Units, "primary: heavy_tank_cannon", "secondary: heavy_tank_cannon");
+
+        Assert.Equal("'heavy_tank' has a secondary weapon but no primary one", error.Reason);
+    }
+
+    [Theory]
+    [InlineData(Weapons, "warhead: ap_shell", "warhead: ap_shell\n  targets: [space]", "'space' must be one of ground, air")]
+    [InlineData(Weapons, "warhead: ap_shell", "warhead: ap_shell\n  targets: [ground, ground]", "target 'ground' repeats")]
+    [InlineData(Projectiles, "motion: ballistic", "motion: teleport", "'teleport' must be one of instant, ballistic, homing")]
+    [InlineData(Warheads, "steel: 50% }", "steel: 50%, steel: 60% }", "Duplicate key steel")]
+    [InlineData(Units, "primary: heavy_tank_cannon", "weapons: [heavy_tank_cannon]", "unknown key 'weapons' in 'heavy_tank'")]
+    public void A_combat_value_that_does_not_read_is_reported(string fileName, string text, string replacement, string reason)
+    {
+        var errors = Errors(Edited(Dataset(), fileName, text, replacement));
+
+        Assert.Contains(errors, error => error.FileName == fileName && error.Reason.Contains(reason, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -89,7 +145,7 @@ public sealed class RulesValidatorTests
     {
         var error = Fails(Units, "  name: Conscript\n  faction: union\n", "  name: Conscript\n  faction: soviet\n");
 
-        Assert.Equal((Units, 4, 12), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Units, 5, 12), (error.FileName, error.Line, error.Column));
         Assert.Equal("'conscript' refers to faction 'soviet', which is not defined", error.Reason);
     }
 
@@ -98,7 +154,7 @@ public sealed class RulesValidatorTests
     {
         var error = Fails(Units, "locomotor: foot", "locomotor: legs");
 
-        Assert.Equal((Units, 7, 14), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Units, 8, 14), (error.FileName, error.Line, error.Column));
         Assert.Contains("locomotor 'legs', which is not defined", error.Reason);
     }
 
@@ -108,7 +164,7 @@ public sealed class RulesValidatorTests
         // Three units inherit the locomotor from the template; the error is where the value is written.
         var error = Fails(Templates, "locomotor: track", "locomotor: tracks");
 
-        Assert.Equal((Templates, 7, 14), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Templates, 8, 14), (error.FileName, error.Line, error.Column));
     }
 
     [Fact]
@@ -216,7 +272,15 @@ public sealed class RulesValidatorTests
     [InlineData(Buildings, "exit_cell: [1, 3]", "exit_cell: [1, 6]", "the exit cell [1, 6] of 'war_factory' must be in its footprint or next to it")]
     [InlineData(Locomotors, "slope: 65%", "slope: 120%", "'slope' of 'wheel' must be 0% to 100%")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  adjacent: 11\n", "'adjacent' of 'reactor' must be 0 to 10 cells")]
-    [InlineData("factions/union/weapons.yaml", "damage: 120", "damage: -5", "'damage' of 'heavy_tank_cannon' must not be negative")]
+    [InlineData(Weapons, "damage: 120", "damage: -5", "'damage' of 'heavy_tank_cannon' must not be negative")]
+    [InlineData(Weapons, "reload: 2s", "reload: 2s\n  burst: 0", "'burst' of 'heavy_tank_cannon' must be above zero")]
+    [InlineData(Weapons, "range: 5.5", "range: 5.5\n  min_range: 5.5", "'min_range' of 'heavy_tank_cannon' must be 0 or more and below its range")]
+    [InlineData(Weapons, "range: 5.5", "range: 0", "'range' of 'heavy_tank_cannon' must be above zero")]
+    [InlineData(Warheads, "steel: 50%", "steel: 1500%", "the share against 'steel' of 'ap_shell' must be 0% to 1000%")]
+    [InlineData(Warheads, "percent_at_max: 50%", "percent_at_max: 150%", "'percent_at_max' of 'ap_shell' must be 0% to 100%")]
+    [InlineData(Warheads, "spread: 0.5", "spread: -0.5", "'spread' of 'ap_shell' must not be negative")]
+    [InlineData(Projectiles, "speed: 40", "speed: 0", "'speed' of 'shell' must be above zero")]
+    [InlineData(Projectiles, "motion: ballistic", "motion: homing\n  lifetime: 4s", "'turn_rate' of 'shell' must be above zero")]
     public void A_number_out_of_its_range_is_reported_at_the_number(string fileName, string text, string replacement, string reason)
     {
         var error = Fails(fileName, text, replacement);

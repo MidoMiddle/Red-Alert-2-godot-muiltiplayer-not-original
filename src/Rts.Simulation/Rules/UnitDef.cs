@@ -25,7 +25,7 @@ public sealed record UnitDef : IDefinition
 
     public required int Hp { get; init; }
 
-    /// <summary>Id of the armor type; empty until M4 gives armor a meaning.</summary>
+    /// <summary>Id of the armor type (M4, 4.2); the checks of the data require it.</summary>
     public string Armor { get; init; } = "";
 
     /// <summary>Leptons per tick.</summary>
@@ -56,8 +56,11 @@ public sealed record UnitDef : IDefinition
     /// <summary>Credits the unit unloads per tick at the dock of a refinery.</summary>
     public int UnloadRate { get; init; }
 
-    /// <summary>Ids of the weapons; they do damage from M4 on.</summary>
-    public ImmutableArray<string> Weapons { get; init; } = ImmutableArray<string>.Empty;
+    /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
+    public string Primary { get; init; } = "";
+
+    /// <summary>Id of the second weapon (RA2 <c>Secondary</c>), such as a gun against aircraft; only with a primary one.</summary>
+    public string Secondary { get; init; } = "";
 
     /// <summary>Path of the model, relative to the assets folder; the simulation does not use it.</summary>
     public string Model { get; init; } = "";

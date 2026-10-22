@@ -1,5 +1,6 @@
 conscript:
   kind: unit
+  armor: none
   name: Conscript
   faction: union
   category: infantry
@@ -36,7 +37,7 @@ heavy_tank:
   speed: 40
   sight: 8
   prerequisites: [war_factory]
-  weapons: [heavy_tank_cannon]
+  primary: heavy_tank_cannon
   model: vehicles/heavy_tank
   icon: heavy_tank
 

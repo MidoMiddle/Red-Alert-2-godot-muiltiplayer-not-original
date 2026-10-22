@@ -1,0 +1,94 @@
+# The weapons of the Union (docs/implementation/M4_combat.md, 4.3, 4.17, 4.18). Damage, range and reload follow the RA2 weapons in the
+# comments (docs/ra2_units, docs/ra2_buildings); reload is RA2 ROF / 15 seconds, so a tick of ours is a frame of RA2. `range` and
+# `min_range` in cells, `burst` shots a volley, `targets` ground and/or air. The balance comes in M4 step 14.
+conscript_rifle:  # RA2 M1Carbine
+  kind: weapon
+  name: Rifle
+  damage: 15
+  reload: 1.67s
+  range: 4
+  projectile: bullet
+  warhead: small_arms
+
+rocketeer_rocket:  # an anti-tank rocket (M4 plan, 4.18)
+  kind: weapon
+  name: Rocket
+  damage: 50
+  reload: 4s
+  range: 6
+  projectile: rocket
+  warhead: missile
+
+heavy_tank_cannon:  # RA2 120mm
+  kind: weapon
+  name: 120mm Cannon
+  damage: 90
+  reload: 4.33s
+  range: 5.75
+  projectile: shell
+  warhead: ap_shell
+
+tesla_tank_bolt:  # RA2 TankBolt
+  kind: weapon
+  name: Tesla Bolt
+  damage: 135
+  reload: 5s
+  range: 4
+  projectile: bolt
+  warhead: electric
+
+flak_track_gun:  # RA2 FlakTrackGun: at the ground
+  kind: weapon
+  name: Flak Gun
+  damage: 25
+  reload: 2.67s
+  range: 5
+  projectile: flak_shell
+  warhead: flak_ground
+
+flak_track_aa_gun:  # RA2 FlakTrackAAGun: at aircraft
+  kind: weapon
+  name: Anti-Air Gun
+  damage: 35
+  reload: 1.67s
+  range: 10
+  projectile: bullet
+  warhead: flak_air
+  targets: [air]
+
+harvester_machine_gun:  # RA2 20mmRapid
+  kind: weapon
+  name: 20mm Machine Gun
+  damage: 30
+  reload: 1.33s
+  range: 5.5
+  projectile: bullet
+  warhead: light_mg
+
+sentry_machine_gun:  # RA2 Vulcan of the Sentry Gun
+  kind: weapon
+  name: Machine Gun
+  damage: 50
+  reload: 1.73s
+  range: 5.5
+  projectile: bullet
+  warhead: small_arms
+
+tesla_coil_bolt:  # RA2 CoilBolt
+  kind: weapon
+  name: Coil Bolt
+  damage: 200
+  reload: 5.33s
+  range: 7
+  projectile: bolt
+  warhead: electric
+
+flak_cannon_gun:  # RA2 FlakWeapon: aircraft only
+  kind: weapon
+  name: Flak Cannon
+  damage: 40
+  reload: 1.33s
+  range: 12
+  projectile: flak_shell
+  warhead: flak_air
+  targets: [air]

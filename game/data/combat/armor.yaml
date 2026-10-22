@@ -1,0 +1,36 @@
+# Armor types (docs/implementation/M4_combat.md, 4.2): what a warhead's `verses` give a share of damage against. The order of the
+# entries means nothing; a type's number is its place by id. RA2 counterparts: none, flak, plate (infantry); light, medium, heavy
+# (vehicles); wood, steel, concrete (buildings); two kept for special cases.
+none:
+  kind: armor
+  name: None
+flak:
+  kind: armor
+  name: Flak
+plate:
+  kind: armor
+  name: Plate
+light:
+  kind: armor
+  name: Light
+medium:
+  kind: armor
+  name: Medium
+heavy:
+  kind: armor
+  name: Heavy
+wood:
+  kind: armor
+  name: Wood
+steel:
+  kind: armor
+  name: Steel
+concrete:
+  kind: armor
+  name: Concrete
+special_1:
+  kind: armor
+  name: Special 1
+special_2:
+  kind: armor
+  name: Special 2

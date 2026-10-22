@@ -12,7 +12,7 @@ namespace Rts.Simulation.Tests;
 /// simulation need no YAML. The numbers the simulation reads are those of <c>game/data</c>: a test of Rts.Data, which links this file,
 /// checks that both give the same <see cref="GameRules"/>. The buildings of the Union (footprint, power, build-up, base rules,
 /// prerequisites) and the prerequisites of the units are those of <c>game/data</c> too; costs, hit points and build times of the units
-/// are placeholders.
+/// are placeholders. The combat of M4 (armor, warheads, projectiles, weapons and who carries what) is that of <c>game/data</c>.
 /// </summary>
 internal static class TestRules
 {
@@ -67,26 +67,41 @@ internal static class TestRules
         }
 
         // Speed in leptons per tick, turn rate in BAngle units per tick, sight in cells: the M2 values of each type.
-        Infantry(builder, UnitType.Conscript, sight: 5);
-        Infantry(builder, UnitType.Rocketeer, sight: 5);
-        Infantry(builder, UnitType.Engineer, sight: 4);
+        builder.Add(InfantryDef(UnitType.Conscript, sight: 5) with { Armor = "flak", Primary = "conscript_rifle" });
+        builder.Add(InfantryDef(UnitType.Rocketeer, sight: 5) with { Primary = "rocketeer_rocket" });
+        builder.Add(InfantryDef(UnitType.Engineer, sight: 4));
         Vehicle(builder, UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6);
         builder.Add(VehicleDef(UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4, "war_factory", "refinery") with
         {
             HarvestCapacity = 1000,
             HarvestTime = 12,
             UnloadRate = 50,
+            Armor = "medium",
+            Primary = "harvester_machine_gun",
         });
-        Vehicle(builder, UnitType.SupportVehicle, Locomotor.Wheel, speed: 48, turret: true, sight: 8);
-        Vehicle(builder, UnitType.HeavyTank, Locomotor.Track, speed: 36, turret: true, sight: 8);
-        Vehicle(builder, UnitType.TeslaTank, Locomotor.Track, speed: 36, turret: true, sight: 8, "war_factory", "tech_center");
+        builder.Add(VehicleDef(UnitType.SupportVehicle, Locomotor.Wheel, speed: 48, turret: true, sight: 8) with
+        {
+            Primary = "flak_track_gun",
+            Secondary = "flak_track_aa_gun",
+        });
+        builder.Add(VehicleDef(UnitType.HeavyTank, Locomotor.Track, speed: 36, turret: true, sight: 8) with { Primary = "heavy_tank_cannon" });
+        builder.Add(VehicleDef(UnitType.TeslaTank, Locomotor.Track, speed: 36, turret: true, sight: 8, "war_factory", "tech_center") with
+        {
+            Primary = "tesla_tank_bolt",
+        });
+        Combat(builder);
 
         // The buildings of docs/implementation/M3_base_economy.md, 4.6: id, footprint, power, prerequisites.
-        builder.Add(Def("construction_yard", 3, 3, power: 0) with { Produces = [ProductionCategory.Building, ProductionCategory.Defense] });
+        builder.Add(Def("construction_yard", 3, 3, power: 0) with
+        {
+            Produces = [ProductionCategory.Building, ProductionCategory.Defense],
+            Armor = "concrete",
+        });
         Building(builder, "reactor", 2, 2, power: 150, "construction_yard");
         builder.Add(Def("refinery", 3, 3, power: -50, "reactor") with { DockCell = new CellPos(1, 3) });
         builder.Add(Def("barracks", 2, 2, power: -10, "reactor") with
         {
+            Armor = "steel",
             Produces = [ProductionCategory.Infantry],
             ExitCell = new CellPos(1, 2),
         });
@@ -97,10 +112,15 @@ internal static class TestRules
         });
         builder.Add(Def("radar", 2, 2, power: -50, "refinery") with { Radar = true });
         Building(builder, "tech_center", 3, 3, power: -100, "war_factory", "radar");
-        builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with { ExtendsBase = false, Category = ProductionCategory.Defense });
-        builder.Add(Def("sentry_bunker", 1, 1, power: 0, "barracks") with { Category = ProductionCategory.Defense });
-        builder.Add(Def("tesla_coil", 2, 2, power: -75, "radar") with { Category = ProductionCategory.Defense });
-        builder.Add(Def("flak_cannon", 2, 2, power: -50, "radar") with { Category = ProductionCategory.Defense });
+        builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with
+        {
+            ExtendsBase = false,
+            Category = ProductionCategory.Defense,
+            Armor = "concrete",
+        });
+        builder.Add(Defense("sentry_bunker", 1, 1, power: 0, "sentry_machine_gun", "barracks"));
+        builder.Add(Defense("tesla_coil", 2, 2, power: -75, "tesla_coil_bolt", "radar"));
+        builder.Add(Defense("flak_cannon", 2, 2, power: -50, "flak_cannon_gun", "radar"));
         builder.Add(new EconomyDef
         {
             Id = "economy",
@@ -152,13 +172,101 @@ internal static class TestRules
             Power = power,
             BuildUp = 23,
             Prerequisites = [.. prerequisites],
+            Armor = "wood",
         };
+
+    private static BuildingDef Defense(string id, int width, int height, int power, string weapon, params string[] prerequisites) =>
+        Def(id, width, height, power, prerequisites) with { Category = ProductionCategory.Defense, Armor = "steel", Primary = weapon };
 
     // Rounded to the nearest, as the parser of the data files reads "5%".
     private static Fixed Percent(int percent) => Fixed.FromRaw(IntMath.DivRound(percent * Fixed.OneRaw, 100));
 
-    private static void Infantry(RulesBuilder builder, UnitType type, int sight) =>
-        builder.Add(Unit(type, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, speed: 24, turnRate: 0, turret: false, sight, ["barracks"]));
+    // Rounded to the nearest, as the parser of the data files reads "0.3".
+    private static Fixed Tenths(int tenths) => Fixed.FromRaw(IntMath.DivRound(tenths * Fixed.OneRaw, 10));
+
+    // The armor types of game/data/combat/armor.yaml, in the order the verses below list their shares. A property: Standard, above,
+    // is made before the static fields below it.
+    private static string[] Armors => ["none", "flak", "plate", "light", "medium", "heavy", "wood", "steel", "concrete", "special_1", "special_2"];
+
+    /// <summary>The armor, warheads, projectiles and weapons of game/data (M4 step 1), the same numbers.</summary>
+    private static void Combat(RulesBuilder builder)
+    {
+        foreach (var armor in Armors)
+        {
+            builder.Add(new ArmorDef { Id = armor, Name = armor });
+        }
+
+        Warhead(builder, "small_arms", [100, 80, 70, 50, 25, 25, 75, 50, 25, 100, 100], "normal");
+        Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 100, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true);
+        Warhead(builder, "electric", [100, 100, 100, 85, 100, 100, 50, 50, 50, 100, 100], "electro");
+        Warhead(builder, "flak_ground", [150, 100, 50, 60, 10, 10, 30, 10, 10, 100, 100], "explode", spread: Fixed.One, atMax: 25);
+        Warhead(builder, "flak_air", [100, 100, 100, 100, 20, 20, 0, 0, 0, 100, 100], "", spread: Fixed.One, atMax: 10, affectsAir: true);
+        Warhead(builder, "light_mg", [100, 80, 70, 50, 20, 20, 20, 10, 10, 100, 100], "normal");
+        Warhead(builder, "missile", [25, 25, 25, 75, 100, 100, 50, 50, 25, 100, 100], "explode", spread: Tenths(3), atMax: 50);
+
+        builder.Add(new ProjectileDef { Id = "bullet", Name = "bullet", Motion = ProjectileMotion.Instant });
+        builder.Add(new ProjectileDef { Id = "bolt", Name = "bolt", Motion = ProjectileMotion.Instant, Visual = "electric_bolt" });
+        builder.Add(new ProjectileDef { Id = "shell", Name = "shell", Motion = ProjectileMotion.Ballistic, Speed = 40, Arc = Tenths(5) });
+        builder.Add(new ProjectileDef
+        {
+            Id = "flak_shell",
+            Name = "flak_shell",
+            Motion = ProjectileMotion.Ballistic,
+            Speed = 40,
+            Arc = Fixed.One,
+            Inaccuracy = Tenths(5),
+        });
+        builder.Add(new ProjectileDef { Id = "rocket", Name = "rocket", Motion = ProjectileMotion.Homing, Speed = 30, TurnRate = 2048, Lifetime = 90 });
+
+        // Damage, reload in ticks, range in cells (quarters for 5.75 and halves for 5.5), projectile, warhead.
+        Weapon(builder, "conscript_rifle", 15, 25, Fixed.FromInt(4), "bullet", "small_arms");
+        Weapon(builder, "rocketeer_rocket", 50, 60, Fixed.FromInt(6), "rocket", "missile");
+        Weapon(builder, "heavy_tank_cannon", 90, 65, Fixed.FromRatio(23, 4), "shell", "ap_shell");
+        Weapon(builder, "tesla_tank_bolt", 135, 75, Fixed.FromInt(4), "bolt", "electric");
+        Weapon(builder, "flak_track_gun", 25, 40, Fixed.FromInt(5), "flak_shell", "flak_ground");
+        Weapon(builder, "flak_track_aa_gun", 35, 25, Fixed.FromInt(10), "bullet", "flak_air", WeaponTargets.Air);
+        Weapon(builder, "harvester_machine_gun", 30, 20, Fixed.FromRatio(11, 2), "bullet", "light_mg");
+        Weapon(builder, "sentry_machine_gun", 50, 26, Fixed.FromRatio(11, 2), "bullet", "small_arms");
+        Weapon(builder, "tesla_coil_bolt", 200, 80, Fixed.FromInt(7), "bolt", "electric");
+        Weapon(builder, "flak_cannon_gun", 40, 20, Fixed.FromInt(12), "flak_shell", "flak_air", WeaponTargets.Air);
+    }
+
+    private static void Warhead(
+        RulesBuilder builder, string id, int[] verses, string death, Fixed spread = default, int atMax = 100, bool wallDamage = false,
+        bool affectsAir = false) =>
+        builder.Add(new WarheadDef
+        {
+            Id = id,
+            Name = id,
+            Verses = Armors.Select((armor, i) => new ArmorPercent(armor, Percent(verses[i]))).OrderBy(verse => verse.Armor, System.StringComparer.Ordinal)
+                .ToImmutableArray(),
+            Spread = spread,
+            PercentAtMax = Percent(atMax),
+            WallDamage = wallDamage,
+            AffectsAir = affectsAir,
+            InfantryDeath = death,
+        });
+
+    private static void Weapon(
+        RulesBuilder builder, string id, int damage, int reload, Fixed range, string projectile, string warhead,
+        WeaponTargets targets = WeaponTargets.Ground) =>
+        builder.Add(new WeaponDef
+        {
+            Id = id,
+            Name = id,
+            Damage = damage,
+            Reload = reload,
+            Range = range,
+            Projectile = projectile,
+            Warhead = warhead,
+            Targets = targets,
+        });
+
+    private static UnitDef InfantryDef(UnitType type, int sight) =>
+        Unit(type, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, speed: 24, turnRate: 0, turret: false, sight, ["barracks"]) with
+        {
+            Armor = "none",
+        };
 
     private static void Vehicle(
         RulesBuilder builder, UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
@@ -167,7 +275,10 @@ internal static class TestRules
     private static UnitDef VehicleDef(UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
         Unit(
             type, UnitCategory.Vehicle, locomotor, UnitPlacement.Cell, speed, turnRate: 2048, turret, sight,
-            prerequisites.Length > 0 ? prerequisites : ["war_factory"]);
+            prerequisites.Length > 0 ? prerequisites : ["war_factory"]) with
+        {
+            Armor = "heavy",
+        };
 
     private static UnitDef Unit(
         UnitType type, UnitCategory category, Locomotor locomotor, UnitPlacement placement, int speed, int turnRate, bool turret, int sight,

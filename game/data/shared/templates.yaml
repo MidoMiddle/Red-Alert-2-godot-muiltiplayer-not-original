@@ -6,6 +6,7 @@
 base_infantry:
   kind: unit
   abstract: true
+  armor: none
   category: infantry
   placement: subcell
   locomotor: foot
@@ -17,6 +18,7 @@ base_infantry:
 base_vehicle:
   kind: unit
   abstract: true
+  armor: heavy
   category: vehicle
   placement: cell
   locomotor: track
@@ -33,6 +35,7 @@ base_vehicle:
 base_building:
   kind: building
   abstract: true
+  armor: wood
   category: building
   build_up: 1.5s
   power: 0
@@ -42,4 +45,5 @@ base_defense:
   kind: building
   abstract: true
   inherits: base_building
+  armor: steel
   category: defense

@@ -1,0 +1,10 @@
+# Armor types of the test dataset (M4 step 1).
+none:
+  kind: armor
+  name: None
+heavy:
+  kind: armor
+  name: Heavy
+steel:
+  kind: armor
+  name: Steel

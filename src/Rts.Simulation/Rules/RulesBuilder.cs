@@ -18,6 +18,9 @@ public sealed class RulesBuilder
     private readonly List<BuildingDef> _buildings = [];
     private readonly List<FactionDef> _factions = [];
     private readonly List<EconomyDef> _economies = [];
+    private readonly List<ArmorDef> _armors = [];
+    private readonly List<WarheadDef> _warheads = [];
+    private readonly List<ProjectileDef> _projectiles = [];
 
     public RulesBuilder Add(LocomotorDef definition)
     {
@@ -61,6 +64,24 @@ public sealed class RulesBuilder
         return this;
     }
 
+    public RulesBuilder Add(ArmorDef definition)
+    {
+        _armors.Add(definition);
+        return this;
+    }
+
+    public RulesBuilder Add(WarheadDef definition)
+    {
+        _warheads.Add(definition);
+        return this;
+    }
+
+    public RulesBuilder Add(ProjectileDef definition)
+    {
+        _projectiles.Add(definition);
+        return this;
+    }
+
     /// <summary>Sorts every kind by id and checks that no id is used twice, in any kind.</summary>
     /// <exception cref="ArgumentException">Two definitions have the same id.</exception>
     public RulesDatabase Build()
@@ -81,7 +102,10 @@ public sealed class RulesBuilder
             Sorted(_units),
             Sorted(_buildings),
             Sorted(_factions),
-            Sorted(_economies));
+            Sorted(_economies),
+            Sorted(_armors),
+            Sorted(_warheads),
+            Sorted(_projectiles));
     }
 
     private IEnumerable<string> AllIds()
@@ -117,6 +141,21 @@ public sealed class RulesBuilder
         }
 
         foreach (var definition in _economies)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _armors)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _warheads)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _projectiles)
         {
             yield return definition.Id;
         }

@@ -2,6 +2,7 @@
 base_tracked_vehicle:
   kind: unit
   abstract: true
+  armor: heavy
   category: vehicle
   placement: cell
   locomotor: track
@@ -12,6 +13,7 @@ base_tracked_vehicle:
 base_building:
   kind: building
   abstract: true
+  armor: steel
   category: building
   build_up: 1.5s
   power: 0

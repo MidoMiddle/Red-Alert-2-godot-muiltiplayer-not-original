@@ -8,6 +8,7 @@ construction_yard:  # Construction Yard; comes from the MCV
   cost: 3000
   build_time: 126s
   hp: 1000
+  armor: concrete
   footprint: [3, 3]
   produces: [building, defense]
 
@@ -45,6 +46,7 @@ barracks:  # Barracks
   cost: 500
   build_time: 21s
   hp: 500
+  armor: steel
   footprint: [2, 2]
   power: -10
   produces: [infantry]
@@ -98,6 +100,7 @@ wall:  # Wall; placed by dragging
   cost: 100
   build_time: 4.2s
   hp: 300
+  armor: concrete
   footprint: [1, 1]
   extends_base: false
   prerequisites: [construction_yard]
@@ -110,6 +113,7 @@ sentry_bunker:  # Sentry Gun
   cost: 500
   build_time: 21s
   hp: 400
+  primary: sentry_machine_gun
   footprint: [1, 1]
   prerequisites: [barracks]
 
@@ -121,6 +125,7 @@ tesla_coil:  # Tesla Coil
   cost: 1500
   build_time: 63s
   hp: 600
+  primary: tesla_coil_bolt
   footprint: [2, 2]
   power: -75
   prerequisites: [radar]
@@ -133,6 +138,7 @@ flak_cannon:  # Flak Cannon
   cost: 1000
   build_time: 42s
   hp: 900
+  primary: flak_cannon_gun
   footprint: [2, 2]
   power: -50
   prerequisites: [radar]

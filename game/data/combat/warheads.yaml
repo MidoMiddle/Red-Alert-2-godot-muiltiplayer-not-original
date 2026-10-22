@@ -1,0 +1,54 @@
+# Warheads (docs/implementation/M4_combat.md, 4.1, 4.3): what a hit does. `verses` gives the share of the weapon's damage against
+# every armor type (all of them must be listed, 0% to 1000%); `spread` is the radius of the area in cells and `percent_at_max` the
+# share at its edge. Starting numbers follow the RA2 warheads named in the comments (docs/ra2_units, docs/ra2_buildings); the balance
+# comes in M4 step 14.
+small_arms:  # RA2 SA: rifles and machine guns, strong against infantry
+  kind: warhead
+  name: Small Arms
+  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  infantry_death: normal
+
+ap_shell:  # RA2 AP: tank shells, strong against vehicles
+  kind: warhead
+  name: Armor Piercing
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 45%, concrete: 45%, special_1: 100%, special_2: 100% }
+  spread: 0.3
+  percent_at_max: 50%
+  wall_damage: true
+  infantry_death: explode
+
+electric:  # RA2 Electric: Tesla bolts, good against everything, half against buildings
+  kind: warhead
+  name: Electric
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 85%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
+  infantry_death: electro
+
+flak_ground:  # RA2 FlakTWH: flak at the ground, in an area, strong against infantry
+  kind: warhead
+  name: Flak (ground)
+  verses: { none: 150%, flak: 100%, plate: 50%, light: 60%, medium: 10%, heavy: 10%, wood: 30%, steel: 10%, concrete: 10%, special_1: 100%, special_2: 100% }
+  spread: 1
+  percent_at_max: 25%
+  infantry_death: explode
+
+flak_air:  # RA2 FlakWH: flak at aircraft, nothing against buildings
+  kind: warhead
+  name: Flak (air)
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 20%, heavy: 20%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  spread: 1
+  percent_at_max: 10%
+  affects_air: true
+
+light_mg:  # RA2 20mmRapid: the harvester's machine gun
+  kind: warhead
+  name: Light Machine Gun
+  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 20%, heavy: 20%, wood: 20%, steel: 10%, concrete: 10%, special_1: 100%, special_2: 100% }
+  infantry_death: normal
+
+missile:  # the anti-tank rocket of the Rocket Trooper (M4 plan, 4.18)
+  kind: warhead
+  name: Missile
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  spread: 0.3
+  percent_at_max: 50%
+  infantry_death: explode

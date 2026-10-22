@@ -1,0 +1,36 @@
+# Projectiles (docs/implementation/M4_combat.md, 4.8): how a shot gets to its target. `motion`: instant (hits at once), ballistic
+# (an arc to the aim point) or homing (follows its target). `speed` in leptons per tick (256 = a cell), `arc` and `inaccuracy` in
+# cells, `turn_rate` in BAngle units per tick (65536 = a full turn), `lifetime` in seconds.
+bullet:
+  kind: projectile
+  name: Bullet
+  motion: instant
+
+bolt:
+  kind: projectile
+  name: Tesla Bolt
+  motion: instant
+  visual: electric_bolt
+
+shell:
+  kind: projectile
+  name: Shell
+  motion: ballistic
+  speed: 40
+  arc: 0.5
+
+flak_shell:
+  kind: projectile
+  name: Flak
+  motion: ballistic
+  speed: 40
+  arc: 1
+  inaccuracy: 0.5
+
+rocket:
+  kind: projectile
+  name: Rocket
+  motion: homing
+  speed: 30
+  turn_rate: 2048
+  lifetime: 6s

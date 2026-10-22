@@ -167,6 +167,27 @@ internal static class Scalars
         return ImmutableArray.CreateRange(speeds.Values);
     }
 
+    /// <summary>The share of damage against each armor type: a mapping such as <c>heavy: 100%</c>, sorted by armor id (M4, 4.3).</summary>
+    public static ImmutableArray<ArmorPercent> ArmorPercents(string fileName, YamlNode node)
+    {
+        if (node is not YamlMappingNode mapping)
+        {
+            throw RulesFormatException.At(fileName, node, "expected a mapping from armor types to percentages such as heavy: 100%");
+        }
+
+        var percents = new SortedDictionary<string, ArmorPercent>(StringComparer.Ordinal);
+        foreach (var entry in mapping)
+        {
+            var armor = Id(fileName, entry.Key);
+            if (!percents.TryAdd(armor, new ArmorPercent(armor, Percent(fileName, entry.Value))))
+            {
+                throw RulesFormatException.At(fileName, entry.Key, $"armor '{armor}' repeats");
+            }
+        }
+
+        return ImmutableArray.CreateRange(percents.Values);
+    }
+
     /// <summary>One of the given words, such as <c>infantry</c> or <c>vehicle</c>.</summary>
     public static string Choice(string fileName, YamlNode node, params string[] options)
     {

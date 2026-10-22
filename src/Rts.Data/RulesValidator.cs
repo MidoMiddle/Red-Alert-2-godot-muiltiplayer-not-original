@@ -13,7 +13,8 @@ namespace Rts.Data;
 /// <summary>
 /// Checks the meaning of rules that have been read (docs/implementation/M3_base_economy.md, 4.3): numbers in their ranges, references to
 /// definitions that exist and have the right kind, no cycle of prerequisites, and every faction with its construction yard, MCV, refinery
-/// and harvester. Every mistake is collected, at the place where its value is written: an inherited field points into the template, an id
+/// and harvester. Since M4 step 1 also the combat: armor of every unit and building, weapons with their projectile and warhead, and
+/// warheads with a share for every armor type. Every mistake is collected, at the place where its value is written: an inherited field points into the template, an id
 /// in a list points at that id. The schema itself (unknown keys, missing fields, values that do not parse) and inheritance cycles are found
 /// earlier, while the files are read; the assets are checked by the client, since the simulation does not need them.
 /// </summary>
@@ -55,6 +56,16 @@ internal static class RulesValidator
         foreach (var economy in rules.Economies)
         {
             checker.Economy(economy);
+        }
+
+        foreach (var warhead in rules.Warheads)
+        {
+            checker.Warhead(warhead);
+        }
+
+        foreach (var projectile in rules.Projectiles)
+        {
+            checker.Projectile(projectile);
         }
 
         checker.PrerequisiteCycles();
@@ -99,12 +110,12 @@ internal static class RulesValidator
                 Error(unit.Id, "locomotor", Missing(unit.Id, "locomotor", unit.Locomotor));
             }
 
-            for (var i = 0; i < unit.Weapons.Length; i++)
+            ArmorOf(unit.Id, unit.Armor);
+            WeaponOf(unit.Id, "primary", unit.Primary);
+            WeaponOf(unit.Id, "secondary", unit.Secondary);
+            if (unit.Secondary.Length > 0 && unit.Primary.Length == 0)
             {
-                if (!rules.TryGetWeapon(unit.Weapons[i], out _))
-                {
-                    ItemError(unit.Id, "weapons", i, Missing(unit.Id, "weapon", unit.Weapons[i]));
-                }
+                Error(unit.Id, "secondary", $"'{unit.Id}' has a secondary weapon but no primary one");
             }
 
             Prerequisites(unit.Id, unit.Prerequisites);
@@ -147,15 +158,99 @@ internal static class RulesValidator
 
             FactionOf(building.Id, building.Faction);
             Prerequisites(building.Id, building.Prerequisites);
+            ArmorOf(building.Id, building.Armor);
+            WeaponOf(building.Id, "primary", building.Primary);
         }
 
+        /// <summary>
+        /// Damage at least 0, a reload and a range above 0, the nearest range below the range, a volley of at least one shot; the projectile
+        /// and the warhead exist.
+        /// </summary>
         public void Weapon(WeaponDef weapon)
         {
             NotNegative(weapon.Id, "damage", weapon.Damage);
-            NotNegative(weapon.Id, "reload", weapon.Reload);
-            if (weapon.Range < Fixed.Zero)
+            Positive(weapon.Id, "reload", weapon.Reload);
+            if (weapon.Range <= Fixed.Zero)
             {
-                Error(weapon.Id, "range", $"'range' of '{weapon.Id}' must not be negative");
+                Error(weapon.Id, "range", $"'range' of '{weapon.Id}' must be above zero");
+            }
+
+            if (weapon.MinRange < Fixed.Zero || (weapon.Range > Fixed.Zero && weapon.MinRange >= weapon.Range))
+            {
+                Error(weapon.Id, "min_range", $"'min_range' of '{weapon.Id}' must be 0 or more and below its range");
+            }
+
+            Positive(weapon.Id, "burst", weapon.Burst);
+            NotNegative(weapon.Id, "burst_delay", weapon.BurstDelay);
+            if (!rules.TryGetProjectile(weapon.Projectile, out _))
+            {
+                Error(weapon.Id, "projectile", Missing(weapon.Id, "projectile", weapon.Projectile));
+            }
+
+            if (!rules.TryGetWarhead(weapon.Warhead, out _))
+            {
+                Error(weapon.Id, "warhead", Missing(weapon.Id, "warhead", weapon.Warhead));
+            }
+        }
+
+        /// <summary>A share of 0 to 1000 % for known armor, one for every armor type; the area and the share at its edge in range.</summary>
+        public void Warhead(WarheadDef warhead)
+        {
+            var thousand = Fixed.FromInt(10);
+            foreach (var verse in warhead.Verses)
+            {
+                if (!rules.TryGetArmor(verse.Armor, out _))
+                {
+                    MapKeyError(warhead.Id, "verses", verse.Armor, Missing(warhead.Id, "armor", verse.Armor));
+                }
+                else if (verse.Percent < Fixed.Zero || verse.Percent > thousand)
+                {
+                    MapKeyError(warhead.Id, "verses", verse.Armor, $"the share against '{verse.Armor}' of '{warhead.Id}' must be 0% to 1000%");
+                }
+            }
+
+            foreach (var armor in rules.Armors)
+            {
+                if (!warhead.Verses.Any(verse => verse.Armor == armor.Id))
+                {
+                    Error(warhead.Id, "verses", $"the verses of '{warhead.Id}' have no share against armor '{armor.Id}'");
+                }
+            }
+
+            if (warhead.Spread < Fixed.Zero)
+            {
+                Error(warhead.Id, "spread", $"'spread' of '{warhead.Id}' must not be negative");
+            }
+
+            if (warhead.PercentAtMax < Fixed.Zero || warhead.PercentAtMax > Fixed.One)
+            {
+                Error(warhead.Id, "percent_at_max", $"'percent_at_max' of '{warhead.Id}' must be 0% to 100%");
+            }
+        }
+
+        /// <summary>Nothing negative; a projectile that flies needs a speed, a homing one also a turn rate and a lifetime.</summary>
+        public void Projectile(ProjectileDef projectile)
+        {
+            NotNegative(projectile.Id, "speed", projectile.Speed);
+            NotNegative(projectile.Id, "turn_rate", projectile.TurnRate);
+            NotNegative(projectile.Id, "lifetime", projectile.Lifetime);
+            foreach (var (key, value) in new[] { ("arc", projectile.Arc), ("inaccuracy", projectile.Inaccuracy) })
+            {
+                if (value < Fixed.Zero)
+                {
+                    Error(projectile.Id, key, $"'{key}' of '{projectile.Id}' must not be negative");
+                }
+            }
+
+            if (projectile.Motion != ProjectileMotion.Instant)
+            {
+                Positive(projectile.Id, "speed", projectile.Speed);
+            }
+
+            if (projectile.Motion == ProjectileMotion.Homing)
+            {
+                Positive(projectile.Id, "turn_rate", projectile.TurnRate);
+                Positive(projectile.Id, "lifetime", projectile.Lifetime);
             }
         }
 
@@ -290,6 +385,28 @@ internal static class RulesValidator
             done.Add(building.Id);
         }
 
+        /// <summary>A unit or a building has an armor type that exists.</summary>
+        private void ArmorOf(string id, string armor)
+        {
+            if (armor.Length == 0)
+            {
+                Error(id, "armor", $"'{id}' has no armor");
+            }
+            else if (!rules.TryGetArmor(armor, out _))
+            {
+                Error(id, "armor", Missing(id, "armor", armor));
+            }
+        }
+
+        /// <summary>A weapon slot is empty or names a weapon.</summary>
+        private void WeaponOf(string id, string key, string weapon)
+        {
+            if (weapon.Length > 0 && !rules.TryGetWeapon(weapon, out _))
+            {
+                Error(id, key, Missing(id, "weapon", weapon));
+            }
+        }
+
         private void FactionOf(string id, string faction)
         {
             if (!rules.TryGetFaction(faction, out _))
@@ -350,6 +467,9 @@ internal static class RulesValidator
             : rules.TryGetTerrain(id, out _) ? "terrain"
             : rules.TryGetFaction(id, out _) ? "faction"
             : rules.TryGetEconomy(id, out _) ? "economy"
+            : rules.TryGetArmor(id, out _) ? "armor"
+            : rules.TryGetWarhead(id, out _) ? "warhead"
+            : rules.TryGetProjectile(id, out _) ? "projectile"
             : null;
 
         private void Positive(string id, string key, int value)
@@ -384,14 +504,17 @@ internal static class RulesValidator
         }
 
         /// <summary>An error at the locomotor key of a speed in a land type.</summary>
-        private void SpeedError(string id, string locomotor, string reason)
+        private void SpeedError(string id, string locomotor, string reason) => MapKeyError(id, "speed", locomotor, reason);
+
+        /// <summary>An error at one key of a mapping field, such as an armor of <c>verses</c>.</summary>
+        private void MapKeyError(string id, string field, string mapKey, string reason)
         {
-            var (fileName, node) = Place(id, "speed");
+            var (fileName, node) = Place(id, field);
             if (node is YamlMappingNode mapping)
             {
                 foreach (var entry in mapping)
                 {
-                    if (entry.Key is YamlScalarNode { Value: { } key } && key == locomotor)
+                    if (entry.Key is YamlScalarNode { Value: { } key } && key == mapKey)
                     {
                         node = entry.Key;
                         break;

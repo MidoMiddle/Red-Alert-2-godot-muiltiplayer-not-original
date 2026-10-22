@@ -53,6 +53,12 @@ public sealed record BuildingDef : IDefinition
     /// </summary>
     public bool Radar { get; init; }
 
+    /// <summary>Id of the armor type (M4, 4.2); the checks of the data require it.</summary>
+    public string Armor { get; init; } = "";
+
+    /// <summary>Id of the weapon of a defense (RA2 <c>Primary</c>); empty for a building that does not fight.</summary>
+    public string Primary { get; init; } = "";
+
     /// <summary>The <see cref="Adjacent"/> of a building that does not set it.</summary>
     public const int DefaultAdjacent = 2;
 

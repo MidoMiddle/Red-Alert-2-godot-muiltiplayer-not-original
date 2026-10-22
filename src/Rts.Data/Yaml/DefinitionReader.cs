@@ -13,21 +13,30 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile"];
 
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
-        "placement", "turret", "prerequisites", "weapons", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
+        "placement", "turret", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
     ];
 
     private static readonly string[] BuildingKeys =
     [
-        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar",
+        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary",
         "prerequisites", "model", "icon",
     ];
 
-    private static readonly string[] WeaponKeys = ["name", "damage", "range", "reload"];
+    private static readonly string[] WeaponKeys =
+    [
+        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report",
+    ];
+
+    private static readonly string[] ArmorKeys = ["name"];
+
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "infantry_death"];
+
+    private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual"];
 
     private static readonly string[] LocomotorKeys = ["name", "slope"];
 
@@ -41,7 +50,7 @@ internal static class DefinitionReader
         "ore_growth_chance", "ore_spread_stage", "ore_spread_chance", "sell_refund", "repair_cost", "repair_rate",
     ];
 
-    /// <summary>The kind of an entry, one of the six known kinds.</summary>
+    /// <summary>The kind of an entry, one of the known kinds.</summary>
     public static string KindOf(RawDefinition definition)
     {
         var field = definition.Fields["kind"];
@@ -72,7 +81,8 @@ internal static class DefinitionReader
             Placement = fields.Required("placement", PlacementOf, UnitPlacement.Cell),
             Turret = fields.Optional("turret", Scalars.Flag, false),
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
-            Weapons = fields.Optional("weapons", Scalars.IdList, ImmutableArray<string>.Empty),
+            Primary = fields.Optional("primary", Scalars.Id, ""),
+            Secondary = fields.Optional("secondary", Scalars.Id, ""),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -101,6 +111,8 @@ internal static class DefinitionReader
             Adjacent = fields.Optional("adjacent", Scalars.Int, BuildingDef.DefaultAdjacent),
             ExtendsBase = fields.Optional("extends_base", Scalars.Flag, true),
             Radar = fields.Optional("radar", Scalars.Flag, false),
+            Armor = fields.Optional("armor", Scalars.Id, ""),
+            Primary = fields.Optional("primary", Scalars.Id, ""),
             Produces = fields.Optional("produces", CategoriesOf, ImmutableArray<ProductionCategory>.Empty),
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
             Model = fields.Optional("model", Scalars.Path, ""),
@@ -115,9 +127,55 @@ internal static class DefinitionReader
         {
             Id = definition.Id,
             Name = fields.Required("name", Scalars.Text, ""),
-            Damage = fields.Optional("damage", Scalars.Int, 0),
-            Range = fields.Optional("range", Scalars.FixedNumber, Fixed.Zero),
-            Reload = fields.Optional("reload", Scalars.Ticks, 0),
+            Damage = fields.Required("damage", Scalars.Int, 0),
+            Reload = fields.Required("reload", Scalars.Ticks, 0),
+            Range = fields.Required("range", Scalars.FixedNumber, Fixed.Zero),
+            MinRange = fields.Optional("min_range", Scalars.FixedNumber, Fixed.Zero),
+            Projectile = fields.Required("projectile", Scalars.Id, ""),
+            Warhead = fields.Required("warhead", Scalars.Id, ""),
+            Burst = fields.Optional("burst", Scalars.Int, 1),
+            BurstDelay = fields.Optional("burst_delay", Scalars.Ticks, 0),
+            Targets = fields.Optional("targets", TargetsOf, WeaponTargets.Ground),
+            Report = fields.Optional("report", Scalars.Id, ""),
+        };
+    }
+
+    public static ArmorDef Armor(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, ArmorKeys);
+        return new ArmorDef { Id = definition.Id, Name = fields.Required("name", Scalars.Text, "") };
+    }
+
+    public static WarheadDef Warhead(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, WarheadKeys);
+        return new WarheadDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            Verses = fields.Required("verses", Scalars.ArmorPercents, ImmutableArray<ArmorPercent>.Empty),
+            Spread = fields.Optional("spread", Scalars.FixedNumber, Fixed.Zero),
+            PercentAtMax = fields.Optional("percent_at_max", Scalars.Percent, Fixed.One),
+            WallDamage = fields.Optional("wall_damage", Scalars.Flag, false),
+            AffectsAir = fields.Optional("affects_air", Scalars.Flag, false),
+            InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
+        };
+    }
+
+    public static ProjectileDef Projectile(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, ProjectileKeys);
+        return new ProjectileDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            Motion = fields.Required("motion", MotionOf, ProjectileMotion.Instant),
+            Speed = fields.Optional("speed", Scalars.Int, 0),
+            Arc = fields.Optional("arc", Scalars.FixedNumber, Fixed.Zero),
+            Inaccuracy = fields.Optional("inaccuracy", Scalars.FixedNumber, Fixed.Zero),
+            TurnRate = fields.Optional("turn_rate", Scalars.Int, 0),
+            Lifetime = fields.Optional("lifetime", Scalars.Ticks, 0),
+            Visual = fields.Optional("visual", Scalars.Id, ""),
         };
     }
 
@@ -215,6 +273,37 @@ internal static class DefinitionReader
 
     private static ProductionCategory BuildingCategoryOf(string fileName, YamlNode node) =>
         Scalars.Choice(fileName, node, "building", "defense") == "building" ? ProductionCategory.Building : ProductionCategory.Defense;
+
+    private static ProjectileMotion MotionOf(string fileName, YamlNode node) =>
+        Scalars.Choice(fileName, node, "instant", "ballistic", "homing") switch
+        {
+            "instant" => ProjectileMotion.Instant,
+            "ballistic" => ProjectileMotion.Ballistic,
+            _ => ProjectileMotion.Homing,
+        };
+
+    /// <summary>What a weapon fires at: a list of <c>ground</c> and <c>air</c>, each once.</summary>
+    private static WeaponTargets TargetsOf(string fileName, YamlNode node)
+    {
+        if (node is not YamlSequenceNode { Children.Count: > 0 } sequence)
+        {
+            throw RulesFormatException.At(fileName, node, "expected a list of targets such as [ground] or [ground, air]");
+        }
+
+        var targets = WeaponTargets.None;
+        foreach (var child in sequence.Children)
+        {
+            var target = Scalars.Choice(fileName, child, "ground", "air") == "ground" ? WeaponTargets.Ground : WeaponTargets.Air;
+            if ((targets & target) != 0)
+            {
+                throw RulesFormatException.At(fileName, child, $"target '{((YamlScalarNode)child).Value}' repeats");
+            }
+
+            targets |= target;
+        }
+
+        return targets;
+    }
 
     private static UnitPlacement PlacementOf(string fileName, YamlNode node) =>
         Scalars.Choice(fileName, node, "cell", "subcell") == "cell" ? UnitPlacement.Cell : UnitPlacement.Subcell;

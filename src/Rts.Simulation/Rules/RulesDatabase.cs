@@ -16,7 +16,10 @@ public sealed class RulesDatabase
         ImmutableArray<UnitDef> units,
         ImmutableArray<BuildingDef> buildings,
         ImmutableArray<FactionDef> factions,
-        ImmutableArray<EconomyDef> economies)
+        ImmutableArray<EconomyDef> economies,
+        ImmutableArray<ArmorDef> armors,
+        ImmutableArray<WarheadDef> warheads,
+        ImmutableArray<ProjectileDef> projectiles)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -25,6 +28,9 @@ public sealed class RulesDatabase
         Buildings = buildings;
         Factions = factions;
         Economies = economies;
+        Armors = armors;
+        Warheads = warheads;
+        Projectiles = projectiles;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -42,6 +48,13 @@ public sealed class RulesDatabase
     /// <summary>The general rules of the economy; the engine needs exactly one (<see cref="GameRules.Problems"/>).</summary>
     public ImmutableArray<EconomyDef> Economies { get; }
 
+    /// <summary>The armor types (M4, 4.2); a type's number is its place here.</summary>
+    public ImmutableArray<ArmorDef> Armors { get; }
+
+    public ImmutableArray<WarheadDef> Warheads { get; }
+
+    public ImmutableArray<ProjectileDef> Projectiles { get; }
+
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
 
     public bool TryGetTerrain(string id, out TerrainDef definition) => TryFind(Terrains, id, out definition);
@@ -55,6 +68,15 @@ public sealed class RulesDatabase
     public bool TryGetFaction(string id, out FactionDef definition) => TryFind(Factions, id, out definition);
 
     public bool TryGetEconomy(string id, out EconomyDef definition) => TryFind(Economies, id, out definition);
+
+    public bool TryGetArmor(string id, out ArmorDef definition) => TryFind(Armors, id, out definition);
+
+    public bool TryGetWarhead(string id, out WarheadDef definition) => TryFind(Warheads, id, out definition);
+
+    public bool TryGetProjectile(string id, out ProjectileDef definition) => TryFind(Projectiles, id, out definition);
+
+    /// <summary>The number of an armor type: its position in <see cref="Armors"/>; -1 when it is not defined.</summary>
+    public int IndexOfArmor(string id) => IndexOf(Armors, id);
 
     /// <summary>The position of a unit in <see cref="Units"/>: the index commands and tech sets use; -1 when it is not defined.</summary>
     public int IndexOfUnit(string id) => IndexOf(Units, id);

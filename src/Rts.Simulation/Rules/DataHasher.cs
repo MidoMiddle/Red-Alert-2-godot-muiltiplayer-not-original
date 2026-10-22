@@ -46,6 +46,12 @@ public static class DataHasher
             hash.Add(weapon.Damage);
             hash.Add(weapon.Range.Raw);
             hash.Add(weapon.Reload);
+            hash.Add(weapon.MinRange.Raw);
+            Add(hash, weapon.Projectile);
+            Add(hash, weapon.Warhead);
+            hash.Add(weapon.Burst);
+            hash.Add(weapon.BurstDelay);
+            hash.Add((byte)weapon.Targets);
         }
 
         hash.Add(rules.Units.Length);
@@ -68,7 +74,8 @@ public static class DataHasher
             hash.Add(unit.HarvestTime);
             hash.Add(unit.UnloadRate);
             Add(hash, unit.Prerequisites);
-            Add(hash, unit.Weapons);
+            Add(hash, unit.Primary);
+            Add(hash, unit.Secondary);
         }
 
         hash.Add(rules.Buildings.Length);
@@ -107,6 +114,8 @@ public static class DataHasher
             }
 
             Add(hash, building.Prerequisites);
+            Add(hash, building.Armor);
+            Add(hash, building.Primary);
         }
 
         hash.Add(rules.Factions.Length);
@@ -135,6 +144,42 @@ public static class DataHasher
             hash.Add(economy.SellRefund.Raw);
             hash.Add(economy.RepairCost.Raw);
             hash.Add(economy.RepairRate);
+        }
+
+        // M4 step 1: armor, warheads and projectiles; the death of infantry and the look of a projectile are the client's.
+        hash.Add(rules.Armors.Length);
+        foreach (var armor in rules.Armors)
+        {
+            Add(hash, armor.Id);
+        }
+
+        hash.Add(rules.Warheads.Length);
+        foreach (var warhead in rules.Warheads)
+        {
+            Add(hash, warhead.Id);
+            hash.Add(warhead.Verses.Length);
+            foreach (var verse in warhead.Verses)
+            {
+                Add(hash, verse.Armor);
+                hash.Add(verse.Percent.Raw);
+            }
+
+            hash.Add(warhead.Spread.Raw);
+            hash.Add(warhead.PercentAtMax.Raw);
+            hash.Add(warhead.WallDamage);
+            hash.Add(warhead.AffectsAir);
+        }
+
+        hash.Add(rules.Projectiles.Length);
+        foreach (var projectile in rules.Projectiles)
+        {
+            Add(hash, projectile.Id);
+            hash.Add((byte)projectile.Motion);
+            hash.Add(projectile.Speed);
+            hash.Add(projectile.Arc.Raw);
+            hash.Add(projectile.Inaccuracy.Raw);
+            hash.Add(projectile.TurnRate);
+            hash.Add(projectile.Lifetime);
         }
 
         return hash.Value;

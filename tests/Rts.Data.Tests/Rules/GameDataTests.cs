@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0x314b59aebbc04ca9UL, GameDataFiles.Current.Hash);
+        Assert.Equal(0x577edd5436347203UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -73,17 +73,30 @@ public sealed class GameDataTests
         var test = TestRules.Standard.Database;
 
         Assert.Equal(test.Buildings.Select(Shape), data.Buildings.Select(Shape));
-        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites))),
-            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites))));
+        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary)),
+            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary)));
         Assert.Equal(test.Factions.Single(), data.Factions.Single() with { Name = test.Factions.Single().Name });
 
         Assert.Equal(test.Economies.Single(), data.Economies.Single());
 
-        static (string, string, int, int, int, string, int, int, bool, bool, string, string, string, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
+        static (string, string, int, int, int, string, int, int, bool, bool, string, string, string, string, string, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
             (building.Id, building.Faction, building.Footprint.Width, building.Footprint.Height, building.Power,
              string.Join(",", building.Prerequisites), building.BuildUp, building.Adjacent, building.ExtendsBase, building.Radar,
              string.Join(",", building.Produces), building.ExitCell?.ToString() ?? "", building.DockCell?.ToString() ?? "",
-             building.Category.ToString());
+             building.Category.ToString(), building.Armor, building.Primary);
+    }
+
+    [Fact]
+    public void The_game_data_has_the_combat_of_the_simulation_tests()
+    {
+        // Armor, warheads, projectiles and weapons (M4 step 1): every number the simulation reads; names and sounds are left out.
+        var data = GameDataFiles.Current.Database;
+        var test = TestRules.Standard.Database;
+
+        Assert.Equal(test.Armors.Select(armor => armor.Id), data.Armors.Select(armor => armor.Id));
+        Assert.Equal(test.Warheads.Select(w => w with { Name = "" }), data.Warheads.Select(w => w with { Name = "" }));
+        Assert.Equal(test.Projectiles.Select(p => p with { Name = "" }), data.Projectiles.Select(p => p with { Name = "" }));
+        Assert.Equal(test.Weapons.Select(w => w with { Name = "", Report = "" }), data.Weapons.Select(w => w with { Name = "", Report = "" }));
     }
 
     [Fact]

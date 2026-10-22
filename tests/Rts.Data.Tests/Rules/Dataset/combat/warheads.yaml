@@ -1,0 +1,7 @@
+ap_shell:
+  kind: warhead
+  name: Armor Piercing
+  verses: { none: 25%, heavy: 100%, steel: 50% }
+  spread: 0.5
+  percent_at_max: 50%
+  wall_damage: true
