@@ -85,12 +85,12 @@ internal static class TestRules
         builder.Add(Def("construction_yard", 3, 3, power: 0) with { Produces = [ProductionCategory.Building, ProductionCategory.Defense] });
         Building(builder, "reactor", 2, 2, power: 150, "construction_yard");
         builder.Add(Def("refinery", 3, 3, power: -50, "reactor") with { DockCell = new CellPos(1, 3) });
-        builder.Add(Def("barracks", 2, 2, power: -20, "reactor") with
+        builder.Add(Def("barracks", 2, 2, power: -10, "reactor") with
         {
             Produces = [ProductionCategory.Infantry],
             ExitCell = new CellPos(1, 2),
         });
-        builder.Add(Def("war_factory", 3, 4, power: -50, "refinery") with
+        builder.Add(Def("war_factory", 3, 4, power: -25, "refinery") with
         {
             Produces = [ProductionCategory.Vehicle],
             ExitCell = new CellPos(1, 4),

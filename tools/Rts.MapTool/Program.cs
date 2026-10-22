@@ -11,6 +11,8 @@ using Rts.Simulation.Map;
 //     [--symmetry mirror|rotate180|rotate90] [--relief flat|hilly|mountainous] [--water none|rivers|lakes]
 //     [--forest low|medium|high] [--resources low|medium|high]       a random map (step 13)
 // dotnet run --project tools/Rts.MapTool -- ready-maps game/data/maps        write the four ready maps of step 14
+// dotnet run --project tools/Rts.MapTool -- economy [map] [minutes]               the end-to-end run of M3 step 14 on game/data: MCV, base,
+//     ten tanks; prints the timeline, credits and income by the minute
 // dotnet run --project tools/Rts.MapTool -- rules [folder]                   load the data files below a folder: counts and data hash, or every error;
 //     without a folder game/data, with what the engine needs from it
 if (args.Length == 2 && args[0] == "check")
@@ -49,6 +51,18 @@ if (args.Length is 1 or 2 && args[0] == "rules")
         Console.Error.WriteLine($"{e.Errors.Count} errors");
         return 1;
     }
+}
+
+if (args.Length is >= 1 and <= 3 && args[0] == "economy")
+{
+    var mapFile = args.Length >= 2 ? args[1] : "frozen-crossing";
+    var minutes = args.Length == 3 ? int.Parse(args[2], System.Globalization.CultureInfo.InvariantCulture) : 20;
+    var data = Rts.Data.GameData.LoadDirectory(Path.Combine("game", Rts.Data.GameData.Folder));
+    return Run(Path.Combine("game", Rts.Data.GameData.Folder, "maps", mapFile + ".rtsmap"), map =>
+    {
+        Console.Write(Rts.MapTool.EconomyRun.Format(Rts.MapTool.EconomyRun.Play(map, data.Rules, maxMinutes: minutes)));
+        return 0;
+    });
 }
 
 if (args.Length == 2 && args[0] == "shapes")
@@ -177,7 +191,7 @@ if (args.Length >= 2 && args[0] == "generate")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | ready-maps <dir> | rules [folder]");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

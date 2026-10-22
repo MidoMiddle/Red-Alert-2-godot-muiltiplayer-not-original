@@ -46,7 +46,7 @@ barracks:  # Barracks
   build_time: 21s
   hp: 500
   footprint: [2, 2]
-  power: -20
+  power: -10
   produces: [infantry]
   exit_cell: [1, 2]
   prerequisites: [reactor]
@@ -60,7 +60,7 @@ war_factory:  # War Factory
   build_time: 84s
   hp: 1000
   footprint: [3, 4]
-  power: -50
+  power: -25
   produces: [vehicle]
   exit_cell: [1, 4]
   prerequisites: [refinery]

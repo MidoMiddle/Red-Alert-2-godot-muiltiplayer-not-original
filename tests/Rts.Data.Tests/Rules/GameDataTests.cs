@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0x264016dd47b393d2UL, GameDataFiles.Current.Hash);
+        Assert.Equal(0x314b59aebbc04ca9UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

@@ -38,7 +38,7 @@ public sealed class PowerSystemTests
         Assert.Empty(Update(world));
 
         var player = world.Player(Player1);
-        Assert.Equal((150, 70, false), (player.PowerOutput, player.PowerDrain, player.LowPower));
+        Assert.Equal((150, 60, false), (player.PowerOutput, player.PowerDrain, player.LowPower));
         Assert.Equal(3, player.Buildings.Count);
     }
 
@@ -54,16 +54,16 @@ public sealed class PowerSystemTests
 
         var events = Update(world);
 
-        Assert.Equal((150, 150, false), (world.Player(Player1).PowerOutput, world.Player(Player1).PowerDrain, world.Player(Player1).LowPower));
+        Assert.Equal((150, 125, false), (world.Player(Player1).PowerOutput, world.Player(Player1).PowerDrain, world.Player(Player1).LowPower));
         Assert.Empty(events);
 
-        Build(world, "barracks", 14, 0);
+        Build(world, "tech_center", 14, 0);
         events = Update(world);
 
         Assert.True(world.Player(Player1).LowPower);
         Assert.Equal([new LowPower(0, Player1)], events);
 
-        Build(world, "tesla_coil", 17, 0);
+        Build(world, "tesla_coil", 18, 0);
         Assert.Empty(Update(world));
     }
 
@@ -77,15 +77,17 @@ public sealed class PowerSystemTests
         Build(world, "radar", 7, 0);
         Build(world, "barracks", 10, 0);
         Build(world, "refinery", 13, 0);
+        Build(world, "radar", 16, 0);
         simulation.Step();
         Assert.Contains(new LowPower(0, Player1), simulation.LastTickEvents);
 
-        simulation.Enqueue(new DamageMapObjectCommand(Player1, 1, 0, new CellPos(3, 0), DamageMapObjectCommand.MaxAmount));
+        // The radar at (7, 0) falls: 185 - 50 = 135 against 150.
+        simulation.Enqueue(new DamageMapObjectCommand(Player1, 1, 0, new CellPos(7, 0), DamageMapObjectCommand.MaxAmount));
         simulation.Step();
 
         Assert.False(world.Player(Player1).LowPower);
         Assert.Contains(new PowerRestored(1, Player1), simulation.LastTickEvents);
-        Assert.Equal((150, 120), (world.Player(Player1).PowerOutput, world.Player(Player1).PowerDrain));
+        Assert.Equal((150, 135), (world.Player(Player1).PowerOutput, world.Player(Player1).PowerDrain));
     }
 
     [Fact]
