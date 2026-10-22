@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Map;
@@ -25,7 +26,7 @@ public sealed record TestMap(MapGrid Grid, IReadOnlyList<TestMapUnit> Units);
 /// building neutral_house_a 40 52 0 2
 /// </code>
 /// Codes are the land types of docs/implementation/M7_maps.md, 4.3, plus <c>T</c> for a tree (a <c>pine_tree</c> map object on
-/// clear land). A <c>unit</c> line takes a unit id of <see cref="UnitArchetypes"/>, the cell x and y, and the owner; an
+/// clear land). A <c>unit</c> line takes a unit id of <see cref="UnitTypes"/>, the cell x and y, and the owner; an
 /// <c>object</c> line a map object id of <see cref="MapObjectTypes"/>, the cell x and y, and optionally the model variant; a
 /// <c>bridge</c> line a bridge id of <see cref="BridgeTypes"/> and the cells of both ends; a <c>building</c> line a building id of
 /// <see cref="BuildingTypes"/>, the north-west cell, and optionally the owner (0 neutral, the default) and the facing 0…7.
@@ -35,7 +36,11 @@ public static class TestMapParser
 {
     public const char TreeCode = 'T';
 
-    public static TestMap Parse(string text)
+    /// <summary>
+    /// Reads a test map. With <paramref name="rules"/> the map goes by their land speeds and every unit must be able to stand on its
+    /// cell; without them the map goes by <see cref="LandSpeeds.Reference"/> and the units are only named.
+    /// </summary>
+    public static TestMap Parse(string text, GameRules? rules = null)
     {
         var rows = new List<(int Line, LandType[] Land, bool[] Trees)>();
         var unitLines = new List<(int Line, string Text)>();
@@ -112,7 +117,7 @@ public static class TestMapParser
             objects.Add(ParseObject(line, objectText, width, rows.Count));
         }
 
-        var grid = MapGrid.FromLayers(width, rows.Count, landLayer, new byte[landLayer.Length], default, objects);
+        var grid = MapGrid.FromLayers(width, rows.Count, landLayer, new byte[landLayer.Length], default, objects, speeds: rules?.Land);
         foreach (var (line, bridgeText) in bridgeLines)
         {
             AddBridge(line, bridgeText, grid);
@@ -126,7 +131,7 @@ public static class TestMapParser
         var units = new List<TestMapUnit>();
         foreach (var (line, unitText) in unitLines)
         {
-            units.Add(ParseUnit(line, unitText, grid));
+            units.Add(ParseUnit(line, unitText, grid, rules));
         }
 
         return new TestMap(grid, units);
@@ -263,7 +268,7 @@ public static class TestMapParser
     }
 
     // unit <id> <x> <y> player=<n>
-    private static TestMapUnit ParseUnit(int lineNumber, string line, MapGrid grid)
+    private static TestMapUnit ParseUnit(int lineNumber, string line, MapGrid grid, GameRules? rules)
     {
         var parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 5 || !parts[4].StartsWith("player=", StringComparison.Ordinal))
@@ -271,7 +276,7 @@ public static class TestMapParser
             throw Error(lineNumber, 1, "expected 'unit <id> <x> <y> player=<n>'");
         }
 
-        if (!UnitArchetypes.TryGetById(parts[1], out var archetype))
+        if (!UnitTypes.TryGetById(parts[1], out var type))
         {
             throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown unit '{parts[1]}'");
         }
@@ -290,12 +295,12 @@ public static class TestMapParser
             throw Error(lineNumber, ColumnOf(line, parts[2]), $"cell ({x}, {y}) is outside the {grid.Width}x{grid.Height} map");
         }
 
-        if (!grid.CanEnter(cell, archetype.Locomotor))
+        if (rules?.Unit(type) is { } archetype && !grid.CanEnter(cell, archetype.Locomotor))
         {
             throw Error(lineNumber, ColumnOf(line, parts[2]), $"{archetype.Id} ({archetype.Locomotor}) cannot stand on cell ({x}, {y})");
         }
 
-        return new TestMapUnit(archetype.Type, cell, new PlayerId(player));
+        return new TestMapUnit(type, cell, new PlayerId(player));
     }
 
     private static int ParseNumber(int lineNumber, string line, string text) =>

@@ -24,7 +24,7 @@ public sealed class AStarTests
             var dy = to.Y - from.Y;
             Assert.True(IntMathMax(dx, dy) == 1, $"Cells {from} and {to} are not neighbours.");
             Assert.True(AStar.CanStep(map, from, dx, dy, locomotor), $"Illegal step {from} → {to} for {locomotor}.");
-            cost += AStar.StepCost(locomotor, map.LandAt(to), dx != 0 && dy != 0);
+            cost += LandSpeeds.Reference.StepCost(locomotor, map.LandAt(to), dx != 0 && dy != 0);
         }
 
         Assert.Equal(cost, path.Cost);
@@ -42,8 +42,8 @@ public sealed class AStarTests
     [InlineData(Locomotor.Track, LandType.Deep, 0, 0)]
     public void Step_cost_divides_by_the_speed_of_the_entered_land(Locomotor locomotor, LandType land, int straight, int diagonal)
     {
-        Assert.Equal(straight, AStar.StepCost(locomotor, land, diagonal: false));
-        Assert.Equal(diagonal, AStar.StepCost(locomotor, land, diagonal: true));
+        Assert.Equal(straight, LandSpeeds.Reference.StepCost(locomotor, land, diagonal: false));
+        Assert.Equal(diagonal, LandSpeeds.Reference.StepCost(locomotor, land, diagonal: true));
     }
 
     [Fact]
@@ -281,7 +281,7 @@ public sealed class AStarTests
                 var best = Enumerable.Range(0, 32 * 32)
                     .Select(i => new CellPos(i % 32, i / 32))
                     .Where(c => distances[c.X, c.Y] >= 0)
-                    .OrderBy(c => AStar.Heuristic(locomotor, c, goal))
+                    .OrderBy(c => AStar.Heuristic(LandSpeeds.Reference, locomotor, c, goal))
                     .ThenBy(c => distances[c.X, c.Y])
                     .ThenBy(c => c.Y * 32 + c.X)
                     .First();

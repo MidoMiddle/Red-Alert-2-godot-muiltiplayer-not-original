@@ -4,10 +4,11 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Tests.World;
 
 /// <summary>
-/// The M2 unit roster: ids of docs/implementation/M3_base_economy.md, 4.6, and movement numbers of the RA2
-/// counterparts in docs/ra2_units (docs/implementation/M2_unit_control.md, 4.11).
+/// The M2 unit roster: ids of docs/implementation/M3_base_economy.md, 4.6, and the movement numbers the simulation tests play by
+/// (<see cref="TestRules"/>, the same as game/data): 6 leptons per tick for each point of RA2 <c>Speed</c>, 2048 per tick for
+/// <c>ROT</c> 5 (docs/implementation/M2_unit_control.md, 4.11).
 /// </summary>
-public sealed class UnitArchetypesTests
+public sealed class UnitTypesTests
 {
     [Theory]
     [InlineData(UnitType.Conscript, "conscript", UnitCategory.Infantry, Locomotor.Foot, 24, 0, false)]
@@ -21,7 +22,7 @@ public sealed class UnitArchetypesTests
     public void Roster_matches_the_documentation(
         UnitType type, string id, UnitCategory category, Locomotor locomotor, int speed, int turnRate, bool hasTurret)
     {
-        var archetype = UnitArchetypes.Get(type);
+        var archetype = TestRules.Unit(type);
 
         Assert.Equal(type, archetype.Type);
         Assert.Equal(id, archetype.Id);
@@ -38,10 +39,10 @@ public sealed class UnitArchetypesTests
     {
         var types = Enum.GetValues<UnitType>();
 
-        Assert.Equal(types.Length, UnitArchetypes.All.Count);
-        Assert.Equal(types, UnitArchetypes.All.Select(a => a.Type));
-        Assert.All(types, type => Assert.True(UnitArchetypes.IsKnown(type)));
-        Assert.Equal(UnitArchetypes.All.Count, UnitArchetypes.All.Select(a => a.Id).Distinct().Count());
+        Assert.Equal(types.Length, TestRules.Standard.Units.Count);
+        Assert.Equal(types, TestRules.Standard.Units.Select(a => a.Type));
+        Assert.All(types, type => Assert.True(UnitTypes.IsKnown(type)));
+        Assert.Equal(TestRules.Standard.Units.Count, TestRules.Standard.Units.Select(a => a.Id).Distinct().Count());
     }
 
     [Theory]
@@ -50,39 +51,21 @@ public sealed class UnitArchetypesTests
     [InlineData(255)]
     public void Unknown_types_are_not_known(int type)
     {
-        Assert.False(UnitArchetypes.IsKnown((UnitType)type));
-        Assert.Throws<ArgumentOutOfRangeException>(() => UnitArchetypes.Get((UnitType)type));
+        Assert.False(UnitTypes.IsKnown((UnitType)type));
+        Assert.Throws<ArgumentOutOfRangeException>(() => TestRules.Unit((UnitType)type));
     }
 
     [Fact]
     public void Types_are_found_by_data_id()
     {
-        foreach (var archetype in UnitArchetypes.All)
+        foreach (var archetype in TestRules.Standard.Units)
         {
-            Assert.True(UnitArchetypes.TryGetById(archetype.Id, out var found));
-            Assert.Same(archetype, found);
+            Assert.True(UnitTypes.TryGetById(archetype.Id, out var found));
+            Assert.Equal(archetype.Type, found);
+            Assert.Equal(archetype.Id, UnitTypes.IdOf(found));
         }
 
-        Assert.False(UnitArchetypes.TryGetById("Heavy_Tank", out _));
-        Assert.False(UnitArchetypes.TryGetById("", out _));
-    }
-
-    [Theory]
-    [InlineData(4, 24)]
-    [InlineData(6, 36)]
-    [InlineData(8, 48)]
-    public void Ra2_speed_converts_to_leptons_per_tick(int ra2Speed, int leptons)
-    {
-        Assert.Equal(leptons, UnitArchetypes.SpeedFromRa2(ra2Speed));
-    }
-
-    [Theory]
-    [InlineData(0, 0)]
-    [InlineData(1, 410)]
-    [InlineData(5, 2048)]
-    [InlineData(40, 16384)]
-    public void Ra2_rot_converts_to_turn_rate(int rot, int turnRate)
-    {
-        Assert.Equal(turnRate, UnitArchetypes.TurnRateFromRa2(rot));
+        Assert.False(UnitTypes.TryGetById("Heavy_Tank", out _));
+        Assert.False(UnitTypes.TryGetById("", out _));
     }
 }

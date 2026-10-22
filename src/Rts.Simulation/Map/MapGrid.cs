@@ -36,8 +36,11 @@ public sealed class MapGrid
     private Passability _passability;
     private ulong? _digest;
 
-    /// <summary>A map of <paramref name="width"/> × <paramref name="height"/> clear cells.</summary>
-    public MapGrid(int width, int height)
+    /// <summary>
+    /// A map of <paramref name="width"/> × <paramref name="height"/> clear cells. <paramref name="speeds"/> are the land speeds of
+    /// the match; a map outside a match goes by <see cref="LandSpeeds.Reference"/>.
+    /// </summary>
+    public MapGrid(int width, int height, LandSpeeds? speeds = null)
     {
         if (width <= 0 || height <= 0)
         {
@@ -46,6 +49,7 @@ public sealed class MapGrid
 
         Width = width;
         Height = height;
+        Speeds = speeds ?? LandSpeeds.Reference;
         _land = new LandType[width * height];
         Array.Fill(_land, LandType.Clear);
         _blocked = new bool[width * height];
@@ -59,13 +63,14 @@ public sealed class MapGrid
     /// levels (<c>(W+1) × (H+1)</c>; an empty layer means flat ground), then the map objects, the bridges and the buildings of the
     /// start. Used by the replay reader and the map loader; throws on unknown land types, flags or levels, on a bridge that does
     /// not run over water from shore to shore (see <see cref="TryAddBridge"/>) and on a building out of place (see
-    /// <see cref="TryAddBuilding"/>).
+    /// <see cref="TryAddBuilding"/>). <paramref name="speeds"/> as in the constructor.
     /// </summary>
     public static MapGrid FromLayers(
         int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked, ReadOnlySpan<byte> heights = default,
-        IReadOnlyList<MapObjectState>? objects = null, IReadOnlyList<BridgeState>? bridges = null, IReadOnlyList<BuildingState>? buildings = null)
+        IReadOnlyList<MapObjectState>? objects = null, IReadOnlyList<BridgeState>? bridges = null, IReadOnlyList<BuildingState>? buildings = null,
+        LandSpeeds? speeds = null)
     {
-        var grid = new MapGrid(width, height);
+        var grid = new MapGrid(width, height, speeds);
         if (land.Length != grid._land.Length || blocked.Length != grid._blocked.Length)
         {
             throw new ArgumentException($"Layers must have {grid._land.Length} cells, got {land.Length} and {blocked.Length}.");
@@ -74,7 +79,7 @@ public sealed class MapGrid
         for (var i = 0; i < land.Length; i++)
         {
             var type = (LandType)land[i];
-            if (!LocomotorRules.IsKnown(type) || blocked[i] > 1)
+            if (!LandSpeeds.IsKnown(type) || blocked[i] > 1)
             {
                 throw new ArgumentException($"Cell {i} has an unknown land type {land[i]} or obstacle flag {blocked[i]}.");
             }
@@ -133,6 +138,13 @@ public sealed class MapGrid
     public int Width { get; }
 
     public int Height { get; }
+
+    /// <summary>
+    /// How fast each locomotor goes on each land type of this map: the rules of the match (<see cref="Rules.GameRules.Land"/>), or
+    /// <see cref="LandSpeeds.Reference"/> for a map outside a match. Rules, not map content: not in the digest, the replay or
+    /// <see cref="ContentEquals"/>.
+    /// </summary>
+    public LandSpeeds Speeds { get; }
 
     public bool Contains(CellPos cell) => cell.X >= 0 && cell.Y >= 0 && cell.X < Width && cell.Y < Height;
 
@@ -217,7 +229,7 @@ public sealed class MapGrid
 
     /// <summary>
     /// Speed multiplier in percent for <paramref name="locomotor"/> on the cell, slopes included; 0 when it cannot enter
-    /// (outside the map, a cliff, impassable land, an obstacle). See <see cref="LocomotorRules.CellPercent"/>.
+    /// (outside the map, a cliff, impassable land, an obstacle). See <see cref="LandSpeeds.CellPercent"/>.
     /// </summary>
     public int SpeedPercent(CellPos cell, Locomotor locomotor) =>
         Contains(cell) ? _passability.Percent(cell.Y * Width + cell.X, locomotor) : 0;
@@ -227,11 +239,12 @@ public sealed class MapGrid
 
     /// <summary>
     /// An independent copy: the match changes its own map, never the one in the settings. Buildings destroyed in the match stay
-    /// down in the copy.
+    /// down in the copy. The copy goes by <paramref name="speeds"/>, or by the speeds of this map.
     /// </summary>
-    public MapGrid Clone()
+    public MapGrid Clone(LandSpeeds? speeds = null)
     {
-        var copy = FromLayers(Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings);
+        var copy = FromLayers(
+            Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings, speeds ?? Speeds);
         if (!_building.AsSpan().SequenceEqual(copy._building))
         {
             _building.CopyTo(copy._building, 0);
@@ -279,7 +292,7 @@ public sealed class MapGrid
 
     internal void SetLand(CellPos cell, LandType land)
     {
-        if (!LocomotorRules.IsKnown(land))
+        if (!LandSpeeds.IsKnown(land))
         {
             throw new ArgumentOutOfRangeException(nameof(land), land, "Unknown land type.");
         }

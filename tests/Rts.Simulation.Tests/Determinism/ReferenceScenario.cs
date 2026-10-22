@@ -47,7 +47,7 @@ internal static class ReferenceScenario
                 var kind = random.NextInt(16);
                 if (kind < 5)
                 {
-                    var type = (UnitType)(1 + random.NextInt(UnitArchetypes.All.Count));
+                    var type = (UnitType)(1 + random.NextInt(TestRules.Standard.Units.Count));
                     commands.Add(new SpawnTestUnitCommand(owner, tick, sequences[player]++, type, point));
                     continue;
                 }
@@ -77,7 +77,7 @@ internal static class ReferenceScenario
     /// <summary>Runs the commands for <paramref name="ticks"/> ticks; returns the checksum after every step.</summary>
     public static IReadOnlyList<StateChecksum> Run(IEnumerable<Command> commands, int ticks, ulong seed = MatchSeed)
     {
-        var simulation = new GameSimulation(Settings(seed));
+        var simulation = new GameSimulation(Settings(seed), TestRules.Standard);
         foreach (var command in commands)
         {
             simulation.Enqueue(command);

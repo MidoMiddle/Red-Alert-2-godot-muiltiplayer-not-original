@@ -59,7 +59,7 @@ public sealed class ReliefMovementTests
     [Fact]
     public void Nobody_spawns_on_a_cliff()
     {
-        var simulation = new GameSimulation(new SimulationSettings(1, Relief()));
+        var simulation = new GameSimulation(new SimulationSettings(1, Relief()), GameDataFiles.Rules);
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 0, UnitType.Conscript, ReliefTestMap.PlateauWallCell.Center));
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 1, UnitType.Conscript, ReliefTestMap.PlateauCell.Center));
 
@@ -95,7 +95,7 @@ public sealed class ReliefMovementTests
 
     private static int TicksToDrive(CellPos from, CellPos to)
     {
-        var simulation = new GameSimulation(new SimulationSettings(5, Relief()));
+        var simulation = new GameSimulation(new SimulationSettings(5, Relief()), GameDataFiles.Rules);
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 0, UnitType.HeavyTank, from.Center));
         simulation.Step();
         var tank = simulation.World.Entities.OfType<Unit>().Single();

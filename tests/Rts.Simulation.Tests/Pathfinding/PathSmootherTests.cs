@@ -270,7 +270,7 @@ public sealed class PathSmootherTests
     [Fact]
     public void Unit_drives_the_straight_line_across_open_field()
     {
-        var world = new GameWorld(seed: 1, Load("paths/open_field.txt"));
+        var world = new GameWorld(seed: 1, Load("paths/open_field.txt"), TestRules.Standard);
         var player = new PlayerId(1);
         var conscript = world.SpawnUnit(player, UnitType.Conscript, new CellPos(0, 0).Center);
         var target = new CellPos(9, 5).Center;

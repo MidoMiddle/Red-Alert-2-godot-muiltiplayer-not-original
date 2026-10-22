@@ -1,0 +1,107 @@
+using Rts.Simulation.Map;
+using Rts.Simulation.Tests;
+using Rts.Simulation.World;
+
+namespace Rts.Data.Tests.Rules;
+
+/// <summary>
+/// The data files of the game, <c>game/data</c> (docs/implementation/M3_base_economy.md, 4.5, 6): they load, they give the simulation
+/// the same rules as the tests of M2 play by, and what the engine needs from them is checked at the place where it is written.
+/// </summary>
+public sealed class GameDataTests
+{
+    private const string Terrain = "shared/terrain.yaml";
+
+    private static List<(string FileName, string Text)> Files() =>
+        Directory.GetFiles(GameDataFiles.Folder, "*.yaml", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(GameDataFiles.Folder, path).Replace('\\', '/'))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .Select(name => (name, File.ReadAllText(Path.Combine(GameDataFiles.Folder, name)).Replace("\r\n", "\n")))
+            .ToList();
+
+    /// <summary>The errors of the game data with one text replaced in one file.</summary>
+    private static IReadOnlyList<RulesError> ErrorsWith(string fileName, string text, string replacement)
+    {
+        var files = Files();
+        var index = files.FindIndex(file => file.FileName == fileName);
+        Assert.Equal(1, files[index].Text.Split(text).Length - 1);
+        files[index] = (fileName, files[index].Text.Replace(text, replacement));
+        return Assert.Throws<RulesException>(() => GameData.Load(files)).Errors;
+    }
+
+    [Fact]
+    public void Every_file_of_the_game_data_loads()
+    {
+        var database = GameDataFiles.Current.Database;
+
+        Assert.Equal(8, database.Units.Length);
+        Assert.Equal(11, database.Buildings.Length);
+        Assert.Equal(6, database.Locomotors.Length);
+        Assert.Equal(8, database.Terrains.Length);
+        Assert.Equal(new[] { "union" }, database.Factions.Select(faction => faction.Id));
+    }
+
+    [Fact]
+    public void The_hash_of_the_game_data_is_pinned()
+    {
+        // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
+        Assert.Equal(0xe8afc8ce7d55fc08UL, GameDataFiles.Current.Hash);
+    }
+
+    [Fact]
+    public void The_game_data_gives_the_rules_of_the_simulation_tests()
+    {
+        var rules = GameDataFiles.Rules;
+
+        foreach (var type in UnitTypes.All)
+        {
+            Assert.Equal(TestRules.Unit(type), rules.Unit(type));
+        }
+
+        Assert.True(rules.Land.ContentEquals(TestRules.Standard.Land));
+    }
+
+    [Fact]
+    public void The_land_speeds_of_the_game_data_are_the_reference_table_of_maps()
+    {
+        // Maps outside a match (the editor, the checks, the generator) go by the reference table.
+        Assert.True(GameDataFiles.Rules.Land.ContentEquals(LandSpeeds.Reference));
+    }
+
+    [Fact]
+    public void A_unit_type_the_engine_needs_is_reported_without_a_place()
+    {
+        var error = Assert.Single(ErrorsWith("factions/union/units.yaml", "heavy_tank:  # Rhino Tank", "rhino_tank:  # Rhino Tank"));
+
+        Assert.Equal(("", 0, 0), (error.FileName, error.Line, error.Column));
+        Assert.Equal("the engine needs unit 'heavy_tank', which is not defined", error.Reason);
+        Assert.Equal(error.Reason, error.ToString());
+    }
+
+    [Fact]
+    public void A_land_code_other_than_the_map_format_is_reported_at_the_code()
+    {
+        var error = Assert.Single(ErrorsWith(Terrain, "code: \"=\"", "code: \"+\""));
+
+        Assert.Equal((Terrain, 21, 9), (error.FileName, error.Line, error.Column));
+        Assert.Equal("'road' is written '=' in map files, so its code must be \"=\"", error.Reason);
+    }
+
+    [Fact]
+    public void A_speed_over_255_percent_is_reported_at_the_speeds()
+    {
+        var error = Assert.Single(ErrorsWith(Terrain, "wheel: 120%", "wheel: 300%"));
+
+        Assert.Equal((Terrain, 24, 10), (error.FileName, error.Line, error.Column));
+        Assert.Equal("the speed of 'wheel' on 'road' must be 255% at most", error.Reason);
+    }
+
+    [Fact]
+    public void A_mistake_of_the_data_itself_comes_before_the_engine_checks()
+    {
+        // The validator finds the repeated code; the engine checks, which would also want '=' here, run only on data without mistakes.
+        var error = Assert.Single(ErrorsWith(Terrain, "code: \"=\"", "code: \".\""));
+
+        Assert.Equal("code '.' of 'road' is already used by 'clear'", error.Reason);
+    }
+}

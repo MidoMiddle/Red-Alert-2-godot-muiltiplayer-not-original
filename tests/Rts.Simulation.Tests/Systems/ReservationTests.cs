@@ -20,7 +20,7 @@ public sealed class ReservationTests
     private static readonly PlayerId Player1 = new(1);
     private static readonly PlayerId Player2 = new(2);
 
-    private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid);
+    private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid, TestRules.Standard);
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
         CommandProcessor.Apply(world, new MoveCommand(unit.Owner, world.CurrentTick, 0, [unit.Id], target.Center));
@@ -113,7 +113,7 @@ public sealed class ReservationTests
     public void Units_cross_a_one_cell_ford_one_by_one()
     {
         var map = TestMapParserTests.Load("bridge_gap.txt");
-        var world = new GameWorld(seed: 1, map.Grid);
+        var world = new GameWorld(seed: 1, map.Grid, TestRules.Standard);
         var units = map.Units.Select(u => world.SpawnUnit(u.Owner, u.Type, u.Cell.Center)).ToList();
         CellPos[] targets = [new(10, 3), new(10, 1), new(10, 5)];
         for (var i = 0; i < units.Count; i++)
@@ -283,7 +283,7 @@ public sealed class ReservationTests
     {
         // 10 cells = 2560 leptons. Wheels: 48 per tick, ×120% on road = 58 (45 ticks), ×75% on rough = 36 (72 ticks).
         // Infantry on rough: 24 × 90% = 21.6, rounded to 22 (117 ticks).
-        var world = new GameWorld(seed: 1, TestMapParser.Parse(row).Grid);
+        var world = new GameWorld(seed: 1, TestMapParser.Parse(row).Grid, TestRules.Standard);
         var unit = world.SpawnUnit(Player1, type, new CellPos(0, 0).Center);
         unit.Facing = BAngle.East;
         Order(world, unit, new CellPos(10, 0));

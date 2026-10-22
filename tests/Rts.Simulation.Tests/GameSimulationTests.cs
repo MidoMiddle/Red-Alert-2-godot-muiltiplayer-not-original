@@ -9,7 +9,7 @@ namespace Rts.Simulation.Tests;
 
 public sealed class GameSimulationTests
 {
-    private static GameSimulation NewSimulation(ulong seed = 1) => new(new SimulationSettings(seed));
+    private static GameSimulation NewSimulation(ulong seed = 1) => new(new SimulationSettings(seed), TestRules.Standard);
 
     [Fact]
     public void Step_advances_the_tick()
@@ -88,7 +88,7 @@ public sealed class GameSimulationTests
         simulation.Step();
 
         var unit = Assert.IsType<Unit>(Assert.Single(simulation.World.Entities));
-        Assert.Equal(new WorldPos(128 + UnitArchetypes.Get(UnitType.Conscript).Speed, 128), unit.Position);
+        Assert.Equal(new WorldPos(128 + TestRules.Unit(UnitType.Conscript).Speed, 128), unit.Position);
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public sealed class GameSimulationTests
     [Fact]
     public void Checksum_follows_the_hash_interval()
     {
-        var simulation = new GameSimulation(new SimulationSettings(1) { HashInterval = 5 });
+        var simulation = new GameSimulation(new SimulationSettings(1) { HashInterval = 5 }, TestRules.Standard);
         var checksumTicks = new List<int?>();
 
         for (var i = 0; i < 12; i++)
@@ -179,8 +179,8 @@ public sealed class GameSimulationTests
     [Fact]
     public void Invalid_settings_are_rejected()
     {
-        Assert.Throws<ArgumentException>(() => new GameSimulation(new SimulationSettings(1) { TicksPerSecond = 0 }));
-        Assert.Throws<ArgumentException>(() => new GameSimulation(new SimulationSettings(1) { MapWidthCells = -1 }));
+        Assert.Throws<ArgumentException>(() => new GameSimulation(new SimulationSettings(1) { TicksPerSecond = 0 }, TestRules.Standard));
+        Assert.Throws<ArgumentException>(() => new GameSimulation(new SimulationSettings(1) { MapWidthCells = -1 }, TestRules.Standard));
     }
 
     private static List<string> Describe(GameSimulation simulation) => simulation.World.Entities

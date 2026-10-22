@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Benchmarks;
@@ -48,10 +49,10 @@ public static class LoadScenario
 
     public static TestMap LoadMap(string repoRoot) => TestMapParser.Parse(File.ReadAllText(Path.Combine(repoRoot, MapPath)));
 
-    /// <summary>A new match on the load map with its 300 units spawned (tick 0 done).</summary>
-    public static GameSimulation Start(TestMap map)
+    /// <summary>A new match on the load map by <paramref name="rules"/>, with its 300 units spawned (tick 0 done).</summary>
+    public static GameSimulation Start(TestMap map, GameRules rules)
     {
-        var simulation = new GameSimulation(new SimulationSettings(Seed, map.Grid));
+        var simulation = new GameSimulation(new SimulationSettings(Seed, map.Grid), rules);
         uint sequence = 0;
         foreach (var unit in map.Units)
         {

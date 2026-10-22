@@ -44,9 +44,9 @@ public static class CommandProcessor
     private static bool ApplySpawn(GameWorld world, SpawnTestUnitCommand command, List<SimEvent>? events)
     {
         if (!world.Contains(command.Position)
-            || !UnitArchetypes.IsKnown(command.UnitType)
-            || !world.Map.CanEnter(command.Position.ToCell(), UnitArchetypes.Get(command.UnitType).Locomotor)
-            || !world.Reservations.HasRoomFor(command.Position.ToCell(), UnitArchetypes.Get(command.UnitType).Placement, EntityId.None))
+            || !UnitTypes.IsKnown(command.UnitType)
+            || !world.Map.CanEnter(command.Position.ToCell(), world.Rules.Unit(command.UnitType).Locomotor)
+            || !world.Reservations.HasRoomFor(command.Position.ToCell(), world.Rules.Unit(command.UnitType).Placement, EntityId.None))
         {
             return false;
         }

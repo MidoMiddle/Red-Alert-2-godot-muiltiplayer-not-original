@@ -1,0 +1,8 @@
+# Factions (docs/05_factions_content.md): what every base of the faction starts from and needs.
+union:
+  kind: faction
+  name: Union
+  mcv: mcv
+  construction_yard: construction_yard
+  refinery: refinery
+  harvester: harvester

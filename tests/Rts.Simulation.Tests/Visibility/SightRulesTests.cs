@@ -35,7 +35,7 @@ public sealed class SightRulesTests
     [Fact]
     public void A_unit_on_level_four_sees_two_cells_farther()
     {
-        var world = new GameWorld(seed: 1, Plateau(4));
+        var world = new GameWorld(seed: 1, Plateau(4), TestRules.Standard);
         var below = world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(2, 2).Center);
         var above = world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(10, 10).Center);
 
@@ -81,6 +81,6 @@ public sealed class SightRulesTests
     [InlineData(UnitType.TeslaTank, 8)]
     public void Each_type_sees_as_far_as_its_ra2_counterpart(UnitType type, int sight)
     {
-        Assert.Equal(sight, UnitArchetypes.Get(type).Sight);
+        Assert.Equal(sight, TestRules.Unit(type).Sight);
     }
 }

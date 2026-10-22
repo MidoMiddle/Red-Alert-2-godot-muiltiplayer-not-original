@@ -1,0 +1,130 @@
+# The buildings of the Union (docs/implementation/M3_base_economy.md, 4.6). RA2 counterpart in brackets; see templates.yaml.
+# The simulation builds them from M3 step 6 on.
+construction_yard:  # Construction Yard; comes from the MCV
+  kind: building
+  inherits: base_building
+  name: Construction Yard
+  faction: union
+  cost: 3000
+  build_time: 126s
+  hp: 1000
+  footprint: [3, 3]
+
+reactor:  # Tesla Reactor
+  kind: building
+  inherits: base_building
+  name: Reactor
+  faction: union
+  cost: 600
+  build_time: 25.2s
+  hp: 750
+  footprint: [2, 2]
+  power: 150
+  prerequisites: [construction_yard]
+
+refinery:  # Ore Refinery; gives a free harvester
+  kind: building
+  inherits: base_building
+  name: Refinery
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 1000
+  footprint: [3, 3]
+  power: -50
+  prerequisites: [reactor]
+
+barracks:  # Barracks
+  kind: building
+  inherits: base_building
+  name: Barracks
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 500
+  footprint: [2, 2]
+  power: -20
+  prerequisites: [reactor]
+
+war_factory:  # War Factory
+  kind: building
+  inherits: base_building
+  name: War Factory
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 1000
+  footprint: [3, 4]
+  power: -50
+  exit_cell: [1, 4]
+  prerequisites: [refinery]
+
+radar:  # Radar Tower
+  kind: building
+  inherits: base_building
+  name: Radar
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 1000
+  footprint: [2, 2]
+  power: -50
+  prerequisites: [refinery]
+
+tech_center:  # Battle Lab
+  kind: building
+  inherits: base_building
+  name: Tech Center
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 500
+  footprint: [3, 3]
+  power: -100
+  prerequisites: [war_factory, radar]
+
+wall:  # Wall; placed by dragging
+  kind: building
+  inherits: base_defense
+  name: Wall
+  faction: union
+  cost: 100
+  build_time: 4.2s
+  hp: 300
+  footprint: [1, 1]
+  prerequisites: [construction_yard]
+
+sentry_bunker:  # Sentry Gun
+  kind: building
+  inherits: base_defense
+  name: Sentry Bunker
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 400
+  footprint: [1, 1]
+  prerequisites: [barracks]
+
+tesla_coil:  # Tesla Coil
+  kind: building
+  inherits: base_defense
+  name: Tesla Coil
+  faction: union
+  cost: 1500
+  build_time: 63s
+  hp: 600
+  footprint: [2, 2]
+  power: -75
+  prerequisites: [radar]
+
+flak_cannon:  # Flak Cannon
+  kind: building
+  inherits: base_defense
+  name: Flak Cannon
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 900
+  footprint: [2, 2]
+  power: -50
+  prerequisites: [radar]

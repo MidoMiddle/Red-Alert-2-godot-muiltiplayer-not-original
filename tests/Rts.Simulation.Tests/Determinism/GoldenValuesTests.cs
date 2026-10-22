@@ -204,7 +204,7 @@ public sealed class GoldenValuesTests
     [Fact]
     public void Reference_scenario_replay_bytes()
     {
-        var live = new GameSimulation(ReferenceScenario.Settings());
+        var live = new GameSimulation(ReferenceScenario.Settings(), TestRules.Standard);
         var recorder = new ReplayRecorder(live);
         foreach (var command in ReferenceScenario.Commands(ScenarioTicks))
         {

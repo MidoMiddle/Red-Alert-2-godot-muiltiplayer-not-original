@@ -17,7 +17,7 @@ public sealed class StateHasherTests
     /// <summary>Two units, one with a move target: covers every Unit field.</summary>
     private static (GameWorld World, Unit Moving, Unit Idle) BuildWorld(int idleOwner = 2, UnitType idleType = UnitType.Conscript)
     {
-        var world = new GameWorld(seed: 7, widthCells: 64, heightCells: 64);
+        var world = new GameWorld(seed: 7, widthCells: 64, heightCells: 64, TestRules.Standard);
         var moving = world.SpawnForTest(Player1, new WorldPos(100, 200), speed: 32);
         moving.MoveTarget = new WorldPos(900, 800);
         var idle = world.SpawnForTest(new PlayerId(idleOwner), new WorldPos(300, 400), speed: 16, idleType);
@@ -146,6 +146,8 @@ public sealed class StateHasherTests
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
         // Derived from unit positions and rebuilt from them; not hashed (docs/implementation/M2_unit_control.md, 4.9).
         "<Spatial>k__BackingField",
+        // The rules of the match: data, not state; the replay keeps their hash (M3 step 3).
+        "<Rules>k__BackingField",
     })]
     [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_vehicle", "_infantry", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]
@@ -162,6 +164,8 @@ public sealed class StateHasherTests
         // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of
         // every locomotor on every cell (M7 step 3).
         "_digest", "<Version>k__BackingField", "_passability",
+        // The land speeds the cells above are read by: rules of the match, not state (M3 step 4).
+        "<Speeds>k__BackingField",
     })]
     [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(MapObject), new[]

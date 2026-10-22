@@ -58,8 +58,8 @@ public sealed record SimulationSettings
         }
     }
 
-    /// <summary>The starting world map: a copy of <see cref="Map"/>, or clear land of the given size.</summary>
-    internal MapGrid CreateMap() => Map?.Clone() ?? new MapGrid(MapWidthCells, MapHeightCells);
+    /// <summary>The starting world map: a copy of <see cref="Map"/>, or clear land of the given size, going by <paramref name="speeds"/>.</summary>
+    internal MapGrid CreateMap(LandSpeeds speeds) => Map?.Clone(speeds) ?? new MapGrid(MapWidthCells, MapHeightCells, speeds);
 
     public bool Equals(SimulationSettings? other) =>
         other is not null

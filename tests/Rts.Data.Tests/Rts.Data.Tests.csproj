@@ -29,6 +29,11 @@
     <Compile Include="../../tools/Rts.MapTool/ReadyMaps.cs" Link="Tools/ReadyMaps.cs" />
   </ItemGroup>
 
+  <!-- The M2 rules of the simulation tests: game/data must give the same rules (M3 step 4). -->
+  <ItemGroup>
+    <Compile Include="../Rts.Simulation.Tests/TestRules.cs" Link="Rules/TestRules.cs" />
+  </ItemGroup>
+
   <!-- The map previews and the map catalog of the client (docs/implementation/M7_maps.md, step 10): pure, without Godot. -->
   <ItemGroup>
     <Compile Include="../../game/scripts/Maps/MapPreview.cs" Link="Client/MapPreview.cs" />

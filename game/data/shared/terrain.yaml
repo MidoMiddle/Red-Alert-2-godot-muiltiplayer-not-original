@@ -1,0 +1,60 @@
+# Land types (docs/implementation/M7_maps.md, 4.3; docs/map_elements/02_land_types): what a cell is for movement and
+# building, not how it looks. `code` is the character of the land layer of .rtsmap files and must stay as it is.
+# `speed` gives every locomotor a percentage of its own speed; 0% means it cannot enter.
+clear:
+  kind: terrain
+  name: Clear
+  code: "."
+  buildable: true
+  speed: { foot: 100%, track: 100%, wheel: 100%, amphibious: 100%, naval: 0%, hover: 100% }
+
+rough:
+  kind: terrain
+  name: Rough
+  code: ","
+  buildable: true
+  speed: { foot: 90%, track: 90%, wheel: 75%, amphibious: 75%, naval: 0%, hover: 75% }
+
+road:
+  kind: terrain
+  name: Road
+  code: "="
+  buildable: true
+  # Only wheels are faster on a road.
+  speed: { foot: 100%, track: 100%, wheel: 120%, amphibious: 100%, naval: 0%, hover: 100% }
+
+beach:
+  kind: terrain
+  name: Beach
+  code: "b"
+  buildable: true
+  speed: { foot: 90%, track: 80%, wheel: 70%, amphibious: 100%, naval: 0%, hover: 100% }
+
+shallow:
+  kind: terrain
+  name: Shallow Water
+  code: "~"
+  buildable: false
+  # For small ships too, once ships have a size (M11).
+  speed: { foot: 0%, track: 0%, wheel: 0%, amphibious: 100%, naval: 0%, hover: 100% }
+
+deep:
+  kind: terrain
+  name: Deep Water
+  code: "W"
+  buildable: false
+  speed: { foot: 0%, track: 0%, wheel: 0%, amphibious: 100%, naval: 100%, hover: 100% }
+
+rock:
+  kind: terrain
+  name: Rock
+  code: "#"
+  buildable: false
+  speed: { foot: 0%, track: 0%, wheel: 0%, amphibious: 0%, naval: 0%, hover: 0% }
+
+ice:
+  kind: terrain
+  name: Ice
+  code: "i"
+  buildable: false
+  speed: { foot: 80%, track: 90%, wheel: 90%, amphibious: 100%, naval: 0%, hover: 100% }

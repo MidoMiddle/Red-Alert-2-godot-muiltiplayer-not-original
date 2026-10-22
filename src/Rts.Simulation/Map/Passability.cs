@@ -17,7 +17,7 @@ internal sealed class Passability
     public Passability(MapGrid map)
     {
         _cells = map.Width * map.Height;
-        _percent = new byte[LocomotorRules.Count * _cells];
+        _percent = new byte[LandSpeeds.LocomotorCount * _cells];
         for (var y = 0; y < map.Height; y++)
         {
             for (var x = 0; x < map.Width; x++)
@@ -39,7 +39,7 @@ internal sealed class Passability
         for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             var blocked = (obstacles & MapObjectTypes.Bit(locomotor)) != 0;
-            _percent[((int)locomotor - 1) * _cells + index] = blocked ? (byte)0 : (byte)LocomotorRules.CellPercent(locomotor, land, shape);
+            _percent[((int)locomotor - 1) * _cells + index] = blocked ? (byte)0 : (byte)map.Speeds.CellPercent(locomotor, land, shape);
         }
     }
 }

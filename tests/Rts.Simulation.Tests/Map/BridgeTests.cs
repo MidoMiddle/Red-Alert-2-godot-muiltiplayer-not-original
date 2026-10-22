@@ -65,7 +65,7 @@ public sealed class BridgeTests
     [InlineData(UnitType.SupportVehicle)]
     public void Ground_units_cross_the_river_by_the_bridge(UnitType type)
     {
-        var world = new GameWorld(seed: 1, River(4));
+        var world = new GameWorld(seed: 1, River(4), TestRules.Standard);
         var unit = world.SpawnUnit(Blue, type, new CellPos(2, 2).Center);
 
         Order(world, unit, new CellPos(13, 6));
@@ -91,7 +91,7 @@ public sealed class BridgeTests
     [Fact]
     public void A_destroyed_segment_is_water_again_its_units_drown_and_its_neighbours_stand()
     {
-        var world = new GameWorld(seed: 1, River(4));
+        var world = new GameWorld(seed: 1, River(4), TestRules.Standard);
         var cell = new CellPos(7, 4);
         var conscript = world.SpawnUnit(Blue, UnitType.Conscript, cell.Center, snapToSubcell: true);
         var other = world.SpawnUnit(Blue, UnitType.Conscript, cell.Center, snapToSubcell: true);
@@ -131,7 +131,7 @@ public sealed class BridgeTests
     [Fact]
     public void A_unit_on_its_way_over_a_bridge_that_falls_takes_the_other_bridge()
     {
-        var world = new GameWorld(seed: 1, River(4, 7));
+        var world = new GameWorld(seed: 1, River(4, 7), TestRules.Standard);
         var tank = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(2, 4).Center);
         var events = new List<SimEvent>();
         Order(world, tank, new CellPos(13, 4));
@@ -153,7 +153,7 @@ public sealed class BridgeTests
     [Fact]
     public void Without_another_bridge_the_unit_stops_at_the_gap_and_lives()
     {
-        var world = new GameWorld(seed: 1, River(4));
+        var world = new GameWorld(seed: 1, River(4), TestRules.Standard);
         var tank = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(2, 4).Center);
         var events = new List<SimEvent>();
         Order(world, tank, new CellPos(13, 4));
@@ -178,7 +178,7 @@ public sealed class BridgeTests
         var map = MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default,
             [MapObjectState.New(MapObjectKind.LampPost, new CellPos(7, 4), 0)],
             [BridgeState.New(BridgeKind.WoodLow, new CellPos(7, 4), new CellPos(7, 4))]);
-        var world = new GameWorld(seed: 1, map);
+        var world = new GameWorld(seed: 1, map, TestRules.Standard);
         var before = StateHasher.Compute(world);
 
         world.DamageAtCell(new CellPos(7, 4), 100, null);
@@ -255,7 +255,7 @@ public sealed class BridgeTests
     [Fact]
     public void Bridges_and_their_damage_are_in_the_hash_and_the_copy()
     {
-        var world = new GameWorld(seed: 1, River(4, 7));
+        var world = new GameWorld(seed: 1, River(4, 7), TestRules.Standard);
         var before = StateHasher.Compute(world);
         var copy = world.Map.Clone();
 
@@ -274,7 +274,7 @@ public sealed class BridgeTests
         var start = River();
         Assert.Null(start.TryAddBridge(new BridgeState(BridgeKind.WoodLow, new CellPos(6, 2), new CellPos(9, 2), [600, 0, 250, 600])));
         Assert.Null(start.TryAddBridge(BridgeState.New(BridgeKind.WoodLow, new CellPos(6, 6), new CellPos(9, 6))));
-        var simulation = new GameSimulation(new SimulationSettings(seed: 7, start));
+        var simulation = new GameSimulation(new SimulationSettings(seed: 7, start), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation);
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 0, UnitType.HeavyTank, new CellPos(2, 6).Center));
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 1, UnitType.Conscript, new CellPos(2, 5).Center));
@@ -299,6 +299,6 @@ public sealed class BridgeTests
         Assert.True(read.Settings.Map!.ContentEquals(start));
         Assert.Equal(0, read.Settings.Map.BridgeAt(new CellPos(7, 2))!.Hp);
         Assert.Equal(bytes, ReplayFormat.Write(read));
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
     }
 }

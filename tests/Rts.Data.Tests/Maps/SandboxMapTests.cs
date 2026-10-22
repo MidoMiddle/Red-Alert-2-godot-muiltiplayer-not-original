@@ -65,7 +65,7 @@ public sealed class SandboxMapTests
     public void On_the_sandbox_a_tank_crushes_the_fence_and_a_conscript_goes_round_it()
     {
         var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
-        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid));
+        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid), GameDataFiles.Rules);
         var blue = new Rts.Simulation.World.PlayerId(1);
         simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(blue, 0, 0, Rts.Simulation.World.UnitType.HeavyTank, new CellPos(7, 36).Center));
         simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(blue, 0, 1, Rts.Simulation.World.UnitType.Conscript, new CellPos(9, 36).Center));
@@ -101,7 +101,7 @@ public sealed class SandboxMapTests
         Assert.Equal(Rts.Simulation.Pathfinding.PathStatus.Found, across.Status);
         Assert.Contains(new CellPos(6, 57), across.Cells);
 
-        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid));
+        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid), GameDataFiles.Rules);
         var blue = new Rts.Simulation.World.PlayerId(1);
         simulation.Enqueue(new Rts.Simulation.Commands.DamageMapObjectCommand(blue, 0, 0, new CellPos(6, 57), 600));
         simulation.Step();

@@ -67,7 +67,7 @@ public sealed class MapGridTests
         {
             foreach (var locomotor in AllLocomotors)
             {
-                var expected = LocomotorRules.SpeedPercent(locomotor, lands[x]);
+                var expected = LandSpeeds.Reference.SpeedPercent(locomotor, lands[x]);
                 Assert.Equal(expected, grid.SpeedPercent(new CellPos(x, 0), locomotor));
                 Assert.Equal(expected > 0, grid.CanEnter(new CellPos(x, 0), locomotor));
             }

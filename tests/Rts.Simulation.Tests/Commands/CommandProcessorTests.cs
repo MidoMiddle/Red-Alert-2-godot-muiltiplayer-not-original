@@ -9,7 +9,7 @@ namespace Rts.Simulation.Tests.Commands;
 
 public sealed class CommandProcessorTests
 {
-    private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64);
+    private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64, TestRules.Standard);
 
     [Fact]
     public void Spawn_inside_the_map_creates_a_unit_for_the_player()
@@ -23,8 +23,8 @@ public sealed class CommandProcessorTests
         Assert.Equal(new PlayerId(2), unit.Owner);
         Assert.Equal(new WorldPos(300, 400), unit.Position);
         Assert.Equal(UnitType.HeavyTank, unit.Type);
-        Assert.Equal(UnitArchetypes.Get(UnitType.HeavyTank).Speed, unit.Speed);
-        Assert.Equal(UnitArchetypes.Get(UnitType.HeavyTank).TurnRate, unit.TurnRate);
+        Assert.Equal(TestRules.Unit(UnitType.HeavyTank).Speed, unit.Speed);
+        Assert.Equal(TestRules.Unit(UnitType.HeavyTank).TurnRate, unit.TurnRate);
         Assert.Equal(BAngle.North, unit.Facing);
         Assert.Equal(BAngle.North, unit.TurretFacing);
     }

@@ -14,7 +14,7 @@ public sealed class TurningTests
 
     private static (GameWorld World, Unit Unit) Spawn(UnitType type, WorldPos target)
     {
-        var world = new GameWorld(seed: 1, widthCells: 64, heightCells: 64);
+        var world = new GameWorld(seed: 1, widthCells: 64, heightCells: 64, TestRules.Standard);
         var unit = world.SpawnUnit(Player1, type, Start);
         unit.MoveTarget = target;
         return (world, unit);

@@ -108,9 +108,9 @@ public sealed class ReadyMapsTests
     {
         var map = Committed(file);
         var grid = map.ToMapGrid();
-        var simulation = new GameSimulation(new SimulationSettings(seed: 3, grid));
+        var simulation = new GameSimulation(new SimulationSettings(seed: 3, grid), GameDataFiles.Rules);
         var sequences = new Dictionary<PlayerId, uint>();
-        foreach (var unit in StartSquads.Place(map, grid))
+        foreach (var unit in StartSquads.Place(map, grid, GameDataFiles.Rules))
         {
             sequences.TryGetValue(unit.Owner, out var sequence);
             simulation.Enqueue(new SpawnTestUnitCommand(unit.Owner, 0, sequence, unit.Type, unit.Cell.Center));

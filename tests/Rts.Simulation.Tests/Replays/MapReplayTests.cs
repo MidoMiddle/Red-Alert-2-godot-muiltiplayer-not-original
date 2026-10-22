@@ -20,7 +20,7 @@ public sealed class MapReplayTests
     /// <summary>Spawns the map's units on tick 0 and orders player 1 across the water and back, like the sandbox.</summary>
     private static Replay RecordOnMap(TestMap map, int ticks = 300)
     {
-        var simulation = new GameSimulation(new SimulationSettings(seed: 3, map.Grid));
+        var simulation = new GameSimulation(new SimulationSettings(seed: 3, map.Grid), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation);
         var sequences = new uint[3];
         foreach (var unit in map.Units)
@@ -57,14 +57,14 @@ public sealed class MapReplayTests
     {
         var settings = new SimulationSettings(seed: 1, LandTypes().Grid) { MapWidthCells = 64 };
 
-        Assert.Throws<ArgumentException>(() => new GameSimulation(settings));
+        Assert.Throws<ArgumentException>(() => new GameSimulation(settings, TestRules.Standard));
     }
 
     [Fact]
     public void World_plays_on_a_copy_of_the_settings_map()
     {
         var map = LandTypes().Grid;
-        var simulation = new GameSimulation(new SimulationSettings(seed: 1, map));
+        var simulation = new GameSimulation(new SimulationSettings(seed: 1, map), TestRules.Standard);
 
         simulation.World.Map.SetBlocked(new CellPos(0, 0), true);
 
@@ -98,7 +98,7 @@ public sealed class MapReplayTests
         Assert.Equal(replay.Settings, read.Settings);
         Assert.True(read.Settings.Map!.ContentEquals(LandTypes().Grid));
         Assert.Equal(bytes, ReplayFormat.Write(read));
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class MapReplayTests
         Assert.True(read.Settings.Map!.ContentEquals(grid));
         Assert.Equal(14, read.Settings.Map.Heights.CornerLevel(0, 0));
         Assert.Equal(7, read.Settings.Map.Heights.CornerLevel(24, 12));
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public sealed class MapReplayTests
 
         Assert.True(read.Settings.Map!.ContentEquals(grid));
         Assert.Equal(bytes, ReplayFormat.Write(read));
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
         Assert.Contains(read.Settings.Map.Objects, o => o is { Kind: MapObjectKind.PineTree, Destroyed: true });
         Assert.Contains(read.Settings.Map.Objects, o => o is { Kind: MapObjectKind.WallStone, Hp: 700 });
     }

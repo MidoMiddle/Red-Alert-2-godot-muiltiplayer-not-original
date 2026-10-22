@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Rts.Data.Maps;
+using Rts.Data.Tests;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -151,9 +152,9 @@ public sealed class MapGeneratorTests
     {
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 8, Symmetry = MapSymmetry.Rotate90, Players = 4 });
         var grid = map.ToMapGrid();
-        var simulation = new GameSimulation(new SimulationSettings(seed: 1, grid));
+        var simulation = new GameSimulation(new SimulationSettings(seed: 1, grid), GameDataFiles.Rules);
         var sequences = new Dictionary<PlayerId, uint>();
-        foreach (var unit in StartSquads.Place(map, grid))
+        foreach (var unit in StartSquads.Place(map, grid, GameDataFiles.Rules))
         {
             sequences.TryGetValue(unit.Owner, out var sequence);
             simulation.Enqueue(new SpawnTestUnitCommand(unit.Owner, 0, sequence, unit.Type, unit.Cell.Center));

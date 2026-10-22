@@ -15,7 +15,7 @@ public sealed class PathFollowingTests
 {
     private static readonly PlayerId Player1 = new(1);
 
-    private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid);
+    private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid, TestRules.Standard);
 
     /// <summary>Orders the unit to <paramref name="target"/> and runs queue and movement until it stops; checks every tick.</summary>
     private static (List<SimEvent> Events, int Ticks) Drive(GameWorld world, Unit unit, WorldPos target)

@@ -51,7 +51,7 @@ public sealed class SpatialIndexTests
             // Sizes not divisible by 4 too: the last bucket row and column are partial.
             var width = 13 + random.NextInt(30);
             var height = 13 + random.NextInt(30);
-            var world = new GameWorld(seed: 1, width, height);
+            var world = new GameWorld(seed: 1, width, height, TestRules.Standard);
             var events = new List<SimEvent>();
             uint sequence = 0;
             for (var tick = 0; tick < 60; tick++)
@@ -111,7 +111,7 @@ public sealed class SpatialIndexTests
     [Fact]
     public void Edge_cases_of_queries()
     {
-        var world = new GameWorld(seed: 1, widthCells: 10, heightCells: 10);
+        var world = new GameWorld(seed: 1, widthCells: 10, heightCells: 10, TestRules.Standard);
         var a = world.SpawnUnit(Player1, UnitType.HeavyTank, new WorldPos(1024, 1024));
         var b = world.SpawnUnit(Player1, UnitType.HeavyTank, new WorldPos(1023, 1024));
         var c = world.SpawnUnit(Player1, UnitType.HeavyTank, new WorldPos(2400, 2400));
@@ -128,7 +128,7 @@ public sealed class SpatialIndexTests
     [Fact]
     public void Unit_moves_between_buckets_only_when_it_crosses_a_border()
     {
-        var world = new GameWorld(seed: 1, widthCells: 16, heightCells: 16);
+        var world = new GameWorld(seed: 1, widthCells: 16, heightCells: 16, TestRules.Standard);
         var unit = world.SpawnUnit(Player1, UnitType.HeavyTank, new CellPos(3, 1).Center);
         var westBucket = new WorldPos(0, 0);
         var westBucketEnd = new WorldPos(4 * 256 - 1, 4 * 256 - 1);
@@ -148,7 +148,7 @@ public sealed class SpatialIndexTests
     [Fact]
     public void Rebuild_gives_the_same_answers()
     {
-        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30);
+        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30, TestRules.Standard);
         var random = new TestRandom(4);
         for (var i = 0; i < 60; i++)
         {
@@ -165,7 +165,7 @@ public sealed class SpatialIndexTests
     [Fact]
     public void Dead_units_leave_the_index()
     {
-        var world = new GameWorld(seed: 1, widthCells: 10, heightCells: 10);
+        var world = new GameWorld(seed: 1, widthCells: 10, heightCells: 10, TestRules.Standard);
         var unit = world.SpawnUnit(Player1, UnitType.HeavyTank, new CellPos(2, 2).Center);
 
         unit.MarkDead();

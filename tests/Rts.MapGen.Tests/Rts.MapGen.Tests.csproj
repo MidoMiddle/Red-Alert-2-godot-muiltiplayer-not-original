@@ -23,4 +23,9 @@
     <ProjectReference Include="../../src/Rts.MapGen/Rts.MapGen.csproj" />
   </ItemGroup>
 
+  <!-- The data files of the game, for the matches on generated maps (M3 step 4). -->
+  <ItemGroup>
+    <Compile Include="../Rts.Data.Tests/GameDataFiles.cs" Link="GameDataFiles.cs" />
+  </ItemGroup>
+
 </Project>

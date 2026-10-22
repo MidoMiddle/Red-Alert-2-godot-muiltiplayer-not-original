@@ -41,7 +41,7 @@ public sealed class SandboxMapTests
 
         foreach (var unit in map.Units.Where(u => u.Owner == new PlayerId(1)))
         {
-            var locomotor = UnitArchetypes.Get(unit.Type).Locomotor;
+            var locomotor = TestRules.Unit(unit.Type).Locomotor;
             var start = unit.Cell.Center;
             for (var step = 0; step <= 100; step++)
             {

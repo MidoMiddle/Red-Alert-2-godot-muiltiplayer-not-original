@@ -1,0 +1,40 @@
+# Abstract templates: they create no definitions. A unit or a building that inherits one takes its fields and overrides some.
+#
+# Units: `speed` in leptons per tick (256 leptons = 1 cell, 15 ticks per second), `turn_rate` in BAngle units per tick
+# (65536 = a full turn; 0 turns at once, as infantry does), `sight` in cells. Starting numbers follow the RA2 counterparts
+# (docs/ra2_units): speed = 6 × RA2 Speed, turn rate = RA2 ROT × 2048 / 5. Build time follows RA2: 1000 credits = 42 s.
+base_infantry:
+  kind: unit
+  abstract: true
+  category: infantry
+  placement: subcell
+  locomotor: foot
+  speed: 24
+  turn_rate: 0
+  turret: false
+  prerequisites: [barracks]
+
+base_vehicle:
+  kind: unit
+  abstract: true
+  category: vehicle
+  placement: cell
+  locomotor: track
+  turn_rate: 2048
+  turret: true
+  prerequisites: [war_factory]
+
+# Buildings: footprint, power and prerequisites from docs/implementation/M3_base_economy.md, 4.6; cost and hp from the RA2
+# counterparts (docs/ra2_buildings). A positive power produces energy, a negative one drains it.
+base_building:
+  kind: building
+  abstract: true
+  category: building
+  build_up: 1.5s
+  power: 0
+
+base_defense:
+  kind: building
+  abstract: true
+  inherits: base_building
+  category: defense

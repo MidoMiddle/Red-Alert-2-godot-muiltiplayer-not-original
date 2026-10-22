@@ -60,7 +60,7 @@ public partial class DebugOverlay : CanvasLayer
         _label.Text =
             $"{mode}  {state}\n" +
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
-            $"units {units}   spawn {UnitArchetypes.Get(_host.SpawnType).Id}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
+            $"units {units}   spawn {UnitTypes.IdOf(_host.SpawnType)}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             DescribeCell(simulation.World, _input.CellUnderPointer) + "\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +

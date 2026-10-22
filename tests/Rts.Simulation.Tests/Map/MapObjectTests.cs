@@ -19,7 +19,7 @@ public sealed class MapObjectTests
     private static GameWorld Walled(MapObjectKind kind, int height = 9)
     {
         var objects = Enumerable.Range(0, height).Select(y => MapObjectState.New(kind, new CellPos(8, y), 0)).ToList();
-        return new GameWorld(seed: 1, MapGrid.FromLayers(16, height, new byte[16 * height].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * height], default, objects));
+        return new GameWorld(seed: 1, MapGrid.FromLayers(16, height, new byte[16 * height].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * height], default, objects), TestRules.Standard);
     }
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
@@ -116,7 +116,7 @@ public sealed class MapObjectTests
     {
         // A fence wall with one way round at the bottom (row 8 is open).
         var world = Walled(MapObjectKind.FenceWood, height: 8);
-        world = new GameWorld(seed: 1, AddOpenRow(world.Map));
+        world = new GameWorld(seed: 1, AddOpenRow(world.Map), TestRules.Standard);
         var jeep = world.SpawnUnit(Blue, UnitType.SupportVehicle, new CellPos(2, 2).Center);
         Order(world, jeep, new CellPos(14, 2));
         var (_, jeepCells) = Run(world, jeep);
@@ -142,7 +142,7 @@ public sealed class MapObjectTests
     public void A_lamp_post_stops_nobody_and_falls_under_anyone()
     {
         var world = new GameWorld(seed: 1, MapGrid.FromLayers(12, 5, Enumerable.Repeat((byte)LandType.Clear, 60).ToArray(), new byte[60], default,
-            [MapObjectState.New(MapObjectKind.LampPost, new CellPos(6, 2), 0)]));
+            [MapObjectState.New(MapObjectKind.LampPost, new CellPos(6, 2), 0)]), TestRules.Standard);
         Assert.All(Enum.GetValues<Locomotor>().Where(l => l != Locomotor.Naval), l => Assert.True(world.Map.CanEnter(new CellPos(6, 2), l)));
         var conscript = world.SpawnUnit(Blue, UnitType.Conscript, new CellPos(1, 2).Center);
 
@@ -163,7 +163,7 @@ public sealed class MapObjectTests
             objects.Add(MapObjectState.New((MapObjectKind)(1 + random.NextInt(5)), new CellPos(random.NextInt(20), random.NextInt(12)), random.NextInt(4)));
         }
 
-        var world = new GameWorld(seed: 1, MapGrid.FromLayers(20, 12, Enumerable.Repeat((byte)LandType.Clear, 240).ToArray(), new byte[240], default, objects));
+        var world = new GameWorld(seed: 1, MapGrid.FromLayers(20, 12, Enumerable.Repeat((byte)LandType.Clear, 240).ToArray(), new byte[240], default, objects), TestRules.Standard);
         for (var i = 0; i < 120; i++)
         {
             var cell = new CellPos(random.NextInt(20), random.NextInt(12));

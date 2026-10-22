@@ -62,7 +62,7 @@ public sealed class MapDefinition
         Require(MapNames.IsId(climate), $"climate '{climate}' must be lowercase letters, digits, '-' or '_'");
         Require(players is >= 1 and <= PlayerId.MaxPlayers, $"players {players} is outside 1…{PlayerId.MaxPlayers}");
         Require(heights.Length == (width + 1) * (height + 1) && heights.All(h => h <= MaxHeight), "heights must be (W+1)×(H+1) levels 0…14");
-        Require(land.Length == width * height && land.All(LocomotorRules.IsKnown), "land must be W×H known land types");
+        Require(land.Length == width * height && land.All(LandSpeeds.IsKnown), "land must be W×H known land types");
         Require(!textureLegend.IsEmpty && textureLegend.Select(e => e.Code).Distinct().Count() == textureLegend.Length, "the texture legend needs codes, each once");
         Require(textureLegend.All(e => MapNames.IsLegendCode(e.Code) && MapNames.IsId(e.Material)), "legend codes are letters or digits, materials ids");
         Require(texture.Length == width * height && texture.All(c => textureLegend.Any(e => e.Code == c)), "texture must be W×H codes of the legend");

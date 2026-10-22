@@ -52,7 +52,7 @@ public sealed class BuildingTests
     [Fact]
     public void The_buildings_of_the_map_are_the_first_entities_of_the_world()
     {
-        var world = new GameWorld(seed: 1, Village(new BuildingState(BuildingKind.TechOilDerrick, new CellPos(1, 1), new PlayerId(2), 0)));
+        var world = new GameWorld(seed: 1, Village(new BuildingState(BuildingKind.TechOilDerrick, new CellPos(1, 1), new PlayerId(2), 0)), TestRules.Standard);
 
         var house = Assert.IsType<Building>(world.Entities[0]);
         var derrick = Assert.IsType<Building>(world.Entities[1]);
@@ -68,7 +68,7 @@ public sealed class BuildingTests
     [Fact]
     public void A_building_closes_its_footprint_to_everybody_and_takes_no_orders()
     {
-        var world = new GameWorld(seed: 1, Village());
+        var world = new GameWorld(seed: 1, Village(), TestRules.Standard);
         Assert.All(Footprint(House, 2, 2), cell =>
         {
             Assert.True(world.Map.HasBuilding(cell));
@@ -93,7 +93,7 @@ public sealed class BuildingTests
         var land = ClearLand();
         var world = new GameWorld(seed: 1, MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default,
             [MapObjectState.New(MapObjectKind.PineTree, new CellPos(6, 4), 0)], null,
-            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0)]));
+            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0)]), TestRules.Standard);
         var house = (Building)world.Entities[0];
         var events = new List<SimEvent>();
 
@@ -159,7 +159,7 @@ public sealed class BuildingTests
     public void A_footprint_lies_along_x_and_does_not_turn_with_the_facing()
     {
         var turned = new BuildingState(BuildingKind.TechAirfield, new CellPos(10, 1), PlayerId.Neutral, 2);
-        var world = new GameWorld(seed: 1, Village(turned));
+        var world = new GameWorld(seed: 1, Village(turned), TestRules.Standard);
         var airfield = (Building)world.Entities[1];
 
         Assert.All(Footprint(new CellPos(10, 1), 4, 3), cell => Assert.True(airfield.Covers(cell) && world.Map.HasBuilding(cell)));
@@ -192,7 +192,7 @@ public sealed class BuildingTests
     [Fact]
     public void A_copy_of_the_map_keeps_a_fallen_building_down()
     {
-        var world = new GameWorld(seed: 1, Village());
+        var world = new GameWorld(seed: 1, Village(), TestRules.Standard);
         var pristine = world.Map.Clone();
 
         world.DamageAtCell(House, 800, null);
@@ -208,7 +208,7 @@ public sealed class BuildingTests
     public void A_match_that_knocks_down_a_building_survives_the_replay()
     {
         var start = Village(new BuildingState(BuildingKind.TechHospital, new CellPos(11, 6), new PlayerId(1), 4));
-        var simulation = new GameSimulation(new SimulationSettings(seed: 5, start));
+        var simulation = new GameSimulation(new SimulationSettings(seed: 5, start), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation);
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 0, UnitType.HeavyTank, new CellPos(2, 4).Center));
         simulation.Enqueue(new MoveCommand(Blue, 1, 1, [new EntityId(3)], new CellPos(14, 4).Center));
@@ -233,6 +233,6 @@ public sealed class BuildingTests
         Assert.True(read.Settings.Map!.ContentEquals(start));
         Assert.Equal(start.StartBuildings, read.Settings.Map.StartBuildings);
         Assert.Equal(bytes, ReplayFormat.Write(read));
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
     }
 }

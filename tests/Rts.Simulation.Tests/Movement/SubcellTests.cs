@@ -17,7 +17,7 @@ public sealed class SubcellTests
     private static readonly PlayerId Player1 = new(1);
     private static readonly PlayerId Player2 = new(2);
 
-    private static GameWorld OpenField() => new(seed: 1, widthCells: 20, heightCells: 20);
+    private static GameWorld OpenField() => new(seed: 1, widthCells: 20, heightCells: 20, TestRules.Standard);
 
     private static Unit Place(GameWorld world, PlayerId owner, UnitType type, WorldPos position)
     {
@@ -124,7 +124,7 @@ public sealed class SubcellTests
     [Fact]
     public void Soldier_walks_through_a_cell_with_a_free_spot_without_stopping()
     {
-        var world = new GameWorld(seed: 1, TestMapParserTests.Load("corridor.txt").Grid);
+        var world = new GameWorld(seed: 1, TestMapParserTests.Load("corridor.txt").Grid, TestRules.Standard);
         for (var i = 0; i < 4; i++)
         {
             Place(world, Player2, UnitType.Conscript, new CellPos(8, 2).Center);
@@ -143,7 +143,7 @@ public sealed class SubcellTests
     [Fact]
     public void Tank_does_not_drive_into_soldiers()
     {
-        var world = new GameWorld(seed: 1, TestMapParser.Parse(string.Join("\n", Enumerable.Repeat(". . . . . . . . . .", 5))).Grid);
+        var world = new GameWorld(seed: 1, TestMapParser.Parse(string.Join("\n", Enumerable.Repeat(". . . . . . . . . .", 5))).Grid, TestRules.Standard);
         Place(world, Player2, UnitType.Conscript, new CellPos(5, 2).Center);
         var tank = Place(world, Player1, UnitType.HeavyTank, new CellPos(0, 2).Center);
         CommandProcessor.Apply(world, new MoveCommand(Player1, 0, 0, [tank.Id], new CellPos(9, 2).Center));
@@ -159,7 +159,7 @@ public sealed class SubcellTests
     {
         int Pass(UnitType type)
         {
-            var world = new GameWorld(seed: 1, TestMapParserTests.Load("paths/narrow_pass.txt").Grid);
+            var world = new GameWorld(seed: 1, TestMapParserTests.Load("paths/narrow_pass.txt").Grid, TestRules.Standard);
             var units = Enumerable.Range(0, 15).Select(i => Place(world, Player1, type, new CellPos(i % 13, i / 13).Center)).ToList();
             for (var i = 0; i < units.Count; i++)
             {

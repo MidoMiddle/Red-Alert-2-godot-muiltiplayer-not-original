@@ -35,7 +35,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Forty_units_get_forty_cells_in_the_same_shape()
     {
-        var world = new GameWorld(seed: 1, widthCells: 40, heightCells: 40);
+        var world = new GameWorld(seed: 1, widthCells: 40, heightCells: 40, TestRules.Standard);
         var units = Block(world, 5, 5, 5, 8);
         var target = new CellPos(25, 25);
 
@@ -53,7 +53,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Long_column_arrives_compact_and_in_order()
     {
-        var world = new GameWorld(seed: 1, widthCells: 40, heightCells: 40);
+        var world = new GameWorld(seed: 1, widthCells: 40, heightCells: 40, TestRules.Standard);
         var units = Block(world, 5, 5, 1, 20);
         var target = new CellPos(25, 20);
 
@@ -70,7 +70,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Click_on_an_island_gives_cells_the_group_can_reach()
     {
-        var world = new GameWorld(seed: 1, TestMapParserTests.Load("paths/island.txt").Grid);
+        var world = new GameWorld(seed: 1, TestMapParserTests.Load("paths/island.txt").Grid, TestRules.Standard);
         var units = Block(world, 0, 0, 3, 2, UnitType.Conscript);
 
         var destinations = GroupDestinations.Assign(world, units, new CellPos(5, 5).Center);
@@ -87,7 +87,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Cells_of_standing_outsiders_are_not_given()
     {
-        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30);
+        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30, TestRules.Standard);
         var units = Block(world, 2, 2, 3, 3);
         var blockers = new List<CellPos> { new(15, 15), new(16, 15), new(15, 16), new(14, 14) };
         foreach (var cell in blockers)
@@ -104,7 +104,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Single_unit_drives_to_the_clicked_point()
     {
-        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30);
+        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30, TestRules.Standard);
         var unit = world.SpawnUnit(Player1, UnitType.HeavyTank, new CellPos(2, 2).Center);
         var target = new WorldPos(4000, 3000);
 
@@ -114,7 +114,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Unit_given_the_clicked_cell_drives_to_the_clicked_point()
     {
-        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30);
+        var world = new GameWorld(seed: 1, widthCells: 30, heightCells: 30, TestRules.Standard);
         var units = Block(world, 2, 2, 2, 2);
         var target = new CellPos(15, 15).Center + new WorldPos(50, -30);
 
@@ -126,7 +126,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Order_of_units_in_the_command_does_not_matter()
     {
-        var world = new GameWorld(seed: 1, widthCells: 40, heightCells: 40);
+        var world = new GameWorld(seed: 1, widthCells: 40, heightCells: 40, TestRules.Standard);
         var units = Block(world, 3, 3, 4, 3);
         var mixed = units.Select((u, i) => (u, i)).OrderBy(p => (p.i * 7) % units.Count).Select(p => p.u).ToList();
 
@@ -139,7 +139,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Mixed_group_gets_cells_each_can_stand_on()
     {
-        var world = new GameWorld(seed: 1, TestMapParserTests.Load("all_land_types.txt").Grid);
+        var world = new GameWorld(seed: 1, TestMapParserTests.Load("all_land_types.txt").Grid, TestRules.Standard);
         var units = new List<Unit>
         {
             world.SpawnUnit(Player1, UnitType.Conscript, new CellPos(0, 0).Center),
@@ -157,7 +157,7 @@ public sealed class GroupDestinationsTests
     [Fact]
     public void Forty_units_drive_to_their_planned_places()
     {
-        var simulation = new GameSimulation(new SimulationSettings(7));
+        var simulation = new GameSimulation(new SimulationSettings(7), TestRules.Standard);
         uint sequence = 0;
         for (var i = 0; i < 40; i++)
         {

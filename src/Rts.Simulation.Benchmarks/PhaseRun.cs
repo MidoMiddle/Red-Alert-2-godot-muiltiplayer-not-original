@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Rts.Data;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
 using Rts.Simulation.Hashing;
@@ -15,9 +16,10 @@ public static class PhaseRun
     public static void Run(string repoRoot)
     {
         var map = LoadScenario.LoadMap(repoRoot);
+        var rules = GameData.LoadDirectory(Path.Combine(repoRoot, "game", GameData.Folder)).Rules;
         for (var round = 0; round <= LoadRun.WarmUpRounds; round++)
         {
-            var simulation = LoadScenario.Start(map);
+            var simulation = LoadScenario.Start(map, rules);
             var world = simulation.World;
             var events = new List<SimEvent>();
             var commands = new List<Command>();

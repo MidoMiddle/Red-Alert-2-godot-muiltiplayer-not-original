@@ -29,7 +29,7 @@ public sealed class LoadScenarioTests(ITestOutputHelper output)
     public void ThreeHundredUnitsCrossTheMapAndStandNearTheirPlaces()
     {
         var map = LoadScenario.LoadMap(ClientFiles.RepoRoot);
-        var simulation = LoadScenario.Start(map);
+        var simulation = LoadScenario.Start(map, TestRules.Standard);
         var units = simulation.World.Entities.OfType<Unit>().ToList();
         Assert.Equal(300, units.Count);
         LoadScenario.OrderAcrossTheMap(simulation);
@@ -52,7 +52,7 @@ public sealed class LoadScenarioTests(ITestOutputHelper output)
 
     private static List<ulong> Run(Rts.Simulation.Map.TestMap map)
     {
-        var simulation = LoadScenario.Start(map);
+        var simulation = LoadScenario.Start(map, TestRules.Standard);
         LoadScenario.OrderAcrossTheMap(simulation);
         var checksums = new List<ulong>();
         for (var i = 0; i < 300; i++)

@@ -8,6 +8,7 @@ using Rts.Client.App;
 using Rts.Client.Controls;
 using Rts.Client.Debug;
 using Rts.Client.Units;
+using Rts.Data;
 using Rts.Data.Maps;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
@@ -15,7 +16,6 @@ using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
 using Rts.Simulation.Replays;
-using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
@@ -106,11 +106,11 @@ public partial class SimulationHost : Node
     /// <summary>Human-readable state of the replay check, shown on the debug panel.</summary>
     public string ReplayStatus { get; private set; } = "";
 
-    /// <summary>
-    /// Hash of the data files the match is played with, kept in its replay (docs/implementation/M3_base_economy.md, 4.4). The rules are
-    /// still the M2 ones written in code until M3 step 4 loads <c>game/data</c>.
-    /// </summary>
-    public ulong DataHash { get; } = DataHasher.NoData;
+    /// <summary>The data files the match is played by (<c>game/data</c>, docs/implementation/M3_base_economy.md, 4.5).</summary>
+    public GameData Data => DataFiles.Current;
+
+    /// <summary>Hash of the data files, kept in the replay (4.4): a replay of other data plays with a warning.</summary>
+    public ulong DataHash => Data.Hash;
 
     /// <summary>Type that Shift + click spawns; the debug key cycles through all types.</summary>
     public UnitType SpawnType { get; private set; } = UnitType.HeavyTank;
@@ -120,13 +120,23 @@ public partial class SimulationHost : Node
     /// <summary>True once playback reached the end with every recorded checksum reproduced.</summary>
     public bool PlaybackVerified { get; private set; }
 
-    public override void _Ready() => StartLiveSession();
+    public override void _Ready()
+    {
+        // The game cannot be played without its rules: the errors are in the console already.
+        if (!DataFiles.TryLoad())
+        {
+            GetTree().Quit(1);
+            return;
+        }
+
+        StartLiveSession();
+    }
 
     public void StartLiveSession()
     {
         QueueHistory.Clear();
         var map = LoadMap(MapPath);
-        Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid));
+        Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid), Data.Rules);
         _recorder = new ReplayRecorder(Simulation, dataHash: DataHash);
         _playback = null;
         _nextSequence = 0;
@@ -154,7 +164,7 @@ public partial class SimulationHost : Node
             return;
         }
 
-        Simulation = ReplayPlayer.CreateSimulation(replay);
+        Simulation = ReplayPlayer.CreateSimulation(replay, Data.Rules);
         _recorder = null;
         _playback = replay;
         _nextPlaybackChecksum = 0;
@@ -252,9 +262,9 @@ public partial class SimulationHost : Node
     /// <summary>Switches the Shift + click type to the next one, wrapping around.</summary>
     public void NextSpawnType()
     {
-        var all = UnitArchetypes.All;
-        SpawnType = all[((int)SpawnType) % all.Count].Type;
-        GD.Print($"[host] spawn type {UnitArchetypes.Get(SpawnType).Id}");
+        var all = UnitTypes.All;
+        SpawnType = all[((int)SpawnType) % all.Count];
+        GD.Print($"[host] spawn type {UnitTypes.IdOf(SpawnType)}");
     }
 
     public void ChangeSpeed(int direction) =>
@@ -302,7 +312,7 @@ public partial class SimulationHost : Node
         }
     }
 
-    private static TestMap LoadMap(string path)
+    private TestMap LoadMap(string path)
     {
         var text = Godot.FileAccess.GetFileAsString(path);
         if (string.IsNullOrEmpty(text))
@@ -312,14 +322,14 @@ public partial class SimulationHost : Node
 
         if (!path.EndsWith(".rtsmap", StringComparison.Ordinal))
         {
-            return TestMapParser.Parse(text);
+            return TestMapParser.Parse(text, Data.Rules);
         }
 
         // A map of the M7 format: trees are the obstacles for now (map objects come in M7 step 5), units are debug squads
         // at the starts until skirmish starts exist.
         var definition = RtsMapReader.Read(text);
         var grid = definition.ToMapGrid();
-        return new TestMap(grid, StartSquads.Place(definition, grid));
+        return new TestMap(grid, StartSquads.Place(definition, grid, Data.Rules));
     }
 
     private void SpawnMapUnits(IReadOnlyList<TestMapUnit> units)

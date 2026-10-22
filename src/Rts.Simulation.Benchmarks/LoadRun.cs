@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Rts.Data;
 using Rts.Simulation.Map;
 using Rts.Simulation.Pathfinding;
 using Rts.Simulation.World;
@@ -19,23 +20,24 @@ public static class LoadRun
     public static void Run(string repoRoot)
     {
         var map = LoadScenario.LoadMap(repoRoot);
+        var rules = GameData.LoadDirectory(Path.Combine(repoRoot, "game", GameData.Folder)).Rules;
         // Warm the JIT first: a method is optimised after about 30 calls, and an order runs the group code once per group,
         // so a cold run would time unoptimised code on the order tick. A match runs many orders; this is what it sees.
         for (var round = 0; round < WarmUpRounds; round++)
         {
-            Measure(map, ordered: true, 20, print: false);
+            Measure(map, rules, ordered: true, 20, print: false);
         }
 
-        Measure(map, ordered: true, 300, print: false);
+        Measure(map, rules, ordered: true, 300, print: false);
 
-        Measure(map, ordered: false, IdleTicks, print: true);
-        Measure(map, ordered: true, MovingTicks, print: true);
+        Measure(map, rules, ordered: false, IdleTicks, print: true);
+        Measure(map, rules, ordered: true, MovingTicks, print: true);
         MeasureMaze(map);
     }
 
-    private static void Measure(TestMap map, bool ordered, int ticks, bool print)
+    private static void Measure(TestMap map, Rts.Simulation.Rules.GameRules rules, bool ordered, int ticks, bool print)
     {
-        var simulation = LoadScenario.Start(map);
+        var simulation = LoadScenario.Start(map, rules);
         if (ordered)
         {
             LoadScenario.OrderAcrossTheMap(simulation);

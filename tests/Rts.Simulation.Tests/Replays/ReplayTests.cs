@@ -14,7 +14,7 @@ public sealed class ReplayTests
     /// <summary>Plays a seeded match with random commands and records it, like the client will.</summary>
     private static (Replay Replay, GameSimulation Live) RecordMatch(int ticks = 600, ulong seed = 2026)
     {
-        var simulation = new GameSimulation(new SimulationSettings(seed));
+        var simulation = new GameSimulation(new SimulationSettings(seed), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation);
         var random = new TestRandom(seed);
         var sequences = new uint[3];
@@ -42,7 +42,7 @@ public sealed class ReplayTests
     {
         var (replay, live) = RecordMatch();
 
-        var result = ReplayPlayer.Verify(replay);
+        var result = ReplayPlayer.Verify(replay, TestRules.Standard);
 
         Assert.Equal(ReplayStatus.Match, result.Status);
         Assert.Equal(new StateChecksum(live.CurrentTick, StateHasher.Compute(live.World)), result.Final);
@@ -65,7 +65,7 @@ public sealed class ReplayTests
         Assert.Equal(replay.Commands, read.Commands);
         Assert.Equal(replay.Checksums, read.Checksums);
         Assert.Equal(bytes, ReplayFormat.Write(read));
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class ReplayTests
     [Fact]
     public void The_data_hash_is_written_after_the_rules_version_and_read_back()
     {
-        var simulation = new GameSimulation(new SimulationSettings(5));
+        var simulation = new GameSimulation(new SimulationSettings(5), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation, dataHash: 0x0123456789abcdefUL);
         simulation.Step();
         recorder.AfterStep();
@@ -105,7 +105,7 @@ public sealed class ReplayTests
         Assert.Equal(
             "recorded with other data (hash 000000000000feed, here 0000000000000000): it may not play the same",
             ReplayPlayer.DataWarning(other, DataHasher.NoData));
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(other).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(other, TestRules.Standard).Status);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public sealed class ReplayTests
         var commands = replay.Commands.ToList();
         commands[index] = tampered;
 
-        var result = ReplayPlayer.Verify(replay with { Commands = commands });
+        var result = ReplayPlayer.Verify(replay with { Commands = commands }, TestRules.Standard);
 
         Assert.Equal(ReplayStatus.Desync, result.Status);
         Assert.InRange(result.Expected!.Value.Tick, original.ExecuteTick + 1, original.ExecuteTick + ReplayRecorder.DefaultChecksumInterval);
@@ -133,7 +133,7 @@ public sealed class ReplayTests
         var checksums = replay.Checksums.ToList();
         checksums[10] = checksums[10] with { Value = checksums[10].Value ^ 1 };
 
-        var result = ReplayPlayer.Verify(replay with { Checksums = checksums });
+        var result = ReplayPlayer.Verify(replay with { Checksums = checksums }, TestRules.Standard);
 
         Assert.Equal(ReplayStatus.Desync, result.Status);
         Assert.Equal(checksums[10].Tick, result.Expected!.Value.Tick);
@@ -144,7 +144,7 @@ public sealed class ReplayTests
     {
         var (replay, _) = RecordMatch(ticks: 30);
 
-        var result = ReplayPlayer.Verify(replay with { SimVersion = SimulationVersion.Current + 1 });
+        var result = ReplayPlayer.Verify(replay with { SimVersion = SimulationVersion.Current + 1 }, TestRules.Standard);
 
         Assert.Equal(ReplayStatus.IncompatibleVersion, result.Status);
     }
@@ -152,7 +152,7 @@ public sealed class ReplayTests
     [Fact]
     public void Commands_scheduled_for_unplayed_ticks_are_not_recorded()
     {
-        var simulation = new GameSimulation(new SimulationSettings(1));
+        var simulation = new GameSimulation(new SimulationSettings(1), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation);
         simulation.Enqueue(Spawn(player: 1, tick: 0, sequence: 0));
         simulation.Enqueue(Spawn(player: 1, tick: 50, sequence: 1));
@@ -168,7 +168,7 @@ public sealed class ReplayTests
     [Fact]
     public void Checksum_interval_must_be_a_multiple_of_the_hash_interval()
     {
-        var simulation = new GameSimulation(new SimulationSettings(1) { HashInterval = 4 });
+        var simulation = new GameSimulation(new SimulationSettings(1) { HashInterval = 4 }, TestRules.Standard);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => new ReplayRecorder(simulation, checksumInterval: 6));
         _ = new ReplayRecorder(simulation, checksumInterval: 8);
@@ -178,7 +178,7 @@ public sealed class ReplayTests
     public void Simulation_from_replay_steps_through_the_match()
     {
         var (replay, live) = RecordMatch(ticks: 200);
-        var simulation = ReplayPlayer.CreateSimulation(replay);
+        var simulation = ReplayPlayer.CreateSimulation(replay, TestRules.Standard);
 
         for (var i = 0; i < replay.TickCount; i++)
         {
@@ -219,6 +219,6 @@ public sealed class ReplayTests
 
         Assert.Empty(read.Commands);
         Assert.Empty(read.Checksums);
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
     }
 }

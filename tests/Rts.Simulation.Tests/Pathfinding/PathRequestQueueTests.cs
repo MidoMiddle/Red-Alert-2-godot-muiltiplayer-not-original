@@ -16,7 +16,7 @@ public sealed class PathRequestQueueTests
 {
     private static readonly PlayerId Player1 = new(1);
 
-    private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid);
+    private static GameWorld World(string map) => new(seed: 1, TestMapParserTests.Load(map).Grid, TestRules.Standard);
 
     private static void Order(GameWorld world, Unit unit, CellPos goal) =>
         CommandProcessor.Apply(world, new MoveCommand(Player1, world.CurrentTick, 0, [unit.Id], goal.Center));

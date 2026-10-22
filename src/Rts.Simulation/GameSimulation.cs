@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Rules;
 using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
@@ -18,11 +19,12 @@ public sealed class GameSimulation
     private readonly List<SimEvent> _events = new();
     private readonly List<Command> _executedCommands = new();
 
-    public GameSimulation(SimulationSettings settings)
+    /// <summary>A match with <paramref name="settings"/>, played by <paramref name="rules"/> (from the data files, or built in tests).</summary>
+    public GameSimulation(SimulationSettings settings, GameRules rules)
     {
         settings.Validate();
         Settings = settings;
-        World = new GameWorld(settings.Seed, settings.CreateMap());
+        World = new GameWorld(settings.Seed, settings.CreateMap(rules.Land), rules);
         _commands = new CommandQueue(firstTick: World.CurrentTick);
     }
 

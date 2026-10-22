@@ -1,0 +1,89 @@
+# The units of the Union (docs/implementation/M3_base_economy.md, 4.6). RA2 counterpart in brackets; see templates.yaml for units.
+conscript:  # Conscript
+  kind: unit
+  inherits: base_infantry
+  name: Conscript
+  faction: union
+  cost: 100
+  build_time: 4.2s
+  hp: 125
+  sight: 5
+
+rocketeer:  # Flak Trooper
+  kind: unit
+  inherits: base_infantry
+  name: Rocket Trooper
+  faction: union
+  cost: 300
+  build_time: 12.6s
+  hp: 100
+  sight: 5
+
+engineer:  # Engineer
+  kind: unit
+  inherits: base_infantry
+  name: Engineer
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 75
+  sight: 4
+
+mcv:  # MCV
+  kind: unit
+  inherits: base_vehicle
+  name: MCV
+  faction: union
+  cost: 3000
+  build_time: 126s
+  hp: 1000
+  speed: 24
+  sight: 6
+  turret: false
+
+harvester:  # War Miner
+  kind: unit
+  inherits: base_vehicle
+  name: War Harvester
+  faction: union
+  cost: 1400
+  build_time: 58.8s
+  hp: 1000
+  speed: 24
+  sight: 4
+  prerequisites: [war_factory, refinery]
+
+support_vehicle:  # Flak Track
+  kind: unit
+  inherits: base_vehicle
+  name: Flak Track
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 180
+  locomotor: wheel
+  speed: 48
+  sight: 8
+
+heavy_tank:  # Rhino Tank
+  kind: unit
+  inherits: base_vehicle
+  name: Heavy Tank
+  faction: union
+  cost: 900
+  build_time: 37.8s
+  hp: 400
+  speed: 36
+  sight: 8
+
+tesla_tank:  # Tesla Tank
+  kind: unit
+  inherits: base_vehicle
+  name: Tesla Tank
+  faction: union
+  cost: 1200
+  build_time: 50.4s
+  hp: 300
+  speed: 36
+  sight: 8
+  prerequisites: [war_factory, tech_center]

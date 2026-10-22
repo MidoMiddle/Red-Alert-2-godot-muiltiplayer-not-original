@@ -153,8 +153,8 @@ public sealed class MapValidatorTests
 
         // Play it as «Play» does: the squads at the starts, the blue one sent to the red start across the bridge.
         var grid = read.ToMapGrid();
-        var simulation = new GameSimulation(new SimulationSettings(seed: 12, grid));
-        var units = StartSquads.Place(read, grid);
+        var simulation = new GameSimulation(new SimulationSettings(seed: 12, grid), GameDataFiles.Rules);
+        var units = StartSquads.Place(read, grid, GameDataFiles.Rules);
         var sequences = new Dictionary<PlayerId, uint>();
         foreach (var unit in units)
         {

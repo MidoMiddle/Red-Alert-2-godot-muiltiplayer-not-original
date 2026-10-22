@@ -8,7 +8,7 @@ public sealed class GameWorldTests
 {
     private static readonly PlayerId Player1 = new(1);
 
-    private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64);
+    private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64, TestRules.Standard);
 
     private static Unit Spawn(GameWorld world) => world.SpawnForTest(Player1, new WorldPos(128, 128), speed: 10);
 
@@ -110,7 +110,7 @@ public sealed class GameWorldTests
     [Fact]
     public void Contains_checks_map_bounds()
     {
-        var world = new GameWorld(seed: 1, widthCells: 4, heightCells: 2);
+        var world = new GameWorld(seed: 1, widthCells: 4, heightCells: 2, TestRules.Standard);
 
         Assert.True(world.Contains(new WorldPos(0, 0)));
         Assert.True(world.Contains(new WorldPos(4 * 256 - 1, 2 * 256 - 1)));
@@ -122,7 +122,7 @@ public sealed class GameWorldTests
     [Fact]
     public void Invalid_map_size_throws()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new GameWorld(seed: 1, widthCells: 0, heightCells: 10));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new GameWorld(seed: 1, widthCells: 0, heightCells: 10, TestRules.Standard));
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public sealed class GameWorldTests
     [Fact]
     public void Default_map_is_clear_land_of_the_world_size()
     {
-        var world = new GameWorld(seed: 1, widthCells: 6, heightCells: 4);
+        var world = new GameWorld(seed: 1, widthCells: 6, heightCells: 4, TestRules.Standard);
 
         Assert.Equal((6, 4), (world.Map.Width, world.Map.Height));
         Assert.Equal((6, 4), (world.WidthCells, world.HeightCells));
@@ -151,7 +151,7 @@ public sealed class GameWorldTests
     {
         var map = TestMapParser.Parse(". . #\n= T .").Grid;
 
-        var world = new GameWorld(seed: 1, map);
+        var world = new GameWorld(seed: 1, map, TestRules.Standard);
 
         Assert.Same(map, world.Map);
         Assert.Equal((3, 2), (world.WidthCells, world.HeightCells));

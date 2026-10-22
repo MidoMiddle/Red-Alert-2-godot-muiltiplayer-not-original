@@ -1,9 +1,11 @@
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Rules;
 
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Rebuilds a recorded match from its settings and commands. Runs without Godot: used by tests,
+/// Rebuilds a recorded match from its settings and commands, by the rules it was played with (the replay keeps only their hash,
+/// <see cref="Replay.DataHash"/>). Runs without Godot: used by tests,
 /// by CI and later by the desync tools (docs/13_tools.md).
 /// </summary>
 public static class ReplayPlayer
@@ -12,9 +14,9 @@ public static class ReplayPlayer
     /// Simulation with the replay's settings and all its commands scheduled. Step it to watch the match;
     /// it ends after <see cref="Replay.TickCount"/> steps.
     /// </summary>
-    public static GameSimulation CreateSimulation(Replay replay)
+    public static GameSimulation CreateSimulation(Replay replay, GameRules rules)
     {
-        var simulation = new GameSimulation(replay.Settings);
+        var simulation = new GameSimulation(replay.Settings, rules);
         foreach (var command in replay.Commands)
         {
             simulation.Enqueue(command);
@@ -33,14 +35,14 @@ public static class ReplayPlayer
             : $"recorded with other data (hash {replay.DataHash:x16}, here {currentDataHash:x16}): it may not play the same";
 
     /// <summary>Plays the whole replay headless and compares every recorded checksum.</summary>
-    public static ReplayVerification Verify(Replay replay)
+    public static ReplayVerification Verify(Replay replay, GameRules rules)
     {
         if (replay.SimVersion != SimulationVersion.Current)
         {
             return new ReplayVerification(ReplayStatus.IncompatibleVersion);
         }
 
-        var simulation = CreateSimulation(replay);
+        var simulation = CreateSimulation(replay, rules);
         var nextChecksum = 0;
         for (var i = 0; i < replay.TickCount; i++)
         {

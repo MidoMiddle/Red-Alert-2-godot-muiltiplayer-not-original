@@ -18,7 +18,16 @@ public static class RulesLoader
 {
     /// <summary>Loads files given as (name, text) pairs. The name is what the errors show.</summary>
     /// <exception cref="RulesException">The files have mistakes; all of them are listed.</exception>
-    public static RulesDatabase Load(IEnumerable<(string FileName, string Text)> files)
+    public static RulesDatabase Load(IEnumerable<(string FileName, string Text)> files) => Load(files, check: null);
+
+    /// <summary>
+    /// <see cref="Load(IEnumerable{ValueTuple{string, string}})"/> with one more check of the meaning, which runs after the validator
+    /// when it finds nothing: <see cref="GameData"/> adds what the engine needs. It gets the rules, the resolved entry of each by id
+    /// and the list of errors to add to.
+    /// </summary>
+    internal static RulesDatabase Load(
+        IEnumerable<(string FileName, string Text)> files,
+        Action<RulesDatabase, SortedDictionary<string, RawDefinition>, List<RulesError>>? check)
     {
         var errors = new List<RulesError>();
         var fileNames = new List<string>();
@@ -26,6 +35,11 @@ public static class RulesLoader
         if (errors.Count == 0)
         {
             RulesValidator.Check(rules, sources, errors);
+            if (errors.Count == 0)
+            {
+                check?.Invoke(rules, sources, errors);
+            }
+
             if (errors.Count == 0)
             {
                 return rules;
@@ -88,14 +102,15 @@ public static class RulesLoader
     /// Loads every <c>.yaml</c> file below <paramref name="root"/>. The files are read in the order of their relative paths, so the errors
     /// come in the same order on every system.
     /// </summary>
-    public static RulesDatabase LoadDirectory(string root)
-    {
-        var names = Directory.GetFiles(root, "*.yaml", SearchOption.AllDirectories)
+    public static RulesDatabase LoadDirectory(string root) => Load(FilesBelow(root));
+
+    /// <summary>Every <c>.yaml</c> file below <paramref name="root"/> as (relative path with '/', text), in path order.</summary>
+    internal static List<(string FileName, string Text)> FilesBelow(string root) =>
+        Directory.GetFiles(root, "*.yaml", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
             .OrderBy(name => name, StringComparer.Ordinal)
+            .Select(name => (name, File.ReadAllText(Path.Combine(root, name))))
             .ToList();
-        return Load(names.Select(name => (name, File.ReadAllText(Path.Combine(root, name)))));
-    }
 
     /// <summary>Reads the entry by its kind and adds it to the rules. False for a template, which adds nothing.</summary>
     private static bool Add(RulesBuilder builder, RawDefinition entry)

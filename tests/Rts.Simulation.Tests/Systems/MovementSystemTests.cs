@@ -11,7 +11,7 @@ public sealed class MovementSystemTests
 {
     private static readonly PlayerId Player1 = new(1);
 
-    private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64);
+    private static GameWorld NewWorld() => new(seed: 1, widthCells: 64, heightCells: 64, TestRules.Standard);
 
     /// <summary>Runs movement until the unit stops; returns the number of ticks it took.</summary>
     private static int RunUntilArrived(GameWorld world, Unit unit, int maxTicks = 10_000)

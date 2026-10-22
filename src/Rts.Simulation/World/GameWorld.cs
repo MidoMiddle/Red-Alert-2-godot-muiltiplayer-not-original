@@ -5,6 +5,7 @@ using Rts.Simulation.Map;
 using Rts.Simulation.Movement;
 using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Random;
+using Rts.Simulation.Rules;
 using Rts.Simulation.Spatial;
 
 namespace Rts.Simulation.World;
@@ -19,19 +20,21 @@ public sealed class GameWorld
     private readonly List<Entity> _entities = new();
     private int _nextEntityId = 1;
 
-    /// <summary>A world on a map of clear land.</summary>
-    public GameWorld(ulong seed, int widthCells, int heightCells)
-        : this(seed, new MapGrid(widthCells, heightCells))
+    /// <summary>A world on a map of clear land that goes by the land speeds of <paramref name="rules"/>.</summary>
+    public GameWorld(ulong seed, int widthCells, int heightCells, GameRules rules)
+        : this(seed, new MapGrid(widthCells, heightCells, rules.Land), rules)
     {
     }
 
     /// <summary>
-    /// A world on the given map. The buildings the map places at the start (M7 step 7) become its first entities, in the
-    /// order of <see cref="MapGrid.StartBuildings"/>, at full hit points; the map already marks their cells as taken.
+    /// A world on the given map, which should go by the land speeds of <paramref name="rules"/> (<see cref="MapGrid.Clone"/>). The
+    /// buildings the map places at the start (M7 step 7) become its first entities, in the order of <see cref="MapGrid.StartBuildings"/>,
+    /// at full hit points; the map already marks their cells as taken.
     /// </summary>
-    internal GameWorld(ulong seed, MapGrid map)
+    internal GameWorld(ulong seed, MapGrid map, GameRules rules)
     {
         Map = map;
+        Rules = rules;
         Random = new DeterministicRandom(seed);
         PathRequests = new PathRequestQueue(map);
         Reservations = new Reservations(map.Width, map.Height);
@@ -47,6 +50,9 @@ public sealed class GameWorld
     public DeterministicRandom Random { get; }
 
     public MapGrid Map { get; }
+
+    /// <summary>The rules of the match, from the data files (docs/implementation/M3_base_economy.md, 4.5). Not state.</summary>
+    public GameRules Rules { get; }
 
     /// <summary>Path searches waiting for their share of the per-tick node budget.</summary>
     public PathRequestQueue PathRequests { get; }
@@ -289,7 +295,7 @@ public sealed class GameWorld
 
     internal Unit SpawnUnit(PlayerId owner, UnitType type, WorldPos position, bool snapToSubcell = false)
     {
-        var unit = new Unit(AllocateId(), owner, UnitArchetypes.Get(type), position);
+        var unit = new Unit(AllocateId(), owner, Rules.Unit(type), position);
         _entities.Add(unit);
         Spatial.Add(unit);
         // Commands never spawn where there is no room; a test that places two units in one cell gets an unregistered second one.

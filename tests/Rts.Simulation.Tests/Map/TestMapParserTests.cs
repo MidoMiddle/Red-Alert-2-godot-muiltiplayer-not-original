@@ -99,7 +99,8 @@ public sealed class TestMapParserTests
     [InlineData(". .\nunit conscript 0 0", "line 2, column 1: expected 'unit <id> <x> <y> player=<n>'")]
     public void Errors_name_the_line_and_column(string text, string message)
     {
-        var error = Assert.Throws<InvalidDataException>(() => TestMapParser.Parse(text));
+        // With the rules, so that the parser checks where each unit stands.
+        var error = Assert.Throws<InvalidDataException>(() => TestMapParser.Parse(text, TestRules.Standard));
 
         Assert.Contains(message, error.Message);
     }

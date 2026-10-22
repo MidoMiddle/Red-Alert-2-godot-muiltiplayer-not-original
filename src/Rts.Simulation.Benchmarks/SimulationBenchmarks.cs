@@ -1,4 +1,5 @@
 using BenchmarkDotNet.Attributes;
+using Rts.Data;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
@@ -15,6 +16,7 @@ public class SimulationBenchmarks
     private const int MovingTicks = 100;
 
     private TestMap _map = null!;
+    private Rts.Simulation.Rules.GameRules _rules = null!;
     private GameSimulation _idle = null!;
     private GameSimulation _moving = null!;
     private Pathfinder _pathfinder = null!;
@@ -24,8 +26,10 @@ public class SimulationBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        _map = LoadScenario.LoadMap(LoadScenario.RepoRoot(AppContext.BaseDirectory));
-        _idle = LoadScenario.Start(_map);
+        var repoRoot = LoadScenario.RepoRoot(AppContext.BaseDirectory);
+        _map = LoadScenario.LoadMap(repoRoot);
+        _rules = GameData.LoadDirectory(Path.Combine(repoRoot, "game", GameData.Folder)).Rules;
+        _idle = LoadScenario.Start(_map, _rules);
         _pathfinder = new Pathfinder(_map.Grid);
         _found = new List<EntityId>();
         var random = new System.Random(15);
@@ -38,7 +42,7 @@ public class SimulationBenchmarks
     [IterationSetup(Target = nameof(Tick_300Units_Moving))]
     public void OrderAcross()
     {
-        _moving = LoadScenario.Start(_map);
+        _moving = LoadScenario.Start(_map, _rules);
         LoadScenario.OrderAcrossTheMap(_moving);
     }
 

@@ -28,13 +28,6 @@ public static class AStar
     internal static readonly (int Dx, int Dy)[] Directions =
         [(0, -1), (1, 0), (0, 1), (-1, 0), (1, -1), (1, 1), (-1, 1), (-1, -1)];
 
-    private static readonly int[,] StepCosts = BuildStepCosts();
-    private static readonly (int Straight, int Diagonal)[] MinCosts = BuildMinCosts();
-
-    /// <summary>Cost of entering a cell of <paramref name="land"/>, or 0 when the locomotor cannot.</summary>
-    public static int StepCost(Locomotor locomotor, LandType land, bool diagonal) =>
-        StepCosts[Row(locomotor, land), diagonal ? 1 : 0];
-
     /// <summary>
     /// True when a unit with <paramref name="locomotor"/> may step from <paramref name="from"/> by (dx, dy): the target
     /// is enterable and, for a diagonal step, both cells beside the corner are too.
@@ -50,63 +43,18 @@ public static class AStar
             || (map.CanEnter(new CellPos(from.X + dx, from.Y), locomotor) && map.CanEnter(new CellPos(from.X, from.Y + dy), locomotor));
     }
 
-    /// <summary>The cheapest straight and diagonal step of the locomotor, the base of <see cref="Heuristic"/>.</summary>
-    internal static (int Straight, int Diagonal) MinStepCosts(Locomotor locomotor) => MinCosts[(int)locomotor - 1];
-
     /// <summary>Octile distance on the cheapest steps of the locomotor: never more than the real cost of any path.</summary>
-    public static int Heuristic(Locomotor locomotor, CellPos from, CellPos to)
+    public static int Heuristic(LandSpeeds speeds, Locomotor locomotor, CellPos from, CellPos to)
     {
         var dx = IntMath.Abs(from.X - to.X);
         var dy = IntMath.Abs(from.Y - to.Y);
-        var (straight, diagonal) = MinCosts[(int)locomotor - 1];
+        var (straight, diagonal) = speeds.MinStepCosts(locomotor);
         return straight * (dx + dy) + (diagonal - 2 * straight) * IntMath.Min(dx, dy);
     }
 
     /// <summary>Runs a whole search at once. For a search spread over several ticks, use <see cref="Pathfinder.StartSearch"/>.</summary>
     public static CellPath FindPath(MapGrid map, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = DefaultMaxExpansions) =>
         new Pathfinder(map).FindPath(start, goal, locomotor, maxExpansions);
-
-    private static int Row(Locomotor locomotor, LandType land) => ((int)locomotor - 1) * 8 + (int)land - 1;
-
-    private static int[,] BuildStepCosts()
-    {
-        var costs = new int[LocomotorRules.Count * 8, 2];
-        for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
-        {
-            for (var land = LandType.Clear; land <= LandType.Ice; land++)
-            {
-                var percent = LocomotorRules.SpeedPercent(locomotor, land);
-                var row = Row(locomotor, land);
-                costs[row, 0] = percent == 0 ? 0 : (int)IntMath.DivRound(StraightCost * 100L, percent);
-                costs[row, 1] = percent == 0 ? 0 : (int)IntMath.DivRound(DiagonalCost * 100L, percent);
-            }
-        }
-
-        return costs;
-    }
-
-    private static (int, int)[] BuildMinCosts()
-    {
-        var result = new (int, int)[LocomotorRules.Count];
-        for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
-        {
-            var straight = int.MaxValue;
-            var diagonal = int.MaxValue;
-            for (var land = LandType.Clear; land <= LandType.Ice; land++)
-            {
-                var cost = StepCosts[Row(locomotor, land), 0];
-                if (cost > 0)
-                {
-                    straight = IntMath.Min(straight, cost);
-                    diagonal = IntMath.Min(diagonal, StepCosts[Row(locomotor, land), 1]);
-                }
-            }
-
-            result[(int)locomotor - 1] = (straight, diagonal);
-        }
-
-        return result;
-    }
 }
 
 /// <summary>
@@ -119,7 +67,7 @@ public static class AStar
 public sealed class Pathfinder
 {
     private readonly Stack<SearchBuffers> _pool = new();
-    private readonly StepCostLayer?[] _costs = new StepCostLayer?[LocomotorRules.Count];
+    private readonly StepCostLayer?[] _costs = new StepCostLayer?[LandSpeeds.LocomotorCount];
 
     public Pathfinder(MapGrid map) => Map = map;
 
@@ -181,7 +129,7 @@ public sealed class Pathfinder
 /// <summary>
 /// The cost of stepping into each cell for one locomotor, straight and diagonal, 0 where it cannot enter (outside the map
 /// does not occur: callers check bounds). From <see cref="MapGrid.SpeedPercent"/>, so slopes cost more and cliffs are closed;
-/// on flat land the same numbers as <see cref="AStar.StepCost"/>,
+/// on flat land the same numbers as <see cref="LandSpeeds.StepCost"/>,
 /// read from flat arrays in the inner loop of the search instead of through the land tables (M2 step 15).
 /// </summary>
 internal sealed class StepCostLayer
@@ -202,7 +150,7 @@ internal sealed class StepCostLayer
         {
             for (var x = from.X; x <= to.X; x++)
             {
-                // From the cell's speed, slopes included (M7 step 3): on flat land the same numbers as AStar.StepCost.
+                // From the cell's speed, slopes included (M7 step 3): on flat land the same numbers as LandSpeeds.StepCost.
                 var percent = map.SpeedPercent(new CellPos(x, y), locomotor);
                 var index = y * map.Width + x;
                 Straight[index] = percent > 0 ? (int)IntMath.DivRound(AStar.StraightCost * 100L, percent) : 0;
@@ -305,7 +253,7 @@ public sealed class PathSearch
         _goalIndex = goal.Y * map.Width + goal.X;
         _avoid = avoid.IsDefaultOrEmpty ? [] : avoid.Where(map.Contains).Select(cell => cell.Y * map.Width + cell.X).Order().ToArray();
         _bestIndex = _startIndex;
-        _bestH = AStar.Heuristic(locomotor, start, goal);
+        _bestH = AStar.Heuristic(map.Speeds, locomotor, start, goal);
     }
 
     /// <summary>Nodes expanded so far.</summary>
@@ -346,7 +294,7 @@ public sealed class PathSearch
         var costOf = b.Cost;
         var parent = b.Parent;
         var generation = b.Generation;
-        var (hStraight, hDiagonal) = AStar.MinStepCosts(_locomotor);
+        var (hStraight, hDiagonal) = _map.Speeds.MinStepCosts(_locomotor);
         var goalX = _goal.X;
         var goalY = _goal.Y;
         var expandedNow = 0;

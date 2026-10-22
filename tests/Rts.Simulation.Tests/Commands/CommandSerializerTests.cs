@@ -240,7 +240,7 @@ public sealed class CommandSerializerTests
 
     private static GameWorld RunTicks(IReadOnlyList<Command> commands, int ticks)
     {
-        var world = new GameWorld(seed: 1, widthCells: 64, heightCells: 64);
+        var world = new GameWorld(seed: 1, widthCells: 64, heightCells: 64, TestRules.Standard);
         var queue = new CommandQueue();
         foreach (var command in commands)
         {

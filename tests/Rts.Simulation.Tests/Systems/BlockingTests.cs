@@ -18,7 +18,7 @@ public sealed class BlockingTests
 {
     private static readonly PlayerId Player1 = new(1);
 
-    private static GameWorld LandTypesWorld() => new(seed: 1, TestMapParserTests.Load("all_land_types.txt").Grid);
+    private static GameWorld LandTypesWorld() => new(seed: 1, TestMapParserTests.Load("all_land_types.txt").Grid, TestRules.Standard);
 
     /// <summary>Runs movement until the unit has no order or waits for a path; returns the events.</summary>
     private static List<SimEvent> RunUntilStopped(GameWorld world, Unit unit)

@@ -5,7 +5,7 @@ using Rts.Simulation.Pathfinding;
 namespace Rts.Simulation.World;
 
 /// <summary>
-/// A unit of one of the <see cref="UnitArchetypes"/>: position, move target, hull and turret direction.
+/// A unit of one of the <see cref="UnitTypes"/>, with the rules of its type from the data (<see cref="UnitArchetype"/>): position, move target, hull and turret direction.
 /// State is changed only by the simulation; the client reads it.
 /// </summary>
 public sealed class Unit : Entity

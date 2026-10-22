@@ -54,6 +54,23 @@ internal static class RulesValidator
         checker.PrerequisiteCycles();
     }
 
+    /// <summary>
+    /// An error at the value of <paramref name="key"/> in the definition <paramref name="id"/>; at its id when the key is empty or not
+    /// written; for the whole data, without a place, when the id is empty.
+    /// </summary>
+    public static RulesError At(IReadOnlyDictionary<string, RawDefinition> sources, string id, string key, string reason)
+    {
+        if (id.Length == 0)
+        {
+            return new RulesError("", 0, 0, reason);
+        }
+
+        var source = sources[id];
+        return source.Fields.TryGetValue(key, out var field)
+            ? RulesFormatException.At(field.FileName, field.Value, reason).Error
+            : RulesFormatException.At(source.FileName, source.IdNode, reason).Error;
+    }
+
     private sealed class Checker(RulesDatabase rules, IReadOnlyDictionary<string, RawDefinition> sources, List<RulesError> errors)
     {
         public void Unit(UnitDef unit)
@@ -287,11 +304,7 @@ internal static class RulesValidator
         }
 
         /// <summary>An error at the value of a field; at the id when the field is not written and its default is wrong.</summary>
-        private void Error(string id, string key, string reason)
-        {
-            var (fileName, node) = Place(id, key);
-            Add(fileName, node, reason);
-        }
+        private void Error(string id, string key, string reason) => errors.Add(At(sources, id, key, reason));
 
         /// <summary>An error at one item of a list field.</summary>
         private void ItemError(string id, string key, int index, string reason)

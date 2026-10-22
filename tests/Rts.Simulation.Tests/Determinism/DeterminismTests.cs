@@ -63,7 +63,7 @@ public sealed class DeterminismTests
     [Fact]
     public void Replay_of_the_scenario_reproduces_the_live_match()
     {
-        var live = new GameSimulation(ReferenceScenario.Settings());
+        var live = new GameSimulation(ReferenceScenario.Settings(), TestRules.Standard);
         var recorder = new ReplayRecorder(live);
         foreach (var command in Commands)
         {
@@ -77,7 +77,7 @@ public sealed class DeterminismTests
         }
 
         var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
-        var result = ReplayPlayer.Verify(replay);
+        var result = ReplayPlayer.Verify(replay, TestRules.Standard);
 
         Assert.Equal(ReplayStatus.Match, result.Status);
         Assert.Equal(new StateChecksum(Ticks, StateHasher.Compute(live.World)), result.Final);

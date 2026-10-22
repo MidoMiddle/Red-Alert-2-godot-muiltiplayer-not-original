@@ -10,7 +10,7 @@ public sealed class MinimapImageTests
     [Fact]
     public void EveryLandTypeKeepsItsColourDarkenedAndTreesAreDarkGreen()
     {
-        foreach (var land in Enum.GetValues<LandType>().Where(LocomotorRules.IsKnown))
+        foreach (var land in Enum.GetValues<LandType>().Where(LandSpeeds.IsKnown))
         {
             var (r, g, b) = LandColors.Of(land);
             Assert.Equal((r * MinimapImage.Shade, g * MinimapImage.Shade, b * MinimapImage.Shade), MinimapImage.ColorOf(land, blocked: false));

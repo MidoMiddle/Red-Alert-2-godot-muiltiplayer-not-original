@@ -19,11 +19,11 @@ public sealed class StartSquadsTests
         var map = Relief();
         var grid = map.ToMapGrid();
 
-        var units = StartSquads.Place(map, grid);
+        var units = StartSquads.Place(map, grid, GameDataFiles.Rules);
 
         var blue = units.Where(u => u.Owner == new PlayerId(1)).ToList();
         var red = units.Where(u => u.Owner == new PlayerId(2)).ToList();
-        Assert.Equal(UnitArchetypes.All.Select(a => a.Type), blue.Select(u => u.Type));
+        Assert.Equal(GameDataFiles.Rules.Units.Select(a => a.Type), blue.Select(u => u.Type));
         Assert.Equal([UnitType.HeavyTank, UnitType.SupportVehicle, UnitType.Conscript, UnitType.Rocketeer], red.Select(u => u.Type));
         Assert.Equal(ReliefTestMap.BlueStart, blue[0].Cell);
         Assert.Equal(new CellPos(ReliefTestMap.BlueStart.X + 3, ReliefTestMap.BlueStart.Y + 1), blue[7].Cell);
@@ -41,9 +41,9 @@ public sealed class StartSquadsTests
             [new('s', "snow")], [.. new byte[(size + 1) * (size + 1)]], [.. land], [.. Enumerable.Repeat('s', size * size)], [.. new byte[size * size]], [], [], []);
         var grid = map.ToMapGrid();
 
-        var units = StartSquads.Place(map, grid);
+        var units = StartSquads.Place(map, grid, GameDataFiles.Rules);
 
-        Assert.All(units, u => Assert.True(grid.CanEnter(u.Cell, UnitArchetypes.Get(u.Type).Locomotor)));
+        Assert.All(units, u => Assert.True(grid.CanEnter(u.Cell, GameDataFiles.Rules.Unit(u.Type).Locomotor)));
         Assert.DoesNotContain(units, u => u.Cell == new CellPos(7, 7));
         Assert.Equal(3, units.Count(u => u.Owner == new PlayerId(2)));
     }
@@ -53,9 +53,9 @@ public sealed class StartSquadsTests
     {
         var definition = Relief();
         var grid = definition.ToMapGrid();
-        var simulation = new GameSimulation(new SimulationSettings(3, grid));
+        var simulation = new GameSimulation(new SimulationSettings(3, grid), GameDataFiles.Rules);
         uint sequence = 0;
-        foreach (var unit in StartSquads.Place(definition, grid))
+        foreach (var unit in StartSquads.Place(definition, grid, GameDataFiles.Rules))
         {
             simulation.Enqueue(new SpawnTestUnitCommand(unit.Owner, 0, sequence++, unit.Type, unit.Cell.Center));
         }

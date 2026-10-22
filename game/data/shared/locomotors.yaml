@@ -1,0 +1,31 @@
+# How units move over the ground (docs/implementation/M7_maps.md, 4.3). The speed on each land type is in terrain.yaml;
+# `slope` multiplies it on a slope. Ships never meet a slope: water is flat.
+foot:
+  kind: locomotor
+  name: Foot
+  slope: 80%
+
+track:
+  kind: locomotor
+  name: Track
+  slope: 75%
+
+wheel:
+  kind: locomotor
+  name: Wheel
+  slope: 65%
+
+amphibious:
+  kind: locomotor
+  name: Amphibious
+  slope: 65%
+
+naval:
+  kind: locomotor
+  name: Naval
+  slope: 100%
+
+hover:
+  kind: locomotor
+  name: Hover
+  slope: 65%

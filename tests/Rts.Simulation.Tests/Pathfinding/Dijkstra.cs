@@ -55,7 +55,7 @@ internal static class Dijkstra
                     }
 
                     var next = new CellPos(cell.X + dx, cell.Y + dy);
-                    var cost = distance[cell.X, cell.Y] + AStar.StepCost(locomotor, map.LandAt(next), dx != 0 && dy != 0);
+                    var cost = distance[cell.X, cell.Y] + LandSpeeds.Reference.StepCost(locomotor, map.LandAt(next), dx != 0 && dy != 0);
                     if (distance[next.X, next.Y] < 0 || cost < distance[next.X, next.Y])
                     {
                         distance[next.X, next.Y] = cost;

@@ -15,7 +15,7 @@ public sealed class CommandBehaviourTests
     /// <summary>A simulation with tanks of player 1 at the given cells, spawned on tick 0 (ids from 1).</summary>
     private static GameSimulation WithTanks(params (int X, int Y)[] cells)
     {
-        var simulation = new GameSimulation(new SimulationSettings(5));
+        var simulation = new GameSimulation(new SimulationSettings(5), TestRules.Standard);
         for (var i = 0; i < cells.Length; i++)
         {
             simulation.Enqueue(Spawn(player: 1, tick: 0, sequence: (uint)i, C(cells[i].X, cells[i].Y).X, C(cells[i].X, cells[i].Y).Y, UnitType.HeavyTank));
@@ -206,7 +206,7 @@ public sealed class CommandBehaviourTests
     [Fact]
     public void A_point_outside_the_map_rejects_the_whole_command()
     {
-        var world = new GameWorld(seed: 1, widthCells: 16, heightCells: 16);
+        var world = new GameWorld(seed: 1, widthCells: 16, heightCells: 16, TestRules.Standard);
         var unit = world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, C(2, 2));
 
         Assert.False(CommandProcessor.Apply(world, Waypoints(player: 1, tick: 0, sequence: 0, units: [1], points: [(C(5, 5).X, C(5, 5).Y), (-10, 5)])));
@@ -218,7 +218,7 @@ public sealed class CommandBehaviourTests
     [Fact]
     public void Foreign_units_are_skipped_by_every_command()
     {
-        var world = new GameWorld(seed: 1, widthCells: 16, heightCells: 16);
+        var world = new GameWorld(seed: 1, widthCells: 16, heightCells: 16, TestRules.Standard);
         var foreign = world.SpawnUnit(new PlayerId(2), UnitType.HeavyTank, C(2, 2));
         foreign.MoveTarget = C(9, 9);
 

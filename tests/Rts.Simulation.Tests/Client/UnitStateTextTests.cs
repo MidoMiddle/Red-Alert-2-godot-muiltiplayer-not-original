@@ -9,7 +9,7 @@ public sealed class UnitStateTextTests
     [Fact]
     public void Describes_each_movement_state()
     {
-        var world = new GameWorld(seed: 1, widthCells: 8, heightCells: 8);
+        var world = new GameWorld(seed: 1, widthCells: 8, heightCells: 8, TestRules.Standard);
         var unit = world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(1, 1).Center);
 
         Assert.Equal("unit -", UnitStateText.Describe(null));
@@ -50,7 +50,7 @@ public sealed class UnitStateTextTests
         }
 
         var map = Rts.Simulation.Map.MapGrid.FromLayers(8, 8, Enumerable.Repeat((byte)Rts.Simulation.Map.LandType.Clear, 64).ToArray(), new byte[64], heights);
-        var world = new GameWorld(seed: 1, map);
+        var world = new GameWorld(seed: 1, map, TestRules.Standard);
         var low = world.SpawnUnit(new PlayerId(1), UnitType.Conscript, new CellPos(1, 1).Center);
         var high = world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(6, 1).Center);
 

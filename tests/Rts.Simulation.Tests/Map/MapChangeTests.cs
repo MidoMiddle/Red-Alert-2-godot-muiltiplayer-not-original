@@ -23,7 +23,7 @@ public sealed class MapChangeTests
             map.SetBlocked(new CellPos(wallX, y), true);
         }
 
-        return new GameWorld(seed: 1, map);
+        return new GameWorld(seed: 1, map, TestRules.Standard);
     }
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
@@ -77,7 +77,7 @@ public sealed class MapChangeTests
     [Fact]
     public void A_tree_that_grows_on_the_way_makes_the_unit_find_another()
     {
-        var world = new GameWorld(seed: 1, new MapGrid(16, 8));
+        var world = new GameWorld(seed: 1, new MapGrid(16, 8), TestRules.Standard);
         var tank = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(1, 3).Center);
         Order(world, tank, new CellPos(14, 3));
         Step(world, 5);
@@ -97,7 +97,7 @@ public sealed class MapChangeTests
     [Fact]
     public void A_cliff_raised_on_the_way_is_driven_around()
     {
-        var world = new GameWorld(seed: 1, new MapGrid(16, 8));
+        var world = new GameWorld(seed: 1, new MapGrid(16, 8), TestRules.Standard);
         var tank = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(1, 3).Center);
         Order(world, tank, new CellPos(14, 3));
         Step(world, 5);
@@ -114,7 +114,7 @@ public sealed class MapChangeTests
     [Fact]
     public void A_change_elsewhere_or_a_cell_that_opens_leaves_paths_alone()
     {
-        var world = new GameWorld(seed: 1, new MapGrid(16, 8));
+        var world = new GameWorld(seed: 1, new MapGrid(16, 8), TestRules.Standard);
         world.Map.SetBlocked(new CellPos(8, 6), true);
         var tank = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(1, 3).Center);
         Order(world, tank, new CellPos(14, 3));
@@ -152,7 +152,7 @@ public sealed class MapChangeTests
     public void Patched_step_costs_equal_costs_built_from_scratch()
     {
         var random = new TestRandom(17);
-        var world = new GameWorld(seed: 1, new MapGrid(20, 14));
+        var world = new GameWorld(seed: 1, new MapGrid(20, 14), TestRules.Standard);
         var pathfinder = world.PathRequests.Pathfinder;
         foreach (var locomotor in Enum.GetValues<Locomotor>())
         {
@@ -186,7 +186,7 @@ public sealed class MapChangeTests
 
         static List<ulong> Play()
         {
-            var simulation = new GameSimulation(new SimulationSettings(9, new MapGrid(24, 16)));
+            var simulation = new GameSimulation(new SimulationSettings(9, new MapGrid(24, 16)), TestRules.Standard);
             uint sequence = 0;
             for (var i = 0; i < 6; i++)
             {

@@ -8,7 +8,7 @@ public sealed class PassabilityTests
 {
     /// <summary>What the cache must hold for a cell, worked out from scratch.</summary>
     private static int Expected(MapGrid map, CellPos cell, Locomotor locomotor) =>
-        map.IsBlocked(cell) ? 0 : LocomotorRules.CellPercent(locomotor, map.LandAt(cell), map.Heights.ShapeAt(cell));
+        map.IsBlocked(cell) ? 0 : LandSpeeds.Reference.CellPercent(locomotor, map.LandAt(cell), map.Heights.ShapeAt(cell));
 
     private static void AssertMatches(MapGrid map)
     {

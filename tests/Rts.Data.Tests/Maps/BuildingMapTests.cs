@@ -75,7 +75,7 @@ public sealed class BuildingMapTests
         Assert.Equal(3, grid.StartBuildings.Count(b => BuildingTypes.Get(b.Kind).Capturable));
 
         // The house at (36, 52)…(37, 53): a jeep drives round it, and straight through once it is down.
-        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid));
+        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid), GameDataFiles.Rules);
         var round = AStar.FindPath(simulation.World.Map, new CellPos(34, 52), new CellPos(39, 52), Locomotor.Wheel);
         Assert.DoesNotContain(round.Cells, simulation.World.Map.HasBuilding);
         for (var blow = 0; blow < 4; blow++)

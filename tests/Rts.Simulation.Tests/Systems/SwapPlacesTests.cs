@@ -16,7 +16,7 @@ public sealed class SwapPlacesTests
     private static readonly PlayerId Player1 = new(1);
     private static readonly CellPos Hole = new(16, 10);
 
-    private static GameWorld OpenWorld() => new(seed: 1, widthCells: 32, heightCells: 32);
+    private static GameWorld OpenWorld() => new(seed: 1, widthCells: 32, heightCells: 32, TestRules.Standard);
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
         CommandProcessor.Apply(world, new MoveCommand(unit.Owner, world.CurrentTick, 0, [unit.Id], target.Center));
