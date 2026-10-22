@@ -158,7 +158,8 @@ public sealed class BasePlacement
 
     /// <summary>
     /// For a defense, the point <see cref="DefenseAhead"/> cells from the yard toward the likely enemy: an enemy building or army the bot
-    /// remembers, else the first start where an enemy may be. Null for other buildings, or with nothing known.
+    /// remembers, else where it last saw an enemy, else the first start where an enemy may be. Null for other buildings, or with nothing
+    /// known.
     /// </summary>
     private static CellPos? Target(AiWorldView view, AiMemory memory, BuildingDef def, CellPos centre)
     {
@@ -169,6 +170,7 @@ public sealed class BasePlacement
 
         CellPos? enemy = memory.Buildings.Count > 0 ? memory.Buildings[0].Cell
             : memory.Armies.Count > 0 ? memory.Armies[0].Centre.ToCell()
+            : memory.LastEnemyCell is { } last ? last
             : memory.PossibleEnemyStarts.Count > 0 ? memory.PossibleEnemyStarts[0]
             : null;
         if (enemy is not { } at)

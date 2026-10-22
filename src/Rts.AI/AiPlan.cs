@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rts.Simulation.World;
 
 namespace Rts.AI;
 
@@ -16,6 +17,9 @@ public sealed class AiPlan
 
     /// <summary>The building the planner will order next and saves the money for; -1 when there is none.</summary>
     public int NextBuilding { get; internal set; } = -1;
+
+    /// <summary>The unit that scouts (step 7); the squads of step 8 leave it alone. Null without one.</summary>
+    public EntityId? Scout { get; internal set; }
 
     /// <summary>Whether the economy wants a harvester now: the army leaves the war factory to it.</summary>
     public bool HarvestersWanted { get; internal set; }

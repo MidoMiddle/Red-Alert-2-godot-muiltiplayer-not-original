@@ -109,6 +109,23 @@ public sealed class AiMemoryTests
     }
 
     [Fact]
+    public void Where_an_enemy_was_last_seen_is_kept_after_it_is_out_of_sight()
+    {
+        var scene = new Scene();
+        var scout = scene.Spawn(Scene.Me, UnitType.Engineer, 38, 40);
+        scene.Spawn(Scene.Enemy, UnitType.Engineer, 40, 40);
+        scene.Look();
+        Assert.False(scene.Memory.EnemySeen && scene.Memory.LastEnemyCell is null);
+
+        Scene.Move(scout, 8, 8);
+        scene.Look(5000);
+
+        Assert.True(scene.Memory.EnemySeen);
+        Assert.Equal(new CellPos(40, 40), scene.Memory.LastEnemyCell);
+        Assert.Empty(scene.Memory.Armies);
+    }
+
+    [Fact]
     public void The_enemy_may_be_at_any_start_not_explored_yet()
     {
         var scene = new Scene();

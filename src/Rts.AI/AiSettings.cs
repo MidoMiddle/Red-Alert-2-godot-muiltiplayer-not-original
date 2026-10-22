@@ -50,6 +50,15 @@ public sealed record AiSettings
     /// </summary>
     public int CounterShiftPercent { get; init; } = 20;
 
+    /// <summary>How often the scout goes out once the enemy has been found: 3 minutes, as «Medium» of M8.</summary>
+    public int ScoutingInterval { get; init; } = 2700;
+
+    /// <summary>The side of the blocks of the map the scout looks into, in cells.</summary>
+    public int ScoutBlockCells { get; init; } = 16;
+
+    /// <summary>An armed enemy this near the scout, in cells, makes it run home.</summary>
+    public int ScoutDangerCells { get; init; } = 6;
+
     /// <summary>The units the barracks keep in their queue (4.6).</summary>
     public int InfantryQueued { get; init; } = 2;
 

@@ -52,11 +52,29 @@ public sealed class AiMemory
     /// <summary>The starts of the map not explored yet, other than the bot's own, in the order of the map.</summary>
     public IReadOnlyList<CellPos> PossibleEnemyStarts => _starts;
 
+    /// <summary>Whether the bot has ever seen an enemy unit or building (step 7): the first scouting is over then.</summary>
+    public bool EnemySeen { get; private set; }
+
+    /// <summary>
+    /// Where the bot last saw an enemy — the cell of the first one it saw then, in id order — never forgotten: once the starts are
+    /// explored and the sightings old, the side of the enemy is still known (step 7). Null before the first.
+    /// </summary>
+    public CellPos? LastEnemyCell { get; private set; }
+
     internal void Update(AiWorldView view)
     {
         RememberBuildings(view);
         RememberArmies(view);
         RememberStarts(view);
+        EnemySeen |= view.VisibleEnemies.Count > 0;
+        if (view.VisibleEnemies.Count > 0)
+        {
+            LastEnemyCell = view.VisibleEnemies[0] switch
+            {
+                Building building => building.Cell,
+                var entity => ((Unit)entity).Position.ToCell(),
+            };
+        }
     }
 
     private void RememberBuildings(AiWorldView view)
