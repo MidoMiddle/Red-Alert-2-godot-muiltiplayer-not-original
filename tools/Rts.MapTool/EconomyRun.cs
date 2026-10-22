@@ -7,7 +7,9 @@ using Rts.Simulation;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
+using Rts.Simulation.Replays;
 using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
@@ -16,8 +18,11 @@ namespace Rts.MapTool;
 /// <summary>One line of the timeline: when, and what happened.</summary>
 public sealed record EconomyEvent(int Tick, string Text);
 
-/// <summary>The economy at the end of a minute: credits, what the harvesters brought in that minute, how many there were, power.</summary>
-public sealed record EconomyMinute(int Minute, int Credits, int Income, int Harvesters, int PowerOutput, int PowerDrain, string Modes);
+/// <summary>
+/// The economy at the end of a minute: credits, what the harvesters brought in that minute, how many there were, power, where the
+/// harvesters were, and the hash of the whole state (the golden values of M3 pin the fifth minute).
+/// </summary>
+public sealed record EconomyMinute(int Minute, int Credits, int Income, int Harvesters, int PowerOutput, int PowerDrain, string Modes, ulong Checksum);
 
 /// <summary>What a run found: the timeline, the minutes, and the ticks of the first and the last tank.</summary>
 public sealed record EconomyReport(
@@ -28,7 +33,8 @@ public sealed record EconomyReport(
     int Income,
     int HarvesterTicks,
     int LowestCredits,
-    GameSimulation Simulation)
+    GameSimulation Simulation,
+    Replay? Replay = null)
 {
     /// <summary>Credits a harvester brought in per minute of being there, on average.</summary>
     public int IncomePerHarvesterMinute =>
@@ -50,8 +56,11 @@ public static class EconomyRun
 
     public const string Tank = "heavy_tank";
 
-    /// <summary>Plays the run on the map's first start until <paramref name="tanks"/> tanks are out or the time is up.</summary>
-    public static EconomyReport Play(MapDefinition map, GameRules rules, int tanks = 10, int maxMinutes = 20, ulong seed = 1)
+    /// <summary>
+    /// Plays the run on the map's first start until <paramref name="tanks"/> tanks are out or the time is up; with
+    /// <paramref name="record"/> the report holds the replay of the run.
+    /// </summary>
+    public static EconomyReport Play(MapDefinition map, GameRules rules, int tanks = 10, int maxMinutes = 20, ulong seed = 1, bool record = false)
     {
         if (map.Starts.IsEmpty)
         {
@@ -59,6 +68,7 @@ public static class EconomyRun
         }
 
         var simulation = new GameSimulation(new SimulationSettings(seed, map.ToMapGrid()), rules);
+        var recorder = record ? new ReplayRecorder(simulation, dataHash: DataHasher.Compute(rules.Database)) : null;
         var player = new PlayerId(1);
         var bot = new Bot(simulation, player, rules, tanks);
         simulation.Enqueue(new SpawnTestUnitCommand(player, 0, bot.NextSequence(), UnitType.Mcv, map.Starts[0].Cell.Center));
@@ -66,6 +76,7 @@ public static class EconomyRun
         {
             bot.Act();
             simulation.Step();
+            recorder?.AfterStep();
             bot.Observe();
         }
 
@@ -73,10 +84,11 @@ public static class EconomyRun
         for (var i = 0; i < 15 * 10; i++)
         {
             simulation.Step();
+            recorder?.AfterStep();
             bot.Observe();
         }
 
-        return bot.Report();
+        return bot.Report() with { Replay = recorder?.Build() };
     }
 
     /// <summary>The report as text: the timeline, the minutes and the result.</summary>
@@ -239,7 +251,9 @@ public static class EconomyRun
                 var harvesters = World.Entities.OfType<Unit>().Where(unit => unit.IsAlive && unit.Harvester is not null && unit.Owner == player).ToList();
                 var modes = string.Join(" ", harvesters.Select(unit =>
                     $"{unit.Harvester!.Mode} {unit.Harvester.Load} at {unit.Position.ToCell().X},{unit.Position.ToCell().Y}"));
-                _minutes.Add(new EconomyMinute(simulation.CurrentTick / TicksPerMinute, State.Credits, _minuteIncome, harvesters.Count, State.PowerOutput, State.PowerDrain, modes));
+                _minutes.Add(new EconomyMinute(
+                    simulation.CurrentTick / TicksPerMinute, State.Credits, _minuteIncome, harvesters.Count, State.PowerOutput, State.PowerDrain, modes,
+                    StateHasher.Compute(World)));
                 _minuteIncome = 0;
             }
         }
