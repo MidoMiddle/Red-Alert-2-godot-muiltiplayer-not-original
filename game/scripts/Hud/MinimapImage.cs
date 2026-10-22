@@ -6,7 +6,7 @@ namespace Rts.Client.Hud;
 
 /// <summary>
 /// The ground of the minimap (docs/implementation/M2_unit_control.md, 4.14): one pixel per cell in the colour of its land
-/// (<see cref="LandColors"/>), trees dark green, everything a little darker so the unit dots stand out. Pure, tested in
+/// (<see cref="LandColors"/>; a bridge in the colour of a road), trees dark green, everything a little darker so the unit dots stand out. Pure, tested in
 /// Rts.Simulation.Tests.
 /// </summary>
 public static class MinimapImage
@@ -32,7 +32,7 @@ public static class MinimapImage
             for (var x = 0; x < map.Width; x++)
             {
                 var cell = new CellPos(x, y);
-                var (r, g, b) = ColorOf(map.LandAt(cell), map.IsBlocked(cell));
+                var (r, g, b) = ColorOf(map.SurfaceAt(cell), map.IsBlocked(cell));
                 var index = (y * map.Width + x) * 3;
                 pixels[index] = ToByte(r);
                 pixels[index + 1] = ToByte(g);

@@ -190,11 +190,12 @@ public sealed class GoldenValuesTests
         // Rules v12 (M2, after closing): units of a group swap places; the first difference comes after tick 500.
         // Rules v13 (M7 step 2): the map digest covers the corner heights; the states are the same.
         // Rules v16 (M7 step 5): the map digest covers the map objects too (none here); the states are the same.
+        // Rules v17 (M7 step 6): the map digest covers the bridges too (none here); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0xc3e462e1f7174223UL),
-            new(500, 0x18fa50d2fc02cf99UL),
-            new(1000, 0x2bc5b8c78fef4d6fUL),
+            new(100, 0xe623a48b715c9e90UL),
+            new(500, 0xdbb040a4088b44e6UL),
+            new(1000, 0xa66372107a8aaf4eUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -230,6 +231,7 @@ public sealed class GoldenValuesTests
         // Rules v14 (M7 step 3): slopes and cliffs in passability; the scenario is on flat ground, so only the version changes.
         // Rules v15 (M7 step 4): what follows a map change; the map never changes here, so only the version changes.
         // Replay format v6, command format v4, rules v16 (M7 step 5): versions and checksums change; no map, so no object list.
-        Assert.Equal((23365, 14590129653071329845UL), (bytes.Length, hash.Value));
+        // Replay format v7, rules v17 (M7 step 6): versions and checksums change; no map, so no bridge list.
+        Assert.Equal((23365, 5019191708888550280UL), (bytes.Length, hash.Value));
     }
 }

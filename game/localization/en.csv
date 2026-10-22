@@ -143,7 +143,7 @@ UI_KEY_SELECT_ALL,Select all own units
 UI_KEY_STOP,Stop
 UI_KEY_SCATTER,Scatter
 UI_KEY_WAYPOINT_MODE,Waypoints (hold)
-UI_KEY_DEBUG_DAMAGE,Damage the map object under the cursor (debug)
+UI_KEY_DEBUG_DAMAGE,Damage the map object or bridge under the cursor (debug)
 UI_KEY_CANCEL_SELECTION,Cancel selection or menu
 UI_KEY_WAITING,Press a key...
 UI_KEYS_SWAPPED,{0} was used by {1}. {1} now uses {2}.

@@ -34,7 +34,7 @@ public static class CommandProcessor
             StopCommand stop => ApplyStop(world, stop),
             ScatterCommand scatter => ApplyScatter(world, scatter, events),
             DamageMapObjectCommand damage => damage.Amount is >= 1 and <= DamageMapObjectCommand.MaxAmount
-                && world.Map.Contains(damage.Cell) && world.DamageMapObject(damage.Cell, damage.Amount, events),
+                && world.Map.Contains(damage.Cell) && world.DamageAtCell(damage.Cell, damage.Amount, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
     }

@@ -137,11 +137,12 @@ public sealed class GameWorld
     }
 
     /// <summary>
-    /// Damages the first destructible standing map object on the cell (debug command now, weapons in M4). At 0 hit points it is
-    /// destroyed through <see cref="ChangeMap"/>, so paths learn about the opened cell; reports <see cref="Events.MapObjectDestroyed"/>.
-    /// Returns false when there is nothing on the cell that can be damaged.
+    /// Damages what stands on the cell (debug command now, weapons in M4): the first destructible standing map object, or else a
+    /// standing bridge segment (M7 step 6). At 0 hit points it is destroyed through <see cref="ChangeMap"/>, so paths learn about
+    /// the change; reports <see cref="Events.MapObjectDestroyed"/>, or <see cref="Events.BridgeSegmentDamaged"/> and
+    /// <see cref="Events.BridgeSegmentDestroyed"/>. Returns false when there is nothing on the cell that can be damaged.
     /// </summary>
-    internal bool DamageMapObject(CellPos cell, int amount, List<Events.SimEvent>? events)
+    internal bool DamageAtCell(CellPos cell, int amount, List<Events.SimEvent>? events)
     {
         foreach (var mapObject in Map.ObjectsAt(cell))
         {
@@ -158,6 +159,21 @@ public sealed class GameWorld
 
                 return true;
             }
+        }
+
+        if (Map.BridgeAt(cell) is { IsIntact: true } segment)
+        {
+            if (segment.Hp > amount)
+            {
+                Map.SetSegmentHp(segment, segment.Hp - amount);
+                events?.Add(new Events.BridgeSegmentDamaged(CurrentTick, segment.Bridge.Id, segment.Cell, segment.Hp));
+            }
+            else
+            {
+                DestroyBridgeSegment(segment, events);
+            }
+
+            return true;
         }
 
         return false;
@@ -182,6 +198,25 @@ public sealed class GameWorld
     {
         ChangeMap([new DestroyObjectEdit(mapObject.Id)], events);
         events?.Add(new Events.MapObjectDestroyed(CurrentTick, mapObject.Id, mapObject.Kind, mapObject.Cell));
+    }
+
+    /// <summary>
+    /// A bridge segment falls (docs/implementation/M7_maps.md, 4.6): its cell is water again, paths are rebuilt through
+    /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. The dead keep
+    /// their place in the cell until the end of the tick, like every unit that dies.
+    /// </summary>
+    private void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events)
+    {
+        ChangeMap([new DestroyBridgeSegmentEdit(segment.Bridge.Id, segment.Index)], events);
+        events?.Add(new Events.BridgeSegmentDestroyed(CurrentTick, segment.Bridge.Id, segment.Cell));
+        foreach (var entity in _entities)
+        {
+            if (entity is Unit { IsAlive: true } unit && unit.Position.ToCell() == segment.Cell && !Map.CanEnter(segment.Cell, unit.Archetype.Locomotor))
+            {
+                unit.MarkDead();
+                events?.Add(new Events.UnitKilled(CurrentTick, unit.Id, unit.Position));
+            }
+        }
     }
 
     /// <summary>True when a cell of the path still ahead of the unit lies in the area and is closed to it now.</summary>

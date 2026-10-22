@@ -8,8 +8,9 @@ namespace Rts.Client.Terrain;
 /// <summary>
 /// Symbolic map objects on the ground (docs/implementation/conventions.md, section 12; M7_maps.md, 4.7): a dark green cone on
 /// a trunk for a tree and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a tall
-/// stone block for a wall, a dark pole with a yellow lamp for a lamp post, and a grey block for every rock cell. One
-/// MultiMesh per shape. Rebuilt whenever the map changes (a tree felled, a fence crushed), which is rare.
+/// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
+/// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell. One MultiMesh
+/// per shape (and per direction for bridges). Rebuilt whenever the map changes (a tree felled, a bridge blown up), which is rare.
 /// </summary>
 public partial class MapObjects : Node3D
 {
@@ -83,6 +84,11 @@ public partial class MapObjects : Node3D
             list?.Add(at);
         }
 
+        foreach (var bridge in _map.Bridges)
+        {
+            AddBridge(bridge);
+        }
+
         AddInstances("Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
         AddInstances("TreeTrunks", new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = TrunkHeight }, new Color(0.35f, 0.24f, 0.15f), trees, TrunkHeight / 2);
         AddInstances("TreeCrowns", new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = CrownHeight }, new Color(0.12f, 0.32f, 0.16f), trees, TrunkHeight + CrownHeight / 2);
@@ -92,6 +98,38 @@ public partial class MapObjects : Node3D
         AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f);
         AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f);
         AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
+    }
+
+    /// <summary>The deck of a standing segment lies flat just above the water, so units on it seem to drive on the planks.</summary>
+    private void AddBridge(Bridge bridge)
+    {
+        var alongX = bridge.From.Y == bridge.To.Y;
+        var decks = new List<Vector3>();
+        var rails = new List<Vector3>();
+        var stubs = new List<Vector3>();
+        var side = alongX ? new Vector3(0, 0, 0.44f) : new Vector3(0.44f, 0, 0);
+        foreach (var segment in bridge.Segments)
+        {
+            var at = Ground(segment.Cell.X, segment.Cell.Y);
+            if (segment.IsIntact)
+            {
+                decks.Add(at);
+                rails.Add(at + side);
+                rails.Add(at - side);
+            }
+            else
+            {
+                stubs.Add(at + side);
+                stubs.Add(at - side);
+            }
+        }
+
+        var name = $"Bridge{bridge.Id}";
+        var deck = alongX ? new Vector3(1f, 0.05f, 0.9f) : new Vector3(0.9f, 0.05f, 1f);
+        var rail = alongX ? new Vector3(1f, 0.1f, 0.04f) : new Vector3(0.04f, 0.1f, 1f);
+        AddInstances(name + "Deck", new BoxMesh { Size = deck }, new Color(0.55f, 0.4f, 0.24f), decks, 0.03f);
+        AddInstances(name + "Rails", new BoxMesh { Size = rail }, new Color(0.38f, 0.26f, 0.15f), rails, 0.1f);
+        AddInstances(name + "Stubs", new BoxMesh { Size = new Vector3(0.12f, 0.12f, 0.12f) }, new Color(0.2f, 0.16f, 0.13f), stubs, 0.02f);
     }
 
     private Vector3 Ground(int x, int y) => new(x + 0.5f, _heights.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);

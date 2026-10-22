@@ -104,3 +104,7 @@ object lamp_post 34 44
 object lamp_post 34 46
 object lamp_post 34 48
 object lamp_post 34 50
+
+// Bridge of M7 step 6: a low wooden bridge across the lake in the south-west, from the shallows at x = 2 to x = 10 on row 57,
+// beach at both ends. Blow up a segment with K (three blows): units on it drown, the rest find another way.
+bridge bridge_wood_low 2 57 10 57

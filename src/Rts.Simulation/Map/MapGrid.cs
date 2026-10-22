@@ -14,9 +14,9 @@ public readonly record struct MapObjectState(MapObjectKind Kind, CellPos Cell, i
 
 /// <summary>
 /// The map as the simulation sees it (docs/implementation/M2_unit_control.md, 4.3; M7_maps.md, 4.1–4.7): per cell a logical
-/// <see cref="LandType"/> and a plain obstacle flag (tests), the corner heights, and the map objects (trees, boulders,
-/// fences, walls, lamp posts). Structure of arrays indexed <c>y * Width + x</c>, cheap to hash and to scan. Part of the
-/// simulation state: trees fall and fences are crushed during a match.
+/// <see cref="LandType"/> and a plain obstacle flag (tests), the corner heights, the map objects (trees, boulders,
+/// fences, walls, lamp posts) and the low bridges. Structure of arrays indexed <c>y * Width + x</c>, cheap to hash and to
+/// scan. Part of the simulation state: trees fall, fences are crushed and bridges are blown up during a match.
 /// </summary>
 public sealed class MapGrid
 {
@@ -24,6 +24,8 @@ public sealed class MapGrid
     private readonly bool[] _blocked;
     private readonly List<MapObject> _objects = new();
     private readonly Dictionary<int, List<MapObject>> _objectsByCell = new();
+    private readonly List<Bridge> _bridges = new();
+    private readonly Dictionary<int, BridgeSegment> _segmentsByCell = new();
     private CornerHeightGrid _heights;
     private Passability _passability;
     private ulong? _digest;
@@ -47,12 +49,13 @@ public sealed class MapGrid
 
     /// <summary>
     /// A map from raw layers, one byte per cell in index order: land type values and obstacle flags (0 or 1), and the corner
-    /// levels (<c>(W+1) × (H+1)</c>; an empty layer means flat ground). Used by the replay reader and the map loader; throws on
-    /// unknown land types, flags or levels.
+    /// levels (<c>(W+1) × (H+1)</c>; an empty layer means flat ground), then the map objects and the bridges. Used by the replay
+    /// reader and the map loader; throws on unknown land types, flags or levels, and on a bridge that does not run over water
+    /// from shore to shore (see <see cref="TryAddBridge"/>).
     /// </summary>
     public static MapGrid FromLayers(
         int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked, ReadOnlySpan<byte> heights = default,
-        IReadOnlyList<MapObjectState>? objects = null)
+        IReadOnlyList<MapObjectState>? objects = null, IReadOnlyList<BridgeState>? bridges = null)
     {
         var grid = new MapGrid(width, height);
         if (land.Length != grid._land.Length || blocked.Length != grid._blocked.Length)
@@ -97,6 +100,14 @@ public sealed class MapGrid
             inCell.Add(mapObject);
         }
 
+        foreach (var state in bridges ?? [])
+        {
+            if (grid.TryAddBridge(state) is { } problem)
+            {
+                throw new ArgumentException($"Bridge {grid._bridges.Count + 1} is not valid: {problem}.");
+            }
+        }
+
         grid._passability = new Passability(grid);
         grid._digest = null;
         grid.Version++;
@@ -109,7 +120,33 @@ public sealed class MapGrid
 
     public bool Contains(CellPos cell) => cell.X >= 0 && cell.Y >= 0 && cell.X < Width && cell.Y < Height;
 
+    /// <summary>The land layer: under a bridge, the water it spans.</summary>
     public LandType LandAt(CellPos cell) => _land[IndexOf(cell)];
+
+    /// <summary>The land a unit drives on (M7 step 6): a road over a standing bridge segment, the land layer elsewhere.</summary>
+    public LandType SurfaceAt(CellPos cell)
+    {
+        var index = IndexOf(cell);
+        return _segmentsByCell.TryGetValue(index, out var segment) && segment.IsIntact ? LandType.Road : _land[index];
+    }
+
+    /// <summary>The bridge segment on the cell, standing or destroyed; null when no bridge crosses it.</summary>
+    public BridgeSegment? BridgeAt(CellPos cell) => _segmentsByCell.GetValueOrDefault(IndexOf(cell));
+
+    /// <summary>Every bridge, in id order.</summary>
+    public IReadOnlyList<Bridge> Bridges => _bridges;
+
+    /// <summary>The bridges as they stand now, for a copy or a replay.</summary>
+    public BridgeState[] BridgeStates()
+    {
+        var states = new BridgeState[_bridges.Count];
+        for (var i = 0; i < states.Length; i++)
+        {
+            states[i] = _bridges[i].State();
+        }
+
+        return states;
+    }
 
     /// <summary>The corner heights (docs/implementation/M7_maps.md, 4.1). Read only from outside; the match changes them through the map.</summary>
     public CornerHeightGrid Heights => _heights;
@@ -164,7 +201,7 @@ public sealed class MapGrid
     public bool CanEnter(CellPos cell, Locomotor locomotor) => SpeedPercent(cell, locomotor) > 0;
 
     /// <summary>An independent copy: the match changes its own map, never the one in the settings.</summary>
-    public MapGrid Clone() => FromLayers(Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates());
+    public MapGrid Clone() => FromLayers(Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates());
 
     /// <summary>True when both maps have the same size and the same cells.</summary>
     public bool ContentEquals(MapGrid other) =>
@@ -173,7 +210,8 @@ public sealed class MapGrid
         && _land.AsSpan().SequenceEqual(other._land)
         && _blocked.AsSpan().SequenceEqual(other._blocked)
         && _heights.ContentEquals(other._heights)
-        && ObjectsEqual(other);
+        && ObjectsEqual(other)
+        && BridgesEqual(other);
 
     /// <summary>Land layer as bytes in cell index order, the replay layout.</summary>
     public byte[] LandBytes()
@@ -238,6 +276,96 @@ public sealed class MapGrid
         Version++;
     }
 
+    /// <summary>
+    /// Adds a bridge (docs/implementation/M7_maps.md, 4.6) and returns null, or returns what is wrong with it and adds nothing:
+    /// it must run along X or along Y over water cells (shallow or deep) that no other bridge takes, with a shore beyond both
+    /// ends, a cell on the map that is not water; a bridge of one cell needs that along X or along Y. Hit points are per segment,
+    /// 0 (destroyed) up to the type's.
+    /// </summary>
+    internal string? TryAddBridge(BridgeState state)
+    {
+        if (!BridgeTypes.IsKnown(state.Kind))
+        {
+            return $"unknown bridge kind {(int)state.Kind}";
+        }
+
+        var (from, to) = (state.From, state.To);
+        if (!Contains(from) || !Contains(to))
+        {
+            return $"end {Text(Contains(from) ? to : from)} is outside the {Width}x{Height} map";
+        }
+
+        if (from.X != to.X && from.Y != to.Y)
+        {
+            return $"{Text(from)} to {Text(to)} runs neither along X nor along Y";
+        }
+
+        var length = Bridge.Length(from, to);
+        if (state.SegmentHp.IsDefault || state.SegmentHp.Length != length)
+        {
+            return $"{length} segments need {length} hit point values";
+        }
+
+        var (dx, dy) = Bridge.Step(from, to);
+        for (var i = 0; i < length; i++)
+        {
+            var cell = new CellPos(from.X + dx * i, from.Y + dy * i);
+            if (!IsWater(_land[IndexOf(cell)]))
+            {
+                return $"cell {Text(cell)} is not water";
+            }
+
+            if (_segmentsByCell.ContainsKey(IndexOf(cell)))
+            {
+                return $"cell {Text(cell)} already has a bridge";
+            }
+
+            if (state.SegmentHp[i] < 0 || state.SegmentHp[i] > BridgeTypes.Get(state.Kind).SegmentHp)
+            {
+                return $"segment {i} has {state.SegmentHp[i]} hit points";
+            }
+        }
+
+        var shore = ShoreProblem(from, to, length > 1 ? dx : 1, length > 1 ? dy : 0);
+        if (shore is not null && length == 1 && ShoreProblem(from, to, 0, 1) is null)
+        {
+            shore = null;
+        }
+
+        if (shore is not null)
+        {
+            return shore;
+        }
+
+        var bridge = new Bridge(_bridges.Count + 1, state.Kind, from, to, state.SegmentHp);
+        _bridges.Add(bridge);
+        foreach (var segment in bridge.Segments)
+        {
+            _segmentsByCell.Add(IndexOf(segment.Cell), segment);
+            _passability.Update(this, segment.Cell);
+        }
+
+        _digest = null;
+        Version++;
+        return null;
+    }
+
+    /// <summary>Takes hit points off a bridge segment without destroying it (the hash sees it; nothing else changes).</summary>
+    internal void SetSegmentHp(BridgeSegment segment, int hp)
+    {
+        segment.Hp = hp;
+        _digest = null;
+    }
+
+    /// <summary>Destroys a bridge segment: its cell is the water under it again.</summary>
+    internal void DestroySegment(BridgeSegment segment)
+    {
+        segment.Hp = 0;
+        _passability.Update(this, segment.Cell);
+        _digest = null;
+        Version++;
+    }
+
     /// <summary>Sets the level of one corner (tests now; destructible relief later).</summary>
     internal void SetCornerLevel(int x, int y, int level)
     {
@@ -266,7 +394,7 @@ public sealed class MapGrid
     public int Version { get; private set; }
 
     /// <summary>
-    /// FNV-1a of the land layer, the obstacle layer, the corner heights and the map objects, in index order, for the state hash. Computed once and kept
+    /// FNV-1a of the land layer, the obstacle layer, the corner heights, the map objects and the bridges, in index order, for the state hash. Computed once and kept
     /// until a cell changes, so the per-tick hash does not walk the whole map (docs/implementation/M2_unit_control.md, 4.15).
     /// </summary>
     internal ulong Digest => _digest ??= ComputeDigest();
@@ -306,7 +434,59 @@ public sealed class MapGrid
             hash.Add(o.Destroyed);
         }
 
+        // Rules v17 (M7 step 6): the bridges, in id order, with the hit points of every segment.
+        hash.Add(_bridges.Count);
+        foreach (var bridge in _bridges)
+        {
+            hash.Add(bridge.Id);
+            hash.Add((byte)bridge.Kind);
+            hash.Add(bridge.From.X);
+            hash.Add(bridge.From.Y);
+            hash.Add(bridge.To.X);
+            hash.Add(bridge.To.Y);
+            foreach (var segment in bridge.Segments)
+            {
+                hash.Add(segment.Hp);
+            }
+        }
+
         return hash.Value;
+    }
+
+    private static string Text(CellPos cell) => $"{cell.X},{cell.Y}";
+
+    private static bool IsWater(LandType land) => land is LandType.Shallow or LandType.Deep;
+
+    /// <summary>Null when the cells just before <paramref name="from"/> and just after <paramref name="to"/> are shore.</summary>
+    private string? ShoreProblem(CellPos from, CellPos to, int dx, int dy)
+    {
+        foreach (var beyond in (ReadOnlySpan<CellPos>)[new CellPos(from.X - dx, from.Y - dy), new CellPos(to.X + dx, to.Y + dy)])
+        {
+            if (!Contains(beyond) || IsWater(_land[IndexOf(beyond)]))
+            {
+                return $"no shore at {Text(beyond)}, a bridge runs from shore to shore";
+            }
+        }
+
+        return null;
+    }
+
+    private bool BridgesEqual(MapGrid other)
+    {
+        if (_bridges.Count != other._bridges.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < _bridges.Count; i++)
+        {
+            if (!_bridges[i].ContentEquals(other._bridges[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private bool ObjectsEqual(MapGrid other)

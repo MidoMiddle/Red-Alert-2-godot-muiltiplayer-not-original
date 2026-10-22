@@ -20,11 +20,13 @@ public sealed record TestMap(MapGrid Grid, IReadOnlyList<TestMapUnit> Units);
 /// // comment
 /// . , = b ~ W # i T
 /// unit heavy_tank 3 5 player=1
+/// object fence_wood 4 38
+/// bridge bridge_wood_low 2 57 10 57
 /// </code>
 /// Codes are the land types of docs/implementation/M7_maps.md, 4.3, plus <c>T</c> for a tree (a <c>pine_tree</c> map object on
 /// clear land). A <c>unit</c> line takes a unit id of <see cref="UnitArchetypes"/>, the cell x and y, and the owner; an
-/// <c>object</c> line a map object id of <see cref="MapObjectTypes"/>, the cell x and y, and optionally the model variant.
-/// Every error names the line and the column.
+/// <c>object</c> line a map object id of <see cref="MapObjectTypes"/>, the cell x and y, and optionally the model variant; a
+/// <c>bridge</c> line a bridge id of <see cref="BridgeTypes"/> and the cells of both ends. Every error names the line and the column.
 /// </summary>
 public static class TestMapParser
 {
@@ -35,6 +37,7 @@ public static class TestMapParser
         var rows = new List<(int Line, LandType[] Land, bool[] Trees)>();
         var unitLines = new List<(int Line, string Text)>();
         var objectLines = new List<(int Line, string Text)>();
+        var bridgeLines = new List<(int Line, string Text)>();
 
         var lines = text.Replace("\r\n", "\n").Split('\n');
         for (var i = 0; i < lines.Length; i++)
@@ -55,6 +58,12 @@ public static class TestMapParser
             if (line.StartsWith("object ", StringComparison.Ordinal))
             {
                 objectLines.Add((lineNumber, lines[i]));
+                continue;
+            }
+
+            if (line.StartsWith("bridge ", StringComparison.Ordinal))
+            {
+                bridgeLines.Add((lineNumber, lines[i]));
                 continue;
             }
 
@@ -94,6 +103,10 @@ public static class TestMapParser
         }
 
         var grid = MapGrid.FromLayers(width, rows.Count, landLayer, new byte[landLayer.Length], default, objects);
+        foreach (var (line, bridgeText) in bridgeLines)
+        {
+            AddBridge(line, bridgeText, grid);
+        }
 
         var units = new List<TestMapUnit>();
         foreach (var (line, unitText) in unitLines)
@@ -187,6 +200,28 @@ public static class TestMapParser
         }
 
         return MapObjectState.New(type.Kind, cell, variant);
+    }
+
+    // bridge <type> <x1> <y1> <x2> <y2>
+    private static void AddBridge(int lineNumber, string line, MapGrid grid)
+    {
+        var parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 6)
+        {
+            throw Error(lineNumber, 1, "expected 'bridge <type> <x1> <y1> <x2> <y2>'");
+        }
+
+        if (!BridgeTypes.TryGetById(parts[1], out var type))
+        {
+            throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown bridge '{parts[1]}'");
+        }
+
+        var from = new CellPos(ParseNumber(lineNumber, line, parts[2]), ParseNumber(lineNumber, line, parts[3]));
+        var to = new CellPos(ParseNumber(lineNumber, line, parts[4]), ParseNumber(lineNumber, line, parts[5]));
+        if (grid.TryAddBridge(BridgeState.New(type.Kind, from, to)) is { } problem)
+        {
+            throw Error(lineNumber, ColumnOf(line, parts[2]), problem);
+        }
     }
 
     // unit <id> <x> <y> player=<n>

@@ -227,7 +227,7 @@ public partial class SimulationHost : Node
     public void IssueScatter(IReadOnlyList<EntityId> units) =>
         IssueTo(units, ordered => new ScatterCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
 
-    /// <summary>Debug (M7 step 5): takes <paramref name="amount"/> hit points off the map object on the cell.</summary>
+    /// <summary>Debug (M7 steps 5–6): takes <paramref name="amount"/> hit points off the map object or the bridge segment on the cell.</summary>
     public void IssueDamage(CellPos cell, int amount) =>
         Issue(new DamageMapObjectCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, cell, amount));
 

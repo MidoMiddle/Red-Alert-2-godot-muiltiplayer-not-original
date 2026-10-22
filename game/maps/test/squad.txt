@@ -93,6 +93,7 @@ object lamp_post 34 44
 object lamp_post 34 46
 object lamp_post 34 48
 object lamp_post 34 50
+bridge bridge_wood_low 2 57 10 57
 unit heavy_tank 18 19 player=1
 unit heavy_tank 19 19 player=1
 unit heavy_tank 20 19 player=1

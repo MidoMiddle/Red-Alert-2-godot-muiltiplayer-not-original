@@ -142,9 +142,10 @@ public sealed class MapDefinition
     public LandType LandAt(CellPos cell) => Land[cell.Y * Width + cell.X];
 
     /// <summary>
-    /// The map as the simulation plays it: corner heights and land as they are, and the map objects by the table of
-    /// <see cref="MapObjectTypes"/> (M7 step 5), at full hit points, in the order of <see cref="Objects"/>. The texture stays out:
-    /// it is visual. Throws on an object type the table does not know.
+    /// The map as the simulation plays it: corner heights and land as they are, the map objects by the table of
+    /// <see cref="MapObjectTypes"/> (M7 step 5) and the bridges by <see cref="BridgeTypes"/> (step 6), at full hit points, in the
+    /// order of <see cref="Objects"/> and <see cref="Bridges"/>. The texture stays out: it is visual. Throws on a type the
+    /// tables do not know and on a bridge that does not run over water from shore to shore.
     /// </summary>
     public MapGrid ToMapGrid()
     {
@@ -166,7 +167,19 @@ public sealed class MapDefinition
             objects[i] = MapObjectState.New(type.Kind, placement.Cell, placement.Variant);
         }
 
-        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects);
+        var bridges = new BridgeState[Bridges.Length];
+        for (var i = 0; i < bridges.Length; i++)
+        {
+            var placement = Bridges[i];
+            if (!BridgeTypes.TryGetById(placement.Type, out var type))
+            {
+                throw new ArgumentException($"Unknown bridge '{placement.Type}' at {placement.From.X},{placement.From.Y}.");
+            }
+
+            bridges[i] = BridgeState.New(type.Kind, placement.From, placement.To);
+        }
+
+        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects, bridges);
     }
 
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>

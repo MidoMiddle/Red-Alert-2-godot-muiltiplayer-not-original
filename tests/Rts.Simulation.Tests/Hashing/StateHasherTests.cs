@@ -156,9 +156,9 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(MapGrid), new[]
     {
-        "_land", "_blocked", "_heights", "_objects", "<Width>k__BackingField", "<Height>k__BackingField",
-        // An index of the objects by cell, built from the list above.
-        "_objectsByCell",
+        "_land", "_blocked", "_heights", "_objects", "_bridges", "<Width>k__BackingField", "<Height>k__BackingField",
+        // Indexes of the objects and the bridge segments by cell, built from the lists above.
+        "_objectsByCell", "_segmentsByCell",
         // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of
         // every locomotor on every cell (M7 step 3).
         "_digest", "<Version>k__BackingField", "_passability",
@@ -169,6 +169,9 @@ public sealed class StateHasherTests
         "<Id>k__BackingField", "<Kind>k__BackingField", "<Cell>k__BackingField", "<Variant>k__BackingField", "<Hp>k__BackingField",
         "<Destroyed>k__BackingField",
     })]
+    [InlineData(typeof(Bridge), new[] { "_segments", "<Id>k__BackingField", "<Kind>k__BackingField", "<From>k__BackingField", "<To>k__BackingField" })]
+    // Only the hit points are hashed: the bridge, the place in the chain and the cell follow from the bridge's ends.
+    [InlineData(typeof(BridgeSegment), new[] { "<Hp>k__BackingField", "<Bridge>k__BackingField", "<Index>k__BackingField", "<Cell>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {

@@ -21,7 +21,7 @@ namespace Rts.Client;
 /// </summary>
 public partial class PlayerInput : Node
 {
-    /// <summary>Hit points one press of the debug damage key takes off a map object: a tree falls on the second press.</summary>
+    /// <summary>Hit points one press of the debug damage key takes off a map object or a bridge segment: a tree falls on the second press, a segment on the third.</summary>
     private const int DebugDamage = 200;
 
     /// <summary>Screen distance in pixels within which a click picks a unit.</summary>
@@ -218,7 +218,7 @@ public partial class PlayerInput : Node
         }
         else if (key.IsActionPressed("debug_damage", false, true) && CellUnderPointer is { } damaged)
         {
-            // Debug (M7 step 5): a blow at the map object under the cursor, until the weapons of M4.
+            // Debug (M7 steps 5–6): a blow at the map object or the bridge segment under the cursor, until the weapons of M4.
             _host.IssueDamage(damaged, DebugDamage);
         }
         else if (key.IsActionPressed("select_all", false, true))

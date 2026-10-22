@@ -20,11 +20,13 @@ namespace Rts.Simulation.Replays;
 /// </code>
 /// History: v2 (M2 step 2) marks command format v2 inside; v3 (M2 step 4) adds the map layers; v4 (M2 step 12) marks command format v3 inside;
 /// v5 (M7 step 2) adds the corner heights, (W+1) × (H+1) bytes after the cell layers; v6 (M7 step 5) adds the map objects after
-/// them (u32 count, then u8 kind | u16 x | u16 y | u8 variant | i32 hp | u8 destroyed each) and marks command format v4.
+/// them (u32 count, then u8 kind | u16 x | u16 y | u8 variant | i32 hp | u8 destroyed each) and marks command format v4;
+/// v7 (M7 step 6) adds the bridges after the objects (u32 count, then u8 kind | u16 fromX | u16 fromY | u16 toX | u16 toY |
+/// i32 hp per segment from the first end each).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 6;
+    public const ushort FormatVersion = 7;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -35,6 +37,9 @@ public static class ReplayFormat
     // u8 kind | u16 x | u16 y | u8 variant | i32 hp | u8 destroyed.
     private const int ObjectSize = 1 + 2 + 2 + 1 + 4 + 1;
 
+    // u8 kind | u16 fromX | u16 fromY | u16 toX | u16 toY, then i32 hp per segment.
+    private const int BridgeHeaderSize = 1 + 2 * 4;
+
     // 512 × 512 cells: far above any map we plan, small enough to reject garbage sizes before allocating.
     private const long MaxMapCells = 512 * 512;
 
@@ -42,7 +47,12 @@ public static class ReplayFormat
     {
         var commands = CommandSerializer.WriteAll(replay.Commands);
         var map = replay.Settings.Map;
-        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height + (map.Width + 1) * (map.Height + 1) + 4 + ObjectSize * map.Objects.Count);
+        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height + (map.Width + 1) * (map.Height + 1) + 4 + ObjectSize * map.Objects.Count + 4);
+        foreach (var bridge in map?.Bridges ?? [])
+        {
+            mapSize += BridgeHeaderSize + 4 * bridge.Segments.Count;
+        }
+
         var buffer = new byte[HeaderSize + mapSize + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
         var span = buffer.AsSpan();
 
@@ -77,6 +87,23 @@ public static class ReplayFormat
                 BinaryPrimitives.WriteInt32LittleEndian(span[(offset + 6)..], mapObject.Hp);
                 span[offset + 10] = mapObject.Destroyed ? (byte)1 : (byte)0;
                 offset += ObjectSize;
+            }
+
+            BinaryPrimitives.WriteUInt32LittleEndian(span[offset..], (uint)map.Bridges.Count);
+            offset += 4;
+            foreach (var bridge in map.Bridges)
+            {
+                span[offset] = (byte)bridge.Kind;
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 1)..], (ushort)bridge.From.X);
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 3)..], (ushort)bridge.From.Y);
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 5)..], (ushort)bridge.To.X);
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 7)..], (ushort)bridge.To.Y);
+                offset += BridgeHeaderSize;
+                foreach (var segment in bridge.Segments)
+                {
+                    BinaryPrimitives.WriteInt32LittleEndian(span[offset..], segment.Hp);
+                    offset += 4;
+                }
             }
         }
 
@@ -163,16 +190,48 @@ public static class ReplayFormat
                     at[10] == 1);
             }
 
+            var bridgesStart = objectsStart + ObjectSize * (int)objectCount;
+            Require(source[bridgesStart..], 4);
+            var bridgeCount = BinaryPrimitives.ReadUInt32LittleEndian(source[bridgesStart..]);
+            if (bridgeCount > (uint)cells)
+            {
+                throw new InvalidDataException($"Invalid bridge count {bridgeCount}.");
+            }
+
+            var bridges = new BridgeState[bridgeCount];
+            var next = bridgesStart + 4;
+            for (var i = 0; i < bridges.Length; i++)
+            {
+                Require(source[next..], BridgeHeaderSize);
+                var from = new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(source[(next + 1)..]), BinaryPrimitives.ReadUInt16LittleEndian(source[(next + 3)..]));
+                var to = new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(source[(next + 5)..]), BinaryPrimitives.ReadUInt16LittleEndian(source[(next + 7)..]));
+                var kind = (BridgeKind)source[next];
+                next += BridgeHeaderSize;
+
+                // Ends far off the map would make a huge segment count: FromLayers rejects them, but only after reading.
+                var segments = from.X < width && to.X < width && from.Y < height && to.Y < height ? Bridge.Length(from, to) : 0;
+                Require(source[next..], 4 * segments);
+                var hp = new int[segments];
+                for (var s = 0; s < segments; s++)
+                {
+                    hp[s] = BinaryPrimitives.ReadInt32LittleEndian(source[(next + 4 * s)..]);
+                }
+
+                next += 4 * segments;
+                bridges[i] = new BridgeState(kind, from, to, System.Collections.Immutable.ImmutableArray.Create(hp));
+            }
+
             try
             {
-                map = MapGrid.FromLayers(width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners), objects);
+                map = MapGrid.FromLayers(
+                    width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners), objects, bridges);
             }
             catch (ArgumentException error)
             {
                 throw new InvalidDataException($"Invalid map data: {error.Message}", error);
             }
 
-            offset = objectsStart + ObjectSize * (int)objectCount;
+            offset = next;
         }
 
         var settings = (map is null ? new SimulationSettings(seed) : new SimulationSettings(seed, map)) with

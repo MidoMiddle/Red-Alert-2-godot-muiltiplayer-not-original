@@ -15,7 +15,7 @@ public abstract record MapEdit
     internal abstract void Apply(MapGrid map);
 }
 
-/// <summary>The cell gets another land type (a bridge falls into the water, step 6).</summary>
+/// <summary>The cell gets another land type (tests; terrain changes later).</summary>
 public sealed record SetLandEdit(CellPos Cell, LandType Land) : MapEdit
 {
     internal override (CellPos From, CellPos To) Area(MapGrid map) => (Cell, Cell);
@@ -37,6 +37,16 @@ public sealed record DestroyObjectEdit(int ObjectId) : MapEdit
     internal override (CellPos From, CellPos To) Area(MapGrid map) => (map.Objects[ObjectId - 1].Cell, map.Objects[ObjectId - 1].Cell);
 
     internal override void Apply(MapGrid map) => map.DestroyObject(ObjectId);
+}
+
+/// <summary>A segment of a bridge is destroyed: its cell is water again, open to ships, closed to the ground movers.</summary>
+public sealed record DestroyBridgeSegmentEdit(int BridgeId, int Segment) : MapEdit
+{
+    internal override (CellPos From, CellPos To) Area(MapGrid map) => (CellOf(map), CellOf(map));
+
+    internal override void Apply(MapGrid map) => map.DestroySegment(map.Bridges[BridgeId - 1].Segments[Segment]);
+
+    private CellPos CellOf(MapGrid map) => map.Bridges[BridgeId - 1].Segments[Segment].Cell;
 }
 
 /// <summary>A corner gets another height level (destructible relief, later; tests now).</summary>

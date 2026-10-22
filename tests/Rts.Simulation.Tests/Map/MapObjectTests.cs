@@ -78,7 +78,7 @@ public sealed class MapObjectTests
         var world = Walled(MapObjectKind.PineTree);
         var before = StateHasher.Compute(world);
 
-        world.DamageMapObject(new CellPos(8, 2), 10, null);
+        world.DamageAtCell(new CellPos(8, 2), 10, null);
 
         Assert.NotEqual(before, StateHasher.Compute(world));
         Assert.False(world.Map.CanEnter(new CellPos(8, 2), Locomotor.Track));
@@ -103,9 +103,9 @@ public sealed class MapObjectTests
         var cell = new CellPos(8, 4);
         Assert.False(world.Map.CanEnter(cell, Locomotor.Track));
 
-        world.DamageMapObject(cell, 1499, null);
+        world.DamageAtCell(cell, 1499, null);
         Assert.False(world.Map.CanEnter(cell, Locomotor.Track));
-        world.DamageMapObject(cell, 1, null);
+        world.DamageAtCell(cell, 1, null);
 
         Assert.True(world.Map.CanEnter(cell, Locomotor.Track));
         Assert.DoesNotContain(world.Map.ObjectsAt(cell), o => o.IsAlive);
@@ -169,7 +169,7 @@ public sealed class MapObjectTests
             var cell = new CellPos(random.NextInt(20), random.NextInt(12));
             if (random.NextInt(2) == 0)
             {
-                world.DamageMapObject(cell, 1 + random.NextInt(500), null);
+                world.DamageAtCell(cell, 1 + random.NextInt(500), null);
             }
             else
             {

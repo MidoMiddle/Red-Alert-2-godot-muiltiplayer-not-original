@@ -390,5 +390,6 @@ objects:
   - { type: wall_stone, cell: [8, 42], variant: 0 }
   - { type: wall_stone, cell: [9, 42], variant: 0 }
   - { type: wall_stone, cell: [10, 42], variant: 0 }
-bridges: []
+bridges:
+  - { type: bridge_wood_low, from: [2, 57], to: [10, 57] }
 structures: []

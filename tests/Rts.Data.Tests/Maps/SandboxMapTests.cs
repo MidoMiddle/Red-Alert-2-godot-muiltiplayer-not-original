@@ -38,6 +38,11 @@ public sealed class SandboxMapTests
             old.Objects.Select(o => (o.Type.Id, o.Cell, o.Variant)).OrderBy(o => o.Id, StringComparer.Ordinal).ThenBy(o => o.Cell.Y).ThenBy(o => o.Cell.X),
             map.Objects.Select(o => (o.Type, o.Cell, o.Variant)));
 
+        // The bridge line (M7 step 6) becomes the bridge of the map file.
+        Assert.Equal(
+            old.Bridges.Select(b => new BridgePlacement(b.Type.Id, b.From, b.To)),
+            map.Bridges);
+
         Assert.All(map.Heights, h => Assert.Equal(0, h));
     }
 
@@ -47,7 +52,7 @@ public sealed class SandboxMapTests
         // Golden value: the canonical text and SHA-256 must not depend on the OS or the runtime.
         var map = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));
 
-        Assert.Equal("96033965d88d9732e93fae069764d09a877a8bffd1b09526a8cb65fbbaca3480", MapHasher.Hash(map));
+        Assert.Equal("988ce1552ad2fb919bb1fd820867627c2b178a331f3c13ca5d95b4febb1b664c", MapHasher.Hash(map));
     }
 
     [Fact]
@@ -76,5 +81,27 @@ public sealed class SandboxMapTests
         Assert.Equal(new CellPos(7, 40), tank.Position.ToCell());
         Assert.Equal(new CellPos(9, 40), conscript.Position.ToCell());
         Assert.DoesNotContain(conscriptCells, cell => cell.Y == 38 && cell.X is >= 4 and <= 11 && cell.X != 7);
+    }
+
+    [Fact]
+    public void On_the_sandbox_a_jeep_crosses_the_lake_by_the_bridge_until_a_segment_falls()
+    {
+        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
+        var bridge = Assert.Single(grid.Bridges);
+        Assert.Equal((new CellPos(2, 57), new CellPos(10, 57), 9), (bridge.From, bridge.To, bridge.Segments.Count));
+        Assert.All(bridge.Segments, s => Assert.Equal(LandType.Road, grid.SurfaceAt(s.Cell)));
+
+        var across = Rts.Simulation.Pathfinding.AStar.FindPath(grid, new CellPos(0, 57), new CellPos(12, 57), Locomotor.Wheel);
+        Assert.Equal(Rts.Simulation.Pathfinding.PathStatus.Found, across.Status);
+        Assert.Contains(new CellPos(6, 57), across.Cells);
+
+        var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid));
+        var blue = new Rts.Simulation.World.PlayerId(1);
+        simulation.Enqueue(new Rts.Simulation.Commands.DamageMapObjectCommand(blue, 0, 0, new CellPos(6, 57), 600));
+        simulation.Step();
+
+        var around = Rts.Simulation.Pathfinding.AStar.FindPath(simulation.World.Map, new CellPos(0, 57), new CellPos(12, 57), Locomotor.Wheel);
+        Assert.Equal(Rts.Simulation.Pathfinding.PathStatus.Found, around.Status);
+        Assert.DoesNotContain(around.Cells, cell => cell.Y == 57 && cell.X is >= 2 and <= 10);
     }
 }
