@@ -34,6 +34,8 @@ UI_SKIRMISH_MAP,Map
 UI_MAP_NONE,No maps yet
 UI_MAP_PREVIEW,Map preview
 UI_MAP_INFO_NONE,No map selected
+UI_MAP_INFO,{0} · {1}×{2} · {3} players
+UI_MAP_PREVIEW_RENDERING,Rendering preview…
 UI_SKIRMISH_PLAYERS,Players
 UI_SKIRMISH_OPTIONS,Options
 UI_SKIRMISH_YOU,You

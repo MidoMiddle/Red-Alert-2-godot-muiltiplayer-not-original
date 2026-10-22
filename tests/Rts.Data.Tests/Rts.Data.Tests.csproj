@@ -28,4 +28,11 @@
     <Compile Include="../../tools/Rts.MapTool/ReliefTestMap.cs" Link="Tools/ReliefTestMap.cs" />
   </ItemGroup>
 
+  <!-- The map previews and the map catalog of the client (docs/implementation/M7_maps.md, step 10): pure, without Godot. -->
+  <ItemGroup>
+    <Compile Include="../../game/scripts/Maps/MapPreview.cs" Link="Client/MapPreview.cs" />
+    <Compile Include="../../game/scripts/Maps/MapCatalog.cs" Link="Client/MapCatalog.cs" />
+    <Compile Include="../../game/scripts/Terrain/LandColors.cs" Link="Client/LandColors.cs" />
+  </ItemGroup>
+
 </Project>

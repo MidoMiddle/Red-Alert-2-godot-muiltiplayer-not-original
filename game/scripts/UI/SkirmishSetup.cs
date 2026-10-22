@@ -1,13 +1,16 @@
+using System.Collections.Generic;
 using Godot;
 using Rts.Client.App;
+using Rts.Client.Maps;
 
 namespace Rts.Client.UI;
 
 /// <summary>
 /// Skirmish setup, layout only (docs/menu/README.md, section 3.3; docs/implementation/M6_menus_skirmish.md, 4.3).
 /// Players and options are on the left, the map and the buttons on the right, as in the classic RA2 setup.
-/// Nothing works yet: the bot and the match setup need M5, the maps need M7. Only Back is active. Every other
-/// control is disabled and says "Coming soon" on hover.
+/// The map list works since M7 step 10: every map of <see cref="MapCatalog"/>, with its preview (cached, or drawn in the
+/// background) and a line of information. The rest waits for the bot and the match setup of M5: only Back is active, every
+/// other control is disabled and says "Coming soon" on hover.
 /// </summary>
 public partial class SkirmishSetup : Control
 {
@@ -22,15 +25,26 @@ public partial class SkirmishSetup : Control
     private const int OptionSeparation = 24;
     private const int RowSeparation = 12;
 
+    private List<MapEntry> _maps = [];
+    private MapPreviewView _preview = null!;
+    private Label _previewLabel = null!;
+    private Label _mapInfo = null!;
+
     public override void _Ready()
     {
         ScreenshotCapture.AttachIfRequested(this);
 
         GetNode<Label>("Column/Scroll/Stack/Header/HeaderLabel").Text = Tr("UI_SKIRMISH_HEADER");
         GetNode<Label>("Column/Scroll/Stack/MapLabel").Text = Tr("UI_SKIRMISH_MAP");
-        GetNode<VBoxContainer>("Column/Scroll/Stack/MapBox").AddChild(DisabledOption(ActionWidth, 0, Tr("UI_MAP_NONE")));
-        GetNode<Label>("Column/Scroll/Stack/Preview/PreviewLabel").Text = Tr("UI_MAP_PREVIEW");
-        GetNode<Label>("Column/Scroll/Stack/MapInfo").Text = Tr("UI_MAP_INFO_NONE");
+        _previewLabel = GetNode<Label>("Column/Scroll/Stack/Preview/PreviewLabel");
+        _mapInfo = GetNode<Label>("Column/Scroll/Stack/MapInfo");
+        // A long description wraps instead of widening the column.
+        _mapInfo.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _mapInfo.CustomMinimumSize = new Vector2(ActionWidth, 0);
+        _preview = new MapPreviewView { Name = "PreviewImage", MouseFilter = MouseFilterEnum.Ignore };
+        _preview.SetAnchorsPreset(LayoutPreset.FullRect);
+        GetNode<Panel>("Column/Scroll/Stack/Preview").AddChild(_preview);
+        BuildMapList();
 
         var content = GetNode<VBoxContainer>("Screen/Scroll/Content");
         content.AddChild(Caption(Tr("UI_SKIRMISH_PLAYERS")));
@@ -64,6 +78,60 @@ public partial class SkirmishSetup : Control
         {
             OnBackPressed();
         }
+    }
+
+    /// <summary>The maps of the catalog in a dropdown; the first one is shown. Broken map files go to the log.</summary>
+    private void BuildMapList()
+    {
+        var box = GetNode<VBoxContainer>("Column/Scroll/Stack/MapBox");
+        var (maps, errors) = MapCatalog.Load(MapPreviews.ReadMapFiles());
+        foreach (var error in errors)
+        {
+            GD.PushWarning($"Map left out: {error}");
+        }
+
+        _maps = maps;
+        if (_maps.Count == 0)
+        {
+            box.AddChild(DisabledOption(ActionWidth, 0, Tr("UI_MAP_NONE")));
+            _previewLabel.Text = Tr("UI_MAP_PREVIEW");
+            _mapInfo.Text = Tr("UI_MAP_INFO_NONE");
+            return;
+        }
+
+        var list = new OptionButton { Name = "MapList", CustomMinimumSize = new Vector2(ActionWidth, FieldHeight) };
+        foreach (var entry in _maps)
+        {
+            list.AddItem(entry.Map.Name);
+        }
+
+        list.ItemSelected += index => ShowMap((int)index);
+        box.AddChild(list);
+        ShowMap(0);
+    }
+
+    /// <summary>Shows the preview of a map: from the cache at once, or a placeholder until the background drawing is done.</summary>
+    private async void ShowMap(int index)
+    {
+        var entry = _maps[index];
+        var map = entry.Map;
+        _mapInfo.Text = string.Format(Tr("UI_MAP_INFO"), map.Name, map.Width, map.Height, map.Players)
+            + (map.Description.Length > 0 ? "\n" + map.Description : "");
+        var texture = MapPreviews.TryLoad(entry);
+        if (texture is null)
+        {
+            _preview.Show(null, null);
+            _previewLabel.Text = Tr("UI_MAP_PREVIEW_RENDERING");
+            texture = await MapPreviews.RenderAsync(entry);
+            if (!IsInsideTree() || _maps.IndexOf(entry) != GetNode<OptionButton>("Column/Scroll/Stack/MapBox/MapList").Selected)
+            {
+                // The player picked another map meanwhile; the picture is in the cache for later.
+                return;
+            }
+        }
+
+        _previewLabel.Text = "";
+        _preview.Show(texture, map);
     }
 
     /// <summary>
