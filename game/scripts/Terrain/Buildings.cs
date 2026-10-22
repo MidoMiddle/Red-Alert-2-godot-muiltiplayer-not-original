@@ -7,9 +7,8 @@ namespace Rts.Client.Terrain;
 /// Symbolic buildings (docs/implementation/conventions.md, section 12; M7_maps.md, 4.8): a block over the footprint, beige for
 /// civilian houses and grey-teal for tech buildings, with a mark of their own — a tower on the oil derrick, a white cross on
 /// the hospital, a pale runway on the airfield — and a band in the owner's colour on a building of a player. The buildings
-/// players place (M3 step 6) are steel-grey blocks, taller for a larger footprint, that rise out of the ground while they grow.
-/// The footprint sinks a little into the ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a
-/// building is placed or falls) and every tick a building grows, which is rare.
+/// players place are drawn by <see cref="PlayerBuildings"/> (M3 step 13), one view each. The footprint sinks a little into the
+/// ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a building is placed or falls), which is rare.
 /// </summary>
 public partial class Buildings : Node3D
 {
@@ -18,38 +17,19 @@ public partial class Buildings : Node3D
 
     private static readonly Color Civilian = new(0.78f, 0.7f, 0.55f);
     private static readonly Color Tech = new(0.45f, 0.58f, 0.6f);
-    private static readonly Color Base = new(0.55f, 0.57f, 0.62f);
 
     private object? _builtMap;
     private int _builtVersion = -1;
-    private long _builtGrowth = -1;
 
     public override void _Process(double delta)
     {
         // The map of the terrain: a match's, or the editor's (M7 step 12), which has no world and shows its start buildings.
         var map = GetParent<TerrainBuilder>().Map;
         var world = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World;
-        var growth = Growth(world);
-        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion || growth != _builtGrowth)
+        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion)
         {
-            _builtGrowth = growth;
             Rebuild(map, world);
         }
-    }
-
-    /// <summary>A number that changes whenever a building of a player grows a tick: the sum of what is left to grow.</summary>
-    private static long Growth(GameWorld? world)
-    {
-        long growth = 0;
-        foreach (var entity in world?.Entities ?? [])
-        {
-            if (entity is Building { IsAlive: true, Def: not null } building)
-            {
-                growth += building.BuildUpLeft + 1;
-            }
-        }
-
-        return growth;
     }
 
     private void Rebuild(Rts.Simulation.Map.MapGrid map, GameWorld? world)
@@ -77,22 +57,7 @@ public partial class Buildings : Node3D
             {
                 Add(building.Kind, building.Cell, building.Owner);
             }
-            else if (entity is Building { IsAlive: true } placed)
-            {
-                AddPlaced(placed);
-            }
         }
-    }
-
-    /// <summary>A building of a player: a steel-grey block in the owner's band, as tall as its share of growing.</summary>
-    private void AddPlaced(Building building)
-    {
-        var height = (0.35f + 0.2f * Mathf.Max(building.Width, building.Height)) * Mathf.Max(0.05f, building.BuildUpPermille / 1000f);
-        var centre = new Vector3(building.Cell.X + building.Width / 2f, 0, building.Cell.Y + building.Height / 2f);
-        var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
-        var size = new Vector3(building.Width - 2 * Margin, height + Sink, building.Height - 2 * Margin);
-        Box(size, centre + new Vector3(0, ground + (height - Sink) / 2, 0), Base);
-        Box(new Vector3(size.X + 0.02f, 0.08f, size.Z + 0.02f), centre + new Vector3(0, ground + height - 0.1f, 0), OwnerColor(building.Owner));
     }
 
     private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner)
@@ -133,7 +98,8 @@ public partial class Buildings : Node3D
         }
     }
 
-    private static Color OwnerColor(PlayerId owner) => owner.Value switch
+    /// <summary>The colour of a player's band.</summary>
+    internal static Color OwnerColor(PlayerId owner) => owner.Value switch
     {
         1 => new Color(0.2f, 0.45f, 0.95f),
         2 => new Color(0.9f, 0.25f, 0.2f),

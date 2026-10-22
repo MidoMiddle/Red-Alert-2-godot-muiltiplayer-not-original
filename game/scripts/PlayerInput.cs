@@ -6,6 +6,7 @@ using Rts.Client.App;
 using Rts.Client.Controls;
 using Rts.Client.Hud;
 using Rts.Client.Orders;
+using Rts.Client.Terrain;
 using Rts.Client.UI;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
@@ -79,6 +80,9 @@ public partial class PlayerInput : Node
     /// <summary>Map cell under the mouse pointer, or null off the map. Shown on the debug panel.</summary>
     public CellPos? CellUnderPointer { get; private set; }
 
+    /// <summary>The point of the ground under the mouse pointer, or null off the map: the placement preview follows it.</summary>
+    public WorldPos? PointerGround { get; private set; }
+
     /// <summary>Whether a building is being placed (V or the sidebar): a click places the host's building type.</summary>
     public bool BuildArmed => _interpreter.BuildArmed;
 
@@ -125,6 +129,7 @@ public partial class PlayerInput : Node
         _pauseMenu = GetNode<PauseMenu>("../PauseMenu");
         var settings = AppSettings.Instance?.Values ?? SettingsValues.Defaults;
         _interpreter = new InputInterpreter(settings.Scheme, settings.CameraDrag);
+        AddChild(new PlacementGhost { Name = "PlacementGhost" });
         var boxLayer = new CanvasLayer { Name = "SelectionBox", Layer = 5 };
         boxLayer.AddChild(_box);
         AddChild(boxLayer);
@@ -158,9 +163,12 @@ public partial class PlayerInput : Node
             Input.IsKeyPressed(Key.Alt),
             Input.IsKeyPressed(Key.Ctrl) || Input.IsKeyPressed(Key.Meta));
         CellUnderPointer = context.Ground?.ToCell();
+        PointerGround = context.Ground;
         Hovered = context.Target.Kind == PointerTargetKind.Ground ? null : context.Target.Unit;
         // Over the sidebar and the menus the plain arrow.
-        CursorSet.Show(GetViewport().GuiGetHoveredControl() is null ? CursorChoice.For(context, AnyCanEnter(context.Ground)) : CursorKind.Normal);
+        CursorSet.Show(GetViewport().GuiGetHoveredControl() is null
+            ? CursorChoice.For(context, AnyCanEnter(context.Ground), Tool, SpotOf(context))
+            : CursorKind.Normal);
     }
 
     /// <summary>
@@ -525,6 +533,9 @@ public partial class PlayerInput : Node
                     }
 
                     break;
+                case DeployUnit deploy when !_host.IsPlayback:
+                    _host.IssueDeploy([deploy.Unit]);
+                    break;
                 case SellBuilding sell when !_host.IsPlayback:
                     _host.IssueSell(sell.Position.ToCell());
                     break;
@@ -697,16 +708,58 @@ public partial class PlayerInput : Node
         }
     }
 
-    private PointerContext Context(ScreenPoint at, bool shift, bool alt, bool ctrl) =>
-        new(
+    private PointerContext Context(ScreenPoint at, bool shift, bool alt, bool ctrl)
+    {
+        var target = PickTarget(at);
+        return new(
             GroundAt(at),
-            PickTarget(at),
+            target,
             shift,
             !Selection.IsEmpty,
             alt,
             ctrl,
             WaypointMode: WaypointArmed || WaypointHeld(),
-            HasWaypoints: !Waypoints.IsEmpty);
+            HasWaypoints: !Waypoints.IsEmpty,
+            TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && IsMcv(target.Unit, out _));
+    }
+
+    /// <summary>Whether the unit is an MCV of the local player's faction.</summary>
+    private bool IsMcv(EntityId id, out Unit mcv)
+    {
+        var world = _host.Simulation.World;
+        if (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit
+            && unit.Archetype.Id == world.Player(SimulationHost.LocalPlayer).Faction.Mcv)
+        {
+            mcv = unit;
+            return true;
+        }
+
+        mcv = null!;
+        return false;
+    }
+
+    /// <summary>What lies under the pointer for the cursors of the base (M3 step 13).</summary>
+    private PointerSpot SpotOf(PointerContext context)
+    {
+        var world = _host.Simulation.World;
+        var player = SimulationHost.LocalPlayer;
+        var building = context.Ground is { } ground ? world.BuildingAt(ground.ToCell()) : null;
+        var own = building is { IsAlive: true, Def: not null } && building.Owner == player;
+        var fits = false;
+        if (context.TargetDeploys && IsMcv(context.Target.Unit, out var mcv)
+            && world.Rules.Database.TryGetBuilding(world.Player(player).Faction.ConstructionYard, out var yard))
+        {
+            var corner = PlacementPreview.CornerOf(yard.Footprint, mcv.Position);
+            fits = PlacementRules.Check(world, player, yard, corner, needsBase: false, ignoreUnit: mcv.Id) == PlacementProblem.None;
+        }
+
+        return new PointerSpot(
+            own,
+            own && building!.Hp < building.MaxHp,
+            context.Ground is { } at && !world.Map.OreAt(at.ToCell()).IsEmpty,
+            Selection.Units.Any(id => world.TryGet(id, out var entity) && entity is Unit { Harvester: not null }),
+            fits);
+    }
 
     /// <summary>Whether Z is held on its own: with Ctrl, Shift, Alt or Meta it is not the waypoint key.</summary>
     private static bool WaypointHeld() =>

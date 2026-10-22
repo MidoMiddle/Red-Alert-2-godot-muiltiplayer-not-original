@@ -63,6 +63,7 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <param name="DoubleClick">Whether this press is the second one of a double click.</param>
 /// <param name="WaypointMode">Whether the waypoints mode is on (the command bar's flag, or Z held): an order adds a waypoint instead.</param>
 /// <param name="HasWaypoints">Whether waypoints are laid out and not sent yet: an order without Z sends them.</param>
+/// <param name="TargetDeploys">Whether the unit under the pointer is an own MCV already selected: a click deploys it (M3 step 13).</param>
 public readonly record struct PointerContext(
     WorldPos? Ground,
     PointerTarget Target,
@@ -72,7 +73,8 @@ public readonly record struct PointerContext(
     bool Ctrl = false,
     bool DoubleClick = false,
     bool WaypointMode = false,
-    bool HasWaypoints = false);
+    bool HasWaypoints = false,
+    bool TargetDeploys = false);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
@@ -81,6 +83,9 @@ public sealed record SelectUnit(EntityId Unit) : Intent;
 
 /// <summary>Add the unit to the selection, or take it out if it is selected (Shift + click).</summary>
 public sealed record ToggleUnit(EntityId Unit) : Intent;
+
+/// <summary>Deploy the MCV: a click on an own MCV that is already selected, as in RA2 (M3 step 13).</summary>
+public sealed record DeployUnit(EntityId Unit) : Intent;
 
 /// <summary>A selection box started at <paramref name="From"/>: the left button was dragged past <see cref="InputInterpreter.ClickSlop"/>.</summary>
 public sealed record BoxStarted(ScreenPoint From) : Intent;
@@ -452,6 +457,8 @@ public sealed class InputInterpreter
                 return new Intent[] { new SelectSameType(context.Target.Unit, context.Shift) };
             case PointerTargetKind.OwnUnit when context.Shift:
                 return new Intent[] { new ToggleUnit(context.Target.Unit) };
+            case PointerTargetKind.OwnUnit when context.TargetDeploys:
+                return new Intent[] { new DeployUnit(context.Target.Unit) };
             case PointerTargetKind.OwnUnit:
                 return new Intent[] { new SelectUnit(context.Target.Unit) };
             case PointerTargetKind.Ground when _scheme == ControlScheme.Modern:

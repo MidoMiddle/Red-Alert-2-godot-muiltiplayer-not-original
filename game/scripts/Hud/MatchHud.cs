@@ -36,6 +36,9 @@ public partial class MatchHud : CanvasLayer
         sidebar.StatsRequested += stats.Toggle;
         sidebar.Setup(PlayerFaction, host.Simulation.World.Player(SimulationHost.LocalPlayer).Credits);
         sidebar.Bind(host, player);
+        var notices = new Notifications { Name = "Notifications" };
+        AddChild(notices);
+        notices.Bind(host);
         stats.Setup(0, 0);
         bar.Bind(player);
         bar.Requested += button => player.RunCommand((CommandBarButton)button);

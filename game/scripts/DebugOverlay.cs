@@ -67,7 +67,7 @@ public partial class DebugOverlay : CanvasLayer
             DescribeQueues(simulation.World, simulation.World.Player(SimulationHost.LocalPlayer)) +
             DescribeTool() +
             (_host.Notice.Length > 0 ? $"base: {_host.Notice}\n" : "") +
-            DescribeCell(simulation.World, _input.CellUnderPointer) + "\n" +
+            DescribeCell(simulation.World, _input.CellUnderPointer) + $" · cursor {CursorSet.Shown?.ToString() ?? "-"}\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
             (_cellOverlay is null ? "" : _cellOverlay.Description + "\n") +

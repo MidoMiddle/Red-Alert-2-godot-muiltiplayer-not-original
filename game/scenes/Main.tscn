@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
 [ext_resource type="Script" path="res://scripts/SimulationHost.cs" id="2_host"]
@@ -10,6 +10,7 @@
 [ext_resource type="Environment" path="res://assets/environments/winter.tres" id="8_winter"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="9_pause"]
 [ext_resource type="PackedScene" path="res://scenes/hud/Hud.tscn" id="10_hud"]
+[ext_resource type="Script" path="res://scripts/Units/HarvesterMarks.cs" id="11_marks"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -43,6 +44,9 @@ script = ExtResource("7_terrain")
 
 [node name="UnitsRoot" type="Node3D" parent="."]
 script = ExtResource("4_units")
+
+[node name="HarvesterMarks" type="Node3D" parent="."]
+script = ExtResource("11_marks")
 
 [node name="PlayerInput" type="Node" parent="."]
 script = ExtResource("5_input")

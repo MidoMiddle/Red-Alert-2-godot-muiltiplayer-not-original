@@ -49,6 +49,7 @@ public partial class TerrainBuilder : Node3D
         (_builtMap, _builtVersion) = (map, map.Version);
         AddChild(new MapObjects { Name = "MapObjects" });
         AddChild(new Buildings { Name = "Buildings" });
+        AddChild(new PlayerBuildings { Name = "PlayerBuildings" });
         AddChild(new OreField { Name = "OreField" });
     }
 

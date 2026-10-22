@@ -47,5 +47,47 @@ public sealed class CursorChoiceTests
         Assert.Equal(CursorKind.Move, CursorChoice.For(Context(Ground, selected: true) with { Shift = true }, anyCanEnter: true));
     }
 
+    [Fact]
+    public void The_sell_mode_shows_the_dollar_over_an_own_building_only()
+    {
+        Assert.Equal(CursorKind.Sell, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Sell, new PointerSpot(OwnBuilding: true)));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Sell));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(OwnUnit, selected: true), true, PointerTool.Sell));
+    }
+
+    [Fact]
+    public void The_repair_mode_shows_the_wrench_over_an_own_damaged_building_only()
+    {
+        Assert.Equal(CursorKind.Repair, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Repair, new PointerSpot(OwnBuilding: true, Damaged: true)));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Repair, new PointerSpot(OwnBuilding: true)));
+    }
+
+    [Fact]
+    public void Placing_keeps_the_arrow_the_preview_shows_the_rest()
+    {
+        Assert.Equal(CursorKind.Normal, CursorChoice.For(Context(OwnUnit, selected: true), false, PointerTool.Build, new PointerSpot(Ore: true, Harvesters: true)));
+    }
+
+    [Fact]
+    public void A_selected_mcv_shows_deploy_where_it_fits_and_forbidden_where_not()
+    {
+        var mcv = Context(OwnUnit, selected: true) with { TargetDeploys = true };
+
+        Assert.Equal(CursorKind.Deploy, CursorChoice.For(mcv, true, spot: new PointerSpot(DeployFits: true)));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(mcv, true));
+        // Shift adds and takes out of the selection; Z gives a waypoint.
+        Assert.Equal(CursorKind.Select, CursorChoice.For(mcv with { Shift = true }, true, spot: new PointerSpot(DeployFits: true)));
+        Assert.Equal(CursorKind.Waypoint, CursorChoice.For(mcv with { WaypointMode = true }, true, spot: new PointerSpot(DeployFits: true)));
+    }
+
+    [Fact]
+    public void Ore_shows_the_harvest_cursor_when_harvesters_are_selected()
+    {
+        Assert.Equal(CursorKind.Harvest, CursorChoice.For(Context(Ground, selected: true), true, spot: new PointerSpot(Ore: true, Harvesters: true)));
+        Assert.Equal(CursorKind.Move, CursorChoice.For(Context(Ground, selected: true), true, spot: new PointerSpot(Ore: true)));
+        Assert.Equal(CursorKind.AttackMove, CursorChoice.For(Context(Ground, selected: true) with { Ctrl = true, Shift = true }, true, spot: new PointerSpot(Ore: true, Harvesters: true)));
+        Assert.Equal(CursorKind.Normal, CursorChoice.For(Context(Ground, selected: false), true, spot: new PointerSpot(Ore: true, Harvesters: true)));
+    }
+
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);
 }

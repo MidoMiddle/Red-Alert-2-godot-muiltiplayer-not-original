@@ -11,7 +11,7 @@ namespace Rts.Client.App;
 /// at the keyboard. Started with <c>--input-script &lt;path&gt;</c> after <c>--</c>. One command per line; empty lines and lines that
 /// start with <c>#</c> are skipped: <c>wait N</c>, <c>node NAME</c> (presses a button), <c>click|down|up BUTTON X Y [MODIFIERS]</c>
 /// (BUTTON is left, right or middle), <c>move X Y</c> (the system pointer moves there too), <c>key NAME</c> (a Godot key name), <c>keydown NAME</c> and <c>keyup NAME</c>
-/// (hold and release a key, a modifier included), <c>shot PATH</c> (saves a PNG), <c>log TEXT</c>. MODIFIERS are any of
+/// (hold and release a key, a modifier included), <c>shot PATH</c> (saves a PNG), <c>cursors PATH</c> (saves every cursor side by side, M3 step 13), <c>log TEXT</c>. MODIFIERS are any of
 /// <c>shift</c>, <c>ctrl</c>, <c>alt</c>, <c>meta</c>, added to the modifiers held with <c>keydown</c>. X and Y are in the game's
 /// 1920 x 1080 base space, whatever the window size is. The run ends with exit code 0 after the last line.
 /// </summary>
@@ -121,6 +121,12 @@ public partial class InputScript : Node
                 {
                     var error = GetViewport().GetTexture().GetImage().SavePng(parts[1]);
                     GD.Print($"[input-script] saved {parts[1]}: {error}");
+                    break;
+                }
+            case "cursors":
+                {
+                    var error = Rts.Client.Controls.CursorSet.Sheet().SavePng(parts[1]);
+                    GD.Print($"[input-script] saved cursors {parts[1]}: {error}");
                     break;
                 }
             case "log":

@@ -74,7 +74,11 @@ public static class PlacementRules
         return needsBase && !NearBase(world, player, def, cell, far) ? PlacementProblem.TooFar : PlacementProblem.None;
     }
 
-    private static PlacementProblem CellProblem(GameWorld world, CellPos cell, int level, EntityId ignoreUnit)
+    /// <summary>
+    /// The problem of one cell of a footprint whose north-west cell stands at <paramref name="level"/>: taken, land, level, ore, units.
+    /// The client colours each cell of the footprint by it.
+    /// </summary>
+    public static PlacementProblem CellProblem(GameWorld world, CellPos cell, int level, EntityId ignoreUnit = default)
     {
         var map = world.Map;
         if (map.IsBlocked(cell) || map.HasBuilding(cell) || map.BridgeAt(cell) is not null || HasStandingObject(map, cell))

@@ -88,6 +88,12 @@ public partial class SimulationHost : Node
 
     public GameSimulation Simulation { get; private set; } = null!;
 
+    /// <summary>
+    /// Every event of a tick, right after it, live and in playback (M3 step 13): the views of buildings, the effects and the
+    /// notifications listen here instead of reading the events themselves.
+    /// </summary>
+    public event Action<SimEvent>? EventRaised;
+
     public bool IsPlayback => _playback is not null;
 
     public bool Paused { get; set; }
@@ -324,11 +330,10 @@ public partial class SimulationHost : Node
     public void IssuePlaceBuilding(WorldPos position, bool line = false)
     {
         var footprint = Data.Database.Buildings[BuildIndex].Footprint;
-        var centre = position.ToCell();
-        var cell = new CellPos(centre.X - (footprint.Width - 1) / 2, centre.Y - (footprint.Height - 1) / 2);
+        var cell = PlacementPreview.CornerOf(footprint, position);
         if (footprint.Width == 1 && footprint.Height == 1 && line && _lastWall is { } from)
         {
-            Issue(new PlaceWallsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, WallLine(from, cell)));
+            Issue(new PlaceWallsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, PlacementPreview.WallLine(from, cell)));
         }
         else
         {
@@ -354,24 +359,8 @@ public partial class SimulationHost : Node
     // The cell of the last one-cell building placed with the debug build: a Shift + click draws a wall line from it.
     private CellPos? _lastWall;
 
-    /// <summary>
-    /// The cells of a wall line from <paramref name="from"/> (left out: it is built) to <paramref name="to"/>: straight along the longer
-    /// axis, or a diagonal when both are equal, 64 cells at most.
-    /// </summary>
-    public static ImmutableArray<CellPos> WallLine(CellPos from, CellPos to)
-    {
-        var (dx, dy) = (to.X - from.X, to.Y - from.Y);
-        var diagonal = Math.Abs(dx) == Math.Abs(dy);
-        var (stepX, stepY) = diagonal ? (Math.Sign(dx), Math.Sign(dy)) : Math.Abs(dx) > Math.Abs(dy) ? (Math.Sign(dx), 0) : (0, Math.Sign(dy));
-        var length = Math.Min(Math.Max(Math.Abs(dx), Math.Abs(dy)), PlaceWallsCommand.MaxCells);
-        var cells = ImmutableArray.CreateBuilder<CellPos>(length);
-        for (var i = 1; i <= length; i++)
-        {
-            cells.Add(new CellPos(from.X + stepX * i, from.Y + stepY * i));
-        }
-
-        return cells.MoveToImmutable();
-    }
+    /// <summary>The cell of the last wall placed by a click, where a Shift + click line starts; the preview draws the line from it.</summary>
+    public CellPos? LastWall => _lastWall;
 
     /// <summary>The sidebar (M3 step 12): orders <paramref name="count"/> of the item, or resumes it when it is on hold.</summary>
     public void IssueProduce(ProductionKind kind, int defIndex, int count) =>
@@ -604,6 +593,7 @@ public partial class SimulationHost : Node
         foreach (var simEvent in Simulation.LastTickEvents)
         {
             GD.Print($"[sim] {simEvent}");
+            EventRaised?.Invoke(simEvent);
             if (NoticeOf(simEvent) is { } notice)
             {
                 Notice = notice;

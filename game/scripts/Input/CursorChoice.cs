@@ -1,6 +1,6 @@
 namespace Rts.Client.Controls;
 
-/// <summary>The cursors of the game (docs/implementation/M2_unit_control.md, 4.14).</summary>
+/// <summary>The cursors of the game (docs/implementation/M2_unit_control.md, 4.14; M3_base_economy.md, 4.17).</summary>
 public enum CursorKind
 {
     Normal,
@@ -9,16 +9,61 @@ public enum CursorKind
     Forbidden,
     AttackMove,
     Waypoint,
+
+    /// <summary>The sell mode over an own building.</summary>
+    Sell,
+
+    /// <summary>The repair mode over an own damaged building.</summary>
+    Repair,
+
+    /// <summary>Over a selected MCV that can deploy where it stands.</summary>
+    Deploy,
+
+    /// <summary>Over ore while harvesters are selected: they go to work there.</summary>
+    Harvest,
 }
+
+/// <summary>
+/// What lies under the pointer beyond the unit picking of <see cref="PointerContext"/>, for the cursors of the base (M3 step 13).
+/// </summary>
+/// <param name="OwnBuilding">An own building of a player stands on the cell.</param>
+/// <param name="Damaged">That building has lost hit points.</param>
+/// <param name="Ore">The cell holds ore or gems.</param>
+/// <param name="Harvesters">The selection holds a harvester.</param>
+/// <param name="DeployFits">The MCV under the pointer (<see cref="PointerContext.TargetDeploys"/>) can deploy where it stands.</param>
+public readonly record struct PointerSpot(
+    bool OwnBuilding = false,
+    bool Damaged = false,
+    bool Ore = false,
+    bool Harvesters = false,
+    bool DeployFits = false);
 
 /// <summary>Which cursor to show for what is under the pointer. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CursorChoice
 {
     /// <param name="context">The pointer context, as the interpreter would get it on a press.</param>
     /// <param name="anyCanEnter">Whether at least one selected unit can enter the cell under the pointer.</param>
-    public static CursorKind For(PointerContext context, bool anyCanEnter)
+    /// <param name="tool">The armed tool: sell and repair have their own cursors, a placement keeps the arrow (the preview shows it).</param>
+    /// <param name="spot">What lies under the pointer for the cursors of the base.</param>
+    public static CursorKind For(PointerContext context, bool anyCanEnter, PointerTool tool = PointerTool.None, PointerSpot spot = default)
     {
-        if (context.Target.Kind == PointerTargetKind.OwnUnit && !context.WaypointMode && !(context.Ctrl && context.Shift))
+        switch (tool)
+        {
+            case PointerTool.Sell:
+                return spot.OwnBuilding ? CursorKind.Sell : CursorKind.Forbidden;
+            case PointerTool.Repair:
+                return spot.OwnBuilding && spot.Damaged ? CursorKind.Repair : CursorKind.Forbidden;
+            case PointerTool.Build:
+                return CursorKind.Normal;
+        }
+
+        var groundOrder = context.WaypointMode || (context.Ctrl && context.Shift);
+        if (context.TargetDeploys && !groundOrder && !context.Shift)
+        {
+            return spot.DeployFits ? CursorKind.Deploy : CursorKind.Forbidden;
+        }
+
+        if (context.Target.Kind == PointerTargetKind.OwnUnit && !groundOrder)
         {
             return CursorKind.Select;
         }
@@ -38,6 +83,11 @@ public static class CursorChoice
             return CursorKind.Waypoint;
         }
 
-        return context.Ctrl && context.Shift ? CursorKind.AttackMove : CursorKind.Move;
+        if (context.Ctrl && context.Shift)
+        {
+            return CursorKind.AttackMove;
+        }
+
+        return spot.Ore && spot.Harvesters ? CursorKind.Harvest : CursorKind.Move;
     }
 }

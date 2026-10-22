@@ -5,8 +5,8 @@ using Rts.Simulation.Map;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// The ore of a match (docs/implementation/M3_base_economy.md, 4.12, step 9): a yellow diamond on every cell of ore and a blue one on
-/// every cell of gems, larger the higher the stage. Rebuilt when the ore changes (<see cref="MapGrid.OreVersion"/>): it grows every
+/// The ore of a match (docs/implementation/M3_base_economy.md, 4.12, step 9): yellow diamonds on every cell of ore and blue ones on
+/// every cell of gems, one to four and larger the higher the stage (<see cref="OreCrystals"/>, step 13). Rebuilt when the ore changes (<see cref="MapGrid.OreVersion"/>): it grows every
 /// 30 seconds and the harvesters of step 10 take it.
 /// </summary>
 public partial class OreField : Node3D
@@ -41,11 +41,9 @@ public partial class OreField : Node3D
             for (var x = 0; x < map.Width; x++)
             {
                 var cell = map.OreAt(new Rts.Simulation.Geometry.CellPos(x, y));
-                if (!cell.IsEmpty)
+                foreach (var crystal in OreCrystals.Of(x, y, cell))
                 {
-                    var gem = cell.Kind == OreKind.Gems;
-                    var size = (gem ? 0.2f : 0.12f) + (cell.Stage + 1) * (gem ? 0.02f : 0.018f);
-                    (gem ? gems : ore).Add(Diamond(terrain, x, y, size));
+                    (cell.Kind == OreKind.Gems ? gems : ore).Add(Diamond(terrain, x + crystal.X - 0.5f, y + crystal.Z - 0.5f, crystal.Size));
                 }
             }
         }
@@ -54,8 +52,8 @@ public partial class OreField : Node3D
         AddDiamonds(this, "Gems", gems, GemColor);
     }
 
-    /// <summary>A diamond of <paramref name="size"/> standing on the middle of the cell.</summary>
-    public static Transform3D Diamond(TerrainHeights terrain, int x, int y, float size)
+    /// <summary>A diamond of <paramref name="size"/> standing on the middle of the cell (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    public static Transform3D Diamond(TerrainHeights terrain, float x, float y, float size)
     {
         var at = new Vector3(x + 0.5f, terrain.HeightAt(x + 0.5f, y + 0.5f) + size, y + 0.5f);
         return new Transform3D(new Basis(Vector3.Forward, Mathf.Pi / 4f).Scaled(new Vector3(size, size, size)), at);

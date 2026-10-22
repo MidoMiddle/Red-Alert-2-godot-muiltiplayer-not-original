@@ -130,6 +130,21 @@ public sealed class InputGestureTests
         Assert.Equal(PointerTool.None, input.Tool);
     }
 
+    [Theory]
+    [InlineData(ControlScheme.Classic)]
+    [InlineData(ControlScheme.Modern)]
+    public void A_click_on_a_selected_mcv_deploys_it_and_on_another_unit_selects(ControlScheme scheme)
+    {
+        var input = new InputInterpreter(scheme, cameraDrag: true);
+
+        input.Press(PointerButton.Left, Here, Context(OwnUnit, hasSelection: true) with { TargetDeploys = true });
+        Assert.Equal([new DeployUnit(Blue)], input.Release(PointerButton.Left));
+        input.Press(PointerButton.Left, Here, Context(OwnUnit, hasSelection: true));
+        Assert.Equal([new SelectUnit(Blue)], input.Release(PointerButton.Left));
+        input.Press(PointerButton.Left, Here, Context(OwnUnit, hasSelection: true) with { TargetDeploys = true, Shift = true });
+        Assert.Equal([new ToggleUnit(Blue)], input.Release(PointerButton.Left));
+    }
+
     [Fact]
     public void One_tool_at_a_time()
     {
