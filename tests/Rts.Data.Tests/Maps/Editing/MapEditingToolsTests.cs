@@ -87,6 +87,18 @@ public sealed class MapEditingToolsTests
     }
 
     [Fact]
+    public void A_road_stops_at_water()
+    {
+        var session = WithLake();
+
+        Stroke(session, EditTool.Road, Dot, null, (2, 12), (25, 12));
+
+        Assert.Equal(LandType.Road, session.Map.LandAt(new CellPos(8, 12)));
+        Assert.Equal(LandType.Deep, session.Map.LandAt(new CellPos(12, 12)));
+        Assert.Equal(LandType.Road, session.Map.LandAt(new CellPos(20, 12)));
+    }
+
+    [Fact]
     public void Ore_and_gems_go_on_dry_land_only()
     {
         var session = WithLake();

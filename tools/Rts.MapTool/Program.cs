@@ -10,6 +10,7 @@ using Rts.Simulation.Map;
 // dotnet run --project tools/Rts.MapTool -- generate <out.rtsmap> [--seed N] [--size 64|96|128|160] [--players 2|4]
 //     [--symmetry mirror|rotate180|rotate90] [--relief flat|hilly|mountainous] [--water none|rivers|lakes]
 //     [--forest low|medium|high] [--resources low|medium|high]       a random map (step 13)
+// dotnet run --project tools/Rts.MapTool -- ready-maps game/data/maps        write the four ready maps of step 14
 if (args.Length == 2 && args[0] == "check")
 {
     return Run(args[1], map =>
@@ -104,6 +105,20 @@ if (args.Length == 3 && args[0] == "convert")
     return 0;
 }
 
+if (args.Length == 2 && args[0] == "ready-maps")
+{
+    foreach (var file in Rts.MapTool.ReadyMaps.Files)
+    {
+        var map = Rts.MapTool.ReadyMaps.Build(file);
+        var path = Path.Combine(args[1], file + ".rtsmap");
+        File.WriteAllText(path, RtsMapWriter.Write(map));
+        Console.WriteLine($"wrote {path} · {map.Width}x{map.Height} · {map.Players} players · {map.Objects.Length} objects · {map.Bridges.Length} bridges · " +
+                          $"{map.Structures.Length} buildings · {MapValidator.Check(map).Count} warnings · hash {MapHasher.Hash(map)}");
+    }
+
+    return 0;
+}
+
 if (args.Length >= 2 && args[0] == "generate")
 {
     string Option(string name, string fallback)
@@ -137,7 +152,7 @@ if (args.Length >= 2 && args[0] == "generate")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options]");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | ready-maps <dir>");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

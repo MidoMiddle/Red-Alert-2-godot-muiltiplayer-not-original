@@ -264,8 +264,8 @@ public sealed class MapEditSession
                 PaintLand(_brush.Cells(Map, cell), _options.Land);
                 break;
             case EditTool.Road:
-                // A road is as wide as the brush, square whatever its shape.
-                PaintLand((_brush with { Shape = BrushShape.Square }).Cells(Map, cell), LandType.Road);
+                // A road is as wide as the brush, square whatever its shape; it stops at water (bridges cross it).
+                PaintLand((_brush with { Shape = BrushShape.Square }).Cells(Map, cell).FindAll(c => !IsWater(Map.LandAt(c))), LandType.Road);
                 break;
             case EditTool.Water:
                 PaintWater(_brush.Cells(Map, cell));

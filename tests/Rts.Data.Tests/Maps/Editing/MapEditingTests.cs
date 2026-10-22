@@ -265,8 +265,8 @@ public sealed class MapEditingTests
         var (maps, errors) = Rts.Client.Maps.MapCatalog.Load(files);
 
         Assert.Empty(errors);
-        Assert.Equal(new[] { "My hill", "Relief test", "Sandbox" }, maps.Select(m => m.Map.Name));
-        Assert.Equal("user://maps/my-hill.rtsmap", maps[0].File);
+        Assert.Equal(new[] { "Four Corners", "Frozen Crossing", "My hill", "Relief test", "Sandbox", "Taiga Front", "Twin Rivers" }, maps.Select(m => m.Map.Name));
+        Assert.Equal("user://maps/my-hill.rtsmap", maps[2].File);
         Assert.Equal(Rts.Client.Maps.MapCatalog.UserDirectory, UserMapPaths.UserDirectory);
     }
 }

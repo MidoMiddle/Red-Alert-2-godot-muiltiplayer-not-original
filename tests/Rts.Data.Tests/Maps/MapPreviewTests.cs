@@ -159,10 +159,11 @@ public sealed class MapPreviewTests
         var (maps, errors) = MapCatalog.Load(files);
 
         Assert.Empty(errors);
-        Assert.Equal(new[] { "Relief test", "Sandbox" }, maps.Select(m => m.Map.Name));
-        var relief = maps[0].Map;
+        Assert.Equal(new[] { "Four Corners", "Frozen Crossing", "Relief test", "Sandbox", "Taiga Front", "Twin Rivers" }, maps.Select(m => m.Map.Name));
+        var relief = maps[2].Map;
         var pixels = MapPreview.Render(relief);
         Assert.All(relief.Starts, start => Assert.Equal(Bytes(MapPreview.SlotColor(start.Slot)), Pixel(pixels, relief, start.Cell.X, start.Cell.Y)));
-        Assert.Equal(128 * 128 * 3, MapPreview.Render(maps[1].Map).Length);
+        Assert.Equal(128 * 128 * 3, MapPreview.Render(maps[3].Map).Length);
+        Assert.All(maps, m => Assert.Equal(m.Map.Width * m.Map.Height * 12, MapPreview.Render(m.Map).Length));
     }
 }

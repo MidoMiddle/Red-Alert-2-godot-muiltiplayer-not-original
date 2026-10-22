@@ -23,9 +23,10 @@
     <ProjectReference Include="../../src/Rts.Data/Rts.Data.csproj" />
   </ItemGroup>
 
-  <!-- The relief test map generator of the map tool (docs/implementation/M7_maps.md, step 2), checked against the committed file. -->
+  <!-- The relief test map (M7 step 2) and the ready maps (step 14) of the map tool, checked against the committed files. -->
   <ItemGroup>
     <Compile Include="../../tools/Rts.MapTool/ReliefTestMap.cs" Link="Tools/ReliefTestMap.cs" />
+    <Compile Include="../../tools/Rts.MapTool/ReadyMaps.cs" Link="Tools/ReadyMaps.cs" />
   </ItemGroup>
 
   <!-- The map previews and the map catalog of the client (docs/implementation/M7_maps.md, step 10): pure, without Godot. -->

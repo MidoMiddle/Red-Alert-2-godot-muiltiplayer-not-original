@@ -358,7 +358,16 @@ dotnet run --project tools/Rts.MapTool -- generate random.rtsmap --seed 1
 
 Параметры: `--size 64|96|128|160`, `--symmetry mirror|rotate180|rotate90` (у `rotate90` — 4 игрока), `--relief flat|hilly|mountainous`, `--water none|rivers|lakes`, `--forest low|medium|high`, `--resources low|medium|high`.
 
+Четыре готовые карты (M7 шаг 14) собирает сценарий; переписать их файлы (тест сверяет файлы со сценарием):
+
+```bash
+dotnet run --project tools/Rts.MapTool -- ready-maps game/data/maps
+```
+
+Сыграть готовую карту: `--map frozen-crossing`, `twin-rivers`, `taiga-front` или `four-corners` (команда в начале раздела 7).
+
 Что проверить:
+- [ ] Готовые карты: главное меню → **Skirmish** — шесть карт (Four Corners, Frozen Crossing, Relief test, Sandbox, Taiga Front, Twin Rivers), у каждой превью. Каждую из четырёх новых открыть в **Map Editor** (**Open**) — в **Checks** `No problems`; **Play** — отряды у стартов. Frozen Crossing: лёд посередине реки, два моста. Twin Rivers: плато с рампами между реками. Taiga Front: густой лес, деревня у перекрёстка, четыре старта. Four Corners: плато с нефтевышкой в центре, четыре базы по углам.
 - [ ] `generate random.rtsmap --seed 1` печатает `seed 1 · 64x64 · … 2 bridges … hash 7b1c56d0…`; ещё раз — тот же хеш; `--seed 2` — другой.
 - [ ] `passability` для `track`: рампы — `7` (75 %), стены и кромки обрывов — `#`, плато и площадка — `.`; для `foot` рампы — `8`, для `wheel` — `6`. На песочнице для `naval` открыта только глубокая вода озера, для `wheel` дороги — `+`.
 - [ ] `check` печатает `sandbox "Sandbox" 64x64 … objects 88 …` и хеш `6b62f7cf…`.
