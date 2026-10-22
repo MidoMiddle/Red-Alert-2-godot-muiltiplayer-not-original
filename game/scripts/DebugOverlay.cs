@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Rts.Client.App;
@@ -5,6 +6,7 @@ using Rts.Client.Controls;
 using Rts.Client.Debug;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
@@ -62,6 +64,7 @@ public partial class DebugOverlay : CanvasLayer
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   spawn {UnitTypes.IdOf(_host.SpawnType)}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             DescribePlayer(simulation.World.Player(SimulationHost.LocalPlayer)) + "\n" +
+            DescribeQueues(simulation.World, simulation.World.Player(SimulationHost.LocalPlayer)) +
             (_input.BuildArmed ? $"build {_host.BuildId}: click to place, V next type, Esc stop\n" : "") +
             (_host.Notice.Length > 0 ? $"base: {_host.Notice}\n" : "") +
             DescribeCell(simulation.World, _input.CellUnderPointer) + "\n" +
@@ -82,6 +85,34 @@ public partial class DebugOverlay : CanvasLayer
 
     /// <summary><c>cell 12,30 Rough · foot 90 track 90 wheel 75</c>; a tree or impassable land shows as such.</summary>
     /// <summary>The economy of a player (M3 step 5): "P1 credits 10000 · power 150/70 · tech 3 buildings, 0 units", "LOW POWER" in a deficit.</summary>
+    /// <summary>
+    /// The production queues of a player (M3 step 8), the busy ones only: "queues: building reactor 45% · infantry conscript 20% +2",
+    /// with "paused", "waits for money" or "ready"; empty when nothing is produced.
+    /// </summary>
+    private static string DescribeQueues(GameWorld world, PlayerState player)
+    {
+        var rules = world.Rules.Database;
+        var parts = new List<string>();
+        for (var category = ProductionCategory.Infantry; category <= ProductionCategory.Defense; category++)
+        {
+            var queue = player.Queue(category);
+            if (queue.Count == 0)
+            {
+                continue;
+            }
+
+            var item = queue[0];
+            var state = item.Ready ? "ready"
+                : item.Paused ? "paused"
+                : item.WaitingForFunds ? "waits for money"
+                : $"{item.Progress / (ProductionRules.TotalProgress(rules, item.Kind, item.DefIndex) / 100)}%";
+            parts.Add($"{category.ToString().ToLowerInvariant()} {ProductionRules.IdOf(rules, item.Kind, item.DefIndex)} {state}" +
+                      (queue.Count > 1 ? $" +{queue.Count - 1}" : ""));
+        }
+
+        return parts.Count == 0 ? "" : $"queues: {string.Join(" · ", parts)}\n";
+    }
+
     private static string DescribePlayer(PlayerState player)
     {
         var (units, buildings) = player.AvailableCount;

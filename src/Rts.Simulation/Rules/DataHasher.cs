@@ -83,6 +83,11 @@ public static class DataHasher
             hash.Add(building.BuildUp);
             hash.Add(building.Adjacent);
             hash.Add(building.ExtendsBase);
+            hash.Add(building.Produces.Length);
+            foreach (var category in building.Produces)
+            {
+                hash.Add((byte)category);
+            }
             hash.Add(building.ExitCell.HasValue);
             if (building.ExitCell is { } exit)
             {
@@ -101,6 +106,15 @@ public static class DataHasher
             Add(hash, faction.ConstructionYard);
             Add(hash, faction.Refinery);
             Add(hash, faction.Harvester);
+        }
+
+        hash.Add(rules.Economies.Length);
+        foreach (var economy in rules.Economies)
+        {
+            Add(hash, economy.Id);
+            hash.Add(economy.LowPowerMinRate.Raw);
+            hash.Add(economy.MultipleFactoryBonus.Raw);
+            hash.Add(economy.MaxFactoryRate.Raw);
         }
 
         return hash.Value;

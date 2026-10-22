@@ -69,3 +69,15 @@ public sealed record Deployed(int Tick, EntityId Unit, EntityId Building) : SimE
 
 /// <summary>The MCV could not turn into its construction yard where it stands, for <paramref name="Problem"/>.</summary>
 public sealed record CannotDeploy(int Tick, PlayerId Player, EntityId Unit, PlacementProblem Problem) : SimEvent(Tick);
+
+/// <summary>A building has been produced and waits to be placed (docs/implementation/M3_base_economy.md, 4.10).</summary>
+public sealed record ProductionReady(int Tick, PlayerId Player, int DefIndex) : SimEvent(Tick);
+
+/// <summary>A unit came out of <paramref name="Factory"/>.</summary>
+public sealed record UnitProduced(int Tick, PlayerId Player, EntityId Unit, EntityId Factory) : SimEvent(Tick);
+
+/// <summary>Production of a category stopped for want of credits; it goes on by itself when they come.</summary>
+public sealed record InsufficientFunds(int Tick, PlayerId Player, Rules.ProductionCategory Category) : SimEvent(Tick);
+
+/// <summary>An item left its queue, and <paramref name="Refund"/> credits, all that was paid for it, went back.</summary>
+public sealed record ProductionCancelled(int Tick, PlayerId Player, ProductionKind Kind, int DefIndex, int Refund) : SimEvent(Tick);

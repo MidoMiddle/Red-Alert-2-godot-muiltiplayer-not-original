@@ -14,4 +14,8 @@ public enum CommandType : byte
     DamageMapObject = 7,
     PlaceBuilding = 8,
     Deploy = 9,
+    Produce = 10,
+    PauseProduction = 11,
+    CancelProduction = 12,
+    SetRallyPoint = 13,
 }

@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v5, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v6, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -22,19 +22,26 @@ namespace Rts.Simulation.Commands;
 /// DamageMapObject: i32 cellX | i32 cellY | i32 amount
 /// PlaceBuilding: u16 defIndex | i32 cellX | i32 cellY
 /// Deploy:        i32 unit
+/// Produce:       u8 kind | u16 defIndex | u8 count
+/// PauseProduction, CancelProduction: u8 kind | u16 defIndex
+/// SetRallyPoint: i32 building | i32 x | i32 y
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
-/// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy.
+/// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy; v6 (M3 step 8) added Produce, PauseProduction,
+/// CancelProduction and SetRallyPoint.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 5;
+    public const int FormatVersion = 6;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
     private const int SpawnSize = 1 + PositionSize;
+
+    // u8 kind | u16 defIndex.
+    private const int ProductSize = 1 + 2;
 
     public static int GetSize(Command command) => command switch
     {
@@ -47,6 +54,9 @@ public static class CommandSerializer
         DamageMapObjectCommand => HeaderSize + PositionSize + 4,
         PlaceBuildingCommand => HeaderSize + 2 + PositionSize,
         DeployCommand => HeaderSize + 4,
+        ProduceCommand => HeaderSize + ProductSize + 1,
+        PauseProductionCommand or CancelProductionCommand => HeaderSize + ProductSize,
+        SetRallyPointCommand => HeaderSize + 4 + PositionSize,
         _ => throw UnknownCommand(command),
     };
 
@@ -113,6 +123,22 @@ public static class CommandSerializer
                 break;
             case DeployCommand deploy:
                 BinaryPrimitives.WriteInt32LittleEndian(payload, deploy.Unit.Value);
+                break;
+            case ProduceCommand produce:
+                WriteProduct(payload, produce.Kind, produce.DefIndex);
+                payload[ProductSize] = produce.Count is >= 0 and <= byte.MaxValue
+                    ? (byte)produce.Count
+                    : throw new ArgumentOutOfRangeException(nameof(command), produce.Count, "A count is 0…255.");
+                break;
+            case PauseProductionCommand pause:
+                WriteProduct(payload, pause.Kind, pause.DefIndex);
+                break;
+            case CancelProductionCommand cancel:
+                WriteProduct(payload, cancel.Kind, cancel.DefIndex);
+                break;
+            case SetRallyPointCommand rally:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, rally.Building.Value);
+                WritePosition(payload[4..], rally.Point);
                 break;
         }
 
@@ -212,6 +238,32 @@ public static class CommandSerializer
                 return new DeployCommand(player, tick, sequence, new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload)));
             }
 
+            case CommandType.Produce:
+            {
+                // Any kind, index and count are read as they are; CommandProcessor decides whether they are allowed.
+                Require(payload, ProductSize + 1);
+                bytesRead = HeaderSize + ProductSize + 1;
+                return new ProduceCommand(player, tick, sequence, (ProductionKind)payload[0], ReadIndex(payload), payload[ProductSize]);
+            }
+
+            case CommandType.PauseProduction:
+            case CommandType.CancelProduction:
+            {
+                Require(payload, ProductSize);
+                bytesRead = HeaderSize + ProductSize;
+                return type == CommandType.PauseProduction
+                    ? new PauseProductionCommand(player, tick, sequence, (ProductionKind)payload[0], ReadIndex(payload))
+                    : new CancelProductionCommand(player, tick, sequence, (ProductionKind)payload[0], ReadIndex(payload));
+            }
+
+            case CommandType.SetRallyPoint:
+            {
+                Require(payload, 4 + PositionSize);
+                bytesRead = HeaderSize + 4 + PositionSize;
+                var building = new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload));
+                return new SetRallyPointCommand(player, tick, sequence, building, ReadPosition(payload[4..]));
+            }
+
             default:
                 throw new InvalidDataException($"Unknown command type {(byte)type}.");
         }
@@ -267,6 +319,20 @@ public static class CommandSerializer
     }
 
     private static int UnitsSize(UnitsCommand command) => 2 + 4 * command.Units.Length;
+
+    /// <summary>Writes <c>u8 kind | u16 defIndex</c>.</summary>
+    private static void WriteProduct(Span<byte> destination, ProductionKind kind, int defIndex)
+    {
+        if (defIndex is < 0 or > ushort.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(defIndex), defIndex, "A definition index is 0…65535.");
+        }
+
+        destination[0] = (byte)kind;
+        BinaryPrimitives.WriteUInt16LittleEndian(destination[1..], (ushort)defIndex);
+    }
+
+    private static int ReadIndex(ReadOnlySpan<byte> payload) => BinaryPrimitives.ReadUInt16LittleEndian(payload[1..]);
 
     /// <summary>Writes <c>u16 count | i32 ids</c>; returns the bytes written.</summary>
     private static int WriteUnits(Span<byte> destination, UnitsCommand command)

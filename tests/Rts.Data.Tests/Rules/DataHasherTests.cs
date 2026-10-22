@@ -100,6 +100,7 @@ public sealed class DataHasherTests
         ("building build-up", Building(b => b with { BuildUp = b.BuildUp + 1 })),
         ("building adjacent", Building(b => b with { Adjacent = b.Adjacent + 1 })),
         ("building extends base", Building(b => b with { ExtendsBase = false })),
+        ("building produces", Building(b => b with { Produces = [ProductionCategory.Infantry] })),
         ("building exit x", Building(b => b with { ExitCell = new CellPos(2, 3) })),
         ("building exit y", Building(b => b with { ExitCell = new CellPos(1, 4) })),
         ("building no exit", Building(b => b with { ExitCell = null })),
@@ -114,8 +115,8 @@ public sealed class DataHasherTests
     public void The_hash_of_the_dataset_is_pinned()
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
-        // M3 step 6: the adjacent and extends_base of every building joined the encoding.
-        Assert.Equal(0x157ba6bdf36ecb92UL, Hash(Files()));
+        // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records.
+        Assert.Equal(0xd4678379802e8592UL, Hash(Files()));
     }
 
     [Fact]

@@ -135,7 +135,8 @@ Godot 4.7 по умолчанию встраивает окно игры в ре
 - [ ] В левом верхнем углу панель: `LIVE`, номер тика растёт, `ticks/s` около 15, есть FPS и `checksum`.
 - [ ] Под строкой `units …` — строка своего игрока: `P1 credits 10000 · power 0/0 · tech 1 buildings, 0 units` (деньги, выход/потребление энергии, сколько видов зданий и юнитов можно строить; при дефиците — `LOW POWER`).
 - [ ] **База (M3, шаги 6–7):** выдели MCV (крупная синяя коробка без башни) и нажми **D** — на его месте вырастает серая стройплощадка с синей полосой, на панели `base: placed construction_yard, growing`, затем `construction_yard ready` и `tech 3 buildings`.
-- [ ] **V** — `build reactor: click …`; клик по земле рядом со стройплощадкой (не дальше двух клеток) — реактор растёт около полутора секунд, потом `power 150/0`. **V** ещё раз выбирает следующее здание (по алфавиту). Клик далеко — `cannot place reactor: too far from the base`, на воду — `the ground takes no building`, на юнитов — `units in the way`. **Esc** выключает постройку.
+- [ ] **V** — `build reactor: click …` и строка `queues: building reactor N%`: реактор **производится** (M3, шаг 8), кредиты тают (600 за 25 секунд; **=** ускоряет игру). Готов — `reactor ready to place`; клик по земле рядом со стройплощадкой (не дальше двух клеток) — реактор растёт около полутора секунд, потом `power 150/0`. Клик до готовности — `cannot place reactor: it is not produced yet`. **V** ещё раз выбирает следующее здание (по алфавиту) и заказывает его, а незаконченный прежний заказ отменяется с возвратом (`cancelled …, N back`). Клик далеко — `cannot place reactor: too far from the base`, на воду — `the ground takes no building`, на юнитов — `units in the way`. **Esc** выключает постройку.
+- [ ] **Юниты (M3, шаг 8):** поставь казармы (V до `barracks`), потом **B** дважды-трижды до `spawn conscript`, **Esc**, и **U** — призывник производится (`queues: infantry conscript N%`) и выходит под казармами (`conscript out`). **Shift+U** — пять подряд, выходят по одному и встают рядом. Кончились деньги — `insufficient funds`, очередь ждёт.
 - [ ] Казармы до готового реактора — `its prerequisites are missing`. Больше потребителей, чем реакторов, — `LOW POWER`, и строка энергии с `LOW POWER`.
 - [ ] Отправь танк через место рядом с базой и, пока он едет, поставь на его пути здание — танк объезжает его.
 - [ ] MCV рядом с деревом или водой — **D** даёт `cannot deploy: …`, MCV остаётся.
@@ -407,10 +408,10 @@ dotnet run --project tools/Rts.MapTool -- rules tests/Rts.Data.Tests/Rules/Datas
 ```
 
 Что проверить:
-- [ ] `rules` печатает `units 8 · buildings 11 · weapons 0 · locomotors 6 · terrains 8 · factions 1` и `data hash a9af6eb92b354662`.
+- [ ] `rules` печатает `units 8 · buildings 11 · weapons 0 · locomotors 6 · terrains 8 · factions 1` и `data hash f66abef057f52dab`.
 - [ ] Песочница играется, как раньше. В `factions/union/units.yaml` у `heavy_tank` поставь `speed: 72` и запусти песочницу — тяжёлый танк едет вдвое быстрее. Верни `36`.
 - [ ] Испорть ключ в `shared/terrain.yaml` (например, `name` → `nmae`) и запусти песочницу из Терминала — в консоли `ERROR: [data] res://data/shared/terrain.yaml:строка:столбец: unknown key 'nmae' in …`, игра закрывается. Верни.
-- [ ] `rules tests/Rts.Data.Tests/Rules/Dataset` печатает `units 4 · buildings 4 · weapons 1 · locomotors 3 · terrains 2 · factions 1` и `data hash 157ba6bdf36ecb92`.
+- [ ] `rules tests/Rts.Data.Tests/Rules/Dataset` печатает `units 4 · buildings 4 · weapons 1 · locomotors 3 · terrains 2 · factions 1` и `data hash d4678379802e8592`.
 - [ ] Скопируй папку набора и сделай в копии три ошибки в разных файлах. Например:
   - в `factions/factions.yaml` — `harvester: harvestr`;
   - в `factions/union/buildings.yaml` у реактора — `prerequisites: [construction_yrd]`;

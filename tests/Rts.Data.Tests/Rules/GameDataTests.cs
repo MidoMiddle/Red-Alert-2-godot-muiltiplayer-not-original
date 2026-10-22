@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0xa9af6eb92b354662UL, GameDataFiles.Current.Hash);
+        Assert.Equal(0xf66abef057f52dabUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class GameDataTests
     [Fact]
     public void The_game_data_has_the_buildings_and_prerequisites_of_the_simulation_tests()
     {
-        // What power, technologies, placement and build-up read (M3 steps 5–6).
+        // What power, technologies, placement, build-up and production read (M3 steps 5–8).
         var data = GameDataFiles.Current.Database;
         var test = TestRules.Standard.Database;
 
@@ -77,9 +77,12 @@ public sealed class GameDataTests
             data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites))));
         Assert.Equal(test.Factions.Single(), data.Factions.Single() with { Name = test.Factions.Single().Name });
 
-        static (string, string, int, int, int, string, int, int, bool) Shape(Rts.Simulation.Rules.BuildingDef building) =>
+        Assert.Equal(test.Economies.Single(), data.Economies.Single());
+
+        static (string, string, int, int, int, string, int, int, bool, string, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
             (building.Id, building.Faction, building.Footprint.Width, building.Footprint.Height, building.Power,
-             string.Join(",", building.Prerequisites), building.BuildUp, building.Adjacent, building.ExtendsBase);
+             string.Join(",", building.Prerequisites), building.BuildUp, building.Adjacent, building.ExtendsBase,
+             string.Join(",", building.Produces), building.ExitCell?.ToString() ?? "");
     }
 
     [Fact]
@@ -97,6 +100,37 @@ public sealed class GameDataTests
         Assert.Equal(("", 0, 0), (error.FileName, error.Line, error.Column));
         Assert.Equal("the engine needs unit 'heavy_tank', which is not defined", error.Reason);
         Assert.Equal(error.Reason, error.ToString());
+    }
+
+    [Fact]
+    public void The_engine_needs_one_economy_record()
+    {
+        var files = Files().Where(file => file.FileName != "shared/economy.yaml").ToList();
+
+        var error = Assert.Single(Assert.Throws<RulesException>(() => GameData.Load(files)).Errors);
+
+        Assert.Equal("the engine needs exactly one economy record, and there are 0", error.Reason);
+    }
+
+    [Theory]
+    [InlineData("low_power_min_rate: 25%", "low_power_min_rate: 120%", "'low_power_min_rate' of 'economy' must be 0% to 100%")]
+    [InlineData("multiple_factory_bonus: 50%", "multiple_factory_bonus: -10%", "'-10%' must be a percentage such as 125%")]
+    [InlineData("max_factory_rate: 300%", "max_factory_rate: 50%", "'max_factory_rate' of 'economy' must be 100% or more")]
+    public void An_economy_rate_out_of_its_range_is_reported(string text, string replacement, string reason)
+    {
+        var error = Assert.Single(ErrorsWith("shared/economy.yaml", text, replacement));
+
+        Assert.Equal(reason, error.Reason);
+    }
+
+    [Theory]
+    [InlineData("produces: [infantry]", "produces: [aircraft]", "'aircraft' must be one of building, defense, infantry, vehicle")]
+    [InlineData("produces: [infantry]", "produces: [infantry, infantry]", "category 'infantry' repeats")]
+    public void A_wrong_category_of_a_factory_is_reported(string text, string replacement, string reason)
+    {
+        var error = Assert.Single(ErrorsWith("factions/union/buildings.yaml", text, replacement));
+
+        Assert.Contains(reason, error.Reason);
     }
 
     [Fact]

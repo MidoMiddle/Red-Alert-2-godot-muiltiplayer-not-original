@@ -10,7 +10,7 @@ using Rts.Simulation.Map;
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v11, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v12, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion | u64 dataHash
 /// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 startingCredits | i32 tickCount
@@ -25,11 +25,12 @@ namespace Rts.Simulation.Replays;
 /// i32 hp per segment from the first end each); v8 (M7 step 7) adds the buildings of the start after the bridges (u32 count, then
 /// u8 kind | u16 x | u16 y | u8 owner | u8 facing each); v9 (M3 step 3) adds the hash of the data files after the rules version
 /// (<c>DataHasher</c>, docs/implementation/M3_base_economy.md, 4.4); v10 (M3 step 5) adds the starting credits of the players
-/// after the hash interval; v11 (M3 step 6) marks command format v5 inside (PlaceBuilding, Deploy).
+/// after the hash interval; v11 (M3 step 6) marks command format v5 inside (PlaceBuilding, Deploy); v12 (M3 step 8) marks command
+/// format v6 inside (production and rally points).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 11;
+    public const ushort FormatVersion = 12;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

@@ -30,6 +30,9 @@ public enum PlacementProblem : byte
 
     /// <summary>The player may not build this yet: the prerequisites are missing (checked by the command, not here).</summary>
     NotAvailable = 7,
+
+    /// <summary>The building has not been produced yet: it is not ready in its queue (checked by the command, not here).</summary>
+    NotReady = 8,
 }
 
 /// <summary>

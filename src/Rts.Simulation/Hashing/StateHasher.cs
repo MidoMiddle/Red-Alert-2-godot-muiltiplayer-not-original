@@ -37,9 +37,25 @@ public static class StateHasher
         AddTaken(hash, world.Reservations.InfantrySpots);
 
         // Rules v19 (M3 step 5): the credits of every player. Power and technologies follow from the buildings, not hashed.
+        // Rules v21 (step 8): the production queues.
         foreach (var player in world.Players)
         {
             hash.Add(player.Credits);
+            for (var category = Rules.ProductionCategory.Infantry; category <= Rules.ProductionCategory.Defense; category++)
+            {
+                var queue = player.Queue(category);
+                hash.Add(queue.Count);
+                foreach (var item in queue)
+                {
+                    hash.Add((byte)item.Kind);
+                    hash.Add(item.DefIndex);
+                    hash.Add(item.Progress);
+                    hash.Add(item.Paid);
+                    hash.Add(item.Paused);
+                    hash.Add(item.WaitingForFunds);
+                    hash.Add(item.Ready);
+                }
+            }
         }
 
         hash.Add(world.Entities.Count);
@@ -111,6 +127,14 @@ public static class StateHasher
                 // Rules v19 (M3 step 5): the definition of a building of a player; v20 (step 6): the ticks it still grows.
                 hash.Add(building.DefIndex);
                 hash.Add(building.BuildUpLeft);
+
+                // Rules v21 (step 8): the rally point of a factory.
+                hash.Add(building.RallyPoint.HasValue);
+                if (building.RallyPoint is { } rally)
+                {
+                    hash.Add(rally.X);
+                    hash.Add(rally.Y);
+                }
                 break;
 
             default:

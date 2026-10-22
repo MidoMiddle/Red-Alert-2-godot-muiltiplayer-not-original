@@ -80,6 +80,9 @@ public sealed class Building : Entity
     /// <summary>How far the building has grown, 0…1000 (per mille), for the client: 1000 when ready.</summary>
     public int BuildUpPermille => Def is { BuildUp: > 0 } def ? 1000 - BuildUpLeft * 1000 / def.BuildUp : 1000;
 
+    /// <summary>Where the units of a factory go once they are out (4.10); null: one cell on from the exit.</summary>
+    public WorldPos? RallyPoint { get; internal set; }
+
     /// <summary>The south-east cell of the footprint.</summary>
     public CellPos FarCell => new(Cell.X + Width - 1, Cell.Y + Height - 1);
 

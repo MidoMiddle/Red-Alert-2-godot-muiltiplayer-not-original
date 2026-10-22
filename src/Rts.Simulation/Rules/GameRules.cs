@@ -44,6 +44,9 @@ public sealed class GameRules
     /// <summary>The faction every player plays until the skirmish setup chooses one (M6): the first of the data, in id order.</summary>
     public FactionDef DefaultFaction => Database.Factions[0];
 
+    /// <summary>The general rules of the economy: the one <c>economy</c> record of the data.</summary>
+    public EconomyDef Economy => Database.Economies[0];
+
     /// <summary>Whether a building may stand on <paramref name="land"/>: <c>buildable</c> of the land type in the data.</summary>
     public bool IsBuildable(LandType land) => LandSpeeds.IsKnown(land) && _buildable[(int)land - 1];
 
@@ -116,6 +119,14 @@ public sealed class GameRules
         if (database.Factions.Length == 0)
         {
             problems.Add(new RulesProblem("", "", "the engine needs a faction for the players, and none is defined"));
+        }
+
+        if (database.Economies.Length != 1)
+        {
+            problems.Add(new RulesProblem(
+                database.Economies.Length > 1 ? database.Economies[1].Id : "",
+                "",
+                $"the engine needs exactly one economy record, and there are {database.Economies.Length}"));
         }
 
         for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)

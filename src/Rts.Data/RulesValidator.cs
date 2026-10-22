@@ -51,6 +51,11 @@ internal static class RulesValidator
             checker.Faction(faction);
         }
 
+        foreach (var economy in rules.Economies)
+        {
+            checker.Economy(economy);
+        }
+
         checker.PrerequisiteCycles();
     }
 
@@ -136,6 +141,25 @@ internal static class RulesValidator
             if (weapon.Range < Fixed.Zero)
             {
                 Error(weapon.Id, "range", $"'range' of '{weapon.Id}' must not be negative");
+            }
+        }
+
+        /// <summary>The slowest rate under low power 0–100 %, the bonus of a factory at least 0, the fastest rate at least 100 %.</summary>
+        public void Economy(EconomyDef economy)
+        {
+            if (economy.LowPowerMinRate < Fixed.Zero || economy.LowPowerMinRate > Fixed.One)
+            {
+                Error(economy.Id, "low_power_min_rate", $"'low_power_min_rate' of '{economy.Id}' must be 0% to 100%");
+            }
+
+            if (economy.MultipleFactoryBonus < Fixed.Zero)
+            {
+                Error(economy.Id, "multiple_factory_bonus", $"'multiple_factory_bonus' of '{economy.Id}' must not be negative");
+            }
+
+            if (economy.MaxFactoryRate < Fixed.One)
+            {
+                Error(economy.Id, "max_factory_rate", $"'max_factory_rate' of '{economy.Id}' must be 100% or more");
             }
         }
 
@@ -289,6 +313,7 @@ internal static class RulesValidator
             : rules.TryGetLocomotor(id, out _) ? "locomotor"
             : rules.TryGetTerrain(id, out _) ? "terrain"
             : rules.TryGetFaction(id, out _) ? "faction"
+            : rules.TryGetEconomy(id, out _) ? "economy"
             : null;
 
         private void Positive(string id, string key, int value)

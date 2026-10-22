@@ -221,19 +221,22 @@ public partial class PlayerInput : Node
         }
         else if (key.IsActionPressed("debug_build", false, true))
         {
-            // V arms the debug build (M3 step 6) with the reactor; V again while it is armed takes the next building.
-            if (!_interpreter.BuildArmed)
+            // V arms the debug build (M3 steps 6, 8) with the reactor and orders it; V again while it is armed takes and orders the next
+            // building. A click places the building once it is produced.
+            if (!_interpreter.BuildArmed && _host.BuildIndex >= 0)
             {
                 _interpreter.ArmBuild();
-                if (_host.BuildIndex < 0)
-                {
-                    _host.NextBuildType();
-                }
             }
-            else
+            else if (!_host.IsPlayback)
             {
-                _host.NextBuildType();
+                _interpreter.ArmBuild();
+                _host.ChooseBuild();
             }
+        }
+        else if (key.IsActionPressed("debug_produce", false, true) && !_host.IsPlayback)
+        {
+            // U (M3 step 8): one unit of the B type from the barracks or the factory; Shift + U, five.
+            _host.IssueProduceUnits(key.ShiftPressed ? ProductionRules.MaxOrder : 1);
         }
         else if (key.IsActionPressed("deploy", false, true) && !Selection.IsEmpty && !_host.IsPlayback)
         {

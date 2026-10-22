@@ -1,0 +1,9 @@
+# The general rules of the economy (docs/implementation/M3_base_economy.md, 4.10). The engine needs exactly one record.
+economy:
+  kind: economy
+  name: Economy
+  # Production under low power slows to output / drain, but never below this.
+  low_power_min_rate: 25%
+  # Every factory of a category beyond the first adds this to its speed, up to max_factory_rate.
+  multiple_factory_bonus: 50%
+  max_factory_rate: 300%

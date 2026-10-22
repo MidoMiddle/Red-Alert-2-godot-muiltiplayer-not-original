@@ -13,7 +13,7 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy"];
 
     private static readonly string[] UnitKeys =
     [
@@ -23,7 +23,7 @@ internal static class DefinitionReader
 
     private static readonly string[] BuildingKeys =
     [
-        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base",
+        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces",
         "prerequisites", "model", "icon",
     ];
 
@@ -34,6 +34,8 @@ internal static class DefinitionReader
     private static readonly string[] TerrainKeys = ["name", "code", "buildable", "speed"];
 
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester"];
+
+    private static readonly string[] EconomyKeys = ["name", "low_power_min_rate", "multiple_factory_bonus", "max_factory_rate"];
 
     /// <summary>The kind of an entry, one of the six known kinds.</summary>
     public static string KindOf(RawDefinition definition)
@@ -90,6 +92,7 @@ internal static class DefinitionReader
             ExitCell = fields.Maybe("exit_cell", Scalars.Cell),
             Adjacent = fields.Optional("adjacent", Scalars.Int, BuildingDef.DefaultAdjacent),
             ExtendsBase = fields.Optional("extends_base", Scalars.Flag, true),
+            Produces = fields.Optional("produces", CategoriesOf, ImmutableArray<ProductionCategory>.Empty),
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
@@ -145,6 +148,48 @@ internal static class DefinitionReader
             Refinery = fields.Required("refinery", Scalars.Id, ""),
             Harvester = fields.Required("harvester", Scalars.Id, ""),
         };
+    }
+
+    public static EconomyDef Economy(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, EconomyKeys);
+        return new EconomyDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            LowPowerMinRate = fields.Required("low_power_min_rate", Scalars.Percent, Fixed.Zero),
+            MultipleFactoryBonus = fields.Required("multiple_factory_bonus", Scalars.Percent, Fixed.Zero),
+            MaxFactoryRate = fields.Required("max_factory_rate", Scalars.Percent, Fixed.Zero),
+        };
+    }
+
+    /// <summary>A list of production categories, <c>[building, defense]</c>; each at most once.</summary>
+    private static ImmutableArray<ProductionCategory> CategoriesOf(string fileName, YamlNode node)
+    {
+        if (node is not YamlSequenceNode sequence)
+        {
+            throw RulesFormatException.At(fileName, node, "expected a list of categories such as [infantry]");
+        }
+
+        var categories = ImmutableArray.CreateBuilder<ProductionCategory>(sequence.Children.Count);
+        foreach (var child in sequence.Children)
+        {
+            var category = Scalars.Choice(fileName, child, "building", "defense", "infantry", "vehicle") switch
+            {
+                "building" => ProductionCategory.Building,
+                "defense" => ProductionCategory.Defense,
+                "infantry" => ProductionCategory.Infantry,
+                _ => ProductionCategory.Vehicle,
+            };
+            if (categories.Contains(category))
+            {
+                throw RulesFormatException.At(fileName, child, $"category '{((YamlScalarNode)child).Value}' repeats");
+            }
+
+            categories.Add(category);
+        }
+
+        return categories.MoveToImmutable();
     }
 
     private static UnitCategory UnitCategoryOf(string fileName, YamlNode node) =>

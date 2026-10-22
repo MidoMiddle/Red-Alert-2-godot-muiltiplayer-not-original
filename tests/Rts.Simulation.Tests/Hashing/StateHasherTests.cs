@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "credits", "building", "building ready",
+        "credits", "building", "building ready", "production", "production progress", "rally point",
     };
 
     [Theory]
@@ -115,6 +115,22 @@ public sealed class StateHasherTests
             case "order index": idle.OrderIndex = 1; break;
             case "loop": idle.LoopOrders = true; break;
             case "credits": world.Player(Player1).Credits--; break;
+            case "production":
+                world.Player(Player1).QueueList(Rules.ProductionCategory.Vehicle).Add(new ProductionItem(ProductionKind.Unit, 0));
+                break;
+            case "production progress":
+                var item = new ProductionItem(ProductionKind.Unit, 0);
+                world.Player(Player1).QueueList(Rules.ProductionCategory.Vehicle).Add(item);
+                var before = StateHasher.Compute(world);
+                item.Progress++;
+                Assert.NotEqual(before, StateHasher.Compute(world));
+                break;
+            case "rally point":
+                var factory = world.CreateBuilding(Player1, TestRules.BuildingDef("war_factory"), new CellPos(40, 40), ready: true, null);
+                var without = StateHasher.Compute(world);
+                factory.RallyPoint = new WorldPos(5, 5);
+                Assert.NotEqual(without, StateHasher.Compute(world));
+                break;
             case "building": world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(40, 40), ready: false, null); break;
             case "building ready":
                 var reactor = world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(40, 40), ready: false, null);
@@ -160,9 +176,14 @@ public sealed class StateHasherTests
         // The players (M3 step 5): their credits are hashed; the marks that power and technologies need working out are derived.
         "_players", "<PowerDirty>k__BackingField", "<TechDirty>k__BackingField",
     })]
+    [InlineData(typeof(ProductionItem), new[]
+    {
+        "<Kind>k__BackingField", "<DefIndex>k__BackingField", "<Progress>k__BackingField", "<Paid>k__BackingField",
+        "<Paused>k__BackingField", "<WaitingForFunds>k__BackingField", "<Ready>k__BackingField",
+    })]
     [InlineData(typeof(PlayerState), new[]
     {
-        "<Credits>k__BackingField",
+        "<Credits>k__BackingField", "_queues",
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField",
         // Derived from the buildings by PowerSystem and TechTree (M3 step 5).
@@ -199,7 +220,7 @@ public sealed class StateHasherTests
     [InlineData(typeof(Building), new[]
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
-        "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField",
+        "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
     })]

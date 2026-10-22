@@ -136,6 +136,9 @@ public static class RulesLoader
             case "faction":
                 AddUnlessTemplate(template, DefinitionReader.Faction(entry, !template), definition => builder.Add(definition));
                 break;
+            case "economy":
+                AddUnlessTemplate(template, DefinitionReader.Economy(entry, !template), definition => builder.Add(definition));
+                break;
         }
 
         return !template;

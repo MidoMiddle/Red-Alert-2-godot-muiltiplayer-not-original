@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 using Rts.Simulation.Movement;
 using Rts.Simulation.Pathfinding;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Commands;
@@ -37,6 +39,10 @@ public static class CommandProcessor
                 && world.Map.Contains(damage.Cell) && world.DamageAtCell(damage.Cell, damage.Amount, events),
             PlaceBuildingCommand place => ApplyPlaceBuilding(world, place, events),
             DeployCommand deploy => ApplyDeploy(world, deploy, events),
+            ProduceCommand produce => ApplyProduce(world, produce),
+            PauseProductionCommand pause => ApplyPause(world, pause),
+            CancelProductionCommand cancel => ApplyCancel(world, cancel, events),
+            SetRallyPointCommand rally => ApplyRallyPoint(world, rally),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
     }
@@ -44,9 +50,10 @@ public static class CommandProcessor
     private static bool IsPlayablePlayer(PlayerId player) => player.Value >= 1 && player.Value <= PlayerId.MaxPlayers;
 
     /// <summary>
-    /// A building of the player's faction from the rules, available by its prerequisites, where <see cref="PlacementRules"/> allow
-    /// (docs/implementation/M3_base_economy.md, 4.8). A wrong index or another faction's building is ignored; a building the player may
-    /// not build yet or not there is refused with <see cref="CannotPlace"/>, so the player learns why.
+    /// A building of the player's faction that is ready in its production queue, where <see cref="PlacementRules"/> allow
+    /// (docs/implementation/M3_base_economy.md, 4.8); it then leaves the queue. A wrong index or another faction's building is ignored;
+    /// a building that is not ready (or not even available) or not allowed there is refused with <see cref="CannotPlace"/>, so the
+    /// player learns why.
     /// </summary>
     private static bool ApplyPlaceBuilding(GameWorld world, PlaceBuildingCommand command, List<SimEvent>? events)
     {
@@ -63,18 +70,152 @@ public static class CommandProcessor
             return false;
         }
 
-        var problem = player.CanBuildBuilding(command.DefIndex)
+        var queue = player.QueueList(def.Category);
+        var ready = queue.Count > 0 && queue[0] is { Kind: ProductionKind.Building, Ready: true } item && item.DefIndex == command.DefIndex;
+        var problem = ready
             ? PlacementRules.Check(world, command.Player, def, command.Cell)
-            : PlacementProblem.NotAvailable;
+            : player.CanBuildBuilding(command.DefIndex) ? PlacementProblem.NotReady : PlacementProblem.NotAvailable;
         if (problem != PlacementProblem.None)
         {
             events?.Add(new CannotPlace(world.CurrentTick, command.Player, command.DefIndex, command.Cell, problem));
             return false;
         }
 
+        queue.RemoveAt(0);
         var building = world.CreateBuilding(command.Player, def, command.Cell, ready: false, events);
         events?.Add(new BuildingPlaced(world.CurrentTick, building.Id, command.Player, command.DefIndex, command.Cell));
         return true;
+    }
+
+    /// <summary>
+    /// Production of a definition of the player's faction (4.10): resumes its first item when that one is paused; otherwise, when it is
+    /// available, a ready factory of its category stands and the queue has room, adds the items. A building or defense takes the queue
+    /// alone; infantry and vehicles queue up to <see cref="ProductionRules.MaxUnitQueue"/>.
+    /// </summary>
+    private static bool ApplyProduce(GameWorld world, ProduceCommand command)
+    {
+        var rules = world.Rules.Database;
+        if (!ProductionRules.IsKnown(rules, command.Kind, command.DefIndex) || command.Count is < 1 or > ProductionRules.MaxOrder)
+        {
+            return false;
+        }
+
+        var player = world.Player(command.Player);
+        var faction = command.Kind == ProductionKind.Unit ? rules.Units[command.DefIndex].Faction : rules.Buildings[command.DefIndex].Faction;
+        if (faction != player.Faction.Id
+            || (command.Kind == ProductionKind.Unit && !UnitTypes.TryGetById(rules.Units[command.DefIndex].Id, out _)))
+        {
+            return false;
+        }
+
+        var category = ProductionRules.CategoryOf(rules, command.Kind, command.DefIndex);
+        var queue = player.QueueList(category);
+        if (FirstOf(queue, command.Kind, command.DefIndex) is { Paused: true } paused)
+        {
+            paused.Paused = false;
+            return true;
+        }
+
+        var available = command.Kind == ProductionKind.Unit ? player.CanBuildUnit(command.DefIndex) : player.CanBuildBuilding(command.DefIndex);
+        if (!available || !HasFactory(world, command.Player, category))
+        {
+            return false;
+        }
+
+        var room = category is ProductionCategory.Building or ProductionCategory.Defense
+            ? 1 - queue.Count
+            : IntMath.Min(command.Count, ProductionRules.MaxUnitQueue - queue.Count);
+        for (var i = 0; i < room; i++)
+        {
+            queue.Add(new ProductionItem(command.Kind, command.DefIndex));
+        }
+
+        return room > 0;
+    }
+
+    /// <summary>Pauses the first unfinished item of the definition (4.10).</summary>
+    private static bool ApplyPause(GameWorld world, PauseProductionCommand command)
+    {
+        var rules = world.Rules.Database;
+        if (!ProductionRules.IsKnown(rules, command.Kind, command.DefIndex))
+        {
+            return false;
+        }
+
+        var queue = world.Player(command.Player).QueueList(ProductionRules.CategoryOf(rules, command.Kind, command.DefIndex));
+        if (FirstOf(queue, command.Kind, command.DefIndex) is not { Paused: false, Ready: false } item)
+        {
+            return false;
+        }
+
+        item.Paused = true;
+        return true;
+    }
+
+    /// <summary>Takes the last item of the definition out of its queue and gives back all that was paid for it (4.10).</summary>
+    private static bool ApplyCancel(GameWorld world, CancelProductionCommand command, List<SimEvent>? events)
+    {
+        var rules = world.Rules.Database;
+        if (!ProductionRules.IsKnown(rules, command.Kind, command.DefIndex))
+        {
+            return false;
+        }
+
+        var player = world.Player(command.Player);
+        var queue = player.QueueList(ProductionRules.CategoryOf(rules, command.Kind, command.DefIndex));
+        for (var i = queue.Count - 1; i >= 0; i--)
+        {
+            if (queue[i].Kind == command.Kind && queue[i].DefIndex == command.DefIndex)
+            {
+                var refund = queue[i].Paid;
+                queue.RemoveAt(i);
+                player.Credits += refund;
+                events?.Add(new ProductionCancelled(world.CurrentTick, command.Player, command.Kind, command.DefIndex, refund));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>The rally point of the player's standing factory, anywhere on the map (4.10).</summary>
+    private static bool ApplyRallyPoint(GameWorld world, SetRallyPointCommand command)
+    {
+        if (!world.TryGet(command.Building, out var entity) || entity is not Building { IsAlive: true, Def.Produces.Length: > 0 } factory
+            || factory.Owner != command.Player || !world.Contains(command.Point))
+        {
+            return false;
+        }
+
+        factory.RallyPoint = command.Point;
+        return true;
+    }
+
+    private static ProductionItem? FirstOf(List<ProductionItem> queue, ProductionKind kind, int defIndex)
+    {
+        foreach (var item in queue)
+        {
+            if (item.Kind == kind && item.DefIndex == defIndex)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>True when the player has a ready building that produces <paramref name="category"/>.</summary>
+    private static bool HasFactory(GameWorld world, PlayerId player, ProductionCategory category)
+    {
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && building.Owner == player && def.Produces.Contains(category))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

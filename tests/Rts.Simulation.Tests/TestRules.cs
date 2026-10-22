@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
@@ -76,17 +77,33 @@ internal static class TestRules
         Vehicle(builder, UnitType.TeslaTank, Locomotor.Track, speed: 36, turret: true, sight: 8, "war_factory", "tech_center");
 
         // The buildings of docs/implementation/M3_base_economy.md, 4.6: id, footprint, power, prerequisites.
-        Building(builder, "construction_yard", 3, 3, power: 0);
+        builder.Add(Def("construction_yard", 3, 3, power: 0) with { Produces = [ProductionCategory.Building, ProductionCategory.Defense] });
         Building(builder, "reactor", 2, 2, power: 150, "construction_yard");
         Building(builder, "refinery", 3, 3, power: -50, "reactor");
-        Building(builder, "barracks", 2, 2, power: -20, "reactor");
-        Building(builder, "war_factory", 3, 4, power: -50, "refinery");
+        builder.Add(Def("barracks", 2, 2, power: -20, "reactor") with
+        {
+            Produces = [ProductionCategory.Infantry],
+            ExitCell = new CellPos(1, 2),
+        });
+        builder.Add(Def("war_factory", 3, 4, power: -50, "refinery") with
+        {
+            Produces = [ProductionCategory.Vehicle],
+            ExitCell = new CellPos(1, 4),
+        });
         Building(builder, "radar", 2, 2, power: -50, "refinery");
         Building(builder, "tech_center", 3, 3, power: -100, "war_factory", "radar");
         builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with { ExtendsBase = false });
         Building(builder, "sentry_bunker", 1, 1, power: 0, "barracks");
         Building(builder, "tesla_coil", 2, 2, power: -75, "radar");
         Building(builder, "flak_cannon", 2, 2, power: -50, "radar");
+        builder.Add(new EconomyDef
+        {
+            Id = "economy",
+            Name = "Economy",
+            LowPowerMinRate = Percent(25),
+            MultipleFactoryBonus = Percent(50),
+            MaxFactoryRate = Percent(300),
+        });
         builder.Add(new FactionDef
         {
             Id = "union",

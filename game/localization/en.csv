@@ -216,7 +216,8 @@ UI_KEY_STOP,Stop
 UI_KEY_SCATTER,Scatter
 UI_KEY_WAYPOINT_MODE,Waypoints (hold)
 UI_KEY_DEBUG_DAMAGE,Damage the map object / bridge / building under the cursor (debug)
-UI_KEY_DEBUG_BUILD,Place a building (press, then click; again: next type) (debug)
+UI_KEY_DEBUG_BUILD,Produce and place a building (press, then click when ready; again: next type) (debug)
+UI_KEY_DEBUG_PRODUCE,Produce units of the spawn type (Shift: five) (debug)
 UI_KEY_CANCEL_SELECTION,Cancel selection or menu
 UI_KEY_WAITING,Press a key...
 UI_KEYS_SWAPPED,{0} was used by {1}. {1} now uses {2}.

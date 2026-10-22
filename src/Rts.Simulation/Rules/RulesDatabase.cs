@@ -15,7 +15,8 @@ public sealed class RulesDatabase
         ImmutableArray<WeaponDef> weapons,
         ImmutableArray<UnitDef> units,
         ImmutableArray<BuildingDef> buildings,
-        ImmutableArray<FactionDef> factions)
+        ImmutableArray<FactionDef> factions,
+        ImmutableArray<EconomyDef> economies)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -23,6 +24,7 @@ public sealed class RulesDatabase
         Units = units;
         Buildings = buildings;
         Factions = factions;
+        Economies = economies;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -37,6 +39,9 @@ public sealed class RulesDatabase
 
     public ImmutableArray<FactionDef> Factions { get; }
 
+    /// <summary>The general rules of the economy; the engine needs exactly one (<see cref="GameRules.Problems"/>).</summary>
+    public ImmutableArray<EconomyDef> Economies { get; }
+
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
 
     public bool TryGetTerrain(string id, out TerrainDef definition) => TryFind(Terrains, id, out definition);
@@ -48,6 +53,8 @@ public sealed class RulesDatabase
     public bool TryGetBuilding(string id, out BuildingDef definition) => TryFind(Buildings, id, out definition);
 
     public bool TryGetFaction(string id, out FactionDef definition) => TryFind(Factions, id, out definition);
+
+    public bool TryGetEconomy(string id, out EconomyDef definition) => TryFind(Economies, id, out definition);
 
     /// <summary>The position of a unit in <see cref="Units"/>: the index commands and tech sets use; -1 when it is not defined.</summary>
     public int IndexOfUnit(string id) => IndexOf(Units, id);

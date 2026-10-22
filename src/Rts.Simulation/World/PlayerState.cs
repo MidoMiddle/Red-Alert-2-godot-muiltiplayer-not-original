@@ -4,15 +4,18 @@ using Rts.Simulation.Rules;
 namespace Rts.Simulation.World;
 
 /// <summary>
-/// The economy of one player (docs/implementation/M3_base_economy.md, 4.7): credits, power and what the player may build. Only
-/// <see cref="Credits"/> is state; the rest follows from the player's buildings, worked out again by <see cref="Systems.PowerSystem"/>
-/// and <see cref="Systems.TechTree"/> when they change, so it is not hashed. Every player 1…8 has one from the start of the match;
-/// the neutral player has no economy.
+/// The economy of one player (docs/implementation/M3_base_economy.md, 4.7): credits, production queues, power and what the player may
+/// build. <see cref="Credits"/> and the queues are state; the rest follows from the player's buildings, worked out again by
+/// <see cref="Systems.PowerSystem"/> and <see cref="Systems.TechTree"/> when they change, so it is not hashed. Every player 1…8 has one
+/// from the start of the match; the neutral player has no economy.
 /// </summary>
 public sealed class PlayerState
 {
     private readonly bool[] _units;
     private readonly bool[] _buildings;
+
+    // One queue per ProductionCategory, in its order (infantry, vehicle, building, defense).
+    private readonly List<ProductionItem>[] _queues = [[], [], [], []];
 
     internal PlayerState(PlayerId id, FactionDef faction, int credits, RulesDatabase rules)
     {
@@ -43,6 +46,14 @@ public sealed class PlayerState
     public bool LowPower { get; internal set; }
 
     internal List<EntityId> BuildingList { get; } = [];
+
+    /// <summary>
+    /// The production queue of a category (4.10): the first item is in work, the rest wait. Buildings and defenses hold one item,
+    /// infantry and vehicles up to <see cref="ProductionRules.MaxUnitQueue"/>.
+    /// </summary>
+    public IReadOnlyList<ProductionItem> Queue(ProductionCategory category) => QueueList(category);
+
+    internal List<ProductionItem> QueueList(ProductionCategory category) => _queues[(int)category - 1];
 
     /// <summary>Whether the unit at <paramref name="index"/> of <see cref="RulesDatabase.Units"/> may be built now.</summary>
     public bool CanBuildUnit(int index) => _units[index];

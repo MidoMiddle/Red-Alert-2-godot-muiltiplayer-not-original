@@ -17,6 +17,7 @@ public sealed class RulesBuilder
     private readonly List<UnitDef> _units = [];
     private readonly List<BuildingDef> _buildings = [];
     private readonly List<FactionDef> _factions = [];
+    private readonly List<EconomyDef> _economies = [];
 
     public RulesBuilder Add(LocomotorDef definition)
     {
@@ -54,6 +55,12 @@ public sealed class RulesBuilder
         return this;
     }
 
+    public RulesBuilder Add(EconomyDef definition)
+    {
+        _economies.Add(definition);
+        return this;
+    }
+
     /// <summary>Sorts every kind by id and checks that no id is used twice, in any kind.</summary>
     /// <exception cref="ArgumentException">Two definitions have the same id.</exception>
     public RulesDatabase Build()
@@ -73,7 +80,8 @@ public sealed class RulesBuilder
             Sorted(_weapons),
             Sorted(_units),
             Sorted(_buildings),
-            Sorted(_factions));
+            Sorted(_factions),
+            Sorted(_economies));
     }
 
     private IEnumerable<string> AllIds()
@@ -104,6 +112,11 @@ public sealed class RulesBuilder
         }
 
         foreach (var definition in _factions)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _economies)
         {
             yield return definition.Id;
         }

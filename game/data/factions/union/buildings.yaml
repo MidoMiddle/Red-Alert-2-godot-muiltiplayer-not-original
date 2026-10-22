@@ -9,6 +9,7 @@ construction_yard:  # Construction Yard; comes from the MCV
   build_time: 126s
   hp: 1000
   footprint: [3, 3]
+  produces: [building, defense]
 
 reactor:  # Tesla Reactor
   kind: building
@@ -44,6 +45,8 @@ barracks:  # Barracks
   hp: 500
   footprint: [2, 2]
   power: -20
+  produces: [infantry]
+  exit_cell: [1, 2]
   prerequisites: [reactor]
 
 war_factory:  # War Factory
@@ -56,6 +59,7 @@ war_factory:  # War Factory
   hp: 1000
   footprint: [3, 4]
   power: -50
+  produces: [vehicle]
   exit_cell: [1, 4]
   prerequisites: [refinery]
 

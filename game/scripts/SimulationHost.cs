@@ -293,6 +293,47 @@ public partial class SimulationHost : Node
     }
 
     /// <summary>
+    /// The debug build (V, M3 step 8): takes the next building type (<see cref="NextBuildType"/>) and orders it when its queue is empty.
+    /// The previous choice, if still unfinished, and an unfinished building of another type in the new queue are cancelled first, their
+    /// credits come back; a finished one stays to be placed.
+    /// </summary>
+    public void ChooseBuild()
+    {
+        var rules = Data.Database;
+        var player = Simulation.World.Player(LocalPlayer);
+        if (BuildIndex >= 0 && player.Queue(rules.Buildings[BuildIndex].Category) is [{ Ready: false } previous, ..] && previous.DefIndex == BuildIndex)
+        {
+            Issue(new CancelProductionCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ProductionKind.Building, BuildIndex));
+        }
+
+        var previousIndex = BuildIndex;
+        NextBuildType();
+        var queue = player.Queue(rules.Buildings[BuildIndex].Category);
+        if (queue.Count > 0 && queue[0].DefIndex == previousIndex && !queue[0].Ready)
+        {
+            // Cancelled just above, on this tick.
+            Issue(new ProduceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ProductionKind.Building, BuildIndex, 1));
+            return;
+        }
+
+        if (queue.Count > 0 && queue[0].DefIndex != BuildIndex && !queue[0].Ready)
+        {
+            Issue(new CancelProductionCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ProductionKind.Building, queue[0].DefIndex));
+        }
+        else if (queue.Count > 0)
+        {
+            return;
+        }
+
+        Issue(new ProduceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ProductionKind.Building, BuildIndex, 1));
+    }
+
+    /// <summary>Debug (U, M3 step 8): orders <paramref name="count"/> units of the <see cref="SpawnType"/>, from the barracks or the factory.</summary>
+    public void IssueProduceUnits(int count) =>
+        Issue(new ProduceCommand(
+            LocalPlayer, Simulation.CurrentTick, _nextSequence++, ProductionKind.Unit, Data.Database.IndexOfUnit(UnitTypes.IdOf(SpawnType)), count));
+
+    /// <summary>
     /// The debug build (V): the first press takes the reactor, every next one the next building of the player's faction, wrapping
     /// around.
     /// </summary>
@@ -457,6 +498,12 @@ public partial class SimulationHost : Node
             CannotPlace refused when refused.Player == LocalPlayer =>
                 $"cannot place {buildings[refused.DefIndex].Id}: {ProblemText(refused.Problem)}",
             CannotDeploy refused when refused.Player == LocalPlayer => $"cannot deploy: {ProblemText(refused.Problem)}",
+            ProductionReady ready when ready.Player == LocalPlayer => $"{buildings[ready.DefIndex].Id} ready to place",
+            UnitProduced produced when produced.Player == LocalPlayer && Simulation.World.TryGet(produced.Unit, out var unit) =>
+                $"{((Unit)unit).Archetype.Id} out",
+            InsufficientFunds funds when funds.Player == LocalPlayer => "insufficient funds",
+            ProductionCancelled cancelled when cancelled.Player == LocalPlayer =>
+                $"cancelled {ProductionRules.IdOf(Data.Database, cancelled.Kind, cancelled.DefIndex)}, {cancelled.Refund} back",
             LowPower low when low.Player == LocalPlayer => "LOW POWER",
             PowerRestored restored when restored.Player == LocalPlayer => "power restored",
             _ => null,
@@ -472,6 +519,7 @@ public partial class SimulationHost : Node
         PlacementProblem.Units => "units in the way",
         PlacementProblem.TooFar => "too far from the base",
         PlacementProblem.NotAvailable => "its prerequisites are missing",
+        PlacementProblem.NotReady => "it is not produced yet",
         _ => problem.ToString(),
     };
 

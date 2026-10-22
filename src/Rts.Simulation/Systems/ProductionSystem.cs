@@ -1,0 +1,191 @@
+using System.Collections.Generic;
+using Rts.Simulation.Events;
+using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
+using Rts.Simulation.Movement;
+using Rts.Simulation.Rules;
+using Rts.Simulation.World;
+
+namespace Rts.Simulation.Systems;
+
+/// <summary>
+/// The production of every player (docs/implementation/M3_base_economy.md, 4.10). The first item of each queue goes on by
+/// <c>1000 × power × factories</c> per mille of a tick: power is 100 %, or <c>max(low_power_min_rate, output / drain)</c> on low power;
+/// factories are <c>1 + bonus × (N − 1)</c> up to <c>max_factory_rate</c> for N ready factories of its category, and nothing goes on
+/// without one. It is paid as it goes: the cost times the share of progress, rounded down, so the payments add up to the cost exactly.
+/// When the player cannot pay a tick, the item waits (<see cref="InsufficientFunds"/> once). A finished building waits to be placed; a
+/// finished unit comes out at the exit of the main factory — the last one built — as soon as the exit is free, and drives to a free place
+/// at the rally point or one cell on. Runs after power and before build-up (4.15).
+/// </summary>
+public static class ProductionSystem
+{
+    private const int Categories = 4;
+
+    public static void Update(GameWorld world, List<SimEvent>? events)
+    {
+        var (counts, mains) = Factories(world);
+        var rules = world.Rules.Database;
+        foreach (var player in world.Players)
+        {
+            for (var category = ProductionCategory.Infantry; category <= ProductionCategory.Defense; category++)
+            {
+                var queue = player.QueueList(category);
+                var factories = counts[player.Id.Value - 1, (int)category - 1];
+                if (queue.Count == 0 || factories == 0 || queue[0].Paused)
+                {
+                    continue;
+                }
+
+                var item = queue[0];
+                var total = ProductionRules.TotalProgress(rules, item.Kind, item.DefIndex);
+                if (item.Progress < total && !Advance(world, player, item, total, category, factories, events))
+                {
+                    continue;
+                }
+
+                if (item.Progress < total)
+                {
+                    continue;
+                }
+
+                if (item.Kind == ProductionKind.Building)
+                {
+                    if (!item.Ready)
+                    {
+                        item.Ready = true;
+                        events?.Add(new ProductionReady(world.CurrentTick, player.Id, item.DefIndex));
+                    }
+                }
+                else if (mains[player.Id.Value - 1, (int)category - 1] is { } factory && TryRelease(world, player, item, factory, events))
+                {
+                    queue.RemoveAt(0);
+                }
+                else
+                {
+                    item.Ready = true;
+                }
+            }
+        }
+    }
+
+    /// <summary>The speed of production in per mille: <c>1000 × power × factories</c>.</summary>
+    public static int RatePermille(GameWorld world, PlayerState player, int factories)
+    {
+        var economy = world.Rules.Economy;
+        var power = 1000;
+        if (player.LowPower)
+        {
+            var floor = Permille(economy.LowPowerMinRate);
+            power = IntMath.Max(floor, (int)(player.PowerOutput * 1000L / player.PowerDrain));
+        }
+
+        var factory = IntMath.Min(Permille(economy.MaxFactoryRate), 1000 + Permille(economy.MultipleFactoryBonus) * (factories - 1));
+        return (int)((long)power * factory / 1000);
+    }
+
+    /// <summary>One tick of progress and its payment; false when the player cannot pay it, and the item waits.</summary>
+    private static bool Advance(
+        GameWorld world, PlayerState player, ProductionItem item, int total, ProductionCategory category, int factories, List<SimEvent>? events)
+    {
+        var progress = IntMath.Min(total, item.Progress + RatePermille(world, player, factories));
+        var due = (int)((long)ProductionRules.CostOf(world.Rules.Database, item.Kind, item.DefIndex) * progress / total);
+        var payment = due - item.Paid;
+        if (payment > player.Credits)
+        {
+            if (!item.WaitingForFunds)
+            {
+                item.WaitingForFunds = true;
+                events?.Add(new InsufficientFunds(world.CurrentTick, player.Id, category));
+            }
+
+            return false;
+        }
+
+        player.Credits -= payment;
+        item.Paid = due;
+        item.Progress = progress;
+        item.WaitingForFunds = false;
+        return true;
+    }
+
+    /// <summary>
+    /// A finished unit comes out at the exit of <paramref name="factory"/> — its <c>exit_cell</c>, or the cell under the middle of its
+    /// footprint — when that cell takes it, and drives to the rally point, or one cell further on.
+    /// </summary>
+    private static bool TryRelease(GameWorld world, PlayerState player, ProductionItem item, Building factory, List<SimEvent>? events)
+    {
+        var def = world.Rules.Database.Units[item.DefIndex];
+        if (!UnitTypes.TryGetById(def.Id, out var type))
+        {
+            return false;
+        }
+
+        var archetype = world.Rules.Unit(type);
+        var exit = factory.Def!.ExitCell is { } offset
+            ? new CellPos(factory.Cell.X + offset.X, factory.Cell.Y + offset.Y)
+            : new CellPos(factory.Cell.X + factory.Width / 2, factory.Cell.Y + factory.Height);
+        if (!world.Map.CanEnter(exit, archetype.Locomotor) || !world.Reservations.HasRoomFor(exit, archetype.Placement, EntityId.None))
+        {
+            return false;
+        }
+
+        var unit = world.SpawnUnit(player.Id, type, exit.Center, snapToSubcell: true);
+        events?.Add(new UnitProduced(world.CurrentTick, player.Id, unit.Id, factory.Id));
+        var point = factory.RallyPoint?.ToCell() ?? new CellPos(exit.X, exit.Y + 1);
+        if (FreeCellNear(world, point, exit, archetype) is { } place)
+        {
+            UnitOrders.MoveTo(world, unit, place.Center);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The nearest cell to <paramref name="point"/>, ring by ring up to 8 cells and row by row inside a ring, that the unit can enter and
+    /// that nobody stands in, other than the exit: units that came out before may stand at the point, and a unit sent to its own cell
+    /// would stay in the exit and close the factory. Null when there is none.
+    /// </summary>
+    private static CellPos? FreeCellNear(GameWorld world, CellPos point, CellPos exit, UnitArchetype archetype)
+    {
+        for (var ring = 0; ring <= 8; ring++)
+        {
+            for (var y = point.Y - ring; y <= point.Y + ring; y++)
+            {
+                for (var x = point.X - ring; x <= point.X + ring; x++)
+                {
+                    var cell = new CellPos(x, y);
+                    if (IntMath.Max(IntMath.Abs(x - point.X), IntMath.Abs(y - point.Y)) == ring && cell != exit
+                        && world.Map.CanEnter(cell, archetype.Locomotor) && world.Reservations.HasRoomFor(cell, archetype.Placement, EntityId.None))
+                    {
+                        return cell;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>For every player and category: how many ready factories it has, and the main one — the last built.</summary>
+    private static (int[,] Counts, Building?[,] Mains) Factories(GameWorld world)
+    {
+        var counts = new int[PlayerId.MaxPlayers, Categories];
+        var mains = new Building?[PlayerId.MaxPlayers, Categories];
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && !building.Owner.IsNeutral)
+            {
+                foreach (var category in def.Produces)
+                {
+                    counts[building.Owner.Value - 1, (int)category - 1]++;
+                    // Entities go in id order: the last one seen is the last built.
+                    mains[building.Owner.Value - 1, (int)category - 1] = building;
+                }
+            }
+        }
+
+        return (counts, mains);
+    }
+
+    private static int Permille(Fixed fraction) => (int)IntMath.DivRound(fraction.Raw * 1000, Fixed.OneRaw);
+}

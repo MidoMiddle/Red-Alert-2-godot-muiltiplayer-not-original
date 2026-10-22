@@ -61,6 +61,20 @@ public sealed class CommandSerializerTests
     }
 
     [Fact]
+    public void Production_commands_have_the_exact_v6_byte_layout()
+    {
+        Assert.Equal(
+            "0A" + "01000000" + "05000000" + "07000000" + "01" + "0600" + "05",
+            Convert.ToHexString(Serialize(new ProduceCommand(new PlayerId(1), 5, 7, ProductionKind.Unit, 6, 5))));
+        Assert.Equal(
+            "0C" + "01000000" + "05000000" + "07000000" + "02" + "0300",
+            Convert.ToHexString(Serialize(new CancelProductionCommand(new PlayerId(1), 5, 7, ProductionKind.Building, 3))));
+        Assert.Equal(
+            "0D" + "01000000" + "05000000" + "07000000" + "2A000000" + "00010000" + "00020000",
+            Convert.ToHexString(Serialize(new SetRallyPointCommand(new PlayerId(1), 5, 7, new EntityId(42), new WorldPos(256, 512)))));
+    }
+
+    [Fact]
     public void A_definition_index_beyond_16_bits_cannot_be_written()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => Serialize(new PlaceBuildingCommand(new PlayerId(1), 0, 0, 70_000, new CellPos(0, 0))));
@@ -89,6 +103,13 @@ public sealed class CommandSerializerTests
         new PlaceBuildingCommand(new PlayerId(3), 11, 2, 0, new CellPos(5, 6)),
         new PlaceBuildingCommand(new PlayerId(8), 0, 0, ushort.MaxValue, new CellPos(-3, int.MaxValue)),
         new DeployCommand(new PlayerId(4), 9, 1, new EntityId(17)),
+        new ProduceCommand(new PlayerId(1), 3, 4, ProductionKind.Unit, 6, 5),
+        new ProduceCommand(new PlayerId(2), 3, 5, ProductionKind.Building, ushort.MaxValue, 255),
+        // An unknown kind still round-trips: the processor rejects it.
+        new ProduceCommand(new PlayerId(2), 3, 6, (ProductionKind)9, 0, 0),
+        new PauseProductionCommand(new PlayerId(3), 8, 1, ProductionKind.Unit, 2),
+        new CancelProductionCommand(new PlayerId(3), 8, 2, ProductionKind.Building, 7),
+        new SetRallyPointCommand(new PlayerId(5), 1, 1, new EntityId(33), new WorldPos(-4, 9000)),
     };
 
     [Theory]

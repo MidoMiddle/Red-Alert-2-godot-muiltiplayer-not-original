@@ -77,8 +77,14 @@ public sealed class DeployTests
             simulation.Step();
         }
 
-        simulation.Enqueue(new PlaceBuildingCommand(
-            Player1, simulation.CurrentTick, _sequence++, TestRules.Standard.Database.IndexOfBuilding("reactor"), new CellPos(13, 9)));
+        var reactor = TestRules.Standard.Database.IndexOfBuilding("reactor");
+        simulation.Enqueue(new ProduceCommand(Player1, simulation.CurrentTick, _sequence++, ProductionKind.Building, reactor, 1));
+        for (var i = 0; i < 100 && !simulation.LastTickEvents.OfType<ProductionReady>().Any(); i++)
+        {
+            simulation.Step();
+        }
+
+        simulation.Enqueue(new PlaceBuildingCommand(Player1, simulation.CurrentTick, _sequence++, reactor, new CellPos(13, 9)));
         simulation.Step();
 
         Assert.Contains(simulation.LastTickEvents, e => e is BuildingPlaced);
@@ -147,8 +153,15 @@ public sealed class DeployTests
             recorder.AfterStep();
         }
 
-        simulation.Enqueue(new PlaceBuildingCommand(
-            Player1, simulation.CurrentTick, _sequence++, TestRules.Standard.Database.IndexOfBuilding("reactor"), new CellPos(13, 9)));
+        var reactor = TestRules.Standard.Database.IndexOfBuilding("reactor");
+        simulation.Enqueue(new ProduceCommand(Player1, simulation.CurrentTick, _sequence++, ProductionKind.Building, reactor, 1));
+        for (var i = 0; i < 20; i++)
+        {
+            simulation.Step();
+            recorder.AfterStep();
+        }
+
+        simulation.Enqueue(new PlaceBuildingCommand(Player1, simulation.CurrentTick, _sequence++, reactor, new CellPos(13, 9)));
         for (var i = 0; i < 40; i++)
         {
             simulation.Step();

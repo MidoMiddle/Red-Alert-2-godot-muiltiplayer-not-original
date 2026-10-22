@@ -36,6 +36,9 @@ public sealed record BuildingDef : IDefinition
     /// <summary>Where a factory releases its units, relative to the north-west cell of the footprint.</summary>
     public CellPos? ExitCell { get; init; }
 
+    /// <summary>What the building produces (RA2 <c>Factory</c>): the construction yard buildings and defenses, barracks infantry.</summary>
+    public ImmutableArray<ProductionCategory> Produces { get; init; } = ImmutableArray<ProductionCategory>.Empty;
+
     /// <summary>How many cells from the player's base the building may stand (RA2 <c>Adjacent</c>, 4.8).</summary>
     public int Adjacent { get; init; } = DefaultAdjacent;
 
