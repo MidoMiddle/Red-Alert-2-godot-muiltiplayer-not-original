@@ -61,9 +61,29 @@ UI_EDITOR_BRUSH,Brush
 UI_EDITOR_CIRCLE,Circle
 UI_EDITOR_SQUARE,Square
 UI_EDITOR_UNDO,Undo
+UI_EDITOR_CLIFF,Cliff
+UI_EDITOR_WATER,Water
+UI_EDITOR_ROAD,Road
+UI_EDITOR_ORE,Ore
+UI_EDITOR_GEMS,Gems
+UI_EDITOR_OBJECTS,Objects
+UI_EDITOR_BRIDGE,Bridge
+UI_EDITOR_BUILDING,Building
+UI_EDITOR_START,Start
+UI_EDITOR_ERASER,Eraser
+UI_EDITOR_SHALLOW,Shallow
+UI_EDITOR_DEEP,Deep
+UI_EDITOR_DENSITY,Density
+UI_EDITOR_FACING,Facing
+UI_EDITOR_CHECKS,Checks
+UI_EDITOR_NO_PROBLEMS,No problems
+UI_EDITOR_PROBLEM_ERROR,Error: {0}
+UI_EDITOR_PROBLEM_WARNING,Warning: {0}
+UI_EDITOR_PLAY,Play
+UI_EDITOR_REFUSED,Not done: {0}
 UI_EDITOR_REDO,Redo
 UI_EDITOR_CURSOR,Corner {0} {1} · level {2}
-UI_EDITOR_HINT,LMB paint · RMB drag the camera · wheel zoom · arrows move · [ and ] brush size · Ctrl+Z undo · Ctrl+Shift+Z redo
+UI_EDITOR_HINT,LMB paint (bridge: press on one shore and let go on the other) · RMB drag the camera · wheel zoom · arrows move · [ and ] brush size · Ctrl+Z undo · Ctrl+Shift+Z redo
 UI_SKIRMISH_PLAYERS,Players
 UI_SKIRMISH_OPTIONS,Options
 UI_SKIRMISH_YOU,You

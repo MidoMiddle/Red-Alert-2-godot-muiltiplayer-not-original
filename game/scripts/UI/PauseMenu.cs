@@ -78,6 +78,14 @@ public partial class PauseMenu : CanvasLayer
         // Unpause first: the router's fade runs on a tween, and a paused tree would hold it.
         GetTree().Paused = false;
         _open = false;
+
+        // A match started by «Play» in the map editor goes back to the editor (M7 step 12).
+        if (SceneRouter.Instance?.Args.ContainsKey(Rts.Client.Editor.MapEditorScene.FromEditorArgument) == true)
+        {
+            SceneRouter.Instance.Back();
+            return;
+        }
+
         SceneRouter.Instance?.Replace(MainMenuScene);
     }
 }

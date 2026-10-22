@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Godot;
+using Rts.Client.App;
 using Rts.Client.Controls;
 using Rts.Client.Debug;
 using Rts.Client.Units;
@@ -40,14 +41,23 @@ public partial class SimulationHost : Node
     public const string LoadMapPath = "res://maps/test/load128.txt";
 
     /// <summary>
-    /// The map of a live session: <c>--map NAME</c> plays res://data/maps/NAME.rtsmap when there is one (M7: heights in the
-    /// rules), otherwise res://maps/test/NAME.txt (for example <c>squad</c>, the 60-unit squad of the M2 definition of done);
-    /// <c>--perf</c> plays the load map, otherwise the sandbox.
+    /// The map of a live session: the <c>map</c> argument of the scene router (the map editor's «Play», M7 step 12); else
+    /// <c>--map NAME</c> plays res://data/maps/NAME.rtsmap when there is one (M7: heights in the rules), otherwise
+    /// res://maps/test/NAME.txt (for example <c>squad</c>, the 60-unit squad of the M2 definition of done); <c>--perf</c> plays
+    /// the load map, otherwise the sandbox.
     /// </summary>
+    /// <summary>The scene router argument with the path of the map to play.</summary>
+    public const string MapArgument = "map";
+
     public static string MapPath
     {
         get
         {
+            if (SceneRouter.Instance?.Args.TryGetValue(MapArgument, out var routed) == true && routed is string path)
+            {
+                return path;
+            }
+
             var args = OS.GetCmdlineUserArgs();
             var index = Array.IndexOf(args, "--map");
             if (index >= 0 && index + 1 < args.Length)

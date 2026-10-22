@@ -2,19 +2,23 @@ using System.Collections.Generic;
 
 namespace Rts.Data.Maps.Editing;
 
-/// <summary>What an edit changes: a corner height, or the land or texture of a cell.</summary>
+/// <summary>What an edit changes: a corner height, or the land, texture or ore of a cell.</summary>
 public enum EditLayer : byte
 {
     Height,
     Land,
     Texture,
+    Ore,
 }
 
 /// <summary>One value of one layer: the index of the corner or cell, before and after.</summary>
 public readonly record struct LayerChange(EditLayer Layer, int Index, byte Before, byte After);
 
-/// <summary>One stroke of the editor (from pressing the button to letting it go): every value it changed, in order.</summary>
-public sealed record EditRecord(IReadOnlyList<LayerChange> Changes);
+/// <summary>
+/// One stroke of the editor (from pressing the button to letting it go): every layer value it changed, in order, and the
+/// lists before and after when it changed them (objects, bridges, structures, starts).
+/// </summary>
+public sealed record EditRecord(IReadOnlyList<LayerChange> Changes, MapLists? ListsBefore = null, MapLists? ListsAfter = null);
 
 /// <summary>
 /// Undo and redo of the editor (docs/implementation/M7_maps.md, 4.13): one record per stroke, at most <see cref="Depth"/>; the
@@ -57,6 +61,11 @@ public sealed class UndoStack
             map.SetRaw(changes[i].Layer, changes[i].Index, changes[i].Before);
         }
 
+        if (last.Value.ListsBefore is { } lists)
+        {
+            map.SetLists(lists);
+        }
+
         _undone.Push(last.Value);
         return true;
     }
@@ -72,6 +81,11 @@ public sealed class UndoStack
         foreach (var change in record.Changes)
         {
             map.SetRaw(change.Layer, change.Index, change.After);
+        }
+
+        if (record.ListsAfter is { } lists)
+        {
+            map.SetLists(lists);
         }
 
         _done.AddLast(record);

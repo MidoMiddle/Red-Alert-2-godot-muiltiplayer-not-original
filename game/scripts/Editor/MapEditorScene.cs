@@ -8,19 +8,29 @@ using Rts.Data.Maps;
 using Rts.Data.Maps.Editing;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.World;
 
 namespace Rts.Client.Editor;
 
 /// <summary>
-/// The map editor, its base (docs/implementation/M7_maps.md, 4.13, step 11): the RA2 camera over the terrain of the map being
-/// edited, a brush cursor, and a panel on the right — new map, open, name and save; the tools raise, lower, flatten, smooth and
-/// land; brush size and shape; undo and redo. The left button paints a stroke while held, the right one drags the camera.
-/// The editing itself is <see cref="MapEditSession"/> (Rts.Data, tested without Godot); this scene only turns the pointer into
-/// dabs and shows the result. The terrain and the camera read the map through <see cref="IMapSource"/>. Maps are saved in
+/// The map editor (docs/implementation/M7_maps.md, 4.13, steps 11–12): the RA2 camera over the terrain of the map being
+/// edited, a cursor for the tool, the marks only the editor shows (<see cref="EditorMarks"/>), and a panel on the right —
+/// new map, open, name and save; fourteen tools with the settings of the chosen one; brush size and shape; undo and redo;
+/// the problems of <see cref="MapValidator"/> (a click on one moves the camera there) and «Play». The left button paints a
+/// stroke while held (click tools act on letting go), the right one drags the camera. The editing itself is
+/// <see cref="MapEditSession"/> (Rts.Data, tested without Godot); this scene turns the pointer into dabs and shows the
+/// result. The terrain and the camera read the map through <see cref="IMapSource"/>. Maps are saved in
 /// <see cref="UserMapPaths.UserDirectory"/>; the maps of the game are only read, so a changed one is saved as a copy there.
+/// «Play» opens the map in the debug match (squads at the starts until the bot of M5); leaving the match comes back here
+/// with the same session (<see cref="Kept"/>).
 /// </summary>
 public partial class MapEditorScene : Node3D, IMapSource
 {
+    /// <summary>The scene router argument a match started by «Play» carries, so leaving it returns to the editor.</summary>
+    public const string FromEditorArgument = "from_editor";
+
+    private const string MatchScene = "res://scenes/Main.tscn";
+    private const string PlayPath = "user://cache/editor_play.rtsmap";
     private const float PanelWidth = 380f;
     private const float FieldHeight = 40f;
     private const float CursorLift = 0.04f;
@@ -28,29 +38,47 @@ public partial class MapEditorScene : Node3D, IMapSource
     private static readonly int[] Sizes = [32, 64, 96, 128];
     private static readonly Color CursorColor = new(1f, 0.85f, 0.2f);
 
+    private static readonly (EditTool Tool, string Key)[] Tools =
+    [
+        (EditTool.Raise, "UI_EDITOR_RAISE"), (EditTool.Lower, "UI_EDITOR_LOWER"), (EditTool.Flatten, "UI_EDITOR_FLATTEN"),
+        (EditTool.Smooth, "UI_EDITOR_SMOOTH"), (EditTool.Cliff, "UI_EDITOR_CLIFF"), (EditTool.Land, "UI_EDITOR_LAND"),
+        (EditTool.Water, "UI_EDITOR_WATER"), (EditTool.Road, "UI_EDITOR_ROAD"), (EditTool.Ore, "UI_EDITOR_ORE"),
+        (EditTool.Objects, "UI_EDITOR_OBJECTS"), (EditTool.Bridge, "UI_EDITOR_BRIDGE"), (EditTool.Building, "UI_EDITOR_BUILDING"),
+        (EditTool.Start, "UI_EDITOR_START"), (EditTool.Eraser, "UI_EDITOR_ERASER"),
+    ];
+
+    /// <summary>The session of the editor, kept while a match started by «Play» runs, so the editor comes back as it was.</summary>
+    private static MapEditSession? Kept;
+
     private readonly ImmediateMesh _cursorMesh = new();
+    private readonly Dictionary<EditTool, Button> _toolButtons = new();
     private MapEditSession _session = null!;
     private MapGrid _view = null!;
     private int _viewVersion = -1;
+    private int _checkedVersion = -1;
+    private List<MapProblem> _problems = [];
     private RtsCamera _camera = null!;
+    private EditorMarks _marks = null!;
     private EditTool _tool = EditTool.Raise;
     private Brush _brush = new(BrushShape.Circle, 3);
-    private LandType _land = LandType.Road;
+    private EditOptions _options = new() { Land = LandType.Road };
     private bool _painting;
     private bool _dragging;
     private (int X, int Y, CellPos Cell)? _pointer;
+    private CellPos? _pressedCell;
     private string _message = "";
-    private (EditTool, Brush, (int, int, CellPos)?, int) _drawnCursor;
+    private (EditTool, Brush, (int, int, CellPos)?, CellPos?, int, EditOptions) _drawnCursor;
+    private List<MapEntry> _maps = [];
 
     private Label _status = null!;
     private LineEdit _name = null!;
     private OptionButton _openList = null!;
     private OptionButton _sizeList = null!;
     private SpinBox _players = null!;
-    private OptionButton _landList = null!;
     private HSlider _sizeSlider = null!;
-    private readonly Dictionary<EditTool, Button> _toolButtons = new();
-    private List<MapEntry> _maps = [];
+    private VBoxContainer _toolOptions = null!;
+    private ItemList _problemList = null!;
+    private Button _play = null!;
 
     public MapGrid CurrentMap
     {
@@ -69,15 +97,17 @@ public partial class MapEditorScene : Node3D, IMapSource
     public override void _EnterTree()
     {
         // Before the terrain and the camera are ready: they ask for the map at once.
-        Load(new MapEditSession(EditableMap.New(64, 64, 2)));
+        Load(Kept ?? new MapEditSession(EditableMap.New(64, 64, 2)));
     }
 
     public override void _Ready()
     {
         ScreenshotCapture.AttachIfRequested(this);
         _camera = GetNode<RtsCamera>("CameraRig");
-        GetNode<DirectionalLight3D>("Sun").Basis = Basis.LookingAt(Main.SunDirection, Vector3.Up);
         _camera.ReservedRight = PanelWidth;
+        GetNode<DirectionalLight3D>("Sun").Basis = Basis.LookingAt(Main.SunDirection, Vector3.Up);
+        _marks = new EditorMarks { Name = "EditorMarks" };
+        AddChild(_marks);
         AddChild(new MeshInstance3D
         {
             Name = "BrushCursor",
@@ -103,6 +133,12 @@ public partial class MapEditorScene : Node3D, IMapSource
             _session.Paint(at.X, at.Y, at.Cell);
         }
 
+        _marks.Refresh(_session);
+        if (!_painting && _checkedVersion != _session.Version)
+        {
+            Recheck();
+        }
+
         DrawCursor();
         UpdateStatus();
     }
@@ -114,14 +150,22 @@ public partial class MapEditorScene : Node3D, IMapSource
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } left:
                 if (left.Pressed && PointerUnder(left.Position) is { } at)
                 {
-                    _session.BeginStroke(_tool, _brush, _land);
+                    _session.BeginStroke(_tool, _brush, _options);
                     _session.Paint(at.X, at.Y, at.Cell);
+                    _pressedCell = at.Cell;
                     _painting = true;
                 }
                 else if (!left.Pressed && _painting)
                 {
+                    if (PointerUnder(left.Position) is { } end)
+                    {
+                        _session.Paint(end.X, end.Y, end.Cell);
+                    }
+
                     _session.EndStroke();
                     _painting = false;
+                    _pressedCell = null;
+                    _message = _session.Message is { } refused ? string.Format(Tr("UI_EDITOR_REFUSED"), refused) : _message;
                 }
 
                 break;
@@ -180,13 +224,15 @@ public partial class MapEditorScene : Node3D, IMapSource
         var map = _session.Map;
         var cell = new CellPos((int)Math.Floor(ground.X), (int)Math.Floor(ground.Z));
         var (x, y) = ((int)Math.Round(ground.X), (int)Math.Round(ground.Z));
-        return map.ContainsCorner(x, y) ? (x, y, cell) : null;
+        return map.ContainsCorner(x, y) && map.ContainsCell(cell) ? (x, y, cell) : null;
     }
 
     private void Load(MapEditSession session)
     {
         _session = session;
+        Kept = session;
         _viewVersion = -1;
+        _checkedVersion = -1;
         _painting = false;
         if (_name is not null)
         {
@@ -195,11 +241,65 @@ public partial class MapEditorScene : Node3D, IMapSource
         }
     }
 
-    // ---- The brush cursor: a cross on every corner under a height brush, the outline of every cell under the land brush.
+    // ---- Checks and «Play».
+
+    private void Recheck()
+    {
+        _checkedVersion = _session.Version;
+        try
+        {
+            _problems = MapValidator.Check(_session.Map.ToDefinition());
+        }
+        catch (ArgumentException error)
+        {
+            _problems = [new MapProblem(ProblemLevel.Error, error.Message, null)];
+        }
+
+        _problemList.Clear();
+        foreach (var problem in _problems)
+        {
+            var key = problem.Level == ProblemLevel.Error ? "UI_EDITOR_PROBLEM_ERROR" : "UI_EDITOR_PROBLEM_WARNING";
+            _problemList.AddItem(string.Format(Tr(key), problem.Message));
+        }
+
+        if (_problems.Count == 0)
+        {
+            _problemList.AddItem(Tr("UI_EDITOR_NO_PROBLEMS"));
+        }
+
+        _play.Disabled = MapValidator.HasErrors(_problems);
+    }
+
+    private void ShowProblem(long index)
+    {
+        if (index < _problems.Count && _problems[(int)index].Cell is { } cell)
+        {
+            _camera.CenterOn(new Vector3(cell.X + 0.5f, 0f, cell.Y + 0.5f));
+        }
+    }
+
+    /// <summary>Saves the map to a scratch file and opens it in the debug match; leaving the match comes back here.</summary>
+    private void Play()
+    {
+        if (!Write(PlayPath, _session.Map.ToDefinition(), out var error))
+        {
+            _message = string.Format(Tr("UI_EDITOR_SAVE_FAILED"), error);
+            return;
+        }
+
+        SceneRouter.Instance?.GoTo(MatchScene, new Dictionary<string, object>
+        {
+            [SimulationHost.MapArgument] = PlayPath,
+            [FromEditorArgument] = true,
+        });
+    }
+
+    // ---- The cursor: crosses on the corners under a height brush, outlines of the cells under the other brushes, the
+    // footprint of a building, the line of a bridge from where the button went down.
 
     private void DrawCursor()
     {
-        var state = (_tool, _brush, _pointer, _session.Version);
+        var state = (_tool, _brush, _pointer, _pressedCell, _session.Version, _options);
         if (state == _drawnCursor)
         {
             return;
@@ -213,35 +313,59 @@ public partial class MapEditorScene : Node3D, IMapSource
         }
 
         _cursorMesh.SurfaceBegin(Mesh.PrimitiveType.Lines);
-        if (_tool == EditTool.Land)
+        switch (_tool)
         {
-            foreach (var cell in _brush.Cells(_session.Map, at.Cell))
-            {
-                Corner(terrain, cell.X, cell.Y, out var a);
-                Corner(terrain, cell.X + 1, cell.Y, out var b);
-                Corner(terrain, cell.X + 1, cell.Y + 1, out var c);
-                Corner(terrain, cell.X, cell.Y + 1, out var d);
-                Segment(a, b);
-                Segment(b, c);
-                Segment(c, d);
-                Segment(d, a);
-            }
-        }
-        else
-        {
-            foreach (var (x, y) in _brush.Corners(_session.Map, at.X, at.Y))
-            {
-                Corner(terrain, x, y, out var point);
-                Segment(point + new Vector3(-CrossHalf, 0, 0), point + new Vector3(CrossHalf, 0, 0));
-                Segment(point + new Vector3(0, 0, -CrossHalf), point + new Vector3(0, 0, CrossHalf));
-            }
+            case EditTool.Raise or EditTool.Lower or EditTool.Flatten or EditTool.Smooth or EditTool.Cliff:
+                foreach (var (x, y) in _brush.Corners(_session.Map, at.X, at.Y))
+                {
+                    var point = Corner(terrain, x, y);
+                    Segment(point + new Vector3(-CrossHalf, 0, 0), point + new Vector3(CrossHalf, 0, 0));
+                    Segment(point + new Vector3(0, 0, -CrossHalf), point + new Vector3(0, 0, CrossHalf));
+                }
+
+                break;
+            case EditTool.Building:
+                if (BuildingTypes.TryGetById(_options.BuildingType, out var type))
+                {
+                    Outline(terrain, at.Cell, type.Width, type.Height);
+                }
+
+                break;
+            case EditTool.Start:
+                Outline(terrain, at.Cell, 1, 1);
+                break;
+            case EditTool.Bridge:
+                var from = _pressedCell ?? at.Cell;
+                Outline(terrain, from, 1, 1);
+                Outline(terrain, at.Cell, 1, 1);
+                Segment(Corner(terrain, from.X, from.Y) + new Vector3(0.5f, 0, 0.5f), Corner(terrain, at.Cell.X, at.Cell.Y) + new Vector3(0.5f, 0, 0.5f));
+                break;
+            default:
+                var brush = _tool == EditTool.Road ? _brush with { Shape = BrushShape.Square } : _brush;
+                foreach (var cell in brush.Cells(_session.Map, at.Cell))
+                {
+                    Outline(terrain, cell, 1, 1);
+                }
+
+                break;
         }
 
         _cursorMesh.SurfaceEnd();
     }
 
-    private static void Corner(TerrainHeights terrain, int x, int y, out Vector3 point) =>
-        point = new Vector3(x, terrain.VertexHeight(x, y) + CursorLift, y);
+    private static Vector3 Corner(TerrainHeights terrain, int x, int y) => new(x, terrain.VertexHeight(x, y) + CursorLift, y);
+
+    private void Outline(TerrainHeights terrain, CellPos cell, int width, int height)
+    {
+        var a = Corner(terrain, cell.X, cell.Y);
+        var b = Corner(terrain, cell.X + width, cell.Y);
+        var c = Corner(terrain, cell.X + width, cell.Y + height);
+        var d = Corner(terrain, cell.X, cell.Y + height);
+        Segment(a, b);
+        Segment(b, c);
+        Segment(c, d);
+        Segment(d, a);
+    }
 
     private void Segment(Vector3 from, Vector3 to)
     {
@@ -283,7 +407,7 @@ public partial class MapEditorScene : Node3D, IMapSource
         _sizeList.Selected = 1;
         newRow.AddChild(_sizeList);
         newRow.AddChild(new Label { Text = Tr("UI_EDITOR_PLAYERS"), VerticalAlignment = VerticalAlignment.Center });
-        _players = new SpinBox { MinValue = 2, MaxValue = Rts.Simulation.World.PlayerId.MaxPlayers, Value = 2 };
+        _players = new SpinBox { MinValue = 2, MaxValue = PlayerId.MaxPlayers, Value = 2 };
         newRow.AddChild(_players);
         stack.AddChild(ActionButton("UI_EDITOR_NEW", () =>
         {
@@ -304,16 +428,12 @@ public partial class MapEditorScene : Node3D, IMapSource
         stack.AddChild(_name);
         stack.AddChild(ActionButton("UI_EDITOR_SAVE", Save));
 
-        // Tools.
+        // Tools and the settings of the chosen one.
         stack.AddChild(Caption("UI_EDITOR_TOOLS"));
         var tools = new GridContainer { Columns = 2 };
         tools.AddThemeConstantOverride("h_separation", 8);
         stack.AddChild(tools);
-        foreach (var (tool, key) in new[]
-        {
-            (EditTool.Raise, "UI_EDITOR_RAISE"), (EditTool.Lower, "UI_EDITOR_LOWER"), (EditTool.Flatten, "UI_EDITOR_FLATTEN"),
-            (EditTool.Smooth, "UI_EDITOR_SMOOTH"), (EditTool.Land, "UI_EDITOR_LAND"),
-        })
+        foreach (var (tool, key) in Tools)
         {
             var button = new Button { Text = Tr(key), ToggleMode = true, CustomMinimumSize = new Vector2(0, FieldHeight), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
             button.Pressed += () => SelectTool(tool);
@@ -321,45 +441,34 @@ public partial class MapEditorScene : Node3D, IMapSource
             tools.AddChild(button);
         }
 
-        _landList = new OptionButton { CustomMinimumSize = new Vector2(0, FieldHeight), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
-        foreach (var land in Enum.GetValues<LandType>())
-        {
-            _landList.AddItem(land.ToString(), (int)land);
-        }
-
-        _landList.Selected = _landList.GetItemIndex((int)_land);
-        _landList.ItemSelected += index =>
-        {
-            _land = (LandType)_landList.GetItemId((int)index);
-            SelectTool(EditTool.Land);
-        };
-        tools.AddChild(_landList);
+        _toolOptions = new VBoxContainer();
+        _toolOptions.AddThemeConstantOverride("separation", 6);
+        stack.AddChild(_toolOptions);
 
         // Brush.
         stack.AddChild(Caption("UI_EDITOR_BRUSH"));
         _sizeSlider = new HSlider { MinValue = Brush.MinSize, MaxValue = Brush.MaxSize, Step = 1, Value = _brush.Size, CustomMinimumSize = new Vector2(0, FieldHeight) };
         _sizeSlider.ValueChanged += value => _brush = _brush with { Size = (int)value };
         stack.AddChild(_sizeSlider);
-        var shapes = new OptionButton { CustomMinimumSize = new Vector2(0, FieldHeight) };
-        shapes.AddItem(Tr("UI_EDITOR_CIRCLE"));
-        shapes.AddItem(Tr("UI_EDITOR_SQUARE"));
-        shapes.ItemSelected += index => _brush = _brush with { Shape = index == 0 ? BrushShape.Circle : BrushShape.Square };
-        stack.AddChild(shapes);
+        stack.AddChild(Choice([Tr("UI_EDITOR_CIRCLE"), Tr("UI_EDITOR_SQUARE")], 0, index => _brush = _brush with { Shape = index == 0 ? BrushShape.Circle : BrushShape.Square }));
 
-        // History and back.
+        // History.
         var history = Row(stack);
         history.AddChild(ActionButton("UI_EDITOR_UNDO", () => _session.Undo(), expand: true));
         history.AddChild(ActionButton("UI_EDITOR_REDO", () => _session.Redo(), expand: true));
+
+        // Checks and «Play».
+        stack.AddChild(Caption("UI_EDITOR_CHECKS"));
+        _problemList = new ItemList { CustomMinimumSize = new Vector2(0, 150), AutoHeight = false };
+        _problemList.ItemSelected += ShowProblem;
+        stack.AddChild(_problemList);
+        _play = ActionButton("UI_EDITOR_PLAY", Play);
+        stack.AddChild(_play);
         stack.AddChild(ActionButton("UI_BUTTON_BACK", () => SceneRouter.Instance?.Back()));
 
         _status = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         stack.AddChild(_status);
-        stack.AddChild(new Label
-        {
-            Text = Tr("UI_EDITOR_HINT"),
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            Modulate = new Color(1, 1, 1, 0.7f),
-        });
+        stack.AddChild(new Label { Text = Tr("UI_EDITOR_HINT"), AutowrapMode = TextServer.AutowrapMode.WordSmart, Modulate = new Color(1, 1, 1, 0.7f) });
     }
 
     private void SelectTool(EditTool tool)
@@ -368,6 +477,63 @@ public partial class MapEditorScene : Node3D, IMapSource
         foreach (var (each, button) in _toolButtons)
         {
             button.SetPressedNoSignal(each == tool);
+        }
+
+        foreach (var child in _toolOptions.GetChildren())
+        {
+            child.QueueFree();
+        }
+
+        switch (tool)
+        {
+            case EditTool.Land:
+                var lands = Enum.GetValues<LandType>();
+                _toolOptions.AddChild(Choice(Array.ConvertAll(lands, l => l.ToString()), Array.IndexOf(lands, _options.Land), i => _options = _options with { Land = lands[i] }));
+                break;
+            case EditTool.Water:
+                _toolOptions.AddChild(Choice(
+                    [Tr("UI_EDITOR_SHALLOW"), Tr("UI_EDITOR_DEEP")], _options.Water == LandType.Deep ? 1 : 0,
+                    i => _options = _options with { Water = i == 1 ? LandType.Deep : LandType.Shallow }));
+                break;
+            case EditTool.Ore:
+                var gems = _options.Ore > 9;
+                _toolOptions.AddChild(Choice([Tr("UI_EDITOR_ORE"), Tr("UI_EDITOR_GEMS")], gems ? 1 : 0, i => _options = _options with { Ore = i == 1 ? 11 : 5 }));
+                _toolOptions.AddChild(Slider("UI_EDITOR_DENSITY", 1, 9, gems ? _options.Ore - 9 : _options.Ore, value =>
+                    _options = _options with { Ore = _options.Ore > 9 ? Math.Clamp(9 + value, 10, 12) : value }));
+                break;
+            case EditTool.Objects:
+                var objects = new List<string>();
+                foreach (var type in MapObjectTypes.All)
+                {
+                    objects.Add(type.Id);
+                }
+
+                _toolOptions.AddChild(Choice([.. objects], Math.Max(0, objects.IndexOf(_options.ObjectType)), i => _options = _options with { ObjectType = objects[i] }));
+                _toolOptions.AddChild(Slider("UI_EDITOR_DENSITY", 1, 100, _options.Density, value => _options = _options with { Density = value }));
+                break;
+            case EditTool.Bridge:
+                var bridges = new List<string>();
+                foreach (var type in BridgeTypes.All)
+                {
+                    bridges.Add(type.Id);
+                }
+
+                _toolOptions.AddChild(Choice([.. bridges], Math.Max(0, bridges.IndexOf(_options.BridgeType)), i => _options = _options with { BridgeType = bridges[i] }));
+                break;
+            case EditTool.Building:
+                var buildings = new List<string>();
+                foreach (var type in BuildingTypes.All)
+                {
+                    buildings.Add(type.Id);
+                }
+
+                _toolOptions.AddChild(Choice([.. buildings], Math.Max(0, buildings.IndexOf(_options.BuildingType)), i => _options = _options with { BuildingType = buildings[i] }));
+                _toolOptions.AddChild(Slider("UI_EDITOR_FACING", 0, 7, _options.Facing, value => _options = _options with { Facing = value }));
+                break;
+            case EditTool.Eraser:
+                var layers = Enum.GetValues<EraseLayer>();
+                _toolOptions.AddChild(Choice(Array.ConvertAll(layers, l => l.ToString()), Array.IndexOf(layers, _options.Erase), i => _options = _options with { Erase = layers[i] }));
+                break;
         }
     }
 
@@ -399,7 +565,7 @@ public partial class MapEditorScene : Node3D, IMapSource
         _message = string.Format(Tr("UI_EDITOR_OPENED"), entry.File);
     }
 
-    /// <summary>Saves under the name in the field as user://maps/&lt;id&gt;.rtsmap; a map that does not play is saved with a warning.</summary>
+    /// <summary>Saves under the name in the field as user://maps/&lt;id&gt;.rtsmap; a map with errors is saved with a warning.</summary>
     private void Save()
     {
         var name = _name.Text.Trim();
@@ -424,29 +590,32 @@ public partial class MapEditorScene : Node3D, IMapSource
         }
 
         var path = UserMapPaths.SavePath(map.Id);
-        DirAccess.MakeDirRecursiveAbsolute(UserMapPaths.UserDirectory);
-        using (var file = FileAccess.Open(path, FileAccess.ModeFlags.Write))
+        if (!Write(path, definition, out var failure))
         {
-            if (file is null)
-            {
-                _message = string.Format(Tr("UI_EDITOR_SAVE_FAILED"), FileAccess.GetOpenError().ToString());
-                return;
-            }
-
-            file.StoreString(RtsMapWriter.Write(definition));
+            _message = string.Format(Tr("UI_EDITOR_SAVE_FAILED"), failure);
+            return;
         }
 
-        try
-        {
-            definition.ToMapGrid();
-            _message = string.Format(Tr("UI_EDITOR_SAVED"), path);
-        }
-        catch (ArgumentException error)
-        {
-            _message = string.Format(Tr("UI_EDITOR_SAVED_NOT_PLAYABLE"), path, error.Message);
-        }
-
+        Recheck();
+        _message = MapValidator.HasErrors(_problems)
+            ? string.Format(Tr("UI_EDITOR_SAVED_NOT_PLAYABLE"), path, _problems.Find(p => p.Level == ProblemLevel.Error)!.Message)
+            : string.Format(Tr("UI_EDITOR_SAVED"), path);
         RefreshOpenList();
+    }
+
+    private static bool Write(string path, MapDefinition definition, out string error)
+    {
+        DirAccess.MakeDirRecursiveAbsolute(path[..path.LastIndexOf('/')]);
+        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+        if (file is null)
+        {
+            error = FileAccess.GetOpenError().ToString();
+            return false;
+        }
+
+        file.StoreString(RtsMapWriter.Write(definition));
+        error = "";
+        return true;
     }
 
     private void UpdateStatus()
@@ -463,6 +632,36 @@ public partial class MapEditorScene : Node3D, IMapSource
         var row = new HBoxContainer();
         row.AddThemeConstantOverride("separation", 8);
         parent.AddChild(row);
+        return row;
+    }
+
+    private static OptionButton Choice(string[] items, int selected, Action<int> chosen)
+    {
+        var choice = new OptionButton { CustomMinimumSize = new Vector2(0, FieldHeight) };
+        foreach (var item in items)
+        {
+            choice.AddItem(item);
+        }
+
+        choice.Selected = Math.Max(0, selected);
+        choice.ItemSelected += index => chosen((int)index);
+        return choice;
+    }
+
+    private HBoxContainer Slider(string key, int min, int max, int value, Action<int> changed)
+    {
+        var row = new HBoxContainer();
+        row.AddThemeConstantOverride("separation", 8);
+        var shown = new Label { Text = value.ToString(System.Globalization.CultureInfo.InvariantCulture), CustomMinimumSize = new Vector2(36, 0) };
+        var slider = new HSlider { MinValue = min, MaxValue = max, Step = 1, Value = value, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(0, FieldHeight) };
+        slider.ValueChanged += v =>
+        {
+            shown.Text = ((int)v).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            changed((int)v);
+        };
+        row.AddChild(new Label { Text = Tr(key), VerticalAlignment = VerticalAlignment.Center });
+        row.AddChild(slider);
+        row.AddChild(shown);
         return row;
     }
 

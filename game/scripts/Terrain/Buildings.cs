@@ -23,36 +23,47 @@ public partial class Buildings : Node3D
 
     public override void _Process(double delta)
     {
-        var world = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World;
-        if (world is not null && (!ReferenceEquals(world.Map, _builtMap) || world.Map.Version != _builtVersion))
+        // The map of the terrain: a match's, or the editor's (M7 step 12), which has no world and shows its start buildings.
+        var map = GetParent<TerrainBuilder>().Map;
+        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion)
         {
-            Rebuild(world);
+            Rebuild(map, GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World);
         }
     }
 
-    private void Rebuild(GameWorld world)
+    private void Rebuild(Rts.Simulation.Map.MapGrid map, GameWorld? world)
     {
         foreach (var child in GetChildren())
         {
             child.QueueFree();
         }
 
-        _builtMap = world.Map;
-        _builtVersion = world.Map.Version;
+        _builtMap = map;
+        _builtVersion = map.Version;
+        if (world is null)
+        {
+            foreach (var start in map.StartBuildings)
+            {
+                Add(start.Kind, start.Cell, start.Owner);
+            }
+
+            return;
+        }
+
         foreach (var entity in world.Entities)
         {
             if (entity is Building { IsAlive: true } building)
             {
-                Add(building);
+                Add(building.Kind, building.Cell, building.Owner);
             }
         }
     }
 
-    private void Add(Building building)
+    private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner)
     {
-        var type = building.Type;
+        var type = BuildingTypes.Get(kind);
         var tech = type.Capturable;
-        var height = building.Kind switch
+        var height = kind switch
         {
             BuildingKind.NeutralShed => 0.35f,
             BuildingKind.NeutralHouseA => 0.6f,
@@ -60,13 +71,13 @@ public partial class Buildings : Node3D
             BuildingKind.TechAirfield => 0.2f,
             _ => 0.5f,
         };
-        var centre = new Vector3(building.Cell.X + type.Width / 2f, 0, building.Cell.Y + type.Height / 2f);
+        var centre = new Vector3(cell.X + type.Width / 2f, 0, cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
         var size = new Vector3(type.Width - 2 * Margin, height + Sink, type.Height - 2 * Margin);
         Box(size, centre + new Vector3(0, ground + (height - Sink) / 2, 0), tech ? Tech : Civilian);
         var top = ground + height;
 
-        switch (building.Kind)
+        switch (kind)
         {
             case BuildingKind.TechOilDerrick:
                 Box(new Vector3(0.18f, 1.1f, 0.18f), centre + new Vector3(0.4f, top + 0.55f, 0.4f), new Color(0.2f, 0.2f, 0.22f));
@@ -80,13 +91,13 @@ public partial class Buildings : Node3D
                 break;
         }
 
-        if (!building.Owner.IsNeutral)
+        if (!owner.IsNeutral)
         {
-            var band = building.Owner.Value switch
+            var band = owner.Value switch
             {
                 1 => new Color(0.2f, 0.45f, 0.95f),
                 2 => new Color(0.9f, 0.25f, 0.2f),
-                var owner => Color.FromHsv(owner * 0.13f % 1f, 0.7f, 0.9f),
+                var other => Color.FromHsv(other * 0.13f % 1f, 0.7f, 0.9f),
             };
             Box(new Vector3(size.X + 0.02f, 0.08f, size.Z + 0.02f), centre + new Vector3(0, top - 0.1f, 0), band);
         }
