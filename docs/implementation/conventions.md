@@ -101,29 +101,31 @@ game/data/
 Единый порядок для всех вех. Веха, добавляющая систему, вставляет её в указанное место и обновляет этот список.
 
 ```
- 1. Команды тика T: сортировка (PlayerId, Sequence), проверка, применение     M0
- 2. Супероружие: таймеры, запуски                                               M11
- 3. Способности: телепорт, контроль разума, мутация, захват, вход в здания     M11
- 4. PathRequestQueue — обработка в пределах бюджета                            M2
- 5. PowerSystem                                                                 M3
- 6. ProductionSystem                                                            M3
- 7. BuildUp — завершение вырастания зданий                                      M3
- 8. HarvesterBrain                                                              M3
- 9. MovementSystem: земля → вода → воздух                                       M2, M11
-10. Harvesting / Unloading                                                      M3
-11. RepairSellSystem                                                            M3
-12. TargetingSystem → WeaponSystem → ProjectileSystem → DamageSystem            M4
-13. CrushSystem                                                                 M4
-14. Ветеранство                                                                 M11
-15. DeathSystem (+ выброс пассажиров и гарнизона в M11)                         M4
-16. Ящики, техздания                                                            M11
-17. OreGrowthSystem (по интервалу)                                              M3
-18. TechTree — пересчёт при изменении зданий                                    M3
-19. VisibilitySystem                                                            M4
-20. SpatialIndex, удаление мёртвых                                              M0, M2
-21. Боты думают: читают состояние после тика T, выдают команды на T + 1         M5
-22. T = T + 1, контрольная сумма                                                M0
+ 1. VisibilitySystem — что появилось между тиками (здания карты, юниты тестов)   M4
+ 2. Команды тика T: сортировка (PlayerId, Sequence), проверка, применение      M0
+ 3. Супероружие: таймеры, запуски                                                M11
+ 4. Способности: телепорт, контроль разума, мутация, захват, вход в здания      M11
+ 5. PathRequestQueue — обработка в пределах бюджета                             M2
+ 6. PowerSystem                                                                  M3
+ 7. ProductionSystem                                                             M3
+ 8. BuildUpSystem — завершение вырастания зданий                                 M3
+ 9. HarvesterSystem — поиск руды, добыча, разгрузка                             M3
+10. RepairSystem                                                                 M3
+11. TargetingSystem → PursuitSystem → WeaponSystem → ProjectileSystem → DamageSystem   M4
+12. Ветеранство                                                                  M11
+13. MovementSystem: земля → вода → воздух; давка — CrushSystem при въезде в клетку   M2, M4, M11
+14. SpatialIndex.Sync                                                           M2
+15. Ящики, техздания                                                             M11
+16. OreGrowthSystem (по интервалу)                                               M3
+17. TechTree — пересчёт при изменении зданий                                     M3
+18. DeathSystem — клетки рухнувших открываются (+ выброс пассажиров и гарнизона в M11)   M4
+19. VisibilitySystem                                                             M4
+20. Удаление мёртвых                                                             M0
+21. Боты думают: читают состояние после тика T, выдают команды на T + 1          M5
+22. T = T + 1, контрольная сумма (раз в HashInterval)                            M0
 ```
+
+**Как сделано (M4, шаг 16):** порядок выше совпадает с `GameSimulation.Step()`. Гибель наступает в момент урона или давки (`DeathSystem.Kill` / `Destroy`). Пункт 18 в конце тика только открывает клетки рухнувших зданий. Продажа — команда, отдельной системы у неё нет.
 
 ---
 

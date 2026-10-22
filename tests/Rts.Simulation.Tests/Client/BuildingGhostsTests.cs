@@ -60,6 +60,29 @@ public sealed class BuildingGhostsTests
     }
 
     [Fact]
+    public void A_building_that_fell_while_its_owner_looked_stays_a_ghost_for_the_player_that_saw_it()
+    {
+        // The debug switch of the player (F11): the owner looks on while its building falls, then the other player looks again.
+        var world = World();
+        var reactor = Build(world, Enemy, "reactor", 20, 20);
+        var scout = world.SpawnUnit(Me, UnitType.HeavyTank, new CellPos(20, 24).Center);
+        VisibilitySystem.Update(world);
+        var ghosts = new BuildingGhosts();
+        ghosts.Update(world, Me);
+
+        scout.Position = new CellPos(45, 45).Center;
+        VisibilitySystem.Update(world);
+        ghosts.Update(world, Enemy);
+        world.DestroyBuilding(reactor, null);
+        DeathSystem.Update(world, null);
+        world.RemoveDead();
+        ghosts.Update(world, Enemy);
+
+        var shown = Assert.Single(ghosts.Update(world, Me));
+        Assert.Equal((reactor, true), (shown.Building, shown.Ghost));
+    }
+
+    [Fact]
     public void A_building_never_seen_is_not_shown_and_an_own_one_always_is()
     {
         var world = World();

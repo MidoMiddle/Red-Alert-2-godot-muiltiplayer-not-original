@@ -27,7 +27,7 @@ public sealed record SkirmishResult(int Winner, int Ticks, int[] UnitsLeft, int[
 /// The fights of balance v0 (docs/implementation/M4_combat.md, step 14): two groups on an open field 12 cells apart attack-move into
 /// each other, and the fight goes on until a side has no fighters — units or armed buildings — or the time is up. The groups stand in
 /// columns of six, a cell apart. A side with no units — a defense the setup places — does not move. Only the public commands of the game are used, as the client
-/// would; the setup can place what they cannot (buildings), for the tests.
+/// would; the setup can place what they cannot (buildings), for the tests, and <c>afterTick</c> sees every tick of the fight.
 /// </summary>
 public static class Skirmish
 {
@@ -42,7 +42,7 @@ public static class Skirmish
 
     public static SkirmishResult Fight(
         GameRules rules, IReadOnlyList<UnitType> first, IReadOnlyList<UnitType> second, int maxTicks = MaxTicks, ulong seed = 1,
-        Action<GameSimulation>? setup = null)
+        Action<GameSimulation>? setup = null, Action<GameSimulation>? afterTick = null)
     {
         var simulation = new GameSimulation(new SimulationSettings(seed, new MapGrid(Width, Height, rules.Land)), rules);
         setup?.Invoke(simulation);
@@ -59,6 +59,7 @@ public static class Skirmish
         while (simulation.CurrentTick < maxTicks && Count(simulation, players[0]) > 0 && Count(simulation, players[1]) > 0)
         {
             simulation.Step();
+            afterTick?.Invoke(simulation);
         }
 
         var left = new[] { Count(simulation, players[0]), Count(simulation, players[1]) };

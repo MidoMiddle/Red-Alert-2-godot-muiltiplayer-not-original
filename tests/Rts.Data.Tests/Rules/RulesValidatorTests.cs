@@ -120,6 +120,17 @@ public sealed class RulesValidatorTests
     }
 
     [Fact]
+    public void A_building_needs_armor_and_a_weapon_that_exist()
+    {
+        var armor = Fails(Buildings, "  power: 150\n", "  power: 150\n  armor: paper\n");
+        var weapon = Fails(Buildings, "  power: 150\n", "  power: 150\n  primary: reactor_gun\n");
+
+        Assert.Equal((Buildings, 21, 10, "'reactor' refers to armor 'paper', which is not defined"), (armor.FileName, armor.Line, armor.Column, armor.Reason));
+        Assert.Equal((Buildings, 21, 12), (weapon.FileName, weapon.Line, weapon.Column));
+        Assert.Contains("weapon 'reactor_gun', which is not defined", weapon.Reason);
+    }
+
+    [Fact]
     public void Only_a_vehicle_crushes_and_only_infantry_is_crushed()
     {
         var crusher = Fails(Units, "  sight: 5\n  turret: false\n", "  sight: 5\n  turret: false\n  crusher: true\n");

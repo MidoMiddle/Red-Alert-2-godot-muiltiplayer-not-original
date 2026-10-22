@@ -9,12 +9,12 @@ namespace Rts.Client.Terrain;
 /// The buildings of the players as one player knows them (docs/implementation/M4_combat.md, 4.15, step 12): its own always; another's
 /// as it stands while seen, as last seen — a ghost — while in the fog, even after it fell there, until its cells are seen again; never
 /// one that was never seen. Only a picture: the simulation does not know of ghosts and takes no order on them. With the fog revealed
-/// every building shows as it stands. Pure, tested in Rts.Simulation.Tests.
+/// every building shows as it stands. Each viewer remembers on its own (M4 step 16): with the debug switch of the player (F11) a
+/// building that fell while another player looked stays a ghost for the one that saw it. Pure, tested in Rts.Simulation.Tests.
 /// </summary>
 public sealed class BuildingGhosts
 {
-    private readonly Dictionary<EntityId, Building> _seen = new();
-    private readonly Dictionary<EntityId, int> _growth = new();
+    private readonly Dictionary<PlayerId, Memory> _memories = new();
     private readonly List<Shown> _shown = [];
     private GameWorld? _world;
 
@@ -27,11 +27,17 @@ public sealed class BuildingGhosts
         if (!ReferenceEquals(world, _world))
         {
             // A new session numbers its entities again: nothing seen before is known.
-            _seen.Clear();
-            _growth.Clear();
+            _memories.Clear();
             _world = world;
         }
 
+        if (!_memories.TryGetValue(viewer, out var memory))
+        {
+            memory = new Memory();
+            _memories[viewer] = memory;
+        }
+
+        var (seen, growth) = (memory.Seen, memory.Growth);
         _shown.Clear();
         foreach (var entity in world.Entities)
         {
@@ -46,13 +52,13 @@ public sealed class BuildingGhosts
             }
             else if (Vision.Sees(world, viewer, building))
             {
-                _seen[building.Id] = building;
-                _growth[building.Id] = building.BuildUpLeft;
+                seen[building.Id] = building;
+                growth[building.Id] = building.BuildUpLeft;
                 _shown.Add(new Shown(building, building.BuildUpLeft, Ghost: false));
             }
-            else if (_seen.ContainsKey(building.Id))
+            else if (seen.ContainsKey(building.Id))
             {
-                _shown.Add(new Shown(building, _growth[building.Id], Ghost: true));
+                _shown.Add(new Shown(building, growth[building.Id], Ghost: true));
             }
         }
 
@@ -63,7 +69,7 @@ public sealed class BuildingGhosts
 
         // Fallen ones that were seen: ghosts until their cells are seen again.
         List<EntityId>? forgotten = null;
-        foreach (var (id, building) in _seen)
+        foreach (var (id, building) in seen)
         {
             if (building.IsAlive && world.TryGet(id, out var entity) && ReferenceEquals(entity, building))
             {
@@ -76,17 +82,25 @@ public sealed class BuildingGhosts
             }
             else
             {
-                _shown.Add(new Shown(building, _growth[id], Ghost: true));
+                _shown.Add(new Shown(building, growth[id], Ghost: true));
             }
         }
 
         foreach (var id in forgotten ?? [])
         {
-            _seen.Remove(id);
-            _growth.Remove(id);
+            seen.Remove(id);
+            growth.Remove(id);
         }
 
         return _shown;
+    }
+
+    /// <summary>What one viewer saw of the buildings of others: the building and its growth when last seen.</summary>
+    private sealed class Memory
+    {
+        public Dictionary<EntityId, Building> Seen { get; } = new();
+
+        public Dictionary<EntityId, int> Growth { get; } = new();
     }
 
     private static bool AnyCellVisible(VisibilityGrid grid, Building building)

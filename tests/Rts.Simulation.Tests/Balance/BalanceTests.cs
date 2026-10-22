@@ -1,4 +1,5 @@
 using Rts.MapTool;
+using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
 
@@ -32,9 +33,13 @@ public sealed class BalanceTests
     [Fact]
     public void A_rhino_beats_ten_conscripts_by_crushing_and_its_cannon()
     {
-        var result = Fight(UnitType.Conscript, 10, UnitType.HeavyTank, 1);
+        var crushed = 0;
+        var result = Skirmish.Fight(
+            Rules, Skirmish.Repeat(UnitType.Conscript, 10), Skirmish.Repeat(UnitType.HeavyTank, 1),
+            afterTick: simulation => crushed += simulation.LastTickEvents.Count(e => e is EntityDestroyed { Cause: DeathCause.Crushed }));
 
         Assert.True(result.Winner == 2, Describe(result));
+        Assert.True(crushed > 0, $"no conscript was crushed; {Describe(result)}");
     }
 
     [Fact]

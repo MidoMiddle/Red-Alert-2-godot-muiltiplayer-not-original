@@ -39,6 +39,7 @@ public sealed class StateHasherTests
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
         "vision", "explored", "credits", "under attack", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
+        "building hp", "building target", "building reload",
     };
 
     [Theory]
@@ -179,6 +180,24 @@ public sealed class StateHasherTests
                 var growing = StateHasher.Compute(world);
                 world.CompleteBuildUp(reactor);
                 Assert.NotEqual(growing, StateHasher.Compute(world));
+                break;
+            case "building hp":
+                var hurt = world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null);
+                var whole = StateHasher.Compute(world);
+                hurt.Hp--;
+                Assert.NotEqual(whole, StateHasher.Compute(world));
+                break;
+            case "building target":
+                var aiming = world.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(44, 44), ready: true, null);
+                var idleCoil = StateHasher.Compute(world);
+                aiming.Target = idle.Id;
+                Assert.NotEqual(idleCoil, StateHasher.Compute(world));
+                break;
+            case "building reload":
+                var coil = world.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(44, 44), ready: true, null);
+                var loaded = StateHasher.Compute(world);
+                coil.Weapons[0].ReloadLeft = 5;
+                Assert.NotEqual(loaded, StateHasher.Compute(world));
                 break;
             case "path request avoid":
                 world.PathRequests.Request(idle, 0, new CellPos(5, 5));
