@@ -13,6 +13,7 @@ base_infantry:
   speed: 24
   turn_rate: 0
   turret: false
+  crushable: true
   prerequisites: [barracks]
 
 base_vehicle:
@@ -24,6 +25,7 @@ base_vehicle:
   locomotor: track
   turn_rate: 2048
   turret: true
+  crusher: true
   prerequisites: [war_factory]
 
 # Buildings: footprint, power and prerequisites from docs/implementation/M3_base_economy.md, 4.6; cost and hp from the RA2

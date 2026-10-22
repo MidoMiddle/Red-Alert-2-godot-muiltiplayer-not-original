@@ -18,7 +18,7 @@ internal static class DefinitionReader
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
-        "placement", "turret", "turret_turn_rate", "threat", "stance", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
+        "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -86,6 +86,8 @@ internal static class DefinitionReader
             Secondary = fields.Optional("secondary", Scalars.Id, ""),
             Threat = fields.Optional("threat", Scalars.Int, 0),
             Stance = fields.Optional("stance", StanceOf, Stance.Aggressive),
+            Crusher = fields.Optional("crusher", Scalars.Flag, false),
+            Crushable = fields.Optional("crushable", Scalars.Flag, false),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),

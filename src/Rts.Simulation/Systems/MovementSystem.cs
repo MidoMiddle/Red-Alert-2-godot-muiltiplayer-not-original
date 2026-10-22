@@ -175,6 +175,9 @@ public static class MovementSystem
             return MoveResult.Stopped;
         }
 
+        // A crushing vehicle drives over the enemy infantry of the cell (M4 step 8): their spots are free now.
+        CrushSystem.TryCrush(world, unit, cell, events);
+
         // A soldier takes the spot nearest to where it stops in its last cell, elsewhere the one nearest to where it comes in.
         var finalPoint = FinalPoint(unit);
         var subcell = world.Reservations.TryEnter(cell, unit, cell == finalPoint.ToCell() ? finalPoint : next);

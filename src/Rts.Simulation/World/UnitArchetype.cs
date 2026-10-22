@@ -20,6 +20,8 @@ namespace Rts.Simulation.World;
 /// <param name="Secondary">The position of the second weapon; -1 without one.</param>
 /// <param name="Threat">How dangerous it is, for the choice of targets (M4 step 6).</param>
 /// <param name="Stance">The stance a new unit starts with (M4 step 7).</param>
+/// <param name="Crusher">Whether it crushes the infantry it drives over (M4 step 8).</param>
+/// <param name="Crushable">Whether a crushing vehicle can drive over it (M4 step 8).</param>
 public sealed record UnitArchetype(
     UnitType Type,
     string Id,
@@ -39,7 +41,9 @@ public sealed record UnitArchetype(
     int Primary = -1,
     int Secondary = -1,
     int Threat = 0,
-    Stance Stance = Stance.Aggressive)
+    Stance Stance = Stance.Aggressive,
+    bool Crusher = false,
+    bool Crushable = false)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;

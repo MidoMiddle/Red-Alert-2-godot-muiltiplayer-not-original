@@ -65,6 +65,12 @@ public sealed record UnitDef : IDefinition
     /// <summary>The stance a new unit starts with (M4, 4.11).</summary>
     public World.Stance Stance { get; init; }
 
+    /// <summary>Whether it crushes the infantry it drives over (RA2 <c>Crusher</c>, M4, 4.13); only a vehicle.</summary>
+    public bool Crusher { get; init; }
+
+    /// <summary>Whether a crushing vehicle can drive over it (RA2 <c>Crushable</c>, M4, 4.13); only infantry.</summary>
+    public bool Crushable { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

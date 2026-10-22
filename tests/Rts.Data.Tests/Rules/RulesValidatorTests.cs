@@ -120,6 +120,18 @@ public sealed class RulesValidatorTests
     }
 
     [Fact]
+    public void Only_a_vehicle_crushes_and_only_infantry_is_crushed()
+    {
+        var crusher = Fails(Units, "  sight: 5\n  turret: false\n", "  sight: 5\n  turret: false\n  crusher: true\n");
+        Assert.Equal((Units, 16, 12), (crusher.FileName, crusher.Line, crusher.Column));
+        Assert.Contains("'conscript' cannot crush: only a vehicle (placement: cell) crushes infantry", crusher.Reason);
+
+        var crushable = Fails(Units, "  cost: 3000\n", "  cost: 3000\n  crushable: true\n");
+        Assert.Equal((Units, 23, 14), (crushable.FileName, crushable.Line, crushable.Column));
+        Assert.Contains("'mcv' cannot be crushed: only infantry (placement: subcell) can be", crushable.Reason);
+    }
+
+    [Fact]
     public void A_secondary_weapon_needs_a_primary_one()
     {
         var error = Fails(Units, "primary: heavy_tank_cannon", "secondary: heavy_tank_cannon");

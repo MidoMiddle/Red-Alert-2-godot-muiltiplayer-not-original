@@ -136,6 +136,7 @@ public sealed class RulesLoaderTests
         Assert.Equal(5, last.Cost);
         Assert.Equal(UnitCategory.Infantry, last.Category);
         Assert.Equal(Stance.Aggressive, last.Stance);
+        Assert.False(last.Crusher || last.Crushable);
     }
 
     [Fact]
@@ -159,6 +160,7 @@ public sealed class RulesLoaderTests
               stance: STANCE
             """;
 
+        Assert.True(Read(Unit.Replace("STANCE", "guard\n  crushable: true")).Units.Single().Crushable);
         Assert.Equal(Stance.Guard, Read(Unit.Replace("STANCE", "guard")).Units.Single().Stance);
         Assert.Equal(Stance.HoldPosition, Read(Unit.Replace("STANCE", "hold")).Units.Single().Stance);
         var error = Fails(Unit.Replace("STANCE", "passive"));

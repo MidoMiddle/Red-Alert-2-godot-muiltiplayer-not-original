@@ -6,6 +6,7 @@ using Rts.Data.Yaml;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
+using Rts.Simulation.World;
 using YamlDotNet.RepresentationModel;
 
 namespace Rts.Data;
@@ -99,6 +100,16 @@ internal static class RulesValidator
             NotNegative(unit.Id, "turn_rate", unit.TurnRate);
             NotNegative(unit.Id, "turret_turn_rate", unit.TurretTurnRate ?? 0);
             NotNegative(unit.Id, "threat", unit.Threat);
+            if (unit.Crusher && unit.Placement != UnitPlacement.Cell)
+            {
+                Error(unit.Id, "crusher", $"'{unit.Id}' cannot crush: only a vehicle (placement: cell) crushes infantry");
+            }
+
+            if (unit.Crushable && unit.Placement != UnitPlacement.Subcell)
+            {
+                Error(unit.Id, "crushable", $"'{unit.Id}' cannot be crushed: only infantry (placement: subcell) can be");
+            }
+
             NotNegative(unit.Id, "sight", unit.Sight);
             NotNegative(unit.Id, "harvest_capacity", unit.HarvestCapacity);
             if (unit.HarvestCapacity > 0)

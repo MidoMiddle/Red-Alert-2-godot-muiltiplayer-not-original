@@ -97,6 +97,8 @@ public sealed class DataHasherTests
         ("unit hp", Unit(u => u with { Hp = u.Hp + 1 })),
         ("unit threat", Unit(u => u with { Threat = u.Threat + 1 })),
         ("unit stance", Unit(u => u with { Stance = Rts.Simulation.World.Stance.HoldPosition })),
+        ("unit crusher", Unit(u => u with { Crusher = !u.Crusher })),
+        ("unit crushable", Unit(u => u with { Crushable = !u.Crushable })),
         ("unit armor", Unit(u => u with { Armor = "light" })),
         ("unit speed", Unit(u => u with { Speed = u.Speed + 1 })),
         ("unit turn rate", Unit(u => u with { TurnRate = u.TurnRate + 1 })),
@@ -161,8 +163,8 @@ public sealed class DataHasherTests
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
         // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
-        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units.
-        Assert.Equal(0x20ae594dbee4f54bUL, Hash(Files()));
+        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units; step 8: crusher and crushable.
+        Assert.Equal(0x7beabcddd01ed5a3UL, Hash(Files()));
     }
 
     [Fact]

@@ -120,7 +120,9 @@ public sealed class GameRules
                 database.IndexOfWeapon(unit.Primary),
                 database.IndexOfWeapon(unit.Secondary),
                 unit.Threat,
-                unit.Stance);
+                unit.Stance,
+                unit.Crusher,
+                unit.Crushable);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];

@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0xe4caf96704f445d7UL, GameDataFiles.Current.Hash);
+        Assert.Equal(0xb041f250e1a741e1UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -73,8 +73,8 @@ public sealed class GameDataTests
         var test = TestRules.Standard.Database;
 
         Assert.Equal(test.Buildings.Select(Shape), data.Buildings.Select(Shape));
-        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance)),
-            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance)));
+        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance, unit.Crusher, unit.Crushable)),
+            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance, unit.Crusher, unit.Crushable)));
         Assert.Equal(test.Factions.Single(), data.Factions.Single() with { Name = test.Factions.Single().Name });
 
         Assert.Equal(test.Economies.Single(), data.Economies.Single());

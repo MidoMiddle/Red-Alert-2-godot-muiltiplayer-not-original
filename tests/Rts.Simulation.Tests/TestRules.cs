@@ -23,7 +23,14 @@ internal static class TestRules
     public static UnitArchetype Unit(UnitType type) => Standard.Unit(type);
 
     /// <summary>The standard rules with one weapon changed, for tests of what the data does not have (a volley, a nearest range).</summary>
-    public static GameRules WithWeapon(string id, System.Func<WeaponDef, WeaponDef> change)
+    public static GameRules WithWeapon(string id, System.Func<WeaponDef, WeaponDef> change) =>
+        Rebuild(weapon => weapon.Id == id ? change(weapon) : weapon, unit => unit);
+
+    /// <summary>The standard rules with one unit type changed, for tests of what the data does not have (a conscript that is not crushed).</summary>
+    public static GameRules WithUnit(UnitType type, System.Func<UnitDef, UnitDef> change) =>
+        Rebuild(weapon => weapon, unit => unit.Id == UnitTypes.IdOf(type) ? change(unit) : unit);
+
+    private static GameRules Rebuild(System.Func<WeaponDef, WeaponDef> weapons, System.Func<UnitDef, UnitDef> units)
     {
         var standard = Database();
         var builder = new RulesBuilder();
@@ -39,12 +46,12 @@ internal static class TestRules
 
         foreach (var definition in standard.Weapons)
         {
-            builder.Add(definition.Id == id ? change(definition) : definition);
+            builder.Add(weapons(definition));
         }
 
         foreach (var definition in standard.Units)
         {
-            builder.Add(definition);
+            builder.Add(units(definition));
         }
 
         foreach (var definition in standard.Buildings)
@@ -327,6 +334,7 @@ internal static class TestRules
         Unit(type, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, speed: 24, turnRate: 0, turret: false, sight, ["barracks"]) with
         {
             Armor = "none",
+            Crushable = true,
         };
 
     private static UnitDef VehicleDef(UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
@@ -335,6 +343,7 @@ internal static class TestRules
             prerequisites.Length > 0 ? prerequisites : ["war_factory"]) with
         {
             Armor = "heavy",
+            Crusher = true,
         };
 
     // The hit points of game/data (M4 step 2): the archetypes of both rules must be the same.

@@ -7,7 +7,8 @@ namespace Rts.Simulation.Movement;
 /// <summary>
 /// Who stands where (docs/implementation/M2_unit_control.md, 4.7 and 4.8). A vehicle holds a whole cell; infantry holds one of
 /// the five spots of a cell (subcells: centre and four corners), so up to five soldiers of any players share a cell. Vehicles
-/// and infantry never share a cell (crushing comes in M4). Moving into another cell needs room there; the move takes the new
+/// and infantry never share a cell: a crushing vehicle first kills the enemy infantry of a cell it drives into (M4 step 8,
+/// <see cref="Systems.CrushSystem"/>). Moving into another cell needs room there; the move takes the new
 /// place and frees the old one at once. Units move in <see cref="EntityId"/> order, so nobody takes a place twice in one tick.
 /// Part of the simulation state.
 /// </summary>

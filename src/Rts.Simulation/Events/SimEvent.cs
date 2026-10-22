@@ -61,8 +61,21 @@ public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId S
 /// <summary>A unit or a building lost <paramref name="Amount"/> hit points to a shot of <paramref name="Attacker"/> (M4, 4.9).</summary>
 public sealed record EntityDamaged(int Tick, EntityId Entity, EntityId Attacker, int Amount, int Hp) : SimEvent(Tick);
 
-/// <summary>A shot of <paramref name="Killer"/> destroyed a unit or a building (M4, 4.9); it leaves the world at the end of the tick.</summary>
-public sealed record EntityDestroyed(int Tick, EntityId Entity, EntityId Killer) : SimEvent(Tick);
+/// <summary>
+/// <paramref name="Killer"/> destroyed a unit or a building (M4, 4.9): with a shot, or by driving over it (<see cref="DeathCause.Crushed"/>,
+/// step 8). It leaves the world at the end of the tick.
+/// </summary>
+public sealed record EntityDestroyed(int Tick, EntityId Entity, EntityId Killer, DeathCause Cause = DeathCause.Weapon) : SimEvent(Tick);
+
+/// <summary>How a unit or a building died (M4).</summary>
+public enum DeathCause
+{
+    /// <summary>Hit points taken by shots.</summary>
+    Weapon,
+
+    /// <summary>Driven over by a crushing vehicle (step 8).</summary>
+    Crushed,
+}
 
 /// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
 public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell) : SimEvent(Tick);
