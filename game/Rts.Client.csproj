@@ -10,6 +10,7 @@
     <ProjectReference Include="../src/Rts.Simulation/Rts.Simulation.csproj" />
     <ProjectReference Include="../src/Rts.Data/Rts.Data.csproj" />
     <ProjectReference Include="../src/Rts.MapGen/Rts.MapGen.csproj" />
+    <ProjectReference Include="../src/Rts.AI/Rts.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

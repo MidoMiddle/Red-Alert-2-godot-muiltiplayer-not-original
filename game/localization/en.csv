@@ -8,6 +8,11 @@ UI_EXIT_CONFIRM_TEXT,Exit the game?
 UI_VERSION,Version {0}
 UI_MENU_ITEM_SOON,{0} (coming soon)
 UI_MAIN_SANDBOX,Test Sandbox
+UI_MAIN_QUICK_SKIRMISH,Quick Skirmish (debug)
+UI_QUICK_SKIRMISH_TITLE,Quick Skirmish
+UI_QUICK_SKIRMISH_WHO,You against a Medium bot
+UI_QUICK_SKIRMISH_START,Start
+UI_QUICK_SKIRMISH_NO_MAPS,No map with two starts or more
 UI_MAIN_SKIRMISH,Skirmish
 UI_MAIN_MULTIPLAYER,Multiplayer
 UI_MAIN_ONLINE,Online

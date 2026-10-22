@@ -28,8 +28,11 @@ public sealed class PlayerState
 
     public PlayerId Id { get; }
 
-    /// <summary>The faction of the player: what it builds. The first faction of the data until the skirmish setup chooses (M6).</summary>
-    public FactionDef Faction { get; }
+    /// <summary>
+    /// The faction of the player: what it builds. The first faction of the data, or the one of the match setup (M5 step 2). Set once as the
+    /// world is built; not hashed — the setup it comes from is in the replay.
+    /// </summary>
+    public FactionDef Faction { get; internal set; }
 
     public int Credits { get; internal set; }
 

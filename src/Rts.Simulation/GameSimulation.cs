@@ -27,9 +27,9 @@ public sealed class GameSimulation
     /// <summary>A match with <paramref name="settings"/>, played by <paramref name="rules"/> (from the data files, or built in tests).</summary>
     public GameSimulation(SimulationSettings settings, GameRules rules)
     {
-        settings.Validate();
+        settings.Validate(rules.Database);
         Settings = settings;
-        World = new GameWorld(settings.Seed, settings.CreateMap(rules.Land), rules, settings.StartingCredits);
+        World = new GameWorld(settings.Seed, settings.CreateMap(rules.Land), rules, settings.StartingCredits, settings.Match);
         _commands = new CommandQueue(firstTick: World.CurrentTick);
     }
 

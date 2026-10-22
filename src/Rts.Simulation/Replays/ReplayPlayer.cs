@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using Rts.Simulation.Ai;
+using Rts.Simulation.Commands;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Matches;
 using Rts.Simulation.Rules;
 
 namespace Rts.Simulation.Replays;
@@ -34,15 +39,76 @@ public static class ReplayPlayer
             ? null
             : $"recorded with other data (hash {replay.DataHash:x16}, here {currentDataHash:x16}): it may not play the same";
 
+    /// <summary>
+    /// Whether <paramref name="command"/> of <paramref name="replay"/> was given by a bot (docs/implementation/M5_first_bot.md, 4.4): its
+    /// player is a bot of the match setup and it is numbered as bots number. A person who played that player with the debug switch
+    /// numbers from 0.
+    /// </summary>
+    public static bool IsBotCommand(Replay replay, Command command) =>
+        command.Sequence >= AiTurn.FirstSequence && replay.Settings.Match?.PlayerOf(command.Player)?.Kind == PlayerKind.Ai;
+
     /// <summary>Plays the whole replay headless and compares every recorded checksum.</summary>
-    public static ReplayVerification Verify(Replay replay, GameRules rules)
+    public static ReplayVerification Verify(Replay replay, GameRules rules) =>
+        replay.SimVersion != SimulationVersion.Current ? new ReplayVerification(ReplayStatus.IncompatibleVersion) : Play(replay, CreateSimulation(replay, rules));
+
+    /// <summary>
+    /// The replay with its bots run again (docs/implementation/M5_first_bot.md, 4.4, the mode «re-run the bots»): every recorded command
+    /// but those of the bots is scheduled, <paramref name="createBot"/> makes a bot for every bot of the match setup, and the match is
+    /// played; the checksums must hold and the bots must give the recorded commands, byte for byte. For the tests of determinism: a
+    /// replay never needs its bots to play.
+    /// </summary>
+    public static ReplayVerification VerifyWithBots(Replay replay, GameRules rules, Func<MatchPlayer, IAiController> createBot)
     {
         if (replay.SimVersion != SimulationVersion.Current)
         {
             return new ReplayVerification(ReplayStatus.IncompatibleVersion);
         }
 
-        var simulation = CreateSimulation(replay, rules);
+        var simulation = new GameSimulation(replay.Settings, rules);
+        var recorded = new List<Command>();
+        foreach (var command in replay.Commands)
+        {
+            if (IsBotCommand(replay, command))
+            {
+                recorded.Add(command);
+            }
+            else
+            {
+                simulation.Enqueue(command);
+            }
+        }
+
+        foreach (var player in replay.Settings.Match?.Players ?? [])
+        {
+            if (player.Kind == PlayerKind.Ai)
+            {
+                simulation.AttachAi(createBot(player));
+            }
+        }
+
+        var result = Play(replay, simulation);
+        if (result.Status != ReplayStatus.Match)
+        {
+            return result;
+        }
+
+        var given = new List<Command>();
+        foreach (var command in simulation.ExecutedCommands)
+        {
+            if (IsBotCommand(replay, command))
+            {
+                given.Add(command);
+            }
+        }
+
+        return CommandSerializer.WriteAll(given).AsSpan().SequenceEqual(CommandSerializer.WriteAll(recorded))
+            ? result
+            : new ReplayVerification(ReplayStatus.BotsDiffer, Final: result.Final);
+    }
+
+    /// <summary>Steps <paramref name="simulation"/> through the replay and compares every recorded checksum.</summary>
+    private static ReplayVerification Play(Replay replay, GameSimulation simulation)
+    {
         var nextChecksum = 0;
         for (var i = 0; i < replay.TickCount; i++)
         {

@@ -44,4 +44,9 @@
     <Compile Include="../../game/scripts/Terrain/LandColors.cs" Link="Client/LandColors.cs" />
   </ItemGroup>
 
+  <!-- The matches the client sets up on the ready maps (docs/implementation/M5_first_bot.md, step 2): pure, without Godot. -->
+  <ItemGroup>
+    <Compile Include="../../game/scripts/Matches/MatchSetups.cs" Link="Client/MatchSetups.cs" />
+  </ItemGroup>
+
 </Project>

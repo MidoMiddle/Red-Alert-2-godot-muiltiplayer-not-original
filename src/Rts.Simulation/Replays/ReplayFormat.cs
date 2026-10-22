@@ -6,15 +6,17 @@ using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
+using Rts.Simulation.Matches;
 
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v15, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v17, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion | u64 dataHash
 /// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 startingCredits | i32 tickCount
 /// u8 hasMap | (u8 land × width·height | u8 obstacle × width·height) when hasMap = 1
+/// u8 hasMatch | the match setup when hasMatch = 1
 /// command batch (u32 count + commands, format of CommandSerializer)
 /// u32 checksumCount | (i32 tick, u64 value) × checksumCount
 /// </code>
@@ -28,11 +30,14 @@ namespace Rts.Simulation.Replays;
 /// after the hash interval; v11 (M3 step 6) marks command format v5 inside (PlaceBuilding, Deploy); v12 (M3 step 8) marks command
 /// format v6 inside (production and rally points); v13 (M3 step 9) adds the ore layer, one byte per cell (kind × 16 + stage), after
 /// the corner heights; v14 (M3 step 10) marks command format v7 inside (Harvest); v15 (M3 step 11) command format v8 (Sell,
-/// ToggleRepair, PlaceWalls); v16 (M4 step 7) command format v9 (Attack, ForceAttack, SetStance).
+/// ToggleRepair, PlaceWalls); v16 (M4 step 7) command format v9 (Attack, ForceAttack, SetStance); v17 (M5 step 2) adds the match
+/// setup after the map: u16 length + UTF-8 map id | u8 shortGame | u8 gameSpeed | u8 playerCount, then per player u8 slot | u8 kind |
+/// u8 difficulty | u16 length + UTF-8 faction | u8 colour | u8 team | u8 startIndex | u16 startX | u16 startY; its seed and credits are
+/// those of the header. The commands of a bot are those of an Ai player numbered from <see cref="Ai.AiTurn.FirstSequence"/>.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 16;
+    public const ushort FormatVersion = 17;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -64,7 +69,8 @@ public static class ReplayFormat
 
         mapSize += map is null ? 0 : 4 + BuildingSize * map.StartBuildings.Count;
 
-        var buffer = new byte[HeaderSize + mapSize + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
+        var match = WriteMatch(replay.Settings.Match);
+        var buffer = new byte[HeaderSize + mapSize + match.Length + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
         var span = buffer.AsSpan();
 
         Magic.CopyTo(span);
@@ -134,6 +140,8 @@ public static class ReplayFormat
             }
         }
 
+        match.CopyTo(span[offset..]);
+        offset += match.Length;
         commands.CopyTo(span[offset..]);
         offset += commands.Length;
 
@@ -284,13 +292,16 @@ public static class ReplayFormat
             offset = next;
         }
 
+        var credits = BinaryPrimitives.ReadInt32LittleEndian(source[42..]);
+        var setup = ReadMatch(source, ref offset, seed, credits);
         var settings = (map is null ? new SimulationSettings(seed) : new SimulationSettings(seed, map)) with
         {
             TicksPerSecond = BinaryPrimitives.ReadInt32LittleEndian(source[26..]),
             MapWidthCells = width,
             MapHeightCells = height,
             HashInterval = BinaryPrimitives.ReadInt32LittleEndian(source[38..]),
-            StartingCredits = BinaryPrimitives.ReadInt32LittleEndian(source[42..]),
+            StartingCredits = credits,
+            Match = setup,
         };
 
         var commands = CommandSerializer.ReadBatch(source[offset..], out var commandBytes);
@@ -315,6 +326,108 @@ public static class ReplayFormat
         }
 
         return new Replay(simVersion, dataHash, settings, tickCount, commands, checksums);
+    }
+
+    /// <summary>The match block: one zero byte without a setup.</summary>
+    private static byte[] WriteMatch(MatchSetup? setup)
+    {
+        if (setup is null)
+        {
+            return [0];
+        }
+
+        var bytes = new List<byte> { 1 };
+        AddText(bytes, setup.MapId);
+        bytes.Add(setup.Options.ShortGame ? (byte)1 : (byte)0);
+        bytes.Add((byte)setup.Options.GameSpeed);
+        bytes.Add((byte)setup.Players.Length);
+        foreach (var player in setup.Players)
+        {
+            bytes.Add((byte)player.Slot);
+            bytes.Add((byte)player.Kind);
+            bytes.Add((byte)player.Difficulty);
+            AddText(bytes, player.Faction);
+            bytes.Add((byte)player.Color);
+            bytes.Add((byte)player.Team);
+            bytes.Add((byte)player.StartIndex);
+            AddUInt16(bytes, (ushort)player.Start.X);
+            AddUInt16(bytes, (ushort)player.Start.Y);
+        }
+
+        return bytes.ToArray();
+    }
+
+    private static MatchSetup? ReadMatch(ReadOnlySpan<byte> source, ref int offset, ulong seed, int credits)
+    {
+        Require(source[offset..], 1);
+        var hasMatch = source[offset++];
+        if (hasMatch > 1)
+        {
+            throw new InvalidDataException($"Invalid match flag {hasMatch}.");
+        }
+
+        if (hasMatch == 0)
+        {
+            return null;
+        }
+
+        var mapId = ReadText(source, ref offset);
+        Require(source[offset..], 3);
+        var shortGame = source[offset];
+        var speed = source[offset + 1];
+        var count = source[offset + 2];
+        offset += 3;
+        if (shortGame > 1)
+        {
+            throw new InvalidDataException($"Invalid short game flag {shortGame}.");
+        }
+
+        var players = System.Collections.Immutable.ImmutableArray.CreateBuilder<MatchPlayer>(count);
+        for (var i = 0; i < count; i++)
+        {
+            Require(source[offset..], 3);
+            var slot = source[offset];
+            var kind = source[offset + 1];
+            var difficulty = source[offset + 2];
+            offset += 3;
+            if (kind > (byte)PlayerKind.Ai || difficulty != (byte)AiDifficulty.Medium)
+            {
+                throw new InvalidDataException($"Invalid kind {kind} or difficulty {difficulty} of player {i + 1}.");
+            }
+
+            var faction = ReadText(source, ref offset);
+            Require(source[offset..], 7);
+            players.Add(new MatchPlayer(
+                slot, (PlayerKind)kind, (AiDifficulty)difficulty, faction, source[offset], source[offset + 1], source[offset + 2],
+                new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 3)..]), BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 5)..]))));
+            offset += 7;
+        }
+
+        return new MatchSetup(mapId, seed, new MatchOptions(credits, shortGame == 1, speed), players.MoveToImmutable());
+    }
+
+    private static void AddText(List<byte> bytes, string text)
+    {
+        var utf8 = System.Text.Encoding.UTF8.GetBytes(text);
+        AddUInt16(bytes, (ushort)utf8.Length);
+        bytes.AddRange(utf8);
+    }
+
+    private static void AddUInt16(List<byte> bytes, ushort value)
+    {
+        bytes.Add((byte)value);
+        bytes.Add((byte)(value >> 8));
+    }
+
+    private static string ReadText(ReadOnlySpan<byte> source, ref int offset)
+    {
+        Require(source[offset..], 2);
+        var length = BinaryPrimitives.ReadUInt16LittleEndian(source[offset..]);
+        offset += 2;
+        Require(source[offset..], length);
+        var text = System.Text.Encoding.UTF8.GetString(source.Slice(offset, length));
+        offset += length;
+        return text;
     }
 
     private static void Require(ReadOnlySpan<byte> source, int length)

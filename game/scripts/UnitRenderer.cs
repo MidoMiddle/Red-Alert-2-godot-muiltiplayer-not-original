@@ -110,13 +110,7 @@ public partial class UnitRenderer : Node3D
     {
         if (!_materials.TryGetValue((owner, glow), out var material))
         {
-            var color = owner switch
-            {
-                0 => new Color(0.6f, 0.6f, 0.6f),
-                1 => new Color(0.2f, 0.45f, 0.95f),
-                2 => new Color(0.9f, 0.25f, 0.2f),
-                _ => Color.FromHsv(owner * 0.13f % 1f, 0.7f, 0.9f),
-            };
+            var color = Matches.PlayerColors.Of(new PlayerId(owner));
             material = new StandardMaterial3D { AlbedoColor = color };
             if (glow != Glow.None)
             {

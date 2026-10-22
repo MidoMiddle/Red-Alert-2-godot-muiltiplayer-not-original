@@ -99,12 +99,7 @@ public partial class Buildings : Node3D
     }
 
     /// <summary>The colour of a player's band.</summary>
-    internal static Color OwnerColor(PlayerId owner) => owner.Value switch
-    {
-        1 => new Color(0.2f, 0.45f, 0.95f),
-        2 => new Color(0.9f, 0.25f, 0.2f),
-        var other => Color.FromHsv(other * 0.13f % 1f, 0.7f, 0.9f),
-    };
+    internal static Color OwnerColor(PlayerId owner) => Matches.PlayerColors.Of(owner);
 
     private void Box(Vector3 size, Vector3 position, Color color) =>
         AddChild(new MeshInstance3D

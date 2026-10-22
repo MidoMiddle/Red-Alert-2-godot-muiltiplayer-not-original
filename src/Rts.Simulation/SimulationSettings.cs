@@ -1,5 +1,6 @@
 using System;
 using Rts.Simulation.Map;
+using Rts.Simulation.Matches;
 
 namespace Rts.Simulation;
 
@@ -50,6 +51,16 @@ public sealed record SimulationSettings
     /// <summary>The credits every player starts with (M3 step 5).</summary>
     public int StartingCredits { get; init; } = DefaultStartingCredits;
 
+    /// <summary>
+    /// The description of the match (M5 step 2): its players, their factions and starts. Null for a session of the sandbox or a test,
+    /// where the units come by commands. Its seed and credits are those of the settings (<see cref="ForMatch"/>).
+    /// </summary>
+    public MatchSetup? Match { get; init; }
+
+    /// <summary>The settings of <paramref name="setup"/> played on <paramref name="map"/>: its seed, its credits, the setup itself.</summary>
+    public static SimulationSettings ForMatch(MatchSetup setup, MapGrid map) =>
+        new(setup.Seed, map) { StartingCredits = setup.Options.StartingCredits, Match = setup };
+
     internal void Validate()
     {
         if (TicksPerSecond <= 0 || HashInterval <= 0 || MapWidthCells <= 0 || MapHeightCells <= 0 || StartingCredits < 0)
@@ -61,6 +72,21 @@ public sealed record SimulationSettings
         {
             throw new ArgumentException(
                 $"Map is {Map.Width}x{Map.Height}, but the settings say {MapWidthCells}x{MapHeightCells}.");
+        }
+
+        if (Match is not null && (Match.Seed != Seed || Match.Options.StartingCredits != StartingCredits))
+        {
+            throw new ArgumentException("The seed and the credits of the settings must be those of the match setup.");
+        }
+    }
+
+    /// <summary>The settings and the match setup checked against <paramref name="rules"/>: what a simulation can be started with.</summary>
+    internal void Validate(Rules.RulesDatabase rules)
+    {
+        Validate();
+        if (Match?.Problem(MapWidthCells, MapHeightCells, rules) is { } problem)
+        {
+            throw new ArgumentException($"The match cannot be played: {problem}.");
         }
     }
 
@@ -75,6 +101,7 @@ public sealed record SimulationSettings
         && MapHeightCells == other.MapHeightCells
         && HashInterval == other.HashInterval
         && StartingCredits == other.StartingCredits
+        && (Match is null ? other.Match is null : Match.Equals(other.Match))
         && (Map is null ? other.Map is null : other.Map is not null && Map.ContentEquals(other.Map));
 
     // Only for dictionaries; System.HashCode is banned in the simulation (randomized per process).

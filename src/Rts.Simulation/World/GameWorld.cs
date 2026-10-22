@@ -37,7 +37,8 @@ public sealed class GameWorld
     /// at full hit points; the map already marks their cells as taken. Every player 1…8 starts with <paramref name="startingCredits"/>
     /// and the first faction of the data.
     /// </summary>
-    internal GameWorld(ulong seed, MapGrid map, GameRules rules, int startingCredits = SimulationSettings.DefaultStartingCredits)
+    internal GameWorld(
+        ulong seed, MapGrid map, GameRules rules, int startingCredits = SimulationSettings.DefaultStartingCredits, Matches.MatchSetup? match = null)
     {
         Map = map;
         Rules = rules;
@@ -60,6 +61,12 @@ public sealed class GameWorld
         foreach (var start in map.StartBuildings)
         {
             _entities.Add(new Building(AllocateId(), start.Owner, start.Kind, start.Cell, start.Facing));
+        }
+
+        // A match: the factions and the starting units of its players (M5 step 2).
+        if (match is not null)
+        {
+            Matches.MatchStart.Apply(this, match);
         }
 
         // Power and technologies as the match starts, so a command of the first tick sees them.

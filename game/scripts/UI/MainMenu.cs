@@ -25,6 +25,7 @@ public partial class MainMenu : Control
     private const string SkirmishSetupScene = "res://scenes/ui/SkirmishSetup.tscn";
     private const string SettingsScene = "res://scenes/ui/Settings.tscn";
     private const string SandboxScene = "res://scenes/Main.tscn";
+    private const string QuickSkirmishScene = "res://scenes/debug/QuickSkirmish.tscn";
     private const string MapEditorScene = "res://scenes/editor/MapEditor.tscn";
 
     private VBoxContainer _entries = null!;
@@ -43,6 +44,7 @@ public partial class MainMenu : Control
 
         // Entries without an action are not ready yet. Each step that adds a screen passes its action here.
         AddEntry("UI_MAIN_SANDBOX", OpenSandbox);
+        AddEntry("UI_MAIN_QUICK_SKIRMISH", OpenQuickSkirmish);
         AddEntry("UI_MAIN_SKIRMISH", OpenSkirmishSetup);
         AddEntry("UI_MAIN_MULTIPLAYER", null);
         AddEntry("UI_MAIN_ONLINE", null);
@@ -102,6 +104,12 @@ public partial class MainMenu : Control
     private void OpenSandbox()
     {
         SceneRouter.Instance?.GoTo(SandboxScene);
+    }
+
+    // The debug quick skirmish of M5 step 2: one against a «Medium» bot until the skirmish screen starts matches.
+    private void OpenQuickSkirmish()
+    {
+        SceneRouter.Instance?.GoTo(QuickSkirmishScene);
     }
 
     private void OpenSettings()

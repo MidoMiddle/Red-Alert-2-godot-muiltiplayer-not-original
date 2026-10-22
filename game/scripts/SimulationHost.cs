@@ -4,9 +4,11 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Godot;
+using Rts.AI;
 using Rts.Client.App;
 using Rts.Client.Controls;
 using Rts.Client.Debug;
+using Rts.Client.Matches;
 using Rts.Client.Units;
 using Rts.Data;
 using Rts.Data.Maps;
@@ -17,6 +19,7 @@ using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
+using Rts.Simulation.Matches;
 using Rts.Simulation.Replays;
 using Rts.Simulation.World;
 
@@ -29,7 +32,10 @@ namespace Rts.Client;
 /// </summary>
 public partial class SimulationHost : Node
 {
-    /// <summary>The player at the keyboard: player 1, or the one F11 switched to in a debug build (M4 step 13).</summary>
+    /// <summary>
+    /// The player at the keyboard: player 1, the person of the match setup (M5 step 2), or the one F11 switched to in a debug build
+    /// (M4 step 13).
+    /// </summary>
     public static PlayerId LocalPlayer { get; private set; } = new(1);
 
     /// <summary>Debug (M4 step 13): the keyboard goes to the next player with units or buildings.</summary>
@@ -64,6 +70,12 @@ public partial class SimulationHost : Node
     public const string MapArgument = "map";
 
     /// <summary>
+    /// The scene router argument with the <see cref="MatchSetup"/> to play on the map (M5 step 2, the quick skirmish). Without one, a map with
+    /// two starts or more is played one against one with a «Medium» bot (<see cref="MatchSetups.OneOnOne"/>).
+    /// </summary>
+    public const string MatchArgument = "match";
+
+    /// <summary>
     /// <c>--perf-battle</c>: the live session is the general battle of M4 (<see cref="BattleScenario"/>, both armies without their
     /// bases) on the land of the load map, instead of the map's own units.
     /// </summary>
@@ -91,6 +103,9 @@ public partial class SimulationHost : Node
     }
 
     private readonly Dictionary<EntityId, UnitPose> _previousPoses = new();
+
+    // The match of this scene, made once: R plays it again from the start with the same seed.
+    private MatchSetup? _match;
     private double _accumulator;
     private int _speedIndex = 2;
     private uint _nextSequence;
@@ -187,10 +202,28 @@ public partial class SimulationHost : Node
     public void StartLiveSession()
     {
         QueueHistory.Clear();
-        var map = LoadMap(MapPath);
-        Simulation = IsBattle
-            ? BattleScenario.Create(map.Grid, Data.Rules)
-            : new GameSimulation(new SimulationSettings(MatchSeed, map.Grid), Data.Rules);
+        var (map, definition) = LoadMap(MapPath);
+        _match ??= RoutedMatch() ?? (!IsBattle && definition is not null && MatchSetups.IsPlayable(definition)
+            ? MatchSetups.OneOnOne(definition, Data.Rules.DefaultFaction.Id, MatchSetups.NewSeed())
+            : null);
+        if (_match is not null)
+        {
+            // A match (M5 step 2): the starting units come with the world, the bots think inside the simulation.
+            Simulation = new GameSimulation(SimulationSettings.ForMatch(_match, map.Grid), Data.Rules);
+            MatchBots.AttachAll(Simulation);
+            LocalPlayer = _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
+            CallDeferred(MethodName.LookAtStart);
+            GD.Print($"[host] match on {_match.MapId}, seed {_match.Seed}: " +
+                     string.Join(", ", _match.Players.Select(player => $"{player.Id} {player.Kind} at {player.Start.X},{player.Start.Y}")));
+        }
+        else
+        {
+            Simulation = IsBattle
+                ? BattleScenario.Create(map.Grid, Data.Rules)
+                : new GameSimulation(new SimulationSettings(MatchSeed, map.Grid), Data.Rules);
+        }
+
+        PlayerColors.Match = _match;
         _recorder = new ReplayRecorder(Simulation, dataHash: DataHash);
         _playback = null;
         _nextSequence = 0;
@@ -198,8 +231,8 @@ public partial class SimulationHost : Node
         ResetClock();
         ReplayStatus = "";
 
-        // Starting units are commands too, so they end up in the replay.
-        if (!IsBattle)
+        // Starting units are commands too, so they end up in the replay; those of a match come with its setup.
+        if (!IsBattle && _match is null)
         {
             SpawnMapUnits(map.Units);
         }
@@ -223,7 +256,9 @@ public partial class SimulationHost : Node
             return;
         }
 
+        // Without bots: their commands are in the replay (M5, 4.4).
         Simulation = ReplayPlayer.CreateSimulation(replay, Data.Rules);
+        PlayerColors.Match = replay.Settings.Match;
         _recorder = null;
         _playback = replay;
         _nextPlaybackChecksum = 0;
@@ -570,7 +605,21 @@ public partial class SimulationHost : Node
         }
     }
 
-    private TestMap LoadMap(string path)
+    /// <summary>A match opens with the camera over the start of the person at the keyboard.</summary>
+    private void LookAtStart()
+    {
+        if (_match?.PlayerOf(LocalPlayer) is { } player)
+        {
+            GetNodeOrNull<RtsCamera>("../CameraRig")?.CenterOn(WorldCoords.ToGodotOnGround(player.Start.Center));
+        }
+    }
+
+    /// <summary>The match setup the scene router brought, if any.</summary>
+    private static MatchSetup? RoutedMatch() =>
+        SceneRouter.Instance?.Args.TryGetValue(MatchArgument, out var routed) == true ? routed as MatchSetup : null;
+
+    /// <summary>The map at <paramref name="path"/>, with its definition when it is an <c>.rtsmap</c> (its starts make a match).</summary>
+    private (TestMap Map, MapDefinition? Definition) LoadMap(string path)
     {
         var text = Godot.FileAccess.GetFileAsString(path);
         if (string.IsNullOrEmpty(text))
@@ -580,14 +629,14 @@ public partial class SimulationHost : Node
 
         if (!path.EndsWith(".rtsmap", StringComparison.Ordinal))
         {
-            return TestMapParser.Parse(text, Data.Rules);
+            return (TestMapParser.Parse(text, Data.Rules), null);
         }
 
-        // A map of the M7 format: trees are the obstacles for now (map objects come in M7 step 5), units are debug squads
-        // at the starts until skirmish starts exist.
+        // A map of the M7 format: with two starts or more it is played as a match; the debug squads at the starts are left for
+        // a map with fewer.
         var definition = RtsMapReader.Read(text);
         var grid = definition.ToMapGrid();
-        return new TestMap(grid, StartSquads.Place(definition, grid, Data.Rules));
+        return (new TestMap(grid, StartSquads.Place(definition, grid, Data.Rules)), definition);
     }
 
     private void SpawnMapUnits(IReadOnlyList<TestMapUnit> units)

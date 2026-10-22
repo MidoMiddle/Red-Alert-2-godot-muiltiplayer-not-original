@@ -172,11 +172,5 @@ public partial class Minimap : Control
     }
 
     /// <summary>The colours of the units by owner, the same as in <c>UnitRenderer</c>.</summary>
-    private static Color OwnerColor(int owner) => owner switch
-    {
-        0 => new Color(0.6f, 0.6f, 0.6f),
-        1 => new Color(0.2f, 0.45f, 0.95f),
-        2 => new Color(0.9f, 0.25f, 0.2f),
-        _ => Color.FromHsv(owner * 0.13f % 1f, 0.7f, 0.9f),
-    };
+    private static Color OwnerColor(int owner) => Matches.PlayerColors.Of(new PlayerId(owner));
 }
