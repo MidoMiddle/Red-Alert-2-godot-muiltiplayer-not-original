@@ -1,3 +1,5 @@
+using Rts.Simulation.Map;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Debug;
@@ -23,6 +25,13 @@ public static class UnitStateText
         }
 
         return unit.MoveTarget is null ? "unit idle" : $"unit moving · wait {unit.WaitTicks} · replans {unit.Replans}" + Route(unit);
+    }
+
+    /// <summary><c>sight 8 +2 height</c>: the base sight of the unit's type and what the height of its cell adds (M7 step 8).</summary>
+    public static string DescribeSight(Unit unit, MapGrid map)
+    {
+        var bonus = SightRules.SightOf(unit, map) - unit.Archetype.Sight;
+        return bonus == 0 ? $"sight {unit.Archetype.Sight}" : $"sight {unit.Archetype.Sight} +{bonus} height";
     }
 
     /// <summary><c> · order 2/3 · patrol · attack-move</c> for a unit with a route of several legs; empty for a single order.</summary>

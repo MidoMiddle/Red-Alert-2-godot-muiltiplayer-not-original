@@ -156,7 +156,7 @@ heavy_tank:
   armor: heavy
   speed: 40                        # лептонов за тик
   turn_rate: 2048
-  sight: 6                         # клеток
+  sight: 8                         # клеток (как у Rhino; в коде — UnitArchetype.Sight с M7)
   prerequisites: [war_factory]
   weapons: [heavy_tank_cannon]     # заготовка для M4
   model: vehicles/heavy_tank
@@ -216,7 +216,7 @@ YamlDotNet по умолчанию разбирает числа через `dou
 
 | Что было в коде (M2) | Куда |
 |---|---|
-| `UnitArchetypes` | `union/units.yaml` (тестовые типы удаляются) |
+| `UnitArchetypes` | `union/units.yaml` (тестовые типы удаляются); с M7 — и базовый обзор `sight` |
 | Таблица `Locomotor` | `locomotors.yaml` |
 | Типы земли и множители | `terrain.yaml` (с M7: 6 типов передвижения — `foot`, `track`, `wheel`, `amphibious`, `naval`, `hover` — и множители склона; сейчас в `LocomotorRules`) |
 | Объекты карты (с M7) | `climates/winter/map_objects.yaml`: тип, маска «кого не пускает», прочность, кто давит, пень (сейчас в `MapObjectTypes`); мосты — тип и прочность сегмента (сейчас в `BridgeTypes`) |

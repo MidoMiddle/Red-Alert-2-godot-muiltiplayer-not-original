@@ -4,6 +4,7 @@ using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Movement;
 using Rts.Simulation.Spatial;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Debug;
@@ -11,7 +12,8 @@ namespace Rts.Client.Debug;
 /// <summary>
 /// Debug cell overlay (docs/implementation/M2_unit_control.md, 4.14): F7 goes through passability for the locomotor of the
 /// first selected unit (tracks without a selection), the reservations (vehicle cells blue, soldiers yellow with a cross on
-/// each taken spot) and the buckets of the spatial index (warmer with more units, a line every 4 cells), then off. The
+/// each taken spot), the buckets of the spatial index (warmer with more units, a line every 4 cells) and the cells the
+/// selected units see, height bonus included (M7 step 8, <see cref="SightRules"/>), then off. The
 /// colours go into the ground shader, one texel per cell, so they lie on the hills. Read-only: the match never sees it.
 /// </summary>
 public partial class CellOverlay : Node3D
@@ -108,6 +110,7 @@ public partial class CellOverlay : Node3D
             _pixels = new byte[map.Width * map.Height * 4];
         }
 
+        var seen = Mode == CellOverlayMode.Sight ? SeenCells(world) : null;
         for (var y = 0; y < map.Height; y++)
         {
             for (var x = 0; x < map.Width; x++)
@@ -118,6 +121,7 @@ public partial class CellOverlay : Node3D
                     CellOverlayMode.Passability => OverlayColors.Passability(map.SpeedPercent(cell, locomotor)),
                     CellOverlayMode.Reservations => OverlayColors.Occupancy(
                         world.Reservations.VehicleAt(cell) != EntityId.None, world.Reservations.InfantryCount(cell)),
+                    CellOverlayMode.Sight => seen![y * map.Width + x] ? OverlayColors.Seen : OverlayColor.None,
                     _ => OverlayColors.Heat(world.Spatial.CountIn(x / SpatialIndex.BucketCells, y / SpatialIndex.BucketCells)),
                 };
                 var index = (y * map.Width + x) * 4;
@@ -127,6 +131,32 @@ public partial class CellOverlay : Node3D
                 _pixels[index + 3] = color.A;
             }
         }
+    }
+
+    /// <summary>The cells within the sight radius of any selected living unit, in index order.</summary>
+    private bool[] SeenCells(GameWorld world)
+    {
+        var map = world.Map;
+        var seen = new bool[map.Width * map.Height];
+        foreach (var id in _input.Selection.Units)
+        {
+            if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit)
+            {
+                continue;
+            }
+
+            var at = unit.Position.ToCell();
+            var radius = SightRules.SightOf(unit, map);
+            for (var y = System.Math.Max(0, at.Y - radius); y <= System.Math.Min(map.Height - 1, at.Y + radius); y++)
+            {
+                for (var x = System.Math.Max(0, at.X - radius); x <= System.Math.Min(map.Width - 1, at.X + radius); x++)
+                {
+                    seen[y * map.Width + x] |= SightRules.InSight(x - at.X, y - at.Y, radius);
+                }
+            }
+        }
+
+        return seen;
     }
 
     /// <summary>A small cross on every taken soldier spot.</summary>

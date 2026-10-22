@@ -14,6 +14,9 @@ public static class OverlayColors
     public static readonly OverlayColor Impassable = new(230, 40, 30, 150);
     public static readonly OverlayColor Vehicle = new(40, 90, 255, 150);
 
+    /// <summary>A cell the selected units see (M7 step 8).</summary>
+    public static readonly OverlayColor Seen = new(90, 200, 255, 90);
+
     /// <summary>
     /// Passability for one locomotor: impassable red; slower than normal orange, denser the slower; normal untouched; faster
     /// green.
@@ -67,12 +70,13 @@ public enum CellOverlayMode
     Passability,
     Reservations,
     Buckets,
+    Sight,
 }
 
 /// <summary>The order of the cell overlays and their line on the debug panel. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CellOverlayModes
 {
-    public static CellOverlayMode Next(CellOverlayMode mode) => mode == CellOverlayMode.Buckets ? CellOverlayMode.Off : mode + 1;
+    public static CellOverlayMode Next(CellOverlayMode mode) => mode == CellOverlayMode.Sight ? CellOverlayMode.Off : mode + 1;
 
     /// <param name="locomotor">The locomotor the passability is shown for, by name.</param>
     public static string Describe(CellOverlayMode mode, string locomotor) => mode switch
@@ -80,6 +84,7 @@ public static class CellOverlayModes
         CellOverlayMode.Passability => $"cells: passability {locomotor} (F7)",
         CellOverlayMode.Reservations => "cells: reservations (F7)",
         CellOverlayMode.Buckets => "cells: index buckets 4x4 (F7)",
+        CellOverlayMode.Sight => "cells: sight of the selected (F7)",
         _ => "cells off (F7)",
     };
 }

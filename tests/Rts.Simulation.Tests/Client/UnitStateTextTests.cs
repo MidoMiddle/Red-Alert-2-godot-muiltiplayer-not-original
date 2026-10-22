@@ -39,4 +39,22 @@ public sealed class UnitStateTextTests
         unit.HoldTicks = 12;
         Assert.Equal("unit giving way · hold 12", UnitStateText.Describe(unit));
     }
+
+    [Fact]
+    public void Describes_the_sight_with_the_height_bonus()
+    {
+        var heights = new byte[9 * 9];
+        for (var i = 0; i < heights.Length; i++)
+        {
+            heights[i] = (byte)(i % 9 >= 5 ? 4 : 0);
+        }
+
+        var map = Rts.Simulation.Map.MapGrid.FromLayers(8, 8, Enumerable.Repeat((byte)Rts.Simulation.Map.LandType.Clear, 64).ToArray(), new byte[64], heights);
+        var world = new GameWorld(seed: 1, map);
+        var low = world.SpawnUnit(new PlayerId(1), UnitType.Conscript, new CellPos(1, 1).Center);
+        var high = world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(6, 1).Center);
+
+        Assert.Equal("sight 5", UnitStateText.DescribeSight(low, map));
+        Assert.Equal("sight 8 +2 height", UnitStateText.DescribeSight(high, map));
+    }
 }

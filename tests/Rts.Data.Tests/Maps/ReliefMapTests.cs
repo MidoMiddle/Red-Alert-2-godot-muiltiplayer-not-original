@@ -105,4 +105,16 @@ public sealed class ReliefMapTests
 
         Assert.Equal(new long[] { 17039360, 15122432, 34219120, 27156480, 6499064, 20447232 }, actual);
     }
+
+    [Theory]
+    [InlineData(4, 4, 2)]   // the level-4 plateau
+    [InlineData(18, 4, 1)]  // the level-2 shelf
+    [InlineData(17, 16, 2)] // the top of the stepped hill: its corners are 5 and 6, a slope counts by its foot
+    [InlineData(4, 16, 0)]  // the flat bottom of the pit
+    public void On_the_relief_map_height_adds_to_sight(int x, int y, int bonus)
+    {
+        var grid = Relief();
+
+        Assert.Equal(8 + bonus, Rts.Simulation.Visibility.SightRules.SightAt(grid, new CellPos(x, y), 8));
+    }
 }

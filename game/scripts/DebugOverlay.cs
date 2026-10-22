@@ -65,7 +65,8 @@ public partial class DebugOverlay : CanvasLayer
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
             (_cellOverlay is null ? "" : _cellOverlay.Description + "\n") +
-            $"selected {_input.Selection.Units.Count}   " + UnitStateText.Describe(SelectedUnit(simulation.World)) + "\n" +
+            $"selected {_input.Selection.Units.Count}   " + UnitStateText.Describe(SelectedUnit(simulation.World)) +
+            (SelectedUnit(simulation.World) is { } selected ? " · " + UnitStateText.DescribeSight(selected, simulation.World.Map) : "") + "\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
     }

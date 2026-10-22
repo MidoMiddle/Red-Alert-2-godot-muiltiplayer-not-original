@@ -41,13 +41,14 @@ public sealed class OverlayColorsTests
     {
         var mode = CellOverlayMode.Off;
         var seen = new List<CellOverlayMode>();
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 5; i++)
         {
             mode = CellOverlayModes.Next(mode);
             seen.Add(mode);
         }
 
-        Assert.Equal([CellOverlayMode.Passability, CellOverlayMode.Reservations, CellOverlayMode.Buckets, CellOverlayMode.Off], seen);
+        Assert.Equal([CellOverlayMode.Passability, CellOverlayMode.Reservations, CellOverlayMode.Buckets, CellOverlayMode.Sight, CellOverlayMode.Off], seen);
+        Assert.Equal("cells: sight of the selected (F7)", CellOverlayModes.Describe(CellOverlayMode.Sight, "track"));
         Assert.Equal("cells: passability wheel (F7)", CellOverlayModes.Describe(CellOverlayMode.Passability, "wheel"));
         Assert.Equal("cells off (F7)", CellOverlayModes.Describe(CellOverlayMode.Off, "track"));
     }

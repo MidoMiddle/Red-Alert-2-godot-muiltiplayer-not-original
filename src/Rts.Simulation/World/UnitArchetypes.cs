@@ -7,8 +7,9 @@ namespace Rts.Simulation.World;
 
 /// <summary>
 /// The unit types of M2, kept in code until the YAML data of M3 (docs/implementation/M2_unit_control.md, 4.11).
-/// Roster and ids follow docs/implementation/M3_base_economy.md, 4.6; speed and turn rate are those of the
-/// RA2 counterpart from docs/ra2_units, converted by two starting constants that can be tuned in play.
+/// Roster and ids follow docs/implementation/M3_base_economy.md, 4.6; speed, turn rate and sight are those of the
+/// RA2 counterpart from docs/ra2_units (Conscript, Flak Trooper, Engineer, MCV, War Miner, Flak Track, Rhino, Tesla Tank),
+/// speed and turn rate converted by two starting constants that can be tuned in play.
 /// </summary>
 public static class UnitArchetypes
 {
@@ -20,14 +21,14 @@ public static class UnitArchetypes
 
     private static readonly UnitArchetype[] ByType =
     [
-        Infantry(UnitType.Conscript, "conscript"),
-        Infantry(UnitType.Rocketeer, "rocketeer"),
-        Infantry(UnitType.Engineer, "engineer"),
-        Vehicle(UnitType.Mcv, "mcv", Locomotor.Track, ra2Speed: 4, hasTurret: false),
-        Vehicle(UnitType.Harvester, "harvester", Locomotor.Track, ra2Speed: 4, hasTurret: true),
-        Vehicle(UnitType.SupportVehicle, "support_vehicle", Locomotor.Wheel, ra2Speed: 8, hasTurret: true),
-        Vehicle(UnitType.HeavyTank, "heavy_tank", Locomotor.Track, ra2Speed: 6, hasTurret: true),
-        Vehicle(UnitType.TeslaTank, "tesla_tank", Locomotor.Track, ra2Speed: 6, hasTurret: true),
+        Infantry(UnitType.Conscript, "conscript", sight: 5),
+        Infantry(UnitType.Rocketeer, "rocketeer", sight: 5),
+        Infantry(UnitType.Engineer, "engineer", sight: 4),
+        Vehicle(UnitType.Mcv, "mcv", Locomotor.Track, ra2Speed: 4, hasTurret: false, sight: 6),
+        Vehicle(UnitType.Harvester, "harvester", Locomotor.Track, ra2Speed: 4, hasTurret: true, sight: 4),
+        Vehicle(UnitType.SupportVehicle, "support_vehicle", Locomotor.Wheel, ra2Speed: 8, hasTurret: true, sight: 8),
+        Vehicle(UnitType.HeavyTank, "heavy_tank", Locomotor.Track, ra2Speed: 6, hasTurret: true, sight: 8),
+        Vehicle(UnitType.TeslaTank, "tesla_tank", Locomotor.Track, ra2Speed: 6, hasTurret: true, sight: 8),
     ];
 
     /// <summary>Every unit type, in <see cref="UnitType"/> order.</summary>
@@ -60,10 +61,10 @@ public static class UnitArchetypes
     public static int TurnRateFromRa2(int ra2Rot) => (int)IntMath.DivRound((long)ra2Rot * TurnRateForRot5, 5);
 
     // Standard RA2 infantry: Speed 4, turns instantly (no ROT).
-    private static UnitArchetype Infantry(UnitType type, string id) =>
-        new(type, id, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, Ra2Speed: 4, Ra2Rot: 0, HasTurret: false);
+    private static UnitArchetype Infantry(UnitType type, string id, int sight) =>
+        new(type, id, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, Ra2Speed: 4, Ra2Rot: 0, HasTurret: false, sight);
 
     // Every vehicle of the roster has ROT 5 in RA2.
-    private static UnitArchetype Vehicle(UnitType type, string id, Locomotor locomotor, int ra2Speed, bool hasTurret) =>
-        new(type, id, UnitCategory.Vehicle, locomotor, UnitPlacement.Cell, ra2Speed, Ra2Rot: 5, hasTurret);
+    private static UnitArchetype Vehicle(UnitType type, string id, Locomotor locomotor, int ra2Speed, bool hasTurret, int sight) =>
+        new(type, id, UnitCategory.Vehicle, locomotor, UnitPlacement.Cell, ra2Speed, Ra2Rot: 5, hasTurret, sight);
 }
