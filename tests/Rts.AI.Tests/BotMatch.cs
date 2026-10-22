@@ -57,18 +57,19 @@ internal sealed class BotMatch
         Simulation.RefusedCommands.Where(command => command.Player == Bot && command.Sequence >= Rts.Simulation.Ai.AiTurn.FirstSequence);
 
     /// <summary>
-    /// Gives the person <paramref name="count"/> units of <paramref name="type"/> round their start on the next tick, by commands of the
-    /// person — so that a replay has them too. A cell with no room is passed over.
+    /// Gives the person <paramref name="count"/> units of <paramref name="type"/> round <paramref name="near"/> — their start by default —
+    /// on the next tick, by commands of the person, so that a replay has them too. A cell with no room is passed over.
     /// </summary>
-    public void GivePerson(UnitType type, int count)
+    public void GivePerson(UnitType type, int count, Rts.Simulation.Geometry.CellPos? near = null)
     {
         var person = Setup.Players.First(player => player.Kind == PlayerKind.Human);
+        var at = near ?? person.Start;
         var given = 0;
         for (var ring = 2; given < count && ring < 8; ring++)
         {
             for (var dx = -ring; dx <= ring && given < count; dx += 2)
             {
-                var cell = new Rts.Simulation.Geometry.CellPos(person.Start.X + dx, person.Start.Y + ring);
+                var cell = new Rts.Simulation.Geometry.CellPos(at.X + dx, at.Y + ring);
                 if (World.Map.Contains(cell) && World.Map.CanEnter(cell, World.Rules.Unit(type).Locomotor) && !World.Map.HasBuilding(cell))
                 {
                     Simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(person.Id, Simulation.CurrentTick, _personSequence++, type, cell.Center));
@@ -76,6 +77,15 @@ internal sealed class BotMatch
                 }
             }
         }
+    }
+
+    /// <summary>The person's units of <paramref name="type"/> attack-move to <paramref name="cell"/> on the next tick.</summary>
+    public void PersonAttacks(UnitType type, Rts.Simulation.Geometry.CellPos cell)
+    {
+        var person = Setup.Players.First(player => player.Kind == PlayerKind.Human);
+        var units = World.Entities.OfType<Unit>().Where(unit => unit.IsAlive && unit.Owner == person.Id && unit.Type == type).Select(unit => unit.Id);
+        Simulation.Enqueue(new Rts.Simulation.Commands.AttackMoveCommand(
+            person.Id, Simulation.CurrentTick, _personSequence++, [.. units], cell.Center));
     }
 
     /// <summary>Plays until <paramref name="minutes"/> of the match are over.</summary>

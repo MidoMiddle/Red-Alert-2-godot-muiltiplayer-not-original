@@ -31,11 +31,17 @@ public sealed class Squad
     /// <summary>Its strength when it set out: it turns back below <see cref="AiSettings.RetreatAtStrengthPercent"/> of this.</summary>
     public int StartStrength { get; internal set; }
 
+    /// <summary>The middle of its units on the last turn of the squads.</summary>
+    public CellPos Centre { get; internal set; }
+
     /// <summary>Its strength on the last turn of the squads: Σ cost × hit points / most hit points.</summary>
     public int Strength { get; internal set; }
 
     /// <summary>Whether it turned back for its losses, not because nothing was left to attack.</summary>
     public bool Beaten { get; internal set; }
+
+    /// <summary>Called back by the defense to fight the threat at the base (step 9).</summary>
+    public bool Recalled { get; internal set; }
 
     /// <summary>Where it comes together while some of it lag behind; null when it does not wait.</summary>
     public CellPos? Regroup { get; internal set; }

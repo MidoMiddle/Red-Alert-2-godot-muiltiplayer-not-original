@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Rts.AI.Squads;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
 
 namespace Rts.AI;
@@ -7,10 +8,33 @@ namespace Rts.AI;
 /// <summary>
 /// What the modules of a bot agree on (docs/implementation/M5_first_bot.md, 4.6): the buildings the economy wants now, most important
 /// first, as indices of the buildings of the rules (step 4); the building the planner waits for money for, which the army does not take
-/// from it (step 6); and whether the strategist lets the army be built (step 9 decides; until then always).
+/// from it (step 6); and whether the strategist lets the army be built; the squads (step 8); the state of the strategist, the threat to the
+/// base and where it came from (step 9).
 /// </summary>
 public sealed class AiPlan
 {
+    /// <summary>The strategist goes into the defense of the base at once, from what it did, which it comes back to later.</summary>
+    internal void Defend()
+    {
+        if (Strategy != StrategyState.Defending)
+        {
+            BeforeDefense = Strategy;
+        }
+
+        (Strategy, AttackAllowed, ArmyFirst) = (StrategyState.Defending, false, true);
+    }
+
+    /// <summary>The base is safe again: back to what the strategist did before.</summary>
+    internal void EndDefense()
+    {
+        if (Strategy == StrategyState.Defending)
+        {
+            Strategy = BeforeDefense;
+        }
+
+        (Threat, AttackAllowed, ArmyFirst) = (null, true, false);
+    }
+
     private readonly List<int> _economy = new();
 
     /// <summary>The buildings the economy wants, most important first.</summary>
@@ -28,8 +52,23 @@ public sealed class AiPlan
     /// <summary>Whether the army may be built now; the strategist of step 9 holds it back.</summary>
     public bool ArmyAllowed { get; internal set; } = true;
 
-    /// <summary>Whether a ready squad may set out (step 8); the strategist of step 9 holds it back.</summary>
+    /// <summary>Whether a ready squad may set out (step 8); the strategist holds it back while the base is defended (step 9).</summary>
     public bool AttackAllowed { get; internal set; } = true;
+
+    /// <summary>What the strategist does (step 9).</summary>
+    public StrategyState Strategy { get; internal set; }
+
+    /// <summary>The state the strategist comes back to once the base is safe again.</summary>
+    internal StrategyState BeforeDefense { get; set; }
+
+    /// <summary>Armed enemies at the base the bot has noticed (step 9); null while there are none.</summary>
+    public AiThreat? Threat { get; internal set; }
+
+    /// <summary>Where the last threat the defense of the base was too weak for came from; null before one (step 9).</summary>
+    public CellPos? AttackedFrom { get; internal set; }
+
+    /// <summary>While the base is defended the army does not save the money of the next building for it (step 9).</summary>
+    public bool ArmyFirst { get; internal set; }
 
     /// <summary>The squads of the bot (step 8), in the order they were formed; the squad manager keeps them.</summary>
     public IReadOnlyList<Squad> Squads { get; internal set; } = [];

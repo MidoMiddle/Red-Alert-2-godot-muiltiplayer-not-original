@@ -1,5 +1,6 @@
 using Rts.AI.Modules;
 using Rts.Simulation.Commands;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.Tests;
 using Rts.Simulation.World;
 
@@ -32,6 +33,67 @@ public sealed class BuildPlannerTests
         }
 
         return scene;
+    }
+
+    /// <summary>
+    /// The base of the whole build order — its tesla coil on the north side, far from the east — with reactors enough and four
+    /// harvesters: after the order only the defense toward an attack may come.
+    /// </summary>
+    private static Scene Done()
+    {
+        var scene = Base("reactor", "refinery", "barracks", "refinery", "war_factory", "reactor", "radar", "tesla_coil");
+        foreach (var (id, x) in new[] { ("tech_center", 6), ("reactor", 12), ("reactor", 18) })
+        {
+            scene.Build(Scene.Me, id, x, 14);
+        }
+
+        for (var i = 0; i < 4; i++)
+        {
+            scene.Spawn(Scene.Me, UnitType.Harvester, 40 + 2 * i, 50);
+        }
+
+        scene.World.Player(Scene.Me).Credits = 3000;
+        return scene;
+    }
+
+    private static List<int> OrderedAfterAttack(Scene scene, CellPos from)
+    {
+        scene.Look();
+        var context = scene.Context();
+        context.Plan.AttackedFrom = from;
+        new EconomyManager(AiSettings.Medium).Update(context);
+        new BuildPlanner(AiSettings.Medium).Update(context);
+        return scene.RunCommands().OfType<ProduceCommand>().Select(command => command.DefIndex).ToList();
+    }
+
+    [Fact]
+    public void After_an_attack_from_a_side_no_defense_covers_another_defense_is_ordered_facing_it()
+    {
+        // Without an attack the order is done and nothing comes.
+        Assert.Empty(Ordered(Done()));
+        Assert.Equal([Index("tesla_coil")], OrderedAfterAttack(Done(), new CellPos(50, 31)));
+
+        // It goes to the east of the yard (30, 30), toward the attack.
+        var scene = Done();
+        scene.Look();
+        var yard = scene.World.Entities.OfType<Building>().First(building => building.Def?.Id == "construction_yard");
+        var placement = new BasePlacement { Toward = new CellPos(50, 31) };
+        CellPos? corner;
+        while (!placement.TryFind(scene.View, scene.Memory, yard, Index("tesla_coil"), out corner))
+        {
+        }
+
+        Assert.NotNull(corner);
+        Assert.True(corner.Value.X > 32, $"{corner}");
+    }
+
+    [Fact]
+    public void A_side_a_defense_covers_already_gets_none()
+    {
+        var scene = Done();
+        scene.Build(Scene.Me, "tesla_coil", 37, 30);
+
+        Assert.Empty(OrderedAfterAttack(scene, new CellPos(50, 31)));
     }
 
     [Fact]

@@ -102,6 +102,22 @@ public sealed class ProductionManagerTests
     }
 
     [Fact]
+    public void While_the_base_is_defended_the_army_does_not_save_for_the_next_building()
+    {
+        var scene = Base();
+        var radar = TestRules.Standard.Database.IndexOfBuilding("radar");
+        var cheapest = TestRules.Standard.Database.Units.Min(unit => unit.Cost);
+        scene.World.Player(Scene.Me).Credits = TestRules.Standard.Database.Buildings[radar].Cost + cheapest - 1;
+        scene.Look();
+        var context = scene.Context();
+        context.Plan.NextBuilding = radar;
+        context.Plan.Defend();
+        new ProductionManager(AiSettings.Medium).Update(context);
+
+        Assert.NotEmpty(scene.RunCommands().OfType<ProduceCommand>());
+    }
+
+    [Fact]
     public void The_strategist_can_hold_the_army_back()
     {
         var scene = Base();

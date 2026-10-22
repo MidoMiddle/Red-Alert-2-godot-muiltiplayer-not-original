@@ -300,6 +300,52 @@ public sealed class SquadManagerTests
     }
 
     [Fact]
+    public void With_a_threat_at_the_base_the_squad_at_home_goes_for_it_and_does_not_set_out()
+    {
+        var scene = new Scene();
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 14, 14);
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 15, 14);
+        var context = scene.Context();
+        context.Plan.Threat = new AiThreat(new CellPos(4, 20), new CellPos(4, 20), 100);
+
+        var commands = Turn(scene, new SquadManager(Small), context, 0);
+
+        Assert.Equal(SquadState.Gathering, context.Plan.Squads.Single().State);
+        var order = Assert.IsType<AttackMoveCommand>(Assert.Single(commands));
+        Assert.Equal(new CellPos(4, 20), order.Target.ToCell());
+    }
+
+    [Fact]
+    public void A_squad_called_back_comes_by_a_plain_move_fights_at_the_base_and_goes_home_once_it_is_safe()
+    {
+        var (scene, squads, context, a, b) = SetOut();
+        var squad = context.Plan.Squads.Single();
+        var threat = new CellPos(10, 10);
+        context.Plan.Threat = new AiThreat(threat, threat, 500);
+        squad.Recalled = true;
+
+        // One far off comes by a plain move, one near goes for the threat.
+        var commands = Turn(scene, squads, context, 15, () =>
+        {
+            Scene.Move(a, 50, 50);
+            Scene.Move(b, 20, 12);
+        });
+        Assert.Equal(SquadState.Defending, squad.State);
+        var move = Assert.Single(commands.OfType<MoveCommand>());
+        Assert.Equal([a.Id], move.Units.AsEnumerable());
+        Assert.Equal(threat, move.Target.ToCell());
+        var attack = Assert.Single(commands.OfType<AttackMoveCommand>());
+        Assert.Equal([b.Id], attack.Units.AsEnumerable());
+
+        // Safe again: home, not beaten.
+        context.Plan.Threat = null;
+        Turn(scene, squads, context, 30);
+        Assert.Equal(SquadState.Retreating, squad.State);
+        Assert.False(squad.Recalled);
+        Assert.False(squad.Beaten);
+    }
+
+    [Fact]
     public void The_fallen_leave_their_squad_and_an_empty_squad_is_dropped()
     {
         var (scene, squads, context, a, b) = SetOut();

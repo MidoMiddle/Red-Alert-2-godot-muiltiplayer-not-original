@@ -15,6 +15,9 @@ public enum SquadState
     /// <summary>Fights the armed enemies near it, its fire on one of them.</summary>
     Fighting,
 
+    /// <summary>Called back from its attack, goes to the threat at the base and fights it (step 9).</summary>
+    Defending,
+
     /// <summary>Goes back to the gathering point — beaten, or with nothing left to attack — and joins the squad gathering there.</summary>
     Retreating,
 }

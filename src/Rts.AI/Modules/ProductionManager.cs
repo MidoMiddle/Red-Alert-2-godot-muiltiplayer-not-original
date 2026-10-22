@@ -18,11 +18,11 @@ namespace Rts.AI.Modules;
 /// <see cref="AiSettings.VehiclesQueued"/>), the kind that
 /// falls shortest of its share — and short it must be: its share of the army with one more is above what there is — is ordered first,
 /// the army counted with what is queued; one a factory a turn, equal ones to the smaller index; a kind that cannot be paid for yet is
-/// saved for, not passed over for a cheaper one. It pays only from what is left when the
-/// queues and the building the planner waits for (<see cref="AiPlan.NextBuilding"/>) are paid, and not at all when the strategist holds
-/// the army back. A factory none of whose kinds is short waits: the mix of the data holds, and money that piles up goes to the second war
-/// factory of the planner, which makes the tanks — the slowest part of the army — come faster. While the economy wants a harvester
-/// (<see cref="AiPlan.HarvestersWanted"/>) the war factory is left to it.
+/// saved for, not passed over for a cheaper one. It pays only from what is left when the queues and the building the planner waits for
+/// (<see cref="AiPlan.NextBuilding"/>) are paid — that one not while the base is defended (<see cref="AiPlan.ArmyFirst"/>) — and not at
+/// all when the strategist holds the army back. A factory none of whose kinds is short waits: the mix of the data holds, and money that
+/// piles up goes to the second war factory of the planner, which makes the tanks — the slowest part of the army — come faster. While the
+/// economy wants a harvester (<see cref="AiPlan.HarvestersWanted"/>) the war factory is left to it.
 /// </summary>
 public sealed class ProductionManager(AiSettings settings) : IAiModule
 {
@@ -46,7 +46,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
 
         var rules = view.Rules.Database;
         var money = view.Player.Credits - Promised(view)
-            - (context.Plan.NextBuilding >= 0 ? rules.Buildings[context.Plan.NextBuilding].Cost : 0);
+            - (context.Plan.NextBuilding >= 0 && !context.Plan.ArmyFirst ? rules.Buildings[context.Plan.NextBuilding].Cost : 0);
         var army = CountArmy(view);
         var open = 0;
         foreach (var category in Factories)

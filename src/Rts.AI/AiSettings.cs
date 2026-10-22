@@ -83,6 +83,18 @@ public sealed record AiSettings
     /// <summary>A unit of a fighting squad with less than this share of its hit points, in percent, falls back behind the squad.</summary>
     public int WoundedPercent { get; init; } = 35;
 
+    /// <summary>How long enemies stand at the base before the bot takes notice, in ticks (4.7, M8's <c>perceptionDelay</c>).</summary>
+    public int PerceptionDelay { get; init; } = 15;
+
+    /// <summary>The base is safe again once no enemy has been at it this long, in ticks (4.6: 10 s).</summary>
+    public int ThreatClearTicks { get; init; } = 150;
+
+    /// <summary>An enemy this near a building of the bot, in cells, is at its base.</summary>
+    public int BaseCells { get; init; } = 8;
+
+    /// <summary>The defenses the bot builds at most, those of the build order and those toward the attacks together.</summary>
+    public int MaxDefenses { get; init; } = 3;
+
     /// <summary>The units the barracks keep in their queue (4.6).</summary>
     public int InfantryQueued { get; init; } = 2;
 

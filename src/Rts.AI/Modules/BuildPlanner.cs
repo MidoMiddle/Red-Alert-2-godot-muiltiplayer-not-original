@@ -20,10 +20,11 @@ namespace Rts.AI.Modules;
 /// cannot be built yet (its prerequisite still grows) is waited for, nothing after it goes first;</item>
 /// <item>the rest of the economy's needs — a war factory for the harvesters;</item>
 /// <item>after the order — refineries up to <see cref="AiSettings.MaxRefineries"/>, a second war factory once the credits reach
-/// <see cref="AiSettings.SecondFactoryCredits"/>.</item>
+/// <see cref="AiSettings.SecondFactoryCredits"/>, and the defense of the order once more when the base was attacked from a side no
+/// defense covers (<see cref="AiPlan.AttackedFrom"/>, step 9), up to <see cref="AiSettings.MaxDefenses"/>; it faces that side.</item>
 /// </list>
-/// A building is ordered only when the credits, less what the queues still have to pay, cover it; one order a queue a turn. The defense
-/// on the side of the attacks comes with the defense of step 9. The bot gives no command it knows to be refused.
+/// A building is ordered only when the credits, less what the queues still have to pay, cover it; one order a queue a turn. The bot
+/// gives no command it knows to be refused.
 /// </summary>
 public sealed class BuildPlanner(AiSettings settings) : IAiModule
 {
@@ -64,7 +65,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
         }
 
         PlaceReady(context, yard);
-        Order(context);
+        Order(context, yard);
     }
 
     /// <summary>The first ready building of the building queue, else of the defense queue, goes where the placement finds room.</summary>
@@ -78,6 +79,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 continue;
             }
 
+            _placement.Toward = context.Plan.AttackedFrom;
             if (_placement.TryFind(view, context.Memory, yard, ready.DefIndex, out var corner) && corner is { } place)
             {
                 context.Issue(new PlaceBuildingCommand(view.Me, context.ExecuteTick, context.NextSequence(), ready.DefIndex, place));
@@ -88,7 +90,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
     }
 
     /// <summary>Orders the most important building there is room and money for, one a queue.</summary>
-    private void Order(AiContext context)
+    private void Order(AiContext context, Building yard)
     {
         var view = context.View;
         var rules = view.Rules.Database;
@@ -96,7 +98,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
         var money = view.Player.Credits - Promised(view);
         var buildingQueueFree = view.Player.Queue(ProductionCategory.Building).Count == 0;
         var defenseQueueFree = view.Player.Queue(ProductionCategory.Defense).Count == 0;
-        Choose(context);
+        Choose(context, yard);
         context.Plan.NextBuilding = -1;
         foreach (var index in _choices)
         {
@@ -134,7 +136,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
     }
 
     /// <summary>The buildings to order, the most important first; -1 marks a step of the order that has to be waited for.</summary>
-    private void Choose(AiContext context)
+    private void Choose(AiContext context, Building yard)
     {
         var view = context.View;
         var rules = view.Rules.Database;
@@ -187,7 +189,68 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             {
                 _choices.Add(factory);
             }
+
+            if (context.Plan.AttackedFrom is { } from && order is not null && order.Faction == faction.Id && DefenseOf(rules, order) is >= 0 and var defense
+                && Defenses(rules) < settings.MaxDefenses && !Covered(view, yard, from))
+            {
+                _choices.Add(defense);
+            }
         }
+    }
+
+    /// <summary>The defense of the build order — its last step with a weapon — or -1 for none.</summary>
+    private static int DefenseOf(RulesDatabase rules, BuildOrderDef order)
+    {
+        var defense = -1;
+        foreach (var step in order.Steps)
+        {
+            var index = rules.IndexOfBuilding(step);
+            if (rules.Buildings[index].Primary.Length > 0)
+            {
+                defense = index;
+            }
+        }
+
+        return defense;
+    }
+
+    /// <summary>The defenses with a weapon the base has: standing, growing or in a queue.</summary>
+    private int Defenses(RulesDatabase rules)
+    {
+        var count = 0;
+        for (var i = 0; i < _have.Length; i++)
+        {
+            count += rules.Buildings[i].Primary.Length > 0 ? _have[i] : 0;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Whether the side of the base toward <paramref name="from"/> has a defense: one with a weapon within
+    /// <see cref="BasePlacement.DefenseAhead"/> of the point that far from the yard toward it, or one in the defense queue — it goes there.
+    /// </summary>
+    private static bool Covered(AiWorldView view, Building yard, CellPos from)
+    {
+        if (view.Player.Queue(ProductionCategory.Defense).Count > 0)
+        {
+            return true;
+        }
+
+        var centre = BasePlacement.Middle(yard);
+        var (dx, dy) = (from.X - centre.X, from.Y - centre.Y);
+        var length = IntMath.Max(IntMath.Max(IntMath.Abs(dx), IntMath.Abs(dy)), 1);
+        var point = new CellPos(centre.X + dx * BasePlacement.DefenseAhead / length, centre.Y + dy * BasePlacement.DefenseAhead / length);
+        foreach (var building in view.OwnBuildings)
+        {
+            if (building.Weapons.Length > 0
+                && IntMath.Max(IntMath.Abs(building.Cell.X - point.X), IntMath.Abs(building.Cell.Y - point.Y)) <= BasePlacement.DefenseAhead)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>How many of each building the base has: standing, growing, or in a queue.</summary>

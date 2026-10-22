@@ -25,6 +25,9 @@ namespace Rts.AI.Modules;
 /// attacked;</item>
 /// <item><b>fighting</b> — while an armed enemy is near: every unit that can hurt the nearest one fires at it, the wounded fall back
 /// behind the squad;</item>
+/// <item><b>defending</b> — called back by <see cref="DefenseManager"/> (<see cref="Squad.Recalled"/>): it goes for the threat at the
+/// base and fights it; the squad at home does the same while there is a threat (<see cref="AiPlan.Threat"/>), and does not set out;
+/// once the base is safe the squads called back go home;</item>
 /// <item><b>retreating</b> — below <see cref="AiSettings.RetreatAtStrengthPercent"/> of its strength when it set out, or with nothing
 /// left to attack: a plain move back to the gathering point, where it joins the squad gathering there.</item>
 /// </list>
@@ -40,6 +43,9 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
     /// <summary>The longest a squad waits for its laggards, in ticks (20 s); half of it passes before it waits again.</summary>
     public const int RegroupTicks = 300;
+
+    /// <summary>A unit of a squad called back comes by a plain move while it is farther than this from the threat, in cells.</summary>
+    public const int RecallCells = 16;
 
     /// <summary>How far behind the middle of the squad a wounded unit falls back, in cells.</summary>
     public const int BehindCells = 3;
@@ -83,14 +89,18 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         {
             Members(squad);
             squad.Strength = Strength(context.Memory);
-            switch (squad.State)
+            squad.Centre = Centre().ToCell();
+            if (squad.Recalled)
             {
-                case SquadState.Gathering or SquadState.Ready:
-                    Gather(context, squad, gather);
-                    break;
-                case SquadState.Moving or SquadState.Fighting:
-                    Attack(context, squad, gather);
-                    break;
+                Defend(context, squad, gather);
+            }
+            else if (squad.State is SquadState.Gathering or SquadState.Ready)
+            {
+                Gather(context, squad, gather);
+            }
+            else if (squad.State is SquadState.Moving or SquadState.Fighting)
+            {
+                Attack(context, squad, gather);
             }
 
             if (squad.State == SquadState.Retreating && Retreat(context, squad, gather))
@@ -174,6 +184,18 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     /// <summary>Sends the units far from the gathering point to it; ready when strong enough, and out when the plan lets it.</summary>
     private void Gather(AiContext context, Squad squad, CellPos? gather)
     {
+        if (context.Plan.Threat is { } threat)
+        {
+            // Enemies at the base: the squad at home goes for them, and does not set out meanwhile.
+            Engage(context, squad.Centre, threat.Cell, gather ?? squad.Centre);
+            return;
+        }
+
+        foreach (var unit in _members)
+        {
+            _fellBack.Remove(unit.Id.Value);
+        }
+
         if (gather is { } point)
         {
             _batch.Clear();
@@ -191,7 +213,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         var enemy = EnemyStrength(context.View, context.Memory);
         var strong = squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent;
         squad.State = strong ? SquadState.Ready : SquadState.Gathering;
-        if (!strong || !context.Plan.AttackAllowed || !Retarget(context, squad, Centre().ToCell()))
+        if (!strong || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre))
         {
             return;
         }
@@ -220,7 +242,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     /// <summary>A moving or fighting squad: turns back when beaten or with nothing to attack, fights the armed enemies near, else goes on.</summary>
     private void Attack(AiContext context, Squad squad, CellPos? gather)
     {
-        var centre = Centre().ToCell();
+        var centre = squad.Centre;
         if ((long)squad.Strength * 100 < (long)squad.StartStrength * settings.RetreatAtStrengthPercent)
         {
             squad.State = SquadState.Retreating;
@@ -246,6 +268,50 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
         squad.State = SquadState.Moving;
         Move(context, squad, centre);
+    }
+
+    /// <summary>
+    /// A squad called back to the base (step 9): its units farther than <see cref="RecallCells"/> from the threat come by a plain move —
+    /// a unit on an attack-move would stay to fight whatever it met on the way, at the enemy's base too; the nearer ones fight at it.
+    /// Once the base is safe again it goes home, not beaten, and joins the squad gathering there.
+    /// </summary>
+    private void Defend(AiContext context, Squad squad, CellPos? gather)
+    {
+        if (context.Plan.Threat is not { } threat)
+        {
+            (squad.Recalled, squad.Beaten, squad.State) = (false, false, SquadState.Retreating);
+            return;
+        }
+
+        squad.State = SquadState.Defending;
+        _batch.Clear();
+        foreach (var unit in _members)
+        {
+            if (Distance(unit.Position.ToCell(), threat.Cell) > RecallCells)
+            {
+                Want(unit, OrderKind.Move, threat.Cell, default);
+            }
+        }
+
+        Issue(context, OrderKind.Move, threat.Cell, default);
+        _members.RemoveAll(unit => Distance(unit.Position.ToCell(), threat.Cell) > RecallCells);
+        if (_members.Count > 0)
+        {
+            Engage(context, threat.Cell, threat.Cell, gather ?? threat.Cell);
+        }
+    }
+
+    /// <summary>Fights the armed enemy nearest the squad, if one is near, else goes for <paramref name="threat"/> by attack-move.</summary>
+    private void Engage(AiContext context, CellPos centre, CellPos threat, CellPos home)
+    {
+        if (Nearest(context, centre, armed: true) is { } enemy)
+        {
+            Fight(context, enemy, centre, home);
+        }
+        else
+        {
+            AttackMoveAll(context, threat);
+        }
     }
 
     /// <summary>Every unit that can hurt <paramref name="focus"/> fires at it; the wounded fall back behind the squad, once.</summary>
@@ -321,7 +387,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         }
 
         Issue(context, OrderKind.Move, point, default);
-        return Distance(Centre().ToCell(), point) <= ArrivedCells;
+        return Distance(squad.Centre, point) <= ArrivedCells;
     }
 
     /// <summary>

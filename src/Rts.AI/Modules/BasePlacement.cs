@@ -49,6 +49,9 @@ public sealed class BasePlacement
     /// Looks on for a place for building <paramref name="defIndex"/> near <paramref name="yard"/>. True when the search is over: then
     /// <paramref name="corner"/> is the north-west cell of the place, or null when there is none. False while it goes on.
     /// </summary>
+    /// <summary>Where a defense faces, when it is not the likely enemy: the side the base was attacked from (step 9).</summary>
+    public CellPos? Toward { get; set; }
+
     public bool TryFind(AiWorldView view, AiMemory memory, Building yard, int defIndex, out CellPos? corner)
     {
         if (defIndex != _defIndex)
@@ -65,7 +68,7 @@ public sealed class BasePlacement
 
         var def = view.Rules.Database.Buildings[defIndex];
         var centre = Middle(yard);
-        var target = Target(view, memory, def, centre);
+        var target = Target(memory, def, centre, Toward);
         var end = IntMath.Min(_next + CandidatesPerCall, Offsets.Count);
         for (; _next < end; _next++)
         {
@@ -157,18 +160,18 @@ public sealed class BasePlacement
     }
 
     /// <summary>
-    /// For a defense, the point <see cref="DefenseAhead"/> cells from the yard toward the likely enemy: an enemy building or army the bot
-    /// remembers, else where it last saw an enemy, else the first start where an enemy may be. Null for other buildings, or with nothing
-    /// known.
+    /// For a defense, the point <see cref="DefenseAhead"/> cells from the yard toward <paramref name="toward"/> — the side the base was
+    /// attacked from — else toward the likely enemy: an enemy building or army the bot remembers, else where it last saw an enemy, else
+    /// the first start where an enemy may be. Null for other buildings, or with nothing known.
     /// </summary>
-    private static CellPos? Target(AiWorldView view, AiMemory memory, BuildingDef def, CellPos centre)
+    private static CellPos? Target(AiMemory memory, BuildingDef def, CellPos centre, CellPos? toward)
     {
         if (def.Category != ProductionCategory.Defense)
         {
             return null;
         }
 
-        if (memory.LikelyEnemyCell() is not { } at)
+        if ((toward ?? memory.LikelyEnemyCell()) is not { } at)
         {
             return null;
         }
@@ -302,7 +305,7 @@ public sealed class BasePlacement
         }
     }
 
-    private static CellPos Middle(Building building) => new(building.Cell.X + building.Width / 2, building.Cell.Y + building.Height / 2);
+    internal static CellPos Middle(Building building) => new(building.Cell.X + building.Width / 2, building.Cell.Y + building.Height / 2);
 
     /// <summary>The offsets of the cells within <paramref name="reach"/>, ring by ring, each ring row by row.</summary>
     private static List<CellPos> Rings(int reach)

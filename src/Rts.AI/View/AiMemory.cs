@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 using Rts.Simulation.World;
 
 namespace Rts.AI.View;
@@ -56,10 +57,14 @@ public sealed class AiMemory
     public bool EnemySeen { get; private set; }
 
     /// <summary>
-    /// Where the bot last saw an enemy — the cell of the first one it saw then, in id order — never forgotten: once the starts are
-    /// explored and the sightings old, the side of the enemy is still known (step 7). Null before the first.
+    /// Where the bot last saw an enemy away from home — the cell of the first one it saw then, in id order, farther than
+    /// <see cref="HomeCells"/> from its start — never forgotten: once the starts are explored and the sightings old, the side of the
+    /// enemy is still known (step 7). A raid on its base does not move it (step 9): squads go there. Null before the first.
     /// </summary>
     public CellPos? LastEnemyCell { get; private set; }
+
+    /// <summary>Enemies this near the bot's start, in cells, are at its home, not where the enemy is.</summary>
+    public const int HomeCells = 16;
 
     /// <summary>
     /// The side of the enemy as far as the bot knows: an enemy building it remembers, else an army, else where it last saw an enemy,
@@ -81,13 +86,14 @@ public sealed class AiMemory
         RememberArmies(view);
         RememberStarts(view);
         EnemySeen |= view.VisibleEnemies.Count > 0;
-        if (view.VisibleEnemies.Count > 0)
+        foreach (var enemy in view.VisibleEnemies)
         {
-            LastEnemyCell = view.VisibleEnemies[0] switch
+            var cell = enemy is Building building ? building.Cell : ((Unit)enemy).Position.ToCell();
+            if (view.Start is not { } start || IntMath.Max(IntMath.Abs(cell.X - start.X), IntMath.Abs(cell.Y - start.Y)) > HomeCells)
             {
-                Building building => building.Cell,
-                var entity => ((Unit)entity).Position.ToCell(),
-            };
+                LastEnemyCell = cell;
+                break;
+            }
         }
     }
 

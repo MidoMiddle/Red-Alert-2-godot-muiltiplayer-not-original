@@ -33,9 +33,17 @@ public static class MatchBots
         }
     }
 
-    /// <summary>The bot of M5 so far: its economy (step 4), its base by the build order and where there is room (step 5), its army (step 6), its scouting (step 7), its squads (step 8).</summary>
+    /// <summary>The bot of M5 so far: its economy (step 4), its base by the build order and where there is room (step 5), its army (step 6), its scouting (step 7), its squads (step 8), its strategist and the defense of its base (step 9).</summary>
     private static AiPlayer Medium(PlayerId player, AiSettings settings, CellPos start, MatchSetup setup) =>
-        new(player, settings, [new EconomyManager(settings), new BuildPlanner(settings), new ProductionManager(settings), new ScoutManager(settings), new SquadManager(settings)], start, setup.MapStarts);
+        new(
+            player,
+            settings,
+            [
+                new Strategist(), new EconomyManager(settings), new BuildPlanner(settings), new ProductionManager(settings), new ScoutManager(settings),
+                new SquadManager(settings), new DefenseManager(settings),
+            ],
+            start,
+            setup.MapStarts);
 
     private static AiSettings SettingsOf(AiDifficulty difficulty) => difficulty switch
     {
