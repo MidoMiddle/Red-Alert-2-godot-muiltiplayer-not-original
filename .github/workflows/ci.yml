@@ -46,6 +46,9 @@ jobs:
       - name: AI tests
         run: dotnet test tests/Rts.AI.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=ai.trx" --results-directory test-results
 
+      - name: Network tests
+        run: dotnet test tests/Rts.Net.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=net.trx" --results-directory test-results
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4
