@@ -51,6 +51,8 @@
 - `Rts.MapTool balance` — стенд баланса;
 - в `Rts.Simulation.Benchmarks` — общий бой 150 на 150 (`--battle`) и время по фазам тика через `GameSimulation.Probe` (`--phases`).
 
+**В M5:** `Rts.AI` — боты, под правилами детерминизма, только на `Rts.Simulation`. Симуляция зовёт их через `IAiController` в конце тика (`GameSimulation.AttachAi`); команды бота идут на следующий тик через общую очередь ([implementation/M5_first_bot.md](implementation/M5_first_bot.md), 4.1–4.3).
+
 Остальные появляются в своих вехах ([implementation/conventions.md](implementation/conventions.md), раздел 1).
 
 ---

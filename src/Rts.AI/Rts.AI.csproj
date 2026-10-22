@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The bots (docs/implementation/M5_first_bot.md, 3, 4.1): they run inside the deterministic simulation on every machine of a match,
+    so the determinism rules apply as to the simulation. The simulation calls them through IAiController and does not know this
+    project; nothing of Godot.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Rts.AI</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RtsDeterministic>true</RtsDeterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Rts.Simulation/Rts.Simulation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rts.AI.Tests" />
+  </ItemGroup>
+
+</Project>

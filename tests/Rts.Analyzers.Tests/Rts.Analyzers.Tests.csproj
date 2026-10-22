@@ -22,6 +22,8 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Rts.Analyzers/Rts.Analyzers.csproj" />
+    <!-- The sources of the bots are analyzed as the build does (docs/implementation/M5_first_bot.md, 6); they need the simulation. -->
+    <ProjectReference Include="../../src/Rts.AI/Rts.AI.csproj" />
   </ItemGroup>
 
 </Project>

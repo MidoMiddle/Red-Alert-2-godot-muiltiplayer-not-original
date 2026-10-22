@@ -1,0 +1,16 @@
+namespace Rts.AI;
+
+/// <summary>
+/// The modules of a bot (docs/implementation/M5_first_bot.md, 4.6), in the order they think on a tick they share: the order of the
+/// table in 4.3.
+/// </summary>
+public enum AiModuleKind
+{
+    Strategist,
+    Economy,
+    BuildPlanner,
+    Production,
+    Scouting,
+    Squads,
+    Defense,
+}

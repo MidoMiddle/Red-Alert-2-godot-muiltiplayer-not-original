@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Rts.Simulation.Ai;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
 using Rts.Simulation.Hashing;
@@ -18,6 +20,9 @@ public sealed class GameSimulation
     private readonly CommandQueue _commands;
     private readonly List<SimEvent> _events = new();
     private readonly List<Command> _executedCommands = new();
+
+    // The bots of the match by player, thinking in that order; a replay is played without them (M5, 4.4).
+    private readonly SortedList<int, (IAiController Bot, AiTurn Turn)> _bots = new();
 
     /// <summary>A match with <paramref name="settings"/>, played by <paramref name="rules"/> (from the data files, or built in tests).</summary>
     public GameSimulation(SimulationSettings settings, GameRules rules)
@@ -52,6 +57,26 @@ public sealed class GameSimulation
 
     /// <summary>Schedules a command. Its tick must not have been executed yet.</summary>
     public void Enqueue(Command command) => _commands.Enqueue(command);
+
+    /// <summary>
+    /// Lets <paramref name="bot"/> play its player in this match (docs/implementation/M5_first_bot.md, 4.2): it thinks at the end of every
+    /// tick. Only in a live match: a replay keeps the commands of the bots and is played without them. One bot a player, players 1–8.
+    /// </summary>
+    public void AttachAi(IAiController bot)
+    {
+        var player = bot.Player;
+        if (player.Value < 1 || player.Value > PlayerId.MaxPlayers)
+        {
+            throw new ArgumentException($"A bot plays one of the players 1–{PlayerId.MaxPlayers}, not {player}.", nameof(bot));
+        }
+
+        if (_bots.ContainsKey(player.Value))
+        {
+            throw new InvalidOperationException($"{player} has a bot already.");
+        }
+
+        _bots.Add(player.Value, (bot, new AiTurn(this, player)));
+    }
 
     /// <summary>
     /// Measuring only (M4 step 15, the benchmarks): called after each phase of <see cref="Step"/> with its name, so its time and memory
@@ -119,6 +144,16 @@ public sealed class GameSimulation
         Probe?.Invoke("death and vision");
         World.RemoveDead();
         Probe?.Invoke("remove dead");
+
+        // The bots think: they read the world after tick T and give commands for T + 1 (M5 step 1). By index: no enumerator to box.
+        var bots = _bots.Values;
+        for (var i = 0; i < bots.Count; i++)
+        {
+            bots[i].Turn.Tick = tick;
+            bots[i].Bot.Think(bots[i].Turn);
+        }
+
+        Probe?.Invoke("bots");
 
         // 7. Next tick.
         World.CurrentTick = tick + 1;
