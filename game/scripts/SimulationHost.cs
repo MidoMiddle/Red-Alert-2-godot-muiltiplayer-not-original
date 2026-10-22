@@ -60,12 +60,6 @@ public partial class SimulationHost : Node
         }
     }
 
-    /// <summary>
-    /// True when the map's heights are rules (a <c>.rtsmap</c> map): the terrain is built from them. The ASCII maps keep the
-    /// visual hills of M1.
-    /// </summary>
-    public bool HeightsFromRules { get; private set; }
-
     private readonly Dictionary<EntityId, UnitPose> _previousPoses = new();
     private double _accumulator;
     private int _speedIndex = 2;
@@ -111,7 +105,6 @@ public partial class SimulationHost : Node
     {
         QueueHistory.Clear();
         var map = LoadMap(MapPath);
-        HeightsFromRules = MapPath.EndsWith(".rtsmap", StringComparison.Ordinal);
         Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid));
         _recorder = new ReplayRecorder(Simulation);
         _playback = null;

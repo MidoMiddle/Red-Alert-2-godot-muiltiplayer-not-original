@@ -1,5 +1,8 @@
 using System.Numerics;
 using Rts.Client.Terrain;
+using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
+using Rts.Simulation.Math;
 
 namespace Rts.Simulation.Tests.Client;
 
@@ -24,78 +27,68 @@ public sealed class TerrainHeightsTests
         Assert.True(Vector3.Distance(target, hit) < 0.01f, $"hit {hit}, expected {target}");
     }
 
-    [Fact]
-    public void Showcase_has_hills_and_flat_base_sites()
+    /// <summary>A 64 x 64 map of the rules with a stepped hill up to level 6 around corner (40, 24) and a cliff at x = 10.</summary>
+    internal static CornerHeightGrid Relief()
     {
-        var terrain = TerrainHeights.Showcase(MapSize, MapSize);
-
-        Assert.True(terrain.MaxHeight > 0.8f, $"max height {terrain.MaxHeight}");
-        // Every corner of every cell the starting units stand on (SimulationHost: cells 20–24 × 20–22 and 44–48 × 44–46), with a margin.
-        for (var z = 19; z <= 24; z++)
-        {
-            for (var x = 19; x <= 26; x++)
-            {
-                Assert.Equal(0f, terrain.VertexHeight(x, z), 4);
-                Assert.Equal(0f, terrain.VertexHeight(x + 24, z + 24), 4);
-            }
-        }
-    }
-
-    [Fact]
-    public void Showcase_slopes_are_gentle_and_heights_not_negative()
-    {
-        var terrain = TerrainHeights.Showcase(MapSize, MapSize);
-
+        var levels = new byte[(MapSize + 1) * (MapSize + 1)];
         for (var z = 0; z <= MapSize; z++)
         {
             for (var x = 0; x <= MapSize; x++)
             {
-                var height = terrain.VertexHeight(x, z);
-                Assert.True(height >= 0f);
-                Assert.True(MathF.Abs(height - terrain.VertexHeight(x + 1, z)) <= TerrainHeights.LevelHeight, $"cliff at ({x}, {z})");
-                Assert.True(MathF.Abs(height - terrain.VertexHeight(x, z + 1)) <= TerrainHeights.LevelHeight, $"cliff at ({x}, {z})");
+                var hill = 6 - System.Math.Max(System.Math.Abs(x - 40), System.Math.Abs(z - 24));
+                levels[z * (MapSize + 1) + x] = (byte)System.Math.Max(System.Math.Max(hill, 0), x <= 10 ? 3 : 0);
             }
+        }
+
+        return CornerHeightGrid.FromLayer(MapSize, MapSize, levels);
+    }
+
+    /// <summary>The height of the rules at a point, in Godot units (cells).</summary>
+    internal static float RulesHeight(CornerHeightGrid heights, float x, float z) =>
+        heights.HeightAt(new WorldPos((int)(x * 256), (int)(z * 256))).Raw / (float)Fixed.OneRaw / WorldPos.LeptonsPerCell;
+
+    [Fact]
+    public void Heights_of_the_rules_are_drawn_where_the_simulation_puts_them()
+    {
+        var rules = Relief();
+        var terrain = TerrainHeights.FromRules(rules);
+        var random = new TestRandom(77);
+
+        Assert.Equal(6 * TerrainHeights.LevelHeight, terrain.VertexHeight(40, 24));
+        Assert.Equal(104f / 256f, TerrainHeights.LevelHeight);
+        for (var i = 0; i < 1000; i++)
+        {
+            var x = random.NextInt(MapSize * 256) / 256f;
+            var z = random.NextInt(MapSize * 256) / 256f;
+            Assert.Equal(RulesHeight(rules, x, z), terrain.HeightAt(x, z), 4);
         }
     }
 
     [Fact]
     public void HeightAt_matches_vertices_and_is_bilinear_between_them()
     {
-        var terrain = TerrainHeights.Showcase(MapSize, MapSize);
+        var terrain = TerrainHeights.FromRules(Relief());
 
-        Assert.Equal(terrain.VertexHeight(54, 32), terrain.HeightAt(54f, 32f), 5);
-        var corners = (terrain.VertexHeight(50, 30) + terrain.VertexHeight(51, 30) + terrain.VertexHeight(50, 31) + terrain.VertexHeight(51, 31)) / 4f;
-        Assert.Equal(corners, terrain.HeightAt(50.5f, 30.5f), 5);
-        var edge = (terrain.VertexHeight(50, 30) + terrain.VertexHeight(51, 30)) / 2f;
-        Assert.Equal(edge, terrain.HeightAt(50.5f, 30f), 5);
+        Assert.Equal(terrain.VertexHeight(38, 24), terrain.HeightAt(38f, 24f), 5);
+        var corners = (terrain.VertexHeight(37, 22) + terrain.VertexHeight(38, 22) + terrain.VertexHeight(37, 23) + terrain.VertexHeight(38, 23)) / 4f;
+        Assert.Equal(corners, terrain.HeightAt(37.5f, 22.5f), 5);
+        var edge = (terrain.VertexHeight(37, 22) + terrain.VertexHeight(38, 22)) / 2f;
+        Assert.Equal(edge, terrain.HeightAt(37.5f, 22f), 5);
     }
 
     [Fact]
     public void Heights_outside_the_map_take_the_edge()
     {
-        var terrain = TerrainHeights.Showcase(MapSize, MapSize);
+        var terrain = TerrainHeights.FromRules(Relief());
 
         Assert.Equal(terrain.HeightAt(0f, 10f), terrain.HeightAt(-5f, 10f));
         Assert.Equal(terrain.VertexHeight(MapSize, MapSize), terrain.VertexHeight(MapSize + 3, MapSize + 3));
     }
 
     [Fact]
-    public void Normals_point_up_on_flat_ground_and_away_from_a_hilltop_on_slopes()
-    {
-        var terrain = TerrainHeights.Showcase(MapSize, MapSize);
-
-        Assert.Equal(Vector3.UnitY, terrain.NormalAt(22, 22));
-
-        // East slope of the hill at (54, 32): the normal leans east, away from the top.
-        var slope = terrain.NormalAt(59, 32);
-        Assert.True(slope.X > 0.05f && slope.Y > 0.8f, $"normal {slope}");
-        Assert.Equal(1f, slope.Length(), 4);
-    }
-
-    [Fact]
     public void Camera_rays_hit_the_surface_where_they_should()
     {
-        var terrain = TerrainHeights.Showcase(MapSize, MapSize);
+        var terrain = TerrainHeights.FromRules(Relief());
         var random = new TestRandom(1234);
 
         for (var i = 0; i < 1000; i++)

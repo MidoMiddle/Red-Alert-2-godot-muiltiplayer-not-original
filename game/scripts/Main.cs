@@ -15,7 +15,7 @@ namespace Rts.Client;
 /// Scene root. Besides normal play it supports service modes, passed after <c>--</c> on the command line:
 /// <c>--smoke</c> runs a scripted session, saves and replays it, and exits with 0 or 1;
 /// <c>--check-camera</c> verifies the RA2 camera angle (a cell projects to a 2:1 diamond) and exits with 0 or 1;
-/// <c>--check-terrain</c> clicks points on hill slopes and verifies the camera ray finds them on the terrain, exits with 0 or 1;
+/// <c>--check-terrain</c> checks that the drawn ground is the ground of the rules and that clicks find it, exits with 0 or 1;
 /// <c>--screenshot &lt;path&gt; [--frames N]</c> saves frame N as PNG and exits.
 /// </summary>
 public partial class Main : Node3D
@@ -197,9 +197,9 @@ public partial class Main : Node3D
     }
 
     /// <summary>
-    /// "A click on a slope gives the right point" (docs/implementation/M1_visual_spike.md, step 3): each sample point on the
-    /// hill slopes is projected to the screen and clicked through the camera; the ground point found must be the sample point
-    /// (within 0.05 cell), and the points must really lie on slopes.
+    /// The ground drawn is the ground of the rules (docs/implementation/M7_maps.md, 4.12, step 9), and a click finds it: at
+    /// points spread over the map the height of the view equals the height of the simulation, and each point projected to
+    /// the screen and clicked through the camera comes back within 0.05 cell (docs/implementation/M1_visual_spike.md, step 3).
     /// </summary>
     private bool CheckTerrain()
     {
@@ -210,32 +210,33 @@ public partial class Main : Node3D
             return false;
         }
 
-        (float X, float Z)[] samples =
-        [
-            (59f, 32f), (49f, 32f), (54f, 27f), (54f, 37f),
-            (16.5f, 42f), (7.5f, 42f), (12f, 46.5f), (12f, 37.5f),
-            (44f, 12f), (36f, 12f), (40f, 16f), (40f, 8f),
-        ];
+        var map = GetNode<SimulationHost>("SimulationHost").Simulation.World.Map;
         var camera = GetNode<RtsCamera>("CameraRig");
-        var worstError = 0f;
-        var lowest = float.MaxValue;
+        var worstHeight = 0f;
+        var worstClick = 0f;
         var missed = 0;
-        foreach (var (x, z) in samples)
+        var samples = 0;
+        for (var z = 4.25f; z < map.Height; z += 7.5f)
         {
-            var point = new Vector3(x, terrain.HeightAt(x, z), z);
-            lowest = Math.Min(lowest, point.Y);
-            if (!camera.TryGroundAt(camera.UnprojectPosition(point), out var hit))
+            for (var x = 3.5f; x < map.Width; x += 7.5f)
             {
-                missed++;
-                continue;
-            }
+                samples++;
+                var rules = map.Heights.HeightAt(new WorldPos((int)(x * WorldPos.LeptonsPerCell), (int)(z * WorldPos.LeptonsPerCell)));
+                var point = new Vector3(x, terrain.HeightAt(x, z), z);
+                worstHeight = Math.Max(worstHeight, Math.Abs(point.Y - rules.Raw / (float)Rts.Simulation.Math.Fixed.OneRaw / WorldPos.LeptonsPerCell));
+                if (!camera.TryGroundAt(camera.UnprojectPosition(point), out var hit))
+                {
+                    missed++;
+                    continue;
+                }
 
-            worstError = Math.Max(worstError, new Vector2(hit.X - x, hit.Z - z).Length());
+                worstClick = Math.Max(worstClick, new Vector2(hit.X - x, hit.Z - z).Length());
+            }
         }
 
-        var ok = missed == 0 && worstError <= 0.05f && lowest > 0.1f;
-        GD.Print($"[terrain] {(ok ? "OK" : "FAILED")}: {samples.Length} slope points, lowest {lowest:0.00}, " +
-                 $"worst click error {worstError:0.0000} cell, missed {missed}");
+        var ok = missed == 0 && worstClick <= 0.05f && worstHeight <= 0.0001f;
+        GD.Print($"[terrain] {(ok ? "OK" : "FAILED")}: {samples} points, worst height error {worstHeight:0.000000}, " +
+                 $"worst click error {worstClick:0.0000} cell, missed {missed}");
         return ok;
     }
 

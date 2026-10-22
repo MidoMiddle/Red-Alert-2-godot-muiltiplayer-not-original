@@ -1,5 +1,7 @@
-// Ground of M2: every cell takes the flat colour of its land type from the simulation map (one texel per cell),
-// with a faint line every cell and a stronger line every 8 cells. Symbolic look, docs/implementation/conventions.md, section 12.
+// Ground of M2: every cell takes the flat colour of its land type from the simulation map (one texel per cell, cliffs in
+// rock), with a faint line every cell and a stronger line every 8 cells. Symbolic look, docs/implementation/conventions.md,
+// section 12. M7 step 9: the normal is the face's own, so every plane of the relief reads apart and a cliff is a wall, and a
+// thin line marks every height level where the ground crosses it (on slopes and cliff walls; flat ground has none).
 // The debug cell overlay (F7, M2 step 14) blends one RGBA texel per cell over it; bucket_lines adds the 4x4 index grid.
 shader_type spatial;
 
@@ -8,6 +10,7 @@ uniform vec3 fallback_color : source_color = vec3(0.34, 0.36, 0.32);
 uniform sampler2D overlay_map : source_color, filter_nearest;
 uniform bool overlay_enabled = false;
 uniform bool bucket_lines = false;
+uniform float level_height = 0.40625;
 
 varying vec3 world_position;
 
@@ -39,6 +42,13 @@ void fragment() {
 		color *= mix(0.35, 1.0, grid(world_position.xz, 4.0));
 	}
 	color *= mix(0.7, 1.0, grid(world_position.xz, 8.0));
+	float level = world_position.y / level_height;
+	float level_change = fwidth(level);
+	if (level_change > 0.001) {
+		float to_line = abs(fract(level - 0.5) - 0.5) / level_change;
+		color *= mix(0.55, 1.0, clamp(to_line, 0.0, 1.0));
+	}
+	NORMAL = normalize(cross(dFdy(VERTEX), dFdx(VERTEX)));
 	ALBEDO = color;
 	ROUGHNESS = 0.95;
 }

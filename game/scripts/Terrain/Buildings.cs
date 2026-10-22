@@ -7,7 +7,7 @@ namespace Rts.Client.Terrain;
 /// Symbolic buildings (docs/implementation/conventions.md, section 12; M7_maps.md, 4.8): a block over the footprint, beige for
 /// civilian houses and grey-teal for tech buildings, with a mark of their own — a tower on the oil derrick, a white cross on
 /// the hospital, a pale runway on the airfield — and a band in the owner's colour on a building of a player. The footprint
-/// sinks a little into the ground so the visual hills of the ASCII maps leave no gaps. Rebuilt whenever the map changes (a
+/// sinks a little into the ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a
 /// building falls), which is rare.
 /// </summary>
 public partial class Buildings : Node3D
@@ -18,11 +18,8 @@ public partial class Buildings : Node3D
     private static readonly Color Civilian = new(0.78f, 0.7f, 0.55f);
     private static readonly Color Tech = new(0.45f, 0.58f, 0.6f);
 
-    private TerrainHeights _heights = null!;
     private object? _builtMap;
     private int _builtVersion = -1;
-
-    public void Show(TerrainHeights heights) => _heights = heights;
 
     public override void _Process(double delta)
     {
@@ -64,7 +61,7 @@ public partial class Buildings : Node3D
             _ => 0.5f,
         };
         var centre = new Vector3(building.Cell.X + type.Width / 2f, 0, building.Cell.Y + type.Height / 2f);
-        var ground = _heights.HeightAt(centre.X, centre.Z);
+        var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
         var size = new Vector3(type.Width - 2 * Margin, height + Sink, type.Height - 2 * Margin);
         Box(size, centre + new Vector3(0, ground + (height - Sink) / 2, 0), tech ? Tech : Civilian);
         var top = ground + height;

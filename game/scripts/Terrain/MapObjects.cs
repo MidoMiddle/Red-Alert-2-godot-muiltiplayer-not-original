@@ -19,16 +19,8 @@ public partial class MapObjects : Node3D
     private const float CrownHeight = 0.8f;
 
     private MapGrid _map = null!;
-    private TerrainHeights _heights = null!;
     private int _builtVersion = -1;
     private MapGrid? _builtMap;
-
-    public void Show(MapGrid map, TerrainHeights heights)
-    {
-        _map = map;
-        _heights = heights;
-        Rebuild();
-    }
 
     public override void _Process(double delta)
     {
@@ -132,7 +124,7 @@ public partial class MapObjects : Node3D
         AddInstances(name + "Stubs", new BoxMesh { Size = new Vector3(0.12f, 0.12f, 0.12f) }, new Color(0.2f, 0.16f, 0.13f), stubs, 0.02f);
     }
 
-    private Vector3 Ground(int x, int y) => new(x + 0.5f, _heights.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
+    private static Vector3 Ground(int x, int y) => new(x + 0.5f, WorldCoords.Terrain!.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
 
     private void AddInstances(string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift)
     {

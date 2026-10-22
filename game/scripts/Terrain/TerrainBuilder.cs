@@ -3,17 +3,23 @@ using Godot;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// Builds the visual terrain mesh from <see cref="TerrainHeights"/> (docs/implementation/M1_visual_spike.md, 4.4):
-/// chunks of 16×16 cells, smooth normals, UV0 = world XZ for texture tiling, UV1 = position on the whole map for the
-/// layer mask of step 4. Registers the heights in <see cref="WorldCoords.Terrain"/> so the camera, units and picking follow them.
-/// Since M2 step 4 the ground is coloured by the land types of the simulation map, with trees and rocks on top
-/// (<see cref="LandLayer"/>, <see cref="MapObjects"/>). The hills stay visual until heights become rules in M7.
+/// Builds the terrain from the heights of the rules (docs/implementation/M1_visual_spike.md, 4.4; M7_maps.md, 4.12): chunks of
+/// <see cref="TerrainMesh.ChunkCells"/> cells from <see cref="TerrainMesh"/>, UV0 = world XZ, UV1 = position on the whole map.
+/// Registers the heights in <see cref="WorldCoords.Terrain"/> so the camera, units and picking follow them. The ground is
+/// coloured by the land types of the simulation map, cliffs in rock (<see cref="LandLayer"/>), with map objects and buildings
+/// on top (<see cref="MapObjects"/>, <see cref="Buildings"/>). What is drawn is the rules: since M7 step 9 every map, the ASCII
+/// ones too, has only the relief of its rules. When the map changes (a corner raised, a land type changed — the editor of
+/// steps 11–12), the land texture is painted again and only the chunks with a changed corner are rebuilt.
 /// </summary>
 public partial class TerrainBuilder : Node3D
 {
-    public const int ChunkCells = 16;
-
     private const string GroundShader = "res://shaders/grid.gdshader";
+
+    private readonly System.Collections.Generic.Dictionary<(int X, int Z), MeshInstance3D> _chunks = new();
+    private SimulationHost _host = null!;
+    private Rts.Simulation.Map.MapGrid? _builtMap;
+    private int _builtVersion;
+    private ImageTexture _landTexture = null!;
 
     public TerrainHeights Heights { get; private set; } = null!;
 
@@ -22,35 +28,62 @@ public partial class TerrainBuilder : Node3D
 
     public override void _Ready()
     {
-        var host = GetNode<SimulationHost>("../SimulationHost");
-        var world = host.Simulation.World;
-        // A .rtsmap map brings its heights as rules (M7 step 4); the ASCII maps keep the visual hills of M1.
-        Heights = host.HeightsFromRules ? TerrainHeights.FromRules(world.Map.Heights) : TerrainHeights.Showcase(world.WidthCells, world.HeightCells);
+        _host = GetNode<SimulationHost>("../SimulationHost");
+        var map = _host.Simulation.World.Map;
+        Heights = TerrainHeights.FromRules(map.Heights);
         WorldCoords.Terrain = Heights;
 
-        var material = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShader) };
-        material.SetShaderParameter("land_map", LandLayer.CreateTexture(world.Map));
-        GroundMaterial = material;
-        for (var chunkZ = 0; chunkZ < world.HeightCells; chunkZ += ChunkCells)
+        _landTexture = LandLayer.CreateTexture(map);
+        GroundMaterial = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShader) };
+        GroundMaterial.SetShaderParameter("land_map", _landTexture);
+        GroundMaterial.SetShaderParameter("level_height", TerrainHeights.LevelHeight);
+        foreach (var chunk in TerrainMesh.Chunks(map.Width, map.Height))
         {
-            for (var chunkX = 0; chunkX < world.WidthCells; chunkX += ChunkCells)
-            {
-                AddChild(new MeshInstance3D
-                {
-                    Name = $"Chunk_{chunkX / ChunkCells}_{chunkZ / ChunkCells}",
-                    Mesh = BuildChunk(chunkX, chunkZ),
-                    MaterialOverride = material,
-                    CastShadow = GeometryInstance3D.ShadowCastingSetting.On,
-                });
-            }
+            BuildChunk(chunk);
         }
 
-        var objects = new MapObjects { Name = "MapObjects" };
-        AddChild(objects);
-        objects.Show(world.Map, Heights);
-        var buildings = new Buildings { Name = "Buildings" };
-        AddChild(buildings);
-        buildings.Show(Heights);
+        (_builtMap, _builtVersion) = (map, map.Version);
+        AddChild(new MapObjects { Name = "MapObjects" });
+        AddChild(new Buildings { Name = "Buildings" });
+    }
+
+    public override void _Process(double delta)
+    {
+        // Runs before the children: map objects and buildings rebuilt on the same change read the new heights.
+        var map = _host.Simulation.World.Map;
+        if (ReferenceEquals(map, _builtMap) && map.Version == _builtVersion)
+        {
+            return;
+        }
+
+        // The same map changed, or a new match (R) started on a map of the same size: rebuild what differs. Another size: all.
+        var heights = TerrainHeights.FromRules(map.Heights);
+        var sameSize = heights.WidthCells == Heights.WidthCells && heights.HeightCells == Heights.HeightCells;
+        var changed = sameSize ? TerrainMesh.ChangedChunks(Heights, heights) : [.. TerrainMesh.Chunks(map.Width, map.Height)];
+        if (sameSize)
+        {
+            LandLayer.Update(_landTexture, map);
+        }
+        else
+        {
+            foreach (var instance in _chunks.Values)
+            {
+                instance.QueueFree();
+            }
+
+            _chunks.Clear();
+            _landTexture = LandLayer.CreateTexture(map);
+            GroundMaterial.SetShaderParameter("land_map", _landTexture);
+        }
+
+        Heights = heights;
+        WorldCoords.Terrain = heights;
+        foreach (var chunk in changed)
+        {
+            BuildChunk(chunk);
+        }
+
+        (_builtMap, _builtVersion) = (map, map.Version);
     }
 
     public override void _ExitTree()
@@ -61,62 +94,32 @@ public partial class TerrainBuilder : Node3D
         }
     }
 
-    private ArrayMesh BuildChunk(int startX, int startZ)
+    private void BuildChunk((int X, int Z) start)
     {
-        var cellsX = Mathf.Min(ChunkCells, Heights.WidthCells - startX);
-        var cellsZ = Mathf.Min(ChunkCells, Heights.HeightCells - startZ);
-        var rowLength = cellsX + 1;
-        var vertexCount = rowLength * (cellsZ + 1);
-
-        var positions = new Vector3[vertexCount];
-        var normals = new Vector3[vertexCount];
-        var worldUv = new Vector2[vertexCount];
-        var mapUv = new Vector2[vertexCount];
-        for (var z = 0; z <= cellsZ; z++)
-        {
-            for (var x = 0; x <= cellsX; x++)
-            {
-                var mapX = startX + x;
-                var mapZ = startZ + z;
-                var index = z * rowLength + x;
-                positions[index] = new Vector3(mapX, Heights.VertexHeight(mapX, mapZ), mapZ);
-                var normal = Heights.NormalAt(mapX, mapZ);
-                normals[index] = new Vector3(normal.X, normal.Y, normal.Z);
-                worldUv[index] = new Vector2(mapX, mapZ);
-                mapUv[index] = new Vector2((float)mapX / Heights.WidthCells, (float)mapZ / Heights.HeightCells);
-            }
-        }
-
-        // Two triangles per cell, clockwise seen from above: Godot's front faces.
-        var indices = new int[cellsX * cellsZ * 6];
-        var i = 0;
-        for (var z = 0; z < cellsZ; z++)
-        {
-            for (var x = 0; x < cellsX; x++)
-            {
-                var topLeft = z * rowLength + x;
-                var topRight = topLeft + 1;
-                var bottomLeft = topLeft + rowLength;
-                var bottomRight = bottomLeft + 1;
-                indices[i++] = topLeft;
-                indices[i++] = topRight;
-                indices[i++] = bottomRight;
-                indices[i++] = topLeft;
-                indices[i++] = bottomRight;
-                indices[i++] = bottomLeft;
-            }
-        }
-
+        var data = TerrainMesh.BuildChunk(Heights, start.X, start.Z);
         var arrays = new Godot.Collections.Array();
         arrays.Resize((int)Mesh.ArrayType.Max);
-        arrays[(int)Mesh.ArrayType.Vertex] = positions;
-        arrays[(int)Mesh.ArrayType.Normal] = normals;
-        arrays[(int)Mesh.ArrayType.TexUV] = worldUv;
-        arrays[(int)Mesh.ArrayType.TexUV2] = mapUv;
-        arrays[(int)Mesh.ArrayType.Index] = indices;
-
+        arrays[(int)Mesh.ArrayType.Vertex] = System.Array.ConvertAll(data.Positions, p => new Vector3(p.X, p.Y, p.Z));
+        // The shader lights every face by its own normal; the vertex normal only feeds the shadow bias.
+        arrays[(int)Mesh.ArrayType.Normal] = System.Array.ConvertAll(data.Positions, _ => Vector3.Up);
+        arrays[(int)Mesh.ArrayType.TexUV] = System.Array.ConvertAll(data.WorldUv, p => new Vector2(p.X, p.Y));
+        arrays[(int)Mesh.ArrayType.TexUV2] = System.Array.ConvertAll(data.MapUv, p => new Vector2(p.X, p.Y));
+        arrays[(int)Mesh.ArrayType.Index] = data.Indices;
         var mesh = new ArrayMesh();
         mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
-        return mesh;
+
+        if (!_chunks.TryGetValue(start, out var instance))
+        {
+            instance = new MeshInstance3D
+            {
+                Name = $"Chunk_{start.X / TerrainMesh.ChunkCells}_{start.Z / TerrainMesh.ChunkCells}",
+                MaterialOverride = GroundMaterial,
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.On,
+            };
+            _chunks.Add(start, instance);
+            AddChild(instance);
+        }
+
+        instance.Mesh = mesh;
     }
 }

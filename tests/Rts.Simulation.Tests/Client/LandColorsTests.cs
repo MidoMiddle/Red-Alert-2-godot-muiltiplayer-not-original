@@ -25,4 +25,13 @@ public sealed class LandColorsTests
         var (cr, _, cb) = LandColors.Of(LandType.Clear);
         Assert.True(b - r > cb - cr, $"{water} should be bluer than clear land.");
     }
+
+    [Fact]
+    public void A_cliff_is_rock_whatever_its_land_and_a_slope_keeps_its_land()
+    {
+        Assert.All(Enum.GetValues<LandType>(), land => Assert.Equal(LandColors.Cliff, LandColors.Of(land, CellShape.Cliff)));
+        Assert.All(Enum.GetValues<LandType>(), land => Assert.Equal(LandColors.Of(land), LandColors.Of(land, CellShape.Slope)));
+        Assert.Equal(LandColors.Of(LandType.Clear), LandColors.Of(LandType.Clear, CellShape.Flat));
+        Assert.DoesNotContain(LandColors.Cliff, Enum.GetValues<LandType>().Select(LandColors.Of));
+    }
 }
