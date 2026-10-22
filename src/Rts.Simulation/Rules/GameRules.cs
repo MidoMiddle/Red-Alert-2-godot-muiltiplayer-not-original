@@ -47,6 +47,14 @@ public sealed class GameRules
     /// <summary>The general rules of the economy: the one <c>economy</c> record of the data.</summary>
     public EconomyDef Economy => Database.Economies[0];
 
+    /// <summary>Credits a cell of ore holds: <c>(stage + 1) × ore_value</c>, or <c>gem_value</c> for gems; 0 without ore.</summary>
+    public int CreditsOf(OreCell ore) => ore.Kind switch
+    {
+        OreKind.Ore => (ore.Stage + 1) * Economy.OreValue,
+        OreKind.Gems => (ore.Stage + 1) * Economy.GemValue,
+        _ => 0,
+    };
+
     /// <summary>Whether a building may stand on <paramref name="land"/>: <c>buildable</c> of the land type in the data.</summary>
     public bool IsBuildable(LandType land) => LandSpeeds.IsKnown(land) && _buildable[(int)land - 1];
 

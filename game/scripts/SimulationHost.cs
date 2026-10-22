@@ -520,6 +520,7 @@ public partial class SimulationHost : Node
         PlacementProblem.TooFar => "too far from the base",
         PlacementProblem.NotAvailable => "its prerequisites are missing",
         PlacementProblem.NotReady => "it is not produced yet",
+        PlacementProblem.Ore => "ore",
         _ => problem.ToString(),
     };
 

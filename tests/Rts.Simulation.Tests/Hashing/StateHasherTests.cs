@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "credits", "building", "building ready", "production", "production progress", "rally point",
+        "credits", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage",
     };
 
     [Theory]
@@ -115,6 +115,13 @@ public sealed class StateHasherTests
             case "order index": idle.OrderIndex = 1; break;
             case "loop": idle.LoopOrders = true; break;
             case "credits": world.Player(Player1).Credits--; break;
+            case "ore": world.Map.SetOre(new CellPos(5, 5), new OreCell(OreKind.Ore, 0)); break;
+            case "ore stage":
+                world.Map.SetOre(new CellPos(5, 5), new OreCell(OreKind.Ore, 3));
+                var stage3 = StateHasher.Compute(world);
+                world.Map.SetOre(new CellPos(5, 5), new OreCell(OreKind.Ore, 4));
+                Assert.NotEqual(stage3, StateHasher.Compute(world));
+                break;
             case "production":
                 world.Player(Player1).QueueList(Rules.ProductionCategory.Vehicle).Add(new ProductionItem(ProductionKind.Unit, 0));
                 break;
@@ -199,7 +206,7 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(MapGrid), new[]
     {
-        "_land", "_blocked", "_heights", "_objects", "_bridges", "_startBuildings", "_building", "<Width>k__BackingField", "<Height>k__BackingField",
+        "_land", "_blocked", "_heights", "_objects", "_bridges", "_startBuildings", "_building", "_ore", "<Width>k__BackingField", "<Height>k__BackingField",
         // Indexes of the objects and the bridge segments by cell, built from the lists above.
         "_objectsByCell", "_segmentsByCell",
         // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of
@@ -207,6 +214,8 @@ public sealed class StateHasherTests
         "_digest", "<Version>k__BackingField", "_passability",
         // The land speeds the cells above are read by: rules of the match, not state (M3 step 4).
         "<Speeds>k__BackingField",
+        // A counter of ore changes for the client to redraw (M3 step 9).
+        "<OreVersion>k__BackingField",
     })]
     [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(MapObject), new[]

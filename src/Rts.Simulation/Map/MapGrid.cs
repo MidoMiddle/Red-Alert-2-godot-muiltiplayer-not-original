@@ -32,6 +32,7 @@ public sealed class MapGrid
     private readonly Dictionary<int, BridgeSegment> _segmentsByCell = new();
     private readonly List<BuildingState> _startBuildings = new();
     private readonly bool[] _building;
+    private readonly byte[] _ore;
     private CornerHeightGrid _heights;
     private Passability _passability;
     private ulong? _digest;
@@ -54,6 +55,7 @@ public sealed class MapGrid
         Array.Fill(_land, LandType.Clear);
         _blocked = new bool[width * height];
         _building = new bool[width * height];
+        _ore = new byte[width * height];
         _heights = new CornerHeightGrid(width, height);
         _passability = new Passability(this);
     }
@@ -63,12 +65,13 @@ public sealed class MapGrid
     /// levels (<c>(W+1) × (H+1)</c>; an empty layer means flat ground), then the map objects, the bridges and the buildings of the
     /// start. Used by the replay reader and the map loader; throws on unknown land types, flags or levels, on a bridge that does
     /// not run over water from shore to shore (see <see cref="TryAddBridge"/>) and on a building out of place (see
-    /// <see cref="TryAddBuilding"/>). <paramref name="speeds"/> as in the constructor.
+    /// <see cref="TryAddBuilding"/>). <paramref name="ore"/> is one byte per cell (<see cref="OreCell.Packed"/>; empty: no ore).
+    /// <paramref name="speeds"/> as in the constructor.
     /// </summary>
     public static MapGrid FromLayers(
         int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked, ReadOnlySpan<byte> heights = default,
         IReadOnlyList<MapObjectState>? objects = null, IReadOnlyList<BridgeState>? bridges = null, IReadOnlyList<BuildingState>? buildings = null,
-        LandSpeeds? speeds = null)
+        ReadOnlySpan<byte> ore = default, LandSpeeds? speeds = null)
     {
         var grid = new MapGrid(width, height, speeds);
         if (land.Length != grid._land.Length || blocked.Length != grid._blocked.Length)
@@ -118,6 +121,19 @@ public sealed class MapGrid
             if (grid.TryAddBridge(state) is { } problem)
             {
                 throw new ArgumentException($"Bridge {grid._bridges.Count + 1} is not valid: {problem}.");
+            }
+        }
+
+        if (!ore.IsEmpty)
+        {
+            if (ore.Length != grid._ore.Length)
+            {
+                throw new ArgumentException($"The ore layer must have {grid._ore.Length} cells, got {ore.Length}.");
+            }
+
+            for (var i = 0; i < ore.Length; i++)
+            {
+                grid._ore[i] = OreCell.IsValidPacked(ore[i]) ? ore[i] : throw new ArgumentException($"Cell {i} has an unknown ore byte {ore[i]}.");
             }
         }
 
@@ -244,7 +260,7 @@ public sealed class MapGrid
     public MapGrid Clone(LandSpeeds? speeds = null)
     {
         var copy = FromLayers(
-            Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings, speeds ?? Speeds);
+            Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings, _ore, speeds ?? Speeds);
         if (!_building.AsSpan().SequenceEqual(copy._building))
         {
             _building.CopyTo(copy._building, 0);
@@ -264,7 +280,28 @@ public sealed class MapGrid
         && ObjectsEqual(other)
         && BridgesEqual(other)
         && System.Linq.Enumerable.SequenceEqual(_startBuildings, other._startBuildings)
-        && _building.AsSpan().SequenceEqual(other._building);
+        && _building.AsSpan().SequenceEqual(other._building)
+        && _ore.AsSpan().SequenceEqual(other._ore);
+
+    /// <summary>The ore of the cell (M3 step 9); empty off the map.</summary>
+    public OreCell OreAt(CellPos cell) => Contains(cell) ? OreCell.FromPacked(_ore[IndexOf(cell)]) : OreCell.Empty;
+
+    /// <summary>Ore layer as bytes in cell index order (<see cref="OreCell.Packed"/>), the replay layout.</summary>
+    public byte[] OreBytes() => (byte[])_ore.Clone();
+
+    /// <summary>
+    /// Counts every change of the ore, so the client redraws it. Ore takes no part in movement, so it leaves <see cref="Version"/> and the
+    /// path costs alone.
+    /// </summary>
+    public int OreVersion { get; private set; }
+
+    /// <summary>The ore of a cell grows, spreads or is harvested (M3 steps 9–10).</summary>
+    internal void SetOre(CellPos cell, OreCell ore)
+    {
+        _ore[IndexOf(cell)] = ore.Packed;
+        _digest = null;
+        OreVersion++;
+    }
 
     /// <summary>Land layer as bytes in cell index order, the replay layout.</summary>
     public byte[] LandBytes()
@@ -506,7 +543,8 @@ public sealed class MapGrid
     public int Version { get; private set; }
 
     /// <summary>
-    /// FNV-1a of the land layer, the obstacle layer, the corner heights, the map objects, the bridges and the buildings, in index order, for the state hash. Computed once and kept
+    /// FNV-1a of the land layer, the obstacle layer, the corner heights, the map objects, the bridges, the buildings and the ore, in index
+    /// order, for the state hash. Computed once and kept
     /// until a cell changes, so the per-tick hash does not walk the whole map (docs/implementation/M2_unit_control.md, 4.15).
     /// </summary>
     internal ulong Digest => _digest ??= ComputeDigest();
@@ -578,6 +616,8 @@ public sealed class MapGrid
             hash.Add(taken);
         }
 
+        // Rules v22 (M3 step 9): the ore of every cell.
+        hash.Add(_ore);
         return hash.Value;
     }
 

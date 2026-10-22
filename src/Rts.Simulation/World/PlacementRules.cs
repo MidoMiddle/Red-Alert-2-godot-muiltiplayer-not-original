@@ -33,19 +33,21 @@ public enum PlacementProblem : byte
 
     /// <summary>The building has not been produced yet: it is not ready in its queue (checked by the command, not here).</summary>
     NotReady = 8,
+
+    /// <summary>A cell holds ore or gems (M3 step 9).</summary>
+    Ore = 9,
 }
 
 /// <summary>
 /// Where a building of a player may stand (docs/implementation/M3_base_economy.md, 4.8). One function for the simulation, which
-/// decides, and the client, which shows the footprint in red or green: they cannot disagree. Ore under the footprint joins with
-/// ore in the match (step 9).
+/// decides, and the client, which shows the footprint in red or green: they cannot disagree.
 /// </summary>
 public static class PlacementRules
 {
     /// <param name="cell">The north-west cell of the footprint.</param>
     /// <param name="needsBase">False for the construction yard of an MCV, which starts a base where there is none.</param>
     /// <param name="ignoreUnit">A unit that does not stand in the way: the MCV that turns into the building.</param>
-    /// <returns>The first problem found: the footprint, then each cell in order (taken, land, level, units), then the base.</returns>
+    /// <returns>The first problem found: the footprint, then each cell in order (taken, land, level, ore, units), then the base.</returns>
     public static PlacementProblem Check(
         GameWorld world, PlayerId player, BuildingDef def, CellPos cell, bool needsBase = true, EntityId ignoreUnit = default)
     {
@@ -88,6 +90,11 @@ public static class PlacementRules
         if (map.Heights.ShapeAt(cell) != CellShape.Flat || map.Heights.CellLevel(cell) != level)
         {
             return PlacementProblem.NotFlat;
+        }
+
+        if (!map.OreAt(cell).IsEmpty)
+        {
+            return PlacementProblem.Ore;
         }
 
         var reservations = world.Reservations;

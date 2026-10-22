@@ -10,7 +10,7 @@ using Rts.Simulation.Map;
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v12, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v13, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion | u64 dataHash
 /// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 startingCredits | i32 tickCount
@@ -26,11 +26,12 @@ namespace Rts.Simulation.Replays;
 /// u8 kind | u16 x | u16 y | u8 owner | u8 facing each); v9 (M3 step 3) adds the hash of the data files after the rules version
 /// (<c>DataHasher</c>, docs/implementation/M3_base_economy.md, 4.4); v10 (M3 step 5) adds the starting credits of the players
 /// after the hash interval; v11 (M3 step 6) marks command format v5 inside (PlaceBuilding, Deploy); v12 (M3 step 8) marks command
-/// format v6 inside (production and rally points).
+/// format v6 inside (production and rally points); v13 (M3 step 9) adds the ore layer, one byte per cell (kind × 16 + stage), after
+/// the corner heights.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 12;
+    public const ushort FormatVersion = 13;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -54,7 +55,7 @@ public static class ReplayFormat
     {
         var commands = CommandSerializer.WriteAll(replay.Commands);
         var map = replay.Settings.Map;
-        var mapSize = 1 + (map is null ? 0 : 2 * map.Width * map.Height + (map.Width + 1) * (map.Height + 1) + 4 + ObjectSize * map.Objects.Count + 4);
+        var mapSize = 1 + (map is null ? 0 : 3 * map.Width * map.Height + (map.Width + 1) * (map.Height + 1) + 4 + ObjectSize * map.Objects.Count + 4);
         foreach (var bridge in map?.Bridges ?? [])
         {
             mapSize += BridgeHeaderSize + 4 * bridge.Segments.Count;
@@ -87,6 +88,8 @@ public static class ReplayFormat
             offset += map.Width * map.Height;
             map.Heights.LevelBytes().CopyTo(span[offset..]);
             offset += (map.Width + 1) * (map.Height + 1);
+            map.OreBytes().CopyTo(span[offset..]);
+            offset += map.Width * map.Height;
             BinaryPrimitives.WriteUInt32LittleEndian(span[offset..], (uint)map.Objects.Count);
             offset += 4;
             foreach (var mapObject in map.Objects)
@@ -188,14 +191,14 @@ public static class ReplayFormat
 
             var cells = width * height;
             var corners = (width + 1) * (height + 1);
-            Require(source[offset..], 2 * cells + corners + 4);
-            var objectCount = BinaryPrimitives.ReadUInt32LittleEndian(source[(offset + 2 * cells + corners)..]);
+            Require(source[offset..], 3 * cells + corners + 4);
+            var objectCount = BinaryPrimitives.ReadUInt32LittleEndian(source[(offset + 3 * cells + corners)..]);
             if (objectCount > (uint)cells * 4)
             {
                 throw new InvalidDataException($"Invalid map object count {objectCount}.");
             }
 
-            var objectsStart = offset + 2 * cells + corners + 4;
+            var objectsStart = offset + 3 * cells + corners + 4;
             Require(source[objectsStart..], ObjectSize * (int)objectCount);
             var objects = new MapObjectState[objectCount];
             for (var i = 0; i < objects.Length; i++)
@@ -270,7 +273,7 @@ public static class ReplayFormat
             {
                 map = MapGrid.FromLayers(
                     width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners), objects, bridges,
-                    buildings);
+                    buildings, source.Slice(offset + 2 * cells + corners, cells));
             }
             catch (ArgumentException error)
             {

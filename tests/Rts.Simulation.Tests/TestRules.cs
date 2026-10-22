@@ -103,6 +103,12 @@ internal static class TestRules
             LowPowerMinRate = Percent(25),
             MultipleFactoryBonus = Percent(50),
             MaxFactoryRate = Percent(300),
+            OreValue = 25,
+            GemValue = 50,
+            OreGrowthInterval = 450,
+            OreGrowthChance = Percent(20),
+            OreSpreadStage = 6,
+            OreSpreadChance = Percent(5),
         });
         builder.Add(new FactionDef
         {
@@ -140,7 +146,8 @@ internal static class TestRules
             Prerequisites = [.. prerequisites],
         };
 
-    private static Fixed Percent(int percent) => Fixed.FromRatio(percent, 100);
+    // Rounded to the nearest, as the parser of the data files reads "5%".
+    private static Fixed Percent(int percent) => Fixed.FromRaw(IntMath.DivRound(percent * Fixed.OneRaw, 100));
 
     private static void Infantry(RulesBuilder builder, UnitType type, int sight) =>
         builder.Add(Unit(type, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, speed: 24, turnRate: 0, turret: false, sight, ["barracks"]));

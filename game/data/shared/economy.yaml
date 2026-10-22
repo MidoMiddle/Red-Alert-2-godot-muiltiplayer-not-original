@@ -7,3 +7,12 @@ economy:
   # Every factory of a category beyond the first adds this to its speed, up to max_factory_rate.
   multiple_factory_bonus: 50%
   max_factory_rate: 300%
+  # Ore (4.12): 12 stages per cell, 0…11; a stage is worth ore_value (gems: gem_value), so a full cell of ore holds 300.
+  ore_value: 25
+  gem_value: 50
+  # Every ore_growth_interval each cell of ore grows a stage by ore_growth_chance; from ore_spread_stage on it may also seed a
+  # neighbour of clear or rough land with ore of stage 0, by ore_spread_chance. Gems neither grow nor spread.
+  ore_growth_interval: 30s
+  ore_growth_chance: 20%
+  ore_spread_stage: 6
+  ore_spread_chance: 5%

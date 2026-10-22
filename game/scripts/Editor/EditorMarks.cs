@@ -8,15 +8,12 @@ using Rts.Simulation.Geometry;
 namespace Rts.Client.Editor;
 
 /// <summary>
-/// What only the editor shows (docs/implementation/M7_maps.md, 4.13, step 12): ore as yellow diamonds and gems as blue ones,
-/// larger the denser (ore has no rules before M3, so the field and the previews do not draw it yet), and every start as a
-/// pillar in its slot's colour with its number. Rebuilt when the map changes.
+/// What the editor shows on its map (docs/implementation/M7_maps.md, 4.13, step 12): ore as yellow diamonds and gems as blue ones,
+/// larger the denser (the diamonds of a match, <see cref="OreField"/>, from the density of the file rather than the stage), and every
+/// start as a pillar in its slot's colour with its number. Rebuilt when the map changes.
 /// </summary>
 public partial class EditorMarks : Node3D
 {
-    private static readonly Color OreColor = new(0.95f, 0.8f, 0.15f);
-    private static readonly Color GemColor = new(0.35f, 0.8f, 1f);
-
     private int _builtVersion = -1;
 
     public void Refresh(MapEditSession session)
@@ -47,14 +44,12 @@ public partial class EditorMarks : Node3D
 
                 var density = value > 9 ? value - 9 : value;
                 var size = value > 9 ? 0.2f + density * 0.08f : 0.12f + density * 0.025f;
-                var at = new Vector3(x + 0.5f, terrain.HeightAt(x + 0.5f, y + 0.5f) + size, y + 0.5f);
-                var basis = new Basis(Vector3.Forward, Mathf.Pi / 4f).Scaled(new Vector3(size, size, size));
-                (value > 9 ? gems : ore).Add(new Transform3D(basis, at));
+                (value > 9 ? gems : ore).Add(OreField.Diamond(terrain, x, y, size));
             }
         }
 
-        AddDiamonds("Ore", ore, OreColor);
-        AddDiamonds("Gems", gems, GemColor);
+        OreField.AddDiamonds(this, "Ore", ore, OreField.OreColor);
+        OreField.AddDiamonds(this, "Gems", gems, OreField.GemColor);
 
         foreach (var start in map.Starts)
         {
@@ -75,26 +70,5 @@ public partial class EditorMarks : Node3D
                 Position = new Vector3(start.Cell.X + 0.5f, ground + 2.1f, start.Cell.Y + 0.5f),
             });
         }
-    }
-
-    private void AddDiamonds(string name, List<Transform3D> transforms, Color color)
-    {
-        if (transforms.Count == 0)
-        {
-            return;
-        }
-
-        var multiMesh = new MultiMesh
-        {
-            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-            Mesh = new BoxMesh { Size = Vector3.One, Material = new StandardMaterial3D { AlbedoColor = color } },
-            InstanceCount = transforms.Count,
-        };
-        for (var i = 0; i < transforms.Count; i++)
-        {
-            multiMesh.SetInstanceTransform(i, transforms[i]);
-        }
-
-        AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Math;
 using Rts.Simulation.World;
 
 namespace Rts.Data.Maps;
@@ -192,8 +193,25 @@ public sealed class MapDefinition
             buildings[i] = new BuildingState(type.Kind, placement.Cell, new PlayerId(placement.Owner), placement.Facing);
         }
 
-        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects, bridges, buildings);
+        var ore = new byte[Width * Height];
+        for (var i = 0; i < ore.Length; i++)
+        {
+            ore[i] = OreOf(Ore[i]).Packed;
+        }
+
+        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects, bridges, buildings, ore);
     }
+
+    /// <summary>
+    /// The ore of a cell of the map file in the match (M3 step 9): a density 1…9 of ore is spread over the 12 stages,
+    /// <c>round((d − 1) × 11 / 8)</c>, so 1 is stage 0 and 9 is stage 11; gems A, B, C (10…12) are stages 3, 7 and 11.
+    /// </summary>
+    public static OreCell OreOf(byte value) => value switch
+    {
+        0 => OreCell.Empty,
+        <= 9 => new OreCell(OreKind.Ore, (int)IntMath.DivRound((value - 1) * 11L, 8)),
+        _ => new OreCell(OreKind.Gems, 4 * (value - 10) + 3),
+    };
 
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>
     public bool ContentEquals(MapDefinition other) =>

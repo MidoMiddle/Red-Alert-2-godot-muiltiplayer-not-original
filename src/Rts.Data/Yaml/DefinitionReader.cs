@@ -35,7 +35,11 @@ internal static class DefinitionReader
 
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester"];
 
-    private static readonly string[] EconomyKeys = ["name", "low_power_min_rate", "multiple_factory_bonus", "max_factory_rate"];
+    private static readonly string[] EconomyKeys =
+    [
+        "name", "low_power_min_rate", "multiple_factory_bonus", "max_factory_rate", "ore_value", "gem_value", "ore_growth_interval",
+        "ore_growth_chance", "ore_spread_stage", "ore_spread_chance",
+    ];
 
     /// <summary>The kind of an entry, one of the six known kinds.</summary>
     public static string KindOf(RawDefinition definition)
@@ -160,6 +164,12 @@ internal static class DefinitionReader
             LowPowerMinRate = fields.Required("low_power_min_rate", Scalars.Percent, Fixed.Zero),
             MultipleFactoryBonus = fields.Required("multiple_factory_bonus", Scalars.Percent, Fixed.Zero),
             MaxFactoryRate = fields.Required("max_factory_rate", Scalars.Percent, Fixed.Zero),
+            OreValue = fields.Required("ore_value", Scalars.Int, 0),
+            GemValue = fields.Required("gem_value", Scalars.Int, 0),
+            OreGrowthInterval = fields.Required("ore_growth_interval", Scalars.Ticks, 0),
+            OreGrowthChance = fields.Required("ore_growth_chance", Scalars.Percent, Fixed.Zero),
+            OreSpreadStage = fields.Required("ore_spread_stage", Scalars.Int, 0),
+            OreSpreadChance = fields.Required("ore_spread_chance", Scalars.Percent, Fixed.Zero),
         };
     }
 

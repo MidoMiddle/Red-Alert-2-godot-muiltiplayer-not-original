@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Rts.Data.Yaml;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
 using YamlDotNet.RepresentationModel;
@@ -160,6 +161,22 @@ internal static class RulesValidator
             if (economy.MaxFactoryRate < Fixed.One)
             {
                 Error(economy.Id, "max_factory_rate", $"'max_factory_rate' of '{economy.Id}' must be 100% or more");
+            }
+
+            Positive(economy.Id, "ore_value", economy.OreValue);
+            Positive(economy.Id, "gem_value", economy.GemValue);
+            Positive(economy.Id, "ore_growth_interval", economy.OreGrowthInterval);
+            foreach (var (key, chance) in new[] { ("ore_growth_chance", economy.OreGrowthChance), ("ore_spread_chance", economy.OreSpreadChance) })
+            {
+                if (chance < Fixed.Zero || chance > Fixed.One)
+                {
+                    Error(economy.Id, key, $"'{key}' of '{economy.Id}' must be 0% to 100%");
+                }
+            }
+
+            if (economy.OreSpreadStage is < 0 or > OreCell.MaxStage)
+            {
+                Error(economy.Id, "ore_spread_stage", $"'ore_spread_stage' of '{economy.Id}' must be 0 to {OreCell.MaxStage}");
             }
         }
 

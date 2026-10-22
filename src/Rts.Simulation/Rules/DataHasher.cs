@@ -115,6 +115,12 @@ public static class DataHasher
             hash.Add(economy.LowPowerMinRate.Raw);
             hash.Add(economy.MultipleFactoryBonus.Raw);
             hash.Add(economy.MaxFactoryRate.Raw);
+            hash.Add(economy.OreValue);
+            hash.Add(economy.GemValue);
+            hash.Add(economy.OreGrowthInterval);
+            hash.Add(economy.OreGrowthChance.Raw);
+            hash.Add(economy.OreSpreadStage);
+            hash.Add(economy.OreSpreadChance.Raw);
         }
 
         return hash.Value;

@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0xf66abef057f52dabUL, GameDataFiles.Current.Hash);
+        Assert.Equal(0x819d6c216c20ebdcUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -116,6 +116,9 @@ public sealed class GameDataTests
     [InlineData("low_power_min_rate: 25%", "low_power_min_rate: 120%", "'low_power_min_rate' of 'economy' must be 0% to 100%")]
     [InlineData("multiple_factory_bonus: 50%", "multiple_factory_bonus: -10%", "'-10%' must be a percentage such as 125%")]
     [InlineData("max_factory_rate: 300%", "max_factory_rate: 50%", "'max_factory_rate' of 'economy' must be 100% or more")]
+    [InlineData("ore_growth_chance: 20%", "ore_growth_chance: 120%", "'ore_growth_chance' of 'economy' must be 0% to 100%")]
+    [InlineData("ore_spread_stage: 6", "ore_spread_stage: 12", "'ore_spread_stage' of 'economy' must be 0 to 11")]
+    [InlineData("ore_value: 25", "ore_value: 0", "'ore_value' of 'economy' must be above zero")]
     public void An_economy_rate_out_of_its_range_is_reported(string text, string replacement, string reason)
     {
         var error = Assert.Single(ErrorsWith("shared/economy.yaml", text, replacement));

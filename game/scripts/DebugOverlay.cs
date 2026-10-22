@@ -155,6 +155,13 @@ public partial class DebugOverlay : CanvasLayer
             var (id, maxHp) = building.Def is { } def ? (def.Id, def.Hp) : (building.Type.Id, building.Type.MaxHp);
             land += $" + {id} {building.Hp}/{maxHp} ({building.Owner})" + (building.IsReady ? "" : $" growing {building.BuildUpPermille / 10}%");
         }
+
+        // Ore (M3 step 9): "ore 7 · 200 cr", "gems 3 · 200 cr".
+        if (map.OreAt(cell) is { IsEmpty: false } ore)
+        {
+            land += $" + {(ore.Kind == OreKind.Gems ? "gems" : "ore")} {ore.Stage} · {world.Rules.CreditsOf(ore)} cr";
+        }
+
         var foot = map.SpeedPercent(cell, Locomotor.Foot);
         var track = map.SpeedPercent(cell, Locomotor.Track);
         var wheel = map.SpeedPercent(cell, Locomotor.Wheel);

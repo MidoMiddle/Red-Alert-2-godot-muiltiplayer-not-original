@@ -78,7 +78,8 @@ public sealed class GameSimulation
         MovementSystem.Update(World, _events);
         World.Spatial.Sync(World);
 
-        // 5. Technologies, when the buildings changed.
+        // 5. Ore grows and spreads (by its interval), then technologies, when the buildings changed.
+        OreGrowthSystem.Update(World);
         TechTree.Update(World);
 
         // 6. Entities that died this tick leave the world.
