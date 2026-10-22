@@ -40,6 +40,9 @@ jobs:
       - name: Data tests
         run: dotnet test tests/Rts.Data.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=data.trx" --results-directory test-results
 
+      - name: Map generator tests
+        run: dotnet test tests/Rts.MapGen.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=mapgen.trx" --results-directory test-results
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4

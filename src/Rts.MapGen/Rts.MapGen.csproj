@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Random maps (docs/implementation/M7_maps.md, 4.14): one seed and settings give the same map on every system, so a lobby
+    only has to send them. Needs the map format (Rts.Data) and nothing of Godot; the determinism rules apply.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Rts.MapGen</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RtsDeterministic>true</RtsDeterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Rts.Data/Rts.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rts.MapGen.Tests" />
+  </ItemGroup>
+
+</Project>

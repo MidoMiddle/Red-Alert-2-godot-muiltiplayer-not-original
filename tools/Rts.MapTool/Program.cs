@@ -7,6 +7,9 @@ using Rts.Simulation.Map;
 // dotnet run --project tools/Rts.MapTool -- shapes <map.rtsmap>              cell shapes and cell levels as text
 // dotnet run --project tools/Rts.MapTool -- passability <map.rtsmap> <type>  where a locomotor goes and how fast
 // dotnet run --project tools/Rts.MapTool -- relief-test <out.rtsmap>         write the relief test map of step 2
+// dotnet run --project tools/Rts.MapTool -- generate <out.rtsmap> [--seed N] [--size 64|96|128|160] [--players 2|4]
+//     [--symmetry mirror|rotate180|rotate90] [--relief flat|hilly|mountainous] [--water none|rivers|lakes]
+//     [--forest low|medium|high] [--resources low|medium|high]       a random map (step 13)
 if (args.Length == 2 && args[0] == "check")
 {
     return Run(args[1], map =>
@@ -101,7 +104,40 @@ if (args.Length == 3 && args[0] == "convert")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap>");
+if (args.Length >= 2 && args[0] == "generate")
+{
+    string Option(string name, string fallback)
+    {
+        var index = Array.IndexOf(args, "--" + name);
+        return index >= 0 && index + 1 < args.Length ? args[index + 1] : fallback;
+    }
+
+    T Choice<T>(string name, T fallback)
+        where T : struct, Enum => Enum.TryParse<T>(Option(name, fallback.ToString()), ignoreCase: true, out var value)
+            ? value
+            : throw new ArgumentException($"--{name} {Option(name, "")} is not one of {string.Join(", ", Enum.GetNames<T>()).ToLowerInvariant()}");
+
+    var symmetry = Choice("symmetry", Rts.MapGen.MapSymmetry.Mirror);
+    var settings = new Rts.MapGen.MapGenSettings
+    {
+        Seed = uint.Parse(Option("seed", "1"), System.Globalization.CultureInfo.InvariantCulture),
+        Size = int.Parse(Option("size", "64"), System.Globalization.CultureInfo.InvariantCulture),
+        Symmetry = symmetry,
+        Players = int.Parse(Option("players", symmetry == Rts.MapGen.MapSymmetry.Rotate90 ? "4" : "2"), System.Globalization.CultureInfo.InvariantCulture),
+        Relief = Choice("relief", Rts.MapGen.ReliefKind.Hilly),
+        Water = Choice("water", Rts.MapGen.WaterKind.Rivers),
+        Forest = Choice("forest", Rts.MapGen.Amount.Medium),
+        Resources = Choice("resources", Rts.MapGen.Amount.Medium),
+    };
+    var (map, seed) = Rts.MapGen.MapGenerator.Generate(settings);
+    File.WriteAllText(args[1], RtsMapWriter.Write(map));
+    var warnings = MapValidator.Check(map);
+    Console.WriteLine($"wrote {args[1]} · seed {seed} · {map.Width}x{map.Height} · {map.Objects.Length} objects · {map.Bridges.Length} bridges · " +
+                      $"{map.Structures.Length} buildings · {warnings.Count} warnings · hash {MapHasher.Hash(map)}");
+    return 0;
+}
+
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options]");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>
