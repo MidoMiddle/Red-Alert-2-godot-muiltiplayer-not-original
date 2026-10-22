@@ -14,19 +14,23 @@ namespace Rts.Simulation.Systems;
 /// </summary>
 public static class DeathSystem
 {
-    /// <summary>The unit dies: no hit points, dead, an <see cref="EntityDestroyed"/>; <paramref name="weapon"/> is -1 without one.</summary>
-    public static void Kill(GameWorld world, Unit unit, EntityId killer, DeathCause cause, int weapon, List<SimEvent>? events)
+    /// <summary>
+    /// The unit dies: no hit points, dead, an <see cref="EntityDestroyed"/>; <paramref name="weapon"/> is -1 without one,
+    /// <paramref name="killerOwner"/> neutral without a killer.
+    /// </summary>
+    public static void Kill(
+        GameWorld world, Unit unit, EntityId killer, PlayerId killerOwner, DeathCause cause, int weapon, List<SimEvent>? events)
     {
         world.SetHp(unit, 0, events);
         unit.MarkDead();
-        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, cause, weapon));
+        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, cause, weapon, killerOwner));
     }
 
-    /// <summary>The building falls (<see cref="GameWorld.DestroyBuilding"/>) to a shot of <paramref name="killer"/>.</summary>
-    public static void Destroy(GameWorld world, Building building, EntityId killer, int weapon, List<SimEvent>? events)
+    /// <summary>The building falls (<see cref="GameWorld.DestroyBuilding"/>) to a shot of <paramref name="killer"/>, a unit of <paramref name="killerOwner"/>.</summary>
+    public static void Destroy(GameWorld world, Building building, EntityId killer, PlayerId killerOwner, int weapon, List<SimEvent>? events)
     {
         world.DestroyBuilding(building, events);
-        events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon));
+        events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
     }
 
     /// <summary>The building falls without a shot — <see cref="DeathCause.Defeat"/> of its owner (M5 step 10): no killer, no weapon.</summary>

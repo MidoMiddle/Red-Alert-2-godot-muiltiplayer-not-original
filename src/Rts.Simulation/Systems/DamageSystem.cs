@@ -149,7 +149,7 @@ public static class DamageSystem
                     events?.Add(new EntityDamaged(world.CurrentTick, unit.Id, attacker, amount, hp));
                     if (hp == 0)
                     {
-                        DeathSystem.Kill(world, unit, attacker, DeathCause.Weapon, weapon, events);
+                        DeathSystem.Kill(world, unit, attacker, hit.Owner, DeathCause.Weapon, weapon, events);
                     }
 
                     break;
@@ -162,7 +162,7 @@ public static class DamageSystem
                     events?.Add(new EntityDamaged(world.CurrentTick, building.Id, attacker, amount, hp));
                     if (hp == 0)
                     {
-                        DeathSystem.Destroy(world, building, attacker, weapon, events);
+                        DeathSystem.Destroy(world, building, attacker, hit.Owner, weapon, events);
                     }
                     else
                     {

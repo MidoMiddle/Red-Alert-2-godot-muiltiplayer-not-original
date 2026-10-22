@@ -47,7 +47,7 @@ public static class CrushSystem
             reservations.Leave(cell, soldier);
             if (soldier.IsAlive)
             {
-                DeathSystem.Kill(world, soldier, vehicle.Id, DeathCause.Crushed, -1, events);
+                DeathSystem.Kill(world, soldier, vehicle.Id, vehicle.Owner, DeathCause.Crushed, -1, events);
             }
         }
 

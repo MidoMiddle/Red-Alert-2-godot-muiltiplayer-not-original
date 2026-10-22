@@ -102,6 +102,7 @@ public static class ProductionSystem
         }
 
         player.Credits -= payment;
+        world.Stats.Spent(player.Id, payment);
         item.Paid = due;
         item.Progress = progress;
         item.WaitingForFunds = false;

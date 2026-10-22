@@ -85,6 +85,9 @@ public sealed class GameWorld
     /// </summary>
     public Matches.MatchResult? Result { get; internal set; }
 
+    /// <summary>What every player did (M5 step 11), in the sandbox too. Not hashed: the game does not depend on it.</summary>
+    public Matches.MatchStats Stats { get; } = new();
+
     public DeterministicRandom Random { get; }
 
     public MapGrid Map { get; }

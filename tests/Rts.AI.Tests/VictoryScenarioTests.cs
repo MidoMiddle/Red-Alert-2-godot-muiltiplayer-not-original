@@ -1,5 +1,6 @@
 using Rts.Data.Tests;
 using Rts.Simulation.Replays;
+using Rts.Simulation.Tests.Matches;
 using Rts.Simulation.World;
 
 namespace Rts.AI.Tests;
@@ -13,20 +14,21 @@ public sealed class VictoryScenarioTests
 {
     private const int Limit = 15 * 900;
 
-    private static readonly Lazy<BotMatch> Normal = new(() => Play(shortGame: false));
+    private static readonly Lazy<(BotMatch Match, EventTally Tally)> Normal = new(() => Play(shortGame: false));
 
-    private static readonly Lazy<BotMatch> Short = new(() => Play(shortGame: true));
+    private static readonly Lazy<(BotMatch Match, EventTally Tally)> Short = new(() => Play(shortGame: true));
 
-    /// <summary>Plays until the match ends or the limit passes.</summary>
-    private static BotMatch Play(bool shortGame)
+    /// <summary>Plays until the match ends or the limit passes, counting its events beside its statistics (step 11).</summary>
+    private static (BotMatch, EventTally) Play(bool shortGame)
     {
         var match = new BotMatch(shortGame: shortGame);
+        var tally = EventTally.Attach(match.Simulation);
         while (match.World.Result is null && match.Simulation.CurrentTick < Limit)
         {
             match.Step();
         }
 
-        return match;
+        return (match, tally);
     }
 
     [Theory]
@@ -34,7 +36,7 @@ public sealed class VictoryScenarioTests
     [InlineData(true)]
     public void The_bot_wins_against_a_passive_person_before_the_fifteenth_minute(bool shortGame)
     {
-        var match = (shortGame ? Short : Normal).Value;
+        var match = (shortGame ? Short : Normal).Value.Match;
         var result = match.World.Result;
 
         Assert.NotNull(result);
@@ -46,9 +48,26 @@ public sealed class VictoryScenarioTests
     }
 
     [Fact]
+    public void The_statistics_of_the_match_say_what_its_events_said_and_the_winner_built_and_destroyed()
+    {
+        var (match, tally) = Normal.Value;
+        var (bot, person) = (match.World.Stats.Of(BotMatch.Bot), match.World.Stats.Of(new PlayerId(1)));
+
+        tally.AssertAgrees(match.World);
+        // And by the bot's own timeline, which writes down every building placed — the deploy too — and every unit produced.
+        Assert.Equal(match.Timeline.Count(line => line.Text.StartsWith("placed ", StringComparison.Ordinal)), bot.BuildingsBuilt);
+        Assert.Equal(match.Timeline.Count(line => line.Text.StartsWith("produced ", StringComparison.Ordinal)), bot.UnitsBuilt);
+        Assert.True(bot.UnitsBuilt > 0 && bot.BuildingsBuilt > 0 && bot.CreditsHarvested > 0 && bot.CreditsSpent > 0);
+        // The person's MCV and three conscripts, all destroyed by the bot.
+        Assert.Equal((4, 4), (person.UnitsLost, bot.UnitsDestroyed));
+        Assert.Equal(match.World.Result!.Tick, match.World.Stats.Duration);
+        Assert.Equal(match.World.Result.Tick / Rts.Simulation.Matches.MatchStats.SampleTicks + 1, bot.Samples.Count);
+    }
+
+    [Fact]
     public void A_match_won_by_the_bot_plays_back_with_the_bot_run_again()
     {
-        var match = Normal.Value;
+        var match = Normal.Value.Match;
         var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
 
         Assert.Equal(

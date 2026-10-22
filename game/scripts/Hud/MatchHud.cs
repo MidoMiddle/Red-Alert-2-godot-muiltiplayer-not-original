@@ -35,7 +35,12 @@ public partial class MatchHud : CanvasLayer
         var pause = GetNode<PauseMenu>("../PauseMenu");
         pause.Bind(host);
         sidebar.MenuRequested += pause.Open;
-        sidebar.StatsRequested += stats.Toggle;
+        // Built: the buildings of the match statistics (M5 step 11), as the panel opens; captured comes with M11.
+        sidebar.StatsRequested += () =>
+        {
+            stats.Setup(host.Simulation.World.Stats.Of(SimulationHost.LocalPlayer).BuildingsBuilt, 0);
+            stats.Toggle();
+        };
         sidebar.Setup(PlayerFaction, host.Simulation.World.Player(SimulationHost.LocalPlayer).Credits);
         sidebar.Bind(host, player);
         var notices = new Notifications { Name = "Notifications" };

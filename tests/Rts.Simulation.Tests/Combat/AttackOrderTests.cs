@@ -119,7 +119,7 @@ public sealed class AttackOrderTests
         Assert.True(CommandProcessor.Apply(world, Attack(simulation, [tank], enemy.Id)));
 
         // The spotter dies: nobody of the player sees the engineer any more.
-        DeathSystem.Kill(world, spotter, EntityId.None, Events.DeathCause.Weapon, -1, null);
+        DeathSystem.Kill(world, spotter, EntityId.None, PlayerId.Neutral, Events.DeathCause.Weapon, -1, null);
         simulation.Step();
 
         Assert.Equal(TargetOrder.None, tank.TargetOrder);

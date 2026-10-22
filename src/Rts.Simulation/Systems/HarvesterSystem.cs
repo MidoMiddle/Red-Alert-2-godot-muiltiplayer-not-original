@@ -295,6 +295,7 @@ public static class HarvesterSystem
                 var amount = IntMath.Min(unit.Archetype.UnloadRate, harvester.Load);
                 harvester.Load -= amount;
                 world.Player(unit.Owner).Credits += amount;
+                world.Stats.Harvested(unit.Owner, amount);
                 if (harvester.Load == 0)
                 {
                     harvester.Refinery = EntityId.None;

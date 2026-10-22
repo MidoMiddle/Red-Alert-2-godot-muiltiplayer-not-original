@@ -4,7 +4,7 @@ namespace Rts.Client.Hud;
 
 /// <summary>
 /// Game statistics, opened by the Stats button: how many buildings the player has built and how many it has captured
-/// (docs/08_ui_ux.md, section 4). Built comes with M3, captured with M11. Until then both show 0.
+/// (docs/08_ui_ux.md, section 4). Built comes from the statistics of the match (M5 step 11), captured with M11 — until then 0.
 /// </summary>
 public partial class StatsPanel : PanelContainer
 {

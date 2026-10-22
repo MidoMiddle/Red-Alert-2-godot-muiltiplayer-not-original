@@ -64,9 +64,11 @@ public sealed record EntityDamaged(int Tick, EntityId Entity, EntityId Attacker,
 /// <summary>
 /// <paramref name="Killer"/> destroyed a unit or a building (M4, 4.9): with a shot of <paramref name="Weapon"/> (its place in the
 /// rules; its warhead tells the client the kind of death, step 9), or by driving over it (<see cref="DeathCause.Crushed"/>, step 8,
-/// weapon -1). It leaves the world at the end of the tick.
+/// weapon -1). It leaves the world at the end of the tick. <paramref name="KillerOwner"/> is the player of the killer, kept from the shot
+/// itself: the shooter may be gone before its shell lands (M5 step 11, the statistics); neutral without a killer.
 /// </summary>
-public sealed record EntityDestroyed(int Tick, EntityId Entity, EntityId Killer, DeathCause Cause = DeathCause.Weapon, int Weapon = -1)
+public sealed record EntityDestroyed(
+    int Tick, EntityId Entity, EntityId Killer, DeathCause Cause = DeathCause.Weapon, int Weapon = -1, PlayerId KillerOwner = default)
     : SimEvent(Tick);
 
 /// <summary>How a unit or a building died (M4).</summary>

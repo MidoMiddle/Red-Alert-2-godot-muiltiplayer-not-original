@@ -69,7 +69,8 @@ public sealed class DeathTests
 
         var events = Apply(world, HitOn(conscript, "tesla_tank_bolt", conscript.Position, 900));
 
-        Assert.Contains(new EntityDestroyed(0, conscript.Id, new EntityId(900), DeathCause.Weapon, Weapon("tesla_tank_bolt")), events);
+        // The shooter 900 is in no world: its player comes with the shot.
+        Assert.Contains(new EntityDestroyed(0, conscript.Id, new EntityId(900), DeathCause.Weapon, Weapon("tesla_tank_bolt"), Player1), events);
         Assert.Equal(1, world.Reservations.InfantryCount(new CellPos(10, 10)));
         world.RemoveDead();
         Assert.Equal(0, world.Reservations.InfantryCount(new CellPos(10, 10)));
@@ -85,7 +86,7 @@ public sealed class DeathTests
 
         Assert.True(CrushSystem.TryCrush(world, tank, new CellPos(10, 10), events));
 
-        Assert.Contains(new EntityDestroyed(0, conscript.Id, tank.Id, DeathCause.Crushed, -1), events);
+        Assert.Contains(new EntityDestroyed(0, conscript.Id, tank.Id, DeathCause.Crushed, -1, Player1), events);
     }
 
     [Fact]
@@ -96,7 +97,7 @@ public sealed class DeathTests
         harvester.Harvester!.Load = 500;
         var credits = world.Player(Player1).Credits;
 
-        DeathSystem.Kill(world, harvester, EntityId.None, DeathCause.Weapon, -1, null);
+        DeathSystem.Kill(world, harvester, EntityId.None, PlayerId.Neutral, DeathCause.Weapon, -1, null);
         world.RemoveDead();
 
         Assert.False(world.TryGet(harvester.Id, out _));

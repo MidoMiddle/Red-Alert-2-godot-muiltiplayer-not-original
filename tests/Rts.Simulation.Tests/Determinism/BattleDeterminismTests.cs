@@ -1,6 +1,7 @@
 using Rts.Simulation.Benchmarks;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Replays;
+using Rts.Simulation.World;
 
 namespace Rts.Simulation.Tests.Determinism;
 
@@ -16,13 +17,21 @@ public sealed class BattleDeterminismTests
     private static readonly Rts.Simulation.Map.MapGrid Land = LoadScenario.LoadMap(LoadScenario.RepoRoot(AppContext.BaseDirectory)).Grid;
 
     /// <summary>The checksums of one run, made once and shared with the golden values.</summary>
-    internal static readonly Lazy<IReadOnlyList<StateChecksum>> Once = new(() => Run());
+    internal static readonly Lazy<IReadOnlyList<StateChecksum>> Once = new(() => Run(watch: true));
+
+    /// <summary>The world at the end of <see cref="Once"/> and the count of its events beside its statistics (M5 step 11).</summary>
+    private static (GameWorld World, Matches.EventTally Tally)? _watched;
 
     /// <summary>The checksum of every <see cref="HashInterval"/>-th tick of the battle.</summary>
-    internal static IReadOnlyList<StateChecksum> Run(int ticks = BattleScenario.Ticks)
+    internal static IReadOnlyList<StateChecksum> Run(int ticks = BattleScenario.Ticks, bool watch = false)
     {
         var simulation = BattleScenario.Start(Land.Clone(), TestRules.Standard, HashInterval, BattleBases.Build);
         BattleScenario.Charge(simulation);
+        if (watch)
+        {
+            _watched = (simulation.World, Matches.EventTally.Attach(simulation));
+        }
+
         var checksums = new List<StateChecksum>(ticks / HashInterval);
         for (var tick = 0; tick < ticks; tick++)
         {
@@ -44,6 +53,16 @@ public sealed class BattleDeterminismTests
 
         Assert.Equal(BattleScenario.Ticks / HashInterval, first.Count);
         Assert.Equal(first, second);
+    }
+
+    [Fact]
+    public void The_statistics_of_the_battle_say_what_its_events_said()
+    {
+        _ = Once.Value;
+        var (world, tally) = _watched!.Value;
+
+        Assert.True(tally.Deaths > 100, $"{tally.Deaths} deaths");
+        tally.AssertAgrees(world);
     }
 
     [Fact]

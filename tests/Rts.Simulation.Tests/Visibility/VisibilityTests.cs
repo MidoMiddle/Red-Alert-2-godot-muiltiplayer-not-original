@@ -125,7 +125,7 @@ public sealed class VisibilityTests
         Assert.False(grid.IsVisible(new CellPos(20, 11)));
 
         world.DestroyBuilding(yard, null);
-        DeathSystem.Kill(world, tank, EntityId.None, Events.DeathCause.Weapon, -1, null);
+        DeathSystem.Kill(world, tank, EntityId.None, PlayerId.Neutral, Events.DeathCause.Weapon, -1, null);
         VisibilitySystem.Update(world);
 
         Assert.All(grid.Counts.ToArray(), count => Assert.Equal(0, count));

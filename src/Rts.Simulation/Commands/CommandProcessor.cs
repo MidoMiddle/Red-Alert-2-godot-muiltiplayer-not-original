@@ -147,6 +147,7 @@ public static class CommandProcessor
             else
             {
                 player.Credits -= def.Cost;
+                world.Stats.Spent(command.Player, def.Cost);
             }
 
             var wall = world.CreateBuilding(command.Player, def, cell, ready: false, events);

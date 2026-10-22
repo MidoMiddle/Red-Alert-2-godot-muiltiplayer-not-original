@@ -37,6 +37,7 @@ public static class RepairSystem
                 }
 
                 player.Credits -= price;
+                world.Stats.Spent(building.Owner, price);
                 building.RepairCarry = due % scale;
                 world.SetHp(building, building.Hp + gain, events);
             }

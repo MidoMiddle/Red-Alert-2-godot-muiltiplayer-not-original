@@ -157,6 +157,10 @@ public sealed class GameSimulation
         DeathSystem.Update(World, _events);
         VisibilitySystem.Update(World);
         Probe?.Invoke("death and vision");
+
+        // The statistics of the tick (M5 step 11), while the fallen are still in the world: whose they were.
+        World.Stats.Record(World, _events);
+        Probe?.Invoke("statistics");
         World.RemoveDead();
         Probe?.Invoke("remove dead");
 

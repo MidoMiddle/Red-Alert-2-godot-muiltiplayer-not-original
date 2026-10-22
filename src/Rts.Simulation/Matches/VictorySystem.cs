@@ -85,7 +85,7 @@ public static class VictorySystem
             switch (entity)
             {
                 case Unit unit:
-                    DeathSystem.Kill(world, unit, EntityId.None, DeathCause.Defeat, -1, events);
+                    DeathSystem.Kill(world, unit, EntityId.None, PlayerId.Neutral, DeathCause.Defeat, -1, events);
                     break;
                 case Building building:
                     DeathSystem.Fall(world, building, DeathCause.Defeat, events);
