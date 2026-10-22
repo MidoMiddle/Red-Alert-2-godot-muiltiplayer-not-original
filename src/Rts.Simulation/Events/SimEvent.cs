@@ -54,3 +54,18 @@ public sealed record LowPower(int Tick, PlayerId Player) : SimEvent(Tick);
 
 /// <summary>The player produces enough power again.</summary>
 public sealed record PowerRestored(int Tick, PlayerId Player) : SimEvent(Tick);
+
+/// <summary>A building of a player was placed (or came from an MCV) and starts to grow (docs/implementation/M3_base_economy.md, 4.8).</summary>
+public sealed record BuildingPlaced(int Tick, EntityId Building, PlayerId Player, int DefIndex, CellPos Cell) : SimEvent(Tick);
+
+/// <summary>A building has grown: it gives power and counts as a prerequisite from now on.</summary>
+public sealed record BuildUpComplete(int Tick, EntityId Building) : SimEvent(Tick);
+
+/// <summary>A building could not be placed at <paramref name="Cell"/> (north-west cell), for <paramref name="Problem"/>.</summary>
+public sealed record CannotPlace(int Tick, PlayerId Player, int DefIndex, CellPos Cell, PlacementProblem Problem) : SimEvent(Tick);
+
+/// <summary>The MCV turned into <paramref name="Building"/>, its construction yard (4.9).</summary>
+public sealed record Deployed(int Tick, EntityId Unit, EntityId Building) : SimEvent(Tick);
+
+/// <summary>The MCV could not turn into its construction yard where it stands, for <paramref name="Problem"/>.</summary>
+public sealed record CannotDeploy(int Tick, PlayerId Player, EntityId Unit, PlacementProblem Problem) : SimEvent(Tick);

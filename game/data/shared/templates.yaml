@@ -26,12 +26,15 @@ base_vehicle:
 
 # Buildings: footprint, power and prerequisites from docs/implementation/M3_base_economy.md, 4.6; cost and hp from the RA2
 # counterparts (docs/ra2_buildings). A positive power produces energy, a negative one drains it.
+# `adjacent`: how many cells from the player's base the building may stand; `extends_base`: whether new buildings may be
+# placed next to it (false for walls), as RA2 Adjacent and BaseNormal.
 base_building:
   kind: building
   abstract: true
   category: building
   build_up: 1.5s
   power: 0
+  adjacent: 2
 
 base_defense:
   kind: building

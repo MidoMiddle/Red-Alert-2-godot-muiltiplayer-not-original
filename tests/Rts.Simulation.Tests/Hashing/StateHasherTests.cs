@@ -199,7 +199,7 @@ public sealed class StateHasherTests
     [InlineData(typeof(Building), new[]
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
-        "<DefIndex>k__BackingField", "<IsReady>k__BackingField",
+        "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
     })]

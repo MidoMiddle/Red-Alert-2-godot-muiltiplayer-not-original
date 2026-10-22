@@ -23,7 +23,7 @@ internal static class DefinitionReader
 
     private static readonly string[] BuildingKeys =
     [
-        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell",
+        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base",
         "prerequisites", "model", "icon",
     ];
 
@@ -88,6 +88,8 @@ internal static class DefinitionReader
             Power = fields.Optional("power", Scalars.Int, 0),
             BuildUp = fields.Optional("build_up", Scalars.Ticks, 0),
             ExitCell = fields.Maybe("exit_cell", Scalars.Cell),
+            Adjacent = fields.Optional("adjacent", Scalars.Int, BuildingDef.DefaultAdjacent),
+            ExtendsBase = fields.Optional("extends_base", Scalars.Flag, true),
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),

@@ -36,6 +36,18 @@ public sealed record BuildingDef : IDefinition
     /// <summary>Where a factory releases its units, relative to the north-west cell of the footprint.</summary>
     public CellPos? ExitCell { get; init; }
 
+    /// <summary>How many cells from the player's base the building may stand (RA2 <c>Adjacent</c>, 4.8).</summary>
+    public int Adjacent { get; init; } = DefaultAdjacent;
+
+    /// <summary>Whether new buildings may be placed next to this one (RA2 <c>BaseNormal</c>): false for walls.</summary>
+    public bool ExtendsBase { get; init; } = true;
+
+    /// <summary>The <see cref="Adjacent"/> of a building that does not set it.</summary>
+    public const int DefaultAdjacent = 2;
+
+    /// <summary>The largest <see cref="Adjacent"/> the data may set.</summary>
+    public const int MaxAdjacent = 10;
+
     public ImmutableArray<string> Prerequisites { get; init; } = ImmutableArray<string>.Empty;
 
     /// <summary>Path of the model, relative to the assets folder; the simulation does not use it.</summary>

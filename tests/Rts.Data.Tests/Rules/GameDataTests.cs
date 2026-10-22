@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0xe8afc8ce7d55fc08UL, GameDataFiles.Current.Hash);
+        Assert.Equal(0xa9af6eb92b354662UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -59,12 +59,16 @@ public sealed class GameDataTests
         }
 
         Assert.True(rules.Land.ContentEquals(TestRules.Standard.Land));
+        for (var land = LandType.Clear; land <= LandType.Ice; land++)
+        {
+            Assert.Equal(TestRules.Standard.IsBuildable(land), rules.IsBuildable(land));
+        }
     }
 
     [Fact]
     public void The_game_data_has_the_buildings_and_prerequisites_of_the_simulation_tests()
     {
-        // What power and technologies read (M3 step 5): footprint, power, faction and prerequisites.
+        // What power, technologies, placement and build-up read (M3 steps 5–6).
         var data = GameDataFiles.Current.Database;
         var test = TestRules.Standard.Database;
 
@@ -73,8 +77,9 @@ public sealed class GameDataTests
             data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites))));
         Assert.Equal(test.Factions.Single(), data.Factions.Single() with { Name = test.Factions.Single().Name });
 
-        static (string, string, int, int, int, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
-            (building.Id, building.Faction, building.Footprint.Width, building.Footprint.Height, building.Power, string.Join(",", building.Prerequisites));
+        static (string, string, int, int, int, string, int, int, bool) Shape(Rts.Simulation.Rules.BuildingDef building) =>
+            (building.Id, building.Faction, building.Footprint.Width, building.Footprint.Height, building.Power,
+             string.Join(",", building.Prerequisites), building.BuildUp, building.Adjacent, building.ExtendsBase);
     }
 
     [Fact]

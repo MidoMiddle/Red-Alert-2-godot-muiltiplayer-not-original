@@ -237,6 +237,7 @@ public sealed class GoldenValuesTests
         // Replay format v8, rules v18 (M7 step 7): versions and checksums change; no map, so no building list.
         // Replay format v9 (M3 step 3): the format version and 8 bytes of data hash (no data, zero); the checksums do not change.
         // Replay format v10, rules v19 (M3 step 5): 4 bytes of starting credits; versions and checksums change.
-        Assert.Equal((23377, 16545936013128136398UL), (bytes.Length, hash.Value));
+        // Replay format v11, command format v5, rules v20 (M3 step 6): only the versions change; the scenario has no buildings.
+        Assert.Equal((23377, 6331460623745338596UL), (bytes.Length, hash.Value));
     }
 }

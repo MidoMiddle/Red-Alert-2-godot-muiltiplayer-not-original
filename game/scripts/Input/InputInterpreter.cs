@@ -98,6 +98,9 @@ public sealed record CancelWaypoints : Intent;
 
 public sealed record SpawnUnit(WorldPos Position) : Intent;
 
+/// <summary>Debug (M3 step 6): place the armed building with its centre on <paramref name="Position"/>.</summary>
+public sealed record PlaceBuilding(WorldPos Position) : Intent;
+
 public sealed record CameraDragStarted(ScreenPoint From) : Intent;
 
 public sealed record CameraDragMoved(ScreenPoint To) : Intent;
@@ -176,9 +179,17 @@ public sealed class InputInterpreter
         return intents;
     }
 
-    /// <summary>The start of a press: a spawn while the debug spawn is armed or Alt is held, else the button's own gesture.</summary>
+    /// <summary>
+    /// The start of a press: a building while the debug build is armed, a spawn while the debug spawn is armed or Alt is held, else the
+    /// button's own gesture.
+    /// </summary>
     private IReadOnlyList<Intent> Start(PointerButton button, ScreenPoint at, PointerContext context)
     {
+        if (BuildArmed && button == PointerButton.Left)
+        {
+            return context.Ground is { } buildAt ? new Intent[] { new PlaceBuilding(buildAt) } : Array.Empty<Intent>();
+        }
+
         if ((context.Alt || SpawnArmed) && button == PointerButton.Left)
         {
             return context.Ground is { } spawnAt && context.Target.Kind == PointerTargetKind.Ground
@@ -312,18 +323,33 @@ public sealed class InputInterpreter
     public bool SpawnArmed { get; private set; }
 
     /// <summary>Arms the debug spawn (B). PlayerInput cycles the unit type when B is pressed again.</summary>
-    public void ArmSpawn() => SpawnArmed = true;
+    public void ArmSpawn()
+    {
+        SpawnArmed = true;
+        BuildArmed = false;
+    }
+
+    /// <summary>Whether the debug build is armed (V, M3 step 6): a left click places a building until Escape.</summary>
+    public bool BuildArmed { get; private set; }
+
+    /// <summary>Arms the debug build (V). PlayerInput cycles the building type when V is pressed again.</summary>
+    public void ArmBuild()
+    {
+        BuildArmed = true;
+        SpawnArmed = false;
+    }
 
     /// <summary>
-    /// The cancel key (Escape) was pressed. An armed spawn is disarmed first and nothing else happens. Otherwise, with units
+    /// The cancel key (Escape) was pressed. An armed spawn or build is disarmed first and nothing else happens. Otherwise, with units
     /// selected it clears the selection. Without them it opens the pause menu, which takes all input, so a button still held down
     /// is never released in the game: the press is dropped here.
     /// </summary>
     public IReadOnlyList<Intent> EscapePressed(bool hasSelection, bool hasWaypoints = false)
     {
-        if (SpawnArmed)
+        if (SpawnArmed || BuildArmed)
         {
             SpawnArmed = false;
+            BuildArmed = false;
             return Array.Empty<Intent>();
         }
 

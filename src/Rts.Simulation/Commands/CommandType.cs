@@ -12,4 +12,6 @@ public enum CommandType : byte
     Waypoints = 5,
     Scatter = 6,
     DamageMapObject = 7,
+    PlaceBuilding = 8,
+    Deploy = 9,
 }

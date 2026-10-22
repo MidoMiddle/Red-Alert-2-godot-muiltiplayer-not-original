@@ -62,6 +62,8 @@ public partial class DebugOverlay : CanvasLayer
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   spawn {UnitTypes.IdOf(_host.SpawnType)}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             DescribePlayer(simulation.World.Player(SimulationHost.LocalPlayer)) + "\n" +
+            (_input.BuildArmed ? $"build {_host.BuildId}: click to place, V next type, Esc stop\n" : "") +
+            (_host.Notice.Length > 0 ? $"base: {_host.Notice}\n" : "") +
             DescribeCell(simulation.World, _input.CellUnderPointer) + "\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
@@ -120,7 +122,7 @@ public partial class DebugOverlay : CanvasLayer
         if (world.BuildingAt(cell) is { } building)
         {
             var (id, maxHp) = building.Def is { } def ? (def.Id, def.Hp) : (building.Type.Id, building.Type.MaxHp);
-            land += $" + {id} {building.Hp}/{maxHp} ({building.Owner})";
+            land += $" + {id} {building.Hp}/{maxHp} ({building.Owner})" + (building.IsReady ? "" : $" growing {building.BuildUpPermille / 10}%");
         }
         var foot = map.SpeedPercent(cell, Locomotor.Foot);
         var track = map.SpeedPercent(cell, Locomotor.Track);

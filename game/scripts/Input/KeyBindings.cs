@@ -67,6 +67,7 @@ public sealed class KeyBindings
         new KeyAction("scatter", "UI_KEY_SCATTER", "X"),
         new KeyAction("waypoint_mode", "UI_KEY_WAYPOINT_MODE", "Z"),
         new KeyAction("debug_damage", "UI_KEY_DEBUG_DAMAGE", "K"),
+        new KeyAction("debug_build", "UI_KEY_DEBUG_BUILD", "V"),
         new KeyAction("cancel_selection", "UI_KEY_CANCEL_SELECTION", "Escape"),
     };
 

@@ -79,6 +79,9 @@ public partial class PlayerInput : Node
     /// <summary>Map cell under the mouse pointer, or null off the map. Shown on the debug panel.</summary>
     public CellPos? CellUnderPointer { get; private set; }
 
+    /// <summary>Whether the debug build (V) is armed: a click places the host's building type.</summary>
+    public bool BuildArmed => _interpreter.BuildArmed;
+
     public override void _Ready()
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
@@ -215,6 +218,27 @@ public partial class PlayerInput : Node
         {
             // T: the units of the type of the first selected unit on the field; a second T within 400 ms takes the whole map.
             SelectSameType(Selection.Units[0], false, _typeTaps.Press(TypeSelectKey, Time.GetTicksMsec()));
+        }
+        else if (key.IsActionPressed("debug_build", false, true))
+        {
+            // V arms the debug build (M3 step 6) with the reactor; V again while it is armed takes the next building.
+            if (!_interpreter.BuildArmed)
+            {
+                _interpreter.ArmBuild();
+                if (_host.BuildIndex < 0)
+                {
+                    _host.NextBuildType();
+                }
+            }
+            else
+            {
+                _host.NextBuildType();
+            }
+        }
+        else if (key.IsActionPressed("deploy", false, true) && !Selection.IsEmpty && !_host.IsPlayback)
+        {
+            // D: the selected MCVs turn into construction yards (M3 step 7).
+            _host.IssueDeploy(Selection.Units);
         }
         else if (key.IsActionPressed("debug_damage", false, true) && CellUnderPointer is { } damaged)
         {
@@ -435,6 +459,13 @@ public partial class PlayerInput : Node
                     if (!_host.IsPlayback)
                     {
                         _host.IssueSpawn(spawn.Position);
+                    }
+
+                    break;
+                case PlaceBuilding place:
+                    if (!_host.IsPlayback)
+                    {
+                        _host.IssuePlaceBuilding(place.Position);
                     }
 
                     break;

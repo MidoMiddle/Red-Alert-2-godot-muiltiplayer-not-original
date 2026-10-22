@@ -81,6 +81,8 @@ public static class DataHasher
             hash.Add(building.Footprint.Height);
             hash.Add(building.Power);
             hash.Add(building.BuildUp);
+            hash.Add(building.Adjacent);
+            hash.Add(building.ExtendsBase);
             hash.Add(building.ExitCell.HasValue);
             if (building.ExitCell is { } exit)
             {

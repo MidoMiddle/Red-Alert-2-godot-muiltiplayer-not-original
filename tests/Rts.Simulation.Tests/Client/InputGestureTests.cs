@@ -81,6 +81,22 @@ public sealed class InputGestureTests
         Assert.Equal([new ClearSelection()], input.EscapePressed(hasSelection: true));
     }
 
+    [Fact]
+    public void An_armed_build_places_buildings_until_escape_and_replaces_an_armed_spawn()
+    {
+        var input = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        input.ArmSpawn();
+        input.ArmBuild();
+
+        Assert.False(input.SpawnArmed);
+        Assert.Equal([new PlaceBuilding(Spot)], input.Press(PointerButton.Left, Here, Context(Ground)));
+        Assert.Empty(input.Release(PointerButton.Left));
+        Assert.True(input.BuildArmed);
+
+        Assert.Empty(input.EscapePressed(hasSelection: true));
+        Assert.False(input.BuildArmed);
+    }
+
     private static PointerContext Context(PointerTarget target, bool hasSelection = false) =>
         new(Spot, target, false, hasSelection);
 }

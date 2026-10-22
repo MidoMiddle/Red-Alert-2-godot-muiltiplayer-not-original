@@ -104,6 +104,10 @@ internal static class RulesValidator
             Positive(building.Id, "hp", building.Hp);
             Positive(building.Id, "build_time", building.BuildTime);
             NotNegative(building.Id, "build_up", building.BuildUp);
+            if (building.Adjacent is < 0 or > BuildingDef.MaxAdjacent)
+            {
+                Error(building.Id, "adjacent", $"'adjacent' of '{building.Id}' must be 0 to {BuildingDef.MaxAdjacent} cells");
+            }
             var (width, height) = (building.Footprint.Width, building.Footprint.Height);
             if (width is < 1 or > MaxFootprint || height is < 1 or > MaxFootprint)
             {

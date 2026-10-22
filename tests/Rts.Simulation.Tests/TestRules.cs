@@ -9,8 +9,9 @@ namespace Rts.Simulation.Tests;
 /// <summary>
 /// The rules of M2 built in code with <see cref="RulesBuilder"/> (docs/implementation/M3_base_economy.md, 4.5), so that the tests of the
 /// simulation need no YAML. The numbers the simulation reads are those of <c>game/data</c>: a test of Rts.Data, which links this file,
-/// checks that both give the same <see cref="GameRules"/>. The buildings of the Union, their power and prerequisites, and the
-/// prerequisites of the units are those of <c>game/data</c> too; costs, hit points and build times of the units are placeholders.
+/// checks that both give the same <see cref="GameRules"/>. The buildings of the Union (footprint, power, build-up, base rules,
+/// prerequisites) and the prerequisites of the units are those of <c>game/data</c> too; costs, hit points and build times of the units
+/// are placeholders.
 /// </summary>
 internal static class TestRules
 {
@@ -82,7 +83,7 @@ internal static class TestRules
         Building(builder, "war_factory", 3, 4, power: -50, "refinery");
         Building(builder, "radar", 2, 2, power: -50, "refinery");
         Building(builder, "tech_center", 3, 3, power: -100, "war_factory", "radar");
-        Building(builder, "wall", 1, 1, power: 0, "construction_yard");
+        builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with { ExtendsBase = false });
         Building(builder, "sentry_bunker", 1, 1, power: 0, "barracks");
         Building(builder, "tesla_coil", 2, 2, power: -75, "radar");
         Building(builder, "flak_cannon", 2, 2, power: -50, "radar");
@@ -103,7 +104,11 @@ internal static class TestRules
         Standard.Database.TryGetBuilding(id, out var definition) ? definition : throw new System.ArgumentException($"No building '{id}'.");
 
     private static void Building(RulesBuilder builder, string id, int width, int height, int power, params string[] prerequisites) =>
-        builder.Add(new BuildingDef
+        builder.Add(Def(id, width, height, power, prerequisites));
+
+    // Grows in 1.5 s, 23 ticks, as the template of game/data.
+    private static BuildingDef Def(string id, int width, int height, int power, params string[] prerequisites) =>
+        new()
         {
             Id = id,
             Name = id,
@@ -114,8 +119,9 @@ internal static class TestRules
             Hp = 500,
             Footprint = new CellSize(width, height),
             Power = power,
+            BuildUp = 23,
             Prerequisites = [.. prerequisites],
-        });
+        };
 
     private static Fixed Percent(int percent) => Fixed.FromRatio(percent, 100);
 

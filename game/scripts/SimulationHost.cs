@@ -12,6 +12,7 @@ using Rts.Data;
 using Rts.Data.Maps;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
+using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
@@ -115,6 +116,18 @@ public partial class SimulationHost : Node
     /// <summary>Type that Shift + click spawns; the debug key cycles through all types.</summary>
     public UnitType SpawnType { get; private set; } = UnitType.HeavyTank;
 
+    /// <summary>The building the debug build (V) places, an index of the rules' buildings; V again takes the next one.</summary>
+    public int BuildIndex { get; private set; } = -1;
+
+    /// <summary>The id of <see cref="BuildIndex"/>, such as <c>reactor</c>.</summary>
+    public string BuildId => Data.Database.Buildings[BuildIndex].Id;
+
+    /// <summary>
+    /// The last thing that happened to the local player's base, shown on the debug panel (M3 step 6): a building placed, refused or
+    /// grown, an MCV deployed or not, power lost or back.
+    /// </summary>
+    public string Notice { get; private set; } = "";
+
     public bool PlaybackFinished => _playback is not null && Simulation.CurrentTick >= _playback.TickCount;
 
     /// <summary>True once playback reached the end with every recorded checksum reproduced.</summary>
@@ -140,6 +153,7 @@ public partial class SimulationHost : Node
         _recorder = new ReplayRecorder(Simulation, dataHash: DataHash);
         _playback = null;
         _nextSequence = 0;
+        Notice = "";
         ResetClock();
         ReplayStatus = "";
 
@@ -256,6 +270,52 @@ public partial class SimulationHost : Node
     public void IssueDamage(CellPos cell, int amount) =>
         Issue(new DamageMapObjectCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, cell, amount));
 
+    /// <summary>The selected units deploy; only the player's MCVs do (M3 step 7).</summary>
+    public void IssueDeploy(IReadOnlyList<EntityId> units)
+    {
+        foreach (var unit in units)
+        {
+            if (Simulation.World.TryGet(unit, out var entity) && entity is Unit { IsAlive: true } mcv && mcv.Owner == LocalPlayer
+                && mcv.Archetype.Id == Simulation.World.Player(LocalPlayer).Faction.Mcv)
+            {
+                Issue(new DeployCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, unit));
+            }
+        }
+    }
+
+    /// <summary>Debug (M3 step 6): places the <see cref="BuildIndex"/> building with the centre of its footprint at <paramref name="position"/>.</summary>
+    public void IssuePlaceBuilding(WorldPos position)
+    {
+        var footprint = Data.Database.Buildings[BuildIndex].Footprint;
+        var centre = position.ToCell();
+        var cell = new CellPos(centre.X - (footprint.Width - 1) / 2, centre.Y - (footprint.Height - 1) / 2);
+        Issue(new PlaceBuildingCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, cell));
+    }
+
+    /// <summary>
+    /// The debug build (V): the first press takes the reactor, every next one the next building of the player's faction, wrapping
+    /// around.
+    /// </summary>
+    public void NextBuildType()
+    {
+        var buildings = Data.Database.Buildings;
+        var faction = Simulation.World.Player(LocalPlayer).Faction.Id;
+        if (BuildIndex < 0)
+        {
+            BuildIndex = Data.Database.IndexOfBuilding("reactor");
+        }
+        else
+        {
+            do
+            {
+                BuildIndex = (BuildIndex + 1) % buildings.Length;
+            }
+            while (buildings[BuildIndex].Faction != faction);
+        }
+
+        GD.Print($"[host] build type {BuildId}");
+    }
+
     public void IssueSpawn(WorldPos position) =>
         Issue(new SpawnTestUnitCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, SpawnType, position));
 
@@ -371,6 +431,10 @@ public partial class SimulationHost : Node
         foreach (var simEvent in Simulation.LastTickEvents)
         {
             GD.Print($"[sim] {simEvent}");
+            if (NoticeOf(simEvent) is { } notice)
+            {
+                Notice = notice;
+            }
         }
 
         if (_playback is not null)
@@ -378,6 +442,38 @@ public partial class SimulationHost : Node
             CheckPlaybackChecksums(_playback);
         }
     }
+
+    /// <summary>What an event of the local player's base reads like on the debug panel, or null.</summary>
+    private string? NoticeOf(SimEvent simEvent)
+    {
+        var buildings = Data.Database.Buildings;
+        string NameOf(EntityId id) =>
+            Simulation.World.TryGet(id, out var entity) && entity is Building { Def: { } def } ? def.Id : "building";
+        return simEvent switch
+        {
+            BuildingPlaced placed when placed.Player == LocalPlayer => $"placed {buildings[placed.DefIndex].Id}, growing",
+            BuildUpComplete complete when Simulation.World.TryGet(complete.Building, out var entity) && entity.Owner == LocalPlayer =>
+                $"{NameOf(complete.Building)} ready",
+            CannotPlace refused when refused.Player == LocalPlayer =>
+                $"cannot place {buildings[refused.DefIndex].Id}: {ProblemText(refused.Problem)}",
+            CannotDeploy refused when refused.Player == LocalPlayer => $"cannot deploy: {ProblemText(refused.Problem)}",
+            LowPower low when low.Player == LocalPlayer => "LOW POWER",
+            PowerRestored restored when restored.Player == LocalPlayer => "power restored",
+            _ => null,
+        };
+    }
+
+    private static string ProblemText(PlacementProblem problem) => problem switch
+    {
+        PlacementProblem.OutsideMap => "off the map",
+        PlacementProblem.NotBuildable => "the ground takes no building",
+        PlacementProblem.NotFlat => "the ground is not flat",
+        PlacementProblem.Taken => "the place is taken",
+        PlacementProblem.Units => "units in the way",
+        PlacementProblem.TooFar => "too far from the base",
+        PlacementProblem.NotAvailable => "its prerequisites are missing",
+        _ => problem.ToString(),
+    };
 
     private void CheckPlaybackChecksums(Replay replay)
     {

@@ -49,6 +49,23 @@ public sealed class CommandSerializerTests
         Assert.Equal("07" + "01000000" + "05000000" + "07000000" + "0C000000" + "2C010000" + "C8000000", Convert.ToHexString(bytes));
     }
 
+    [Fact]
+    public void Place_building_and_deploy_have_the_exact_v5_byte_layout()
+    {
+        Assert.Equal(
+            "08" + "01000000" + "05000000" + "07000000" + "0300" + "0C000000" + "2C010000",
+            Convert.ToHexString(Serialize(new PlaceBuildingCommand(new PlayerId(1), 5, 7, 3, new CellPos(12, 300)))));
+        Assert.Equal(
+            "09" + "01000000" + "05000000" + "07000000" + "2A000000",
+            Convert.ToHexString(Serialize(new DeployCommand(new PlayerId(1), 5, 7, new EntityId(42)))));
+    }
+
+    [Fact]
+    public void A_definition_index_beyond_16_bits_cannot_be_written()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => Serialize(new PlaceBuildingCommand(new PlayerId(1), 0, 0, 70_000, new CellPos(0, 0))));
+    }
+
     public static TheoryData<Command> RoundTripCases => new()
     {
         Spawn(player: 1, tick: 0, sequence: 0),
@@ -69,6 +86,9 @@ public sealed class CommandSerializerTests
         new DamageMapObjectCommand(new PlayerId(2), 7, 1, new CellPos(3, 4), 400),
         // Any cell and amount round-trip: the processor rejects what is out of range.
         new DamageMapObjectCommand(new PlayerId(8), 0, 0, new CellPos(-1, int.MaxValue), -5),
+        new PlaceBuildingCommand(new PlayerId(3), 11, 2, 0, new CellPos(5, 6)),
+        new PlaceBuildingCommand(new PlayerId(8), 0, 0, ushort.MaxValue, new CellPos(-3, int.MaxValue)),
+        new DeployCommand(new PlayerId(4), 9, 1, new EntityId(17)),
     };
 
     [Theory]

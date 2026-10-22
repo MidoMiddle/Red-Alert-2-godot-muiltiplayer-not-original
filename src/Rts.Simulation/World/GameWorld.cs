@@ -54,6 +54,10 @@ public sealed class GameWorld
         {
             _entities.Add(new Building(AllocateId(), start.Owner, start.Kind, start.Cell, start.Facing));
         }
+
+        // Power and technologies as the match starts, so a command of the first tick sees them.
+        Systems.PowerSystem.Update(this, null);
+        Systems.TechTree.Update(this);
     }
 
     public int CurrentTick { get; internal set; }
@@ -70,7 +74,7 @@ public sealed class GameWorld
 
     /// <summary>
     /// Set when the buildings of a player changed (one is placed, finished growing or destroyed); <see cref="Systems.PowerSystem"/>
-    /// works the power out again on its turn of the tick and clears it. Derived: true at the start, so the first tick works power out.
+    /// works the power out again on its turn of the tick and clears it. Derived; also worked out once when the world is made.
     /// </summary>
     internal bool PowerDirty { get; set; } = true;
 
@@ -243,8 +247,8 @@ public sealed class GameWorld
     /// about it (docs/implementation/M3_base_economy.md, 4.8). Where a building may stand is the business of the placement rules and
     /// commands of M3 steps 6–7; here only the footprint must be on the map and free of other buildings.
     /// </summary>
-    /// <param name="ready">False for a building that is still growing: it gives no power and opens nothing until
-    /// <see cref="CompleteBuildUp"/>.</param>
+    /// <param name="ready">False for a building that grows for the <c>build_up</c> of its definition first: it gives no power and
+    /// opens nothing until <see cref="CompleteBuildUp"/>.</param>
     internal Building CreateBuilding(PlayerId owner, BuildingDef def, CellPos cell, bool ready, List<Events.SimEvent>? events)
     {
         var index = Rules.Database.IndexOfBuilding(def.Id);
@@ -270,7 +274,7 @@ public sealed class GameWorld
             }
         }
 
-        var building = new Building(AllocateId(), owner, def, index, cell, ready);
+        var building = new Building(AllocateId(), owner, def, index, cell, ready ? 0 : def.BuildUp);
         _entities.Add(building);
         ChangeMap([new TakeBuildingEdit(cell, far)], events);
         BuildingsChanged();
@@ -280,7 +284,7 @@ public sealed class GameWorld
     /// <summary>A building has grown: from now on it gives power and counts as a prerequisite.</summary>
     internal void CompleteBuildUp(Building building)
     {
-        building.IsReady = true;
+        building.BuildUpLeft = 0;
         BuildingsChanged();
     }
 

@@ -35,11 +35,77 @@ public static class CommandProcessor
             ScatterCommand scatter => ApplyScatter(world, scatter, events),
             DamageMapObjectCommand damage => damage.Amount is >= 1 and <= DamageMapObjectCommand.MaxAmount
                 && world.Map.Contains(damage.Cell) && world.DamageAtCell(damage.Cell, damage.Amount, events),
+            PlaceBuildingCommand place => ApplyPlaceBuilding(world, place, events),
+            DeployCommand deploy => ApplyDeploy(world, deploy, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
     }
 
     private static bool IsPlayablePlayer(PlayerId player) => player.Value >= 1 && player.Value <= PlayerId.MaxPlayers;
+
+    /// <summary>
+    /// A building of the player's faction from the rules, available by its prerequisites, where <see cref="PlacementRules"/> allow
+    /// (docs/implementation/M3_base_economy.md, 4.8). A wrong index or another faction's building is ignored; a building the player may
+    /// not build yet or not there is refused with <see cref="CannotPlace"/>, so the player learns why.
+    /// </summary>
+    private static bool ApplyPlaceBuilding(GameWorld world, PlaceBuildingCommand command, List<SimEvent>? events)
+    {
+        var buildings = world.Rules.Database.Buildings;
+        if (command.DefIndex < 0 || command.DefIndex >= buildings.Length)
+        {
+            return false;
+        }
+
+        var def = buildings[command.DefIndex];
+        var player = world.Player(command.Player);
+        if (def.Faction != player.Faction.Id)
+        {
+            return false;
+        }
+
+        var problem = player.CanBuildBuilding(command.DefIndex)
+            ? PlacementRules.Check(world, command.Player, def, command.Cell)
+            : PlacementProblem.NotAvailable;
+        if (problem != PlacementProblem.None)
+        {
+            events?.Add(new CannotPlace(world.CurrentTick, command.Player, command.DefIndex, command.Cell, problem));
+            return false;
+        }
+
+        var building = world.CreateBuilding(command.Player, def, command.Cell, ready: false, events);
+        events?.Add(new BuildingPlaced(world.CurrentTick, building.Id, command.Player, command.DefIndex, command.Cell));
+        return true;
+    }
+
+    /// <summary>
+    /// The player's MCV becomes the construction yard of its faction, its footprint centred on the MCV's cell (4.9). Another unit, or
+    /// someone else's, is ignored; a place where the yard cannot stand is refused with <see cref="CannotDeploy"/> and the MCV stays.
+    /// </summary>
+    private static bool ApplyDeploy(GameWorld world, DeployCommand command, List<SimEvent>? events)
+    {
+        var faction = world.Player(command.Player).Faction;
+        if (!world.TryGet(command.Unit, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Owner != command.Player
+            || unit.Archetype.Id != faction.Mcv || !world.Rules.Database.TryGetBuilding(faction.ConstructionYard, out var yard))
+        {
+            return false;
+        }
+
+        var centre = unit.Position.ToCell();
+        var cell = new CellPos(centre.X - (yard.Footprint.Width - 1) / 2, centre.Y - (yard.Footprint.Height - 1) / 2);
+        var problem = PlacementRules.Check(world, command.Player, yard, cell, needsBase: false, ignoreUnit: unit.Id);
+        if (problem != PlacementProblem.None)
+        {
+            events?.Add(new CannotDeploy(world.CurrentTick, command.Player, unit.Id, problem));
+            return false;
+        }
+
+        // The MCV leaves the world at the end of the tick and frees its cell then; the yard takes the cells now.
+        unit.MarkDead();
+        var building = world.CreateBuilding(command.Player, yard, cell, ready: false, events);
+        events?.Add(new BuildingPlaced(world.CurrentTick, building.Id, command.Player, building.DefIndex, cell));
+        events?.Add(new Deployed(world.CurrentTick, unit.Id, building.Id));
+        return true;
+    }
 
     private static bool ApplySpawn(GameWorld world, SpawnTestUnitCommand command, List<SimEvent>? events)
     {

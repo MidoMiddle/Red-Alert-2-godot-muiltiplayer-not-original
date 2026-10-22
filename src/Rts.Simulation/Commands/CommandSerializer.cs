@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v4, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v5, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -20,15 +20,17 @@ namespace Rts.Simulation.Commands;
 /// Waypoints:     u8 loop | units | u8 pointCount | (i32 x | i32 y) × pointCount
 /// Scatter:       units
 /// DamageMapObject: i32 cellX | i32 cellY | i32 amount
+/// PlaceBuilding: u16 defIndex | i32 cellX | i32 cellY
+/// Deploy:        i32 unit
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
-/// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject.
+/// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 4;
+    public const int FormatVersion = 5;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -43,6 +45,8 @@ public static class CommandSerializer
         ScatterCommand scatter => HeaderSize + UnitsSize(scatter),
         WaypointsCommand route => HeaderSize + 1 + UnitsSize(route) + 1 + PositionSize * route.Points.Length,
         DamageMapObjectCommand => HeaderSize + PositionSize + 4,
+        PlaceBuildingCommand => HeaderSize + 2 + PositionSize,
+        DeployCommand => HeaderSize + 4,
         _ => throw UnknownCommand(command),
     };
 
@@ -96,6 +100,19 @@ public static class CommandSerializer
                 BinaryPrimitives.WriteInt32LittleEndian(payload, damage.Cell.X);
                 BinaryPrimitives.WriteInt32LittleEndian(payload[4..], damage.Cell.Y);
                 BinaryPrimitives.WriteInt32LittleEndian(payload[8..], damage.Amount);
+                break;
+            case PlaceBuildingCommand place:
+                if (place.DefIndex is < 0 or > ushort.MaxValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(command), place.DefIndex, "A definition index is 0…65535.");
+                }
+
+                BinaryPrimitives.WriteUInt16LittleEndian(payload, (ushort)place.DefIndex);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[2..], place.Cell.X);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[6..], place.Cell.Y);
+                break;
+            case DeployCommand deploy:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, deploy.Unit.Value);
                 break;
         }
 
@@ -177,6 +194,22 @@ public static class CommandSerializer
                 bytesRead = HeaderSize + PositionSize + 4;
                 var cell = new CellPos(BinaryPrimitives.ReadInt32LittleEndian(payload), BinaryPrimitives.ReadInt32LittleEndian(payload[4..]));
                 return new DamageMapObjectCommand(player, tick, sequence, cell, BinaryPrimitives.ReadInt32LittleEndian(payload[8..]));
+            }
+
+            case CommandType.PlaceBuilding:
+            {
+                // Whether the definition exists and the cell is allowed is for CommandProcessor.
+                Require(payload, 2 + PositionSize);
+                bytesRead = HeaderSize + 2 + PositionSize;
+                var cell = new CellPos(BinaryPrimitives.ReadInt32LittleEndian(payload[2..]), BinaryPrimitives.ReadInt32LittleEndian(payload[6..]));
+                return new PlaceBuildingCommand(player, tick, sequence, BinaryPrimitives.ReadUInt16LittleEndian(payload), cell);
+            }
+
+            case CommandType.Deploy:
+            {
+                Require(payload, 4);
+                bytesRead = HeaderSize + 4;
+                return new DeployCommand(player, tick, sequence, new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload)));
             }
 
             default:

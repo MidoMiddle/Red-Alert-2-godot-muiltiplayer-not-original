@@ -69,8 +69,9 @@ public sealed class GameSimulation
         // 2. Path searches within the node budget (docs/implementation/M2_unit_control.md, 4.12).
         World.PathRequests.Process(World, _events);
 
-        // 3. Power, when the buildings changed (docs/implementation/M3_base_economy.md, 4.15).
+        // 3. Power, when the buildings changed (docs/implementation/M3_base_economy.md, 4.15), then new buildings grow.
         PowerSystem.Update(World, _events);
+        BuildUpSystem.Update(World, _events);
 
         // 4. Movement.
         MovementSystem.Update(World, _events);

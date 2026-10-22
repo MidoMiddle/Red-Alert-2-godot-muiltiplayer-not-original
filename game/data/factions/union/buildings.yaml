@@ -92,6 +92,7 @@ wall:  # Wall; placed by dragging
   build_time: 4.2s
   hp: 300
   footprint: [1, 1]
+  extends_base: false
   prerequisites: [construction_yard]
 
 sentry_bunker:  # Sentry Gun

@@ -108,9 +108,9 @@ public static class StateHasher
                 hash.Add(building.Facing);
                 hash.Add(building.Hp);
 
-                // Rules v19 (M3 step 5): the definition of a building of a player and whether it has grown.
+                // Rules v19 (M3 step 5): the definition of a building of a player; v20 (step 6): the ticks it still grows.
                 hash.Add(building.DefIndex);
-                hash.Add(building.IsReady);
+                hash.Add(building.BuildUpLeft);
                 break;
 
             default:

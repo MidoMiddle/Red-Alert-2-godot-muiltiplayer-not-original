@@ -27,11 +27,12 @@ public sealed class Building : Entity
         Height = BuildingTypes.Get(kind).Height;
         Hp = BuildingTypes.Get(kind).MaxHp;
         DefIndex = -1;
-        IsReady = true;
     }
 
-    /// <summary>A building of a player, the definition at <paramref name="defIndex"/> of the rules.</summary>
-    internal Building(EntityId id, PlayerId owner, BuildingDef def, int defIndex, CellPos cell, bool ready)
+    /// <summary>
+    /// A building of a player, the definition at <paramref name="defIndex"/> of the rules, growing for <paramref name="buildUp"/> ticks.
+    /// </summary>
+    internal Building(EntityId id, PlayerId owner, BuildingDef def, int defIndex, CellPos cell, int buildUp)
         : base(id, owner)
     {
         Def = def;
@@ -40,7 +41,7 @@ public sealed class Building : Entity
         Width = def.Footprint.Width;
         Height = def.Footprint.Height;
         Hp = def.Hp;
-        IsReady = ready;
+        BuildUpLeft = buildUp;
     }
 
     /// <summary>The kind of a building of the map; 0 for a building of a player.</summary>
@@ -68,10 +69,16 @@ public sealed class Building : Entity
     public int Hp { get; internal set; }
 
     /// <summary>
-    /// True once the building has grown (docs/implementation/M3_base_economy.md, 4.8): only then it gives power and counts as a
-    /// prerequisite. The buildings of the map are always ready.
+    /// Ticks the building still grows (docs/implementation/M3_base_economy.md, 4.8): it stands and blocks its cells, but gives no
+    /// power and counts as no prerequisite until 0. The buildings of the map never grow.
     /// </summary>
-    public bool IsReady { get; internal set; }
+    public int BuildUpLeft { get; internal set; }
+
+    /// <summary>True once the building has grown.</summary>
+    public bool IsReady => BuildUpLeft == 0;
+
+    /// <summary>How far the building has grown, 0…1000 (per mille), for the client: 1000 when ready.</summary>
+    public int BuildUpPermille => Def is { BuildUp: > 0 } def ? 1000 - BuildUpLeft * 1000 / def.BuildUp : 1000;
 
     /// <summary>The south-east cell of the footprint.</summary>
     public CellPos FarCell => new(Cell.X + Width - 1, Cell.Y + Height - 1);

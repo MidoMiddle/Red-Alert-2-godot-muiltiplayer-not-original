@@ -22,12 +22,14 @@ public readonly record struct RulesProblem(string Id, string Key, string Reason)
 public sealed class GameRules
 {
     private readonly UnitArchetype[] _units;
+    private readonly bool[] _buildable;
 
-    private GameRules(RulesDatabase database, UnitArchetype[] units, LandSpeeds land)
+    private GameRules(RulesDatabase database, UnitArchetype[] units, LandSpeeds land, bool[] buildable)
     {
         Database = database;
         _units = units;
         Land = land;
+        _buildable = buildable;
     }
 
     /// <summary>The definitions the rules are made from.</summary>
@@ -41,6 +43,9 @@ public sealed class GameRules
 
     /// <summary>The faction every player plays until the skirmish setup chooses one (M6): the first of the data, in id order.</summary>
     public FactionDef DefaultFaction => Database.Factions[0];
+
+    /// <summary>Whether a building may stand on <paramref name="land"/>: <c>buildable</c> of the land type in the data.</summary>
+    public bool IsBuildable(LandType land) => LandSpeeds.IsKnown(land) && _buildable[(int)land - 1];
 
     public UnitArchetype Unit(UnitType type) => UnitTypes.IsKnown(type)
         ? _units[(int)type - 1]
@@ -80,6 +85,13 @@ public sealed class GameRules
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
         var slope = new int[LandSpeeds.LocomotorCount];
+        var buildable = new bool[LandSpeeds.LandCount];
+        for (var land = LandType.Clear; land <= LandType.Ice; land++)
+        {
+            database.TryGetTerrain(LandSpeeds.IdOf(land), out var terrain);
+            buildable[(int)land - 1] = terrain.Buildable;
+        }
+
         for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             database.TryGetLocomotor(LandSpeeds.IdOf(locomotor), out var definition);
@@ -91,7 +103,7 @@ public sealed class GameRules
             }
         }
 
-        return new GameRules(database, units, new LandSpeeds(percent, slope));
+        return new GameRules(database, units, new LandSpeeds(percent, slope), buildable);
     }
 
     /// <summary>
