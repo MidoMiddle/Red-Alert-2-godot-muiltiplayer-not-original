@@ -37,6 +37,14 @@ internal sealed class Scene
 
     public AiMemory Memory { get; }
 
+    /// <summary>A turn for a module of the bot, after the last <see cref="Look"/>: its commands go to the next tick.</summary>
+    public AiContext Context()
+    {
+        var context = new AiContext(View, Memory);
+        context.Begin(new Rts.Simulation.Ai.AiTurn(Simulation, Me) { Tick = View.Tick });
+        return context;
+    }
+
     public Unit Spawn(PlayerId owner, UnitType type, int x, int y) => World.SpawnUnit(owner, type, new CellPos(x, y).Center);
 
     public Building Build(PlayerId owner, string id, int x, int y) =>

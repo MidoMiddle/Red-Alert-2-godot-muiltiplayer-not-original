@@ -22,6 +22,9 @@ public sealed class AiContext
 
     public AiMemory Memory { get; }
 
+    /// <summary>What the modules agree on: the buildings wanted now.</summary>
+    public AiPlan Plan { get; } = new();
+
     /// <summary>The tick just executed.</summary>
     public int Tick => _turn.Tick;
 

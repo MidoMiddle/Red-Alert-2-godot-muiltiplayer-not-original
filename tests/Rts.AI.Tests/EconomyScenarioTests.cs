@@ -1,0 +1,103 @@
+using Rts.Data.Tests;
+using Rts.Simulation.Hashing;
+using Rts.Simulation.Replays;
+using Rts.Simulation.Systems;
+using Rts.Simulation.World;
+
+namespace Rts.AI.Tests;
+
+/// <summary>
+/// The economy of the «Medium» bot in a match by the real data (docs/implementation/M5_first_bot.md, step 4): it deploys, builds a
+/// reactor, a refinery, a war factory, keeps two harvesters a refinery and builds again what it loses — without a command that changes
+/// nothing.
+/// </summary>
+public sealed class EconomyScenarioTests
+{
+    private static readonly Lazy<BotMatch> TenMinutes = new(() => new BotMatch().PlayTo(10));
+
+    [Fact]
+    public void In_four_minutes_the_bot_has_a_yard_a_reactor_a_refinery_and_brings_ore_in()
+    {
+        var match = TenMinutes.Value;
+
+        Assert.True(match.When("deployed") <= 60, match.Report());
+        Assert.True(match.When("placed reactor") < match.When("placed refinery"), match.Report());
+        Assert.True(match.When("unload") <= 4 * 900, match.Report());
+    }
+
+    [Fact]
+    public void In_ten_minutes_it_has_a_war_factory_and_two_harvesters_without_a_refused_command()
+    {
+        var match = TenMinutes.Value;
+
+        Assert.Single(match.BuildingsOfBot("war_factory"));
+        Assert.Equal(2, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
+        Assert.Empty(match.RefusedBotCommands);
+    }
+
+    [Fact]
+    public void The_match_plays_the_same_twice_and_its_replay_with_or_without_the_bot()
+    {
+        var match = TenMinutes.Value;
+        var again = new BotMatch().PlayTo(10);
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+
+        Assert.Equal(StateHasher.Compute(match.World), StateHasher.Compute(again.World));
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, GameDataFiles.Rules).Status);
+        Assert.Equal(
+            ReplayStatus.Match,
+            ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, player => MatchBots.Create(replay.Settings.Match!, player)).Status);
+    }
+
+    [Fact]
+    public void A_lost_harvester_is_made_again()
+    {
+        var match = new BotMatch().PlayTo(6);
+        match.UnitsOfBot(unit => unit.Harvester is not null)[0].MarkDead();
+        match.Simulation.Step();
+        Assert.Single(match.UnitsOfBot(unit => unit.Harvester is not null));
+
+        match.PlayTo(8);
+
+        Assert.Equal(2, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
+        Assert.Empty(match.RefusedBotCommands);
+    }
+
+    [Fact]
+    public void A_lost_refinery_is_built_again_before_anything_else()
+    {
+        var match = new BotMatch().PlayTo(6);
+        var refinery = Assert.Single(match.BuildingsOfBot("refinery"));
+        match.World.DestroyBuilding(refinery, null);
+        DeathSystem.Update(match.World, null);
+
+        match.PlayTo(10);
+
+        Assert.Single(match.BuildingsOfBot("refinery"));
+        var placed = match.Timeline.Where(line => line.Tick >= 6 * 900 && line.Text.StartsWith("placed", StringComparison.Ordinal)).ToList();
+        Assert.StartsWith("placed refinery", placed[0].Text);
+        Assert.Empty(match.RefusedBotCommands);
+    }
+
+    [Theory]
+    [InlineData("twin-rivers")]
+    [InlineData("taiga-front")]
+    [InlineData("four-corners")]
+    public void On_the_other_maps_the_bot_builds_its_economy_too(string map)
+    {
+        var match = new BotMatch(map).PlayTo(5);
+
+        Assert.True(match.When("placed refinery") is not null && match.When("unload") is not null, match.Report());
+        Assert.Empty(match.RefusedBotCommands);
+    }
+
+    [Fact]
+    public void On_the_slopes_of_the_relief_test_the_mcv_drives_to_flat_ground_and_deploys()
+    {
+        var match = new BotMatch("relief_test").PlayTo(2);
+
+        Assert.NotNull(match.When("deployed"));
+        Assert.Empty(match.RefusedBotCommands);
+        Assert.DoesNotContain(match.Timeline, line => line.Text.StartsWith("cannot", StringComparison.Ordinal));
+    }
+}

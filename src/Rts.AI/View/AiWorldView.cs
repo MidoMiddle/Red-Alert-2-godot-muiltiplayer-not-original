@@ -111,6 +111,30 @@ public sealed class AiWorldView
         return _world.Map.CanEnter(cell, locomotor);
     }
 
+    /// <summary>
+    /// Whether <paramref name="def"/> can be placed with its north-west cell on <paramref name="corner"/> by the rules of the game
+    /// (<see cref="PlacementRules.Check"/>) — asked only of explored cells: a footprint that reaches into the shroud is no. With
+    /// <paramref name="needsBase"/> false and the MCV as <paramref name="ignoreUnit"/> it tells where the MCV can deploy.
+    /// </summary>
+    public bool CanPlace(BuildingDef def, CellPos corner, bool needsBase = true, EntityId ignoreUnit = default)
+    {
+        for (var y = corner.Y; y < corner.Y + def.Footprint.Height; y++)
+        {
+            for (var x = corner.X; x < corner.X + def.Footprint.Width; x++)
+            {
+                if (!IsExplored(new CellPos(x, y)))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return PlacementRules.Check(_world, Me, def, corner, needsBase, ignoreUnit) == PlacementProblem.None;
+    }
+
+    /// <summary>Whether the bot's player has a ready factory of <paramref name="category"/>.</summary>
+    public bool HasFactory(ProductionCategory category) => ProductionRules.HasFactory(_world, Me, category);
+
     /// <summary>The ore of an explored cell (as it is now); none in the shroud.</summary>
     public OreCell OreAt(CellPos cell) => Contains(cell) && IsExplored(cell) ? _world.Map.OreAt(cell) : OreCell.Empty;
 

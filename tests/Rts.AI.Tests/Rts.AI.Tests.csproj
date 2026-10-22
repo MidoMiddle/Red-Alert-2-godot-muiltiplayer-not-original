@@ -21,12 +21,15 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Rts.AI/Rts.AI.csproj" />
+    <ProjectReference Include="../../src/Rts.Data/Rts.Data.csproj" />
   </ItemGroup>
 
   <!-- The rules and the reference match of the simulation tests (docs/implementation/M5_first_bot.md, step 1). -->
   <ItemGroup>
     <Compile Include="../Rts.Simulation.Tests/TestRules.cs" Link="Simulation/TestRules.cs" />
     <Compile Include="../Rts.Simulation.Tests/Determinism/ReferenceScenario.cs" Link="Simulation/ReferenceScenario.cs" />
+    <Compile Include="../Rts.Data.Tests/GameDataFiles.cs" Link="Data/GameDataFiles.cs" />
+    <Compile Include="../../game/scripts/Matches/MatchSetups.cs" Link="Client/MatchSetups.cs" />
   </ItemGroup>
 
 </Project>

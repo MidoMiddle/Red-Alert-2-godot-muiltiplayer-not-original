@@ -20,6 +20,7 @@ public sealed class GameSimulation
     private readonly CommandQueue _commands;
     private readonly List<SimEvent> _events = new();
     private readonly List<Command> _executedCommands = new();
+    private readonly List<Command> _refusedCommands = new();
 
     // The bots of the match by player, thinking in that order; a replay is played without them (M5, 4.4).
     private readonly SortedList<int, (IAiController Bot, AiTurn Turn)> _bots = new();
@@ -54,6 +55,13 @@ public sealed class GameSimulation
     /// stores; the state can always be rebuilt from settings plus this list.
     /// </summary>
     public IReadOnlyList<Command> ExecutedCommands => _executedCommands;
+
+    /// <summary>
+    /// The commands that changed nothing — refused by the checks or with nothing left to do — in execution order (M5 step 4). For the
+    /// tests and the tools, not state: a bot must never give one (docs/implementation/M5_first_bot.md, 6, «protection from wrong
+    /// commands»).
+    /// </summary>
+    public IReadOnlyList<Command> RefusedCommands => _refusedCommands;
 
     /// <summary>Schedules a command. Its tick must not have been executed yet.</summary>
     public void Enqueue(Command command) => _commands.Enqueue(command);
@@ -100,7 +108,10 @@ public sealed class GameSimulation
         for (var i = 0; i < commands.Count; i++)
         {
             _executedCommands.Add(commands[i]);
-            CommandProcessor.Apply(World, commands[i], _events);
+            if (!CommandProcessor.Apply(World, commands[i], _events))
+            {
+                _refusedCommands.Add(commands[i]);
+            }
         }
 
         Probe?.Invoke("commands");

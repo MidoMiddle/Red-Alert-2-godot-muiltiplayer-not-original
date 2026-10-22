@@ -1,7 +1,10 @@
 using System;
+using Rts.AI.Modules;
 using Rts.Simulation;
 using Rts.Simulation.Ai;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.Matches;
+using Rts.Simulation.World;
 
 namespace Rts.AI;
 
@@ -10,7 +13,7 @@ public static class MatchBots
 {
     /// <summary>The bot of <paramref name="player"/> in <paramref name="setup"/>, by its level: it knows its start and every start of the map.</summary>
     public static IAiController Create(MatchSetup setup, MatchPlayer player) => player.Kind == PlayerKind.Ai
-        ? new AiPlayer(player.Id, SettingsOf(player.Difficulty), start: player.Start, mapStarts: setup.MapStarts)
+        ? Medium(player.Id, SettingsOf(player.Difficulty), player.Start, setup)
         : throw new ArgumentException($"{player.Id} is played by a person.", nameof(player));
 
     /// <summary>Attaches the bots of the match of <paramref name="simulation"/>; none without a match setup. Only for a live match.</summary>
@@ -29,6 +32,10 @@ public static class MatchBots
             }
         }
     }
+
+    /// <summary>The bot of M5 so far: its economy (step 4) and the base that serves it.</summary>
+    private static AiPlayer Medium(PlayerId player, AiSettings settings, CellPos start, MatchSetup setup) =>
+        new(player, settings, [new EconomyManager(settings), new BuildPlanner()], start, setup.MapStarts);
 
     private static AiSettings SettingsOf(AiDifficulty difficulty) => difficulty switch
     {

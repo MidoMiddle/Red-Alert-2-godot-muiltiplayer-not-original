@@ -22,4 +22,16 @@ public sealed record AiSettings
     public int TacticsPeriod { get; init; } = 15;
 
     public int DefensePeriod { get; init; } = 5;
+
+    /// <summary>The refineries the bot builds at most (4.7).</summary>
+    public int MaxRefineries { get; init; } = 2;
+
+    /// <summary>The harvesters the bot keeps for each refinery (4.6).</summary>
+    public int HarvestersPerRefinery { get; init; } = 2;
+
+    /// <summary>A reactor is wanted when what is left of the power output falls below this share of it, in percent (4.6).</summary>
+    public int PowerReservePercent { get; init; } = 20;
+
+    /// <summary>A harvester that works this near a known enemy, in cells, is sent to a field farther away (4.6).</summary>
+    public int DangerCells { get; init; } = 12;
 }
