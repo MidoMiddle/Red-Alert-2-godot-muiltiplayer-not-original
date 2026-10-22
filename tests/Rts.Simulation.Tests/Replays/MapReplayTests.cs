@@ -13,7 +13,7 @@ namespace Rts.Simulation.Tests.Replays;
 public sealed class MapReplayTests
 {
     // "RTSR" | u16 format | u32 rules | u64 seed | 5 × i32.
-    private const int MapFlagOffset = 4 + 2 + 4 + 8 + 8 + 4 * 5;
+    private const int MapFlagOffset = 4 + 2 + 4 + 8 + 8 + 4 * 6;
 
     private static TestMap LandTypes() => TestMapParserTests.Load("all_land_types.txt");
 

@@ -18,23 +18,34 @@ namespace Rts.Simulation.World;
 public sealed class GameWorld
 {
     private readonly List<Entity> _entities = new();
+    private readonly PlayerState[] _players;
     private int _nextEntityId = 1;
 
-    /// <summary>A world on a map of clear land that goes by the land speeds of <paramref name="rules"/>.</summary>
-    public GameWorld(ulong seed, int widthCells, int heightCells, GameRules rules)
-        : this(seed, new MapGrid(widthCells, heightCells, rules.Land), rules)
+    /// <summary>
+    /// A world on a map of clear land that goes by the land speeds of <paramref name="rules"/>; every player starts with
+    /// <paramref name="startingCredits"/>.
+    /// </summary>
+    public GameWorld(ulong seed, int widthCells, int heightCells, GameRules rules, int startingCredits = SimulationSettings.DefaultStartingCredits)
+        : this(seed, new MapGrid(widthCells, heightCells, rules.Land), rules, startingCredits)
     {
     }
 
     /// <summary>
     /// A world on the given map, which should go by the land speeds of <paramref name="rules"/> (<see cref="MapGrid.Clone"/>). The
     /// buildings the map places at the start (M7 step 7) become its first entities, in the order of <see cref="MapGrid.StartBuildings"/>,
-    /// at full hit points; the map already marks their cells as taken.
+    /// at full hit points; the map already marks their cells as taken. Every player 1…8 starts with <paramref name="startingCredits"/>
+    /// and the first faction of the data.
     /// </summary>
-    internal GameWorld(ulong seed, MapGrid map, GameRules rules)
+    internal GameWorld(ulong seed, MapGrid map, GameRules rules, int startingCredits = SimulationSettings.DefaultStartingCredits)
     {
         Map = map;
         Rules = rules;
+        _players = new PlayerState[PlayerId.MaxPlayers];
+        for (var i = 0; i < _players.Length; i++)
+        {
+            _players[i] = new PlayerState(new PlayerId(i + 1), rules.DefaultFaction, startingCredits, rules.Database);
+        }
+
         Random = new DeterministicRandom(seed);
         PathRequests = new PathRequestQueue(map);
         Reservations = new Reservations(map.Width, map.Height);
@@ -53,6 +64,18 @@ public sealed class GameWorld
 
     /// <summary>The rules of the match, from the data files (docs/implementation/M3_base_economy.md, 4.5). Not state.</summary>
     public GameRules Rules { get; }
+
+    /// <summary>The economy of the players 1…8, in order (docs/implementation/M3_base_economy.md, 4.7).</summary>
+    public IReadOnlyList<PlayerState> Players => _players;
+
+    /// <summary>
+    /// Set when the buildings of a player changed (one is placed, finished growing or destroyed); <see cref="Systems.PowerSystem"/>
+    /// works the power out again on its turn of the tick and clears it. Derived: true at the start, so the first tick works power out.
+    /// </summary>
+    internal bool PowerDirty { get; set; } = true;
+
+    /// <summary>The same for <see cref="Systems.TechTree"/>, which runs late in the tick (4.15).</summary>
+    internal bool TechDirty { get; set; } = true;
 
     /// <summary>Path searches waiting for their share of the per-tick node budget.</summary>
     public PathRequestQueue PathRequests { get; }
@@ -209,6 +232,65 @@ public sealed class GameWorld
         return false;
     }
 
+    /// <summary>The economy of a player 1…8.</summary>
+    public PlayerState Player(PlayerId player) =>
+        player.Value is >= 1 and <= PlayerId.MaxPlayers
+            ? _players[player.Value - 1]
+            : throw new ArgumentOutOfRangeException(nameof(player), player, "Only the players 1…8 have an economy.");
+
+    /// <summary>
+    /// Creates a building of <paramref name="owner"/> from the data and takes its cells through <see cref="ChangeMap"/>, so paths learn
+    /// about it (docs/implementation/M3_base_economy.md, 4.8). Where a building may stand is the business of the placement rules and
+    /// commands of M3 steps 6–7; here only the footprint must be on the map and free of other buildings.
+    /// </summary>
+    /// <param name="ready">False for a building that is still growing: it gives no power and opens nothing until
+    /// <see cref="CompleteBuildUp"/>.</param>
+    internal Building CreateBuilding(PlayerId owner, BuildingDef def, CellPos cell, bool ready, List<Events.SimEvent>? events)
+    {
+        var index = Rules.Database.IndexOfBuilding(def.Id);
+        if (index < 0 || !ReferenceEquals(Rules.Database.Buildings[index], def))
+        {
+            throw new ArgumentException($"'{def.Id}' is not a building of the rules of this match.", nameof(def));
+        }
+
+        var far = new CellPos(cell.X + def.Footprint.Width - 1, cell.Y + def.Footprint.Height - 1);
+        if (!Map.Contains(cell) || !Map.Contains(far))
+        {
+            throw new ArgumentException($"{def.Id} at ({cell.X}, {cell.Y}) reaches outside the map.", nameof(cell));
+        }
+
+        for (var y = cell.Y; y <= far.Y; y++)
+        {
+            for (var x = cell.X; x <= far.X; x++)
+            {
+                if (Map.HasBuilding(new CellPos(x, y)))
+                {
+                    throw new ArgumentException($"{def.Id} at ({cell.X}, {cell.Y}) covers another building at ({x}, {y}).", nameof(cell));
+                }
+            }
+        }
+
+        var building = new Building(AllocateId(), owner, def, index, cell, ready);
+        _entities.Add(building);
+        ChangeMap([new TakeBuildingEdit(cell, far)], events);
+        BuildingsChanged();
+        return building;
+    }
+
+    /// <summary>A building has grown: from now on it gives power and counts as a prerequisite.</summary>
+    internal void CompleteBuildUp(Building building)
+    {
+        building.IsReady = true;
+        BuildingsChanged();
+    }
+
+    /// <summary>Power and technologies are worked out again on their next turn.</summary>
+    internal void BuildingsChanged()
+    {
+        PowerDirty = true;
+        TechDirty = true;
+    }
+
     /// <summary>The standing building whose footprint covers the cell, or null.</summary>
     public Building? BuildingAt(CellPos cell)
     {
@@ -271,8 +353,8 @@ public sealed class GameWorld
     {
         building.Hp = 0;
         building.MarkDead();
-        var far = new CellPos(building.Cell.X + building.Type.Width - 1, building.Cell.Y + building.Type.Height - 1);
-        ChangeMap([new ClearBuildingEdit(building.Cell, far)], events);
+        ChangeMap([new ClearBuildingEdit(building.Cell, building.FarCell)], events);
+        BuildingsChanged();
         events?.Add(new Events.BuildingDestroyed(CurrentTick, building.Id, building.Kind, building.Cell));
     }
 

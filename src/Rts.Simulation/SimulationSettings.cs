@@ -12,6 +12,9 @@ public sealed record SimulationSettings
     public const int DefaultTicksPerSecond = 15;
     public const int DefaultMapSizeCells = 64;
 
+    /// <summary>The credits of every player at the start of a skirmish (docs/implementation/M3_base_economy.md, decision 5).</summary>
+    public const int DefaultStartingCredits = 10_000;
+
     public SimulationSettings(ulong seed)
     {
         Seed = seed;
@@ -44,9 +47,12 @@ public sealed record SimulationSettings
     /// <summary>State checksum is computed on ticks divisible by this value (step 7).</summary>
     public int HashInterval { get; init; } = 1;
 
+    /// <summary>The credits every player starts with (M3 step 5).</summary>
+    public int StartingCredits { get; init; } = DefaultStartingCredits;
+
     internal void Validate()
     {
-        if (TicksPerSecond <= 0 || HashInterval <= 0 || MapWidthCells <= 0 || MapHeightCells <= 0)
+        if (TicksPerSecond <= 0 || HashInterval <= 0 || MapWidthCells <= 0 || MapHeightCells <= 0 || StartingCredits < 0)
         {
             throw new ArgumentException($"Invalid simulation settings: {this}.");
         }
@@ -68,9 +74,10 @@ public sealed record SimulationSettings
         && MapWidthCells == other.MapWidthCells
         && MapHeightCells == other.MapHeightCells
         && HashInterval == other.HashInterval
+        && StartingCredits == other.StartingCredits
         && (Map is null ? other.Map is null : other.Map is not null && Map.ContentEquals(other.Map));
 
     // Only for dictionaries; System.HashCode is banned in the simulation (randomized per process).
     public override int GetHashCode() =>
-        unchecked((int)Seed ^ (int)(Seed >> 32) ^ (TicksPerSecond * 31) ^ (MapWidthCells * 997) ^ (MapHeightCells * 7919) ^ HashInterval);
+        unchecked((int)Seed ^ (int)(Seed >> 32) ^ (TicksPerSecond * 31) ^ (MapWidthCells * 997) ^ (MapHeightCells * 7919) ^ HashInterval ^ (StartingCredits * 31337));
 }

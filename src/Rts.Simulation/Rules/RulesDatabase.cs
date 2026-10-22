@@ -49,8 +49,22 @@ public sealed class RulesDatabase
 
     public bool TryGetFaction(string id, out FactionDef definition) => TryFind(Factions, id, out definition);
 
-    /// <summary>Binary search over a list sorted by id. The comparison is ordinal, so every platform finds the same entry.</summary>
+    /// <summary>The position of a unit in <see cref="Units"/>: the index commands and tech sets use; -1 when it is not defined.</summary>
+    public int IndexOfUnit(string id) => IndexOf(Units, id);
+
+    /// <summary>The position of a building in <see cref="Buildings"/>: the index commands and tech sets use; -1 when it is not defined.</summary>
+    public int IndexOfBuilding(string id) => IndexOf(Buildings, id);
+
     private static bool TryFind<T>(ImmutableArray<T> sorted, string id, out T definition)
+        where T : IDefinition
+    {
+        var index = IndexOf(sorted, id);
+        definition = index >= 0 ? sorted[index] : default!;
+        return index >= 0;
+    }
+
+    /// <summary>Binary search over a list sorted by id. The comparison is ordinal, so every platform finds the same entry.</summary>
+    private static int IndexOf<T>(ImmutableArray<T> sorted, string id)
         where T : IDefinition
     {
         var low = 0;
@@ -61,8 +75,7 @@ public sealed class RulesDatabase
             var order = string.CompareOrdinal(sorted[middle].Id, id);
             if (order == 0)
             {
-                definition = sorted[middle];
-                return true;
+                return middle;
             }
 
             if (order < 0)
@@ -75,7 +88,6 @@ public sealed class RulesDatabase
             }
         }
 
-        definition = default!;
-        return false;
+        return -1;
     }
 }

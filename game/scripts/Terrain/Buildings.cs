@@ -52,7 +52,8 @@ public partial class Buildings : Node3D
 
         foreach (var entity in world.Entities)
         {
-            if (entity is Building { IsAlive: true } building)
+            // The buildings of players (M3) get their look with placement, M3 step 6.
+            if (entity is Building { IsAlive: true, Def: null } building)
             {
                 Add(building.Kind, building.Cell, building.Owner);
             }

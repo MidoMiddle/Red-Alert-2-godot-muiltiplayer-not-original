@@ -24,7 +24,7 @@ public sealed class GameSimulation
     {
         settings.Validate();
         Settings = settings;
-        World = new GameWorld(settings.Seed, settings.CreateMap(rules.Land), rules);
+        World = new GameWorld(settings.Seed, settings.CreateMap(rules.Land), rules, settings.StartingCredits);
         _commands = new CommandQueue(firstTick: World.CurrentTick);
     }
 
@@ -66,18 +66,26 @@ public sealed class GameSimulation
             CommandProcessor.Apply(World, command, _events);
         }
 
-        // 2. Path searches within the node budget, then movement (docs/implementation/M2_unit_control.md, 4.12).
+        // 2. Path searches within the node budget (docs/implementation/M2_unit_control.md, 4.12).
         World.PathRequests.Process(World, _events);
+
+        // 3. Power, when the buildings changed (docs/implementation/M3_base_economy.md, 4.15).
+        PowerSystem.Update(World, _events);
+
+        // 4. Movement.
         MovementSystem.Update(World, _events);
         World.Spatial.Sync(World);
 
-        // 3. Entities that died this tick leave the world.
+        // 5. Technologies, when the buildings changed.
+        TechTree.Update(World);
+
+        // 6. Entities that died this tick leave the world.
         World.RemoveDead();
 
-        // 4. Next tick.
+        // 7. Next tick.
         World.CurrentTick = tick + 1;
 
-        // 5. State checksum: describes the state at the start of the new tick.
+        // 8. State checksum: describes the state at the start of the new tick.
         if (World.CurrentTick % Settings.HashInterval == 0)
         {
             LastChecksum = new StateChecksum(World.CurrentTick, StateHasher.Compute(World));

@@ -1,37 +1,82 @@
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Rules;
 
 namespace Rts.Simulation.World;
 
 /// <summary>
-/// A building (docs/implementation/M7_maps.md, 4.8): for now only the minimal one of M7 — a footprint of cells that stops
-/// every mover, hit points, an owner (the neutral player for the houses and tech buildings of a map). M3 adds construction,
-/// power and production; M11 garrisons and capture. The footprint does not turn with <see cref="Facing"/>, which is for
-/// the look only. A destroyed building leaves no ruins: its cells open at once.
+/// A building: a footprint of cells that stops every mover, hit points and an owner. Two sorts for now:
+/// <list type="bullet">
+/// <item>a building of the map (docs/implementation/M7_maps.md, 4.8): a neutral house or tech building of a <see cref="BuildingKind"/>,
+/// owned by the neutral player, always ready;</item>
+/// <item>a building of a player from the data (docs/implementation/M3_base_economy.md, 4.7–4.11): a <see cref="BuildingDef"/>, which
+/// gives power and opens technologies once it is <see cref="IsReady"/>.</item>
+/// </list>
+/// The buildings of the map move to the data with M3 step 6; M11 adds garrisons and capture. The footprint does not turn with
+/// <see cref="Facing"/>, which is for the look only. A destroyed building leaves no ruins: its cells open at once.
 /// </summary>
 public sealed class Building : Entity
 {
+    /// <summary>A building of the map.</summary>
     internal Building(EntityId id, PlayerId owner, BuildingKind kind, CellPos cell, int facing)
         : base(id, owner)
     {
         Kind = kind;
         Cell = cell;
         Facing = facing;
+        Width = BuildingTypes.Get(kind).Width;
+        Height = BuildingTypes.Get(kind).Height;
         Hp = BuildingTypes.Get(kind).MaxHp;
+        DefIndex = -1;
+        IsReady = true;
     }
 
+    /// <summary>A building of a player, the definition at <paramref name="defIndex"/> of the rules.</summary>
+    internal Building(EntityId id, PlayerId owner, BuildingDef def, int defIndex, CellPos cell, bool ready)
+        : base(id, owner)
+    {
+        Def = def;
+        DefIndex = defIndex;
+        Cell = cell;
+        Width = def.Footprint.Width;
+        Height = def.Footprint.Height;
+        Hp = def.Hp;
+        IsReady = ready;
+    }
+
+    /// <summary>The kind of a building of the map; 0 for a building of a player.</summary>
     public BuildingKind Kind { get; }
 
+    /// <summary>The type of a building of the map.</summary>
     public BuildingType Type => BuildingTypes.Get(Kind);
+
+    /// <summary>The definition of a building of a player; null for a building of the map.</summary>
+    public BuildingDef? Def { get; }
+
+    /// <summary>The position of <see cref="Def"/> in <see cref="RulesDatabase.Buildings"/>; -1 for a building of the map.</summary>
+    public int DefIndex { get; }
 
     /// <summary>The north-west cell of the footprint.</summary>
     public CellPos Cell { get; }
+
+    public int Width { get; }
+
+    public int Height { get; }
 
     /// <summary>0…7 in 45° steps, for the look only.</summary>
     public int Facing { get; }
 
     public int Hp { get; internal set; }
 
+    /// <summary>
+    /// True once the building has grown (docs/implementation/M3_base_economy.md, 4.8): only then it gives power and counts as a
+    /// prerequisite. The buildings of the map are always ready.
+    /// </summary>
+    public bool IsReady { get; internal set; }
+
+    /// <summary>The south-east cell of the footprint.</summary>
+    public CellPos FarCell => new(Cell.X + Width - 1, Cell.Y + Height - 1);
+
     /// <summary>True when the cell is part of the footprint.</summary>
     public bool Covers(CellPos cell) =>
-        cell.X >= Cell.X && cell.Y >= Cell.Y && cell.X < Cell.X + Type.Width && cell.Y < Cell.Y + Type.Height;
+        cell.X >= Cell.X && cell.Y >= Cell.Y && cell.X < Cell.X + Width && cell.Y < Cell.Y + Height;
 }

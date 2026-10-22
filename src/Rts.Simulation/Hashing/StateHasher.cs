@@ -36,6 +36,12 @@ public static class StateHasher
         AddTaken(hash, world.Reservations.VehicleCells);
         AddTaken(hash, world.Reservations.InfantrySpots);
 
+        // Rules v19 (M3 step 5): the credits of every player. Power and technologies follow from the buildings, not hashed.
+        foreach (var player in world.Players)
+        {
+            hash.Add(player.Credits);
+        }
+
         hash.Add(world.Entities.Count);
         foreach (var entity in world.Entities)
         {
@@ -101,6 +107,10 @@ public static class StateHasher
                 hash.Add(building.Cell.Y);
                 hash.Add(building.Facing);
                 hash.Add(building.Hp);
+
+                // Rules v19 (M3 step 5): the definition of a building of a player and whether it has grown.
+                hash.Add(building.DefIndex);
+                hash.Add(building.IsReady);
                 break;
 
             default:

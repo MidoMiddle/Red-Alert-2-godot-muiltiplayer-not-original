@@ -9,7 +9,8 @@ namespace Rts.Simulation.Tests;
 /// <summary>
 /// The rules of M2 built in code with <see cref="RulesBuilder"/> (docs/implementation/M3_base_economy.md, 4.5), so that the tests of the
 /// simulation need no YAML. The numbers the simulation reads are those of <c>game/data</c>: a test of Rts.Data, which links this file,
-/// checks that both give the same <see cref="GameRules"/>. Costs, hit points and build times are placeholders; nothing reads them yet.
+/// checks that both give the same <see cref="GameRules"/>. The buildings of the Union, their power and prerequisites, and the
+/// prerequisites of the units are those of <c>game/data</c> too; costs, hit points and build times of the units are placeholders.
 /// </summary>
 internal static class TestRules
 {
@@ -68,23 +69,68 @@ internal static class TestRules
         Infantry(builder, UnitType.Rocketeer, sight: 5);
         Infantry(builder, UnitType.Engineer, sight: 4);
         Vehicle(builder, UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6);
-        Vehicle(builder, UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4);
+        Vehicle(builder, UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4, "war_factory", "refinery");
         Vehicle(builder, UnitType.SupportVehicle, Locomotor.Wheel, speed: 48, turret: true, sight: 8);
         Vehicle(builder, UnitType.HeavyTank, Locomotor.Track, speed: 36, turret: true, sight: 8);
-        Vehicle(builder, UnitType.TeslaTank, Locomotor.Track, speed: 36, turret: true, sight: 8);
+        Vehicle(builder, UnitType.TeslaTank, Locomotor.Track, speed: 36, turret: true, sight: 8, "war_factory", "tech_center");
+
+        // The buildings of docs/implementation/M3_base_economy.md, 4.6: id, footprint, power, prerequisites.
+        Building(builder, "construction_yard", 3, 3, power: 0);
+        Building(builder, "reactor", 2, 2, power: 150, "construction_yard");
+        Building(builder, "refinery", 3, 3, power: -50, "reactor");
+        Building(builder, "barracks", 2, 2, power: -20, "reactor");
+        Building(builder, "war_factory", 3, 4, power: -50, "refinery");
+        Building(builder, "radar", 2, 2, power: -50, "refinery");
+        Building(builder, "tech_center", 3, 3, power: -100, "war_factory", "radar");
+        Building(builder, "wall", 1, 1, power: 0, "construction_yard");
+        Building(builder, "sentry_bunker", 1, 1, power: 0, "barracks");
+        Building(builder, "tesla_coil", 2, 2, power: -75, "radar");
+        Building(builder, "flak_cannon", 2, 2, power: -50, "radar");
+        builder.Add(new FactionDef
+        {
+            Id = "union",
+            Name = "Union",
+            Mcv = "mcv",
+            ConstructionYard = "construction_yard",
+            Refinery = "refinery",
+            Harvester = "harvester",
+        });
         return builder.Build();
     }
+
+    /// <summary>A building of the Union from <see cref="Database"/>.</summary>
+    public static BuildingDef BuildingDef(string id) =>
+        Standard.Database.TryGetBuilding(id, out var definition) ? definition : throw new System.ArgumentException($"No building '{id}'.");
+
+    private static void Building(RulesBuilder builder, string id, int width, int height, int power, params string[] prerequisites) =>
+        builder.Add(new BuildingDef
+        {
+            Id = id,
+            Name = id,
+            Faction = "union",
+            Category = ProductionCategory.Building,
+            Cost = 100,
+            BuildTime = 15,
+            Hp = 500,
+            Footprint = new CellSize(width, height),
+            Power = power,
+            Prerequisites = [.. prerequisites],
+        });
 
     private static Fixed Percent(int percent) => Fixed.FromRatio(percent, 100);
 
     private static void Infantry(RulesBuilder builder, UnitType type, int sight) =>
-        builder.Add(Unit(type, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, speed: 24, turnRate: 0, turret: false, sight));
+        builder.Add(Unit(type, UnitCategory.Infantry, Locomotor.Foot, UnitPlacement.Subcell, speed: 24, turnRate: 0, turret: false, sight, ["barracks"]));
 
-    private static void Vehicle(RulesBuilder builder, UnitType type, Locomotor locomotor, int speed, bool turret, int sight) =>
-        builder.Add(Unit(type, UnitCategory.Vehicle, locomotor, UnitPlacement.Cell, speed, turnRate: 2048, turret, sight));
+    private static void Vehicle(
+        RulesBuilder builder, UnitType type, Locomotor locomotor, int speed, bool turret, int sight, params string[] prerequisites) =>
+        builder.Add(Unit(
+            type, UnitCategory.Vehicle, locomotor, UnitPlacement.Cell, speed, turnRate: 2048, turret, sight,
+            prerequisites.Length > 0 ? prerequisites : ["war_factory"]));
 
     private static UnitDef Unit(
-        UnitType type, UnitCategory category, Locomotor locomotor, UnitPlacement placement, int speed, int turnRate, bool turret, int sight) =>
+        UnitType type, UnitCategory category, Locomotor locomotor, UnitPlacement placement, int speed, int turnRate, bool turret, int sight,
+        string[] prerequisites) =>
         new()
         {
             Id = UnitTypes.IdOf(type),
@@ -100,5 +146,6 @@ internal static class TestRules
             Locomotor = LandSpeeds.IdOf(locomotor),
             Placement = placement,
             Turret = turret,
+            Prerequisites = [.. prerequisites],
         };
 }

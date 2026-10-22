@@ -38,6 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
+        "credits", "building", "building ready",
     };
 
     [Theory]
@@ -113,6 +114,14 @@ public sealed class StateHasherTests
                 break;
             case "order index": idle.OrderIndex = 1; break;
             case "loop": idle.LoopOrders = true; break;
+            case "credits": world.Player(Player1).Credits--; break;
+            case "building": world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(40, 40), ready: false, null); break;
+            case "building ready":
+                var reactor = world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(40, 40), ready: false, null);
+                var growing = StateHasher.Compute(world);
+                world.CompleteBuildUp(reactor);
+                Assert.NotEqual(growing, StateHasher.Compute(world));
+                break;
             case "path request avoid":
                 world.PathRequests.Request(idle, 0, new CellPos(5, 5));
                 var withoutAvoid = StateHasher.Compute(world);
@@ -148,6 +157,17 @@ public sealed class StateHasherTests
         "<Spatial>k__BackingField",
         // The rules of the match: data, not state; the replay keeps their hash (M3 step 3).
         "<Rules>k__BackingField",
+        // The players (M3 step 5): their credits are hashed; the marks that power and technologies need working out are derived.
+        "_players", "<PowerDirty>k__BackingField", "<TechDirty>k__BackingField",
+    })]
+    [InlineData(typeof(PlayerState), new[]
+    {
+        "<Credits>k__BackingField",
+        // Fixed by the order of the players and the rules of the match.
+        "<Id>k__BackingField", "<Faction>k__BackingField",
+        // Derived from the buildings by PowerSystem and TechTree (M3 step 5).
+        "<BuildingList>k__BackingField", "<PowerOutput>k__BackingField", "<PowerDrain>k__BackingField", "<LowPower>k__BackingField",
+        "_units", "_buildings",
     })]
     [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_vehicle", "_infantry", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]
@@ -176,7 +196,13 @@ public sealed class StateHasherTests
     [InlineData(typeof(Bridge), new[] { "_segments", "<Id>k__BackingField", "<Kind>k__BackingField", "<From>k__BackingField", "<To>k__BackingField" })]
     // Only the hit points are hashed: the bridge, the place in the chain and the cell follow from the bridge's ends.
     [InlineData(typeof(BridgeSegment), new[] { "<Hp>k__BackingField", "<Bridge>k__BackingField", "<Index>k__BackingField", "<Cell>k__BackingField" })]
-    [InlineData(typeof(Building), new[] { "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField" })]
+    [InlineData(typeof(Building), new[]
+    {
+        "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
+        "<DefIndex>k__BackingField", "<IsReady>k__BackingField",
+        // From the kind or the definition (by DefIndex): rules, not state.
+        "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
+    })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {

@@ -60,6 +60,7 @@ public sealed class ReplayTests
 
         Assert.Equal(replay.SimVersion, read.SimVersion);
         Assert.Equal(replay.DataHash, read.DataHash);
+        Assert.Equal(replay.Settings.StartingCredits, read.Settings.StartingCredits);
         Assert.Equal(replay.Settings, read.Settings);
         Assert.Equal(replay.TickCount, read.TickCount);
         Assert.Equal(replay.Commands, read.Commands);
@@ -79,6 +80,14 @@ public sealed class ReplayTests
         Assert.Equal(ReplayFormat.FormatVersion, BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(4)));
         Assert.Equal(SimulationVersion.Current, BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(6)));
         Assert.Equal(DataHasher.NoData, BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(10)));
+    }
+
+    [Fact]
+    public void The_starting_credits_are_kept_in_the_replay()
+    {
+        var replay = new Replay(SimulationVersion.Current, DataHasher.NoData, new SimulationSettings(9) { StartingCredits = 7500 }, 0, [], []);
+
+        Assert.Equal(7500, ReplayFormat.Read(ReplayFormat.Write(replay)).Settings.StartingCredits);
     }
 
     [Fact]
@@ -204,7 +213,7 @@ public sealed class ReplayTests
             case "format version": bytes[4] = 99; break;
             case "truncated": bytes.RemoveAt(bytes.Count - 1); break;
             case "trailing byte": bytes.Add(0); break;
-            case "negative ticks": bytes[45] = 0xFF; break;
+            case "negative ticks": bytes[49] = 0xFF; break;
         }
 
         Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(bytes.ToArray()));

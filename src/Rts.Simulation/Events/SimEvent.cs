@@ -48,3 +48,9 @@ public sealed record MapChanged(int Tick, CellPos From, CellPos To) : SimEvent(T
 /// and takes the other's spot instead, so a group fills its places from the inside.
 /// </summary>
 public sealed record UnitPlacesSwapped(int Tick, EntityId Unit, EntityId Other) : SimEvent(Tick);
+
+/// <summary>The player drains more power than it produces from now on (docs/implementation/M3_base_economy.md, 4.11).</summary>
+public sealed record LowPower(int Tick, PlayerId Player) : SimEvent(Tick);
+
+/// <summary>The player produces enough power again.</summary>
+public sealed record PowerRestored(int Tick, PlayerId Player) : SimEvent(Tick);

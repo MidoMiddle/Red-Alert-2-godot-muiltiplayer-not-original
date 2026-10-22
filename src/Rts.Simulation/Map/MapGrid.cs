@@ -459,6 +459,9 @@ public sealed class MapGrid
     /// <summary>A building fell: its cells open (no ruins in M7).</summary>
     internal void ClearBuilding(CellPos from, CellPos to) => SetBuildingCells(from, to, false);
 
+    /// <summary>A building of a player is placed (M3): its cells close. Where it may stand is checked before.</summary>
+    internal void TakeBuilding(CellPos from, CellPos to) => SetBuildingCells(from, to, true);
+
     /// <summary>Takes hit points off a bridge segment without destroying it (the hash sees it; nothing else changes).</summary>
     internal void SetSegmentHp(BridgeSegment segment, int hp)
     {

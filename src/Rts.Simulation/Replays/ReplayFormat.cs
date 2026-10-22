@@ -10,10 +10,10 @@ using Rts.Simulation.Map;
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v9, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v10, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion | u64 dataHash
-/// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 tickCount
+/// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 startingCredits | i32 tickCount
 /// u8 hasMap | (u8 land × width·height | u8 obstacle × width·height) when hasMap = 1
 /// command batch (u32 count + commands, format of CommandSerializer)
 /// u32 checksumCount | (i32 tick, u64 value) × checksumCount
@@ -24,16 +24,17 @@ namespace Rts.Simulation.Replays;
 /// v7 (M7 step 6) adds the bridges after the objects (u32 count, then u8 kind | u16 fromX | u16 fromY | u16 toX | u16 toY |
 /// i32 hp per segment from the first end each); v8 (M7 step 7) adds the buildings of the start after the bridges (u32 count, then
 /// u8 kind | u16 x | u16 y | u8 owner | u8 facing each); v9 (M3 step 3) adds the hash of the data files after the rules version
-/// (<c>DataHasher</c>, docs/implementation/M3_base_economy.md, 4.4).
+/// (<c>DataHasher</c>, docs/implementation/M3_base_economy.md, 4.4); v10 (M3 step 5) adds the starting credits of the players
+/// after the hash interval.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 9;
+    public const ushort FormatVersion = 10;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
 
-    private const int HeaderSize = 4 + 2 + 4 + 8 + 8 + 4 * 5;
+    private const int HeaderSize = 4 + 2 + 4 + 8 + 8 + 4 * 6;
     private const int ChecksumSize = 4 + 8;
 
     // u8 kind | u16 x | u16 y | u8 variant | i32 hp | u8 destroyed.
@@ -72,7 +73,8 @@ public static class ReplayFormat
         BinaryPrimitives.WriteInt32LittleEndian(span[30..], replay.Settings.MapWidthCells);
         BinaryPrimitives.WriteInt32LittleEndian(span[34..], replay.Settings.MapHeightCells);
         BinaryPrimitives.WriteInt32LittleEndian(span[38..], replay.Settings.HashInterval);
-        BinaryPrimitives.WriteInt32LittleEndian(span[42..], replay.TickCount);
+        BinaryPrimitives.WriteInt32LittleEndian(span[42..], replay.Settings.StartingCredits);
+        BinaryPrimitives.WriteInt32LittleEndian(span[46..], replay.TickCount);
 
         var offset = HeaderSize;
         span[offset++] = map is null ? (byte)0 : (byte)1;
@@ -161,7 +163,7 @@ public static class ReplayFormat
         var seed = BinaryPrimitives.ReadUInt64LittleEndian(source[18..]);
         var width = BinaryPrimitives.ReadInt32LittleEndian(source[30..]);
         var height = BinaryPrimitives.ReadInt32LittleEndian(source[34..]);
-        var tickCount = BinaryPrimitives.ReadInt32LittleEndian(source[42..]);
+        var tickCount = BinaryPrimitives.ReadInt32LittleEndian(source[46..]);
         if (tickCount < 0)
         {
             throw new InvalidDataException($"Negative tick count {tickCount}.");
@@ -283,6 +285,7 @@ public static class ReplayFormat
             MapWidthCells = width,
             MapHeightCells = height,
             HashInterval = BinaryPrimitives.ReadInt32LittleEndian(source[38..]),
+            StartingCredits = BinaryPrimitives.ReadInt32LittleEndian(source[42..]),
         };
 
         var commands = CommandSerializer.ReadBatch(source[offset..], out var commandBytes);

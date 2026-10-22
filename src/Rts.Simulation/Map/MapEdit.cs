@@ -49,6 +49,13 @@ public sealed record DestroyBridgeSegmentEdit(int BridgeId, int Segment) : MapEd
     private CellPos CellOf(MapGrid map) => map.Bridges[BridgeId - 1].Segments[Segment].Cell;
 }
 
+/// <summary>A building is placed: the cells from <paramref name="From"/> to <paramref name="To"/> (its footprint) close to every mover.</summary>
+public sealed record TakeBuildingEdit(CellPos From, CellPos To) : MapEdit
+{
+    internal override (CellPos From, CellPos To) Area(MapGrid map) => (From, To);
+    internal override void Apply(MapGrid map) => map.TakeBuilding(From, To);
+}
+
 /// <summary>A building fell: the cells from <paramref name="From"/> to <paramref name="To"/> (its footprint) open; no ruins in M7.</summary>
 public sealed record ClearBuildingEdit(CellPos From, CellPos To) : MapEdit
 {

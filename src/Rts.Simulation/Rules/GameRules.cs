@@ -39,6 +39,9 @@ public sealed class GameRules
     /// <summary>The unit types, in <see cref="UnitType"/> order.</summary>
     public IReadOnlyList<UnitArchetype> Units => _units;
 
+    /// <summary>The faction every player plays until the skirmish setup chooses one (M6): the first of the data, in id order.</summary>
+    public FactionDef DefaultFaction => Database.Factions[0];
+
     public UnitArchetype Unit(UnitType type) => UnitTypes.IsKnown(type)
         ? _units[(int)type - 1]
         : throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown unit type.");
@@ -93,11 +96,16 @@ public sealed class GameRules
 
     /// <summary>
     /// What keeps the engine from playing <paramref name="database"/>: an engine locomotor, land type or unit type without a definition,
-    /// a land code other than the one of the map format, a locomotor the engine does not know, a speed over 255 percent.
+    /// a land code other than the one of the map format, a locomotor the engine does not know, a speed over 255 percent, no faction.
     /// </summary>
     public static List<RulesProblem> Problems(RulesDatabase database)
     {
         var problems = new List<RulesProblem>();
+        if (database.Factions.Length == 0)
+        {
+            problems.Add(new RulesProblem("", "", "the engine needs a faction for the players, and none is defined"));
+        }
+
         for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             if (!database.TryGetLocomotor(LandSpeeds.IdOf(locomotor), out _))

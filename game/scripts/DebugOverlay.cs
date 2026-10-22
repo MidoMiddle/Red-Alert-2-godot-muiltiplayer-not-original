@@ -61,6 +61,7 @@ public partial class DebugOverlay : CanvasLayer
             $"{mode}  {state}\n" +
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   spawn {UnitTypes.IdOf(_host.SpawnType)}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
+            DescribePlayer(simulation.World.Player(SimulationHost.LocalPlayer)) + "\n" +
             DescribeCell(simulation.World, _input.CellUnderPointer) + "\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
@@ -78,6 +79,14 @@ public partial class DebugOverlay : CanvasLayer
             : null;
 
     /// <summary><c>cell 12,30 Rough · foot 90 track 90 wheel 75</c>; a tree or impassable land shows as such.</summary>
+    /// <summary>The economy of a player (M3 step 5): "P1 credits 10000 · power 150/70 · tech 3 buildings, 0 units", "LOW POWER" in a deficit.</summary>
+    private static string DescribePlayer(PlayerState player)
+    {
+        var (units, buildings) = player.AvailableCount;
+        return $"{player.Id} credits {player.Credits} · power {player.PowerOutput}/{player.PowerDrain}" +
+               (player.LowPower ? " LOW POWER" : "") + $" · tech {buildings} buildings, {units} units";
+    }
+
     private static string DescribeCell(GameWorld world, CellPos? pointer)
     {
         var map = world.Map;
@@ -110,7 +119,8 @@ public partial class DebugOverlay : CanvasLayer
         // A building on the cell (M7 step 7): "neutral_house_a 600/800 (Neutral)".
         if (world.BuildingAt(cell) is { } building)
         {
-            land += $" + {building.Type.Id} {building.Hp}/{building.Type.MaxHp} ({building.Owner})";
+            var (id, maxHp) = building.Def is { } def ? (def.Id, def.Hp) : (building.Type.Id, building.Type.MaxHp);
+            land += $" + {id} {building.Hp}/{maxHp} ({building.Owner})";
         }
         var foot = map.SpeedPercent(cell, Locomotor.Foot);
         var track = map.SpeedPercent(cell, Locomotor.Track);

@@ -192,11 +192,12 @@ public sealed class GoldenValuesTests
         // Rules v16 (M7 step 5): the map digest covers the map objects too (none here); the states are the same.
         // Rules v17 (M7 step 6): the map digest covers the bridges too (none here); the states are the same.
         // Rules v18 (M7 step 7): the map digest covers the buildings and their cells too (none here); the states are the same.
+        // Rules v19 (M3 step 5): the hash covers the credits of the players; the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x4bc1d1b19af7d502UL),
-            new(500, 0x6fe591470aab4158UL),
-            new(1000, 0x1afc5b9f2f200340UL),
+            new(100, 0x63365cbd9360ce42UL),
+            new(500, 0x1c5c6b6a2a413418UL),
+            new(1000, 0x2048609b924ce300UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -235,6 +236,7 @@ public sealed class GoldenValuesTests
         // Replay format v7, rules v17 (M7 step 6): versions and checksums change; no map, so no bridge list.
         // Replay format v8, rules v18 (M7 step 7): versions and checksums change; no map, so no building list.
         // Replay format v9 (M3 step 3): the format version and 8 bytes of data hash (no data, zero); the checksums do not change.
-        Assert.Equal((23373, 7595576442674466436UL), (bytes.Length, hash.Value));
+        // Replay format v10, rules v19 (M3 step 5): 4 bytes of starting credits; versions and checksums change.
+        Assert.Equal((23377, 16545936013128136398UL), (bytes.Length, hash.Value));
     }
 }

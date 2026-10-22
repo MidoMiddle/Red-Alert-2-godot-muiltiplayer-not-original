@@ -62,6 +62,22 @@ public sealed class GameDataTests
     }
 
     [Fact]
+    public void The_game_data_has_the_buildings_and_prerequisites_of_the_simulation_tests()
+    {
+        // What power and technologies read (M3 step 5): footprint, power, faction and prerequisites.
+        var data = GameDataFiles.Current.Database;
+        var test = TestRules.Standard.Database;
+
+        Assert.Equal(test.Buildings.Select(Shape), data.Buildings.Select(Shape));
+        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites))),
+            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites))));
+        Assert.Equal(test.Factions.Single(), data.Factions.Single() with { Name = test.Factions.Single().Name });
+
+        static (string, string, int, int, int, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
+            (building.Id, building.Faction, building.Footprint.Width, building.Footprint.Height, building.Power, string.Join(",", building.Prerequisites));
+    }
+
+    [Fact]
     public void The_land_speeds_of_the_game_data_are_the_reference_table_of_maps()
     {
         // Maps outside a match (the editor, the checks, the generator) go by the reference table.
