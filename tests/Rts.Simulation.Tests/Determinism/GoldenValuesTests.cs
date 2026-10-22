@@ -234,6 +234,7 @@ public sealed class GoldenValuesTests
         // Replay format v6, command format v4, rules v16 (M7 step 5): versions and checksums change; no map, so no object list.
         // Replay format v7, rules v17 (M7 step 6): versions and checksums change; no map, so no bridge list.
         // Replay format v8, rules v18 (M7 step 7): versions and checksums change; no map, so no building list.
-        Assert.Equal((23365, 5821454562656531043UL), (bytes.Length, hash.Value));
+        // Replay format v9 (M3 step 3): the format version and 8 bytes of data hash (no data, zero); the checksums do not change.
+        Assert.Equal((23373, 7595576442674466436UL), (bytes.Length, hash.Value));
     }
 }

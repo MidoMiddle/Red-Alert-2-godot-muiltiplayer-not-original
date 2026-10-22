@@ -11,6 +11,7 @@ using Rts.Simulation.Map;
 //     [--symmetry mirror|rotate180|rotate90] [--relief flat|hilly|mountainous] [--water none|rivers|lakes]
 //     [--forest low|medium|high] [--resources low|medium|high]       a random map (step 13)
 // dotnet run --project tools/Rts.MapTool -- ready-maps game/data/maps        write the four ready maps of step 14
+// dotnet run --project tools/Rts.MapTool -- rules <folder>                   load the data files below a folder: counts and data hash, or every error
 if (args.Length == 2 && args[0] == "check")
 {
     return Run(args[1], map =>
@@ -24,6 +25,28 @@ if (args.Length == 2 && args[0] == "check")
         Console.WriteLine($"hash {MapHasher.Hash(map)}");
         return 0;
     });
+}
+
+if (args.Length == 2 && args[0] == "rules")
+{
+    try
+    {
+        var rules = Rts.Data.RulesLoader.LoadDirectory(args[1]);
+        Console.WriteLine($"units {rules.Units.Length} · buildings {rules.Buildings.Length} · weapons {rules.Weapons.Length} · " +
+                          $"locomotors {rules.Locomotors.Length} · terrains {rules.Terrains.Length} · factions {rules.Factions.Length}");
+        Console.WriteLine($"data hash {Rts.Simulation.Rules.DataHasher.Compute(rules):x16}");
+        return 0;
+    }
+    catch (Rts.Data.RulesException e)
+    {
+        foreach (var error in e.Errors)
+        {
+            Console.Error.WriteLine($"{Path.Combine(args[1], error.FileName)}:{error.Line}:{error.Column}: {error.Reason}");
+        }
+
+        Console.Error.WriteLine($"{e.Errors.Count} errors");
+        return 1;
+    }
 }
 
 if (args.Length == 2 && args[0] == "shapes")
@@ -152,7 +175,7 @@ if (args.Length >= 2 && args[0] == "generate")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | ready-maps <dir>");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | ready-maps <dir> | rules <folder>");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

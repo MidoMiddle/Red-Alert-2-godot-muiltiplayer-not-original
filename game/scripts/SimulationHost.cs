@@ -15,6 +15,7 @@ using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Map;
 using Rts.Simulation.Replays;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
@@ -77,6 +78,10 @@ public partial class SimulationHost : Node
     private ReplayRecorder? _recorder;
     private Replay? _playback;
     private int _nextPlaybackChecksum;
+
+    // "; <warning>" when the replay in playback was recorded with other data, else empty; it ends every playback status.
+    private string _dataWarning = "";
+
     private int _ticksThisSecond;
     private double _secondTimer;
 
@@ -101,6 +106,12 @@ public partial class SimulationHost : Node
     /// <summary>Human-readable state of the replay check, shown on the debug panel.</summary>
     public string ReplayStatus { get; private set; } = "";
 
+    /// <summary>
+    /// Hash of the data files the match is played with, kept in its replay (docs/implementation/M3_base_economy.md, 4.4). The rules are
+    /// still the M2 ones written in code until M3 step 4 loads <c>game/data</c>.
+    /// </summary>
+    public ulong DataHash { get; } = DataHasher.NoData;
+
     /// <summary>Type that Shift + click spawns; the debug key cycles through all types.</summary>
     public UnitType SpawnType { get; private set; } = UnitType.HeavyTank;
 
@@ -116,7 +127,7 @@ public partial class SimulationHost : Node
         QueueHistory.Clear();
         var map = LoadMap(MapPath);
         Simulation = new GameSimulation(new SimulationSettings(MatchSeed, map.Grid));
-        _recorder = new ReplayRecorder(Simulation);
+        _recorder = new ReplayRecorder(Simulation, dataHash: DataHash);
         _playback = null;
         _nextSequence = 0;
         ResetClock();
@@ -149,7 +160,8 @@ public partial class SimulationHost : Node
         _nextPlaybackChecksum = 0;
         PlaybackVerified = false;
         ResetClock();
-        ReplayStatus = $"playing {replay.TickCount} ticks, {replay.Checksums.Count} checksums to compare";
+        _dataWarning = ReplayPlayer.DataWarning(replay, DataHash) is { } warning ? $"; {warning}" : "";
+        ReplayStatus = $"playing {replay.TickCount} ticks, {replay.Checksums.Count} checksums to compare{_dataWarning}";
         GD.Print($"[host] playback of {LastReplayPath}");
     }
 
@@ -366,7 +378,7 @@ public partial class SimulationHost : Node
             var actual = new StateChecksum(Simulation.CurrentTick, StateHasher.Compute(Simulation.World));
             if (actual != expected)
             {
-                ReplayStatus = $"DESYNC on tick {expected.Tick}: expected {expected}, got {actual}";
+                ReplayStatus = $"DESYNC on tick {expected.Tick}: expected {expected}, got {actual}{_dataWarning}";
                 GD.PrintErr($"[host] {ReplayStatus}");
                 _playback = replay with { TickCount = Simulation.CurrentTick };
                 return;
@@ -379,6 +391,7 @@ public partial class SimulationHost : Node
             ReplayStatus = PlaybackVerified
                 ? $"finished: all {replay.Checksums.Count} checksums match"
                 : "finished: some checksums were not reached";
+            ReplayStatus += _dataWarning;
             GD.Print($"[host] {ReplayStatus}");
         }
     }

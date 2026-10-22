@@ -15,7 +15,17 @@ public sealed class RulesLoaderTests
 
     private static RulesDatabase Load(string text) => RulesLoader.Load([("test.yaml", text)]);
 
-    private static RulesFormatException Fails(string text) => Assert.Throws<RulesFormatException>(() => Load(text));
+    /// <summary>Reads a snippet without checking its references, for tests of the schema and of inheritance alone.</summary>
+    private static RulesDatabase Read(string text)
+    {
+        var errors = new List<RulesError>();
+        var (rules, _) = RulesLoader.Read([("test.yaml", text)], [], errors);
+        Assert.Empty(errors);
+        return rules;
+    }
+
+    /// <summary>The one error that the text gives.</summary>
+    private static RulesError Fails(string text) => Assert.Throws<RulesException>(() => Load(text)).Errors.Single();
 
     [Fact]
     public void The_dataset_loads_every_kind_in_id_order()
@@ -65,7 +75,7 @@ public sealed class RulesLoaderTests
     [Fact]
     public void A_list_is_replaced_by_the_child_list_and_not_merged()
     {
-        var rules = Load(
+        var rules = Read(
             """
             base_unit:
               kind: unit
@@ -94,7 +104,7 @@ public sealed class RulesLoaderTests
     [Fact]
     public void A_chain_of_inheritance_passes_each_field_down()
     {
-        var rules = Load(
+        var rules = Read(
             """
             first:
               kind: unit
@@ -272,11 +282,14 @@ public sealed class RulesLoaderTests
     [Fact]
     public void The_same_id_in_two_files_is_an_error_at_the_second_one()
     {
-        var error = Assert.Throws<RulesFormatException>(() => RulesLoader.Load(
+        var errors = Assert.Throws<RulesException>(() => RulesLoader.Load(
         [
             ("a.yaml", "heavy_tank:\n  kind: unit\n"),
             ("b.yaml", "heavy_tank:\n  kind: unit\n"),
-        ]));
+        ])).Errors;
+
+        // The first one has no fields either; that is a separate error in a.yaml.
+        var error = errors.Single(error => error.FileName == "b.yaml");
 
         Assert.Equal(("b.yaml", 1, 1), (error.FileName, error.Line, error.Column));
         Assert.Contains("'heavy_tank' is already defined in a.yaml", error.Reason);

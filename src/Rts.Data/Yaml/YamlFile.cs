@@ -14,8 +14,27 @@ namespace Rts.Data.Yaml;
 /// </summary>
 public static class YamlFile
 {
-    /// <summary>The definitions of a file in the order they are written. An empty file has none.</summary>
-    public static List<RawDefinition> Read(string fileName, string text)
+    /// <summary>
+    /// The definitions of a file in the order they are written; an empty file has none. Mistakes go to <paramref name="errors"/>: a file
+    /// that is not valid YAML gives one error and no definitions, an entry that cannot be read gives one error and is left out.
+    /// </summary>
+    public static List<RawDefinition> Read(string fileName, string text, List<RulesError> errors)
+    {
+        var definitions = new List<RawDefinition>();
+        try
+        {
+            ReadInto(definitions, fileName, text, errors);
+        }
+        catch (RulesFormatException e)
+        {
+            errors.Add(e.Error);
+            definitions.Clear();
+        }
+
+        return definitions;
+    }
+
+    private static void ReadInto(List<RawDefinition> definitions, string fileName, string text, List<RulesError> errors)
     {
         text = text.Replace("\r\n", "\n");
         var stream = new YamlStream();
@@ -36,7 +55,6 @@ public static class YamlFile
         }
 
         RejectAnchors(fileName, text);
-        var definitions = new List<RawDefinition>();
         if (stream.Documents.Count > 1)
         {
             throw RulesFormatException.At(fileName, stream.Documents[1].RootNode, "a data file holds one YAML document");
@@ -44,7 +62,7 @@ public static class YamlFile
 
         if (stream.Documents.Count == 0 || stream.Documents[0].RootNode is YamlScalarNode { Value: "" })
         {
-            return definitions;
+            return;
         }
 
         if (stream.Documents[0].RootNode is not YamlMappingNode root)
@@ -54,10 +72,15 @@ public static class YamlFile
 
         foreach (var entry in root)
         {
-            definitions.Add(Definition(fileName, entry));
+            try
+            {
+                definitions.Add(Definition(fileName, entry));
+            }
+            catch (RulesFormatException e)
+            {
+                errors.Add(e.Error);
+            }
         }
-
-        return definitions;
     }
 
     /// <summary>

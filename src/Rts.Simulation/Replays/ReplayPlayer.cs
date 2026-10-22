@@ -23,6 +23,15 @@ public static class ReplayPlayer
         return simulation;
     }
 
+    /// <summary>
+    /// A warning when the replay was recorded with other data files than <paramref name="currentDataHash"/>, null when they match
+    /// (docs/implementation/M3_base_economy.md, 4.4). The replay still plays: the warning explains a desync before it happens.
+    /// </summary>
+    public static string? DataWarning(Replay replay, ulong currentDataHash) =>
+        replay.DataHash == currentDataHash
+            ? null
+            : $"recorded with other data (hash {replay.DataHash:x16}, here {currentDataHash:x16}): it may not play the same";
+
     /// <summary>Plays the whole replay headless and compares every recorded checksum.</summary>
     public static ReplayVerification Verify(Replay replay)
     {

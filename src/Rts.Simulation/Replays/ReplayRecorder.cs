@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Rules;
 
 namespace Rts.Simulation.Replays;
 
@@ -17,9 +18,11 @@ public sealed class ReplayRecorder
 
     private readonly GameSimulation _simulation;
     private readonly int _checksumInterval;
+    private readonly ulong _dataHash;
     private readonly List<StateChecksum> _checksums = new();
 
-    public ReplayRecorder(GameSimulation simulation, int checksumInterval = DefaultChecksumInterval)
+    /// <param name="dataHash">The hash of the data files of the match (<see cref="DataHasher"/>); <see cref="DataHasher.NoData"/> without them.</param>
+    public ReplayRecorder(GameSimulation simulation, int checksumInterval = DefaultChecksumInterval, ulong dataHash = DataHasher.NoData)
     {
         if (checksumInterval <= 0 || checksumInterval % simulation.Settings.HashInterval != 0)
         {
@@ -31,6 +34,7 @@ public sealed class ReplayRecorder
 
         _simulation = simulation;
         _checksumInterval = checksumInterval;
+        _dataHash = dataHash;
     }
 
     public void AfterStep()
@@ -44,6 +48,7 @@ public sealed class ReplayRecorder
 
     public Replay Build() => new(
         SimulationVersion.Current,
+        _dataHash,
         _simulation.Settings,
         _simulation.CurrentTick,
         new List<Command>(_simulation.ExecutedCommands),

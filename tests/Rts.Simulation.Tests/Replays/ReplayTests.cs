@@ -4,6 +4,7 @@ using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Replays;
+using Rts.Simulation.Rules;
 using static Rts.Simulation.Tests.Commands.CommandFactory;
 
 namespace Rts.Simulation.Tests.Replays;
@@ -58,6 +59,7 @@ public sealed class ReplayTests
         var read = ReplayFormat.Read(bytes);
 
         Assert.Equal(replay.SimVersion, read.SimVersion);
+        Assert.Equal(replay.DataHash, read.DataHash);
         Assert.Equal(replay.Settings, read.Settings);
         Assert.Equal(replay.TickCount, read.TickCount);
         Assert.Equal(replay.Commands, read.Commands);
@@ -76,6 +78,34 @@ public sealed class ReplayTests
         Assert.Equal("RTSR"u8.ToArray(), bytes[..4]);
         Assert.Equal(ReplayFormat.FormatVersion, BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(4)));
         Assert.Equal(SimulationVersion.Current, BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(6)));
+        Assert.Equal(DataHasher.NoData, BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(10)));
+    }
+
+    [Fact]
+    public void The_data_hash_is_written_after_the_rules_version_and_read_back()
+    {
+        var simulation = new GameSimulation(new SimulationSettings(5));
+        var recorder = new ReplayRecorder(simulation, dataHash: 0x0123456789abcdefUL);
+        simulation.Step();
+        recorder.AfterStep();
+
+        var bytes = ReplayFormat.Write(recorder.Build());
+
+        Assert.Equal(0x0123456789abcdefUL, BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(10)));
+        Assert.Equal(0x0123456789abcdefUL, ReplayFormat.Read(bytes).DataHash);
+    }
+
+    [Fact]
+    public void A_replay_of_other_data_gets_a_warning_and_still_plays()
+    {
+        var (replay, _) = RecordMatch(ticks: 60);
+        var other = replay with { DataHash = 0xfeedUL };
+
+        Assert.Null(ReplayPlayer.DataWarning(replay, DataHasher.NoData));
+        Assert.Equal(
+            "recorded with other data (hash 000000000000feed, here 0000000000000000): it may not play the same",
+            ReplayPlayer.DataWarning(other, DataHasher.NoData));
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(other).Status);
     }
 
     [Fact]
@@ -174,7 +204,7 @@ public sealed class ReplayTests
             case "format version": bytes[4] = 99; break;
             case "truncated": bytes.RemoveAt(bytes.Count - 1); break;
             case "trailing byte": bytes.Add(0); break;
-            case "negative ticks": bytes[37] = 0xFF; break;
+            case "negative ticks": bytes[45] = 0xFF; break;
         }
 
         Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(bytes.ToArray()));
@@ -183,7 +213,7 @@ public sealed class ReplayTests
     [Fact]
     public void Empty_match_round_trips()
     {
-        var replay = new Replay(SimulationVersion.Current, new SimulationSettings(9), 0, [], []);
+        var replay = new Replay(SimulationVersion.Current, DataHasher.NoData, new SimulationSettings(9), 0, [], []);
 
         var read = ReplayFormat.Read(ReplayFormat.Write(replay));
 

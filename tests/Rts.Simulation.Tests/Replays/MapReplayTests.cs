@@ -3,6 +3,7 @@ using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Replays;
+using Rts.Simulation.Rules;
 using Rts.Simulation.Tests.Map;
 using Rts.Simulation.World;
 
@@ -12,7 +13,7 @@ namespace Rts.Simulation.Tests.Replays;
 public sealed class MapReplayTests
 {
     // "RTSR" | u16 format | u32 rules | u64 seed | 5 × i32.
-    private const int MapFlagOffset = 4 + 2 + 4 + 8 + 4 * 5;
+    private const int MapFlagOffset = 4 + 2 + 4 + 8 + 8 + 4 * 5;
 
     private static TestMap LandTypes() => TestMapParserTests.Load("all_land_types.txt");
 
@@ -147,7 +148,7 @@ public sealed class MapReplayTests
     [Fact]
     public void Replay_without_a_map_has_the_flag_cleared()
     {
-        var replay = new Replay(SimulationVersion.Current, new SimulationSettings(9), 0, [], []);
+        var replay = new Replay(SimulationVersion.Current, DataHasher.NoData, new SimulationSettings(9), 0, [], []);
 
         var bytes = ReplayFormat.Write(replay);
 
