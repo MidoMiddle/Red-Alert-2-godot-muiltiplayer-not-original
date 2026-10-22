@@ -116,8 +116,23 @@ public partial class SimulationHost : Node
     /// <summary>Type that Shift + click spawns; the debug key cycles through all types.</summary>
     public UnitType SpawnType { get; private set; } = UnitType.HeavyTank;
 
-    /// <summary>The building the debug build (V) places, an index of the rules' buildings; V again takes the next one.</summary>
+    /// <summary>
+    /// The building the placement mode places, an index of the rules' buildings: the one the debug build (V) took, or the ready one
+    /// whose square of the sidebar was clicked.
+    /// </summary>
     public int BuildIndex { get; private set; } = -1;
+
+    /// <summary>
+    /// Whether <see cref="BuildIndex"/> came from the debug build (V): it stays armed after a placement and orders the next wall.
+    /// From the sidebar the placement mode ends with the ready building, as in RA2.
+    /// </summary>
+    public bool DebugBuild { get; private set; }
+
+    /// <summary>
+    /// Whether the minimap follows the radar rule of a match (4.17): only the <c>--radar-rule</c> launch option turns it on for now;
+    /// the sandbox keeps the minimap open (decision of the owner 2026-10-22). The skirmish of M6 turns it on.
+    /// </summary>
+    public bool RadarRule { get; } = OS.GetCmdlineUserArgs().Contains("--radar-rule");
 
     /// <summary>The id of <see cref="BuildIndex"/>, such as <c>reactor</c>.</summary>
     public string BuildId => Data.Database.Buildings[BuildIndex].Id;
@@ -358,6 +373,37 @@ public partial class SimulationHost : Node
         return cells.MoveToImmutable();
     }
 
+    /// <summary>The sidebar (M3 step 12): orders <paramref name="count"/> of the item, or resumes it when it is on hold.</summary>
+    public void IssueProduce(ProductionKind kind, int defIndex, int count) =>
+        Issue(new ProduceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, kind, defIndex, count));
+
+    /// <summary>The sidebar: puts the item in work on hold.</summary>
+    public void IssuePause(ProductionKind kind, int defIndex) =>
+        Issue(new PauseProductionCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, kind, defIndex));
+
+    /// <summary>The sidebar: cancels the last item of the definition, its credits come back.</summary>
+    public void IssueCancel(ProductionKind kind, int defIndex) =>
+        Issue(new CancelProductionCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, kind, defIndex));
+
+    /// <summary>The sidebar: the ready building goes into the placement mode.</summary>
+    public void ArmPlacement(int defIndex)
+    {
+        BuildIndex = defIndex;
+        DebugBuild = false;
+    }
+
+    /// <summary>V while nothing is armed: the debug build takes up its last building again.</summary>
+    public void ResumeDebugBuild() => DebugBuild = true;
+
+    /// <summary>
+    /// Whether the building of the placement mode is still ready to place: once it is placed, cancelled or lost, the mode of the
+    /// sidebar ends.
+    /// </summary>
+    public bool PlacementReady =>
+        BuildIndex >= 0
+        && Simulation.World.Player(LocalPlayer).Queue(Data.Database.Buildings[BuildIndex].Category) is [{ Ready: true } first, ..]
+        && first.DefIndex == BuildIndex;
+
     /// <summary>Debug (L, M3 step 11): sells the player's building on the cell.</summary>
     public void IssueSell(CellPos cell)
     {
@@ -383,6 +429,7 @@ public partial class SimulationHost : Node
     /// </summary>
     public void ChooseBuild()
     {
+        DebugBuild = true;
         var rules = Data.Database;
         var player = Simulation.World.Player(LocalPlayer);
         if (BuildIndex >= 0 && player.Queue(rules.Buildings[BuildIndex].Category) is [{ Ready: false } previous, ..] && previous.DefIndex == BuildIndex)
@@ -565,7 +612,7 @@ public partial class SimulationHost : Node
             wallPlaced |= simEvent is BuildingPlaced placed && placed.Player == LocalPlayer && placed.DefIndex == BuildIndex;
         }
 
-        if (wallPlaced && _playback is null)
+        if (wallPlaced && DebugBuild && _playback is null)
         {
             OrderNextWall();
         }

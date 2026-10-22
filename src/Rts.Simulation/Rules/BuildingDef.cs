@@ -48,6 +48,11 @@ public sealed record BuildingDef : IDefinition
     /// <summary>Whether new buildings may be placed next to this one (RA2 <c>BaseNormal</c>): false for walls.</summary>
     public bool ExtendsBase { get; init; } = true;
 
+    /// <summary>
+    /// Whether the building gives its owner the minimap while there is power (RA2 <c>Radar</c>, 4.17). Only the client reads it.
+    /// </summary>
+    public bool Radar { get; init; }
+
     /// <summary>The <see cref="Adjacent"/> of a building that does not set it.</summary>
     public const int DefaultAdjacent = 2;
 

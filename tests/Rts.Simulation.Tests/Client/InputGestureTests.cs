@@ -97,6 +97,50 @@ public sealed class InputGestureTests
         Assert.False(input.BuildArmed);
     }
 
+    [Theory]
+    [InlineData(ControlScheme.Classic)]
+    [InlineData(ControlScheme.Modern)]
+    public void A_right_click_leaves_the_placement_and_nothing_else_happens(ControlScheme scheme)
+    {
+        var input = new InputInterpreter(scheme, cameraDrag: true);
+        input.ArmBuild();
+
+        Assert.Empty(input.Press(PointerButton.Right, Here, Context(Ground, hasSelection: true)));
+        Assert.Empty(input.Release(PointerButton.Right));
+        Assert.Equal(PointerTool.None, input.Tool);
+    }
+
+    [Fact]
+    public void The_sell_and_repair_modes_act_on_every_click_until_a_right_click_or_escape()
+    {
+        var input = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        input.ArmSell();
+
+        Assert.Equal([new SellBuilding(Spot)], input.Press(PointerButton.Left, Here, Context(Ground)));
+        Assert.Empty(input.Release(PointerButton.Left));
+        Assert.Equal([new SellBuilding(Spot)], input.Press(PointerButton.Left, Here, Context(OwnUnit)));
+        Assert.Empty(input.Release(PointerButton.Left));
+        Assert.Empty(input.Press(PointerButton.Right, Here, Context(Ground)));
+        Assert.Equal(PointerTool.None, input.Tool);
+
+        input.ArmRepair();
+        Assert.Equal([new RepairBuilding(Spot)], input.Press(PointerButton.Left, Here, Context(Ground)));
+        Assert.Empty(input.Release(PointerButton.Left));
+        Assert.Empty(input.EscapePressed(hasSelection: true));
+        Assert.Equal(PointerTool.None, input.Tool);
+    }
+
+    [Fact]
+    public void One_tool_at_a_time()
+    {
+        var input = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        input.ArmSell();
+        input.ArmBuild();
+
+        Assert.True(input.BuildArmed);
+        Assert.Equal([new PlaceBuilding(Spot)], input.Press(PointerButton.Left, Here, Context(Ground)));
+    }
+
     private static PointerContext Context(PointerTarget target, bool hasSelection = false) =>
         new(Spot, target, false, hasSelection);
 }

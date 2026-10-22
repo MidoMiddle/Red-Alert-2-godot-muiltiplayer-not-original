@@ -13,6 +13,24 @@ public enum PointerButton
     Middle,
 }
 
+/// <summary>What a left click on the field does while a tool is armed instead of selecting and ordering.</summary>
+public enum PointerTool
+{
+    None,
+
+    /// <summary>The debug spawn (B).</summary>
+    Spawn,
+
+    /// <summary>Placing a building (V, or a ready square of the sidebar).</summary>
+    Build,
+
+    /// <summary>The Sell button of the sidebar.</summary>
+    Sell,
+
+    /// <summary>The Repair button of the sidebar.</summary>
+    Repair,
+}
+
 /// <summary>What is under the cursor when a button goes down.</summary>
 public enum PointerTargetKind
 {
@@ -104,6 +122,12 @@ public sealed record SpawnUnit(WorldPos Position) : Intent;
 /// </summary>
 public sealed record PlaceBuilding(WorldPos Position, bool Line = false) : Intent;
 
+/// <summary>The sell mode (the Sell button, M3 step 12): sell the player's building at <paramref name="Position"/>.</summary>
+public sealed record SellBuilding(WorldPos Position) : Intent;
+
+/// <summary>The repair mode (the Repair button, M3 step 12): turn the repair of the player's building at <paramref name="Position"/> on or off.</summary>
+public sealed record RepairBuilding(WorldPos Position) : Intent;
+
 public sealed record CameraDragStarted(ScreenPoint From) : Intent;
 
 public sealed record CameraDragMoved(ScreenPoint To) : Intent;
@@ -183,14 +207,28 @@ public sealed class InputInterpreter
     }
 
     /// <summary>
-    /// The start of a press: a building while the debug build is armed, a spawn while the debug spawn is armed or Alt is held, else the
-    /// button's own gesture.
+    /// The start of a press: a building, a sale or a repair while that tool is armed (a right click leaves the tool), a spawn while the
+    /// debug spawn is armed or Alt is held, else the button's own gesture.
     /// </summary>
     private IReadOnlyList<Intent> Start(PointerButton button, ScreenPoint at, PointerContext context)
     {
-        if (BuildArmed && button == PointerButton.Left)
+        if (Tool is PointerTool.Build or PointerTool.Sell or PointerTool.Repair)
         {
-            return context.Ground is { } buildAt ? new Intent[] { new PlaceBuilding(buildAt, context.Shift) } : Array.Empty<Intent>();
+            if (button == PointerButton.Right)
+            {
+                Tool = PointerTool.None;
+                return Array.Empty<Intent>();
+            }
+
+            if (button == PointerButton.Left)
+            {
+                return context.Ground is not { } ground ? Array.Empty<Intent>() : Tool switch
+                {
+                    PointerTool.Build => new Intent[] { new PlaceBuilding(ground, context.Shift) },
+                    PointerTool.Sell => new Intent[] { new SellBuilding(ground) },
+                    _ => new Intent[] { new RepairBuilding(ground) },
+                };
+            }
         }
 
         if ((context.Alt || SpawnArmed) && button == PointerButton.Left)
@@ -322,25 +360,32 @@ public sealed class InputInterpreter
         return held ? Array.Empty<Intent>() : Release(tracked);
     }
 
+    /// <summary>What a left click on the field does instead of selecting and ordering; one at a time.</summary>
+    public PointerTool Tool { get; private set; }
+
     /// <summary>Whether the debug spawn is armed (B): a left click on the ground places a test unit until Escape.</summary>
-    public bool SpawnArmed { get; private set; }
+    public bool SpawnArmed => Tool == PointerTool.Spawn;
+
+    /// <summary>
+    /// Whether a building is being placed (V, M3 step 6; a ready square of the sidebar, step 12): a left click places it, a right
+    /// click or Escape leaves the mode and the building stays ready.
+    /// </summary>
+    public bool BuildArmed => Tool == PointerTool.Build;
 
     /// <summary>Arms the debug spawn (B). PlayerInput cycles the unit type when B is pressed again.</summary>
-    public void ArmSpawn()
-    {
-        SpawnArmed = true;
-        BuildArmed = false;
-    }
+    public void ArmSpawn() => Tool = PointerTool.Spawn;
 
-    /// <summary>Whether the debug build is armed (V, M3 step 6): a left click places a building until Escape.</summary>
-    public bool BuildArmed { get; private set; }
+    /// <summary>Arms the placement of a building (V or the sidebar).</summary>
+    public void ArmBuild() => Tool = PointerTool.Build;
 
-    /// <summary>Arms the debug build (V). PlayerInput cycles the building type when V is pressed again.</summary>
-    public void ArmBuild()
-    {
-        BuildArmed = true;
-        SpawnArmed = false;
-    }
+    /// <summary>Arms the sell mode (the Sell button): every left click sells, until a right click or Escape.</summary>
+    public void ArmSell() => Tool = PointerTool.Sell;
+
+    /// <summary>Arms the repair mode (the Repair button): every left click turns a repair on or off, until a right click or Escape.</summary>
+    public void ArmRepair() => Tool = PointerTool.Repair;
+
+    /// <summary>Back to selecting and ordering.</summary>
+    public void Disarm() => Tool = PointerTool.None;
 
     /// <summary>
     /// The cancel key (Escape) was pressed. An armed spawn or build is disarmed first and nothing else happens. Otherwise, with units
@@ -349,10 +394,9 @@ public sealed class InputInterpreter
     /// </summary>
     public IReadOnlyList<Intent> EscapePressed(bool hasSelection, bool hasWaypoints = false)
     {
-        if (SpawnArmed || BuildArmed)
+        if (Tool != PointerTool.None)
         {
-            SpawnArmed = false;
-            BuildArmed = false;
+            Tool = PointerTool.None;
             return Array.Empty<Intent>();
         }
 

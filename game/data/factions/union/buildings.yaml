@@ -75,6 +75,7 @@ radar:  # Radar Tower
   hp: 1000
   footprint: [2, 2]
   power: -50
+  radar: true
   prerequisites: [refinery]
 
 tech_center:  # Battle Lab

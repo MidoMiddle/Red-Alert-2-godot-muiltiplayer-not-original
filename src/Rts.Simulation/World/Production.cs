@@ -66,6 +66,20 @@ public static class ProductionRules
     public static string IdOf(RulesDatabase rules, ProductionKind kind, int defIndex) =>
         kind == ProductionKind.Unit ? rules.Units[defIndex].Id : rules.Buildings[defIndex].Id;
 
+    /// <summary>True when the player has a ready building that produces <paramref name="category"/>.</summary>
+    public static bool HasFactory(GameWorld world, PlayerId player, ProductionCategory category)
+    {
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && building.Owner == player && def.Produces.Contains(category))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>True when the kind and index name a definition of the rules.</summary>
     public static bool IsKnown(RulesDatabase rules, ProductionKind kind, int defIndex) => kind switch
     {

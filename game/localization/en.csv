@@ -237,6 +237,14 @@ UI_TAB_BUILDINGS,Buildings
 UI_TAB_DEFENSE,Defense
 UI_TAB_INFANTRY,Infantry
 UI_TAB_VEHICLES,Vehicles
+UI_SIDEBAR_READY,Ready
+UI_SIDEBAR_ON_HOLD,On Hold
+UI_SIDEBAR_COST,Cost: {0}
+UI_SIDEBAR_REQUIRES,Requires: {0}
+UI_SIDEBAR_SELL_HINT,Sell: click your building. Right click to stop.
+UI_SIDEBAR_REPAIR_HINT,Repair: click your building. Right click to stop.
+UI_SIDEBAR_POWER,Power {0} / {1}
+UI_MINIMAP_OFFLINE,Offline
 UI_STATS_TITLE,Statistics
 UI_STATS_BUILT,Built {0}
 UI_STATS_CAPTURED,Captured {0}

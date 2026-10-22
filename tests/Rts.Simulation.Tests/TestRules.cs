@@ -95,7 +95,7 @@ internal static class TestRules
             Produces = [ProductionCategory.Vehicle],
             ExitCell = new CellPos(1, 4),
         });
-        Building(builder, "radar", 2, 2, power: -50, "refinery");
+        builder.Add(Def("radar", 2, 2, power: -50, "refinery") with { Radar = true });
         Building(builder, "tech_center", 3, 3, power: -100, "war_factory", "radar");
         builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with { ExtendsBase = false, Category = ProductionCategory.Defense });
         builder.Add(Def("sentry_bunker", 1, 1, power: 0, "barracks") with { Category = ProductionCategory.Defense });

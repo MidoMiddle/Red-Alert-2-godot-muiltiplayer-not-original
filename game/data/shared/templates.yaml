@@ -28,7 +28,8 @@ base_vehicle:
 # counterparts (docs/ra2_buildings). A positive power produces energy, a negative one drains it.
 # `adjacent`: how many cells from the player's base the building may stand; `extends_base`: whether new buildings may be
 # placed next to it (false for walls), as RA2 Adjacent and BaseNormal. A factory lists what it `produces` (building, defense,
-# infantry, vehicle) and where its units come out, `exit_cell`, relative to the north-west cell.
+# infantry, vehicle) and where its units come out, `exit_cell`, relative to the north-west cell. A building with `radar: true`
+# gives its owner the minimap while there is power (RA2 Radar).
 base_building:
   kind: building
   abstract: true

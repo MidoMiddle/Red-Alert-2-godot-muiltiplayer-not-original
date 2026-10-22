@@ -65,7 +65,7 @@ public partial class DebugOverlay : CanvasLayer
             $"units {units}   spawn {UnitTypes.IdOf(_host.SpawnType)}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
             DescribePlayer(simulation.World.Player(SimulationHost.LocalPlayer)) + "\n" +
             DescribeQueues(simulation.World, simulation.World.Player(SimulationHost.LocalPlayer)) +
-            (_input.BuildArmed ? $"build {_host.BuildId}: click to place, V next type, Esc stop\n" : "") +
+            DescribeTool() +
             (_host.Notice.Length > 0 ? $"base: {_host.Notice}\n" : "") +
             DescribeCell(simulation.World, _input.CellUnderPointer) + "\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
@@ -87,6 +87,16 @@ public partial class DebugOverlay : CanvasLayer
 
     /// <summary><c>cell 12,30 Rough · foot 90 track 90 wheel 75</c>; a tree or impassable land shows as such.</summary>
     /// <summary>The economy of a player (M3 step 5): "P1 credits 10000 · power 150/70 · tech 3 buildings, 0 units", "LOW POWER" in a deficit.</summary>
+    /// <summary>The armed tool of the pointer and how to leave it, or nothing.</summary>
+    private string DescribeTool() => _input.Tool switch
+    {
+        PointerTool.Build when _host.DebugBuild => $"build {_host.BuildId}: click to place, V next type, Esc stop\n",
+        PointerTool.Build => $"place {_host.BuildId}: click to place, right click or Esc stop\n",
+        PointerTool.Sell => "sell mode: click a building, right click or Esc stop\n",
+        PointerTool.Repair => "repair mode: click a building, right click or Esc stop\n",
+        _ => "",
+    };
+
     /// <summary>
     /// The production queues of a player (M3 step 8), the busy ones only: "queues: building reactor 45% · infantry conscript 20% +2",
     /// with "paused", "waits for money" or "ready"; empty when nothing is produced.

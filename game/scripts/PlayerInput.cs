@@ -79,8 +79,44 @@ public partial class PlayerInput : Node
     /// <summary>Map cell under the mouse pointer, or null off the map. Shown on the debug panel.</summary>
     public CellPos? CellUnderPointer { get; private set; }
 
-    /// <summary>Whether the debug build (V) is armed: a click places the host's building type.</summary>
+    /// <summary>Whether a building is being placed (V or the sidebar): a click places the host's building type.</summary>
     public bool BuildArmed => _interpreter.BuildArmed;
+
+    /// <summary>What a left click on the field does now: select and order, or the armed tool.</summary>
+    public PointerTool Tool => _interpreter.Tool;
+
+    /// <summary>The sidebar (M3 step 12): a click on a ready square places that building.</summary>
+    public void ArmPlacement(int defIndex)
+    {
+        _host.ArmPlacement(defIndex);
+        _interpreter.ArmBuild();
+    }
+
+    /// <summary>The Sell button: turns the sell mode on, or off when it is on.</summary>
+    public void ToggleSell()
+    {
+        if (Tool == PointerTool.Sell)
+        {
+            _interpreter.Disarm();
+        }
+        else
+        {
+            _interpreter.ArmSell();
+        }
+    }
+
+    /// <summary>The Repair button: turns the repair mode on, or off when it is on.</summary>
+    public void ToggleRepair()
+    {
+        if (Tool == PointerTool.Repair)
+        {
+            _interpreter.Disarm();
+        }
+        else
+        {
+            _interpreter.ArmRepair();
+        }
+    }
 
     public override void _Ready()
     {
@@ -96,6 +132,12 @@ public partial class PlayerInput : Node
 
     public override void _Process(double delta)
     {
+        // The placement mode of the sidebar ends with its ready building: placed, cancelled or lost.
+        if (BuildArmed && !_host.DebugBuild && !_host.PlacementReady)
+        {
+            _interpreter.Disarm();
+        }
+
         // A unit that died leaves the selection.
         Selection.RemoveWhere(unit => !_host.Simulation.World.TryGet(unit, out var entity) || !entity.IsAlive);
         // The waypoints mode lays out orders for units: with none selected it ends.
@@ -225,6 +267,7 @@ public partial class PlayerInput : Node
             // building. A click places the building once it is produced.
             if (!_interpreter.BuildArmed && _host.BuildIndex >= 0)
             {
+                _host.ResumeDebugBuild();
                 _interpreter.ArmBuild();
             }
             else if (!_host.IsPlayback)
@@ -245,7 +288,7 @@ public partial class PlayerInput : Node
         }
         else if (key.IsActionPressed("debug_sell", false, true) && CellUnderPointer is { } sold && !_host.IsPlayback)
         {
-            // Debug (M3 step 11): sell the building under the cursor, until the Sell button of the sidebar (step 12).
+            // Debug (M3 step 11): sell the building under the cursor; the Sell button of the sidebar does it with the mouse.
             _host.IssueSell(sold);
         }
         else if (key.IsActionPressed("debug_repair", false, true) && CellUnderPointer is { } repaired && !_host.IsPlayback)
@@ -481,6 +524,12 @@ public partial class PlayerInput : Node
                         _host.IssuePlaceBuilding(place.Position, place.Line);
                     }
 
+                    break;
+                case SellBuilding sell when !_host.IsPlayback:
+                    _host.IssueSell(sell.Position.ToCell());
+                    break;
+                case RepairBuilding repair when !_host.IsPlayback:
+                    _host.IssueToggleRepair(repair.Position.ToCell());
                     break;
                 case CameraDragStarted started:
                     _camera.BeginDrag(ToVector(started.From));

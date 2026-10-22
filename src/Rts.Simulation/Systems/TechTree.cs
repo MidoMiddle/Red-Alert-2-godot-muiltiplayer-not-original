@@ -9,6 +9,7 @@ namespace Rts.Simulation.Systems;
 /// all among its ready buildings. Kept as a flag per definition, by its index in the rules (one set for units, one for buildings).
 /// Worked out only when the buildings changed (<see cref="GameWorld.TechDirty"/>), late in the tick (4.15), so a building finished in
 /// a tick opens its technologies for the next one. Whether a factory is there to build it is the business of production (step 8).
+/// The construction yard of the faction is never built: it comes from the MCV, as in RA2.
 /// </summary>
 public static class TechTree
 {
@@ -43,7 +44,8 @@ public static class TechTree
 
             for (var i = 0; i < buildings.Length; i++)
             {
-                buildings[i] = rules.Buildings[i].Faction == faction && AllOwned(rules.Buildings[i].Prerequisites, owned);
+                buildings[i] = rules.Buildings[i].Faction == faction && rules.Buildings[i].Id != player.Faction.ConstructionYard
+                    && AllOwned(rules.Buildings[i].Prerequisites, owned);
             }
 
             player.SetAvailable(units, buildings);

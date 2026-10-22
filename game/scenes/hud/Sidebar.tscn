@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/Hud/Sidebar.cs" id="1_sidebar"]
 [ext_resource type="PackedScene" path="res://scenes/hud/Minimap.tscn" id="2_minimap"]
+[ext_resource type="Script" path="res://scripts/Hud/PowerBar.cs" id="3_power"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_tabs"]
 
@@ -29,12 +30,23 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="PowerBar" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 8.0
+offset_right = 16.0
+offset_bottom = -8.0
+grow_vertical = 2
+script = ExtResource("3_power")
+
 [node name="Column" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
+offset_left = 22.0
 offset_top = 8.0
 offset_right = -8.0
 offset_bottom = -8.0
@@ -80,14 +92,14 @@ custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
-disabled = true
+toggle_mode = true
 
 [node name="SellButton" type="Button" parent="Column/SellRepairRow"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
-disabled = true
+toggle_mode = true
 
 [node name="TabGrid" type="GridContainer" parent="Column"]
 layout_mode = 2
@@ -131,6 +143,7 @@ button_group = SubResource("ButtonGroup_tabs")
 [node name="Items" type="ScrollContainer" parent="Column"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="Grid" type="GridContainer" parent="Column/Items"]
 layout_mode = 2

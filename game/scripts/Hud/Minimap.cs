@@ -7,12 +7,14 @@ namespace Rts.Client.Hud;
 /// <summary>
 /// The minimap of the sidebar (docs/implementation/M6_menus_skirmish.md, 4.7): the whole map, every living unit as a dot in its
 /// owner's colour, and the frame of the field the camera shows. A click or a drag moves the camera. Since M2 step 14 the ground
-/// shows the land of every cell and the trees (<see cref="MinimapImage"/>), and selected units have a white ring. Fog and radar
-/// come later (M3, M4).
+/// shows the land of every cell and the trees (<see cref="MinimapImage"/>), and selected units have a white ring. Since M3 step 12
+/// it is offline without a radar or power when the radar rule is on (<see cref="MinimapRule"/>): dark, and clicks do not move the
+/// camera. Fog comes later (M4).
 /// </summary>
 public partial class Minimap : Control
 {
     private static readonly Color GroundColor = new("#15171B");
+    private static readonly Color OfflineColor = new("#7D838C");
 
     private SimulationHost? _host;
     private RtsCamera? _camera;
@@ -32,6 +34,9 @@ public partial class Minimap : Control
         TextureFilter = TextureFilterEnum.Nearest;
     }
 
+    /// <summary>Whether the minimap shows the map; the sidebar sets it every frame from <see cref="MinimapRule"/>.</summary>
+    public bool Online { get; set; } = true;
+
     /// <summary>The colour of the frame around the field: the faction accent.</summary>
     public void SetFrameColor(Color color) => _frameColor = color;
 
@@ -43,6 +48,15 @@ public partial class Minimap : Control
         DrawRect(new Rect2(Vector2.Zero, new Vector2(side, side)), GroundColor);
         if (_host is null || _camera is null)
         {
+            return;
+        }
+
+        if (!Online)
+        {
+            // The shutters of RA2: closed until a radar works again.
+            var font = GetThemeFont("font", "Label");
+            DrawString(font, new Vector2(0f, side / 2f), Tr("UI_MINIMAP_OFFLINE"), HorizontalAlignment.Center, side, 16, OfflineColor);
+            DrawRect(new Rect2(Vector2.Zero, new Vector2(side, side)), _frameColor, false, 1.5f);
             return;
         }
 
@@ -67,6 +81,12 @@ public partial class Minimap : Control
 
     public override void _GuiInput(InputEvent @event)
     {
+        if (!Online)
+        {
+            _dragging = false;
+            return;
+        }
+
         if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } button)
         {
             _dragging = button.Pressed;

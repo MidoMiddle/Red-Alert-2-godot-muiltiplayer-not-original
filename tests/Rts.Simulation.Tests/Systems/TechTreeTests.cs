@@ -40,7 +40,7 @@ public sealed class TechTreeTests
         var world = NewWorld();
         Build(world, "construction_yard", 0, 0);
 
-        Assert.Equal(["construction_yard", "reactor", "wall"], Available(world));
+        Assert.Equal(["reactor", "wall"], Available(world));
         Assert.False(CanBuild(world, "barracks"));
     }
 
@@ -51,7 +51,7 @@ public sealed class TechTreeTests
         Build(world, "construction_yard", 0, 0);
         Build(world, "reactor", 4, 0);
 
-        Assert.Equal(["barracks", "construction_yard", "reactor", "refinery", "wall"], Available(world));
+        Assert.Equal(["barracks", "reactor", "refinery", "wall"], Available(world));
     }
 
     [Fact]
@@ -114,7 +114,17 @@ public sealed class TechTreeTests
         var world = NewWorld();
         world.CreateBuilding(new PlayerId(2), TestRules.BuildingDef("construction_yard"), new CellPos(0, 0), ready: true, null);
 
-        Assert.Equal(["construction_yard"], Available(world));
+        Assert.Empty(Available(world));
+    }
+
+    [Fact]
+    public void The_construction_yard_is_never_built_it_comes_from_the_mcv()
+    {
+        var world = NewWorld();
+        Build(world, "construction_yard", 0, 0);
+        Build(world, "reactor", 4, 0);
+
+        Assert.DoesNotContain("construction_yard", Available(world));
     }
 
     [Fact]

@@ -289,7 +289,7 @@ public static class CommandProcessor
         }
 
         var available = command.Kind == ProductionKind.Unit ? player.CanBuildUnit(command.DefIndex) : player.CanBuildBuilding(command.DefIndex);
-        if (!available || !HasFactory(world, command.Player, category))
+        if (!available || !ProductionRules.HasFactory(world, command.Player, category))
         {
             return false;
         }
@@ -374,20 +374,6 @@ public static class CommandProcessor
         }
 
         return null;
-    }
-
-    /// <summary>True when the player has a ready building that produces <paramref name="category"/>.</summary>
-    private static bool HasFactory(GameWorld world, PlayerId player, ProductionCategory category)
-    {
-        foreach (var entity in world.Entities)
-        {
-            if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && building.Owner == player && def.Produces.Contains(category))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /// <summary>

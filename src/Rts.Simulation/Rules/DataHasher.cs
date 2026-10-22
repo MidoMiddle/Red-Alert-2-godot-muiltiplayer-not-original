@@ -93,6 +93,7 @@ public static class DataHasher
 
             hash.Add(building.Adjacent);
             hash.Add(building.ExtendsBase);
+            hash.Add(building.Radar);
             hash.Add(building.Produces.Length);
             foreach (var category in building.Produces)
             {

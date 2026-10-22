@@ -7,8 +7,8 @@ namespace Rts.Client.Hud;
 /// <summary>
 /// The HUD of the match scene: the sidebar, the statistics panel and the command bar, wired to the rest of the scene. The Menu button
 /// opens the pause menu, the Stats button shows the statistics, the minimap moves the camera, the command bar runs its commands on the
-/// selection, and the camera keeps the strips under the sidebar and the bar out of the field. The money and the statistics are
-/// placeholders until M3 and M11.
+/// selection, and the camera keeps the strips under the sidebar and the bar out of the field. The sidebar shows the economy of the
+/// local player (M3 step 12); the statistics are placeholders until M11.
 /// </summary>
 public partial class MatchHud : CanvasLayer
 {
@@ -16,9 +16,9 @@ public partial class MatchHud : CanvasLayer
     [Export]
     public Faction PlayerFaction { get; set; } = Faction.Union;
 
-    /// <summary>The money shown until the economy exists (M3).</summary>
-    [Export]
-    public int Credits { get; set; } = 10000;
+    // Before the children's _Ready, which set their texts: a match scene started on its own (the editor, Main.tscn from the command
+    // line) did not go through Boot, which loads them.
+    public override void _EnterTree() => Localization.Load();
 
     public override void _Ready()
     {
@@ -27,13 +27,15 @@ public partial class MatchHud : CanvasLayer
         var bar = GetNode<CommandBar>("CommandBar");
         var camera = GetNode<RtsCamera>("../CameraRig");
         var player = GetNode<PlayerInput>("../PlayerInput");
+        var host = GetNode<SimulationHost>("../SimulationHost");
 
         camera.ReservedRight = SidebarLayout.Width;
         camera.ReservedBottom = CommandBarLayout.Height;
-        sidebar.Minimap.Bind(GetNode<SimulationHost>("../SimulationHost"), camera);
+        sidebar.Minimap.Bind(host, camera);
         sidebar.MenuRequested += GetNode<PauseMenu>("../PauseMenu").Open;
         sidebar.StatsRequested += stats.Toggle;
-        sidebar.Setup(PlayerFaction, Credits);
+        sidebar.Setup(PlayerFaction, host.Simulation.World.Player(SimulationHost.LocalPlayer).Credits);
+        sidebar.Bind(host, player);
         stats.Setup(0, 0);
         bar.Bind(player);
         bar.Requested += button => player.RunCommand((CommandBarButton)button);

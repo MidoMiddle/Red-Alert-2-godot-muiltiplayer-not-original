@@ -15,8 +15,19 @@ public static class Localization
 
     private const string CsvPath = "res://localization/en.csv";
 
+    private static bool _loaded;
+
+    /// <summary>
+    /// Loads the texts once: Boot does it at startup, and a match scene started on its own (the editor, <c>res://scenes/Main.tscn</c>
+    /// from the command line) does it too, so that its texts are not raw keys.
+    /// </summary>
     public static void Load()
     {
+        if (_loaded)
+        {
+            return;
+        }
+
         var file = FileAccess.Open(CsvPath, FileAccess.ModeFlags.Read);
         if (file is null)
         {
@@ -46,5 +57,6 @@ public static class Localization
 
         TranslationServer.AddTranslation(translation);
         TranslationServer.SetLocale(Locale);
+        _loaded = true;
     }
 }
