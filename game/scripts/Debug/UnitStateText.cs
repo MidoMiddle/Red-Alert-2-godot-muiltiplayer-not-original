@@ -27,6 +27,33 @@ public static class UnitStateText
         return unit.MoveTarget is null ? "unit idle" : $"unit moving · wait {unit.WaitTicks} · replans {unit.Replans}" + Route(unit);
     }
 
+    /// <summary>
+    /// <c>aggressive</c>, <c>guard · attacking #16</c>, <c>hold · forced on #3</c>, <c>aggressive · forced on the ground</c>: the stance
+    /// of an armed unit and its target, and whether the player ordered it (M4 step 7); empty for an unarmed one.
+    /// </summary>
+    public static string DescribeFight(Unit unit)
+    {
+        if (unit.Weapons.Length == 0)
+        {
+            return "";
+        }
+
+        var stance = unit.Stance switch
+        {
+            Stance.Guard => "guard",
+            Stance.HoldPosition => "hold",
+            _ => "aggressive",
+        };
+        var target = unit.Target is { } id ? $"#{id.Value}" : "the ground";
+        return unit.TargetOrder switch
+        {
+            TargetOrder.Attack => $"{stance} · attacking {target}",
+            TargetOrder.Force => $"{stance} · forced on {target}",
+            _ when unit.Target is not null => $"{stance} · target {target}",
+            _ => stance,
+        };
+    }
+
     /// <summary><c>sight 8 +2 height</c>: the base sight of the unit's type and what the height of its cell adds (M7 step 8).</summary>
     public static string DescribeSight(Unit unit, MapGrid map)
     {

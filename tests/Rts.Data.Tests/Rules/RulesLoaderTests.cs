@@ -135,6 +135,35 @@ public sealed class RulesLoaderTests
         Assert.Equal(100, last.Hp);
         Assert.Equal(5, last.Cost);
         Assert.Equal(UnitCategory.Infantry, last.Category);
+        Assert.Equal(Stance.Aggressive, last.Stance);
+    }
+
+    [Fact]
+    public void A_stance_reads_as_one_of_three_and_another_word_points_at_its_value()
+    {
+        const string Unit =
+            """
+            sentry:
+              kind: unit
+              name: Sentry
+              faction: union
+              category: infantry
+              placement: subcell
+              locomotor: foot
+              cost: 1
+              build_time: 1s
+              hp: 1
+              speed: 1
+              turn_rate: 0
+              sight: 2
+              stance: STANCE
+            """;
+
+        Assert.Equal(Stance.Guard, Read(Unit.Replace("STANCE", "guard")).Units.Single().Stance);
+        Assert.Equal(Stance.HoldPosition, Read(Unit.Replace("STANCE", "hold")).Units.Single().Stance);
+        var error = Fails(Unit.Replace("STANCE", "passive"));
+        Assert.Equal((14, 11), (error.Line, error.Column));
+        Assert.Contains("'passive' must be one of aggressive, guard, hold", error.Reason);
     }
 
     [Fact]

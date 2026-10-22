@@ -291,6 +291,18 @@ public partial class SimulationHost : Node
     public void IssueAttackMove(IReadOnlyList<EntityId> units, WorldPos target) =>
         IssueTo(units, ordered => new AttackMoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
 
+    /// <summary>An attack on an enemy unit or building (M4 step 7).</summary>
+    public void IssueAttack(IReadOnlyList<EntityId> units, EntityId target) =>
+        IssueTo(units, ordered => new AttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+
+    /// <summary>A forced attack on <paramref name="target"/>, or on <paramref name="point"/> on the ground without one (M4 step 7).</summary>
+    public void IssueForceAttack(IReadOnlyList<EntityId> units, EntityId? target, WorldPos point) =>
+        IssueTo(units, ordered => new ForceAttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, point));
+
+    /// <summary>The stance of the units (M4 step 7).</summary>
+    public void IssueStance(IReadOnlyList<EntityId> units, Stance stance) =>
+        IssueTo(units, ordered => new SetStanceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, stance));
+
     /// <summary>Sends a route of 1…32 points; <paramref name="loop"/> makes it a patrol.</summary>
     public void IssueWaypoints(IReadOnlyList<EntityId> units, ImmutableArray<WorldPos> points, bool loop)
     {

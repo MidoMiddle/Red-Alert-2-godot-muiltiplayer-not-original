@@ -10,6 +10,12 @@ public enum CursorKind
     AttackMove,
     Waypoint,
 
+    /// <summary>Over an enemy unit or building with a selection: an order attacks it (M4 step 7).</summary>
+    Attack,
+
+    /// <summary>Ctrl with a selection: an order forces an attack on what is under the pointer (M4 step 7).</summary>
+    ForceAttack,
+
     /// <summary>The sell mode over an own building.</summary>
     Sell,
 
@@ -58,14 +64,25 @@ public static class CursorChoice
         }
 
         var groundOrder = context.WaypointMode || (context.Ctrl && context.Shift);
-        if (context.TargetDeploys && !groundOrder && !context.Shift)
+        if (context.TargetDeploys && !groundOrder && !context.Shift && !context.Ctrl)
         {
             return spot.DeployFits ? CursorKind.Deploy : CursorKind.Forbidden;
+        }
+
+        if (context.HasSelection && context.Ctrl && !groundOrder
+            && (context.Ground is not null || context.Target.Kind is PointerTargetKind.OwnUnit or PointerTargetKind.OtherUnit))
+        {
+            return CursorKind.ForceAttack;
         }
 
         if (context.Target.Kind == PointerTargetKind.OwnUnit && !groundOrder)
         {
             return CursorKind.Select;
+        }
+
+        if (context.HasSelection && !groundOrder && context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OtherBuilding)
+        {
+            return CursorKind.Attack;
         }
 
         if (!context.HasSelection)

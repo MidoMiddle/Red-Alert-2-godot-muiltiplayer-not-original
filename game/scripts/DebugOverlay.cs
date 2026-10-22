@@ -74,7 +74,8 @@ public partial class DebugOverlay : CanvasLayer
             $"selected {_input.Selection.Units.Count}   " + UnitStateText.Describe(SelectedUnit(simulation.World)) +
             (SelectedUnit(simulation.World) is { Harvester: { } harvester } carrier
                 ? $" · harvester {harvester.Mode} {harvester.Load}/{carrier.Archetype.HarvestCapacity}" : "") +
-            (SelectedUnit(simulation.World) is { } selected ? " · " + UnitStateText.DescribeSight(selected, simulation.World.Map) : "") + "\n" +
+            (SelectedUnit(simulation.World) is { } selected ? " · " + UnitStateText.DescribeSight(selected, simulation.World.Map) : "") +
+            (SelectedUnit(simulation.World) is { Weapons.Length: > 0 } armed ? " · " + UnitStateText.DescribeFight(armed) : "") + "\n" +
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
     }

@@ -8,17 +8,20 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Systems;
 
 /// <summary>
-/// The choice of targets (docs/implementation/M4_combat.md, 4.10), before <see cref="WeaponSystem"/>. Every armed unit and ready defense
-/// looks again once in <see cref="Period"/> ticks, on the tick where <c>(tick + id) % 4 == 0</c>, so the work spreads evenly and the
-/// result is the same everywhere. It takes the enemy unit or building (not a wall) within its reach — a unit within the longer of its
-/// range and sight, a harvester and a defense within their range — that one of its weapons can hurt, with the best score:
+/// The choice of targets (docs/implementation/M4_combat.md, 4.10, 4.11), before <see cref="PursuitSystem"/>. Every armed unit and
+/// ready defense looks again once in <see cref="Period"/> ticks, on the tick where <c>(tick + id) % 4 == 0</c>, so the work spreads
+/// evenly and the result is the same everywhere. It takes the enemy unit or building (not a wall) within its reach that one of its
+/// weapons can hurt, with the best score:
 /// <code>
 /// threat × 10 + 50 when it fires at me + the share of my weapon against its armor in percent / 2 − its distance in cells × 5
 ///     + 20 when it is my target already
 /// </code>
-/// Equal scores go to the smaller id. With nothing in reach it keeps a target it already has while that lives — one out of reach, or
-/// one given by hand that is no enemy. Neutral units and buildings look for nothing. The fog of war comes in step 11: until then every
-/// enemy counts as seen; chasing a target and the stances come in step 7.
+/// Equal scores go to the smaller id. The reach is the longer of range and sight for an aggressive or guarding unit, the range for one
+/// that holds its position, a harvester and a defense; a guarding unit takes nothing farther than <see cref="PursuitSystem.GuardLeash"/>
+/// cells and its range from its anchor. With nothing in reach it keeps its target only while that is still in reach: a target that
+/// left its sight is dropped. A unit with a target ordered by the player does not look while that stands, nor does a unit on a leg of
+/// a plain move: such a move ignores the enemies until it arrives (4.12). Neutral units and buildings look for nothing. The fog of war
+/// comes in step 11: until then every enemy counts as seen.
 /// </summary>
 public static class TargetingSystem
 {
@@ -30,99 +33,69 @@ public static class TargetingSystem
         var nearby = new List<EntityId>();
         foreach (var entity in world.Entities)
         {
-            if ((world.CurrentTick + entity.Id.Value) % Period != 0 || !entity.IsAlive || entity.Owner.IsNeutral)
+            if (entity is Unit { IsAlive: true, TargetOrder: not TargetOrder.None } ordered)
+            {
+                EndFallenOrder(world, ordered);
+            }
+
+            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral)
             {
                 continue;
             }
 
             switch (entity)
             {
-                case Unit unit when unit.Weapons.Length > 0:
+                case Unit unit when unit.Weapons.Length > 0 && unit.TargetOrder == TargetOrder.None && !IsMoving(unit):
                     {
-                        int[] weapons = [unit.Archetype.Primary, unit.Archetype.Secondary];
+                        var weapons = WeaponsOf(unit);
                         var reach = Reach(rules, weapons);
-                        if (!unit.Archetype.Harvests)
+                        if (!unit.Archetype.Harvests && unit.Stance != Stance.HoldPosition)
                         {
                             reach = IntMath.Max(reach, unit.Archetype.Sight * WorldPos.LeptonsPerCell);
                         }
 
-                        unit.Target = Best(world, rules, unit, unit.Position, reach, weapons, unit.Target, nearby);
+                        var leash = !unit.Archetype.Harvests && unit.Stance == Stance.Guard
+                            ? (PursuitSystem.GuardLeash * WorldPos.LeptonsPerCell) + Reach(rules, weapons)
+                            : -1;
+                        unit.Target = Best(world, rules, unit, new Area(unit.Position, reach, unit.Anchor, leash), weapons, unit.Target, nearby);
                         break;
                     }
 
                 case Building { IsReady: true } building when building.Weapons.Length > 0:
                     {
                         int[] weapons = [rules.WeaponOfBuilding(building.DefIndex)];
-                        building.Target = Best(world, rules, building, Aim.CentreOf(building), Reach(rules, weapons), weapons, building.Target, nearby);
+                        var centre = Aim.CentreOf(building);
+                        building.Target = Best(world, rules, building, new Area(centre, Reach(rules, weapons), centre, -1), weapons, building.Target, nearby);
                         break;
                     }
             }
         }
     }
 
-    /// <summary>The longest range of the weapons, in leptons.</summary>
-    private static int Reach(GameRules rules, int[] weapons)
+    /// <summary>Whether <paramref name="id"/> looks again on this tick: once in <see cref="Period"/> ticks, spread by id.</summary>
+    public static bool IsLookTick(GameWorld world, EntityId id) => (world.CurrentTick + id.Value) % Period == 0;
+
+    /// <summary>The places in the rules of the unit's primary and secondary weapon; -1 for none.</summary>
+    internal static int[] WeaponsOf(Unit unit) => [unit.Archetype.Primary, unit.Archetype.Secondary];
+
+    /// <summary>Whether one of the weapons hits ground targets.</summary>
+    internal static bool HitsGround(GameRules rules, int[] weapons)
     {
-        var reach = 0;
         foreach (var weapon in weapons)
         {
-            if (weapon >= 0)
+            if (weapon >= 0 && (rules.Database.Weapons[weapon].Targets & WeaponTargets.Ground) != 0)
             {
-                reach = IntMath.Max(reach, Aim.Leptons(rules.Database.Weapons[weapon].Range));
+                return true;
             }
         }
 
-        return reach;
+        return false;
     }
 
-    private static EntityId? Best(
-        GameWorld world, GameRules rules, Entity me, WorldPos from, int reach, int[] weapons, EntityId? current, List<EntityId> nearby)
-    {
-        world.Spatial.QueryRadius(world, from, reach, nearby);
-        foreach (var entity in world.Entities)
-        {
-            if (entity is Building { IsAlive: true } building && building.Def is not { ExtendsBase: false }
-                && DamageCalculator.Distance(from, Aim.NearestPoint(building, from)) <= reach)
-            {
-                nearby.Add(building.Id);
-            }
-        }
-
-        nearby.Sort();
-        EntityId? best = null;
-        var bestScore = int.MinValue;
-        foreach (var id in nearby)
-        {
-            if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || candidate.Owner == me.Owner || candidate.Owner.IsNeutral)
-            {
-                continue;
-            }
-
-            var share = BestShare(rules, weapons, candidate);
-            if (share <= 0)
-            {
-                continue;
-            }
-
-            var distance = DamageCalculator.Distance(from, Aim.NearestPoint(candidate, from));
-            var score = (ThreatOf(candidate) * 10) + (TargetOf(candidate) == me.Id ? 50 : 0) + (share / 2)
-                - (distance / WorldPos.LeptonsPerCell * 5) + (current == id ? 20 : 0);
-            if (score > bestScore)
-            {
-                (best, bestScore) = (id, score);
-            }
-        }
-
-        if (best is null && current is { } kept && world.TryGet(kept, out var target) && target.IsAlive)
-        {
-            return kept;
-        }
-
-        return best;
-    }
-
-    /// <summary>The best share in percent of the weapons that hit ground against the candidate's armor; 0 when none can hurt it.</summary>
-    private static int BestShare(GameRules rules, int[] weapons, Entity candidate)
+    /// <summary>
+    /// The best share in percent of the weapons that hit ground against the candidate's armor; 0 when none can hurt it.
+    /// </summary>
+    internal static int BestShare(GameRules rules, int[] weapons, Entity candidate)
     {
         var armor = candidate switch
         {
@@ -146,6 +119,89 @@ public static class TargetingSystem
 
             var verses = rules.Verses(rules.Database.IndexOfWarhead(weapon.Warhead), armor);
             best = IntMath.Max(best, (int)((verses.Raw * 100) >> Fixed.FractionalBits));
+        }
+
+        return best;
+    }
+
+    /// <summary>A unit on a leg of a plain move: it does not look for enemies until it arrives.</summary>
+    internal static bool IsMoving(Unit unit) => unit.Orders.Length > 0 && !unit.IsAttackMoving;
+
+    /// <summary>The ordered target fell: the unit chooses by itself again. A forced attack on the ground lasts until another order.</summary>
+    private static void EndFallenOrder(GameWorld world, Unit unit)
+    {
+        if (unit.TargetPoint is null && (unit.Target is not { } id || !world.TryGet(id, out var target) || !target.IsAlive))
+        {
+            unit.Target = null;
+            unit.TargetOrder = TargetOrder.None;
+        }
+    }
+
+    /// <summary>Where a unit or defense looks: within <c>Reach</c> of <c>From</c>, and within <c>Leash</c> of <c>Anchor</c> when that is not -1.</summary>
+    private readonly record struct Area(WorldPos From, int Reach, WorldPos Anchor, int Leash)
+    {
+        public bool Holds(Entity candidate) =>
+            DamageCalculator.Distance(From, Aim.NearestPoint(candidate, From)) <= Reach
+            && (Leash < 0 || DamageCalculator.Distance(Anchor, Aim.NearestPoint(candidate, Anchor)) <= Leash);
+    }
+
+    /// <summary>The longest range of the weapons, in leptons.</summary>
+    private static int Reach(GameRules rules, int[] weapons)
+    {
+        var reach = 0;
+        foreach (var weapon in weapons)
+        {
+            if (weapon >= 0)
+            {
+                reach = IntMath.Max(reach, Aim.Leptons(rules.Database.Weapons[weapon].Range));
+            }
+        }
+
+        return reach;
+    }
+
+    private static EntityId? Best(GameWorld world, GameRules rules, Entity me, Area area, int[] weapons, EntityId? current, List<EntityId> nearby)
+    {
+        var from = area.From;
+        world.Spatial.QueryRadius(world, from, area.Reach, nearby);
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true } building && building.Def is not { ExtendsBase: false }
+                && DamageCalculator.Distance(from, Aim.NearestPoint(building, from)) <= area.Reach)
+            {
+                nearby.Add(building.Id);
+            }
+        }
+
+        nearby.Sort();
+        EntityId? best = null;
+        var bestScore = int.MinValue;
+        foreach (var id in nearby)
+        {
+            if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || candidate.Owner == me.Owner || candidate.Owner.IsNeutral
+                || !area.Holds(candidate))
+            {
+                continue;
+            }
+
+            var share = BestShare(rules, weapons, candidate);
+            if (share <= 0)
+            {
+                continue;
+            }
+
+            var distance = DamageCalculator.Distance(from, Aim.NearestPoint(candidate, from));
+            var score = (ThreatOf(candidate) * 10) + (TargetOf(candidate) == me.Id ? 50 : 0) + (share / 2)
+                - (distance / WorldPos.LeptonsPerCell * 5) + (current == id ? 20 : 0);
+            if (score > bestScore)
+            {
+                (best, bestScore) = (id, score);
+            }
+        }
+
+        if (best is null && current is { } kept && world.TryGet(kept, out var target) && target.IsAlive && area.Holds(target))
+        {
+            return kept;
         }
 
         return best;

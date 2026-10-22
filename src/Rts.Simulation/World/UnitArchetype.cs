@@ -19,6 +19,7 @@ namespace Rts.Simulation.World;
 /// <param name="Primary">The position of the main weapon in <see cref="Rules.RulesDatabase.Weapons"/>; -1 without one (M4 step 3).</param>
 /// <param name="Secondary">The position of the second weapon; -1 without one.</param>
 /// <param name="Threat">How dangerous it is, for the choice of targets (M4 step 6).</param>
+/// <param name="Stance">The stance a new unit starts with (M4 step 7).</param>
 public sealed record UnitArchetype(
     UnitType Type,
     string Id,
@@ -37,7 +38,8 @@ public sealed record UnitArchetype(
     int TurretTurnRate = 0,
     int Primary = -1,
     int Secondary = -1,
-    int Threat = 0)
+    int Threat = 0,
+    Stance Stance = Stance.Aggressive)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;

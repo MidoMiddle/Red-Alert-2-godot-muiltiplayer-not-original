@@ -156,7 +156,7 @@ public sealed class InputInterpreterTests
     {
         var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
 
-        Assert.Empty(LeftClick(input, Context(OtherUnit, hasSelection: true)));
+        Assert.Empty(LeftClick(input, Context(OtherUnit, hasSelection: false)));
     }
 
     [Fact]
@@ -303,11 +303,38 @@ public sealed class InputInterpreterTests
     }
 
     [Fact]
-    public void CtrlAloneIsAPlainMove()
+    public void CtrlAloneForcesAnAttackOnTheGroundAnOwnUnitOrABuildingInBothSchemes()
     {
-        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        var classic = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        var modern = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        var ground = Context(Ground, hasSelection: true) with { Ctrl = true };
+        var own = Context(OwnUnit, hasSelection: true) with { Ctrl = true };
+        var wall = Context(new PointerTarget(PointerTargetKind.Ground, Building: new EntityId(30)), hasSelection: true) with { Ctrl = true };
 
-        Assert.Equal(new Intent[] { new OrderMove(Spot) }, LeftClick(input, Context(Ground, hasSelection: true) with { Ctrl = true }));
+        Assert.Equal(new Intent[] { new OrderForceAttack(null, Spot) }, LeftClick(classic, ground));
+        Assert.Equal(new Intent[] { new OrderForceAttack(OwnUnit.Unit, Spot) }, LeftClick(classic, own));
+        Assert.Equal(new Intent[] { new OrderForceAttack(new EntityId(30), Spot) }, LeftClick(classic, wall));
+        Assert.Equal(new Intent[] { new OrderForceAttack(OwnUnit.Unit, Spot) }, modern.Press(PointerButton.Right, Here, own));
+
+        // Without a selection Ctrl and a click still select.
+        Assert.Equal(new Intent[] { new SelectUnit(OwnUnit.Unit) }, LeftClick(classic, Context(OwnUnit, hasSelection: false) with { Ctrl = true }));
+    }
+
+    [Fact]
+    public void AnOrderOnAnEnemyUnitOrBuildingAttacksItInBothSchemes()
+    {
+        var classic = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        var modern = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        var building = Context(new PointerTarget(PointerTargetKind.OtherBuilding, Building: new EntityId(40)), hasSelection: true);
+
+        Assert.Equal(new Intent[] { new OrderAttack(OtherUnit.Unit) }, LeftClick(classic, Context(OtherUnit, hasSelection: true)));
+        Assert.Equal(new Intent[] { new OrderAttack(new EntityId(40)) }, LeftClick(classic, building));
+        Assert.Equal(new Intent[] { new OrderAttack(OtherUnit.Unit) }, modern.Press(PointerButton.Right, Here, Context(OtherUnit, hasSelection: true)));
+
+        // The left button of Modern only selects; Ctrl + Shift is still an attack-move, even over an enemy.
+        Assert.Empty(LeftClick(modern, Context(OtherUnit, hasSelection: true)));
+        Assert.Equal(new Intent[] { new OrderAttackMove(Spot) },
+            LeftClick(classic, Context(OtherUnit, hasSelection: true) with { Ctrl = true, Shift = true }));
     }
 
     [Fact]

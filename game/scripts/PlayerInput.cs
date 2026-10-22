@@ -324,6 +324,10 @@ public partial class PlayerInput : Node
         {
             ScatterSelection();
         }
+        else if (key.IsActionPressed("guard", false, true) && !Selection.IsEmpty)
+        {
+            NextStance();
+        }
     }
 
     /// <summary>Runs a command of the command bar: the one its key runs. The buttons that wait for a milestone do nothing.</summary>
@@ -348,6 +352,9 @@ public partial class PlayerInput : Node
             case CommandBarButton.Stop:
                 StopSelection();
                 break;
+            case CommandBarButton.Guard:
+                NextStance();
+                break;
             case CommandBarButton.Waypoints:
                 ToggleWaypointMode();
                 break;
@@ -359,6 +366,41 @@ public partial class PlayerInput : Node
     {
         Voice("stopping");
         _host.IssueStop(Selection.Units);
+    }
+
+    /// <summary>
+    /// The G key or the shield button (M4 step 7): the next stance after the one of the first armed selected unit — aggressive, guard,
+    /// hold position, round again — for the whole selection.
+    /// </summary>
+    private void NextStance()
+    {
+        if (_host.IsPlayback)
+        {
+            return;
+        }
+
+        var world = _host.Simulation.World;
+        var first = Selection.Units
+            .Select(id => world.TryGet(id, out var entity) ? entity as Unit : null)
+            .FirstOrDefault(unit => unit is { IsAlive: true, Weapons.Length: > 0, Harvester: null });
+        if (first is null)
+        {
+            return;
+        }
+
+        var next = first.Stance switch
+        {
+            Stance.Aggressive => Stance.Guard,
+            Stance.Guard => Stance.HoldPosition,
+            _ => Stance.Aggressive,
+        };
+        Voice(next switch
+        {
+            Stance.Guard => "stance guard",
+            Stance.HoldPosition => "stance hold position",
+            _ => "stance aggressive",
+        });
+        _host.IssueStance(Selection.Units, next);
     }
 
     /// <summary>The selected units scatter: the X key, or the Scatter button.</summary>
@@ -506,6 +548,22 @@ public partial class PlayerInput : Node
                     Voice("attack-moving");
                     _markers?.Add(order.Target, MarkerKind.AttackMove);
                     _host.IssueAttackMove(Selection.Units, order.Target);
+                    break;
+                case OrderAttack attack when !_host.IsPlayback:
+                    if (_host.Simulation.World.TryGet(attack.Target, out var enemy) && !enemy.Owner.IsNeutral)
+                    {
+                        Voice("attacking");
+                        _markers ??= GetNodeOrNull<OrderMarkers>("../OrderMarkers");
+                        _markers?.Add(PointOf(enemy), MarkerKind.Attack);
+                        _host.IssueAttack(Selection.Units, attack.Target);
+                    }
+
+                    break;
+                case OrderForceAttack force when !_host.IsPlayback:
+                    Voice("attacking (forced)");
+                    _markers ??= GetNodeOrNull<OrderMarkers>("../OrderMarkers");
+                    _markers?.Add(force.Target is { } forced && _host.Simulation.World.TryGet(forced, out var victim) ? PointOf(victim) : force.Point, MarkerKind.Attack);
+                    _host.IssueForceAttack(Selection.Units, force.Target, force.Point);
                     break;
                 case AddWaypoint waypoint when CanOrder(waypoint.Point):
                     Waypoints.Add(waypoint.Point);
@@ -673,6 +731,14 @@ public partial class PlayerInput : Node
         }
     }
 
+    /// <summary>Where a target stands for its marker: a unit's position, the middle of a building.</summary>
+    private static WorldPos PointOf(Entity entity) => entity switch
+    {
+        Building building => Rts.Simulation.Combat.Aim.CentreOf(building),
+        Unit unit => unit.Position,
+        _ => WorldPos.Zero,
+    };
+
     private bool IsOwnAlive(EntityId id) =>
         _host.Simulation.World.TryGet(id, out var entity) && entity is Unit { IsAlive: true } && entity.Owner == SimulationHost.LocalPlayer;
 
@@ -803,7 +869,19 @@ public partial class PlayerInput : Node
             }
         }
 
-        return nearest ?? new PointerTarget(PointerTargetKind.Ground);
+        if (nearest is { } picked)
+        {
+            return picked;
+        }
+
+        // M4 step 7: the building on the cell is a target, for an attack when it belongs to another player and is no wall.
+        if (GroundAt(at) is { } point && world.BuildingAt(point.ToCell()) is { IsAlive: true } building)
+        {
+            var enemy = building.Owner != SimulationHost.LocalPlayer && !building.Owner.IsNeutral && building.Def is not { ExtendsBase: false };
+            return new PointerTarget(enemy ? PointerTargetKind.OtherBuilding : PointerTargetKind.Ground, Building: building.Id);
+        }
+
+        return new PointerTarget(PointerTargetKind.Ground);
     }
 
     /// <summary>The point on the ground under the pointer, or null when the pointer is off the map.</summary>

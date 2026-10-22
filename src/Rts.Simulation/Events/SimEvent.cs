@@ -44,10 +44,10 @@ public sealed record BuildingDamaged(int Tick, EntityId Building, int Hp) : SimE
 public sealed record DamageStateChanged(int Tick, EntityId Entity, Combat.DamageState State) : SimEvent(Tick);
 
 /// <summary>
-/// A unit or a defense fired at its target (M4, 4.7) with the weapon in <paramref name="Slot"/>: 0 the primary, 1 the secondary. The shot
-/// itself flies from step 4 on.
+/// A unit or a defense fired at its target (M4, 4.7) with the weapon in <paramref name="Slot"/>: 0 the primary, 1 the secondary.
+/// <paramref name="Target"/> is null for a forced attack on the ground (step 7).
 /// </summary>
-public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId Target, int Slot) : SimEvent(Tick);
+public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId? Target, int Slot) : SimEvent(Tick);
 
 /// <summary>
 /// A shot landed (M4, 4.8) at <paramref name="Point"/>: an instant one on the tick it was fired (no <paramref name="Projectile"/>),
@@ -55,14 +55,14 @@ public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId Target, in
 /// was fired at, or none when that died or a homing shot ran out of time. <paramref name="Weapon"/> is the place of the weapon in the
 /// rules. The damage comes from step 5 on.
 /// </summary>
+public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId Shooter, int Weapon, WorldPos Point, EntityId? Target)
+    : SimEvent(Tick);
+
 /// <summary>A unit or a building lost <paramref name="Amount"/> hit points to a shot of <paramref name="Attacker"/> (M4, 4.9).</summary>
 public sealed record EntityDamaged(int Tick, EntityId Entity, EntityId Attacker, int Amount, int Hp) : SimEvent(Tick);
 
 /// <summary>A shot of <paramref name="Killer"/> destroyed a unit or a building (M4, 4.9); it leaves the world at the end of the tick.</summary>
 public sealed record EntityDestroyed(int Tick, EntityId Entity, EntityId Killer) : SimEvent(Tick);
-
-public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId Shooter, int Weapon, WorldPos Point, EntityId? Target)
-    : SimEvent(Tick);
 
 /// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
 public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell) : SimEvent(Tick);

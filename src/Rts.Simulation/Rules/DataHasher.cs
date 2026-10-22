@@ -79,6 +79,7 @@ public static class DataHasher
             hash.Add(unit.TurretTurnRate.HasValue);
             hash.Add(unit.TurretTurnRate ?? 0);
             hash.Add(unit.Threat);
+            hash.Add((byte)unit.Stance);
         }
 
         hash.Add(rules.Buildings.Length);

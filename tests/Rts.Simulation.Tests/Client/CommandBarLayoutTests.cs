@@ -41,7 +41,6 @@ public sealed class CommandBarLayoutTests
     public void TheButtonsThatWaitForAMilestoneStayGreyed()
     {
         Assert.False(CommandBarLayout.Enabled(CommandBarButton.SelectCombat, hasSelection: true));
-        Assert.False(CommandBarLayout.Enabled(CommandBarButton.Guard, hasSelection: true));
         Assert.False(CommandBarLayout.Enabled(CommandBarButton.Bug, hasSelection: true));
     }
 }

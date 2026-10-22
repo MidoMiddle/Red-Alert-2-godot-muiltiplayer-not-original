@@ -7,6 +7,8 @@ using Rts.Simulation.Math;
 using Rts.Simulation.Movement;
 using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Systems;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Commands;
@@ -47,9 +49,12 @@ public static class CommandProcessor
             SellCommand sell => ApplySell(world, sell, events),
             ToggleRepairCommand repair => ApplyToggleRepair(world, repair, events),
             PlaceWallsCommand walls => ApplyPlaceWalls(world, walls, events),
+            AttackCommand attack => ApplyAttack(world, attack),
+            ForceAttackCommand force => ApplyForceAttack(world, force),
+            SetStanceCommand stance => ApplySetStance(world, stance),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
-        if (applied && command is UnitsCommand { Type: not CommandType.Harvest } order)
+        if (applied && command is UnitsCommand { Type: not (CommandType.Harvest or CommandType.Attack or CommandType.ForceAttack or CommandType.SetStance) } order)
         {
             HarvestersFollow(world, order);
         }
@@ -153,6 +158,101 @@ public static class CommandProcessor
         }
 
         return placed > 0;
+    }
+
+    /// <summary>
+    /// An order to attack an enemy (M4, 4.12): a living unit or building of another player that the player sees, not a wall (a wall
+    /// takes a forced attack, as in RA2). Every own armed unit
+    /// with a ground weapon that hurts its armor takes it, drops its route and follows it whatever its stance; a harvester keeps to its
+    /// work and only fires. Refused when no unit takes it.
+    /// </summary>
+    private static bool ApplyAttack(GameWorld world, AttackCommand command)
+    {
+        if (!world.TryGet(command.Target, out var target) || !target.IsAlive || target is not (Unit or Building)
+            || target is Building { Def.ExtendsBase: false } || target.Owner == command.Player || target.Owner.IsNeutral || !Vision.Sees(world, command.Player, target))
+        {
+            return false;
+        }
+
+        var any = false;
+        foreach (var unit in OwnUnits(world, command))
+        {
+            if (unit.Weapons.Length > 0 && TargetingSystem.BestShare(world.Rules, TargetingSystem.WeaponsOf(unit), target) > 0)
+            {
+                Order(world, unit, TargetOrder.Attack, target.Id, null);
+                any = true;
+            }
+        }
+
+        return any;
+    }
+
+    /// <summary>
+    /// A forced attack (M4, 4.12): on any living unit or building the player sees, own and neutral ones and walls too, or on a point
+    /// of the map. Every own unit with a ground weapon takes it, but not one ordered to fire at itself.
+    /// </summary>
+    private static bool ApplyForceAttack(GameWorld world, ForceAttackCommand command)
+    {
+        Entity? target = null;
+        if (command.Target is { } id)
+        {
+            if (!world.TryGet(id, out target) || !target.IsAlive || target is not (Unit or Building) || !Vision.Sees(world, command.Player, target))
+            {
+                return false;
+            }
+        }
+        else if (!world.Contains(command.Point))
+        {
+            return false;
+        }
+
+        var any = false;
+        foreach (var unit in OwnUnits(world, command))
+        {
+            if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.HitsGround(world.Rules, TargetingSystem.WeaponsOf(unit)))
+            {
+                Order(world, unit, TargetOrder.Force, target?.Id, target is null ? command.Point : null);
+                any = true;
+            }
+        }
+
+        return any;
+    }
+
+    /// <summary>Gives the unit the target of an order; a unit that is not a harvester drops its route for it.</summary>
+    private static void Order(GameWorld world, Unit unit, TargetOrder order, EntityId? target, WorldPos? point)
+    {
+        if (unit.Harvester is null)
+        {
+            UnitOrders.Stop(world, unit);
+        }
+
+        UnitOrders.ForgetTarget(unit);
+        unit.Target = target;
+        unit.TargetOrder = order;
+        unit.TargetPoint = point;
+    }
+
+    /// <summary>The stance of the own armed units but the harvesters (M4, 4.11); each guards from where it stands.</summary>
+    private static bool ApplySetStance(GameWorld world, SetStanceCommand command)
+    {
+        if (command.Stance is not (Stance.Aggressive or Stance.Guard or Stance.HoldPosition))
+        {
+            return false;
+        }
+
+        var any = false;
+        foreach (var unit in OwnUnits(world, command))
+        {
+            if (unit.Weapons.Length > 0 && unit.Harvester is null)
+            {
+                unit.Stance = command.Stance;
+                unit.Anchor = unit.Position;
+                any = true;
+            }
+        }
+
+        return any;
     }
 
     /// <summary>The player's harvesters among the units work the field at the cell from now on (4.13).</summary>
@@ -457,6 +557,8 @@ public static class CommandProcessor
 
         foreach (var unit in units)
         {
+            // A new route ends the fight (M4, 4.12): a plain move does not look for enemies until it arrives.
+            UnitOrders.ForgetTarget(unit);
             var route = legs[unit.Id].ToImmutable();
             UnitOrders.GiveRoute(world, unit, route, loop, append);
             events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, route[0].Point));
@@ -471,6 +573,8 @@ public static class CommandProcessor
         foreach (var unit in units)
         {
             UnitOrders.Stop(world, unit);
+            UnitOrders.ForgetTarget(unit);
+            unit.Anchor = unit.Position;
         }
 
         return units.Count > 0;
@@ -499,6 +603,7 @@ public static class CommandProcessor
             }
 
             var target = free[world.Random.NextInt(free.Count)].Center;
+            UnitOrders.ForgetTarget(unit);
             UnitOrders.GiveRoute(world, unit, [new UnitOrder(target, AttackMove: false)], loop: false, append: false);
             events?.Add(new UnitMoveStarted(world.CurrentTick, unit.Id, target));
         }

@@ -25,7 +25,17 @@ public sealed class CursorChoiceTests
     public void WithASelectionTheGroundShowsMoveWhereSomeoneCanGo()
     {
         Assert.Equal(CursorKind.Move, CursorChoice.For(Context(Ground, selected: true), anyCanEnter: true));
-        Assert.Equal(CursorKind.Move, CursorChoice.For(Context(OtherUnit, selected: true), anyCanEnter: true));
+    }
+
+    [Fact]
+    public void WithASelectionAnEnemyShowsAttackAndCtrlAForcedAttack()
+    {
+        var building = new PointerTarget(PointerTargetKind.OtherBuilding, Building: new EntityId(5));
+        Assert.Equal(CursorKind.Attack, CursorChoice.For(Context(OtherUnit, selected: true), anyCanEnter: true));
+        Assert.Equal(CursorKind.Attack, CursorChoice.For(Context(building, selected: true), anyCanEnter: true));
+        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(OwnUnit, selected: true) with { Ctrl = true }, anyCanEnter: true));
+        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(Ground, selected: true) with { Ctrl = true }, anyCanEnter: false));
+        Assert.Equal(CursorKind.Normal, CursorChoice.For(Context(OtherUnit, selected: false), anyCanEnter: true));
     }
 
     [Fact]

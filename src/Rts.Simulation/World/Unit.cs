@@ -20,7 +20,30 @@ public sealed class Unit : Entity
         Harvester = archetype.Harvests ? new Harvester() : null;
         Hp = archetype.Hp;
         Weapons = !archetype.Armed ? [] : archetype.Secondary >= 0 ? [new(), new()] : [new()];
+        Stance = archetype.Stance;
+        Anchor = position;
     }
+
+    /// <summary>How the unit fights by itself (M4, 4.11). State: hashed.</summary>
+    public Stance Stance { get; internal set; }
+
+    /// <summary>Where a guarding unit comes back to: where it last stood by an order of the player (M4, 4.11). State: hashed.</summary>
+    public WorldPos Anchor { get; internal set; }
+
+    /// <summary>Whether <see cref="Target"/> or <see cref="TargetPoint"/> was ordered by the player (M4, 4.12). State: hashed.</summary>
+    public TargetOrder TargetOrder { get; internal set; }
+
+    /// <summary>The point of the ground a forced attack fires at; null otherwise (M4, 4.12). State: hashed.</summary>
+    public WorldPos? TargetPoint { get; internal set; }
+
+    /// <summary>
+    /// True while the unit's movement belongs to a fight: it follows its target or stopped to fire (M4, 4.11). Its route waits
+    /// meanwhile. State: hashed.
+    /// </summary>
+    public bool Engaged { get; internal set; }
+
+    /// <summary>The cell of the target the unit last asked a path to while following it; null when it does not follow. State: hashed.</summary>
+    public CellPos? ChaseCell { get; internal set; }
 
     /// <summary>What the unit shoots at (M4, 4.7): a unit or a building; null without a target. State: hashed.</summary>
     public EntityId? Target { get; internal set; }

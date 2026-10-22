@@ -155,6 +155,21 @@ public static class StateHasher
                 hash.Add(unit.Hp);
                 AddWeapons(hash, unit.Target, unit.Weapons);
 
+                // Rules v31 (M4 step 7): the stance, the orders to attack and the pursuit.
+                hash.Add((byte)unit.Stance);
+                hash.Add(unit.Anchor.X);
+                hash.Add(unit.Anchor.Y);
+                hash.Add((byte)unit.TargetOrder);
+                hash.Add(unit.TargetPoint.HasValue);
+                if (unit.TargetPoint is { } point)
+                {
+                    hash.Add(point.X);
+                    hash.Add(point.Y);
+                }
+
+                hash.Add(unit.Engaged);
+                AddCell(hash, unit.ChaseCell);
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)

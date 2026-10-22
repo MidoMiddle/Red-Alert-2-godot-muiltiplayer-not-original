@@ -64,8 +64,10 @@ internal static class UnitOrders
         {
             if (!unit.LoopOrders)
             {
+                // The end of the player's route: a guarding unit guards here (M4, 4.11).
                 unit.Orders = [];
                 unit.OrderIndex = 0;
+                unit.Anchor = unit.Position;
                 return;
             }
 
@@ -91,6 +93,33 @@ internal static class UnitOrders
         unit.Returning = false;
         unit.WaitTicks = 0;
         unit.Replans = 0;
+    }
+
+    /// <summary>
+    /// Stops the unit's movement but keeps its route (M4, 4.11): it stopped to fire, and goes on with the route when the fight is over.
+    /// </summary>
+    public static void Halt(GameWorld world, Unit unit)
+    {
+        world.PathRequests.Cancel(unit.Id);
+        unit.MoveTarget = null;
+        unit.Path = null;
+        unit.PathIndex = 0;
+        unit.PathPending = false;
+        unit.ResumeTarget = null;
+        unit.HoldTicks = 0;
+        unit.Returning = false;
+        unit.WaitTicks = 0;
+        unit.Replans = 0;
+    }
+
+    /// <summary>Forgets the unit's target, the order behind it and the pursuit (M4, 4.12): a new order of the player ends the fight.</summary>
+    public static void ForgetTarget(Unit unit)
+    {
+        unit.Target = null;
+        unit.TargetOrder = TargetOrder.None;
+        unit.TargetPoint = null;
+        unit.Engaged = false;
+        unit.ChaseCell = null;
     }
 
     /// <summary>Asks for a path to <paramref name="target"/>, keeping out of <paramref name="avoid"/>; the unit waits meanwhile.</summary>

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
@@ -75,6 +76,25 @@ public sealed class CommandSerializerTests
     }
 
     [Fact]
+    public void Attack_commands_and_the_stance_have_the_exact_v9_byte_layout()
+    {
+        const string Header = "01000000" + "05000000" + "07000000";
+        ImmutableArray<EntityId> units = [new EntityId(9)];
+        Assert.Equal(
+            "12" + Header + "0100" + "09000000" + "2A000000",
+            Convert.ToHexString(Serialize(new AttackCommand(new PlayerId(1), 5, 7, units, new EntityId(42)))));
+        Assert.Equal(
+            "13" + Header + "01" + "0100" + "09000000" + "2A000000" + "00000000" + "00000000",
+            Convert.ToHexString(Serialize(new ForceAttackCommand(new PlayerId(1), 5, 7, units, new EntityId(42), WorldPos.Zero))));
+        Assert.Equal(
+            "13" + Header + "00" + "0100" + "09000000" + "00000000" + "00010000" + "00020000",
+            Convert.ToHexString(Serialize(new ForceAttackCommand(new PlayerId(1), 5, 7, units, null, new WorldPos(256, 512)))));
+        Assert.Equal(
+            "14" + Header + "02" + "0100" + "09000000",
+            Convert.ToHexString(Serialize(new SetStanceCommand(new PlayerId(1), 5, 7, units, Stance.HoldPosition))));
+    }
+
+    [Fact]
     public void A_definition_index_beyond_16_bits_cannot_be_written()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => Serialize(new PlaceBuildingCommand(new PlayerId(1), 0, 0, 70_000, new CellPos(0, 0))));
@@ -116,6 +136,13 @@ public sealed class CommandSerializerTests
         new ToggleRepairCommand(new PlayerId(6), 2, 4, new EntityId(99)),
         new PlaceWallsCommand(new PlayerId(1), 5, 1, 9, [new CellPos(3, 4), new CellPos(4, 4), new CellPos(-1, 70000)]),
         new PlaceWallsCommand(new PlayerId(1), 5, 2, 9, [.. Enumerable.Range(0, PlaceWallsCommand.MaxCells).Select(i => new CellPos(i, 0))]),
+        new AttackCommand(new PlayerId(2), 6, 1, [new EntityId(3), new EntityId(4)], new EntityId(77)),
+        new AttackCommand(new PlayerId(2), 6, 2, [], new EntityId(-1)),
+        new ForceAttackCommand(new PlayerId(3), 6, 3, [new EntityId(5)], new EntityId(6), new WorldPos(10, 20)),
+        new ForceAttackCommand(new PlayerId(3), 6, 4, [new EntityId(5)], null, new WorldPos(-10, int.MaxValue)),
+        new SetStanceCommand(new PlayerId(4), 6, 5, [new EntityId(8)], Stance.Guard),
+        // An unknown stance still round-trips: the processor rejects it.
+        new SetStanceCommand(new PlayerId(4), 6, 6, [], (Stance)9),
     };
 
     [Theory]

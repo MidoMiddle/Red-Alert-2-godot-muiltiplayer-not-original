@@ -302,7 +302,7 @@ public static class MovementSystem
     {
         if (other.Owner != unit.Owner || other.Archetype.Placement != unit.Archetype.Placement
             || other.MoveTarget is not null || other.PathPending || other.HoldTicks > 0 || other.ResumeTarget is not null || other.Returning
-            || unit.Returning || unit.ResumeTarget is not null || unit.MoveTarget is not { } place
+            || unit.Returning || unit.ResumeTarget is not null || unit.Engaged || unit.MoveTarget is not { } place
             || (unit.Orders.Length > 0 && (unit.LoopOrders || unit.OrderIndex != unit.Orders.Length - 1)))
         {
             return false;
@@ -492,7 +492,11 @@ public static class MovementSystem
         else
         {
             unit.Returning = false;
-            UnitOrders.NextLeg(world, unit);
+            if (!unit.Engaged)
+            {
+                // A unit that drove to a fight is not at the end of its leg (M4 step 7): its route waits for the fight.
+                UnitOrders.NextLeg(world, unit);
+            }
         }
     }
 }

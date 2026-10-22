@@ -10,6 +10,9 @@ public enum MarkerKind
     Move,
     AttackMove,
     Forbidden,
+
+    /// <summary>On the target of an attack or a forced attack (M4 step 7): two red rings.</summary>
+    Attack,
 }
 
 /// <summary>
@@ -90,6 +93,10 @@ public partial class OrderMarkers : Node3D
                     break;
                 case MarkerKind.AttackMove:
                     Ring(at, radius, WithAlpha(AttackOuter, fade));
+                    Ring(at, radius * 0.6f, WithAlpha(AttackInner, fade));
+                    break;
+                case MarkerKind.Attack:
+                    Ring(at, radius, WithAlpha(AttackInner, fade));
                     Ring(at, radius * 0.6f, WithAlpha(AttackInner, fade));
                     break;
                 default:

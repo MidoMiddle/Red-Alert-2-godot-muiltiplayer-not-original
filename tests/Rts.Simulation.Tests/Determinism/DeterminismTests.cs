@@ -26,6 +26,10 @@ public sealed class DeterminismTests
         Assert.Contains(Commands, c => c is WaypointsCommand { Loop: false });
         Assert.Contains(Commands, c => c is StopCommand);
         Assert.Contains(Commands, c => c is ScatterCommand);
+        Assert.Contains(Commands, c => c is AttackCommand);
+        Assert.Contains(Commands, c => c is ForceAttackCommand { Target: null });
+        Assert.Contains(Commands, c => c is ForceAttackCommand { Target: not null });
+        Assert.Contains(Commands, c => c is SetStanceCommand);
     }
 
     [Fact]

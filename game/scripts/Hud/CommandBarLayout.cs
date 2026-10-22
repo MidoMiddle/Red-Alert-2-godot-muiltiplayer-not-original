@@ -15,7 +15,7 @@ public enum CommandBarButton
     /// <summary>X: the selected units scatter.</summary>
     Scatter,
 
-    /// <summary>The shield: guard. Waits for M4, the guard stance.</summary>
+    /// <summary>The shield (G): the stance of the selection, round aggressive, guard, hold position (M4 step 7).</summary>
     Guard,
 
     /// <summary>S: the selected units stop.</summary>
@@ -37,8 +37,8 @@ public static class CommandBarLayout
     /// <summary>Whether a button can be pressed now. The unit orders need a selection; the buttons that wait for a milestone stay greyed.</summary>
     public static bool Enabled(CommandBarButton button, bool hasSelection) => button switch
     {
-        CommandBarButton.TypeOnScreen or CommandBarButton.TypeOnMap or CommandBarButton.Scatter or CommandBarButton.Stop
-            or CommandBarButton.Waypoints => hasSelection,
+        CommandBarButton.TypeOnScreen or CommandBarButton.TypeOnMap or CommandBarButton.Scatter or CommandBarButton.Guard
+            or CommandBarButton.Stop or CommandBarButton.Waypoints => hasSelection,
         _ => false,
     };
 

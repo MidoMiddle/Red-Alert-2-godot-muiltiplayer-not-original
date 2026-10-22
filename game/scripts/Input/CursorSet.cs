@@ -77,7 +77,7 @@ public static class CursorSet
             CursorKind.Select => Corners,
             CursorKind.Move => ArrowsIn,
             CursorKind.Forbidden => CrossedCircle,
-            CursorKind.AttackMove => Sight,
+            CursorKind.AttackMove or CursorKind.Attack or CursorKind.ForceAttack => Sight,
             CursorKind.Sell => Dollar,
             CursorKind.Repair => Wrench,
             CursorKind.Deploy => ArrowsOut,

@@ -18,7 +18,7 @@ internal static class DefinitionReader
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
-        "placement", "turret", "turret_turn_rate", "threat", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
+        "placement", "turret", "turret_turn_rate", "threat", "stance", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -85,6 +85,7 @@ internal static class DefinitionReader
             Primary = fields.Optional("primary", Scalars.Id, ""),
             Secondary = fields.Optional("secondary", Scalars.Id, ""),
             Threat = fields.Optional("threat", Scalars.Int, 0),
+            Stance = fields.Optional("stance", StanceOf, Stance.Aggressive),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -276,6 +277,14 @@ internal static class DefinitionReader
 
     private static ProductionCategory BuildingCategoryOf(string fileName, YamlNode node) =>
         Scalars.Choice(fileName, node, "building", "defense") == "building" ? ProductionCategory.Building : ProductionCategory.Defense;
+
+    private static Stance StanceOf(string fileName, YamlNode node) =>
+        Scalars.Choice(fileName, node, "aggressive", "guard", "hold") switch
+        {
+            "aggressive" => Stance.Aggressive,
+            "guard" => Stance.Guard,
+            _ => Stance.HoldPosition,
+        };
 
     private static ProjectileMotion MotionOf(string fileName, YamlNode node) =>
         Scalars.Choice(fileName, node, "instant", "ballistic", "homing") switch

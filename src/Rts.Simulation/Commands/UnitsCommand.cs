@@ -56,8 +56,8 @@ public sealed record MoveCommand(PlayerId Player, int ExecuteTick, uint Sequence
 }
 
 /// <summary>
-/// Like <see cref="MoveCommand"/>, but the units are to attack what they meet on the way. Attacking comes in M4; until then the
-/// route leg only carries the mark.
+/// Like <see cref="MoveCommand"/>, but the units fight what they meet on the way: they stop for it, follow it, and go on to the point
+/// when nothing is left (docs/implementation/M4_combat.md, 4.12).
 /// </summary>
 public sealed record AttackMoveCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, WorldPos Target, bool Queue = false)
     : UnitsCommand(Player, ExecuteTick, Sequence, Units)
@@ -65,7 +65,35 @@ public sealed record AttackMoveCommand(PlayerId Player, int ExecuteTick, uint Se
     public override CommandType Type => CommandType.AttackMove;
 }
 
-/// <summary>Stops the units where they are and forgets their route.</summary>
+/// <summary>
+/// The units attack <paramref name="Target"/>, an enemy unit or building, and nothing else: they follow it whatever their stance and
+/// choose by themselves again once it falls (docs/implementation/M4_combat.md, 4.12).
+/// </summary>
+public sealed record AttackCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, EntityId Target)
+    : UnitsCommand(Player, ExecuteTick, Sequence, Units)
+{
+    public override CommandType Type => CommandType.Attack;
+}
+
+/// <summary>
+/// The units attack anything (Ctrl + click): <paramref name="Target"/>, own and neutral ones and walls too, or without a target the
+/// <paramref name="Point"/> on the ground, until another order (docs/implementation/M4_combat.md, 4.12).
+/// </summary>
+public sealed record ForceAttackCommand(
+    PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, EntityId? Target, WorldPos Point)
+    : UnitsCommand(Player, ExecuteTick, Sequence, Units)
+{
+    public override CommandType Type => CommandType.ForceAttack;
+}
+
+/// <summary>Sets the stance of the units (docs/implementation/M4_combat.md, 4.11); a guarding unit guards where it stands.</summary>
+public sealed record SetStanceCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, Stance Stance)
+    : UnitsCommand(Player, ExecuteTick, Sequence, Units)
+{
+    public override CommandType Type => CommandType.SetStance;
+}
+
+/// <summary>Stops the units where they are and forgets their route and their target.</summary>
 public sealed record StopCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units)
     : UnitsCommand(Player, ExecuteTick, Sequence, Units)
 {

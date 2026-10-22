@@ -119,7 +119,8 @@ public sealed class GameRules
                 unit.TurretTurnRate ?? unit.TurnRate,
                 database.IndexOfWeapon(unit.Primary),
                 database.IndexOfWeapon(unit.Secondary),
-                unit.Threat);
+                unit.Threat,
+                unit.Stance);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];

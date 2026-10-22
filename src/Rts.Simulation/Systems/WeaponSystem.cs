@@ -15,7 +15,8 @@ namespace Rts.Simulation.Systems;
 /// defenses at once — and fires when it points within <see cref="AimTolerance"/> and is ready: a volley of <c>burst</c> shots
 /// <c>burst_delay</c> apart, the next volley <c>reload</c> after the first shot (<see cref="WeaponFired"/>). The shots of the tick are
 /// launched after the walk over the entities (step 4): an instant one lands at once (<see cref="ProjectileImpact"/>), a ballistic or
-/// homing one becomes a <see cref="Projectile"/> that <see cref="ProjectileSystem"/> flies. The damage comes in step 5.
+/// homing one becomes a <see cref="Projectile"/> that <see cref="ProjectileSystem"/> flies. A unit forced to attack the ground (step 7)
+/// aims and fires at <see cref="World.Unit.TargetPoint"/> the same way; its shots land there with no target.
 /// </summary>
 public static class WeaponSystem
 {
@@ -23,7 +24,7 @@ public static class WeaponSystem
     public const int AimTolerance = BAngle.FullTurn * 8 / 256;
 
     /// <summary>A shot of this tick, launched after the walk: the list of entities must not change while it is walked.</summary>
-    private readonly record struct Shot(PlayerId Owner, EntityId Shooter, int Weapon, EntityId Target, WorldPos Origin, WorldPos AimAt);
+    private readonly record struct Shot(PlayerId Owner, EntityId Shooter, int Weapon, EntityId? Target, WorldPos Origin, WorldPos AimAt);
 
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
@@ -101,7 +102,8 @@ public static class WeaponSystem
     {
         CountDown(unit.Weapons);
         var archetype = unit.Archetype;
-        if (!TargetOf(world, unit.Target, out var target))
+        var hasTarget = TargetOf(world, unit.Target, out var target);
+        if (!hasTarget && unit.TargetPoint is null)
         {
             unit.Target = null;
             StopVolleys(unit.Weapons);
@@ -114,7 +116,7 @@ public static class WeaponSystem
             return;
         }
 
-        var aimAt = Aim.NearestPoint(target, unit.Position);
+        var aimAt = hasTarget ? Aim.NearestPoint(target, unit.Position) : unit.TargetPoint!.Value;
         var wanted = FixedMath.Angle(aimAt.X - unit.Position.X, aimAt.Y - unit.Position.Y);
         bool aimed;
         if (archetype.HasTurret)
@@ -136,9 +138,10 @@ public static class WeaponSystem
 
         var distance = DamageCalculator.Distance(unit.Position, aimAt);
         int[] slots = [archetype.Primary, archetype.Secondary];
-        if (Fire(world, rules, unit.Id, target, unit.Weapons, slots, distance, aimed, events) is { } weapon)
+        EntityId? targetId = hasTarget ? target.Id : null;
+        if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, events) is { } weapon)
         {
-            shots.Add(new Shot(unit.Owner, unit.Id, weapon, target.Id, unit.Position, aimAt));
+            shots.Add(new Shot(unit.Owner, unit.Id, weapon, targetId, unit.Position, aimAt));
         }
     }
 
@@ -157,7 +160,7 @@ public static class WeaponSystem
         var aimAt = Aim.NearestPoint(target, centre);
         var distance = DamageCalculator.Distance(centre, aimAt);
         int[] slots = [rules.WeaponOfBuilding(building.DefIndex)];
-        if (Fire(world, rules, building.Id, target, building.Weapons, slots, distance, aimed: true, events) is { } weapon)
+        if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, events) is { } weapon)
         {
             shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
         }
@@ -168,7 +171,7 @@ public static class WeaponSystem
     /// weapon that cannot fire now is broken off. Gives the place of the weapon that fired in the rules, or null.
     /// </summary>
     private static int? Fire(
-        GameWorld world, GameRules rules, EntityId shooter, Entity target, WeaponInstance[] weapons, int[] slots, int distance, bool aimed,
+        GameWorld world, GameRules rules, EntityId shooter, EntityId? target, WeaponInstance[] weapons, int[] slots, int distance, bool aimed,
         List<SimEvent>? events)
     {
         var chosen = -1;
@@ -211,8 +214,22 @@ public static class WeaponSystem
             return null;
         }
 
-        events?.Add(new WeaponFired(world.CurrentTick, shooter, target.Id, chosen));
+        events?.Add(new WeaponFired(world.CurrentTick, shooter, target, chosen));
         return slots[chosen];
+    }
+
+    /// <summary>Whether one of the weapons hits ground targets and reaches <paramref name="distance"/> leptons.</summary>
+    internal static bool Reaches(GameRules rules, int[] weapons, int distance)
+    {
+        foreach (var weapon in weapons)
+        {
+            if (weapon >= 0 && Reaches(rules.Database.Weapons[weapon], distance))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Whether the weapon hits ground targets and <paramref name="distance"/> leptons is within its range.</summary>

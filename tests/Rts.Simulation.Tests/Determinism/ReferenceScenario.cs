@@ -44,7 +44,7 @@ internal static class ReferenceScenario
 
                 var owner = new PlayerId(player);
                 var point = new WorldPos(random.NextInt(MapLeptons), random.NextInt(MapLeptons));
-                var kind = random.NextInt(16);
+                var kind = random.NextInt(19);
                 if (kind < 5)
                 {
                     var type = (UnitType)(1 + random.NextInt(TestRules.Standard.Units.Count));
@@ -66,6 +66,10 @@ internal static class ReferenceScenario
                         loop: random.NextInt(2) == 0),
                     13 => new StopCommand(owner, tick, sequence, units),
                     14 => new ScatterCommand(owner, tick, sequence, units),
+                    16 => new AttackCommand(owner, tick, sequence, units, new EntityId(random.NextInt(1, 200))),
+                    17 => new ForceAttackCommand(owner, tick, sequence, units,
+                        random.NextInt(2) == 0 ? new EntityId(random.NextInt(1, 200)) : null, point),
+                    18 => new SetStanceCommand(owner, tick, sequence, units, (Stance)random.NextInt(3)),
                     _ => new MoveCommand(owner, tick, sequence, units, point, Queue: kind == 10),
                 });
             }

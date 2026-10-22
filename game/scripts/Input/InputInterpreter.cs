@@ -37,10 +37,16 @@ public enum PointerTargetKind
     Ground,
     OwnUnit,
     OtherUnit,
+
+    /// <summary>A building of another player, not a wall: a click with a selection attacks it (M4 step 7).</summary>
+    OtherBuilding,
 }
 
-/// <summary>What is under the cursor. <see cref="Unit"/> means something only for the unit kinds.</summary>
-public readonly record struct PointerTarget(PointerTargetKind Kind, EntityId Unit = default);
+/// <summary>
+/// What is under the cursor. <see cref="Unit"/> means something only for the unit kinds; <see cref="Building"/> is the building on the
+/// cell under the cursor whoever owns it, walls too, for an attack or a forced attack (M4 step 7).
+/// </summary>
+public readonly record struct PointerTarget(PointerTargetKind Kind, EntityId Unit = default, EntityId? Building = null);
 
 /// <summary>A point on the screen, in pixels.</summary>
 public readonly record struct ScreenPoint(float X, float Y)
@@ -59,7 +65,7 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <param name="Shift">Whether Shift is held: Shift and a left click add a unit to the selection or take it out, Shift and a box add.</param>
 /// <param name="HasSelection">Whether any unit is selected.</param>
 /// <param name="Alt">Whether Alt is held: Alt and a left click on the ground spawn a test unit (debug).</param>
-/// <param name="Ctrl">Whether Ctrl (or Command) is held: Ctrl + Shift and an order give an attack-move.</param>
+/// <param name="Ctrl">Whether Ctrl (or Command) is held: Ctrl + Shift and an order give an attack-move, Ctrl alone a forced attack.</param>
 /// <param name="DoubleClick">Whether this press is the second one of a double click.</param>
 /// <param name="WaypointMode">Whether the waypoints mode is on (the command bar's flag, or Z held): an order adds a waypoint instead.</param>
 /// <param name="HasWaypoints">Whether waypoints are laid out and not sent yet: an order without Z sends them.</param>
@@ -110,6 +116,12 @@ public sealed record OrderMove(WorldPos Target, bool Queue = false) : Intent;
 /// <summary>Attack-move the selection (Ctrl + Shift and an order).</summary>
 public sealed record OrderAttackMove(WorldPos Target) : Intent;
 
+/// <summary>Attack the enemy unit or building (an order on it, M4 step 7).</summary>
+public sealed record OrderAttack(EntityId Target) : Intent;
+
+/// <summary>Attack anything (Ctrl and an order, M4 step 7): <paramref name="Target"/>, or the <paramref name="Point"/> on the ground without one.</summary>
+public sealed record OrderForceAttack(EntityId? Target, WorldPos Point) : Intent;
+
 /// <summary>Lay out one more waypoint (an order with Z held); nothing is sent yet.</summary>
 public sealed record AddWaypoint(WorldPos Point) : Intent;
 
@@ -149,6 +161,7 @@ public sealed record OpenMenu : Intent;
 /// add or remove, order or cancel on the ground); dragged past <see cref="ClickSlop"/> it draws a selection box.
 /// Orders follow RA2 in both schemes (M2 step 13, docs/implementation/M2_unit_control.md, 4.14): Shift queues a move,
 /// Ctrl + Shift attack-moves, Z lays out waypoints and the next order without Z sends them; a double click selects the type.
+/// An order on an enemy attacks it, Ctrl and an order force an attack on anything, the ground too (M4 step 7).
 /// </summary>
 public sealed class InputInterpreter
 {
@@ -451,6 +464,11 @@ public sealed class InputInterpreter
             return Order(context);
         }
 
+        if (_scheme == ControlScheme.Classic && AttackOf(context) is { } attack)
+        {
+            return new Intent[] { attack };
+        }
+
         switch (context.Target.Kind)
         {
             case PointerTargetKind.OwnUnit when context.DoubleClick:
@@ -474,10 +492,23 @@ public sealed class InputInterpreter
     private static bool IsGroundOrder(PointerContext context) =>
         context.HasSelection && (context.WaypointMode || (context.Ctrl && context.Shift));
 
-    /// <summary>An order on the ground with the scheme's order button: waypoints, attack-move, a queued or a plain move.</summary>
+    /// <summary>
+    /// An order with the scheme's order button: waypoints, attack-move, a forced attack (Ctrl), an attack on an enemy, a queued or a
+    /// plain move.
+    /// </summary>
     private static IReadOnlyList<Intent> Order(PointerContext context)
     {
-        if (!context.HasSelection || context.Ground is not { } point)
+        if (!context.HasSelection)
+        {
+            return Array.Empty<Intent>();
+        }
+
+        if (!context.WaypointMode && !context.HasWaypoints && AttackOf(context) is { } attack)
+        {
+            return new Intent[] { attack };
+        }
+
+        if (context.Ground is not { } point)
         {
             return Array.Empty<Intent>();
         }
@@ -490,6 +521,35 @@ public sealed class InputInterpreter
             _ => new OrderMove(point, context.Shift),
         };
         return new Intent[] { intent };
+    }
+
+    /// <summary>
+    /// The attack an order gives, if any: with Ctrl alone a forced attack on the unit or building under the cursor, or on the ground;
+    /// on an enemy unit or building an attack on it. Never in the waypoints mode or with Ctrl + Shift.
+    /// </summary>
+    private static Intent? AttackOf(PointerContext context)
+    {
+        if (!context.HasSelection || context.WaypointMode || (context.Ctrl && context.Shift))
+        {
+            return null;
+        }
+
+        if (context.Ctrl)
+        {
+            EntityId? target = context.Target.Kind is PointerTargetKind.OwnUnit or PointerTargetKind.OtherUnit
+                ? context.Target.Unit
+                : context.Target.Building;
+            return target is not null || context.Ground is not null
+                ? new OrderForceAttack(target, context.Ground ?? default)
+                : null;
+        }
+
+        return context.Target.Kind switch
+        {
+            PointerTargetKind.OtherUnit => new OrderAttack(context.Target.Unit),
+            PointerTargetKind.OtherBuilding when context.Target.Building is { } building => new OrderAttack(building),
+            _ => null,
+        };
     }
 
     /// <summary>The camera button went down: follow it until it is released. Modern starts the drag at once, Classic after a move.</summary>

@@ -223,9 +223,11 @@ public sealed class WeaponSystemTests
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
         var target = Spawn(simulation, Nobody, UnitType.Conscript, new CellPos(14, 10).Center);
-        tank.Target = target.Id;
         simulation.Enqueue(new Rts.Simulation.Commands.MoveCommand(Player1, 0, 0, [tank.Id], new CellPos(10, 20).Center));
+        simulation.Step();
 
+        // A move forgets the target (step 7); given after it, the target stays while the tank drives.
+        tank.Target = target.Id;
         Shots(simulation, tank, 20);
 
         // The tank drives south; the turret follows the bearing of the target as it changes.

@@ -33,7 +33,7 @@ public sealed class StateHasherTests
     public static TheoryData<string> Mutations => new()
     {
         "tick", "random", "next id", "owner", "alive", "position x", "position y",
-        "target removed", "target added", "target x", "target y", "speed", "unit hp", "attack target", "reload", "burst", "burst delay", "projectile", "projectile position", "projectile ticks", "entity count",
+        "target removed", "target added", "target x", "target y", "speed", "unit hp", "attack target", "stance", "anchor", "target order", "target point", "engaged", "chase cell", "reload", "burst", "burst delay", "projectile", "projectile position", "projectile ticks", "entity count",
         "type", "turn rate", "facing", "turret facing", "land", "obstacle", "height",
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
@@ -67,6 +67,12 @@ public sealed class StateHasherTests
             case "speed": moving.Speed++; break;
             case "unit hp": moving.Hp--; break;
             case "attack target": moving.Target = idle.Id; break;
+            case "stance": moving.Stance = Stance.Guard; break;
+            case "anchor": moving.Anchor += new WorldPos(1, 0); break;
+            case "target order": moving.TargetOrder = TargetOrder.Attack; break;
+            case "target point": moving.TargetPoint = new WorldPos(5, 5); break;
+            case "engaged": moving.Engaged = true; break;
+            case "chase cell": moving.ChaseCell = new CellPos(3, 4); break;
             case "reload": moving.Weapons[0].ReloadLeft = 5; break;
             case "burst": moving.Weapons[0].BurstLeft = 1; break;
             case "burst delay": moving.Weapons[0].BurstDelayLeft = 2; break;
@@ -197,7 +203,8 @@ public sealed class StateHasherTests
         "<WaitTicks>k__BackingField", "<Replans>k__BackingField", "<ResumeTarget>k__BackingField", "<HoldTicks>k__BackingField",
         "<Returning>k__BackingField", "<Subcell>k__BackingField",
         "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField", "<Hp>k__BackingField",
-        "<Target>k__BackingField", "<Weapons>k__BackingField",
+        "<Target>k__BackingField", "<Weapons>k__BackingField", "<Stance>k__BackingField", "<Anchor>k__BackingField",
+        "<TargetOrder>k__BackingField", "<TargetPoint>k__BackingField", "<Engaged>k__BackingField", "<ChaseCell>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {

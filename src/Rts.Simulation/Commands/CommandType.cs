@@ -22,4 +22,7 @@ public enum CommandType : byte
     Sell = 15,
     ToggleRepair = 16,
     PlaceWalls = 17,
+    Attack = 18,
+    ForceAttack = 19,
+    SetStance = 20,
 }

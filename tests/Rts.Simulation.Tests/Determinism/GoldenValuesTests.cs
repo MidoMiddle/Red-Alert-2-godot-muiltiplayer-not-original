@@ -199,11 +199,12 @@ public sealed class GoldenValuesTests
         // Rules v26 (M4 step 2): the hash covers the hit points of the units; the states are the same.
         // Rules v27 (M4 step 3): the hash covers the targets and weapons (none fire here); the states are the same.
         // Rules v30 (M4 step 6): the units of both players find each other by themselves and fight where they meet.
+        // Rules v31 (M4 step 7): the scenario issues Attack, ForceAttack and SetStance too; units follow what they see and stances are hashed.
         StateChecksum[] expected =
         [
-            new(100, 0x1aaf58e831be1884UL),
-            new(500, 0xb1975740c97956d3UL),
-            new(1000, 0x4a2991df4cb1e4ffUL),
+            new(100, 0xe5fda3e654ae12f9UL),
+            new(500, 0xa5c9ace276d66377UL),
+            new(1000, 0x3f36f3a73be0cf5aUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -254,6 +255,7 @@ public sealed class GoldenValuesTests
         // Rules v28 (M4 step 4): only the version changes; nobody fires, so there are no projectiles.
         // Rules v29 (M4 step 5): only the version changes; nobody is hit.
         // Rules v30 (M4 step 6): the version and the checksums change; the units of both players fight where they meet.
-        Assert.Equal((23377, 1510043632936802826UL), (bytes.Length, hash.Value));
+        // Rules v31 (M4 step 7): other commands (Attack, ForceAttack, SetStance among them), so other bytes and length.
+        Assert.Equal((22268, 1315970915943322807UL), (bytes.Length, hash.Value));
     }
 }
