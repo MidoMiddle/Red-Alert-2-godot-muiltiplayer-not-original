@@ -42,6 +42,9 @@ public static class StateHasher
         foreach (var player in world.Players)
         {
             hash.Add(player.Credits);
+            // Rules v36 (M4 step 13): the tick of the last notice of an attack.
+            hash.Add(player.LastUnderAttack.HasValue);
+            hash.Add(player.LastUnderAttack ?? 0);
             for (var category = Rules.ProductionCategory.Infantry; category <= Rules.ProductionCategory.Defense; category++)
             {
                 var queue = player.Queue(category);

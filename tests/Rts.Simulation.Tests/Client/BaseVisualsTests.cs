@@ -82,6 +82,8 @@ public sealed class BaseVisualsTests
         Assert.Null(EvaMessages.KeyOf(new LowPower(5, Player2), Player1));
         Assert.Null(EvaMessages.KeyOf(new ProductionReady(5, Player2, 2), Player1));
         Assert.Null(EvaMessages.KeyOf(new BuildUpComplete(5, new EntityId(3)), Player1));
+        Assert.Equal("UI_EVA_UNDER_ATTACK", EvaMessages.KeyOf(new UnderAttack(5, Player1, new CellPos(4, 4).Center), Player1));
+        Assert.Null(EvaMessages.KeyOf(new UnderAttack(5, Player2, new CellPos(4, 4).Center), Player1));
     }
 
     [Fact]

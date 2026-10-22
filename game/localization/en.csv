@@ -221,6 +221,7 @@ UI_KEY_DEBUG_PRODUCE,Produce units of the spawn type (Shift: five) (debug)
 UI_KEY_DEBUG_SELL,Sell the building under the cursor (debug)
 UI_KEY_DEBUG_REPAIR,Repair the building under the cursor on / off (debug)
 UI_KEY_DEBUG_REVEAL,Show the whole map through the fog of war (debug)
+UI_KEY_DEBUG_SWITCH_PLAYER,Play as the next player (debug builds)
 UI_KEY_CANCEL_SELECTION,Cancel selection or menu
 UI_KEY_WAITING,Press a key...
 UI_KEYS_SWAPPED,{0} was used by {1}. {1} now uses {2}.
@@ -256,6 +257,7 @@ UI_EVA_CANCELLED,Cancelled
 UI_EVA_CANNOT_DEPLOY,Cannot deploy here
 UI_EVA_CANNOT_PLACE,Cannot place building here
 UI_EVA_ORE_DEPLETED,Ore depleted
+UI_EVA_UNDER_ATTACK,Our base is under attack
 UI_STATS_TITLE,Statistics
 UI_STATS_BUILT,Built {0}
 UI_STATS_CAPTURED,Captured {0}

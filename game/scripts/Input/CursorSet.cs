@@ -21,6 +21,7 @@ public static class CursorSet
     private static readonly Color Green = new(0.35f, 1f, 0.35f);
     private static readonly Color Red = new(1f, 0.2f, 0.15f);
     private static readonly Color Yellow = new(1f, 0.85f, 0.1f);
+    private static readonly Color Orange = new(1f, 0.55f, 0.1f);
 
     private static readonly Dictionary<CursorKind, Image> Images = new();
     private static CursorKind? _shown;
@@ -77,7 +78,9 @@ public static class CursorSet
             CursorKind.Select => Corners,
             CursorKind.Move => ArrowsIn,
             CursorKind.Forbidden => CrossedCircle,
-            CursorKind.AttackMove or CursorKind.Attack or CursorKind.ForceAttack => Sight,
+            CursorKind.AttackMove => Sight,
+            CursorKind.Attack => AttackSight,
+            CursorKind.ForceAttack => ForceSight,
             CursorKind.Sell => Dollar,
             CursorKind.Repair => Wrench,
             CursorKind.Deploy => ArrowsOut,
@@ -151,6 +154,29 @@ public static class CursorSet
 
         var cross = (dx < 1.2f && dy is > 3 and < 15) || (dy < 1.2f && dx is > 3 and < 15);
         return cross ? Yellow : null;
+    }
+
+    /// <summary>The attack of RA2 (M4 step 13): a red ring with four red ticks pointing in, on a dark edge.</summary>
+    private static Color? AttackSight(float x, float y) => Crosshair(x, y, Red, dot: false);
+
+    /// <summary>The forced attack (Ctrl, M4 step 13): the same sight in orange, with a dot in the middle.</summary>
+    private static Color? ForceSight(float x, float y) => Crosshair(x, y, Orange, dot: true);
+
+    private static Color? Crosshair(float x, float y, Color color, bool dot)
+    {
+        var dx = MathF.Abs(x - Middle);
+        var dy = MathF.Abs(y - Middle);
+        var distance = MathF.Sqrt(dx * dx + dy * dy);
+        var ring = distance is > 9 and < 11.5f;
+        var ticks = (dx < 1.3f && dy is > 6 and < 14) || (dy < 1.3f && dx is > 6 and < 14);
+        var centre = dot && distance < 2.2f;
+        if (ring || ticks || centre)
+        {
+            return color;
+        }
+
+        var edge = distance is > 8 and < 12.5f || (dx < 2.3f && dy is > 5 and < 15) || (dy < 2.3f && dx is > 5 and < 15) || (dot && distance < 3.2f);
+        return edge ? Outline : null;
     }
 
     /// <summary>A yellow dollar sign with a dark edge: an S of three bars and two sides, crossed by a stroke.</summary>

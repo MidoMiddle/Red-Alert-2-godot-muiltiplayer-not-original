@@ -69,6 +69,12 @@ public partial class AppSettings : Node
         Save();
     }
 
+    public void SetHealthBars(HealthBarMode mode)
+    {
+        Values = Values with { HealthBars = mode };
+        Save();
+    }
+
     public void SetInterfaceScale(int percent)
     {
         Values = Values with { InterfaceScale = percent };

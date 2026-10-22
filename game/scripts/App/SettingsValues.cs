@@ -13,6 +13,17 @@ public enum WindowMode
     Borderless,
 }
 
+/// <summary>
+/// Whose health bars show (M4 step 13), in the order of the dropdown: everybody's, the selected and the damaged (the default, decision 4
+/// of the M4 plan), or the selected only.
+/// </summary>
+public enum HealthBarMode
+{
+    Always,
+    Damaged,
+    Selected,
+}
+
 /// <summary>A window size in pixels.</summary>
 public readonly record struct WindowSize(int Width, int Height);
 
@@ -31,7 +42,8 @@ public sealed record SettingsValues(
     ControlScheme Scheme,
     int ScrollSpeed,
     bool EdgeScroll,
-    bool CameraDrag)
+    bool CameraDrag,
+    HealthBarMode HealthBars = HealthBarMode.Damaged)
 {
     /// <summary>Layout version of the file, written as <c>meta/format</c>.</summary>
     public const int FormatVersion = 1;
@@ -59,6 +71,7 @@ public sealed record SettingsValues(
     private const string ScrollSpeedKey = "controls/scroll_speed";
     private const string EdgeScrollKey = "controls/edge_scroll";
     private const string CameraDragKey = "controls/camera_drag";
+    private const string HealthBarsKey = "interface/health_bars";
 
     /// <summary>Resolutions of the Graphics tab. This is the size of a windowed game; fullscreen uses the screen.</summary>
     public static WindowSize[] ResolutionChoices { get; } =
@@ -73,7 +86,7 @@ public sealed record SettingsValues(
 
     /// <summary>
     /// What the game uses without a settings file: windowed 1280 × 720, VSync, no frame limit, 100 % and full volume, Classic
-    /// scheme, scroll speed 5, edge scrolling and camera drag on.
+    /// scheme, scroll speed 5, edge scrolling and camera drag on, health bars of the selected and the damaged.
     /// </summary>
     public static SettingsValues Defaults { get; } = new(
         WindowMode.Windowed,
@@ -101,7 +114,8 @@ public sealed record SettingsValues(
             ParseScheme(raw, fallback.Scheme),
             Math.Clamp(ParseInteger(raw, ScrollSpeedKey, fallback.ScrollSpeed), MinScrollSpeed, MaxScrollSpeed),
             ParseBool(raw, EdgeScrollKey, fallback.EdgeScroll),
-            ParseBool(raw, CameraDragKey, fallback.CameraDrag));
+            ParseBool(raw, CameraDragKey, fallback.CameraDrag),
+            ParseHealthBars(raw, fallback.HealthBars));
     }
 
     /// <summary>The values as file contents, keyed by <c>section/key</c>. Every known key is written.</summary>
@@ -121,12 +135,20 @@ public sealed record SettingsValues(
             [ScrollSpeedKey] = ScrollSpeed.ToString(CultureInfo.InvariantCulture),
             [EdgeScrollKey] = EdgeScroll ? "true" : "false",
             [CameraDragKey] = CameraDrag ? "true" : "false",
+            [HealthBarsKey] = HealthBars.ToString().ToLowerInvariant(),
         };
     }
 
     private static WindowMode ParseWindowMode(IReadOnlyDictionary<string, string> raw, WindowMode fallback)
     {
         return Enum.TryParse(Text(raw, WindowModeKey), ignoreCase: true, out WindowMode mode) && Enum.IsDefined(mode)
+            ? mode
+            : fallback;
+    }
+
+    private static HealthBarMode ParseHealthBars(IReadOnlyDictionary<string, string> raw, HealthBarMode fallback)
+    {
+        return Enum.TryParse(Text(raw, HealthBarsKey), ignoreCase: true, out HealthBarMode mode) && Enum.IsDefined(mode)
             ? mode
             : fallback;
     }

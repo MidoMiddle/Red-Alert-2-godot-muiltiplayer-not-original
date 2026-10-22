@@ -94,6 +94,12 @@ public sealed record UnitPlacesSwapped(int Tick, EntityId Unit, EntityId Other) 
 /// <summary>The player drains more power than it produces from now on (docs/implementation/M3_base_economy.md, 4.11).</summary>
 public sealed record LowPower(int Tick, PlayerId Player) : SimEvent(Tick);
 
+/// <summary>
+/// Another player's shot hit a building of <paramref name="Player"/> at <paramref name="Point"/> (M4, 4.19, step 13): "our base is under
+/// attack". Once in <see cref="Systems.DamageSystem.UnderAttackTicks"/> per player at most, so the notice does not repeat.
+/// </summary>
+public sealed record UnderAttack(int Tick, PlayerId Player, WorldPos Point) : SimEvent(Tick);
+
 /// <summary>The player produces enough power again.</summary>
 public sealed record PowerRestored(int Tick, PlayerId Player) : SimEvent(Tick);
 

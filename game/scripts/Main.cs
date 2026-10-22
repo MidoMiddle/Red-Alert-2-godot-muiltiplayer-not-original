@@ -43,7 +43,13 @@ public partial class Main : Node3D
         AddChild(new CellOverlay { Name = "CellOverlay" });
         AddChild(new OrderMarkers { Name = "OrderMarkers" });
         AddChild(new RouteLines { Name = "RouteLines" });
+        AddChild(new Effects.CombatEffects { Name = "CombatEffects" });
+        AddChild(new Effects.ProjectileViews { Name = "ProjectileViews" });
         AddChild(new Terrain.FogOfWar { Name = "FogOfWar" });
+        // The health bars lie under the HUD (M4 step 13).
+        var bars = new CanvasLayer { Name = "Bars", Layer = 0 };
+        bars.AddChild(new Hud.HealthBars { Name = "HealthBars" });
+        AddChild(bars);
 
         var args = OS.GetCmdlineUserArgs();
         var screenshotIndex = Array.IndexOf(args, "--screenshot");

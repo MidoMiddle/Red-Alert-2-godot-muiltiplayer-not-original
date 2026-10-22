@@ -56,6 +56,7 @@ public partial class Settings : Control
     private Label _scrollSpeedValue = null!;
     private CheckBox _edgeScroll = null!;
     private CheckBox _cameraDrag = null!;
+    private OptionButton _healthBars = null!;
 
     private static AppSettings Store =>
         AppSettings.Instance ?? throw new InvalidOperationException("AppSettings autoload is missing");
@@ -233,8 +234,10 @@ public partial class Settings : Control
     {
         var rows = AddPage("Game");
 
-        AddRow(rows, "UI_SETTINGS_HEALTH_BARS",
-            NewDropdown(1, Tr("UI_HEALTH_BARS_ALWAYS"), Tr("UI_HEALTH_BARS_DAMAGED"), Tr("UI_HEALTH_BARS_SELECTED")), locked: true);
+        // M4 step 13: the bars work now, in the order of HealthBarMode.
+        _healthBars = NewDropdown((int)HealthBarMode.Damaged, Tr("UI_HEALTH_BARS_ALWAYS"), Tr("UI_HEALTH_BARS_DAMAGED"), Tr("UI_HEALTH_BARS_SELECTED"));
+        _healthBars.ItemSelected += index => Store.SetHealthBars((HealthBarMode)(int)index);
+        AddRow(rows, "UI_SETTINGS_HEALTH_BARS", _healthBars);
         AddRow(rows, "UI_SETTINGS_CONFIRM_SELL", NewCheckBox(true), locked: true);
         AddRow(rows, "UI_SETTINGS_HINTS", NewCheckBox(true), locked: true);
     }
@@ -413,6 +416,7 @@ public partial class Settings : Control
         _scrollSpeedValue.Text = CountText(values.ScrollSpeed);
         _edgeScroll.SetPressedNoSignal(values.EdgeScroll);
         _cameraDrag.SetPressedNoSignal(values.CameraDrag);
+        _healthBars.Selected = (int)values.HealthBars;
     }
 
     /// <summary>Opens the tab named by <c>--tab</c>, so the tabs can be checked from the command line.</summary>

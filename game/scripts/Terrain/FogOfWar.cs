@@ -47,7 +47,9 @@ public partial class FogOfWar : Node3D
     {
         Current = this;
         _host = GetNodeOrNull<SimulationHost>("../SimulationHost");
-        _material = new ShaderMaterial { Shader = GD.Load<Shader>(FogShader) };
+        // First of the transparent things (M4 step 13): the pass redraws the opaque picture, so effects, markers and lines drawn after
+        // it stay on top. They show only where the player sees anyway.
+        _material = new ShaderMaterial { Shader = GD.Load<Shader>(FogShader), RenderPriority = (int)Material.RenderPriorityMin };
         AddChild(new MeshInstance3D
         {
             Name = "FogPass",

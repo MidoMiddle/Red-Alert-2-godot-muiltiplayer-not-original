@@ -14,10 +14,14 @@ namespace Rts.Simulation.Systems;
 /// the point — so the order in which the systems found them changes nothing. A hit takes the whole share against the armor from the
 /// target it was fired at (at least 1, <see cref="DamageCalculator.Direct"/>), and the fall-off from everything else in its area, by id,
 /// friend or foe as in RA2; a wall only from a warhead that damages walls. At no hit points a unit dies and a building falls through
-/// <see cref="DeathSystem"/>. What died this tick takes no more damage.
+/// <see cref="DeathSystem"/>. What died this tick takes no more damage. A building of a player hit by another player's shot tells it
+/// with an <see cref="UnderAttack"/>, once in <see cref="UnderAttackTicks"/> at most (step 13).
 /// </summary>
 public static class DamageSystem
 {
+    /// <summary>The least time between two <see cref="UnderAttack"/> of a player: 10 seconds at 15 ticks a second.</summary>
+    public const int UnderAttackTicks = 150;
+
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
         if (world.Hits.Count == 0)
@@ -62,7 +66,7 @@ public static class DamageSystem
         if (hit.Target is { } targetId && world.TryGet(targetId, out var target) && target.IsAlive && Hurts(target, warhead))
         {
             var amount = DamageCalculator.Direct(weapon.Damage, rules.Verses(warheadIndex, ArmorOf(rules, target)));
-            Damage(world, target, amount, hit.Shooter, hit.Weapon, events);
+            Damage(world, target, amount, hit, events);
         }
 
         if (warhead.Spread <= Fixed.Zero)
@@ -91,8 +95,26 @@ public static class DamageSystem
 
             var distance = DamageCalculator.Distance(hit.Point, Aim.NearestPoint(entity, hit.Point));
             var verses = rules.Verses(warheadIndex, ArmorOf(rules, entity));
-            Damage(world, entity, DamageCalculator.InArea(weapon.Damage, verses, warhead.Spread, warhead.PercentAtMax, distance), hit.Shooter, hit.Weapon, events);
+            Damage(world, entity, DamageCalculator.InArea(weapon.Damage, verses, warhead.Spread, warhead.PercentAtMax, distance), hit, events);
         }
+    }
+
+    /// <summary>A building of a player hit by another: <see cref="UnderAttack"/>, unless the last one is less than 10 seconds old.</summary>
+    private static void WarnOfAttack(GameWorld world, Building building, Hit hit, List<SimEvent>? events)
+    {
+        if (building.Owner.IsNeutral || building.Owner.Value > PlayerId.MaxPlayers || hit.Owner == building.Owner)
+        {
+            return;
+        }
+
+        var player = world.Player(building.Owner);
+        if (player.LastUnderAttack is { } last && world.CurrentTick - last < UnderAttackTicks)
+        {
+            return;
+        }
+
+        player.LastUnderAttack = world.CurrentTick;
+        events?.Add(new UnderAttack(world.CurrentTick, building.Owner, Aim.CentreOf(building)));
     }
 
     /// <summary>A wall takes damage only from a warhead that damages walls.</summary>
@@ -110,13 +132,14 @@ public static class DamageSystem
         _ => 0,
     };
 
-    private static void Damage(GameWorld world, Entity entity, int amount, EntityId attacker, int weapon, List<SimEvent>? events)
+    private static void Damage(GameWorld world, Entity entity, int amount, Hit hit, List<SimEvent>? events)
     {
         if (amount <= 0)
         {
             return;
         }
 
+        var (attacker, weapon) = (hit.Shooter, hit.Weapon);
         switch (entity)
         {
             case World.Unit unit:
@@ -134,6 +157,7 @@ public static class DamageSystem
 
             case Building building:
                 {
+                    WarnOfAttack(world, building, hit, events);
                     var hp = IntMath.Max(0, building.Hp - amount);
                     events?.Add(new EntityDamaged(world.CurrentTick, building.Id, attacker, amount, hp));
                     if (hp == 0)

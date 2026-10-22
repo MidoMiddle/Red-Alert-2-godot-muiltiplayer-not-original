@@ -32,7 +32,8 @@ public sealed class M3GoldenValuesTests
         // M4 step 3, rules v27: the targets and weapons of the units are hashed; the run is the same.
         // M4 step 7, rules v31: the stance and the anchor of every unit are hashed; the run is the same, the credits too.
         // M4 step 11, rules v35: what every player sees is hashed; the run is the same, the credits too.
-        Assert.Equal((6322, 0x46a756406ec3e048UL), (fifth.Credits, fifth.Checksum));
+        // M4 step 13, rules v36: the tick of the last attack notice of every player is hashed; the run is the same, the credits too.
+        Assert.Equal((6322, 0x24685117ade635faUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

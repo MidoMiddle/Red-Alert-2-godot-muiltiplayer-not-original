@@ -14,7 +14,8 @@ namespace Rts.Client.Terrain;
 /// footprint, with a puff of dust, until another building stands on those cells. A yellow bolt blinks over a defense off for want of
 /// power (M4 step 10, <see cref="Defenses.IsOnline"/>). Another player's buildings show as the local player knows them (M4 step 12,
 /// <see cref="BuildingGhosts"/>): as they stand while seen, as last seen in the fog, not at all before they are seen; what happens to
-/// one in the fog — a sale, a fall — shows only when it is seen again.
+/// one in the fog — a sale, a fall — shows only when it is seen again. A damaged building smokes, a critically damaged one burns and
+/// smokes (M4 step 13, by <see cref="DamageStates"/>).
 /// </summary>
 public partial class PlayerBuildings : Node3D
 {
@@ -82,6 +83,9 @@ public partial class PlayerBuildings : Node3D
             view.Dust.Emitting = growth < 1f && !ghost;
             view.Repair.Visible = building.Repairing && !ghost;
             view.Unpowered.Visible = !ghost && !Defenses.IsOnline(world, building) && (int)(_time * 2.5) % 2 == 0;
+            var state = DamageStates.Of(building.Hp, building.MaxHp);
+            view.Smoke.Emitting = !ghost && state != DamageState.Healthy;
+            view.Fire.Emitting = !ghost && state == DamageState.Critical;
             view.Repair.Rotation = new Vector3(0, (float)(_time * 2.5), 0);
         }
 
@@ -148,6 +152,8 @@ public partial class PlayerBuildings : Node3D
             view.Dust.Emitting = true;
             view.Repair.Visible = false;
             view.Unpowered.Visible = false;
+            view.Smoke.Emitting = false;
+            view.Fire.Emitting = false;
             _sinking.Add(view);
         }
         else if (simEvent is BuildingDestroyed destroyed && _views.Remove(destroyed.Building, out var fallen))
@@ -237,7 +243,16 @@ public partial class PlayerBuildings : Node3D
         var dust = Dust(building.Width, building.Height);
         dust.Position = new Vector3(0, Sink + 0.1f, 0);
         root.AddChild(dust);
-        return new View(building, root, body, dust, repair, unpowered, Sink / full);
+
+        // Damage (M4 step 13): dark smoke rises off the roof, flames lick under it once it is critical.
+        var top = new Vector3(0, Sink + shape.Height + 0.1f, 0);
+        var smoke = Plume(building.Width, building.Height, new Color(0.25f, 0.25f, 0.25f), 0.12f, 1.6, 0.6f);
+        smoke.Position = top;
+        root.AddChild(smoke);
+        var fire = Plume(building.Width, building.Height, new Color(1f, 0.45f, 0.1f), 0.09f, 0.6, 0.9f);
+        fire.Position = top;
+        root.AddChild(fire);
+        return new View(building, root, body, dust, repair, unpowered, smoke, fire, Sink / full);
     }
 
     /// <summary>Grey dust round the footprint while a building rises or sinks: small cubes that fly up and fade.</summary>
@@ -257,6 +272,26 @@ public partial class PlayerBuildings : Node3D
             ScaleAmountMin = 0.6f,
             ScaleAmountMax = 1.2f,
             Mesh = new BoxMesh { Size = new Vector3(0.2f, 0.2f, 0.2f), Material = Material(new Color(0.78f, 0.75f, 0.7f)) },
+        };
+
+    /// <summary>Particles that rise off a footprint: smoke or fire.</summary>
+    private static CpuParticles3D Plume(int width, int height, Color color, float size, double lifetime, float speed) =>
+        new()
+        {
+            Emitting = false,
+            Amount = 16,
+            Lifetime = lifetime,
+            LocalCoords = false,
+            EmissionShape = CpuParticles3D.EmissionShapeEnum.Box,
+            EmissionBoxExtents = new Vector3(width / 4f, 0.05f, height / 4f),
+            Direction = Vector3.Up,
+            Spread = 15f,
+            InitialVelocityMin = speed * 0.7f,
+            InitialVelocityMax = speed,
+            Gravity = Vector3.Zero,
+            ScaleAmountMin = 0.8f,
+            ScaleAmountMax = 1.6f,
+            Mesh = new SphereMesh { Radius = size, Height = size * 2, Material = Material(color) },
         };
 
     private static void Box(Node3D parent, Vector3 size, Vector3 position, Color color) =>
@@ -284,7 +319,9 @@ public partial class PlayerBuildings : Node3D
         }
     }
 
-    private sealed class View(Building source, Node3D root, Node3D body, CpuParticles3D dust, Node3D repair, Node3D unpowered, float buried)
+    private sealed class View(
+        Building source, Node3D root, Node3D body, CpuParticles3D dust, Node3D repair, Node3D unpowered, CpuParticles3D smoke, CpuParticles3D fire,
+        float buried)
     {
         /// <summary>The scale of the body for a share grown: from the ground (the buried foot) up to the full height.</summary>
         public float Rise(float growth) => Mathf.Max(0.01f, buried + (1f - buried) * growth);
@@ -300,6 +337,10 @@ public partial class PlayerBuildings : Node3D
         public Node3D Repair { get; } = repair;
 
         public Node3D Unpowered { get; } = unpowered;
+
+        public CpuParticles3D Smoke { get; } = smoke;
+
+        public CpuParticles3D Fire { get; } = fire;
 
         public float SinkLeft { get; set; }
     }

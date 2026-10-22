@@ -31,6 +31,7 @@ public sealed class EvaMessages
         CannotDeploy refused when refused.Player == player => "UI_EVA_CANNOT_DEPLOY",
         CannotPlace refused when refused.Player == player => "UI_EVA_CANNOT_PLACE",
         OreDepleted => "UI_EVA_ORE_DEPLETED",
+        UnderAttack attack when attack.Player == player => "UI_EVA_UNDER_ATTACK",
         _ => null,
     };
 

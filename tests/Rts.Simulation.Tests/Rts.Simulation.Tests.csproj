@@ -58,6 +58,7 @@
     <Compile Include="../../game/scripts/Input/OrderTargets.cs" Link="Client/Controls/OrderTargets.cs" />
     <Compile Include="../../game/scripts/Input/WaypointDraft.cs" Link="Client/Controls/WaypointDraft.cs" />
     <Compile Include="../../game/scripts/Input/CursorChoice.cs" Link="Client/Controls/CursorChoice.cs" />
+    <Compile Include="../../game/scripts/Input/PlayerSwitch.cs" Link="Client/Controls/PlayerSwitch.cs" />
     <Compile Include="../../game/scripts/App/Faction.cs" Link="Client/Faction.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarLayout.cs" Link="Client/Hud/SidebarLayout.cs" />
     <Compile Include="../../game/scripts/Hud/CommandBarLayout.cs" Link="Client/Hud/CommandBarLayout.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="../../game/scripts/Hud/SidebarModel.cs" Link="Client/Hud/SidebarModel.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarGauges.cs" Link="Client/Hud/SidebarGauges.cs" />
     <Compile Include="../../game/scripts/Hud/EvaMessages.cs" Link="Client/Hud/EvaMessages.cs" />
+    <Compile Include="../../game/scripts/Hud/HealthPips.cs" Link="Client/Hud/HealthPips.cs" />
     <Compile Include="../../game/scripts/Input/PlacementPreview.cs" Link="Client/Controls/PlacementPreview.cs" />
     <Compile Include="../../game/scripts/Terrain/BuildingShapes.cs" Link="Client/Terrain/BuildingShapes.cs" />
     <Compile Include="../../game/scripts/Terrain/FogShades.cs" Link="Client/Terrain/FogShades.cs" />

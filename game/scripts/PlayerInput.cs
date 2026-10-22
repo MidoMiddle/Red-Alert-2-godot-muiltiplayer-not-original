@@ -324,6 +324,15 @@ public partial class PlayerInput : Node
         {
             ScatterSelection();
         }
+        else if (key.IsActionPressed("debug_switch_player", false, true) && OS.IsDebugBuild())
+        {
+            // M4 step 13: play the other side until the bot comes. The selection and the waypoints belong to the old player; its
+            // groups stay and come back with it, as the groups keep only own units.
+            _host.SwitchPlayer();
+            ChangeSelection(Selection.Clear);
+            WaypointArmed = false;
+            Waypoints.Clear();
+        }
         else if (key.IsActionPressed("guard", false, true) && !Selection.IsEmpty)
         {
             NextStance();

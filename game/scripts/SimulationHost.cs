@@ -28,7 +28,15 @@ namespace Rts.Client;
 /// </summary>
 public partial class SimulationHost : Node
 {
-    public static readonly PlayerId LocalPlayer = new(1);
+    /// <summary>The player at the keyboard: player 1, or the one F11 switched to in a debug build (M4 step 13).</summary>
+    public static PlayerId LocalPlayer { get; private set; } = new(1);
+
+    /// <summary>Debug (M4 step 13): the keyboard goes to the next player with units or buildings.</summary>
+    public void SwitchPlayer()
+    {
+        LocalPlayer = Controls.PlayerSwitch.Next(Simulation.World, LocalPlayer);
+        GD.Print($"[debug] playing as {LocalPlayer}");
+    }
 
     private const ulong MatchSeed = 42;
     private const int MaxTicksPerFrame = 5;
@@ -647,6 +655,7 @@ public partial class SimulationHost : Node
             ProductionCancelled cancelled when cancelled.Player == LocalPlayer =>
                 $"cancelled {ProductionRules.IdOf(Data.Database, cancelled.Kind, cancelled.DefIndex)}, {cancelled.Refund} back",
             LowPower low when low.Player == LocalPlayer => "LOW POWER",
+            UnderAttack attack when attack.Player == LocalPlayer => $"under attack at {attack.Point.ToCell().X},{attack.Point.ToCell().Y}",
             BuildingSold sold when sold.Player == LocalPlayer => $"sold {buildings[sold.DefIndex].Id}, {sold.Refund} back",
             RepairToggled toggled when Simulation.World.TryGet(toggled.Building, out var repaired) && repaired.Owner == LocalPlayer =>
                 toggled.On ? $"repairing {NameOf(toggled.Building)}" : "repair off",
