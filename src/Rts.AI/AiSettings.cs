@@ -59,6 +59,30 @@ public sealed record AiSettings
     /// <summary>An armed enemy this near the scout, in cells, makes it run home.</summary>
     public int ScoutDangerCells { get; init; } = 6;
 
+    /// <summary>The units the first squad needs before it may set out (4.7, M8's <c>minAttackArmy</c>).</summary>
+    public int MinAttackArmy { get; init; } = 8;
+
+    /// <summary>How much bigger every next wave is, in percent: 8, 10, 12, 15… units (4.7, <c>attackGrowthPerWave</c>).</summary>
+    public int AttackGrowthPercent { get; init; } = 125;
+
+    /// <summary>The strength a squad needs to set out, in percent of the enemy's the bot knows of (4.7, <c>attackThreshold</c>).</summary>
+    public int AttackThresholdPercent { get; init; } = 100;
+
+    /// <summary>A squad turns back below this share of its strength when it set out, in percent (4.7, <c>retreatAtStrength</c>).</summary>
+    public int RetreatAtStrengthPercent { get; init; } = 30;
+
+    /// <summary>The gathering point stands this many cells from the start toward the enemy.</summary>
+    public int GatherCells { get; init; } = 6;
+
+    /// <summary>A unit this far from the middle of its moving squad, in cells, makes the squad wait for it.</summary>
+    public int SquadSpreadCells { get; init; } = 6;
+
+    /// <summary>An armed enemy this near the middle of a squad, in cells, makes it fight.</summary>
+    public int EngageCells { get; init; } = 8;
+
+    /// <summary>A unit of a fighting squad with less than this share of its hit points, in percent, falls back behind the squad.</summary>
+    public int WoundedPercent { get; init; } = 35;
+
     /// <summary>The units the barracks keep in their queue (4.6).</summary>
     public int InfantryQueued { get; init; } = 2;
 

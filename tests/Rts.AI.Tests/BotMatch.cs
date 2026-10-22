@@ -20,17 +20,27 @@ internal sealed class BotMatch
     public static readonly PlayerId Bot = new(2);
 
     private readonly List<(int Tick, string Text)> _timeline = [];
+    private uint _personSequence;
 
     public BotMatch(string mapId = "frozen-crossing", ulong seed = 3)
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(GameDataFiles.Folder, "maps", mapId + ".rtsmap")));
         Setup = MatchSetups.OneOnOne(map, GameDataFiles.Rules.DefaultFaction.Id, seed);
         Simulation = new GameSimulation(SimulationSettings.ForMatch(Setup, map.ToMapGrid()), GameDataFiles.Rules);
-        MatchBots.AttachAll(Simulation);
+        foreach (var player in Setup.Players.Where(player => player.Kind == PlayerKind.Ai))
+        {
+            var bot = (AiPlayer)MatchBots.Create(Setup, player);
+            Simulation.AttachAi(bot);
+            Brain ??= bot;
+        }
+
         Recorder = new ReplayRecorder(Simulation);
     }
 
     public MatchSetup Setup { get; }
+
+    /// <summary>The bot of <see cref="Bot"/>: what it sees, remembers and plans.</summary>
+    public AiPlayer? Brain { get; }
 
     public GameSimulation Simulation { get; }
 
@@ -45,6 +55,28 @@ internal sealed class BotMatch
     /// <summary>The commands of the bot that changed nothing.</summary>
     public IEnumerable<Rts.Simulation.Commands.Command> RefusedBotCommands =>
         Simulation.RefusedCommands.Where(command => command.Player == Bot && command.Sequence >= Rts.Simulation.Ai.AiTurn.FirstSequence);
+
+    /// <summary>
+    /// Gives the person <paramref name="count"/> units of <paramref name="type"/> round their start on the next tick, by commands of the
+    /// person — so that a replay has them too. A cell with no room is passed over.
+    /// </summary>
+    public void GivePerson(UnitType type, int count)
+    {
+        var person = Setup.Players.First(player => player.Kind == PlayerKind.Human);
+        var given = 0;
+        for (var ring = 2; given < count && ring < 8; ring++)
+        {
+            for (var dx = -ring; dx <= ring && given < count; dx += 2)
+            {
+                var cell = new Rts.Simulation.Geometry.CellPos(person.Start.X + dx, person.Start.Y + ring);
+                if (World.Map.Contains(cell) && World.Map.CanEnter(cell, World.Rules.Unit(type).Locomotor) && !World.Map.HasBuilding(cell))
+                {
+                    Simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(person.Id, Simulation.CurrentTick, _personSequence++, type, cell.Center));
+                    given++;
+                }
+            }
+        }
+    }
 
     /// <summary>Plays until <paramref name="minutes"/> of the match are over.</summary>
     public BotMatch PlayTo(int minutes)

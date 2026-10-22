@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rts.AI.Squads;
 using Rts.Simulation.World;
 
 namespace Rts.AI;
@@ -26,6 +27,12 @@ public sealed class AiPlan
 
     /// <summary>Whether the army may be built now; the strategist of step 9 holds it back.</summary>
     public bool ArmyAllowed { get; internal set; } = true;
+
+    /// <summary>Whether a ready squad may set out (step 8); the strategist of step 9 holds it back.</summary>
+    public bool AttackAllowed { get; internal set; } = true;
+
+    /// <summary>The squads of the bot (step 8), in the order they were formed; the squad manager keeps them.</summary>
+    public IReadOnlyList<Squad> Squads { get; internal set; } = [];
 
     /// <summary>The economy's needs of this turn, in place of those of its last one.</summary>
     internal void SetEconomyWants(IEnumerable<int> wants)

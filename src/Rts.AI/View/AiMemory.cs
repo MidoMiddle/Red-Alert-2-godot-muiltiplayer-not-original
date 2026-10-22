@@ -61,6 +61,20 @@ public sealed class AiMemory
     /// </summary>
     public CellPos? LastEnemyCell { get; private set; }
 
+    /// <summary>
+    /// The side of the enemy as far as the bot knows: an enemy building it remembers, else an army, else where it last saw an enemy,
+    /// else the first start where an enemy may be; null with nothing known. Defenses face it (step 5), squads gather toward it (step 8).
+    /// </summary>
+    public CellPos? LikelyEnemyCell() =>
+        Buildings.Count > 0 ? Buildings[0].Cell
+        : Armies.Count > 0 ? Armies[0].Centre.ToCell()
+        : LastEnemyCell is { } last ? last
+        : PossibleEnemyStarts.Count > 0 ? PossibleEnemyStarts[0]
+        : null;
+
+    /// <summary>The strength of a unit as of a squad (4.6): its cost × the share of its hit points left.</summary>
+    public int StrengthOf(Unit unit) => unit.MaxHp > 0 && _costs is { } costs ? costs[(int)unit.Type] * unit.Hp / unit.MaxHp : 0;
+
     internal void Update(AiWorldView view)
     {
         RememberBuildings(view);
@@ -119,7 +133,7 @@ public sealed class AiMemory
             var cell = unit.Position.ToCell();
             var key = Key(cell.X / BlockCells, cell.Y / BlockCells);
             _blocks.TryGetValue(key, out var block);
-            var strength = unit.MaxHp > 0 ? _costs[(int)unit.Type] * unit.Hp / unit.MaxHp : 0;
+            var strength = StrengthOf(unit);
             var infantry = unit.Archetype.Category == UnitCategory.Infantry ? 1 : 0;
             _blocks[key] = (block.X + unit.Position.X, block.Y + unit.Position.Y, block.Units + 1, block.Infantry + infantry, block.Strength + strength);
         }

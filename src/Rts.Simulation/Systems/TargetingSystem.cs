@@ -99,6 +99,12 @@ public static class TargetingSystem
     }
 
     /// <summary>
+    /// Whether a unit of <paramref name="type"/> can hurt <paramref name="target"/> — what an <c>AttackCommand</c> asks of every unit it
+    /// orders; a bot asks it before it orders one (M5, step 8).
+    /// </summary>
+    public static bool CanHurt(GameRules rules, UnitType type, Entity target) => BestShare(rules, rules.WeaponsOf(type), target) > 0;
+
+    /// <summary>
     /// The best share in percent of the weapons that hit ground against the candidate's armor; 0 when none can hurt it.
     /// </summary>
     internal static int BestShare(GameRules rules, ImmutableArray<int> weapons, Entity candidate)

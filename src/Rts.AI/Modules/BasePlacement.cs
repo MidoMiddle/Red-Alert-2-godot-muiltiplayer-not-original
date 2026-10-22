@@ -168,12 +168,7 @@ public sealed class BasePlacement
             return null;
         }
 
-        CellPos? enemy = memory.Buildings.Count > 0 ? memory.Buildings[0].Cell
-            : memory.Armies.Count > 0 ? memory.Armies[0].Centre.ToCell()
-            : memory.LastEnemyCell is { } last ? last
-            : memory.PossibleEnemyStarts.Count > 0 ? memory.PossibleEnemyStarts[0]
-            : null;
-        if (enemy is not { } at)
+        if (memory.LikelyEnemyCell() is not { } at)
         {
             return null;
         }
