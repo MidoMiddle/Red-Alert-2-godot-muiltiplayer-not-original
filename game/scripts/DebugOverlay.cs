@@ -67,7 +67,8 @@ public partial class DebugOverlay : CanvasLayer
             DescribeQueues(simulation.World, simulation.World.Player(SimulationHost.LocalPlayer)) +
             DescribeTool() +
             (_host.Notice.Length > 0 ? $"base: {_host.Notice}\n" : "") +
-            DescribeCell(simulation.World, _input.CellUnderPointer) + $" · cursor {CursorSet.Shown?.ToString() ?? "-"}\n" +
+            DescribeCell(simulation.World, _input.CellUnderPointer) + DescribeVision(simulation.World, _input.CellUnderPointer)
+            + $" · cursor {CursorSet.Shown?.ToString() ?? "-"}\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
             (_cellOverlay is null ? "" : _cellOverlay.Description + "\n") +
@@ -79,6 +80,10 @@ public partial class DebugOverlay : CanvasLayer
             (_host.ReplayStatus.Length > 0 ? $"replay: {_host.ReplayStatus}\n" : "") +
             _controls;
     }
+
+    /// <summary><c> · visible</c>, <c> · fog</c> or <c> · shroud</c>: what the local player knows of the cell (M4 step 11).</summary>
+    private static string DescribeVision(GameWorld world, CellPos? pointer) =>
+        pointer is { } cell ? " · " + world.VisionOf(SimulationHost.LocalPlayer).StateAt(cell).ToString().ToLowerInvariant() : "";
 
     /// <summary>The selected unit when exactly one is selected and alive.</summary>
     private Unit? SelectedUnit(GameWorld world) =>

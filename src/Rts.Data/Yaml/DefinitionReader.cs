@@ -23,7 +23,7 @@ internal static class DefinitionReader
 
     private static readonly string[] BuildingKeys =
     [
-        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered",
+        "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon",
     ];
 
@@ -117,6 +117,7 @@ internal static class DefinitionReader
             ExtendsBase = fields.Optional("extends_base", Scalars.Flag, true),
             Wall = fields.Optional("wall", Scalars.Flag, false),
             Powered = fields.Optional("powered", Scalars.Flag, false),
+            Sight = fields.Optional("sight", Scalars.Int, 0),
             Radar = fields.Optional("radar", Scalars.Flag, false),
             Armor = fields.Optional("armor", Scalars.Id, ""),
             Primary = fields.Optional("primary", Scalars.Id, ""),

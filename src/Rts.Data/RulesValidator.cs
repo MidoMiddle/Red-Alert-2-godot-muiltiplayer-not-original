@@ -141,6 +141,7 @@ internal static class RulesValidator
             Positive(building.Id, "build_time", building.BuildTime);
             NotNegative(building.Id, "build_up", building.BuildUp);
             NotNegative(building.Id, "threat", building.Threat);
+            NotNegative(building.Id, "sight", building.Sight);
             if (building.Adjacent is < 0 or > BuildingDef.MaxAdjacent)
             {
                 Error(building.Id, "adjacent", $"'adjacent' of '{building.Id}' must be 0 to {BuildingDef.MaxAdjacent} cells");

@@ -125,6 +125,7 @@ public static class DataHasher
             Add(hash, building.Armor);
             Add(hash, building.Primary);
             hash.Add(building.Threat);
+            hash.Add(building.Sight);
         }
 
         hash.Add(rules.Factions.Length);

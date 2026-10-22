@@ -109,6 +109,7 @@ public sealed class StanceTests
         tank.Stance = Stance.Guard;
         tank.Anchor = new CellPos(10, 10).Center;                                                // 15 cells off the anchor: beyond 6 + 5.75
 
+        VisibilitySystem.Update(world);
         world.CurrentTick = (TargetingSystem.Period - (tank.Id.Value % TargetingSystem.Period)) % TargetingSystem.Period;
         TargetingSystem.Update(world);
         Assert.Null(tank.Target);
@@ -126,6 +127,7 @@ public sealed class StanceTests
         var enemy = world.SpawnUnit(Player2, UnitType.Engineer, new CellPos(22, 10).Center);    // 12 cells: beyond the sight of 8
         tank.Target = enemy.Id;
 
+        VisibilitySystem.Update(world);
         world.CurrentTick = (TargetingSystem.Period - (tank.Id.Value % TargetingSystem.Period)) % TargetingSystem.Period;
         TargetingSystem.Update(world);
 

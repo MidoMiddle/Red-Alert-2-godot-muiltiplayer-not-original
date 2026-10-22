@@ -59,6 +59,9 @@ public sealed class GameSimulation
         var tick = World.CurrentTick;
         _events.Clear();
 
+        // 0. What appeared between ticks — the buildings of the map, the units of a test — is seen before the commands (M4 step 11).
+        VisibilitySystem.Update(World);
+
         // 1. Commands of tick T, ordered by (Player, Sequence), validated and applied.
         foreach (var command in _commands.TakeForTick(tick))
         {
@@ -89,8 +92,9 @@ public sealed class GameSimulation
         OreGrowthSystem.Update(World);
         TechTree.Update(World, _events);
 
-        // 6. The cells of the buildings that fell open (M4 step 9); entities that died this tick leave the world.
+        // 6. The cells of the buildings that fell open (M4 step 9), the players see anew (step 11); entities that died this tick leave the world.
         DeathSystem.Update(World, _events);
+        VisibilitySystem.Update(World);
         World.RemoveDead();
 
         // 7. Next tick.

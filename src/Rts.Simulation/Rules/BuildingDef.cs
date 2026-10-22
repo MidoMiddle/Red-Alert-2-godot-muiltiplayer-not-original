@@ -71,6 +71,9 @@ public sealed record BuildingDef : IDefinition
     /// <summary>How dangerous it is, for the choice of targets (RA2 <c>ThreatPosed</c>, M4, 4.10).</summary>
     public int Threat { get; init; }
 
+    /// <summary>Sight radius in cells from the middle of the footprint (RA2 <c>Sight</c>, M4, 4.14); height adds to it.</summary>
+    public int Sight { get; init; }
+
     /// <summary>Id of the weapon of a defense (RA2 <c>Primary</c>); empty for a building that does not fight.</summary>
     public string Primary { get; init; } = "";
 

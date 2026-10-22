@@ -144,6 +144,7 @@ public sealed class DataHasherTests
         ("building extends base", Building(b => b with { ExtendsBase = false })),
         ("building wall", Building(b => b with { Wall = !b.Wall })),
         ("building powered", Building(b => b with { Powered = !b.Powered })),
+        ("building sight", Building(b => b with { Sight = b.Sight + 1 })),
         ("building radar", Building(b => b with { Radar = !b.Radar })),
         ("building produces", Building(b => b with { Produces = [ProductionCategory.Infantry] })),
         ("building dock", Building(b => b with { DockCell = new CellPos(1, 4) })),
@@ -165,8 +166,8 @@ public sealed class DataHasherTests
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
         // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
-        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units; step 8: crusher and crushable; step 10: wall and powered.
-        Assert.Equal(0x4c2b82930156c313UL, Hash(Files()));
+        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units; step 8: crusher and crushable; step 10: wall and powered; step 11: the sight of buildings.
+        Assert.Equal(0x250b724c61efddf3UL, Hash(Files()));
     }
 
     [Fact]

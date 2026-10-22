@@ -242,7 +242,20 @@ internal static class TestRules
             BuildUp = 23,
             Prerequisites = [.. prerequisites],
             Armor = "wood",
+            Sight = BuildingSight(id),
         };
+
+    // The sight of game/data (M4 step 11, RA2): both rules must give the buildings the same.
+    private static int BuildingSight(string id) => id switch
+    {
+        "construction_yard" or "tesla_coil" => 8,
+        "barracks" or "tech_center" => 6,
+        "radar" => 10,
+        "wall" => 1,
+        "sentry_bunker" => 7,
+        "flak_cannon" => 5,
+        _ => 4,
+    };
 
     private static BuildingDef Defense(string id, int width, int height, int power, string weapon, params string[] prerequisites) =>
         Def(id, width, height, power, prerequisites) with

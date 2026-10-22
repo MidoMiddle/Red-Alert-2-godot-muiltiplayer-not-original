@@ -206,12 +206,14 @@ public sealed class RulesLoaderTests
               hp: 1
               footprint: [2, 2]
               powered: true
+              sight: 8
             """);
 
         var post = rules.Buildings.Single(building => building.Id == "post");
         var coil = rules.Buildings.Single(building => building.Id == "coil");
         Assert.Equal((true, false), (post.Wall, post.Powered));
         Assert.Equal((false, true), (coil.Wall, coil.Powered));
+        Assert.Equal((0, 8), (post.Sight, coil.Sight));
     }
 
     [Fact]

@@ -8,6 +8,7 @@ construction_yard:  # Construction Yard; comes from the MCV
   cost: 3000
   build_time: 126s
   hp: 1000
+  sight: 8
   armor: concrete
   footprint: [3, 3]
   produces: [building, defense]
@@ -20,6 +21,7 @@ reactor:  # Tesla Reactor
   cost: 600
   build_time: 25.2s
   hp: 750
+  sight: 4
   footprint: [2, 2]
   power: 150
   prerequisites: [construction_yard]
@@ -32,6 +34,7 @@ refinery:  # Ore Refinery; gives a free harvester
   cost: 2000
   build_time: 84s
   hp: 1000
+  sight: 4
   footprint: [3, 3]
   power: -50
   # The harvesters unload standing under the middle of the refinery.
@@ -46,6 +49,7 @@ barracks:  # Barracks
   cost: 500
   build_time: 21s
   hp: 500
+  sight: 6
   armor: steel
   footprint: [2, 2]
   power: -10
@@ -61,6 +65,7 @@ war_factory:  # War Factory
   cost: 2000
   build_time: 84s
   hp: 1000
+  sight: 4
   footprint: [3, 4]
   power: -25
   produces: [vehicle]
@@ -75,6 +80,7 @@ radar:  # Radar Tower
   cost: 1000
   build_time: 42s
   hp: 1000
+  sight: 10
   footprint: [2, 2]
   power: -50
   radar: true
@@ -88,6 +94,7 @@ tech_center:  # Battle Lab
   cost: 2000
   build_time: 84s
   hp: 500
+  sight: 6
   footprint: [3, 3]
   power: -100
   prerequisites: [war_factory, radar]
@@ -100,6 +107,7 @@ wall:  # Wall; placed by dragging
   cost: 100
   build_time: 4.2s
   hp: 300
+  sight: 1
   armor: concrete
   footprint: [1, 1]
   wall: true
@@ -114,6 +122,7 @@ sentry_bunker:  # Sentry Gun
   cost: 500
   build_time: 21s
   hp: 400
+  sight: 7
   threat: 20
   primary: sentry_machine_gun
   footprint: [1, 1]
@@ -128,6 +137,7 @@ tesla_coil:  # Tesla Coil
   cost: 1500
   build_time: 63s
   hp: 600
+  sight: 8
   threat: 40
   primary: tesla_coil_bolt
   footprint: [2, 2]
@@ -142,6 +152,7 @@ flak_cannon:  # Flak Cannon
   cost: 1000
   build_time: 42s
   hp: 900
+  sight: 5
   threat: 10
   primary: flak_cannon_gun
   footprint: [2, 2]

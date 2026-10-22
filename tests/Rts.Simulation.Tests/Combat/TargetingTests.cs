@@ -21,9 +21,10 @@ public sealed class TargetingTests
     private static Unit Spawn(GameWorld world, PlayerId owner, UnitType type, int x, int y) =>
         world.SpawnUnit(owner, type, new CellPos(x, y).Center);
 
-    /// <summary>Runs the targeting on a tick where the unit looks again.</summary>
+    /// <summary>Runs the targeting on a tick where the unit looks again, with the players seeing what stands now (step 11).</summary>
     private static void Look(GameWorld world, Entity entity)
     {
+        VisibilitySystem.Update(world);
         world.CurrentTick = (TargetingSystem.Period - (entity.Id.Value % TargetingSystem.Period)) % TargetingSystem.Period;
         TargetingSystem.Update(world);
     }
@@ -123,6 +124,7 @@ public sealed class TargetingTests
         var world = World();
         var tank = Spawn(world, Player1, UnitType.HeavyTank, 10, 10);
         var enemy = Spawn(world, Player2, UnitType.Conscript, 13, 10);
+        VisibilitySystem.Update(world);
         var looked = new List<int>();
         for (var tick = 0; tick < 12; tick++)
         {
@@ -183,6 +185,21 @@ public sealed class TargetingTests
 
         Assert.Null(harvester.Target);
         Assert.Equal(nearTank.Id, tank.Target);
+    }
+
+    [Fact]
+    public void A_rocketeer_takes_an_enemy_beyond_its_sight_only_when_another_of_its_own_sees_it()
+    {
+        var world = World();
+        var rocketeer = Spawn(world, Player1, UnitType.Rocketeer, 10, 10);        // rocket range 6, sight 5
+        var tank = Spawn(world, Player2, UnitType.HeavyTank, 16, 10);             // 6 cells: in range, out of sight
+
+        Look(world, rocketeer);
+        Assert.Null(rocketeer.Target);
+
+        Spawn(world, Player1, UnitType.Engineer, 15, 13);                          // a spotter
+        Look(world, rocketeer);
+        Assert.Equal(tank.Id, rocketeer.Target);
     }
 
     [Fact]

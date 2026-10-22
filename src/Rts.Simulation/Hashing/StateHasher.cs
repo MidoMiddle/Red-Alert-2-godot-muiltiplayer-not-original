@@ -59,6 +59,12 @@ public static class StateHasher
             }
         }
 
+        // Rules v35 (M4 step 11): what every player sees — the cells seen now with their counts, and the explored marks.
+        for (var player = 1; player <= PlayerId.MaxPlayers; player++)
+        {
+            AddVision(hash, world.VisionOf(new PlayerId(player)));
+        }
+
         hash.Add(world.Entities.Count);
         foreach (var entity in world.Entities)
         {
@@ -66,6 +72,31 @@ public static class StateHasher
         }
 
         return hash.Value;
+    }
+
+    private static void AddVision(Fnv1a64 hash, Visibility.VisibilityGrid grid)
+    {
+        var counts = grid.Counts;
+        var seen = 0;
+        foreach (var count in counts)
+        {
+            seen += count != 0 ? 1 : 0;
+        }
+
+        hash.Add(seen);
+        for (var i = 0; i < counts.Length; i++)
+        {
+            if (counts[i] != 0)
+            {
+                hash.Add(i);
+                hash.Add((int)counts[i]);
+            }
+        }
+
+        foreach (var word in grid.Explored)
+        {
+            hash.Add(word);
+        }
     }
 
     private static void AddWeapons(Fnv1a64 hash, EntityId? target, Combat.WeaponInstance[] weapons)

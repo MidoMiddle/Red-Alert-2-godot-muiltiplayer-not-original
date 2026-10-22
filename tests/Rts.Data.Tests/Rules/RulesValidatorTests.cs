@@ -288,6 +288,7 @@ public sealed class RulesValidatorTests
     [InlineData(Buildings, "cost: 600", "cost: 0", "'cost' of 'reactor' must be above zero")]
     [InlineData(Units, "hp: 150", "hp: -1", "'hp' of 'conscript' must be above zero")]
     [InlineData(Units, "speed: 40", "speed: -40", "'speed' of 'heavy_tank' must not be negative")]
+    [InlineData(Buildings, "power: 150", "power: 150\n  sight: -2", "'sight' of 'reactor' must not be negative")]
     [InlineData(Buildings, "footprint: [2, 2]", "footprint: [7, 1]", "the footprint of 'reactor' must be 1 to 6 cells a side, not [7, 1]")]
     [InlineData(Buildings, "footprint: [2, 2]", "footprint: [0, 2]", "the footprint of 'reactor' must be 1 to 6 cells a side, not [0, 2]")]
     [InlineData(Buildings, "exit_cell: [1, 3]", "exit_cell: [1, 6]", "the exit cell [1, 6] of 'war_factory' must be in its footprint or next to it")]

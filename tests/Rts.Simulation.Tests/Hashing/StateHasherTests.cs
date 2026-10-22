@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "credits", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
+        "vision", "explored", "credits", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
     };
 
     [Theory]
@@ -67,6 +67,8 @@ public sealed class StateHasherTests
             case "speed": moving.Speed++; break;
             case "unit hp": moving.Hp--; break;
             case "attack target": moving.Target = idle.Id; break;
+            case "vision": world.VisionOf(new PlayerId(1)).Reveal(new CellPos(1, 1), 0); world.VisionOf(new PlayerId(1)).Hide(new CellPos(1, 1), 0); world.VisionOf(new PlayerId(2)).Reveal(new CellPos(30, 30), 1); break;
+            case "explored": world.VisionOf(new PlayerId(3)).Reveal(new CellPos(2, 2), 0); world.VisionOf(new PlayerId(3)).Hide(new CellPos(2, 2), 0); break;
             case "stance": moving.Stance = Stance.Guard; break;
             case "anchor": moving.Anchor += new WorldPos(1, 0); break;
             case "target order": moving.TargetOrder = TargetOrder.Attack; break;
@@ -194,7 +196,13 @@ public sealed class StateHasherTests
     /// a field was added or removed: update StateHasher first, then this list.
     /// </summary>
     [Theory]
-    [InlineData(typeof(Entity), new[] { "<Id>k__BackingField", "<Owner>k__BackingField", "<IsAlive>k__BackingField" })]
+    [InlineData(typeof(Entity), new[]
+    {
+        "<Id>k__BackingField", "<Owner>k__BackingField", "<IsAlive>k__BackingField",
+        // The sight circle an entity added (M4 step 11): derived from where it stands; the grids it went into are hashed.
+        "<SightCell>k__BackingField", "<SightRadius>k__BackingField",
+    })]
+    [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[] { "_counts", "_explored", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(Unit), new[]
     {
         "<Archetype>k__BackingField", "<Harvester>k__BackingField", "<Position>k__BackingField", "<MoveTarget>k__BackingField", "<Speed>k__BackingField",
@@ -218,7 +226,7 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(GameWorld), new[]
     {
-        "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField",
+        "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField", "_vision",
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
         // Derived from unit positions and rebuilt from them; not hashed (docs/implementation/M2_unit_control.md, 4.9).
         "<Spatial>k__BackingField",

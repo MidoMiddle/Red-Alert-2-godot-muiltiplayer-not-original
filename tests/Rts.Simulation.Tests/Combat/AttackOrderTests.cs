@@ -47,6 +47,7 @@ public sealed class AttackOrderTests
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, 10, 10);
         var engineer = Spawn(simulation, Player2, UnitType.Engineer, 22, 10);          // 12 cells: beyond the sight of 8
         var conscript = Spawn(simulation, Player2, UnitType.Conscript, 10, 13);        // 3 cells, threat 10 against 5
+        Spawn(simulation, Player1, UnitType.Engineer, 22, 13);                         // an own spotter: the order needs the target seen
         simulation.Enqueue(Attack(simulation, [tank], engineer.Id));
         simulation.Step();
 
@@ -88,6 +89,44 @@ public sealed class AttackOrderTests
     }
 
     [Fact]
+    public void An_attack_on_an_enemy_the_player_does_not_see_is_refused_and_one_it_sees_is_taken()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var tank = Spawn(simulation, Player1, UnitType.HeavyTank, 10, 10);
+        var hidden = Spawn(simulation, Player2, UnitType.Engineer, 30, 10);           // 20 cells off: in the shroud
+        VisibilitySystem.Update(world);
+
+        Assert.False(CommandProcessor.Apply(world, Attack(simulation, [tank], hidden.Id)));
+        Assert.False(CommandProcessor.Apply(world, new ForceAttackCommand(Player1, 0, _sequence++, [tank.Id], hidden.Id, WorldPos.Zero)));
+
+        // An own engineer next to it: now the player sees it.
+        Spawn(simulation, Player1, UnitType.Engineer, 30, 12);
+        VisibilitySystem.Update(world);
+
+        Assert.True(CommandProcessor.Apply(world, Attack(simulation, [tank], hidden.Id)));
+    }
+
+    [Fact]
+    public void An_ordered_attack_ends_when_the_target_goes_out_of_sight()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var tank = Spawn(simulation, Player1, UnitType.HeavyTank, 10, 10);
+        var spotter = Spawn(simulation, Player1, UnitType.Engineer, 30, 12);
+        var enemy = Spawn(simulation, Player2, UnitType.Engineer, 30, 10);
+        VisibilitySystem.Update(world);
+        Assert.True(CommandProcessor.Apply(world, Attack(simulation, [tank], enemy.Id)));
+
+        // The spotter dies: nobody of the player sees the engineer any more.
+        DeathSystem.Kill(world, spotter, EntityId.None, Events.DeathCause.Weapon, -1, null);
+        simulation.Step();
+
+        Assert.Equal(TargetOrder.None, tank.TargetOrder);
+        Assert.NotEqual(enemy.Id, tank.Target);
+    }
+
+    [Fact]
     public void Units_that_cannot_attack_are_left_out_and_a_harvester_keeps_to_its_work()
     {
         var simulation = Match();
@@ -97,6 +136,7 @@ public sealed class AttackOrderTests
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, 12, 10);
         var enemy = Spawn(simulation, Player2, UnitType.HeavyTank, 18, 10);
         var mode = harvester.Harvester!.Mode;
+        VisibilitySystem.Update(world);
 
         Assert.False(CommandProcessor.Apply(world, Attack(simulation, [engineer], enemy.Id)));
         Assert.True(CommandProcessor.Apply(world, Attack(simulation, [engineer, harvester, tank], enemy.Id)));
@@ -204,6 +244,7 @@ public sealed class AttackOrderTests
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, 10, 10);
         var enemy = Spawn(simulation, Player2, UnitType.Engineer, 30, 10);
+        Spawn(simulation, Player1, UnitType.Engineer, 30, 13);                         // an own spotter: the order needs the target seen
         simulation.Enqueue(Attack(simulation, [tank], enemy.Id));
         Play(simulation, 40);
         Assert.NotEqual(new CellPos(10, 10).Center, tank.Position);

@@ -3,6 +3,7 @@ using Rts.Simulation.Combat;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Systems;
@@ -21,8 +22,8 @@ namespace Rts.Simulation.Systems;
 /// cells and its range from its anchor. With nothing in reach it keeps its target only while that is still in reach: a target that
 /// left its sight is dropped. A unit with a target ordered by the player does not look while that stands, nor does a unit on a leg of
 /// a plain move: such a move ignores the enemies until it arrives (4.12). Neutral units and buildings look for nothing, nor does a defense off for want of
-/// power (<see cref="Defenses.IsOnline"/>, step 10). The fog of war
-/// comes in step 11: until then every enemy counts as seen.
+/// power (<see cref="Defenses.IsOnline"/>, step 10). Only what the owner sees counts (<see cref="Vision.Sees"/>, step 11): a target
+/// gone into the fog is dropped, an ordered one too.
 /// </summary>
 public static class TargetingSystem
 {
@@ -133,10 +134,14 @@ public static class TargetingSystem
     /// <summary>A unit on a leg of a plain move: it does not look for enemies until it arrives.</summary>
     internal static bool IsMoving(Unit unit) => unit.Orders.Length > 0 && !unit.IsAttackMoving;
 
-    /// <summary>The ordered target fell: the unit chooses by itself again. A forced attack on the ground lasts until another order.</summary>
+    /// <summary>
+    /// The ordered target fell or went out of sight (step 11, "follow it while it is seen"): the unit chooses by itself again. A forced
+    /// attack on the ground lasts until another order.
+    /// </summary>
     private static void EndFallenOrder(GameWorld world, Unit unit)
     {
-        if (unit.TargetPoint is null && (unit.Target is not { } id || !world.TryGet(id, out var target) || !target.IsAlive))
+        if (unit.TargetPoint is null
+            && (unit.Target is not { } id || !world.TryGet(id, out var target) || !target.IsAlive || !Vision.Sees(world, unit.Owner, target)))
         {
             unit.Target = null;
             unit.TargetOrder = TargetOrder.None;
@@ -185,7 +190,7 @@ public static class TargetingSystem
         foreach (var id in nearby)
         {
             if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || candidate.Owner == me.Owner || candidate.Owner.IsNeutral
-                || !area.Holds(candidate))
+                || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate))
             {
                 continue;
             }
@@ -205,7 +210,8 @@ public static class TargetingSystem
             }
         }
 
-        if (best is null && current is { } kept && world.TryGet(kept, out var target) && target.IsAlive && area.Holds(target))
+        if (best is null && current is { } kept && world.TryGet(kept, out var target) && target.IsAlive && area.Holds(target)
+            && Vision.Sees(world, me.Owner, target))
         {
             return kept;
         }

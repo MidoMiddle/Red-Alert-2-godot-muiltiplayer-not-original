@@ -1,0 +1,66 @@
+using Rts.Simulation.Geometry;
+using Rts.Simulation.Visibility;
+using Rts.Simulation.World;
+
+namespace Rts.Simulation.Systems;
+
+/// <summary>
+/// Keeps the <see cref="VisibilityGrid"/> of every player up to date (docs/implementation/M4_combat.md, 4.14), at the end of the tick
+/// before the dead leave, and at its start for what appeared between ticks (the buildings of the map, the units a test places). Every living unit and building of a player sees a circle: a unit from its cell, <see cref="SightRules.SightOf"/>
+/// cells; a building — growing or ready — from the middle cell of its footprint, its <c>sight</c> plus the height bonus there. An entity
+/// remembers the circle it added (<see cref="Entity.SightCell"/>, <see cref="Entity.SightRadius"/>): when it changes, the old circle
+/// is taken away and the new one added; when the entity dies, its circle goes. An unchanged entity costs nothing. Neutral entities and
+/// shots see nothing.
+/// </summary>
+public static class VisibilitySystem
+{
+    public static void Update(GameWorld world)
+    {
+        foreach (var entity in world.Entities)
+        {
+            if (entity is not (Unit or Building))
+            {
+                continue;
+            }
+
+            var (cell, radius) = entity.IsAlive ? SightOf(world, entity) : (null, 0);
+            if (cell == entity.SightCell && radius == entity.SightRadius)
+            {
+                continue;
+            }
+
+            if (entity.SightCell is { } old)
+            {
+                world.VisionOf(entity.Owner).Hide(old, entity.SightRadius);
+            }
+
+            if (cell is { } now)
+            {
+                world.VisionOf(entity.Owner).Reveal(now, radius);
+            }
+
+            entity.SightCell = cell;
+            entity.SightRadius = radius;
+        }
+    }
+
+    /// <summary>The cell and radius the entity sees from now; no cell when it sees nothing.</summary>
+    public static (CellPos? Cell, int Radius) SightOf(GameWorld world, Entity entity)
+    {
+        if (entity.Owner.IsNeutral || entity.Owner.Value > PlayerId.MaxPlayers)
+        {
+            return (null, 0);
+        }
+
+        switch (entity)
+        {
+            case Unit unit when world.Contains(unit.Position):
+                return (unit.Position.ToCell(), SightRules.SightOf(unit, world.Map));
+            case Building { Def: { Sight: > 0 } def } building:
+                var middle = new CellPos(building.Cell.X + building.Width / 2, building.Cell.Y + building.Height / 2);
+                return (middle, SightRules.SightAt(world.Map, middle, def.Sight));
+            default:
+                return (null, 0);
+        }
+    }
+}

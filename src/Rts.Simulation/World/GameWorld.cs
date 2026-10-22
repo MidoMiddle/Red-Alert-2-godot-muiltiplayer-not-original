@@ -19,6 +19,7 @@ public sealed class GameWorld
 {
     private readonly List<Entity> _entities = new();
     private readonly PlayerState[] _players;
+    private readonly Visibility.VisibilityGrid[] _vision;
     private int _nextEntityId = 1;
 
     /// <summary>
@@ -44,6 +45,12 @@ public sealed class GameWorld
         for (var i = 0; i < _players.Length; i++)
         {
             _players[i] = new PlayerState(new PlayerId(i + 1), rules.DefaultFaction, startingCredits, rules.Database);
+        }
+
+        _vision = new Visibility.VisibilityGrid[PlayerId.MaxPlayers];
+        for (var i = 0; i < _vision.Length; i++)
+        {
+            _vision[i] = new Visibility.VisibilityGrid(map.Width, map.Height);
         }
 
         Random = new DeterministicRandom(seed);
@@ -273,6 +280,18 @@ public sealed class GameWorld
 
         return false;
     }
+
+    /// <summary>What a player 1…8 sees (M4 step 11).</summary>
+    public Visibility.VisibilityGrid VisionOf(PlayerId player) =>
+        player.Value is >= 1 and <= PlayerId.MaxPlayers
+            ? _vision[player.Value - 1]
+            : throw new ArgumentOutOfRangeException(nameof(player), player, "Only the players 1…8 see.");
+
+    /// <summary>
+    /// The players whose sight a player shares, as a mask of bit <c>player − 1</c> (M4, 4.14). Until the teams of the lobby (M6) every
+    /// player is alone.
+    /// </summary>
+    public int AlliesOf(PlayerId player) => player.Value is >= 1 and <= PlayerId.MaxPlayers ? 1 << (player.Value - 1) : 0;
 
     /// <summary>The economy of a player 1…8.</summary>
     public PlayerState Player(PlayerId player) =>
