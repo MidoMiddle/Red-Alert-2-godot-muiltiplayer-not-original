@@ -19,7 +19,14 @@ public sealed class Unit : Entity
         TurnRate = archetype.TurnRate;
         Harvester = archetype.Harvests ? new Harvester() : null;
         Hp = archetype.Hp;
+        Weapons = !archetype.Armed ? [] : archetype.Secondary >= 0 ? [new(), new()] : [new()];
     }
+
+    /// <summary>What the unit shoots at (M4, 4.7): a unit or a building; null without a target. State: hashed.</summary>
+    public EntityId? Target { get; internal set; }
+
+    /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
+    public Combat.WeaponInstance[] Weapons { get; }
 
     /// <summary>Hit points left (M4, 4.4): whole on arrival; weapons take them from step 5 on. State: hashed.</summary>
     public int Hp { get; internal set; }

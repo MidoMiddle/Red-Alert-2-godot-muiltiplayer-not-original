@@ -22,6 +22,64 @@ internal static class TestRules
     /// <summary>The rules of one unit type.</summary>
     public static UnitArchetype Unit(UnitType type) => Standard.Unit(type);
 
+    /// <summary>The standard rules with one weapon changed, for tests of what the data does not have (a volley, a nearest range).</summary>
+    public static GameRules WithWeapon(string id, System.Func<WeaponDef, WeaponDef> change)
+    {
+        var standard = Database();
+        var builder = new RulesBuilder();
+        foreach (var definition in standard.Locomotors)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Terrains)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Weapons)
+        {
+            builder.Add(definition.Id == id ? change(definition) : definition);
+        }
+
+        foreach (var definition in standard.Units)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Buildings)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Factions)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Economies)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Armors)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Warheads)
+        {
+            builder.Add(definition);
+        }
+
+        foreach (var definition in standard.Projectiles)
+        {
+            builder.Add(definition);
+        }
+
+        return GameRules.From(builder.Build());
+    }
+
     public static RulesDatabase Database()
     {
         var builder = new RulesBuilder();

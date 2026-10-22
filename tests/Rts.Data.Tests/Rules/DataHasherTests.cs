@@ -105,6 +105,7 @@ public sealed class DataHasherTests
         ("unit prerequisites", Unit(u => u with { Prerequisites = ["war_factory", "reactor"] })),
         ("unit primary", Unit(u => u with { Primary = "" })),
         ("unit secondary", Unit(u => u with { Secondary = "heavy_tank_cannon" })),
+        ("unit turret turn rate", Unit(u => u with { TurretTurnRate = 1024 })),
         ("building armor", Building(b => b with { Armor = "heavy" })),
         ("building primary", Building(b => b with { Primary = "heavy_tank_cannon" })),
         ("weapon min range", d => d is WeaponDef w ? w with { MinRange = Fixed.One } : d),
@@ -157,8 +158,8 @@ public sealed class DataHasherTests
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
         // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
-        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which.
-        Assert.Equal(0xf858e70c3023cbd3UL, Hash(Files()));
+        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets.
+        Assert.Equal(0x9671015e17ca38ddUL, Hash(Files()));
     }
 
     [Fact]

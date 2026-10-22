@@ -42,7 +42,14 @@ public sealed class Building : Entity
         Height = def.Footprint.Height;
         Hp = def.Hp;
         BuildUpLeft = buildUp;
+        Weapons = def.Primary.Length > 0 ? [new()] : [];
     }
+
+    /// <summary>What a defense shoots at (M4, 4.7); null without a target. State: hashed.</summary>
+    public EntityId? Target { get; internal set; }
+
+    /// <summary>The state of the weapon of a defense; empty for any other building.</summary>
+    public Combat.WeaponInstance[] Weapons { get; } = [];
 
     /// <summary>The kind of a building of the map; 0 for a building of a player.</summary>
     public BuildingKind Kind { get; }

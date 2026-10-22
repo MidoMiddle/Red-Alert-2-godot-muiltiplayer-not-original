@@ -15,6 +15,9 @@ namespace Rts.Simulation.World;
 /// <param name="UnloadRate">Credits unloaded per tick at a dock.</param>
 /// <param name="Hp">Hit points of a whole unit (M4 step 2).</param>
 /// <param name="Armor">The number of its armor type: its place in <see cref="Rules.RulesDatabase.Armors"/> (M4 step 2).</param>
+/// <param name="TurretTurnRate"><c>BAngle</c> units per tick the turret turns; 0 turns at once (M4 step 3).</param>
+/// <param name="Primary">The position of the main weapon in <see cref="Rules.RulesDatabase.Weapons"/>; -1 without one (M4 step 3).</param>
+/// <param name="Secondary">The position of the second weapon; -1 without one.</param>
 public sealed record UnitArchetype(
     UnitType Type,
     string Id,
@@ -29,8 +32,14 @@ public sealed record UnitArchetype(
     int HarvestTime = 0,
     int UnloadRate = 0,
     int Hp = 1,
-    int Armor = 0)
+    int Armor = 0,
+    int TurretTurnRate = 0,
+    int Primary = -1,
+    int Secondary = -1)
 {
+    /// <summary>True for a unit with a weapon.</summary>
+    public bool Armed => Primary >= 0;
+
     /// <summary>True for a unit that gathers ore.</summary>
     public bool Harvests => HarvestCapacity > 0;
 }

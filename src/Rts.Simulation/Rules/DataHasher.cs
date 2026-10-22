@@ -76,6 +76,8 @@ public static class DataHasher
             Add(hash, unit.Prerequisites);
             Add(hash, unit.Primary);
             Add(hash, unit.Secondary);
+            hash.Add(unit.TurretTurnRate.HasValue);
+            hash.Add(unit.TurretTurnRate ?? 0);
         }
 
         hash.Add(rules.Buildings.Length);

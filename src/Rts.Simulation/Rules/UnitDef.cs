@@ -34,6 +34,9 @@ public sealed record UnitDef : IDefinition
     /// <summary><c>BAngle</c> units per tick; zero turns at once, as infantry does.</summary>
     public required int TurnRate { get; init; }
 
+    /// <summary><c>BAngle</c> units per tick the turret turns (M4, 4.6); not set, it turns as fast as the hull.</summary>
+    public int? TurretTurnRate { get; init; }
+
     /// <summary>Base sight radius in cells; the height of the unit's cell adds to it (M7, 4.2).</summary>
     public required int Sight { get; init; }
 

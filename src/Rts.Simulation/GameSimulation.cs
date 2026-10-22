@@ -75,6 +75,7 @@ public sealed class GameSimulation
         BuildUpSystem.Update(World, _events);
         HarvesterSystem.Update(World, _events);
         RepairSystem.Update(World, _events);
+        WeaponSystem.Update(World, _events);
 
         // 4. Movement.
         MovementSystem.Update(World, _events);

@@ -422,7 +422,11 @@ public static class MovementSystem
 
         var wanted = FixedMath.Angle(delta.X, delta.Y);
         unit.Facing = unit.TurnRate == 0 ? wanted : BAngle.RotateTowards(unit.Facing, wanted, unit.TurnRate);
-        unit.TurretFacing = unit.Facing;
+        // A turret that aims at a target stays on it while the hull turns (M4 step 3).
+        if (!unit.Archetype.HasTurret || unit.Target is null)
+        {
+            unit.TurretFacing = unit.Facing;
+        }
         return IntMath.Abs(BAngle.Difference(unit.Facing, wanted)) <= MaxDriveAngle;
     }
 

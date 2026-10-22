@@ -97,6 +97,7 @@ internal static class RulesValidator
             Positive(unit.Id, "build_time", unit.BuildTime);
             NotNegative(unit.Id, "speed", unit.Speed);
             NotNegative(unit.Id, "turn_rate", unit.TurnRate);
+            NotNegative(unit.Id, "turret_turn_rate", unit.TurretTurnRate ?? 0);
             NotNegative(unit.Id, "sight", unit.Sight);
             NotNegative(unit.Id, "harvest_capacity", unit.HarvestCapacity);
             if (unit.HarvestCapacity > 0)

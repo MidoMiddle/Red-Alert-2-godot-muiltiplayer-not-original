@@ -43,6 +43,12 @@ public sealed record BuildingDamaged(int Tick, EntityId Building, int Hp) : SimE
 /// </summary>
 public sealed record DamageStateChanged(int Tick, EntityId Entity, Combat.DamageState State) : SimEvent(Tick);
 
+/// <summary>
+/// A unit or a defense fired at its target (M4, 4.7) with the weapon in <paramref name="Slot"/>: 0 the primary, 1 the secondary. The shot
+/// itself flies from step 4 on.
+/// </summary>
+public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId Target, int Slot) : SimEvent(Tick);
+
 /// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
 public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell) : SimEvent(Tick);
 

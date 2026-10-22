@@ -67,6 +67,19 @@ public static class StateHasher
         return hash.Value;
     }
 
+    private static void AddWeapons(Fnv1a64 hash, EntityId? target, Combat.WeaponInstance[] weapons)
+    {
+        hash.Add(target.HasValue);
+        hash.Add(target?.Value ?? 0);
+        hash.Add(weapons.Length);
+        foreach (var weapon in weapons)
+        {
+            hash.Add(weapon.ReloadLeft);
+            hash.Add(weapon.BurstLeft);
+            hash.Add(weapon.BurstDelayLeft);
+        }
+    }
+
     private static void AddHarvester(Fnv1a64 hash, Harvester harvester)
     {
         hash.Add((byte)harvester.Mode);
@@ -137,8 +150,9 @@ public static class StateHasher
                     hash.Add(resume.Y);
                 }
 
-                // Rules v26 (M4 step 2): hit points.
+                // Rules v26 (M4 step 2): hit points; v27 (step 3): the target and the weapons.
                 hash.Add(unit.Hp);
+                AddWeapons(hash, unit.Target, unit.Weapons);
 
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
@@ -174,6 +188,9 @@ public static class StateHasher
                     hash.Add(rally.X);
                     hash.Add(rally.Y);
                 }
+
+                // Rules v27 (M4 step 3): the target and the weapon of a defense.
+                AddWeapons(hash, building.Target, building.Weapons);
                 break;
 
             default:

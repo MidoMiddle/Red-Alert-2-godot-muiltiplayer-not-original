@@ -18,7 +18,7 @@ internal static class DefinitionReader
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
-        "placement", "turret", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
+        "placement", "turret", "turret_turn_rate", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -76,6 +76,7 @@ internal static class DefinitionReader
             Armor = fields.Optional("armor", Scalars.Id, ""),
             Speed = fields.Required("speed", Scalars.Int, 0),
             TurnRate = fields.Required("turn_rate", Scalars.Int, 0),
+            TurretTurnRate = fields.Maybe("turret_turn_rate", Scalars.Int),
             Sight = fields.Required("sight", Scalars.Int, 0),
             Locomotor = fields.Required("locomotor", Scalars.Id, ""),
             Placement = fields.Required("placement", PlacementOf, UnitPlacement.Cell),

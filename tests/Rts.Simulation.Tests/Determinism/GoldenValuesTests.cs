@@ -197,11 +197,12 @@ public sealed class GoldenValuesTests
         // Rules v22 (M3 step 9): the map digest covers the ore (none here); the states are the same.
         // Rules v23 (M3 step 10): the hash covers the work of the harvesters, which follow the orders of the scenario.
         // Rules v26 (M4 step 2): the hash covers the hit points of the units; the states are the same.
+        // Rules v27 (M4 step 3): the hash covers the targets and weapons (none fire here); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x859b0d9623113cfcUL),
-            new(500, 0xd0cb4458db2052e4UL),
-            new(1000, 0x169909d3e8724770UL),
+            new(100, 0x82ea73798d9c7becUL),
+            new(500, 0xc4d5d948320737f3UL),
+            new(1000, 0x172c7efcfe04f2e3UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -248,6 +249,7 @@ public sealed class GoldenValuesTests
         // Replay format v15, command format v8, rules v24 (M3 step 11): only the versions change; the scenario has no buildings.
         // Rules v25 (M3 step 12): the construction yard is never built; only the version changes.
         // Rules v26 (M4 step 2): versions and checksums change; the hit points of the units are hashed.
-        Assert.Equal((23377, 7978111294248027284UL), (bytes.Length, hash.Value));
+        // Rules v27 (M4 step 3): versions and checksums change; the targets and weapons of the units are hashed.
+        Assert.Equal((23377, 12704201225380129573UL), (bytes.Length, hash.Value));
     }
 }

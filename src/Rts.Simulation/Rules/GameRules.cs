@@ -25,9 +25,12 @@ public sealed class GameRules
     private readonly bool[] _buildable;
     private readonly Fixed[] _verses;
     private readonly int[] _buildingArmor;
+    private readonly int[] _buildingWeapon;
 
-    private GameRules(RulesDatabase database, UnitArchetype[] units, LandSpeeds land, bool[] buildable, Fixed[] verses, int[] buildingArmor)
+    private GameRules(
+        RulesDatabase database, UnitArchetype[] units, LandSpeeds land, bool[] buildable, Fixed[] verses, int[] buildingArmor, int[] buildingWeapon)
     {
+        _buildingWeapon = buildingWeapon;
         Database = database;
         _units = units;
         Land = land;
@@ -71,6 +74,9 @@ public sealed class GameRules
     /// <summary>The armor number of the building at <paramref name="defIndex"/> in <see cref="RulesDatabase.Buildings"/>.</summary>
     public int ArmorOfBuilding(int defIndex) => _buildingArmor[defIndex];
 
+    /// <summary>The weapon of the building at <paramref name="defIndex"/>, its place in <see cref="RulesDatabase.Weapons"/>; -1 without one.</summary>
+    public int WeaponOfBuilding(int defIndex) => _buildingWeapon[defIndex];
+
     public UnitArchetype Unit(UnitType type) => UnitTypes.IsKnown(type)
         ? _units[(int)type - 1]
         : throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown unit type.");
@@ -109,7 +115,10 @@ public sealed class GameRules
                 unit.HarvestTime,
                 unit.UnloadRate,
                 unit.Hp,
-                IntMath.Max(0, database.IndexOfArmor(unit.Armor)));
+                IntMath.Max(0, database.IndexOfArmor(unit.Armor)),
+                unit.TurretTurnRate ?? unit.TurnRate,
+                database.IndexOfWeapon(unit.Primary),
+                database.IndexOfWeapon(unit.Secondary));
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -149,12 +158,14 @@ public sealed class GameRules
         }
 
         var buildingArmor = new int[database.Buildings.Length];
+        var buildingWeapon = new int[database.Buildings.Length];
         for (var i = 0; i < buildingArmor.Length; i++)
         {
             buildingArmor[i] = IntMath.Max(0, database.IndexOfArmor(database.Buildings[i].Armor));
+            buildingWeapon[i] = database.IndexOfWeapon(database.Buildings[i].Primary);
         }
 
-        return new GameRules(database, units, new LandSpeeds(percent, slope), buildable, verses, buildingArmor);
+        return new GameRules(database, units, new LandSpeeds(percent, slope), buildable, verses, buildingArmor, buildingWeapon);
     }
 
     /// <summary>
