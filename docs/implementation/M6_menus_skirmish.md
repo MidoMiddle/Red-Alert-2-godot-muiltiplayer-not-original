@@ -131,7 +131,7 @@ Boot ──► MainMenu ─┬─► SkirmishSetup ──► Loading ──► G
                    ├─► Replays ──► Loading ──► Game (режим повтора)
                    ├─► Settings
                    ├─► Multiplayer   (появится в M9)
-                   ├─► Map Editor    (появится в M7)
+                   ├─► Map Editor    (с M7, шаг 11)
                    ├─► Credits       (титры)
                    └─► Quit
 ```

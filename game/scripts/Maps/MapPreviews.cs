@@ -41,18 +41,29 @@ public static class MapPreviews
         return ImageTexture.CreateFromImage(image);
     }
 
-    /// <summary>Every <c>.rtsmap</c> file of the map directory with its text, in name order.</summary>
+    /// <summary>
+    /// Every <c>.rtsmap</c> file with its text: the maps of the game (<see cref="MapCatalog.Directory"/>), then the player's own
+    /// (<see cref="MapCatalog.UserDirectory"/>, the map editor saves there), each in name order.
+    /// </summary>
     public static List<(string File, string Text)> ReadMapFiles()
     {
         var files = new List<(string File, string Text)>();
-        var names = DirAccess.GetFilesAt(MapCatalog.Directory);
-        System.Array.Sort(names, System.StringComparer.Ordinal);
-        foreach (var name in names)
+        foreach (var directory in new[] { MapCatalog.Directory, MapCatalog.UserDirectory })
         {
-            if (name.EndsWith(".rtsmap", System.StringComparison.Ordinal))
+            if (!DirAccess.DirExistsAbsolute(directory))
             {
-                var path = $"{MapCatalog.Directory}/{name}";
-                files.Add((path, FileAccess.GetFileAsString(path)));
+                continue;
+            }
+
+            var names = DirAccess.GetFilesAt(directory);
+            System.Array.Sort(names, System.StringComparer.Ordinal);
+            foreach (var name in names)
+            {
+                if (name.EndsWith(".rtsmap", System.StringComparison.Ordinal))
+                {
+                    var path = $"{directory}/{name}";
+                    files.Add((path, FileAccess.GetFileAsString(path)));
+                }
             }
         }
 

@@ -36,6 +36,34 @@ UI_MAP_PREVIEW,Map preview
 UI_MAP_INFO_NONE,No map selected
 UI_MAP_INFO,{0} · {1}×{2} · {3} players
 UI_MAP_PREVIEW_RENDERING,Rendering preview…
+UI_EDITOR_TITLE,Map Editor
+UI_EDITOR_NEW_MAP,New map
+UI_EDITOR_NEW,New
+UI_EDITOR_PLAYERS,Players
+UI_EDITOR_SIZE_ITEM,{0}×{0}
+UI_EDITOR_STATUS,{0}×{1} · undo {2}/{3}
+UI_EDITOR_OPEN_MAP,Open a map
+UI_EDITOR_OPEN,Open
+UI_EDITOR_OPENED,Opened {0}
+UI_EDITOR_NAME,Name
+UI_EDITOR_SAVE,Save
+UI_EDITOR_SAVED,Saved {0}
+UI_EDITOR_SAVED_NOT_PLAYABLE,Saved {0} · but the map does not play yet: {1}
+UI_EDITOR_SAVE_FAILED,Not saved: {0}
+UI_EDITOR_BAD_NAME,the name must be one line of text
+UI_EDITOR_TOOLS,Tools
+UI_EDITOR_RAISE,Raise
+UI_EDITOR_LOWER,Lower
+UI_EDITOR_FLATTEN,Flatten
+UI_EDITOR_SMOOTH,Smooth
+UI_EDITOR_LAND,Land
+UI_EDITOR_BRUSH,Brush
+UI_EDITOR_CIRCLE,Circle
+UI_EDITOR_SQUARE,Square
+UI_EDITOR_UNDO,Undo
+UI_EDITOR_REDO,Redo
+UI_EDITOR_CURSOR,Corner {0} {1} · level {2}
+UI_EDITOR_HINT,LMB paint · RMB drag the camera · wheel zoom · arrows move · [ and ] brush size · Ctrl+Z undo · Ctrl+Shift+Z redo
 UI_SKIRMISH_PLAYERS,Players
 UI_SKIRMISH_OPTIONS,Options
 UI_SKIRMISH_YOU,You

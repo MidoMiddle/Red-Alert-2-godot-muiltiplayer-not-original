@@ -33,7 +33,7 @@ public partial class RtsCamera : Node3D
     private const int EdgeBand = 8; // pixels
 
     private Camera3D _camera = null!;
-    private SimulationHost _host = null!;
+    private System.Func<Rts.Simulation.Map.MapGrid> _map = null!;
     private float _targetSize = DefaultSize;
     private float _keyHoldTime;
 
@@ -50,7 +50,7 @@ public partial class RtsCamera : Node3D
 
     public override void _Ready()
     {
-        _host = GetNode<SimulationHost>("../SimulationHost");
+        _map = Rts.Client.Terrain.MapSources.Find(this);
         var pivot = GetNode<Node3D>("Pivot");
         pivot.RotationDegrees = new Vector3(-PitchDegrees, YawDegrees, 0f);
 
@@ -61,7 +61,7 @@ public partial class RtsCamera : Node3D
         _camera.Near = 1f;
         _camera.Far = CameraDistance * 2f;
 
-        Position = new Vector3(_host.Simulation.World.WidthCells / 2f, 0f, _host.Simulation.World.HeightCells / 2f);
+        Position = new Vector3(_map().Width / 2f, 0f, _map().Height / 2f);
     }
 
     public override void _Process(double delta)
@@ -213,11 +213,11 @@ public partial class RtsCamera : Node3D
     /// <summary>Moves the rig over the ground and keeps its centre on the map.</summary>
     private void MoveOverGround(Vector3 offset)
     {
-        var world = _host.Simulation.World;
+        var map = _map();
         var target = Position + offset;
         Position = new Vector3(
-            Mathf.Clamp(target.X, 0f, world.WidthCells),
+            Mathf.Clamp(target.X, 0f, map.Width),
             0f,
-            Mathf.Clamp(target.Z, 0f, world.HeightCells));
+            Mathf.Clamp(target.Z, 0f, map.Height));
     }
 }

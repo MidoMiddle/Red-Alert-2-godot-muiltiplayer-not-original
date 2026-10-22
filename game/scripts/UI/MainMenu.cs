@@ -9,8 +9,9 @@ namespace Rts.Client.UI;
 /// Main menu, laid out after the classic RA2 menu (docs/menu/README.md, section 3.2): a large screen with the
 /// title on the left, a column with the header and the entries on the right. All entries are shown in the order of
 /// section 2.3. An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with
-/// Replays with step 15, Map Editor with M7, Multiplayer with M9, Online with M10. Credits has no step yet.
-/// Skirmish opens its setup screen (step 7, no match start yet), and Settings opens the settings screen (step 5).
+/// Replays with step 15, Multiplayer with M9, Online with M10. Credits has no step yet.
+/// Skirmish opens its setup screen (step 7, no match start yet), Settings the settings screen (step 5), and Map Editor the
+/// map editor (M7 step 11).
 /// Test Sandbox is a temporary entry: it opens the debug scene <c>Main</c> with everything that is ready (M0 simulation,
 /// M1 camera and lighting) until a real match can be started from the skirmish screen. In it, Esc or the Menu button
 /// opens the pause menu, which returns to this menu.
@@ -24,6 +25,7 @@ public partial class MainMenu : Control
     private const string SkirmishSetupScene = "res://scenes/ui/SkirmishSetup.tscn";
     private const string SettingsScene = "res://scenes/ui/Settings.tscn";
     private const string SandboxScene = "res://scenes/Main.tscn";
+    private const string MapEditorScene = "res://scenes/editor/MapEditor.tscn";
 
     private VBoxContainer _entries = null!;
     private ConfirmationDialog _exitDialog = null!;
@@ -44,7 +46,7 @@ public partial class MainMenu : Control
         AddEntry("UI_MAIN_SKIRMISH", OpenSkirmishSetup);
         AddEntry("UI_MAIN_MULTIPLAYER", null);
         AddEntry("UI_MAIN_ONLINE", null);
-        AddEntry("UI_MAIN_MAP_EDITOR", null);
+        AddEntry("UI_MAIN_MAP_EDITOR", OpenMapEditor);
         AddEntry("UI_MAIN_REPLAYS", null);
         AddEntry("UI_MAIN_SETTINGS", OpenSettings);
         AddEntry("UI_MAIN_CREDITS", null);
@@ -90,6 +92,11 @@ public partial class MainMenu : Control
     private void OpenSkirmishSetup()
     {
         SceneRouter.Instance?.GoTo(SkirmishSetupScene);
+    }
+
+    private void OpenMapEditor()
+    {
+        SceneRouter.Instance?.GoTo(MapEditorScene);
     }
 
     private void OpenSandbox()

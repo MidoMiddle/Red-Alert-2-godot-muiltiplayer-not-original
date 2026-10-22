@@ -24,8 +24,11 @@ public partial class Main : Node3D
     private const int SmokeDetourTicks = 600;
     private const int SmokeSpread = 2;
 
-    /// <summary>Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward.</summary>
-    private static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
+    /// <summary>
+    /// Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward. The map editor takes
+    /// it too.
+    /// </summary>
+    public static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
 
     private string? _screenshotPath;
     private int _screenshotFrame = 60;

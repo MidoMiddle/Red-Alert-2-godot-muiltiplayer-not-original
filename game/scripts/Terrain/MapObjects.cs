@@ -24,9 +24,9 @@ public partial class MapObjects : Node3D
 
     public override void _Process(double delta)
     {
-        // The host may start a new match (another map object) or the match may change this one.
-        var map = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World.Map;
-        if (map is not null && (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion))
+        // A new match or a new map in the editor (another map object), or a change of this one.
+        var map = GetParent<TerrainBuilder>().Map;
+        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion)
         {
             _map = map;
             Rebuild();

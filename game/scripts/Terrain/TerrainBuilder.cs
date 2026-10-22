@@ -9,27 +9,31 @@ namespace Rts.Client.Terrain;
 /// coloured by the land types of the simulation map, cliffs in rock (<see cref="LandLayer"/>), with map objects and buildings
 /// on top (<see cref="MapObjects"/>, <see cref="Buildings"/>). What is drawn is the rules: since M7 step 9 every map, the ASCII
 /// ones too, has only the relief of its rules. When the map changes (a corner raised, a land type changed — the editor of
-/// steps 11–12), the land texture is painted again and only the chunks with a changed corner are rebuilt.
+/// steps 11–12), the land texture is painted again and only the chunks with a changed corner are rebuilt. The map comes from
+/// the match, or from the editor (<see cref="IMapSource"/>).
 /// </summary>
 public partial class TerrainBuilder : Node3D
 {
     private const string GroundShader = "res://shaders/grid.gdshader";
 
     private readonly System.Collections.Generic.Dictionary<(int X, int Z), MeshInstance3D> _chunks = new();
-    private SimulationHost _host = null!;
+    private System.Func<Rts.Simulation.Map.MapGrid> _source = null!;
     private Rts.Simulation.Map.MapGrid? _builtMap;
     private int _builtVersion;
     private ImageTexture _landTexture = null!;
 
     public TerrainHeights Heights { get; private set; } = null!;
 
+    /// <summary>The map the terrain shows now; map objects drawn on it read it from here.</summary>
+    public Rts.Simulation.Map.MapGrid Map => _builtMap!;
+
     /// <summary>The ground material of every chunk; the debug cell overlay sets its overlay parameters.</summary>
     public ShaderMaterial GroundMaterial { get; private set; } = null!;
 
     public override void _Ready()
     {
-        _host = GetNode<SimulationHost>("../SimulationHost");
-        var map = _host.Simulation.World.Map;
+        _source = MapSources.Find(this);
+        var map = _source();
         Heights = TerrainHeights.FromRules(map.Heights);
         WorldCoords.Terrain = Heights;
 
@@ -50,7 +54,7 @@ public partial class TerrainBuilder : Node3D
     public override void _Process(double delta)
     {
         // Runs before the children: map objects and buildings rebuilt on the same change read the new heights.
-        var map = _host.Simulation.World.Map;
+        var map = _source();
         if (ReferenceEquals(map, _builtMap) && map.Version == _builtVersion)
         {
             return;

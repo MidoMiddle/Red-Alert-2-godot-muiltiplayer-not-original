@@ -8,14 +8,17 @@ namespace Rts.Client.Maps;
 public sealed record MapEntry(string File, MapDefinition Map, string Hash);
 
 /// <summary>
-/// The maps the skirmish screen offers (docs/implementation/M7_maps.md, step 10): every <c>.rtsmap</c> of
-/// <see cref="Directory"/> that reads and plays (<see cref="MapDefinition.ToMapGrid"/>), sorted by name. A broken file is left
+/// The maps the skirmish screen and the editor offer (docs/implementation/M7_maps.md, steps 10–11): every <c>.rtsmap</c> of
+/// <see cref="Directory"/> and of the player's <see cref="UserDirectory"/> that reads and plays (<see cref="MapDefinition.ToMapGrid"/>), sorted by name. A broken file is left
 /// out with an error naming it and, for a format error, the line and column. Pure: the screen reads the files. Tested in
 /// Rts.Data.Tests.
 /// </summary>
 public static class MapCatalog
 {
     public const string Directory = "res://data/maps";
+
+    /// <summary>The player's own maps, where the map editor saves (<c>UserMapPaths.UserDirectory</c>).</summary>
+    public const string UserDirectory = "user://maps";
 
     public static (List<MapEntry> Maps, List<string> Errors) Load(IEnumerable<(string File, string Text)> files)
     {

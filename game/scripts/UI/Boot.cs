@@ -15,6 +15,7 @@ public partial class Boot : Control
     private const double SplashSeconds = 1.5;
     private const string MainMenuScene = "res://scenes/ui/MainMenu.tscn";
     private const string SkirmishScene = "res://scenes/ui/SkirmishSetup.tscn";
+    private const string EditorScene = "res://scenes/editor/MapEditor.tscn";
     private const string SettingsScene = "res://scenes/ui/Settings.tscn";
     private const string StubScene = "res://scenes/ui/ScreenStub.tscn";
     private const string ShowcaseScene = "res://scenes/ui/ThemeShowcase.tscn";
@@ -39,6 +40,10 @@ public partial class Boot : Control
         else if (args.Contains("--ui-skirmish"))
         {
             OpenDebugScene(SkirmishScene);
+        }
+        else if (args.Contains("--ui-editor"))
+        {
+            OpenDebugScene(EditorScene);
         }
         else if (args.Contains("--ui-settings"))
         {

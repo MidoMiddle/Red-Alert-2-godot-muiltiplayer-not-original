@@ -83,14 +83,29 @@ public static class TestMapConverter
             structures.ToImmutable());
     }
 
-    private static char TextureOf(LandType land) => land switch
+    /// <summary>The texture material that goes with a land type: snow on clear land, dirt on rough, asphalt on roads, and so on.</summary>
+    public static string MaterialOf(LandType land) => land switch
     {
-        LandType.Rough => 'd',
-        LandType.Road => 'a',
-        LandType.Beach => 'b',
-        LandType.Shallow or LandType.Deep => 'w',
-        LandType.Rock => 'k',
-        LandType.Ice => 'i',
-        _ => 's',
+        LandType.Rough => "dirt",
+        LandType.Road => "asphalt",
+        LandType.Beach => "shore",
+        LandType.Shallow or LandType.Deep => "water",
+        LandType.Rock => "rock",
+        LandType.Ice => "ice",
+        _ => "snow",
     };
+
+    private static char TextureOf(LandType land)
+    {
+        var material = MaterialOf(land);
+        foreach (var entry in Legend)
+        {
+            if (entry.Material == material)
+            {
+                return entry.Code;
+            }
+        }
+
+        throw new System.InvalidOperationException($"No legend code for {material}.");
+    }
 }

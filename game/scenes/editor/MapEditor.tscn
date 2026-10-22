@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/Editor/MapEditorScene.cs" id="1_editor"]
+[ext_resource type="Script" path="res://scripts/Camera/RtsCamera.cs" id="2_camera"]
+[ext_resource type="Script" path="res://scripts/Terrain/TerrainBuilder.cs" id="3_terrain"]
+[ext_resource type="Environment" path="res://assets/environments/winter.tres" id="4_winter"]
+
+[node name="MapEditor" type="Node3D"]
+script = ExtResource("1_editor")
+
+[node name="CameraRig" type="Node3D" parent="."]
+script = ExtResource("2_camera")
+
+[node name="Pivot" type="Node3D" parent="CameraRig"]
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/Pivot"]
+projection = 1
+size = 25.5
+current = true
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+light_color = Color(1, 0.97, 0.92, 1)
+light_energy = 1.3
+shadow_enabled = true
+shadow_blur = 1.5
+directional_shadow_mode = 1
+directional_shadow_max_distance = 110.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("4_winter")
+
+[node name="Terrain" type="Node3D" parent="."]
+script = ExtResource("3_terrain")
