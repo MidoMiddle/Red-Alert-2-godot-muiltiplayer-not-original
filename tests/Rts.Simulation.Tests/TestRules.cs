@@ -89,6 +89,11 @@ internal static class TestRules
             builder.Add(definition);
         }
 
+        foreach (var definition in standard.Armies)
+        {
+            builder.Add(definition);
+        }
+
         return GameRules.From(builder.Build());
     }
 
@@ -227,6 +232,20 @@ internal static class TestRules
             Id = "standard",
             Faction = "union",
             Steps = ["reactor", "refinery", "barracks", "refinery", "war_factory", "reactor", "radar", "tesla_coil", "tech_center"],
+        });
+        // The army of game/data/ai (M5 step 6).
+        builder.Add(new ArmyDef
+        {
+            Id = "standard_army",
+            Faction = "union",
+            Shares =
+            [
+                new UnitShare("conscript", Fixed.FromRatio(25, 100)), new UnitShare("heavy_tank", Fixed.FromRatio(40, 100)),
+                new UnitShare("rocketeer", Fixed.FromRatio(20, 100)), new UnitShare("support_vehicle", Fixed.FromRatio(10, 100)),
+                new UnitShare("tesla_tank", Fixed.FromRatio(5, 100)),
+            ],
+            AgainstInfantry = ["heavy_tank", "support_vehicle"],
+            AgainstVehicles = ["rocketeer", "tesla_tank"],
         });
         return builder.Build();
     }

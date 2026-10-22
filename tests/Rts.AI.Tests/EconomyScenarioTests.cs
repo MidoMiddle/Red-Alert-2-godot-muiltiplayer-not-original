@@ -61,7 +61,8 @@ public sealed class EconomyScenarioTests
         match.Simulation.Step();
         Assert.Equal(before - 1, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
 
-        match.PlayTo(10);
+        // One tank queued at most ahead of it, then the harvester itself.
+        match.PlayTo(11);
 
         Assert.Equal(before, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
         Assert.Empty(match.RefusedBotCommands);

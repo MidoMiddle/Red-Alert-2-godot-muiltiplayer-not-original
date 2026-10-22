@@ -147,6 +147,23 @@ public static class DataHasher
             Add(hash, order.Steps);
         }
 
+        // The armies of the bots (M5 step 6).
+        hash.Add(rules.Armies.Length);
+        foreach (var army in rules.Armies)
+        {
+            Add(hash, army.Id);
+            Add(hash, army.Faction);
+            hash.Add(army.Shares.Length);
+            foreach (var share in army.Shares)
+            {
+                Add(hash, share.Unit);
+                hash.Add(share.Share.Raw);
+            }
+
+            Add(hash, army.AgainstInfantry);
+            Add(hash, army.AgainstVehicles);
+        }
+
         hash.Add(rules.Economies.Length);
         foreach (var economy in rules.Economies)
         {

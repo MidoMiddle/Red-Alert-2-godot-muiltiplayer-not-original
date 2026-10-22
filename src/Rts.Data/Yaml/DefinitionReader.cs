@@ -13,7 +13,7 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army"];
 
     private static readonly string[] UnitKeys =
     [
@@ -45,6 +45,8 @@ internal static class DefinitionReader
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester"];
 
     private static readonly string[] BuildOrderKeys = ["faction", "steps"];
+
+    private static readonly string[] ArmyKeys = ["faction", "shares", "against_infantry", "against_vehicles"];
 
     private static readonly string[] EconomyKeys =
     [
@@ -225,6 +227,19 @@ internal static class DefinitionReader
             ConstructionYard = fields.Required("construction_yard", Scalars.Id, ""),
             Refinery = fields.Required("refinery", Scalars.Id, ""),
             Harvester = fields.Required("harvester", Scalars.Id, ""),
+        };
+    }
+
+    public static ArmyDef Army(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, ArmyKeys);
+        return new ArmyDef
+        {
+            Id = definition.Id,
+            Faction = fields.Required("faction", Scalars.Id, ""),
+            Shares = fields.Required("shares", Scalars.UnitShares, ImmutableArray<UnitShare>.Empty),
+            AgainstInfantry = fields.Optional("against_infantry", Scalars.IdList, ImmutableArray<string>.Empty),
+            AgainstVehicles = fields.Optional("against_vehicles", Scalars.IdList, ImmutableArray<string>.Empty),
         };
     }
 

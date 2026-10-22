@@ -80,7 +80,7 @@ public sealed class AiMemoryTests
         scene.Look(100);
 
         var army = Assert.Single(scene.Memory.Armies);
-        Assert.Equal((5, 5, 2, 100 + 100 * second.Hp / second.MaxHp, 100), (army.BlockX, army.BlockY, army.Units, army.Strength, army.SeenTick));
+        Assert.Equal((5, 5, 2, 2, 100 + 100 * second.Hp / second.MaxHp, 100), (army.BlockX, army.BlockY, army.Units, army.Infantry, army.Strength, army.SeenTick));
         Assert.Equal(new WorldPos((first.Position.X + second.Position.X) / 2, first.Position.Y), army.Centre);
 
         // The scout leaves: the army stays remembered for 60 s, then is forgotten.

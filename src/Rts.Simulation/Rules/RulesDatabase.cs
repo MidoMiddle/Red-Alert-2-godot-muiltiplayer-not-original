@@ -20,7 +20,8 @@ public sealed class RulesDatabase
         ImmutableArray<ArmorDef> armors,
         ImmutableArray<WarheadDef> warheads,
         ImmutableArray<ProjectileDef> projectiles,
-        ImmutableArray<BuildOrderDef> buildOrders)
+        ImmutableArray<BuildOrderDef> buildOrders,
+        ImmutableArray<ArmyDef> armies)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -33,6 +34,7 @@ public sealed class RulesDatabase
         Warheads = warheads;
         Projectiles = projectiles;
         BuildOrders = buildOrders;
+        Armies = armies;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -60,9 +62,14 @@ public sealed class RulesDatabase
     /// <summary>The build orders of the bots (M5 step 5).</summary>
     public ImmutableArray<BuildOrderDef> BuildOrders { get; }
 
+    /// <summary>The armies the bots build (M5 step 6).</summary>
+    public ImmutableArray<ArmyDef> Armies { get; }
+
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
 
     public bool TryGetBuildOrder(string id, out BuildOrderDef definition) => TryFind(BuildOrders, id, out definition);
+
+    public bool TryGetArmy(string id, out ArmyDef definition) => TryFind(Armies, id, out definition);
 
     public bool TryGetTerrain(string id, out TerrainDef definition) => TryFind(Terrains, id, out definition);
 

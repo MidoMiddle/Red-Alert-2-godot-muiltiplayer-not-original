@@ -11,9 +11,10 @@ public sealed record RememberedBuilding(EntityId Id, PlayerId Owner, int DefInde
 
 /// <summary>
 /// Enemy units seen together in one block of <see cref="AiMemory.BlockCells"/> × <see cref="AiMemory.BlockCells"/> cells: where they stood on
-/// average, how strong they were (cost × the share of hit points left, as the strength of a squad in 4.6), how many, when.
+/// average, how strong they were (cost × the share of hit points left, as the strength of a squad in 4.6), how many and how many of them
+/// infantry (step 6), when.
 /// </summary>
-public sealed record ArmySighting(int BlockX, int BlockY, WorldPos Centre, int Strength, int Units, int SeenTick);
+public sealed record ArmySighting(int BlockX, int BlockY, WorldPos Centre, int Strength, int Units, int Infantry, int SeenTick);
 
 /// <summary>
 /// What a bot remembers of what it saw (docs/implementation/M5_first_bot.md, 4.5), brought up to date on every turn from its
@@ -35,7 +36,7 @@ public sealed class AiMemory
 
     private readonly SortedList<int, RememberedBuilding> _buildings = new();
     private readonly SortedList<int, ArmySighting> _armies = new();
-    private readonly SortedList<int, (long X, long Y, int Units, int Strength)> _blocks = new();
+    private readonly SortedList<int, (long X, long Y, int Units, int Infantry, int Strength)> _blocks = new();
     private readonly HashSet<int> _seen = new();
     private readonly List<CellPos> _starts = new();
     private readonly List<int> _forgotten = new();
@@ -101,13 +102,14 @@ public sealed class AiMemory
             var key = Key(cell.X / BlockCells, cell.Y / BlockCells);
             _blocks.TryGetValue(key, out var block);
             var strength = unit.MaxHp > 0 ? _costs[(int)unit.Type] * unit.Hp / unit.MaxHp : 0;
-            _blocks[key] = (block.X + unit.Position.X, block.Y + unit.Position.Y, block.Units + 1, block.Strength + strength);
+            var infantry = unit.Archetype.Category == UnitCategory.Infantry ? 1 : 0;
+            _blocks[key] = (block.X + unit.Position.X, block.Y + unit.Position.Y, block.Units + 1, block.Infantry + infantry, block.Strength + strength);
         }
 
         foreach (var (key, block) in _blocks)
         {
             var centre = new WorldPos((int)(block.X / block.Units), (int)(block.Y / block.Units));
-            _armies[key] = new ArmySighting(key % 1024, key / 1024, centre, block.Strength, block.Units, view.Tick);
+            _armies[key] = new ArmySighting(key % 1024, key / 1024, centre, block.Strength, block.Units, block.Infantry, view.Tick);
         }
 
         _forgotten.Clear();

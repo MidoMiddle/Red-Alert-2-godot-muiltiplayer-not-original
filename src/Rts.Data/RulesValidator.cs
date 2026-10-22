@@ -64,6 +64,11 @@ internal static class RulesValidator
             checker.BuildOrder(order);
         }
 
+        foreach (var army in rules.Armies)
+        {
+            checker.Army(army);
+        }
+
         foreach (var warhead in rules.Warheads)
         {
             checker.Warhead(warhead);
@@ -369,6 +374,45 @@ internal static class RulesValidator
             BuildingOf(faction.Id, "refinery", faction.Refinery);
         }
 
+        /// <summary>
+        /// An army of the bots (M5 step 6): of a known faction, its shares — units of that faction — make a whole, and the units that
+        /// gain against infantry or vehicles are among them.
+        /// </summary>
+        public void Army(ArmyDef army)
+        {
+            FactionOf(army.Id, army.Faction);
+            var known = rules.TryGetFaction(army.Faction, out _);
+            var total = Fixed.Zero;
+            foreach (var share in army.Shares)
+            {
+                total += share.Share;
+                if (!rules.TryGetUnit(share.Unit, out var unit))
+                {
+                    Error(army.Id, "shares", Missing(army.Id, "unit", share.Unit));
+                }
+                else if (known && unit.Faction != army.Faction && rules.TryGetFaction(unit.Faction, out _))
+                {
+                    Error(army.Id, "shares", $"'{army.Id}' has '{share.Unit}', which belongs to '{unit.Faction}', not '{army.Faction}'");
+                }
+            }
+
+            if (total != Fixed.One)
+            {
+                Error(army.Id, "shares", $"the shares of army '{army.Id}' do not make 100%");
+            }
+
+            foreach (var (key, units) in new[] { ("against_infantry", army.AgainstInfantry), ("against_vehicles", army.AgainstVehicles) })
+            {
+                for (var i = 0; i < units.Length; i++)
+                {
+                    if (!army.Shares.Any(share => share.Unit == units[i]))
+                    {
+                        ItemError(army.Id, key, i, $"'{army.Id}' gives '{units[i]}' more against the enemy, but it has no share of the army");
+                    }
+                }
+            }
+        }
+
         /// <summary>A build order of the bots (M5 step 5): of a known faction, one step or more, each a building of that faction.</summary>
         public void BuildOrder(BuildOrderDef order)
         {
@@ -518,6 +562,7 @@ internal static class RulesValidator
             : rules.TryGetWarhead(id, out _) ? "warhead"
             : rules.TryGetProjectile(id, out _) ? "projectile"
             : rules.TryGetBuildOrder(id, out _) ? "build order"
+            : rules.TryGetArmy(id, out _) ? "army"
             : null;
 
         private void Positive(string id, string key, int value)

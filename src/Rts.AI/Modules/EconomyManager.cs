@@ -95,6 +95,7 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         }
 
         context.Plan.SetEconomyWants(_wants);
+        context.Plan.HarvestersWanted = harvesters < target && view.HasFactory(ProductionCategory.Vehicle) && view.Player.CanBuildUnit(harvester);
 
         if (harvesters < target && view.HasFactory(ProductionCategory.Vehicle) && view.Player.CanBuildUnit(harvester)
             && vehicleQueue.Count < ProductionRules.MaxUnitQueue)

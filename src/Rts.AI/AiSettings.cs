@@ -40,4 +40,22 @@ public sealed record AiSettings
 
     /// <summary>After the build order, a second war factory once the credits left reach this (4.6).</summary>
     public int SecondFactoryCredits { get; init; } = 4000;
+
+    /// <summary>The army the bot builds, an <c>army</c> of the data for its faction (4.7, step 6).</summary>
+    public string Army { get; init; } = "standard_army";
+
+    /// <summary>
+    /// How many percentage points of the army move to the counters when the enemy seen is mostly infantry or mostly vehicles — the
+    /// coarse counter of «Medium» (4.6, M8's <c>counterComposition: coarse</c>).
+    /// </summary>
+    public int CounterShiftPercent { get; init; } = 20;
+
+    /// <summary>The units the barracks keep in their queue (4.6).</summary>
+    public int InfantryQueued { get; init; } = 2;
+
+    /// <summary>
+    /// The army units the war factory keeps in its queue: one, so that a harvester the economy orders waits for one tank at most — a
+    /// queue runs first come, first served.
+    /// </summary>
+    public int VehiclesQueued { get; init; } = 1;
 }

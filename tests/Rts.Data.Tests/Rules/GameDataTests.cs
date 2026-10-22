@@ -45,8 +45,8 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml).
-        Assert.Equal(0xec7b60e746e3910fUL, GameDataFiles.Current.Hash);
+        // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army.
+        Assert.Equal(0x9a455b524565d0b9UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -110,10 +110,11 @@ public sealed class GameDataTests
     [Fact]
     public void A_unit_type_the_engine_needs_is_reported_without_a_place()
     {
-        var error = Assert.Single(ErrorsWith("factions/union/units.yaml", "heavy_tank:  # Rhino Tank", "rhino_tank:  # Rhino Tank"));
+        // The engineer: no build order or army of the bots names it, so the engine's need is the only error (M5 step 6).
+        var error = Assert.Single(ErrorsWith("factions/union/units.yaml", "engineer:  # Engineer", "sapper:  # Engineer"));
 
         Assert.Equal(("", 0, 0), (error.FileName, error.Line, error.Column));
-        Assert.Equal("the engine needs unit 'heavy_tank', which is not defined", error.Reason);
+        Assert.Equal("the engine needs unit 'engineer', which is not defined", error.Reason);
         Assert.Equal(error.Reason, error.ToString());
     }
 

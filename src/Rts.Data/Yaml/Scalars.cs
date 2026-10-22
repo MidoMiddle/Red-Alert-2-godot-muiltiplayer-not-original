@@ -188,6 +188,27 @@ internal static class Scalars
         return ImmutableArray.CreateRange(percents.Values);
     }
 
+    /// <summary>The share of every kind of unit in an army: a mapping such as <c>heavy_tank: 40%</c>, sorted by unit id (M5 step 6).</summary>
+    public static ImmutableArray<UnitShare> UnitShares(string fileName, YamlNode node)
+    {
+        if (node is not YamlMappingNode mapping)
+        {
+            throw RulesFormatException.At(fileName, node, "expected a mapping from units to percentages such as heavy_tank: 40%");
+        }
+
+        var shares = new SortedDictionary<string, UnitShare>(StringComparer.Ordinal);
+        foreach (var entry in mapping)
+        {
+            var unit = Id(fileName, entry.Key);
+            if (!shares.TryAdd(unit, new UnitShare(unit, Percent(fileName, entry.Value))))
+            {
+                throw RulesFormatException.At(fileName, entry.Key, $"unit '{unit}' repeats");
+            }
+        }
+
+        return ImmutableArray.CreateRange(shares.Values);
+    }
+
     /// <summary>One of the given words, such as <c>infantry</c> or <c>vehicle</c>.</summary>
     public static string Choice(string fileName, YamlNode node, params string[] options)
     {

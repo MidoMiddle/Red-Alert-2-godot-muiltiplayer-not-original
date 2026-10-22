@@ -51,12 +51,18 @@ internal sealed class BotMatch
     {
         while (Simulation.CurrentTick < minutes * 900)
         {
-            Simulation.Step();
-            Recorder.AfterStep();
-            Note();
+            Step();
         }
 
         return this;
+    }
+
+    /// <summary>Plays one tick and writes down what the bot did in it.</summary>
+    public void Step()
+    {
+        Simulation.Step();
+        Recorder.AfterStep();
+        Note();
     }
 
     /// <summary>The first tick a line of the timeline starts with <paramref name="text"/>, or null.</summary>

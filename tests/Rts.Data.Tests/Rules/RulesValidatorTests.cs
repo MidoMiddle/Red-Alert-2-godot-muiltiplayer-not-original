@@ -124,13 +124,25 @@ public sealed class RulesValidatorTests
     [InlineData("war_factory]", "war_fortress]", "'standard' refers to building 'war_fortress', which is not defined")]
     [InlineData("war_factory]", "heavy_tank]", "'standard' refers to building 'heavy_tank', but 'heavy_tank' is unit")]
     [InlineData("[reactor, refinery, war_factory]", "[]", "build order 'standard' has no steps")]
-    [InlineData("faction: union", "faction: allies", "'standard' refers to faction 'allies', which is not defined")]
+    [InlineData("kind: build_order\n  faction: union", "kind: build_order\n  faction: allies", "'standard' refers to faction 'allies', which is not defined")]
     public void A_build_order_of_the_bots_is_checked_like_the_rest(string text, string replacement, string reason)
     {
         var error = Fails(BuildOrders, text, replacement);
 
         Assert.Equal(BuildOrders, error.FileName);
         Assert.Contains(reason, error.Reason);
+    }
+
+    [Theory]
+    [InlineData("heavy_tank: 60%", "harvester: 60%", "'standard_army' gives 'heavy_tank' more against the enemy, but it has no share of the army")]
+    [InlineData("heavy_tank: 60%", "heavy_tank: 50%", "the shares of army 'standard_army' do not make 100%")]
+    [InlineData("conscript: 40%", "reactor: 40%", "'standard_army' refers to unit 'reactor', but 'reactor' is building")]
+    [InlineData("kind: army\n  faction: union", "kind: army\n  faction: allies", "'standard_army' refers to faction 'allies', which is not defined")]
+    public void An_army_of_the_bots_is_checked_like_the_rest(string text, string replacement, string reason)
+    {
+        var errors = Errors(Edited(Dataset(), BuildOrders, text, replacement));
+
+        Assert.Contains(errors, error => error.FileName == BuildOrders && error.Reason.Contains(reason, StringComparison.Ordinal));
     }
 
     [Fact]

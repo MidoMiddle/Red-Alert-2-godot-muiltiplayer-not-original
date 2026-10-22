@@ -97,6 +97,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
         var buildingQueueFree = view.Player.Queue(ProductionCategory.Building).Count == 0;
         var defenseQueueFree = view.Player.Queue(ProductionCategory.Defense).Count == 0;
         Choose(context);
+        context.Plan.NextBuilding = -1;
         foreach (var index in _choices)
         {
             if (index < 0)
@@ -114,7 +115,8 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
 
             if (def.Cost > money)
             {
-                // The money is not there yet: wait for it rather than build something cheaper first.
+                // The money is not there yet: wait for it rather than build something cheaper first, and keep the army off it.
+                context.Plan.NextBuilding = index;
                 return;
             }
 

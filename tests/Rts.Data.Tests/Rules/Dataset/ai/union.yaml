@@ -2,3 +2,10 @@ standard:
   kind: build_order
   faction: union
   steps: [reactor, refinery, war_factory]
+
+standard_army:
+  kind: army
+  faction: union
+  shares: { heavy_tank: 60%, conscript: 40% }
+  against_infantry: [heavy_tank]
+  against_vehicles: [conscript]
