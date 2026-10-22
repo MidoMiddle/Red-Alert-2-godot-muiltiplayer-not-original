@@ -60,10 +60,17 @@ public partial class Minimap : Control
             return;
         }
 
-        DrawTextureRect(GroundOf(_host.Simulation.World.Map), new Rect2(Vector2.Zero, new Vector2(side, side)), false);
-        foreach (var entity in _host.Simulation.World.Entities)
+        var world = _host.Simulation.World;
+        DrawTextureRect(GroundOf(world.Map), new Rect2(Vector2.Zero, new Vector2(side, side)), false);
+        if (Terrain.FogOfWar.Current?.MinimapMask is { } fog)
         {
-            if (entity is Unit { IsAlive: true } unit)
+            // The fog of war (M4 step 12): black on the shroud, dim on the fog.
+            DrawTextureRect(fog, new Rect2(Vector2.Zero, new Vector2(side, side)), false);
+        }
+
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Unit { IsAlive: true } unit && Terrain.FogOfWar.Shows(world, unit))
             {
                 var cell = WorldCoords.ToGodot(unit.Position);
                 var at = ToMinimap(cell.X, cell.Z);

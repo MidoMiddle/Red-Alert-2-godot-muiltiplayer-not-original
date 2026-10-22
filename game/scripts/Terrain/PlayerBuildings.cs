@@ -12,7 +12,9 @@ namespace Rts.Client.Terrain;
 /// rises out of the ground smoothly while the building grows, with dust around it, and sinks back into the ground when the building
 /// is sold. A green cross turns over a building under repair. A destroyed building (M4 step 9) leaves a dark slab of rubble on its
 /// footprint, with a puff of dust, until another building stands on those cells. A yellow bolt blinks over a defense off for want of
-/// power (M4 step 10, <see cref="Defenses.IsOnline"/>).
+/// power (M4 step 10, <see cref="Defenses.IsOnline"/>). Another player's buildings show as the local player knows them (M4 step 12,
+/// <see cref="BuildingGhosts"/>): as they stand while seen, as last seen in the fog, not at all before they are seen; what happens to
+/// one in the fog — a sale, a fall — shows only when it is seen again.
 /// </summary>
 public partial class PlayerBuildings : Node3D
 {
@@ -31,6 +33,7 @@ public partial class PlayerBuildings : Node3D
     private readonly Dictionary<EntityId, View> _views = new();
     private readonly List<View> _sinking = [];
     private readonly List<Rubble> _rubble = [];
+    private readonly BuildingGhosts _ghosts = new();
     private SimulationHost? _host;
     private double _time;
 
@@ -61,13 +64,9 @@ public partial class PlayerBuildings : Node3D
         _time += delta;
         var world = _host.Simulation.World;
         var seen = new HashSet<EntityId>();
-        foreach (var entity in world.Entities)
+        foreach (var (building, buildUpLeft, ghost) in _ghosts.Update(world, SimulationHost.LocalPlayer, FogOfWar.Current?.Revealed ?? true))
         {
-            if (entity is not Building { IsAlive: true, Def: { } def } building)
-            {
-                continue;
-            }
-
+            var def = building.Def!;
             seen.Add(building.Id);
             if (!_views.TryGetValue(building.Id, out var view) || !ReferenceEquals(view.Source, building))
             {
@@ -77,11 +76,12 @@ public partial class PlayerBuildings : Node3D
                 _views[building.Id] = view;
             }
 
-            var growth = BuildingShape.Growth(def.BuildUp, building.BuildUpLeft, _host.Alpha);
+            // A ghost stands as it was last seen, without the marks of what it does now.
+            var growth = BuildingShape.Growth(def.BuildUp, buildUpLeft, ghost ? 1f : _host.Alpha);
             view.Body.Scale = new Vector3(1f, view.Rise(growth), 1f);
-            view.Dust.Emitting = growth < 1f;
-            view.Repair.Visible = building.Repairing;
-            view.Unpowered.Visible = !Defenses.IsOnline(world, building) && (int)(_time * 2.5) % 2 == 0;
+            view.Dust.Emitting = growth < 1f && !ghost;
+            view.Repair.Visible = building.Repairing && !ghost;
+            view.Unpowered.Visible = !ghost && !Defenses.IsOnline(world, building) && (int)(_time * 2.5) % 2 == 0;
             view.Repair.Rotation = new Vector3(0, (float)(_time * 2.5), 0);
         }
 
@@ -125,9 +125,23 @@ public partial class PlayerBuildings : Node3D
         }
     }
 
-    /// <summary>A sold building keeps its view a moment, sinking into the ground; a destroyed one turns into rubble.</summary>
+    /// <summary>
+    /// A sold building keeps its view a moment, sinking into the ground; a destroyed one turns into rubble. Only where the local player
+    /// sees it: in the fog its ghost stays.
+    /// </summary>
     private void OnEvent(SimEvent simEvent)
     {
+        if (_host is null || simEvent is not (BuildingSold or BuildingDestroyed))
+        {
+            return;
+        }
+
+        var id = simEvent is BuildingSold { Building: var soldId } ? soldId : ((BuildingDestroyed)simEvent).Building;
+        if (!_views.TryGetValue(id, out var shown) || !FogOfWar.Shows(_host.Simulation.World, shown.Source))
+        {
+            return;
+        }
+
         if (simEvent is BuildingSold sold && _views.Remove(sold.Building, out var view))
         {
             view.SinkLeft = SinkSeconds;
@@ -136,7 +150,7 @@ public partial class PlayerBuildings : Node3D
             view.Unpowered.Visible = false;
             _sinking.Add(view);
         }
-        else if (simEvent is BuildingDestroyed destroyed && _views.Remove(destroyed.Building, out var fallen) && _host is not null)
+        else if (simEvent is BuildingDestroyed destroyed && _views.Remove(destroyed.Building, out var fallen))
         {
             fallen.Root.QueueFree();
             _rubble.Add(MakeRubble(fallen.Source, _host.Simulation.World));

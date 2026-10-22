@@ -853,7 +853,8 @@ public partial class PlayerInput : Node
 
         foreach (var id in _candidates)
         {
-            if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit)
+            // A unit hidden by the fog (M4 step 12) cannot be pointed at.
+            if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit || !Terrain.FogOfWar.Shows(world, unit))
             {
                 continue;
             }
@@ -874,8 +875,9 @@ public partial class PlayerInput : Node
             return picked;
         }
 
-        // M4 step 7: the building on the cell is a target, for an attack when it belongs to another player and is no wall.
-        if (GroundAt(at) is { } point && world.BuildingAt(point.ToCell()) is { IsAlive: true } building)
+        // M4 step 7: the building on the cell is a target, for an attack when it belongs to another player and is no wall; one the
+        // player does not see now — in the shroud, or a ghost in the fog (step 12) — is only ground.
+        if (GroundAt(at) is { } point && world.BuildingAt(point.ToCell()) is { IsAlive: true } building && Terrain.FogOfWar.Shows(world, building))
         {
             var enemy = building.Owner != SimulationHost.LocalPlayer && !building.Owner.IsNeutral && building.Def is not { Wall: true };
             return new PointerTarget(enemy ? PointerTargetKind.OtherBuilding : PointerTargetKind.Ground, Building: building.Id);

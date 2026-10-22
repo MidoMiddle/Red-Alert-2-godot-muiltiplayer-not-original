@@ -8,7 +8,8 @@ namespace Rts.Client;
 /// <summary>
 /// Draws every unit with its symbolic <see cref="UnitView"/>, interpolated between the previous and the current tick so that
 /// 15 ticks per second still look smooth at 60+ frames per second: position along a line, hull and turret along the
-/// shorter arc. Views are pooled per unit type. Selected units glow; the unit under the pointer glows faintly (M2 step 13).
+/// shorter arc. Views are pooled per unit type. Selected units glow; the unit under the pointer glows faintly (M2 step 13). A unit of
+/// another player is drawn only while the local player sees it (<see cref="Terrain.FogOfWar.Shows"/>, M4 step 12).
 /// </summary>
 public partial class UnitRenderer : Node3D
 {
@@ -37,9 +38,10 @@ public partial class UnitRenderer : Node3D
     public override void _Process(double delta)
     {
         _alive.Clear();
-        foreach (var entity in _host.Simulation.World.Entities)
+        var world = _host.Simulation.World;
+        foreach (var entity in world.Entities)
         {
-            if (entity is not Unit { IsAlive: true } unit)
+            if (entity is not Unit { IsAlive: true } unit || !Terrain.FogOfWar.Shows(world, unit))
             {
                 continue;
             }

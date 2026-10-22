@@ -43,6 +43,7 @@ public partial class Main : Node3D
         AddChild(new CellOverlay { Name = "CellOverlay" });
         AddChild(new OrderMarkers { Name = "OrderMarkers" });
         AddChild(new RouteLines { Name = "RouteLines" });
+        AddChild(new Terrain.FogOfWar { Name = "FogOfWar" });
 
         var args = OS.GetCmdlineUserArgs();
         var screenshotIndex = Array.IndexOf(args, "--screenshot");

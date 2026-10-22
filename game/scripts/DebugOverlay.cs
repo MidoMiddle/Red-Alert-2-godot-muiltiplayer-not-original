@@ -24,7 +24,7 @@ public partial class DebugOverlay : CanvasLayer
         "Shift+order queue · Ctrl+Shift+order attack-move · Z+orders waypoints, then order without Z · S stop · X scatter\n" +
         "K damage map object, bridge or building (debug) · Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
         "arrows/edge/wheel camera · F1…F4 bookmark (Ctrl: save)\n" +
-        "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph";
+        "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph · F10 fog revealed";
 
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
@@ -81,9 +81,13 @@ public partial class DebugOverlay : CanvasLayer
             _controls;
     }
 
-    /// <summary><c> · visible</c>, <c> · fog</c> or <c> · shroud</c>: what the local player knows of the cell (M4 step 11).</summary>
+    /// <summary>
+    /// <c> · visible</c>, <c> · fog</c> or <c> · shroud</c>: what the local player knows of the cell (M4 step 11); <c> · fog revealed</c>
+    /// while F10 shows the whole map (step 12).
+    /// </summary>
     private static string DescribeVision(GameWorld world, CellPos? pointer) =>
-        pointer is { } cell ? " · " + world.VisionOf(SimulationHost.LocalPlayer).StateAt(cell).ToString().ToLowerInvariant() : "";
+        (pointer is { } cell ? " · " + world.VisionOf(SimulationHost.LocalPlayer).StateAt(cell).ToString().ToLowerInvariant() : "")
+        + (Terrain.FogOfWar.Current is { Revealed: true } ? " · fog revealed" : "");
 
     /// <summary>The selected unit when exactly one is selected and alive.</summary>
     private Unit? SelectedUnit(GameWorld world) =>
