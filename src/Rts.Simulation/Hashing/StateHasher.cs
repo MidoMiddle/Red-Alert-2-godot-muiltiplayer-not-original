@@ -137,6 +137,9 @@ public static class StateHasher
                     hash.Add(resume.Y);
                 }
 
+                // Rules v26 (M4 step 2): hit points.
+                hash.Add(unit.Hp);
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)

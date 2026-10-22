@@ -23,13 +23,17 @@ public sealed class GameRules
 {
     private readonly UnitArchetype[] _units;
     private readonly bool[] _buildable;
+    private readonly Fixed[] _verses;
+    private readonly int[] _buildingArmor;
 
-    private GameRules(RulesDatabase database, UnitArchetype[] units, LandSpeeds land, bool[] buildable)
+    private GameRules(RulesDatabase database, UnitArchetype[] units, LandSpeeds land, bool[] buildable, Fixed[] verses, int[] buildingArmor)
     {
         Database = database;
         _units = units;
         Land = land;
         _buildable = buildable;
+        _verses = verses;
+        _buildingArmor = buildingArmor;
     }
 
     /// <summary>The definitions the rules are made from.</summary>
@@ -57,6 +61,15 @@ public sealed class GameRules
 
     /// <summary>Whether a building may stand on <paramref name="land"/>: <c>buildable</c> of the land type in the data.</summary>
     public bool IsBuildable(LandType land) => LandSpeeds.IsKnown(land) && _buildable[(int)land - 1];
+
+    /// <summary>
+    /// The share of damage the warhead at <paramref name="warhead"/> in <see cref="RulesDatabase.Warheads"/> does against the armor numbered
+    /// <paramref name="armor"/> (M4, 4.5): laid out by number when the rules are made, so a hit looks nothing up by name.
+    /// </summary>
+    public Fixed Verses(int warhead, int armor) => _verses[(warhead * Database.Armors.Length) + armor];
+
+    /// <summary>The armor number of the building at <paramref name="defIndex"/> in <see cref="RulesDatabase.Buildings"/>.</summary>
+    public int ArmorOfBuilding(int defIndex) => _buildingArmor[defIndex];
 
     public UnitArchetype Unit(UnitType type) => UnitTypes.IsKnown(type)
         ? _units[(int)type - 1]
@@ -94,7 +107,9 @@ public sealed class GameRules
                 unit.Sight,
                 unit.HarvestCapacity,
                 unit.HarvestTime,
-                unit.UnloadRate);
+                unit.UnloadRate,
+                unit.Hp,
+                IntMath.Max(0, database.IndexOfArmor(unit.Armor)));
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -117,7 +132,29 @@ public sealed class GameRules
             }
         }
 
-        return new GameRules(database, units, new LandSpeeds(percent, slope), buildable);
+        // M4 step 2: the verses of every warhead by armor number, and the armor number of every building; armor the data does not
+        // define (the checks of the data refuse it) counts as the first.
+        var armors = database.Armors.Length;
+        var verses = new Fixed[database.Warheads.Length * armors];
+        for (var warhead = 0; warhead < database.Warheads.Length; warhead++)
+        {
+            foreach (var verse in database.Warheads[warhead].Verses)
+            {
+                var armor = database.IndexOfArmor(verse.Armor);
+                if (armor >= 0)
+                {
+                    verses[(warhead * armors) + armor] = verse.Percent;
+                }
+            }
+        }
+
+        var buildingArmor = new int[database.Buildings.Length];
+        for (var i = 0; i < buildingArmor.Length; i++)
+        {
+            buildingArmor[i] = IntMath.Max(0, database.IndexOfArmor(database.Buildings[i].Armor));
+        }
+
+        return new GameRules(database, units, new LandSpeeds(percent, slope), buildable, verses, buildingArmor);
     }
 
     /// <summary>

@@ -78,6 +78,9 @@ public sealed class RulesDatabase
     /// <summary>The number of an armor type: its position in <see cref="Armors"/>; -1 when it is not defined.</summary>
     public int IndexOfArmor(string id) => IndexOf(Armors, id);
 
+    /// <summary>The position of a warhead in <see cref="Warheads"/>; -1 when it is not defined.</summary>
+    public int IndexOfWarhead(string id) => IndexOf(Warheads, id);
+
     /// <summary>The position of a unit in <see cref="Units"/>: the index commands and tech sets use; -1 when it is not defined.</summary>
     public int IndexOfUnit(string id) => IndexOf(Units, id);
 

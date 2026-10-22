@@ -12,7 +12,7 @@ namespace Rts.Simulation.Tests;
 /// simulation need no YAML. The numbers the simulation reads are those of <c>game/data</c>: a test of Rts.Data, which links this file,
 /// checks that both give the same <see cref="GameRules"/>. The buildings of the Union (footprint, power, build-up, base rules,
 /// prerequisites) and the prerequisites of the units are those of <c>game/data</c> too; costs, hit points and build times of the units
-/// are placeholders. The combat of M4 (armor, warheads, projectiles, weapons and who carries what) is that of <c>game/data</c>.
+/// are placeholders, their hit points are those of <c>game/data</c>. The combat of M4 (armor, warheads, projectiles, weapons and who carries what) is that of <c>game/data</c>.
 /// </summary>
 internal static class TestRules
 {
@@ -280,6 +280,18 @@ internal static class TestRules
             Armor = "heavy",
         };
 
+    // The hit points of game/data (M4 step 2): the archetypes of both rules must be the same.
+    private static int UnitHp(UnitType type) => type switch
+    {
+        UnitType.Conscript => 125,
+        UnitType.Rocketeer => 100,
+        UnitType.Engineer => 75,
+        UnitType.Mcv or UnitType.Harvester => 1000,
+        UnitType.SupportVehicle => 180,
+        UnitType.HeavyTank => 400,
+        _ => 300,
+    };
+
     private static UnitDef Unit(
         UnitType type, UnitCategory category, Locomotor locomotor, UnitPlacement placement, int speed, int turnRate, bool turret, int sight,
         string[] prerequisites) =>
@@ -291,7 +303,7 @@ internal static class TestRules
             Category = category,
             Cost = 100,
             BuildTime = 15,
-            Hp = 100,
+            Hp = UnitHp(type),
             Speed = speed,
             TurnRate = turnRate,
             Sight = sight,

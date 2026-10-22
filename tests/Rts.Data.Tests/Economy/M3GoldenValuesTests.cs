@@ -28,7 +28,8 @@ public sealed class M3GoldenValuesTests
         var fifth = Run.Value.Minutes.Single(minute => minute.Minute == 5);
 
         // M3 step 15, rules v25, game/data 314b59aebbc04ca9.
-        Assert.Equal((6322, 0x8ea7aa9cd42a517aUL), (fifth.Credits, fifth.Checksum));
+        // M4 step 2, rules v26: the hit points of the units are hashed; the run is the same, the credits too.
+        Assert.Equal((6322, 0x7389427c5e3698c5UL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

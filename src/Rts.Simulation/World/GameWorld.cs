@@ -184,6 +184,21 @@ public sealed class GameWorld
     /// <see cref="Events.BridgeSegmentDestroyed"/>, or <see cref="Events.BuildingDamaged"/> and <see cref="Events.BuildingDestroyed"/>.
     /// Returns false when there is nothing on the cell that can be damaged.
     /// </summary>
+    /// <summary>
+    /// Sets the hit points of a building (M4, 4.4) and reports <see cref="Events.DamageStateChanged"/> when that crosses a threshold:
+    /// the one way damage and repair change them.
+    /// </summary>
+    internal void SetHp(Building building, int hp, List<Events.SimEvent>? events)
+    {
+        var before = Combat.DamageStates.Of(building.Hp, building.MaxHp);
+        building.Hp = hp;
+        var after = Combat.DamageStates.Of(hp, building.MaxHp);
+        if (after != before && after != Combat.DamageState.Destroyed)
+        {
+            events?.Add(new Events.DamageStateChanged(CurrentTick, building.Id, after));
+        }
+    }
+
     internal bool DamageAtCell(CellPos cell, int amount, List<Events.SimEvent>? events)
     {
         foreach (var mapObject in Map.ObjectsAt(cell))
@@ -222,7 +237,7 @@ public sealed class GameWorld
         {
             if (building.Hp > amount)
             {
-                building.Hp -= amount;
+                SetHp(building, building.Hp - amount, events);
                 events?.Add(new Events.BuildingDamaged(CurrentTick, building.Id, building.Hp));
             }
             else

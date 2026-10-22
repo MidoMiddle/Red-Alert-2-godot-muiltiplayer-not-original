@@ -33,7 +33,7 @@ public sealed class StateHasherTests
     public static TheoryData<string> Mutations => new()
     {
         "tick", "random", "next id", "owner", "alive", "position x", "position y",
-        "target removed", "target added", "target x", "target y", "speed", "entity count",
+        "target removed", "target added", "target x", "target y", "speed", "unit hp", "entity count",
         "type", "turn rate", "facing", "turret facing", "land", "obstacle", "height",
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
@@ -65,6 +65,7 @@ public sealed class StateHasherTests
             case "target x": moving.MoveTarget = new WorldPos(901, 800); break;
             case "target y": moving.MoveTarget = new WorldPos(900, 801); break;
             case "speed": moving.Speed++; break;
+            case "unit hp": moving.Hp--; break;
             case "entity count": world.SpawnForTest(Player1, new WorldPos(0, 0), speed: 1); break;
             case "type": break;
             case "turn rate": moving.TurnRate++; break;
@@ -188,7 +189,7 @@ public sealed class StateHasherTests
         "<PathPending>k__BackingField", "<Path>k__BackingField", "<PathIndex>k__BackingField",
         "<WaitTicks>k__BackingField", "<Replans>k__BackingField", "<ResumeTarget>k__BackingField", "<HoldTicks>k__BackingField",
         "<Returning>k__BackingField", "<Subcell>k__BackingField",
-        "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField",
+        "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField", "<Hp>k__BackingField",
     })]
     [InlineData(typeof(GameWorld), new[]
     {

@@ -18,7 +18,14 @@ public sealed class Unit : Entity
         Speed = archetype.Speed;
         TurnRate = archetype.TurnRate;
         Harvester = archetype.Harvests ? new Harvester() : null;
+        Hp = archetype.Hp;
     }
+
+    /// <summary>Hit points left (M4, 4.4): whole on arrival; weapons take them from step 5 on. State: hashed.</summary>
+    public int Hp { get; internal set; }
+
+    /// <summary>Hit points of a whole unit of its type.</summary>
+    public int MaxHp => Archetype.Hp;
 
     /// <summary>The work of a unit that gathers ore (M3 step 10); null for every other unit.</summary>
     public Harvester? Harvester { get; }

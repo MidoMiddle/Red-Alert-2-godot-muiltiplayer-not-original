@@ -13,6 +13,8 @@ namespace Rts.Simulation.World;
 /// <param name="HarvestCapacity">Credits of ore the unit carries when full; 0 for a unit that does not harvest (M3 step 10).</param>
 /// <param name="HarvestTime">Ticks to take one stage of ore off a cell.</param>
 /// <param name="UnloadRate">Credits unloaded per tick at a dock.</param>
+/// <param name="Hp">Hit points of a whole unit (M4 step 2).</param>
+/// <param name="Armor">The number of its armor type: its place in <see cref="Rules.RulesDatabase.Armors"/> (M4 step 2).</param>
 public sealed record UnitArchetype(
     UnitType Type,
     string Id,
@@ -25,7 +27,9 @@ public sealed record UnitArchetype(
     int Sight,
     int HarvestCapacity = 0,
     int HarvestTime = 0,
-    int UnloadRate = 0)
+    int UnloadRate = 0,
+    int Hp = 1,
+    int Armor = 0)
 {
     /// <summary>True for a unit that gathers ore.</summary>
     public bool Harvests => HarvestCapacity > 0;

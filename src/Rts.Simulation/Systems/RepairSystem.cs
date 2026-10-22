@@ -38,7 +38,7 @@ public static class RepairSystem
 
                 player.Credits -= price;
                 building.RepairCarry = due % scale;
-                building.Hp += gain;
+                world.SetHp(building, building.Hp + gain, events);
             }
 
             if (building.Hp >= building.MaxHp)

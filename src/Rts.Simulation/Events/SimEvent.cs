@@ -37,6 +37,12 @@ public sealed record UnitKilled(int Tick, EntityId Unit, WorldPos Position) : Si
 /// <summary>A building took a hit and stands, with <paramref name="Hp"/> hit points left.</summary>
 public sealed record BuildingDamaged(int Tick, EntityId Building, int Hp) : SimEvent(Tick);
 
+/// <summary>
+/// A unit or a building crossed a threshold of its hit points (M4, 4.4): healthy, damaged, critical. The client changes its health bar,
+/// smoke and fire.
+/// </summary>
+public sealed record DamageStateChanged(int Tick, EntityId Entity, Combat.DamageState State) : SimEvent(Tick);
+
 /// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
 public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell) : SimEvent(Tick);
 
