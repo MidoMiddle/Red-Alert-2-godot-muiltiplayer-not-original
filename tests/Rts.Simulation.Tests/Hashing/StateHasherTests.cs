@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "credits", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode",
+        "credits", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
     };
 
     [Theory]
@@ -115,6 +115,12 @@ public sealed class StateHasherTests
             case "order index": idle.OrderIndex = 1; break;
             case "loop": idle.LoopOrders = true; break;
             case "credits": world.Player(Player1).Credits--; break;
+            case "repair":
+                var damaged = world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null);
+                var off = StateHasher.Compute(world);
+                damaged.Repairing = true;
+                Assert.NotEqual(off, StateHasher.Compute(world));
+                break;
             case "harvester load":
                 var carrier = world.SpawnForTest(Player1, new WorldPos(2000, 2000), speed: 0, UnitType.Harvester);
                 var empty = StateHasher.Compute(world);
@@ -249,7 +255,8 @@ public sealed class StateHasherTests
     [InlineData(typeof(Building), new[]
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
-        "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField",
+        "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField",
+        "<RepairCarry>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
     })]

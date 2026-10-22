@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v7, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v8, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -26,16 +26,18 @@ namespace Rts.Simulation.Commands;
 /// PauseProduction, CancelProduction: u8 kind | u16 defIndex
 /// SetRallyPoint: i32 building | i32 x | i32 y
 /// Harvest:       units | i32 cellX | i32 cellY
+/// Sell, ToggleRepair: i32 building
+/// PlaceWalls:    u16 defIndex | u8 count | (i32 x | i32 y) × count
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
 /// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy; v6 (M3 step 8) added Produce, PauseProduction,
-/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest.
+/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 7;
+    public const int FormatVersion = 8;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -59,6 +61,8 @@ public static class CommandSerializer
         PauseProductionCommand or CancelProductionCommand => HeaderSize + ProductSize,
         SetRallyPointCommand => HeaderSize + 4 + PositionSize,
         HarvestCommand harvest => HeaderSize + UnitsSize(harvest) + PositionSize,
+        SellCommand or ToggleRepairCommand => HeaderSize + 4,
+        PlaceWallsCommand walls => HeaderSize + 2 + 1 + PositionSize * walls.Cells.Length,
         _ => throw UnknownCommand(command),
     };
 
@@ -141,6 +145,27 @@ public static class CommandSerializer
             case SetRallyPointCommand rally:
                 BinaryPrimitives.WriteInt32LittleEndian(payload, rally.Building.Value);
                 WritePosition(payload[4..], rally.Point);
+                break;
+            case SellCommand sell:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, sell.Building.Value);
+                break;
+            case ToggleRepairCommand repair:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, repair.Building.Value);
+                break;
+            case PlaceWallsCommand walls:
+                if (walls.DefIndex is < 0 or > ushort.MaxValue || walls.Cells.Length > PlaceWallsCommand.MaxCells)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(command), "A wall line has a definition index of 0…65535 and 64 cells at most.");
+                }
+
+                BinaryPrimitives.WriteUInt16LittleEndian(payload, (ushort)walls.DefIndex);
+                payload[2] = (byte)walls.Cells.Length;
+                for (var i = 0; i < walls.Cells.Length; i++)
+                {
+                    BinaryPrimitives.WriteInt32LittleEndian(payload[(3 + PositionSize * i)..], walls.Cells[i].X);
+                    BinaryPrimitives.WriteInt32LittleEndian(payload[(7 + PositionSize * i)..], walls.Cells[i].Y);
+                }
+
                 break;
             case HarvestCommand harvest:
                 var unitsEnd = WriteUnits(payload, harvest);
@@ -261,6 +286,39 @@ public static class CommandSerializer
                 return type == CommandType.PauseProduction
                     ? new PauseProductionCommand(player, tick, sequence, (ProductionKind)payload[0], ReadIndex(payload))
                     : new CancelProductionCommand(player, tick, sequence, (ProductionKind)payload[0], ReadIndex(payload));
+            }
+
+            case CommandType.Sell:
+            case CommandType.ToggleRepair:
+            {
+                Require(payload, 4);
+                bytesRead = HeaderSize + 4;
+                var building = new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload));
+                return type == CommandType.Sell
+                    ? new SellCommand(player, tick, sequence, building)
+                    : new ToggleRepairCommand(player, tick, sequence, building);
+            }
+
+            case CommandType.PlaceWalls:
+            {
+                Require(payload, 3);
+                int count = payload[2];
+                if (count > PlaceWallsCommand.MaxCells)
+                {
+                    throw new InvalidDataException($"A wall line of {count} cells, expected 64 at most.");
+                }
+
+                Require(payload, 3 + PositionSize * count);
+                var cells = ImmutableArray.CreateBuilder<CellPos>(count);
+                for (var i = 0; i < count; i++)
+                {
+                    cells.Add(new CellPos(
+                        BinaryPrimitives.ReadInt32LittleEndian(payload[(3 + PositionSize * i)..]),
+                        BinaryPrimitives.ReadInt32LittleEndian(payload[(7 + PositionSize * i)..])));
+                }
+
+                bytesRead = HeaderSize + 3 + PositionSize * count;
+                return new PlaceWallsCommand(player, tick, sequence, BinaryPrimitives.ReadUInt16LittleEndian(payload), cells.MoveToImmutable());
             }
 
             case CommandType.Harvest:

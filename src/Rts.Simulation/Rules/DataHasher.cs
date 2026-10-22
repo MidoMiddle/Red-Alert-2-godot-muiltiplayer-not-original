@@ -131,6 +131,9 @@ public static class DataHasher
             hash.Add(economy.OreGrowthChance.Raw);
             hash.Add(economy.OreSpreadStage);
             hash.Add(economy.OreSpreadChance.Raw);
+            hash.Add(economy.SellRefund.Raw);
+            hash.Add(economy.RepairCost.Raw);
+            hash.Add(economy.RepairRate);
         }
 
         return hash.Value;

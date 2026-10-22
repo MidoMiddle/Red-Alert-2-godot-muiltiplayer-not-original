@@ -80,6 +80,15 @@ public sealed class Building : Entity
     /// <summary>How far the building has grown, 0…1000 (per mille), for the client: 1000 when ready.</summary>
     public int BuildUpPermille => Def is { BuildUp: > 0 } def ? 1000 - BuildUpLeft * 1000 / def.BuildUp : 1000;
 
+    /// <summary>The player turned the repair on (M3 step 11): it gains hit points every tick and costs credits.</summary>
+    public bool Repairing { get; internal set; }
+
+    /// <summary>What is left over from rounding the cost of the repair down, carried to the next tick so the sum comes out exact.</summary>
+    public long RepairCarry { get; internal set; }
+
+    /// <summary>The hit points of the building when whole.</summary>
+    public int MaxHp => Def?.Hp ?? Type.MaxHp;
+
     /// <summary>Where the units of a factory go once they are out (4.10); null: one cell on from the exit.</summary>
     public WorldPos? RallyPoint { get; internal set; }
 

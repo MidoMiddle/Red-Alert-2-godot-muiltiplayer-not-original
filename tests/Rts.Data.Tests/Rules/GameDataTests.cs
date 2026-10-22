@@ -45,7 +45,7 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0x3d1d4af4ab980808UL, GameDataFiles.Current.Hash);
+        Assert.Equal(0x100d499ab16f4d5dUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -79,10 +79,11 @@ public sealed class GameDataTests
 
         Assert.Equal(test.Economies.Single(), data.Economies.Single());
 
-        static (string, string, int, int, int, string, int, int, bool, string, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
+        static (string, string, int, int, int, string, int, int, bool, string, string, string, string) Shape(Rts.Simulation.Rules.BuildingDef building) =>
             (building.Id, building.Faction, building.Footprint.Width, building.Footprint.Height, building.Power,
              string.Join(",", building.Prerequisites), building.BuildUp, building.Adjacent, building.ExtendsBase,
-             string.Join(",", building.Produces), building.ExitCell?.ToString() ?? "");
+             string.Join(",", building.Produces), building.ExitCell?.ToString() ?? "", building.DockCell?.ToString() ?? "",
+             building.Category.ToString());
     }
 
     [Fact]

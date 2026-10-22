@@ -98,8 +98,11 @@ public sealed record CancelWaypoints : Intent;
 
 public sealed record SpawnUnit(WorldPos Position) : Intent;
 
-/// <summary>Debug (M3 step 6): place the armed building with its centre on <paramref name="Position"/>.</summary>
-public sealed record PlaceBuilding(WorldPos Position) : Intent;
+/// <summary>
+/// Debug (M3 steps 6, 11): place the armed building with its centre on <paramref name="Position"/>; with <paramref name="Line"/>
+/// (Shift) a wall line from the last wall.
+/// </summary>
+public sealed record PlaceBuilding(WorldPos Position, bool Line = false) : Intent;
 
 public sealed record CameraDragStarted(ScreenPoint From) : Intent;
 
@@ -187,7 +190,7 @@ public sealed class InputInterpreter
     {
         if (BuildArmed && button == PointerButton.Left)
         {
-            return context.Ground is { } buildAt ? new Intent[] { new PlaceBuilding(buildAt) } : Array.Empty<Intent>();
+            return context.Ground is { } buildAt ? new Intent[] { new PlaceBuilding(buildAt, context.Shift) } : Array.Empty<Intent>();
         }
 
         if ((context.Alt || SpawnArmed) && button == PointerButton.Left)

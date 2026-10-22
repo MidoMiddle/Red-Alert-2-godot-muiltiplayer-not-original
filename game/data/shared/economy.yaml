@@ -16,3 +16,8 @@ economy:
   ore_growth_chance: 20%
   ore_spread_stage: 6
   ore_spread_chance: 5%
+  # A sold building gives back sell_refund of its cost times its share of hit points. A repair gives repair_rate hit points a
+  # tick; from nothing to full it costs repair_cost of the building's cost (RA2: half).
+  sell_refund: 50%
+  repair_cost: 50%
+  repair_rate: 5

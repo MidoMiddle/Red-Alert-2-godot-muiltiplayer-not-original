@@ -356,10 +356,28 @@ public sealed class GameWorld
     private void DestroyBuilding(Building building, List<Events.SimEvent>? events)
     {
         building.Hp = 0;
+        TakeDown(building, events);
+        events?.Add(new Events.BuildingDestroyed(CurrentTick, building.Id, building.Kind, building.Cell));
+    }
+
+    /// <summary>
+    /// The player sells a building (docs/implementation/M3_base_economy.md, 4.8): <paramref name="refund"/> credits come back, the
+    /// building leaves the world at the end of the tick and its cells open at once.
+    /// </summary>
+    internal void SellBuilding(Building building, int refund, List<Events.SimEvent>? events)
+    {
+        Player(building.Owner).Credits += refund;
+        TakeDown(building, events);
+        events?.Add(new Events.BuildingSold(CurrentTick, building.Id, building.Owner, building.DefIndex, refund));
+    }
+
+    /// <summary>A building goes: it dies, its cells open through <see cref="ChangeMap"/>, power and technologies are worked out again.</summary>
+    private void TakeDown(Building building, List<Events.SimEvent>? events)
+    {
         building.MarkDead();
+        building.Repairing = false;
         ChangeMap([new ClearBuildingEdit(building.Cell, building.FarCell)], events);
         BuildingsChanged();
-        events?.Add(new Events.BuildingDestroyed(CurrentTick, building.Id, building.Kind, building.Cell));
     }
 
     /// <summary>True when a cell of the path still ahead of the unit lies in the area and is closed to it now.</summary>

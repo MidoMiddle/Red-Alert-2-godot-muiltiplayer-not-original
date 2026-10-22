@@ -156,6 +156,11 @@ public partial class DebugOverlay : CanvasLayer
         {
             var (id, maxHp) = building.Def is { } def ? (def.Id, def.Hp) : (building.Type.Id, building.Type.MaxHp);
             land += $" + {id} {building.Hp}/{maxHp} ({building.Owner})" + (building.IsReady ? "" : $" growing {building.BuildUpPermille / 10}%");
+            if (building.Repairing)
+            {
+                land += " · repairing";
+            }
+
             if (building.Def?.DockCell is not null)
             {
                 land += Rts.Simulation.Systems.HarvesterSystem.DockFree(world, building) ? " · dock free" : " · dock busy";

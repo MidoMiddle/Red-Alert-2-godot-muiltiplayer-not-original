@@ -10,7 +10,7 @@ using Rts.Simulation.Map;
 namespace Rts.Simulation.Replays;
 
 /// <summary>
-/// Binary <c>.rtsreplay</c> format v14, little-endian (docs/implementation/M0_foundation.md, 4.10):
+/// Binary <c>.rtsreplay</c> format v15, little-endian (docs/implementation/M0_foundation.md, 4.10):
 /// <code>
 /// "RTSR" | u16 formatVersion | u32 simVersion | u64 dataHash
 /// u64 seed | i32 ticksPerSecond | i32 mapWidth | i32 mapHeight | i32 hashInterval | i32 startingCredits | i32 tickCount
@@ -27,11 +27,12 @@ namespace Rts.Simulation.Replays;
 /// (<c>DataHasher</c>, docs/implementation/M3_base_economy.md, 4.4); v10 (M3 step 5) adds the starting credits of the players
 /// after the hash interval; v11 (M3 step 6) marks command format v5 inside (PlaceBuilding, Deploy); v12 (M3 step 8) marks command
 /// format v6 inside (production and rally points); v13 (M3 step 9) adds the ore layer, one byte per cell (kind × 16 + stage), after
-/// the corner heights; v14 (M3 step 10) marks command format v7 inside (Harvest).
+/// the corner heights; v14 (M3 step 10) marks command format v7 inside (Harvest); v15 (M3 step 11) command format v8 (Sell,
+/// ToggleRepair, PlaceWalls).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 14;
+    public const ushort FormatVersion = 15;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

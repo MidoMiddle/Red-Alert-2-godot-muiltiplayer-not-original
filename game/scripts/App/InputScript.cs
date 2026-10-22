@@ -10,7 +10,7 @@ namespace Rts.Client.App;
 /// Debug harness: plays a script of mouse and key events into the running game, so the controls can be checked without a person
 /// at the keyboard. Started with <c>--input-script &lt;path&gt;</c> after <c>--</c>. One command per line; empty lines and lines that
 /// start with <c>#</c> are skipped: <c>wait N</c>, <c>node NAME</c> (presses a button), <c>click|down|up BUTTON X Y [MODIFIERS]</c>
-/// (BUTTON is left, right or middle), <c>move X Y</c>, <c>key NAME</c> (a Godot key name), <c>keydown NAME</c> and <c>keyup NAME</c>
+/// (BUTTON is left, right or middle), <c>move X Y</c> (the system pointer moves there too), <c>key NAME</c> (a Godot key name), <c>keydown NAME</c> and <c>keyup NAME</c>
 /// (hold and release a key, a modifier included), <c>shot PATH</c> (saves a PNG), <c>log TEXT</c>. MODIFIERS are any of
 /// <c>shift</c>, <c>ctrl</c>, <c>alt</c>, <c>meta</c>, added to the modifiers held with <c>keydown</c>. X and Y are in the game's
 /// 1920 x 1080 base space, whatever the window size is. The run ends with exit code 0 after the last line.
@@ -99,6 +99,8 @@ public partial class InputScript : Node
             case "move":
                 {
                     var to = Position(parts[1], parts[2]);
+                    // The pointer itself moves too: hover and the cell under the pointer follow it, not the motion event.
+                    Input.WarpMouse(to);
                     Input.ParseInputEvent(new InputEventMouseMotion { Position = to, GlobalPosition = to });
                     break;
                 }

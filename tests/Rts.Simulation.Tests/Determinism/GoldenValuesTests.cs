@@ -244,6 +244,7 @@ public sealed class GoldenValuesTests
         // Replay format v12, command format v6, rules v21 (M3 step 8): versions and checksums change.
         // Replay format v13, rules v22 (M3 step 9): versions and checksums change; no map, so no ore layer.
         // Replay format v14, command format v7, rules v23 (M3 step 10): versions and checksums change.
-        Assert.Equal((23377, 12623142371231342605UL), (bytes.Length, hash.Value));
+        // Replay format v15, command format v8, rules v24 (M3 step 11): only the versions change; the scenario has no buildings.
+        Assert.Equal((23377, 4031683543623016011UL), (bytes.Length, hash.Value));
     }
 }

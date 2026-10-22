@@ -97,10 +97,10 @@ internal static class TestRules
         });
         Building(builder, "radar", 2, 2, power: -50, "refinery");
         Building(builder, "tech_center", 3, 3, power: -100, "war_factory", "radar");
-        builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with { ExtendsBase = false });
-        Building(builder, "sentry_bunker", 1, 1, power: 0, "barracks");
-        Building(builder, "tesla_coil", 2, 2, power: -75, "radar");
-        Building(builder, "flak_cannon", 2, 2, power: -50, "radar");
+        builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with { ExtendsBase = false, Category = ProductionCategory.Defense });
+        builder.Add(Def("sentry_bunker", 1, 1, power: 0, "barracks") with { Category = ProductionCategory.Defense });
+        builder.Add(Def("tesla_coil", 2, 2, power: -75, "radar") with { Category = ProductionCategory.Defense });
+        builder.Add(Def("flak_cannon", 2, 2, power: -50, "radar") with { Category = ProductionCategory.Defense });
         builder.Add(new EconomyDef
         {
             Id = "economy",
@@ -114,6 +114,9 @@ internal static class TestRules
             OreGrowthChance = Percent(20),
             OreSpreadStage = 6,
             OreSpreadChance = Percent(5),
+            SellRefund = Percent(50),
+            RepairCost = Percent(50),
+            RepairRate = 5,
         });
         builder.Add(new FactionDef
         {

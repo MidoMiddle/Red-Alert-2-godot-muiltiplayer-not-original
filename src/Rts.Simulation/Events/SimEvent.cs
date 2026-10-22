@@ -87,3 +87,12 @@ public sealed record OreDepleted(int Tick, CellPos Cell) : SimEvent(Tick);
 
 /// <summary>A harvester stands in the dock of <paramref name="Refinery"/> and starts to unload.</summary>
 public sealed record HarvesterUnloading(int Tick, EntityId Harvester, EntityId Refinery) : SimEvent(Tick);
+
+/// <summary>The player sold a building and got <paramref name="Refund"/> credits back (docs/implementation/M3_base_economy.md, 4.8).</summary>
+public sealed record BuildingSold(int Tick, EntityId Building, PlayerId Player, int DefIndex, int Refund) : SimEvent(Tick);
+
+/// <summary>The player turned the repair of a building on or off.</summary>
+public sealed record RepairToggled(int Tick, EntityId Building, bool On) : SimEvent(Tick);
+
+/// <summary>A repaired building is whole again; its repair turned off.</summary>
+public sealed record RepairDone(int Tick, EntityId Building) : SimEvent(Tick);

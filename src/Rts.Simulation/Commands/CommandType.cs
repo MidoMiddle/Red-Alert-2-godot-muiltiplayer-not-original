@@ -19,4 +19,7 @@ public enum CommandType : byte
     CancelProduction = 12,
     SetRallyPoint = 13,
     Harvest = 14,
+    Sell = 15,
+    ToggleRepair = 16,
+    PlaceWalls = 17,
 }

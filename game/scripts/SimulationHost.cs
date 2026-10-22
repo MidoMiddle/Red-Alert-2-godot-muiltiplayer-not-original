@@ -302,13 +302,78 @@ public partial class SimulationHost : Node
         }
     }
 
-    /// <summary>Debug (M3 step 6): places the <see cref="BuildIndex"/> building with the centre of its footprint at <paramref name="position"/>.</summary>
-    public void IssuePlaceBuilding(WorldPos position)
+    /// <summary>
+    /// Debug (M3 steps 6, 11): places the <see cref="BuildIndex"/> building with the centre of its footprint at <paramref name="position"/>.
+    /// A building of one cell with <paramref name="line"/> (Shift) is a line of walls from the last one placed this way.
+    /// </summary>
+    public void IssuePlaceBuilding(WorldPos position, bool line = false)
     {
         var footprint = Data.Database.Buildings[BuildIndex].Footprint;
         var centre = position.ToCell();
         var cell = new CellPos(centre.X - (footprint.Width - 1) / 2, centre.Y - (footprint.Height - 1) / 2);
-        Issue(new PlaceBuildingCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, cell));
+        if (footprint.Width == 1 && footprint.Height == 1 && line && _lastWall is { } from)
+        {
+            Issue(new PlaceWallsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, WallLine(from, cell)));
+        }
+        else
+        {
+            Issue(new PlaceBuildingCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, BuildIndex, cell));
+        }
+
+        _lastWall = footprint.Width == 1 && footprint.Height == 1 ? cell : null;
+    }
+
+    /// <summary>
+    /// Debug (M3 step 11): after a one-cell building of the debug build is placed, the next one is ordered, so that a Shift + click
+    /// soon has a ready one to start the line with, as a wall is dragged in RA2.
+    /// </summary>
+    private void OrderNextWall()
+    {
+        var def = Data.Database.Buildings[BuildIndex];
+        if (def.Footprint is { Width: 1, Height: 1 } && Simulation.World.Player(LocalPlayer).Queue(def.Category).Count == 0)
+        {
+            Issue(new ProduceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ProductionKind.Building, BuildIndex, 1));
+        }
+    }
+
+    // The cell of the last one-cell building placed with the debug build: a Shift + click draws a wall line from it.
+    private CellPos? _lastWall;
+
+    /// <summary>
+    /// The cells of a wall line from <paramref name="from"/> (left out: it is built) to <paramref name="to"/>: straight along the longer
+    /// axis, or a diagonal when both are equal, 64 cells at most.
+    /// </summary>
+    public static ImmutableArray<CellPos> WallLine(CellPos from, CellPos to)
+    {
+        var (dx, dy) = (to.X - from.X, to.Y - from.Y);
+        var diagonal = Math.Abs(dx) == Math.Abs(dy);
+        var (stepX, stepY) = diagonal ? (Math.Sign(dx), Math.Sign(dy)) : Math.Abs(dx) > Math.Abs(dy) ? (Math.Sign(dx), 0) : (0, Math.Sign(dy));
+        var length = Math.Min(Math.Max(Math.Abs(dx), Math.Abs(dy)), PlaceWallsCommand.MaxCells);
+        var cells = ImmutableArray.CreateBuilder<CellPos>(length);
+        for (var i = 1; i <= length; i++)
+        {
+            cells.Add(new CellPos(from.X + stepX * i, from.Y + stepY * i));
+        }
+
+        return cells.MoveToImmutable();
+    }
+
+    /// <summary>Debug (L, M3 step 11): sells the player's building on the cell.</summary>
+    public void IssueSell(CellPos cell)
+    {
+        if (Simulation.World.BuildingAt(cell) is { Def: not null } building && building.Owner == LocalPlayer)
+        {
+            Issue(new SellCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building.Id));
+        }
+    }
+
+    /// <summary>Debug (J, M3 step 11): turns the repair of the player's building on the cell on or off.</summary>
+    public void IssueToggleRepair(CellPos cell)
+    {
+        if (Simulation.World.BuildingAt(cell) is { Def: not null } building && building.Owner == LocalPlayer)
+        {
+            Issue(new ToggleRepairCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building.Id));
+        }
     }
 
     /// <summary>
@@ -488,6 +553,7 @@ public partial class SimulationHost : Node
         _ticksThisSecond++;
         QueueHistory.Add(Simulation.World.PathRequests.ExpandedLastTick, Simulation.World.PathRequests.Requests.Count);
 
+        var wallPlaced = false;
         foreach (var simEvent in Simulation.LastTickEvents)
         {
             GD.Print($"[sim] {simEvent}");
@@ -495,6 +561,13 @@ public partial class SimulationHost : Node
             {
                 Notice = notice;
             }
+
+            wallPlaced |= simEvent is BuildingPlaced placed && placed.Player == LocalPlayer && placed.DefIndex == BuildIndex;
+        }
+
+        if (wallPlaced && _playback is null)
+        {
+            OrderNextWall();
         }
 
         if (_playback is not null)
@@ -524,6 +597,10 @@ public partial class SimulationHost : Node
             ProductionCancelled cancelled when cancelled.Player == LocalPlayer =>
                 $"cancelled {ProductionRules.IdOf(Data.Database, cancelled.Kind, cancelled.DefIndex)}, {cancelled.Refund} back",
             LowPower low when low.Player == LocalPlayer => "LOW POWER",
+            BuildingSold sold when sold.Player == LocalPlayer => $"sold {buildings[sold.DefIndex].Id}, {sold.Refund} back",
+            RepairToggled toggled when Simulation.World.TryGet(toggled.Building, out var repaired) && repaired.Owner == LocalPlayer =>
+                toggled.On ? $"repairing {NameOf(toggled.Building)}" : "repair off",
+            RepairDone done when Simulation.World.TryGet(done.Building, out var whole) && whole.Owner == LocalPlayer => "repair done",
             HarvesterUnloading unloading when Simulation.World.TryGet(unloading.Harvester, out var harvester) && harvester.Owner == LocalPlayer =>
                 "harvester unloading",
             OreDepleted depleted when Simulation.CurrentTick - _lastDepletedNotice >= 75 => DepletedNotice(),

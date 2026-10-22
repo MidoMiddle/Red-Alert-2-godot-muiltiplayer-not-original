@@ -112,6 +112,10 @@ public sealed class CommandSerializerTests
         new SetRallyPointCommand(new PlayerId(5), 1, 1, new EntityId(33), new WorldPos(-4, 9000)),
         new HarvestCommand(new PlayerId(2), 4, 4, [new EntityId(3), new EntityId(9)], new CellPos(17, -2)),
         new HarvestCommand(new PlayerId(2), 4, 5, [], new CellPos(0, 0)),
+        new SellCommand(new PlayerId(1), 2, 3, new EntityId(12)),
+        new ToggleRepairCommand(new PlayerId(6), 2, 4, new EntityId(99)),
+        new PlaceWallsCommand(new PlayerId(1), 5, 1, 9, [new CellPos(3, 4), new CellPos(4, 4), new CellPos(-1, 70000)]),
+        new PlaceWallsCommand(new PlayerId(1), 5, 2, 9, [.. Enumerable.Range(0, PlaceWallsCommand.MaxCells).Select(i => new CellPos(i, 0))]),
     };
 
     [Theory]

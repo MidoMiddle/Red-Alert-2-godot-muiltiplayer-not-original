@@ -44,6 +44,9 @@ public static class CommandProcessor
             CancelProductionCommand cancel => ApplyCancel(world, cancel, events),
             SetRallyPointCommand rally => ApplyRallyPoint(world, rally),
             HarvestCommand harvest => ApplyHarvest(world, harvest),
+            SellCommand sell => ApplySell(world, sell, events),
+            ToggleRepairCommand repair => ApplyToggleRepair(world, repair, events),
+            PlaceWallsCommand walls => ApplyPlaceWalls(world, walls, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
         if (applied && command is UnitsCommand { Type: not CommandType.Harvest } order)
@@ -52,6 +55,104 @@ public static class CommandProcessor
         }
 
         return applied;
+    }
+
+    /// <summary>The player's ready building from the data, if the id names one.</summary>
+    private static Building? OwnReady(GameWorld world, PlayerId player, EntityId id) =>
+        world.TryGet(id, out var entity) && entity is Building { IsAlive: true, IsReady: true, Def: not null } building && building.Owner == player
+            ? building
+            : null;
+
+    /// <summary>Sells the player's ready building: <c>cost × sell_refund × hp / max hp</c> back, rounded down (4.8).</summary>
+    private static bool ApplySell(GameWorld world, SellCommand command, List<SimEvent>? events)
+    {
+        if (OwnReady(world, command.Player, command.Building) is not { } building)
+        {
+            return false;
+        }
+
+        var share = IntMath.DivRound(world.Rules.Economy.SellRefund.Raw * 1000, Fixed.OneRaw);
+        var refund = (int)((long)building.Def!.Cost * share * building.Hp / (1000L * building.MaxHp));
+        world.SellBuilding(building, refund, events);
+        return true;
+    }
+
+    /// <summary>Turns the repair of the player's ready building on or off (4.8).</summary>
+    private static bool ApplyToggleRepair(GameWorld world, ToggleRepairCommand command, List<SimEvent>? events)
+    {
+        if (OwnReady(world, command.Player, command.Building) is not { } building)
+        {
+            return false;
+        }
+
+        building.Repairing = !building.Repairing;
+        events?.Add(new RepairToggled(world.CurrentTick, building.Id, building.Repairing));
+        return true;
+    }
+
+    /// <summary>
+    /// A line of walls (4.8): the cells in order, each where the placement rules allow; the first takes the building ready in the queue,
+    /// every further one is paid at once. A refused cell is skipped; the line ends when the credits do.
+    /// </summary>
+    private static bool ApplyPlaceWalls(GameWorld world, PlaceWallsCommand command, List<SimEvent>? events)
+    {
+        var buildings = world.Rules.Database.Buildings;
+        if (command.DefIndex < 0 || command.DefIndex >= buildings.Length || command.Cells.IsEmpty || command.Cells.Length > PlaceWallsCommand.MaxCells)
+        {
+            return false;
+        }
+
+        var def = buildings[command.DefIndex];
+        var player = world.Player(command.Player);
+        if (def.Faction != player.Faction.Id || def.Footprint != new Rules.CellSize(1, 1))
+        {
+            return false;
+        }
+
+        var queue = player.QueueList(def.Category);
+        var ready = queue.Count > 0 && queue[0] is { Kind: ProductionKind.Building, Ready: true } item && item.DefIndex == command.DefIndex;
+        if (!ready)
+        {
+            var problem = player.CanBuildBuilding(command.DefIndex) ? PlacementProblem.NotReady : PlacementProblem.NotAvailable;
+            events?.Add(new CannotPlace(world.CurrentTick, command.Player, command.DefIndex, command.Cells[0], problem));
+            return false;
+        }
+
+        var placed = 0;
+        var first = PlacementProblem.None;
+        foreach (var cell in command.Cells)
+        {
+            var problem = PlacementRules.Check(world, command.Player, def, cell);
+            if (problem != PlacementProblem.None)
+            {
+                first = first == PlacementProblem.None ? problem : first;
+                continue;
+            }
+
+            if (placed == 0)
+            {
+                queue.RemoveAt(0);
+            }
+            else if (player.Credits < def.Cost)
+            {
+                break;
+            }
+            else
+            {
+                player.Credits -= def.Cost;
+            }
+
+            var wall = world.CreateBuilding(command.Player, def, cell, ready: false, events);
+            events?.Add(new BuildingPlaced(world.CurrentTick, wall.Id, command.Player, command.DefIndex, cell));
+            placed++;
+        }
+
+        if (placed == 0)
+        {
+            events?.Add(new CannotPlace(world.CurrentTick, command.Player, command.DefIndex, command.Cells[0], first));
+        }
+
+        return placed > 0;
     }
 
     /// <summary>The player's harvesters among the units work the field at the cell from now on (4.13).</summary>

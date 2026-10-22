@@ -4,7 +4,7 @@ namespace Rts.Simulation.Rules;
 
 /// <summary>
 /// The general rules of the economy (docs/implementation/M3_base_economy.md, 4.10, 4.12): one record of the data, <c>economy</c>.
-/// Production multipliers and ore; selling and repairs join it in M3 step 11.
+/// Production multipliers, ore, selling and repairs.
 /// </summary>
 public sealed record EconomyDef : IDefinition
 {
@@ -38,4 +38,13 @@ public sealed record EconomyDef : IDefinition
 
     /// <summary>The chance of such a cell to seed a neighbour in a round, as a fraction.</summary>
     public required Fixed OreSpreadChance { get; init; }
+
+    /// <summary>The share of the cost a sold building gives back at full hit points, as a fraction (M3 step 11).</summary>
+    public required Fixed SellRefund { get; init; }
+
+    /// <summary>What a repair from nothing to full hit points costs, as a share of the cost of the building.</summary>
+    public required Fixed RepairCost { get; init; }
+
+    /// <summary>Hit points a repair gives per tick.</summary>
+    public required int RepairRate { get; init; }
 }

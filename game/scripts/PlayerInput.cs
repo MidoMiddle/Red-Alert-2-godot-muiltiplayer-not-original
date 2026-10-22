@@ -243,6 +243,16 @@ public partial class PlayerInput : Node
             // D: the selected MCVs turn into construction yards (M3 step 7).
             _host.IssueDeploy(Selection.Units);
         }
+        else if (key.IsActionPressed("debug_sell", false, true) && CellUnderPointer is { } sold && !_host.IsPlayback)
+        {
+            // Debug (M3 step 11): sell the building under the cursor, until the Sell button of the sidebar (step 12).
+            _host.IssueSell(sold);
+        }
+        else if (key.IsActionPressed("debug_repair", false, true) && CellUnderPointer is { } repaired && !_host.IsPlayback)
+        {
+            // Debug (M3 step 11): turn the repair of the building under the cursor on or off.
+            _host.IssueToggleRepair(repaired);
+        }
         else if (key.IsActionPressed("debug_damage", false, true) && CellUnderPointer is { } damaged)
         {
             // Debug (M7 steps 5–7): a blow at the map object, bridge segment or building under the cursor, until the weapons of M4.
@@ -468,7 +478,7 @@ public partial class PlayerInput : Node
                 case PlaceBuilding place:
                     if (!_host.IsPlayback)
                     {
-                        _host.IssuePlaceBuilding(place.Position);
+                        _host.IssuePlaceBuilding(place.Position, place.Line);
                     }
 
                     break;

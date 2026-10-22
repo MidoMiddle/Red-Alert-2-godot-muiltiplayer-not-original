@@ -160,6 +160,10 @@ public static class StateHasher
                 hash.Add(building.DefIndex);
                 hash.Add(building.BuildUpLeft);
 
+                // Rules v24 (step 11): the repair.
+                hash.Add(building.Repairing);
+                hash.Add(building.RepairCarry);
+
                 // Rules v21 (step 8): the rally point of a factory.
                 hash.Add(building.RallyPoint.HasValue);
                 if (building.RallyPoint is { } rally)
