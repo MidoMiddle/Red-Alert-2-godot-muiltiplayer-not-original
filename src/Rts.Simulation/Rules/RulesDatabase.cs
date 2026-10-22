@@ -19,7 +19,8 @@ public sealed class RulesDatabase
         ImmutableArray<EconomyDef> economies,
         ImmutableArray<ArmorDef> armors,
         ImmutableArray<WarheadDef> warheads,
-        ImmutableArray<ProjectileDef> projectiles)
+        ImmutableArray<ProjectileDef> projectiles,
+        ImmutableArray<BuildOrderDef> buildOrders)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -31,6 +32,7 @@ public sealed class RulesDatabase
         Armors = armors;
         Warheads = warheads;
         Projectiles = projectiles;
+        BuildOrders = buildOrders;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -55,7 +57,12 @@ public sealed class RulesDatabase
 
     public ImmutableArray<ProjectileDef> Projectiles { get; }
 
+    /// <summary>The build orders of the bots (M5 step 5).</summary>
+    public ImmutableArray<BuildOrderDef> BuildOrders { get; }
+
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
+
+    public bool TryGetBuildOrder(string id, out BuildOrderDef definition) => TryFind(BuildOrders, id, out definition);
 
     public bool TryGetTerrain(string id, out TerrainDef definition) => TryFind(Terrains, id, out definition);
 

@@ -52,9 +52,19 @@ internal sealed class Scene
 
     public static void Move(Unit unit, int x, int y) => unit.Position = new CellPos(x, y).Center;
 
+    /// <summary>The commands the bot gave on its last turn, once they have run (two steps: the bot's tick, then theirs).</summary>
+    public List<Rts.Simulation.Commands.Command> RunCommands()
+    {
+        Simulation.Step();
+        Simulation.Step();
+        return Simulation.ExecutedCommands.Where(command => command.Player == Me).ToList();
+    }
+
     /// <summary>The turn of the bot after <paramref name="tick"/>.</summary>
     public void Look(int tick = 0)
     {
+        PowerSystem.Update(World, null);
+        TechTree.Update(World);
         VisibilitySystem.Update(World);
         View.Refresh(World, tick);
         Memory.Update(View);

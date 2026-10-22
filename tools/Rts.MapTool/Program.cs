@@ -40,7 +40,8 @@ if (args.Length is 1 or 2 && args[0] == "rules")
         var rules = args.Length == 2 ? Rts.Data.RulesLoader.LoadDirectory(folder) : Rts.Data.GameData.LoadDirectory(folder).Database;
         Console.WriteLine($"units {rules.Units.Length} · buildings {rules.Buildings.Length} · weapons {rules.Weapons.Length} · " +
                           $"locomotors {rules.Locomotors.Length} · terrains {rules.Terrains.Length} · factions {rules.Factions.Length} · " +
-                          $"armor {rules.Armors.Length} · warheads {rules.Warheads.Length} · projectiles {rules.Projectiles.Length}");
+                          $"armor {rules.Armors.Length} · warheads {rules.Warheads.Length} · projectiles {rules.Projectiles.Length} · " +
+                          $"build orders {rules.BuildOrders.Length}");
         Console.WriteLine($"data hash {Rts.Simulation.Rules.DataHasher.Compute(rules):x16}");
         return 0;
     }

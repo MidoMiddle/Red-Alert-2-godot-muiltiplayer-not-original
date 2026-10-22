@@ -13,7 +13,7 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order"];
 
     private static readonly string[] UnitKeys =
     [
@@ -43,6 +43,8 @@ internal static class DefinitionReader
     private static readonly string[] TerrainKeys = ["name", "code", "buildable", "speed"];
 
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester"];
+
+    private static readonly string[] BuildOrderKeys = ["faction", "steps"];
 
     private static readonly string[] EconomyKeys =
     [
@@ -223,6 +225,17 @@ internal static class DefinitionReader
             ConstructionYard = fields.Required("construction_yard", Scalars.Id, ""),
             Refinery = fields.Required("refinery", Scalars.Id, ""),
             Harvester = fields.Required("harvester", Scalars.Id, ""),
+        };
+    }
+
+    public static BuildOrderDef BuildOrder(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, BuildOrderKeys);
+        return new BuildOrderDef
+        {
+            Id = definition.Id,
+            Faction = fields.Required("faction", Scalars.Id, ""),
+            Steps = fields.Required("steps", Scalars.IdList, ImmutableArray<string>.Empty),
         };
     }
 

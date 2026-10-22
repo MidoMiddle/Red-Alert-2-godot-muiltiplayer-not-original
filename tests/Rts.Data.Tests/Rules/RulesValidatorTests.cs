@@ -15,6 +15,7 @@ public sealed class RulesValidatorTests
     private const string Weapons = "factions/union/weapons.yaml";
     private const string Warheads = "combat/warheads.yaml";
     private const string Projectiles = "combat/projectiles.yaml";
+    private const string BuildOrders = "ai/union.yaml";
 
     /// <summary>The files of the test dataset as (name, text), in the order <see cref="RulesLoader.LoadDirectory"/> reads them.</summary>
     private static List<(string FileName, string Text)> Dataset() =>
@@ -117,6 +118,19 @@ public sealed class RulesValidatorTests
 
         Assert.Equal("'conscript' has no armor", missing.Reason);
         Assert.Equal((Units, 3, 10, "'conscript' refers to armor 'paper', which is not defined"), (unknown.FileName, unknown.Line, unknown.Column, unknown.Reason));
+    }
+
+    [Theory]
+    [InlineData("war_factory]", "war_fortress]", "'standard' refers to building 'war_fortress', which is not defined")]
+    [InlineData("war_factory]", "heavy_tank]", "'standard' refers to building 'heavy_tank', but 'heavy_tank' is unit")]
+    [InlineData("[reactor, refinery, war_factory]", "[]", "build order 'standard' has no steps")]
+    [InlineData("faction: union", "faction: allies", "'standard' refers to faction 'allies', which is not defined")]
+    public void A_build_order_of_the_bots_is_checked_like_the_rest(string text, string replacement, string reason)
+    {
+        var error = Fails(BuildOrders, text, replacement);
+
+        Assert.Equal(BuildOrders, error.FileName);
+        Assert.Contains(reason, error.Reason);
     }
 
     [Fact]

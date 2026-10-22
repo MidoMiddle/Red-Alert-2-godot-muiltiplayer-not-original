@@ -138,6 +138,15 @@ public static class DataHasher
             Add(hash, faction.Harvester);
         }
 
+        // The build orders of the bots (M5 step 5): a bot of other data builds otherwise.
+        hash.Add(rules.BuildOrders.Length);
+        foreach (var order in rules.BuildOrders)
+        {
+            Add(hash, order.Id);
+            Add(hash, order.Faction);
+            Add(hash, order.Steps);
+        }
+
         hash.Add(rules.Economies.Length);
         foreach (var economy in rules.Economies)
         {

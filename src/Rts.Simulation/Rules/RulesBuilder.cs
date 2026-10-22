@@ -17,6 +17,7 @@ public sealed class RulesBuilder
     private readonly List<UnitDef> _units = [];
     private readonly List<BuildingDef> _buildings = [];
     private readonly List<FactionDef> _factions = [];
+    private readonly List<BuildOrderDef> _buildOrders = [];
     private readonly List<EconomyDef> _economies = [];
     private readonly List<ArmorDef> _armors = [];
     private readonly List<WarheadDef> _warheads = [];
@@ -55,6 +56,12 @@ public sealed class RulesBuilder
     public RulesBuilder Add(FactionDef definition)
     {
         _factions.Add(definition);
+        return this;
+    }
+
+    public RulesBuilder Add(BuildOrderDef definition)
+    {
+        _buildOrders.Add(definition);
         return this;
     }
 
@@ -105,11 +112,17 @@ public sealed class RulesBuilder
             Sorted(_economies),
             Sorted(_armors),
             Sorted(_warheads),
-            Sorted(_projectiles));
+            Sorted(_projectiles),
+            Sorted(_buildOrders));
     }
 
     private IEnumerable<string> AllIds()
     {
+        foreach (var definition in _buildOrders)
+        {
+            yield return definition.Id;
+        }
+
         foreach (var definition in _locomotors)
         {
             yield return definition.Id;

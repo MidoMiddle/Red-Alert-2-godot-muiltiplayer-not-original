@@ -45,7 +45,8 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        Assert.Equal(0x5adacaa879375e48UL, GameDataFiles.Current.Hash);
+        // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml).
+        Assert.Equal(0xec7b60e746e3910fUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

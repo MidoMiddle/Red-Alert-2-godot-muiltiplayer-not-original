@@ -1,0 +1,6 @@
+# The build orders of the bots of the Union (docs/implementation/M5_first_bot.md, 4.7, step 5): the buildings in the order a bot
+# builds them first. A step may come twice — the second refinery. A defense is placed facing the enemy by the bot itself.
+standard:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, barracks, refinery, war_factory, reactor, radar, tesla_coil, tech_center]

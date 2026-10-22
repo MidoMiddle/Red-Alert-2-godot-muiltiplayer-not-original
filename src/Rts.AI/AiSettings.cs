@@ -34,4 +34,10 @@ public sealed record AiSettings
 
     /// <summary>A harvester that works this near a known enemy, in cells, is sent to a field farther away (4.6).</summary>
     public int DangerCells { get; init; } = 12;
+
+    /// <summary>The build order the bot follows, a <c>build_order</c> of the data for its faction (4.7).</summary>
+    public string BuildOrder { get; init; } = "standard";
+
+    /// <summary>After the build order, a second war factory once the credits left reach this (4.6).</summary>
+    public int SecondFactoryCredits { get; init; } = 4000;
 }

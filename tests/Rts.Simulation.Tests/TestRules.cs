@@ -84,6 +84,11 @@ internal static class TestRules
             builder.Add(definition);
         }
 
+        foreach (var definition in standard.BuildOrders)
+        {
+            builder.Add(definition);
+        }
+
         return GameRules.From(builder.Build());
     }
 
@@ -215,6 +220,13 @@ internal static class TestRules
             ConstructionYard = "construction_yard",
             Refinery = "refinery",
             Harvester = "harvester",
+        });
+        // The build order of game/data/ai (M5 step 5).
+        builder.Add(new BuildOrderDef
+        {
+            Id = "standard",
+            Faction = "union",
+            Steps = ["reactor", "refinery", "barracks", "refinery", "war_factory", "reactor", "radar", "tesla_coil", "tech_center"],
         });
         return builder.Build();
     }

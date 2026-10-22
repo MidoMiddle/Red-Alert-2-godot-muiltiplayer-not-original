@@ -9,15 +9,23 @@ using Rts.Simulation.World;
 namespace Rts.AI.Modules;
 
 /// <summary>
-/// The base of a bot, as far as step 4 needs it (docs/implementation/M5_first_bot.md, 4.6): it deploys the MCV — where it stands, or
-/// first on the nearest cell within <see cref="DeployReach"/> where the yard fits as far as the bot has seen; with none seen it drives
-/// <see cref="ScoutStep"/> cells toward the middle of the map to see more — then builds what <see cref="AiPlan.Wants"/> asks for:
-/// with the building queue empty it orders the first wanted building it may build and can pay for, and it places a ready one where the
-/// end-to-end player of M3 would (<c>EconomyRun.Spot</c>): near the yard, where the rules allow and a ring of cells stays free, a refinery
-/// as near the explored ore as it can. It gives no command it knows to be refused: no place, no order. Step 5 brings the build order
-/// and the placement that weighs the passages.
+/// The base of a bot (docs/implementation/M5_first_bot.md, 4.6–4.7, steps 4–5). First the MCV deploys — where it stands, or on the nearest
+/// cell within <see cref="DeployReach"/> where the yard fits as far as the bot has seen; with none seen it drives <see cref="ScoutStep"/>
+/// cells toward the middle of the map to see more. Then, on every turn, a ready building is placed where <see cref="BasePlacement"/>
+/// finds room, and with a queue empty the next building is ordered, the most important first:
+/// <list type="number">
+/// <item>what the economy needs at once — a reactor, a refinery (<see cref="AiPlan.Wants"/>);</item>
+/// <item>the next step of the build order of the data (<see cref="AiSettings.BuildOrder"/>) not done yet: a step is done when the base
+/// has as many such buildings, standing, growing or in production, as the order has up to it — a lost one is built again; a step that
+/// cannot be built yet (its prerequisite still grows) is waited for, nothing after it goes first;</item>
+/// <item>the rest of the economy's needs — a war factory for the harvesters;</item>
+/// <item>after the order — refineries up to <see cref="AiSettings.MaxRefineries"/>, a second war factory once the credits reach
+/// <see cref="AiSettings.SecondFactoryCredits"/>.</item>
+/// </list>
+/// A building is ordered only when the credits, less what the queues still have to pay, cover it; one order a queue a turn. The defense
+/// on the side of the attacks comes with the defense of step 9. The bot gives no command it knows to be refused.
 /// </summary>
-public sealed class BuildPlanner : IAiModule
+public sealed class BuildPlanner(AiSettings settings) : IAiModule
 {
     /// <summary>How far, in cells, the MCV may go to find flat ground for its yard.</summary>
     public const int DeployReach = 6;
@@ -25,8 +33,12 @@ public sealed class BuildPlanner : IAiModule
     /// <summary>How far the MCV drives to see more ground when it found none for its yard.</summary>
     public const int ScoutStep = 4;
 
-    /// <summary>How far from the middle of the yard, in cells, buildings go.</summary>
-    public const int BaseReach = 14;
+    private static readonly ProductionCategory[] Categories =
+        [ProductionCategory.Infantry, ProductionCategory.Vehicle, ProductionCategory.Building, ProductionCategory.Defense];
+
+    private readonly BasePlacement _placement = new();
+    private readonly List<int> _choices = new();
+    private int[] _have = [];
 
     public AiModuleKind Kind => AiModuleKind.BuildPlanner;
 
@@ -51,31 +63,171 @@ public sealed class BuildPlanner : IAiModule
             return;
         }
 
-        var queue = view.Player.Queue(ProductionCategory.Building);
-        if (queue is [{ Ready: true } ready, ..])
+        PlaceReady(context, yard);
+        Order(context);
+    }
+
+    /// <summary>The first ready building of the building queue, else of the defense queue, goes where the placement finds room.</summary>
+    private void PlaceReady(AiContext context, Building yard)
+    {
+        var view = context.View;
+        foreach (var category in new[] { ProductionCategory.Building, ProductionCategory.Defense })
         {
-            if (Spot(view, yard, rules.Buildings[ready.DefIndex]) is { } spot)
+            if (view.Player.Queue(category) is not [{ Ready: true } ready, ..])
             {
-                context.Issue(new PlaceBuildingCommand(view.Me, context.ExecuteTick, context.NextSequence(), ready.DefIndex, spot));
+                continue;
+            }
+
+            if (_placement.TryFind(view, context.Memory, yard, ready.DefIndex, out var corner) && corner is { } place)
+            {
+                context.Issue(new PlaceBuildingCommand(view.Me, context.ExecuteTick, context.NextSequence(), ready.DefIndex, place));
             }
 
             return;
         }
+    }
 
-        if (queue.Count > 0)
+    /// <summary>Orders the most important building there is room and money for, one a queue.</summary>
+    private void Order(AiContext context)
+    {
+        var view = context.View;
+        var rules = view.Rules.Database;
+        CountBuildings(view);
+        var money = view.Player.Credits - Promised(view);
+        var buildingQueueFree = view.Player.Queue(ProductionCategory.Building).Count == 0;
+        var defenseQueueFree = view.Player.Queue(ProductionCategory.Defense).Count == 0;
+        Choose(context);
+        foreach (var index in _choices)
         {
-            return;
+            if (index < 0)
+            {
+                // A step of the order that cannot be built yet: nothing after it goes first.
+                return;
+            }
+
+            var def = rules.Buildings[index];
+            var free = def.Category == ProductionCategory.Defense ? defenseQueueFree : buildingQueueFree;
+            if (!free || !view.Player.CanBuildBuilding(index))
+            {
+                continue;
+            }
+
+            if (def.Cost > money)
+            {
+                // The money is not there yet: wait for it rather than build something cheaper first.
+                return;
+            }
+
+            context.Issue(new ProduceCommand(view.Me, context.ExecuteTick, context.NextSequence(), ProductionKind.Building, index, 1));
+            money -= def.Cost;
+            if (def.Category == ProductionCategory.Defense)
+            {
+                defenseQueueFree = false;
+            }
+            else
+            {
+                buildingQueueFree = false;
+            }
+        }
+    }
+
+    /// <summary>The buildings to order, the most important first; -1 marks a step of the order that has to be waited for.</summary>
+    private void Choose(AiContext context)
+    {
+        var view = context.View;
+        var rules = view.Rules.Database;
+        var faction = view.Player.Faction;
+        var refinery = rules.IndexOfBuilding(faction.Refinery);
+        var reactor = EconomyManager.PowerPlant(rules, faction.Id);
+        var factory = EconomyManager.Factory(rules, faction.Id, ProductionCategory.Vehicle);
+        _choices.Clear();
+        foreach (var wanted in context.Plan.Wants)
+        {
+            if (wanted == reactor || wanted == refinery)
+            {
+                _choices.Add(wanted);
+            }
+        }
+
+        var orderDone = true;
+        if (rules.TryGetBuildOrder(settings.BuildOrder, out var order) && order.Faction == faction.Id)
+        {
+            var counts = new int[rules.Buildings.Length];
+            foreach (var step in order.Steps)
+            {
+                var index = rules.IndexOfBuilding(step);
+                counts[index]++;
+                if (_have[index] < counts[index])
+                {
+                    _choices.Add(view.Player.CanBuildBuilding(index) ? index : -1);
+                    orderDone = false;
+                    break;
+                }
+            }
         }
 
         foreach (var wanted in context.Plan.Wants)
         {
-            var def = rules.Buildings[wanted];
-            if (def.Category == ProductionCategory.Building && view.Player.CanBuildBuilding(wanted) && def.Cost <= view.Player.Credits)
+            if (wanted != reactor && wanted != refinery)
             {
-                context.Issue(new ProduceCommand(view.Me, context.ExecuteTick, context.NextSequence(), ProductionKind.Building, wanted, 1));
-                return;
+                _choices.Add(wanted);
             }
         }
+
+        if (orderDone)
+        {
+            if (_have[refinery] < settings.MaxRefineries)
+            {
+                _choices.Add(refinery);
+            }
+
+            if (factory >= 0 && _have[factory] < 2 && view.Player.Credits - Promised(view) >= settings.SecondFactoryCredits)
+            {
+                _choices.Add(factory);
+            }
+        }
+    }
+
+    /// <summary>How many of each building the base has: standing, growing, or in a queue.</summary>
+    private void CountBuildings(AiWorldView view)
+    {
+        var buildings = view.Rules.Database.Buildings.Length;
+        if (_have.Length != buildings)
+        {
+            _have = new int[buildings];
+        }
+
+        System.Array.Clear(_have);
+        foreach (var building in view.OwnBuildings)
+        {
+            if (building.Def is not null)
+            {
+                _have[building.DefIndex]++;
+            }
+        }
+
+        foreach (var category in new[] { ProductionCategory.Building, ProductionCategory.Defense })
+        {
+            foreach (var item in view.Player.Queue(category))
+            {
+                _have[item.DefIndex]++;
+            }
+        }
+    }
+
+    /// <summary>What the queues still have to pay.</summary>
+    private static int Promised(AiWorldView view)
+    {
+        var promised = 0;
+        foreach (var category in Categories)
+        {
+            foreach (var item in view.Player.Queue(category))
+            {
+                promised += ProductionRules.CostOf(view.Rules.Database, item.Kind, item.DefIndex) - item.Paid;
+            }
+        }
+
+        return promised;
     }
 
     /// <summary>The MCV deploys where its yard fits, or drives to the nearest cell where it does; it waits while it drives.</summary>
@@ -146,88 +298,4 @@ public sealed class BuildPlanner : IAiModule
     /// <summary>The north-west cell of <paramref name="def"/> centred on <paramref name="centre"/>, as a deploy places the yard.</summary>
     private static CellPos Corner(CellPos centre, BuildingDef def) =>
         new(centre.X - (def.Footprint.Width - 1) / 2, centre.Y - (def.Footprint.Height - 1) / 2);
-
-    /// <summary>
-    /// The north-west cell for <paramref name="def"/> near <paramref name="yard"/> where the rules allow it and no own building stands in the
-    /// ring round it; nearest the yard, a refinery nearest the explored ore; equal ones go to the smaller (Y, X). Null when there is none.
-    /// </summary>
-    private static CellPos? Spot(AiWorldView view, Building yard, BuildingDef def)
-    {
-        var refinery = def.DockCell is not null;
-        var ore = refinery ? OreCells(view) : [];
-        var centre = new CellPos(yard.Cell.X + yard.Width / 2, yard.Cell.Y + yard.Height / 2);
-        CellPos? best = null;
-        var bestScore = long.MaxValue;
-        for (var y = centre.Y - BaseReach; y <= centre.Y + BaseReach; y++)
-        {
-            for (var x = centre.X - BaseReach; x <= centre.X + BaseReach; x++)
-            {
-                var corner = new CellPos(x, y);
-                if (!Clear(view, corner, def) || !view.CanPlace(def, corner))
-                {
-                    continue;
-                }
-
-                var middleX = x + def.Footprint.Width / 2;
-                var middleY = y + def.Footprint.Height / 2;
-                long score;
-                if (refinery && ore.Count > 0)
-                {
-                    score = long.MaxValue;
-                    foreach (var cell in ore)
-                    {
-                        var distance = Square(cell.X - middleX) + Square(cell.Y - middleY);
-                        score = distance < score ? distance : score;
-                    }
-                }
-                else
-                {
-                    score = Square(middleX - centre.X) + Square(middleY - centre.Y);
-                }
-
-                score = score * 10_000 + y * 100 + x;
-                if (score < bestScore)
-                {
-                    (best, bestScore) = (corner, score);
-                }
-            }
-        }
-
-        return best;
-    }
-
-    /// <summary>No own building in the ring of cells round the footprint, so that exits and docks are not walled in.</summary>
-    private static bool Clear(AiWorldView view, CellPos corner, BuildingDef def)
-    {
-        var (left, top) = (corner.X - 1, corner.Y - 1);
-        var (right, bottom) = (corner.X + def.Footprint.Width, corner.Y + def.Footprint.Height);
-        foreach (var building in view.OwnBuildings)
-        {
-            if (building.Cell.X <= right && building.FarCell.X >= left && building.Cell.Y <= bottom && building.FarCell.Y >= top)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static List<CellPos> OreCells(AiWorldView view)
-    {
-        var cells = new List<CellPos>();
-        for (var y = 0; y < view.Height; y++)
-        {
-            for (var x = 0; x < view.Width; x++)
-            {
-                if (!view.OreAt(new CellPos(x, y)).IsEmpty)
-                {
-                    cells.Add(new CellPos(x, y));
-                }
-            }
-        }
-
-        return cells;
-    }
-
-    private static long Square(int value) => (long)value * value;
 }

@@ -1,6 +1,7 @@
 using Rts.Data.Tests;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Replays;
+using Rts.Simulation.Rules;
 using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
@@ -26,12 +27,14 @@ public sealed class EconomyScenarioTests
     }
 
     [Fact]
-    public void In_ten_minutes_it_has_a_war_factory_and_two_harvesters_without_a_refused_command()
+    public void In_ten_minutes_it_has_a_war_factory_and_two_harvesters_a_refinery_without_a_refused_command()
     {
         var match = TenMinutes.Value;
 
-        Assert.Single(match.BuildingsOfBot("war_factory"));
-        Assert.Equal(2, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
+        Assert.NotEmpty(match.BuildingsOfBot("war_factory"));
+        // The build order gives two refineries (step 5).
+        Assert.Equal(2, match.BuildingsOfBot("refinery").Count);
+        Assert.Equal(4, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
         Assert.Empty(match.RefusedBotCommands);
     }
 
@@ -52,30 +55,42 @@ public sealed class EconomyScenarioTests
     [Fact]
     public void A_lost_harvester_is_made_again()
     {
-        var match = new BotMatch().PlayTo(6);
+        var match = new BotMatch().PlayTo(8);
+        var before = match.UnitsOfBot(unit => unit.Harvester is not null).Count;
         match.UnitsOfBot(unit => unit.Harvester is not null)[0].MarkDead();
         match.Simulation.Step();
-        Assert.Single(match.UnitsOfBot(unit => unit.Harvester is not null));
+        Assert.Equal(before - 1, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
 
-        match.PlayTo(8);
+        match.PlayTo(10);
 
-        Assert.Equal(2, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
+        Assert.Equal(before, match.UnitsOfBot(unit => unit.Harvester is not null).Count);
         Assert.Empty(match.RefusedBotCommands);
     }
 
     [Fact]
-    public void A_lost_refinery_is_built_again_before_anything_else()
+    public void A_lost_refinery_is_the_next_building_ordered()
     {
         var match = new BotMatch().PlayTo(6);
-        var refinery = Assert.Single(match.BuildingsOfBot("refinery"));
-        match.World.DestroyBuilding(refinery, null);
+        var data = GameDataFiles.Rules.Database;
+        // What is in the building queue as the refinery falls is finished first; defenses have a queue of their own.
+        var inProduction = match.World.Player(BotMatch.Bot).Queue(ProductionCategory.Building).Select(item => data.Buildings[item.DefIndex].Id).ToList();
+        var refineries = match.BuildingsOfBot("refinery");
+        match.World.DestroyBuilding(refineries[0], null);
         DeathSystem.Update(match.World, null);
 
         match.PlayTo(10);
 
-        Assert.Single(match.BuildingsOfBot("refinery"));
-        var placed = match.Timeline.Where(line => line.Tick >= 6 * 900 && line.Text.StartsWith("placed", StringComparison.Ordinal)).ToList();
-        Assert.StartsWith("placed refinery", placed[0].Text);
+        Assert.Equal(refineries.Count, match.BuildingsOfBot("refinery").Count);
+        var placed = match.Timeline.Where(line => line.Tick >= 6 * 900 && line.Text.StartsWith("placed", StringComparison.Ordinal))
+            .Select(line => line.Text.Split(' ')[1])
+            .Where(id => data.Buildings[data.IndexOfBuilding(id)].Category == ProductionCategory.Building)
+            .ToList();
+        foreach (var id in inProduction)
+        {
+            placed.Remove(id);
+        }
+
+        Assert.Equal("refinery", placed[0]);
         Assert.Empty(match.RefusedBotCommands);
     }
 

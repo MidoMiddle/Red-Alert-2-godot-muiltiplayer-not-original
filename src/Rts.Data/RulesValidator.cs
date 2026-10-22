@@ -59,6 +59,11 @@ internal static class RulesValidator
             checker.Economy(economy);
         }
 
+        foreach (var order in rules.BuildOrders)
+        {
+            checker.BuildOrder(order);
+        }
+
         foreach (var warhead in rules.Warheads)
         {
             checker.Warhead(warhead);
@@ -364,6 +369,28 @@ internal static class RulesValidator
             BuildingOf(faction.Id, "refinery", faction.Refinery);
         }
 
+        /// <summary>A build order of the bots (M5 step 5): of a known faction, one step or more, each a building of that faction.</summary>
+        public void BuildOrder(BuildOrderDef order)
+        {
+            FactionOf(order.Id, order.Faction);
+            if (order.Steps.IsEmpty)
+            {
+                Error(order.Id, "steps", $"build order '{order.Id}' has no steps");
+            }
+
+            for (var i = 0; i < order.Steps.Length; i++)
+            {
+                if (!rules.TryGetBuilding(order.Steps[i], out var building))
+                {
+                    ItemError(order.Id, "steps", i, Missing(order.Id, "building", order.Steps[i]));
+                }
+                else if (building.Faction != order.Faction && rules.TryGetFaction(order.Faction, out _))
+                {
+                    ItemError(order.Id, "steps", i, $"'{order.Id}' builds '{order.Steps[i]}', which belongs to '{building.Faction}', not '{order.Faction}'");
+                }
+            }
+        }
+
         /// <summary>
         /// Walks the prerequisites of every building, in id order. A prerequisite that leads back to a building whose walk is under way
         /// closes a cycle; it is reported there, with the cycle, once.
@@ -490,6 +517,7 @@ internal static class RulesValidator
             : rules.TryGetArmor(id, out _) ? "armor"
             : rules.TryGetWarhead(id, out _) ? "warhead"
             : rules.TryGetProjectile(id, out _) ? "projectile"
+            : rules.TryGetBuildOrder(id, out _) ? "build order"
             : null;
 
         private void Positive(string id, string key, int value)

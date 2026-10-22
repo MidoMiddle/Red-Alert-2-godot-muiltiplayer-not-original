@@ -1,0 +1,4 @@
+standard:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, war_factory]
