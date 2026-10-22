@@ -51,7 +51,7 @@
 - `Rts.MapTool balance` — стенд баланса;
 - в `Rts.Simulation.Benchmarks` — общий бой 150 на 150 (`--battle`) и время по фазам тика через `GameSimulation.Probe` (`--phases`).
 
-**В M5:** `Rts.AI` — боты, под правилами детерминизма, только на `Rts.Simulation`. Симуляция зовёт их через `IAiController` в конце тика (`GameSimulation.AttachAi`); команды бота идут на следующий тик через общую очередь ([implementation/M5_first_bot.md](implementation/M5_first_bot.md), 4.1–4.3). Партия описывается `MatchSetup` (`Rts.Simulation/Matches`): игроки, фракции, цвета, команды, старты, опции; оно входит в настройки и в повтор (формат v17), а мир по нему ставит каждому MCV и 3 призывника (4.11).
+**В M5:** `Rts.AI` — боты, под правилами детерминизма, только на `Rts.Simulation`. Симуляция зовёт их через `IAiController` в конце тика (`GameSimulation.AttachAi`); команды бота идут на следующий тик через общую очередь ([implementation/M5_first_bot.md](implementation/M5_first_bot.md), 4.1–4.3). Партия описывается `MatchSetup` (`Rts.Simulation/Matches`): игроки, фракции, цвета, команды, старты, опции; оно входит в настройки и в повтор (формат v17), а мир по нему ставит каждому MCV и 3 призывника (4.11). Бот читает мир только через `AiWorldView` — свои, союзные и видимые враги, земля только в разведанном — и помнит увиденное в `AiMemory` (4.5).
 
 Остальные появляются в своих вехах ([implementation/conventions.md](implementation/conventions.md), раздел 1).
 

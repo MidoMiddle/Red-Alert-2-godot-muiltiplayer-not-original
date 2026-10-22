@@ -286,6 +286,7 @@ public sealed class GoldenValuesTests
         // Rules v37 (M4 step 14): the version and the checksums change: tanks crush the soldiers near them by themselves.
         // Replay format v17 (M5 step 2): one byte more, the "no match setup" flag after the map; the version changes, the commands and
         // checksums do not.
-        Assert.Equal((22269, 11137224519760238952UL), (bytes.Length, hash.Value));
+        // Replay format v18 (M5 step 3): the starts of the map in the match setup; there is no setup here, so only the version changes.
+        Assert.Equal((22269, 18068582676711296865UL), (bytes.Length, hash.Value));
     }
 }

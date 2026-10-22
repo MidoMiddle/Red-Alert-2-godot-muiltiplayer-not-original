@@ -19,7 +19,8 @@ public sealed class MatchBotsTests
 
     /// <summary>A person against two «Medium» bots on clear land.</summary>
     private static MatchSetup Setup() =>
-        new("clear", 11, new MatchOptions(), [Player(1, PlayerKind.Human, 10, 10), Player(2, PlayerKind.Ai, 50, 50), Player(4, PlayerKind.Ai, 50, 10)]);
+        new("clear", 11, new MatchOptions(), [Player(1, PlayerKind.Human, 10, 10), Player(2, PlayerKind.Ai, 50, 50), Player(4, PlayerKind.Ai, 50, 10)],
+            [new CellPos(10, 10), new CellPos(50, 50), new CellPos(50, 10), new CellPos(10, 50)]);
 
     private static (GameSimulation Simulation, ReplayRecorder Recorder) Play()
     {
@@ -47,8 +48,8 @@ public sealed class MatchBotsTests
         Assert.Throws<InvalidOperationException>(() => simulation.AttachAi(new LambdaBot(new PlayerId(4), _ => { })));
         simulation.AttachAi(new LambdaBot(new PlayerId(1), _ => { }));
         simulation.AttachAi(new LambdaBot(new PlayerId(3), _ => { }));
-        Assert.Throws<ArgumentException>(() => MatchBots.Create(Setup().Players[0]));
-        Assert.Equal(new PlayerId(2), MatchBots.Create(Setup().Players[1]).Player);
+        Assert.Throws<ArgumentException>(() => MatchBots.Create(Setup(), Setup().Players[0]));
+        Assert.Equal(new PlayerId(2), MatchBots.Create(Setup(), Setup().Players[1]).Player);
     }
 
     [Fact]
@@ -70,6 +71,6 @@ public sealed class MatchBotsTests
 
         Assert.Equal(StateHasher.Compute(first.Simulation.World), StateHasher.Compute(second.Simulation.World));
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.VerifyWithBots(replay, TestRules.Standard, MatchBots.Create).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.VerifyWithBots(replay, TestRules.Standard, player => MatchBots.Create(replay.Settings.Match!, player)).Status);
     }
 }

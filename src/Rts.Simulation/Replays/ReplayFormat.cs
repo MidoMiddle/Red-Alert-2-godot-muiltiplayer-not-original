@@ -33,11 +33,12 @@ namespace Rts.Simulation.Replays;
 /// ToggleRepair, PlaceWalls); v16 (M4 step 7) command format v9 (Attack, ForceAttack, SetStance); v17 (M5 step 2) adds the match
 /// setup after the map: u16 length + UTF-8 map id | u8 shortGame | u8 gameSpeed | u8 playerCount, then per player u8 slot | u8 kind |
 /// u8 difficulty | u16 length + UTF-8 faction | u8 colour | u8 team | u8 startIndex | u16 startX | u16 startY; its seed and credits are
-/// those of the header. The commands of a bot are those of an Ai player numbered from <see cref="Ai.AiTurn.FirstSequence"/>.
+/// those of the header. The commands of a bot are those of an Ai player numbered from <see cref="Ai.AiTurn.FirstSequence"/>; v18 (M5 step 3)
+/// adds every start of the map after the players: u8 count, then u16 x | u16 y each.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 17;
+    public const ushort FormatVersion = 18;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -354,6 +355,13 @@ public static class ReplayFormat
             AddUInt16(bytes, (ushort)player.Start.Y);
         }
 
+        bytes.Add((byte)setup.MapStarts.Length);
+        foreach (var start in setup.MapStarts)
+        {
+            AddUInt16(bytes, (ushort)start.X);
+            AddUInt16(bytes, (ushort)start.Y);
+        }
+
         return bytes.ToArray();
     }
 
@@ -403,7 +411,17 @@ public static class ReplayFormat
             offset += 7;
         }
 
-        return new MatchSetup(mapId, seed, new MatchOptions(credits, shortGame == 1, speed), players.MoveToImmutable());
+        Require(source[offset..], 1);
+        var startCount = source[offset++];
+        Require(source[offset..], 4 * startCount);
+        var starts = System.Collections.Immutable.ImmutableArray.CreateBuilder<CellPos>(startCount);
+        for (var i = 0; i < startCount; i++)
+        {
+            starts.Add(new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(source[offset..]), BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 2)..])));
+            offset += 4;
+        }
+
+        return new MatchSetup(mapId, seed, new MatchOptions(credits, shortGame == 1, speed), players.MoveToImmutable(), starts.MoveToImmutable());
     }
 
     private static void AddText(List<byte> bytes, string text)

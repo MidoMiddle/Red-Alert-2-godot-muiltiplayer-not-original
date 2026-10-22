@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using Rts.Data.Maps;
 using Rts.Simulation.Matches;
 
@@ -31,7 +32,8 @@ public static class MatchSetups
             [
                 new MatchPlayer(1, PlayerKind.Human, AiDifficulty.Medium, faction, Color: 0, Team: 1, person.Slot, person.Cell),
                 new MatchPlayer(2, PlayerKind.Ai, AiDifficulty.Medium, faction, Color: 1, Team: 2, bot.Slot, bot.Cell),
-            ]);
+            ],
+            [.. map.Starts.Select(start => start.Cell)]);
     }
 
     /// <summary>A new seed for a match: the client may take chance, the replay keeps the number.</summary>

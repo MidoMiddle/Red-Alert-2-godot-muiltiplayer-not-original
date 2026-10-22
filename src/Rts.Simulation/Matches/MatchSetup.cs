@@ -37,11 +37,12 @@ public sealed record MatchPlayer(
 
 /// <summary>
 /// The description of a match (docs/implementation/M5_first_bot.md, 4.11): the map it is played on (an id only for show — the map itself
-/// is in the settings and the replay), the seed, the options and the players. It sets the starting state up — factions, an MCV and
+/// is in the settings and the replay), the seed, the options, the players and every start of the map — taken or not, so that a bot
+/// knows where an enemy may be without learning where it is (4.5, M5 step 3). It sets the starting state up — factions, an MCV and
 /// three conscripts at every start (<see cref="MatchStart"/>) — and goes into the replay with the settings
 /// (<see cref="SimulationSettings.ForMatch"/>). The slots that are not in it stay empty.
 /// </summary>
-public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, ImmutableArray<MatchPlayer> Players)
+public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, ImmutableArray<MatchPlayer> Players, ImmutableArray<CellPos> MapStarts)
 {
     public const int MaxColors = 8;
     public const int MinGameSpeed = 1;
@@ -63,8 +64,8 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
 
     /// <summary>
     /// What is wrong with the match on a map of <paramref name="width"/> × <paramref name="height"/> by <paramref name="rules"/>, or null
-    /// when it can be played: 2–8 players in different slots 1–8, a person among them, different starts on the map and different colours,
-    /// known factions, credits not negative, a speed of 1–6.
+    /// when it can be played: 2–8 players in different slots 1–8, a person among them, different starts of the map and different
+    /// colours, known factions, credits not negative, a speed of 1–6.
     /// </summary>
     public string? Problem(int width, int height, RulesDatabase rules)
     {
@@ -81,6 +82,19 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
         if (Options.GameSpeed < MinGameSpeed || Options.GameSpeed > MaxGameSpeed)
         {
             return $"the game speed {Options.GameSpeed} is not {MinGameSpeed}–{MaxGameSpeed}";
+        }
+
+        if (MapStarts.IsDefault || MapStarts.Length < Players.Length)
+        {
+            return $"the map has {(MapStarts.IsDefault ? 0 : MapStarts.Length)} starts for {Players.Length} players";
+        }
+
+        foreach (var start in MapStarts)
+        {
+            if (start.X < 0 || start.Y < 0 || start.X >= width || start.Y >= height)
+            {
+                return $"the start at {start.X}, {start.Y} is off the map";
+            }
         }
 
         var humans = 0;
@@ -105,6 +119,11 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
             if (player.Start.X < 0 || player.Start.Y < 0 || player.Start.X >= width || player.Start.Y >= height)
             {
                 return $"the start of {player.Id} at {player.Start.X}, {player.Start.Y} is off the map";
+            }
+
+            if (!MapStarts.Contains(player.Start))
+            {
+                return $"the start of {player.Id} at {player.Start.X}, {player.Start.Y} is not a start of the map";
             }
 
             for (var j = 0; j < i; j++)
@@ -137,7 +156,8 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
         && MapId == other.MapId
         && Seed == other.Seed
         && Options == other.Options
-        && Players.AsSpan().SequenceEqual(other.Players.AsSpan());
+        && Players.AsSpan().SequenceEqual(other.Players.AsSpan())
+        && MapStarts.AsSpan().SequenceEqual(other.MapStarts.AsSpan());
 
     // Only for dictionaries; System.HashCode is banned in the simulation.
     public override int GetHashCode() => unchecked((int)Seed ^ (int)(Seed >> 32) ^ (Players.IsDefault ? 0 : Players.Length * 7919));

@@ -12,6 +12,8 @@
   <ItemGroup>
     <!-- Tests may set up state directly; game code changes state only through the simulation. -->
     <InternalsVisibleTo Include="Rts.Simulation.Tests" />
+    <!-- The tests of the bots build their scenes as the simulation tests do (docs/implementation/M5_first_bot.md, step 3). -->
+    <InternalsVisibleTo Include="Rts.AI.Tests" />
     <!-- The benchmarks time the phases of a tick one by one (docs/implementation/M2_unit_control.md, 4.15). -->
     <InternalsVisibleTo Include="Rts.Simulation.Benchmarks" />
   </ItemGroup>

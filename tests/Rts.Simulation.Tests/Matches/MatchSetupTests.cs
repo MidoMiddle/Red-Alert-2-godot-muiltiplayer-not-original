@@ -12,7 +12,10 @@ public sealed class MatchSetupTests
         new(slot, kind, AiDifficulty.Medium, faction, color < 0 ? slot - 1 : color, Team: slot, StartIndex: slot, new CellPos(x, y));
 
     internal static MatchSetup OneOnOne(ulong seed = 7, int credits = 10_000) =>
-        new("clear", seed, new MatchOptions(credits), [Player(1, PlayerKind.Human, 10, 10), Player(2, PlayerKind.Ai, 50, 50)]);
+        new("clear", seed, new MatchOptions(credits), [Player(1, PlayerKind.Human, 10, 10), Player(2, PlayerKind.Ai, 50, 50)], Starts);
+
+    /// <summary>The starts of the clear map of these tests: four corners, two of them taken.</summary>
+    internal static readonly ImmutableArray<CellPos> Starts = [new(10, 10), new(50, 50), new(50, 10), new(10, 50)];
 
     private static string? Problem(MatchSetup setup) => setup.Problem(64, 64, TestRules.Standard.Database);
 
@@ -34,6 +37,8 @@ public sealed class MatchSetupTests
     [InlineData("start off the map")]
     [InlineData("negative credits")]
     [InlineData("speed 7")]
+    [InlineData("start not of the map")]
+    [InlineData("fewer starts than players")]
     public void A_match_that_cannot_be_played_says_why(string mistake)
     {
         var good = OneOnOne();
@@ -50,6 +55,8 @@ public sealed class MatchSetupTests
             "start off the map" => good with { Players = [Player(1, PlayerKind.Human, 10, 10), Player(2, PlayerKind.Ai, 64, 50)] },
             "negative credits" => good with { Options = new MatchOptions(-1) },
             "speed 7" => good with { Options = new MatchOptions(GameSpeed: 7) },
+            "start not of the map" => good with { Players = [Player(1, PlayerKind.Human, 10, 10), Player(2, PlayerKind.Ai, 30, 30)] },
+            "fewer starts than players" => good with { MapStarts = [new CellPos(10, 10)] },
             _ => throw new ArgumentException(mistake),
         };
 

@@ -1,22 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using Rts.AI.View;
 using Rts.Simulation.Ai;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
 
 namespace Rts.AI;
 
 /// <summary>
-/// One bot (docs/implementation/M5_first_bot.md, 3, 4.3): on every turn it lets the modules whose tick has come think, in the order of
-/// <see cref="AiModuleKind"/>. At most one module of a kind. Without modules it is the empty bot of step 1: it thinks and does nothing.
+/// One bot (docs/implementation/M5_first_bot.md, 3, 4.3, 4.5): on every turn it looks at the world through its <see cref="AiWorldView"/>,
+/// brings its <see cref="AiMemory"/> up to date, then lets the modules whose tick has come think, in the order of <see cref="AiModuleKind"/>.
+/// At most one module of a kind. Without modules it only looks and remembers.
 /// </summary>
 public sealed class AiPlayer : IAiController
 {
     private readonly IAiModule[] _modules;
+    private readonly CellPos? _start;
+    private readonly ImmutableArray<CellPos> _mapStarts;
+    private AiContext? _context;
 
-    public AiPlayer(PlayerId player, AiSettings settings, IReadOnlyList<IAiModule>? modules = null)
+    /// <summary>
+    /// The bot of <paramref name="player"/>. <paramref name="start"/> and <paramref name="mapStarts"/> — its start and every start of the
+    /// map — come from the match setup; a bot outside a match knows none.
+    /// </summary>
+    public AiPlayer(
+        PlayerId player, AiSettings settings, IReadOnlyList<IAiModule>? modules = null, CellPos? start = null, ImmutableArray<CellPos> mapStarts = default)
     {
         Player = player;
         Settings = settings;
+        _start = start;
+        _mapStarts = mapStarts;
         var ordered = new List<IAiModule>(modules ?? []);
         ordered.Sort((a, b) => a.Kind.CompareTo(b.Kind));
         for (var i = 1; i < ordered.Count; i++)
@@ -34,13 +48,20 @@ public sealed class AiPlayer : IAiController
 
     public AiSettings Settings { get; }
 
+    /// <summary>What the bot sees and remembers; null before its first turn.</summary>
+    public AiContext? Context => _context;
+
     public void Think(AiTurn turn)
     {
+        _context ??= new AiContext(new AiWorldView(turn.World, Player, _start, _mapStarts), new AiMemory());
+        _context.View.Refresh(turn.World, turn.Tick);
+        _context.Memory.Update(_context.View);
+        _context.Begin(turn);
         foreach (var module in _modules)
         {
             if (AiSchedule.IsDue(Settings, module.Kind, Player, turn.Tick))
             {
-                module.Update(turn);
+                module.Update(_context);
             }
         }
     }
