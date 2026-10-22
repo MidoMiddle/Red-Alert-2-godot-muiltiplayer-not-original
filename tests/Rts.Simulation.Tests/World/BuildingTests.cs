@@ -117,6 +117,11 @@ public sealed class BuildingTests
         Assert.False(house.IsAlive);
         Assert.Equal(0, house.Hp);
         Assert.Contains(new BuildingDestroyed(0, house.Id, BuildingKind.NeutralHouseA, House), events);
+
+        // M4 step 9: the cells stay closed on the tick it fell and open at its end.
+        Assert.True(world.Map.HasBuilding(House));
+        Assert.DoesNotContain(events, e => e is MapChanged);
+        DeathSystem.Update(world, events);
         Assert.Contains(new MapChanged(0, House, new CellPos(8, 5)), events);
         Assert.All(Footprint(House, 2, 2), cell => Assert.True(world.Map.CanEnter(cell, Locomotor.Wheel)));
         Assert.Null(world.BuildingAt(House));
@@ -196,6 +201,7 @@ public sealed class BuildingTests
         var pristine = world.Map.Clone();
 
         world.DamageAtCell(House, 800, null);
+        DeathSystem.Update(world, null);
         var copy = world.Map.Clone();
 
         Assert.True(copy.ContentEquals(world.Map));

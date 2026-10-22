@@ -13,8 +13,8 @@ namespace Rts.Simulation.Systems;
 /// The hits wait in <see cref="GameWorld.Hits"/> and are applied in an order of their own — by the projectile or shooter, the target and
 /// the point — so the order in which the systems found them changes nothing. A hit takes the whole share against the armor from the
 /// target it was fired at (at least 1, <see cref="DamageCalculator.Direct"/>), and the fall-off from everything else in its area, by id,
-/// friend or foe as in RA2; a wall only from a warhead that damages walls. A unit at no hit points dies and leaves at the end of the tick;
-/// a building is destroyed as by the debug blow. What died this tick takes no more damage.
+/// friend or foe as in RA2; a wall only from a warhead that damages walls. At no hit points a unit dies and a building falls through
+/// <see cref="DeathSystem"/>. What died this tick takes no more damage.
 /// </summary>
 public static class DamageSystem
 {
@@ -62,7 +62,7 @@ public static class DamageSystem
         if (hit.Target is { } targetId && world.TryGet(targetId, out var target) && target.IsAlive && Hurts(target, warhead))
         {
             var amount = DamageCalculator.Direct(weapon.Damage, rules.Verses(warheadIndex, ArmorOf(rules, target)));
-            Damage(world, target, amount, hit.Shooter, events);
+            Damage(world, target, amount, hit.Shooter, hit.Weapon, events);
         }
 
         if (warhead.Spread <= Fixed.Zero)
@@ -91,7 +91,7 @@ public static class DamageSystem
 
             var distance = DamageCalculator.Distance(hit.Point, Aim.NearestPoint(entity, hit.Point));
             var verses = rules.Verses(warheadIndex, ArmorOf(rules, entity));
-            Damage(world, entity, DamageCalculator.InArea(weapon.Damage, verses, warhead.Spread, warhead.PercentAtMax, distance), hit.Shooter, events);
+            Damage(world, entity, DamageCalculator.InArea(weapon.Damage, verses, warhead.Spread, warhead.PercentAtMax, distance), hit.Shooter, hit.Weapon, events);
         }
     }
 
@@ -110,7 +110,7 @@ public static class DamageSystem
         _ => 0,
     };
 
-    private static void Damage(GameWorld world, Entity entity, int amount, EntityId attacker, List<SimEvent>? events)
+    private static void Damage(GameWorld world, Entity entity, int amount, EntityId attacker, int weapon, List<SimEvent>? events)
     {
         if (amount <= 0)
         {
@@ -126,8 +126,7 @@ public static class DamageSystem
                     events?.Add(new EntityDamaged(world.CurrentTick, unit.Id, attacker, amount, hp));
                     if (hp == 0)
                     {
-                        unit.MarkDead();
-                        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, attacker));
+                        DeathSystem.Kill(world, unit, attacker, DeathCause.Weapon, weapon, events);
                     }
 
                     break;
@@ -139,8 +138,7 @@ public static class DamageSystem
                     events?.Add(new EntityDamaged(world.CurrentTick, building.Id, attacker, amount, hp));
                     if (hp == 0)
                     {
-                        world.DestroyBuilding(building, events);
-                        events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, attacker));
+                        DeathSystem.Destroy(world, building, attacker, weapon, events);
                     }
                     else
                     {

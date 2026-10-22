@@ -87,9 +87,10 @@ public sealed class GameSimulation
 
         // 5. Ore grows and spreads (by its interval), then technologies, when the buildings changed.
         OreGrowthSystem.Update(World);
-        TechTree.Update(World);
+        TechTree.Update(World, _events);
 
-        // 6. Entities that died this tick leave the world.
+        // 6. The cells of the buildings that fell open (M4 step 9); entities that died this tick leave the world.
+        DeathSystem.Update(World, _events);
         World.RemoveDead();
 
         // 7. Next tick.

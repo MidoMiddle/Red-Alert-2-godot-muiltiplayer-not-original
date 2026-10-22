@@ -260,7 +260,7 @@ public sealed class ProductionTests
     }
 
     [Fact]
-    public void Without_a_factory_nothing_is_ordered_and_a_lost_factory_stops_production()
+    public void Without_a_factory_nothing_is_ordered_and_a_lost_factory_cancels_its_queue_with_a_refund()
     {
         var simulation = Match();
         Build(simulation, "construction_yard", 1, 1);
@@ -277,15 +277,16 @@ public sealed class ProductionTests
             simulation.Step();
         }
 
+        var queue = Player(simulation).Queue(ProductionCategory.Vehicle);
+        var paid = queue.Sum(item => item.Paid);
+        var credits = Player(simulation).Credits;
+        Assert.True(paid > 0);
         Send(simulation, new DamageMapObjectCommand(Player1, simulation.CurrentTick, _sequence++, factory.Cell, DamageMapObjectCommand.MaxAmount));
-        var item = Player(simulation).Queue(ProductionCategory.Vehicle)[0];
-        var (progress, credits) = (item.Progress, Player(simulation).Credits);
-        for (var i = 0; i < 10; i++)
-        {
-            simulation.Step();
-        }
 
-        Assert.Equal((progress, credits), (item.Progress, Player(simulation).Credits));
+        // M4 step 9, as in RA2: the last factory of the category fell, so its queue is cancelled and what was paid comes back.
+        Assert.Empty(queue);
+        Assert.Equal(credits + paid, Player(simulation).Credits);
+        Assert.Contains(simulation.LastTickEvents, e => e is ProductionCancelled { Kind: ProductionKind.Unit } cancelled && cancelled.Refund > 0);
     }
 
     [Fact]

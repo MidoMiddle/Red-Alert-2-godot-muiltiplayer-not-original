@@ -224,6 +224,8 @@ public sealed class StateHasherTests
         "<Spatial>k__BackingField",
         // The hits of a tick, emptied in the same tick (M4 step 5): never state.
         "<Hits>k__BackingField",
+        // The buildings that fell this tick, their cells opened at its end (M4 step 9): never state.
+        "<Wrecks>k__BackingField",
         // The rules of the match: data, not state; the replay keeps their hash (M3 step 3).
         "<Rules>k__BackingField",
         // The players (M3 step 5): their credits are hashed; the marks that power and technologies need working out are derived.

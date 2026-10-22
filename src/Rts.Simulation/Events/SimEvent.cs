@@ -62,10 +62,12 @@ public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId S
 public sealed record EntityDamaged(int Tick, EntityId Entity, EntityId Attacker, int Amount, int Hp) : SimEvent(Tick);
 
 /// <summary>
-/// <paramref name="Killer"/> destroyed a unit or a building (M4, 4.9): with a shot, or by driving over it (<see cref="DeathCause.Crushed"/>,
-/// step 8). It leaves the world at the end of the tick.
+/// <paramref name="Killer"/> destroyed a unit or a building (M4, 4.9): with a shot of <paramref name="Weapon"/> (its place in the
+/// rules; its warhead tells the client the kind of death, step 9), or by driving over it (<see cref="DeathCause.Crushed"/>, step 8,
+/// weapon -1). It leaves the world at the end of the tick.
 /// </summary>
-public sealed record EntityDestroyed(int Tick, EntityId Entity, EntityId Killer, DeathCause Cause = DeathCause.Weapon) : SimEvent(Tick);
+public sealed record EntityDestroyed(int Tick, EntityId Entity, EntityId Killer, DeathCause Cause = DeathCause.Weapon, int Weapon = -1)
+    : SimEvent(Tick);
 
 /// <summary>How a unit or a building died (M4).</summary>
 public enum DeathCause

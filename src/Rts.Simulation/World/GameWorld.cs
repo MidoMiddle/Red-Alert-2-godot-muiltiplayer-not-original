@@ -96,6 +96,12 @@ public sealed class GameWorld
     /// </summary>
     internal List<Combat.Hit> Hits { get; } = [];
 
+    /// <summary>
+    /// The buildings that fell this tick (M4 step 9): their cells open at the end of the tick (<see cref="OpenWrecks"/>). Emptied in
+    /// the same tick: never state.
+    /// </summary>
+    internal List<Building> Wrecks { get; } = [];
+
     public int WidthCells => Map.Width;
 
     public int HeightCells => Map.Height;
@@ -382,14 +388,29 @@ public sealed class GameWorld
     }
 
     /// <summary>
-    /// A building falls (docs/implementation/M7_maps.md, 4.8): it dies (leaves the world at the end of the tick) and its
-    /// footprint opens at once through <see cref="ChangeMap"/>. No ruins in M7.
+    /// A building falls (docs/implementation/M7_maps.md, 4.8; M4, 4.16): it dies at once — power and technologies are worked out again
+    /// — and leaves the world at the end of the tick; its footprint opens then too (<see cref="OpenWrecks"/>), so nobody drives or
+    /// builds into it on the tick it fell.
     /// </summary>
     internal void DestroyBuilding(Building building, List<Events.SimEvent>? events)
     {
         building.Hp = 0;
-        TakeDown(building, events);
+        building.MarkDead();
+        building.Repairing = false;
+        BuildingsChanged();
+        Wrecks.Add(building);
         events?.Add(new Events.BuildingDestroyed(CurrentTick, building.Id, building.Kind, building.Cell));
+    }
+
+    /// <summary>The cells of the buildings that fell this tick open through <see cref="ChangeMap"/> (M4 step 9).</summary>
+    internal void OpenWrecks(List<Events.SimEvent>? events)
+    {
+        foreach (var wreck in Wrecks)
+        {
+            ChangeMap([new ClearBuildingEdit(wreck.Cell, wreck.FarCell)], events);
+        }
+
+        Wrecks.Clear();
     }
 
     /// <summary>

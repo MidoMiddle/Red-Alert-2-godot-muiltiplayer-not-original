@@ -9,7 +9,8 @@ namespace Rts.Client.Terrain;
 /// The buildings players place (docs/implementation/M3_base_economy.md, 4.17): one view per building, made when it appears, so the
 /// others are not rebuilt. A view is a steel-grey block in the owner's band with the marks of its <see cref="BuildingShape"/>. It
 /// rises out of the ground smoothly while the building grows, with dust around it, and sinks back into the ground when the building
-/// is sold. A green cross turns over a building under repair.
+/// is sold. A green cross turns over a building under repair. A destroyed building (M4 step 9) leaves a dark slab of rubble on its
+/// footprint, with a puff of dust, until another building stands on those cells.
 /// </summary>
 public partial class PlayerBuildings : Node3D
 {
@@ -22,9 +23,11 @@ public partial class PlayerBuildings : Node3D
     private static readonly Color Dark = new(0.25f, 0.26f, 0.29f);
     private static readonly Color Pad = new(0.95f, 0.8f, 0.15f);
     private static readonly Color RepairColor = new(0.3f, 0.95f, 0.35f);
+    private static readonly Color RubbleColor = new(0.17f, 0.16f, 0.15f);
 
     private readonly Dictionary<EntityId, View> _views = new();
     private readonly List<View> _sinking = [];
+    private readonly List<Rubble> _rubble = [];
     private SimulationHost? _host;
     private double _time;
 
@@ -94,6 +97,17 @@ public partial class PlayerBuildings : Node3D
             _views.Remove(id);
         }
 
+        for (var i = _rubble.Count - 1; i >= 0; i--)
+        {
+            // Rubble of another session goes, and so does rubble that a new building covers.
+            var rubble = _rubble[i];
+            if (!ReferenceEquals(rubble.World, world) || rubble.Covered(world))
+            {
+                rubble.Root.QueueFree();
+                _rubble.RemoveAt(i);
+            }
+        }
+
         for (var i = _sinking.Count - 1; i >= 0; i--)
         {
             var view = _sinking[i];
@@ -107,7 +121,7 @@ public partial class PlayerBuildings : Node3D
         }
     }
 
-    /// <summary>A sold building keeps its view a moment, sinking into the ground.</summary>
+    /// <summary>A sold building keeps its view a moment, sinking into the ground; a destroyed one turns into rubble.</summary>
     private void OnEvent(SimEvent simEvent)
     {
         if (simEvent is BuildingSold sold && _views.Remove(sold.Building, out var view))
@@ -117,6 +131,35 @@ public partial class PlayerBuildings : Node3D
             view.Repair.Visible = false;
             _sinking.Add(view);
         }
+        else if (simEvent is BuildingDestroyed destroyed && _views.Remove(destroyed.Building, out var fallen) && _host is not null)
+        {
+            fallen.Root.QueueFree();
+            _rubble.Add(MakeRubble(fallen.Source, _host.Simulation.World));
+        }
+    }
+
+    /// <summary>A dark slab over the footprint with a few blocks on it, and one puff of dust.</summary>
+    private Rubble MakeRubble(Building building, GameWorld world)
+    {
+        var centre = new Vector3(building.Cell.X + building.Width / 2f, 0, building.Cell.Y + building.Height / 2f);
+        var root = new Node3D { Position = centre + new Vector3(0, WorldCoords.Terrain!.HeightAt(centre.X, centre.Z), 0) };
+        AddChild(root);
+        Box(root, new Vector3(building.Width - 0.2f, 0.12f, building.Height - 0.2f), new Vector3(0, 0.06f, 0), RubbleColor);
+        for (var i = 0; i < building.Width * building.Height; i++)
+        {
+            // Blocks at fixed spots of the footprint, so the same building always leaves the same heap.
+            var x = (i % building.Width) - building.Width / 2f + 0.5f + ((i * 37 % 7) - 3) * 0.06f;
+            var z = (i / building.Width) - building.Height / 2f + 0.5f + ((i * 53 % 5) - 2) * 0.08f;
+            Box(root, new Vector3(0.35f, 0.18f + (i % 3) * 0.08f, 0.3f), new Vector3(x, 0.2f, z), i % 2 == 0 ? Dark : RubbleColor);
+        }
+
+        // Emitting starts once the dust is in the tree: particles need its place in the world.
+        var dust = Dust(building.Width, building.Height);
+        dust.OneShot = true;
+        dust.Position = new Vector3(0, 0.1f, 0);
+        root.AddChild(dust);
+        dust.Emitting = true;
+        return new Rubble(world, building.Cell, building.Width, building.Height, root);
     }
 
     private View MakeView(Building building)
@@ -194,6 +237,26 @@ public partial class PlayerBuildings : Node3D
         parent.AddChild(new MeshInstance3D { Mesh = new BoxMesh { Size = size, Material = Material(color) }, Position = position });
 
     private static StandardMaterial3D Material(Color color) => new() { AlbedoColor = color };
+
+    /// <summary>The rubble of a destroyed building on its footprint, until another building covers a cell of it.</summary>
+    private sealed record Rubble(GameWorld World, Rts.Simulation.Geometry.CellPos Cell, int Width, int Height, Node3D Root)
+    {
+        public bool Covered(GameWorld world)
+        {
+            for (var y = Cell.Y; y < Cell.Y + Height; y++)
+            {
+                for (var x = Cell.X; x < Cell.X + Width; x++)
+                {
+                    if (world.Map.HasBuilding(new Rts.Simulation.Geometry.CellPos(x, y)))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    }
 
     private sealed class View(Building source, Node3D root, Node3D body, CpuParticles3D dust, Node3D repair, float buried)
     {

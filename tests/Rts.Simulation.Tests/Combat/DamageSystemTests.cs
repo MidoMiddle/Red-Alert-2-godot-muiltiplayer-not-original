@@ -81,7 +81,7 @@ public sealed class DamageSystemTests
         simulation.Step();
 
         // 135 × 100 % against flak armor is more than its 125 hit points.
-        Assert.Contains(new EntityDestroyed(0, conscript.Id, tank.Id), simulation.LastTickEvents);
+        Assert.Contains(new EntityDestroyed(0, conscript.Id, tank.Id, DeathCause.Weapon, Weapon("tesla_tank_bolt")), simulation.LastTickEvents);
         Assert.False(simulation.World.TryGet(conscript.Id, out _));
     }
 
@@ -139,6 +139,9 @@ public sealed class DamageSystemTests
 
         Assert.False(reactor.IsAlive);
         Assert.Single(events.OfType<EntityDestroyed>());
+        // Its cells open at the end of the tick (step 9).
+        Assert.True(world.Map.HasBuilding(new CellPos(21, 11)));
+        DeathSystem.Update(world, events);
         Assert.False(world.Map.HasBuilding(new CellPos(21, 11)));
     }
 
