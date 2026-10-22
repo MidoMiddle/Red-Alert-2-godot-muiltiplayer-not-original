@@ -25,7 +25,10 @@ public sealed class GameWorld
     {
     }
 
-    /// <summary>A world on the given map. Maps from settings and replays arrive in M2 step 4; tests use this now.</summary>
+    /// <summary>
+    /// A world on the given map. The buildings the map places at the start (M7 step 7) become its first entities, in the
+    /// order of <see cref="MapGrid.StartBuildings"/>, at full hit points; the map already marks their cells as taken.
+    /// </summary>
     internal GameWorld(ulong seed, MapGrid map)
     {
         Map = map;
@@ -33,6 +36,10 @@ public sealed class GameWorld
         PathRequests = new PathRequestQueue(map);
         Reservations = new Reservations(map.Width, map.Height);
         Spatial = new SpatialIndex(map.Width, map.Height);
+        foreach (var start in map.StartBuildings)
+        {
+            _entities.Add(new Building(AllocateId(), start.Owner, start.Kind, start.Cell, start.Facing));
+        }
     }
 
     public int CurrentTick { get; internal set; }
@@ -138,9 +145,11 @@ public sealed class GameWorld
 
     /// <summary>
     /// Damages what stands on the cell (debug command now, weapons in M4): the first destructible standing map object, or else a
-    /// standing bridge segment (M7 step 6). At 0 hit points it is destroyed through <see cref="ChangeMap"/>, so paths learn about
-    /// the change; reports <see cref="Events.MapObjectDestroyed"/>, or <see cref="Events.BridgeSegmentDamaged"/> and
-    /// <see cref="Events.BridgeSegmentDestroyed"/>. Returns false when there is nothing on the cell that can be damaged.
+    /// standing bridge segment (M7 step 6), or else the standing building whose footprint covers it (step 7). At 0 hit points
+    /// it is destroyed through <see cref="ChangeMap"/>, so paths learn about the change; reports
+    /// <see cref="Events.MapObjectDestroyed"/>, <see cref="Events.BridgeSegmentDamaged"/> and
+    /// <see cref="Events.BridgeSegmentDestroyed"/>, or <see cref="Events.BuildingDamaged"/> and <see cref="Events.BuildingDestroyed"/>.
+    /// Returns false when there is nothing on the cell that can be damaged.
     /// </summary>
     internal bool DamageAtCell(CellPos cell, int amount, List<Events.SimEvent>? events)
     {
@@ -176,7 +185,36 @@ public sealed class GameWorld
             return true;
         }
 
+        if (Map.HasBuilding(cell) && BuildingAt(cell) is { } building)
+        {
+            if (building.Hp > amount)
+            {
+                building.Hp -= amount;
+                events?.Add(new Events.BuildingDamaged(CurrentTick, building.Id, building.Hp));
+            }
+            else
+            {
+                DestroyBuilding(building, events);
+            }
+
+            return true;
+        }
+
         return false;
+    }
+
+    /// <summary>The standing building whose footprint covers the cell, or null.</summary>
+    public Building? BuildingAt(CellPos cell)
+    {
+        foreach (var entity in _entities)
+        {
+            if (entity is Building { IsAlive: true } building && building.Covers(cell))
+            {
+                return building;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -217,6 +255,19 @@ public sealed class GameWorld
                 events?.Add(new Events.UnitKilled(CurrentTick, unit.Id, unit.Position));
             }
         }
+    }
+
+    /// <summary>
+    /// A building falls (docs/implementation/M7_maps.md, 4.8): it dies (leaves the world at the end of the tick) and its
+    /// footprint opens at once through <see cref="ChangeMap"/>. No ruins in M7.
+    /// </summary>
+    private void DestroyBuilding(Building building, List<Events.SimEvent>? events)
+    {
+        building.Hp = 0;
+        building.MarkDead();
+        var far = new CellPos(building.Cell.X + building.Type.Width - 1, building.Cell.Y + building.Type.Height - 1);
+        ChangeMap([new ClearBuildingEdit(building.Cell, far)], events);
+        events?.Add(new Events.BuildingDestroyed(CurrentTick, building.Id, building.Kind, building.Cell));
     }
 
     /// <summary>True when a cell of the path still ahead of the unit lies in the area and is closed to it now.</summary>

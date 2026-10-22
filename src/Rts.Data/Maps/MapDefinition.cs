@@ -143,9 +143,10 @@ public sealed class MapDefinition
 
     /// <summary>
     /// The map as the simulation plays it: corner heights and land as they are, the map objects by the table of
-    /// <see cref="MapObjectTypes"/> (M7 step 5) and the bridges by <see cref="BridgeTypes"/> (step 6), at full hit points, in the
-    /// order of <see cref="Objects"/> and <see cref="Bridges"/>. The texture stays out: it is visual. Throws on a type the
-    /// tables do not know and on a bridge that does not run over water from shore to shore.
+    /// <see cref="MapObjectTypes"/> (M7 step 5), the bridges by <see cref="BridgeTypes"/> (step 6) and the structures by
+    /// <see cref="BuildingTypes"/> (step 7), at full hit points, in the order of <see cref="Objects"/>, <see cref="Bridges"/> and
+    /// <see cref="Structures"/>. The texture stays out: it is visual. Throws on a type the tables do not know, on a bridge that
+    /// does not run over water from shore to shore and on a building out of place.
     /// </summary>
     public MapGrid ToMapGrid()
     {
@@ -179,7 +180,19 @@ public sealed class MapDefinition
             bridges[i] = BridgeState.New(type.Kind, placement.From, placement.To);
         }
 
-        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects, bridges);
+        var buildings = new BuildingState[Structures.Length];
+        for (var i = 0; i < buildings.Length; i++)
+        {
+            var placement = Structures[i];
+            if (!BuildingTypes.TryGetById(placement.Type, out var type))
+            {
+                throw new ArgumentException($"Unknown building '{placement.Type}' at {placement.Cell.X},{placement.Cell.Y}.");
+            }
+
+            buildings[i] = new BuildingState(type.Kind, placement.Cell, new PlayerId(placement.Owner), placement.Facing);
+        }
+
+        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects, bridges, buildings);
     }
 
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>

@@ -34,6 +34,12 @@ public sealed record BridgeSegmentDestroyed(int Tick, int BridgeId, CellPos Cell
 /// <summary>The unit died: for now only on a bridge segment that fell under it (weapons come in M4).</summary>
 public sealed record UnitKilled(int Tick, EntityId Unit, WorldPos Position) : SimEvent(Tick);
 
+/// <summary>A building took a hit and stands, with <paramref name="Hp"/> hit points left.</summary>
+public sealed record BuildingDamaged(int Tick, EntityId Building, int Hp) : SimEvent(Tick);
+
+/// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
+public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell) : SimEvent(Tick);
+
 /// <summary>The map changed in the cells from <paramref name="From"/> to <paramref name="To"/> (inclusive): the client redraws them.</summary>
 public sealed record MapChanged(int Tick, CellPos From, CellPos To) : SimEvent(Tick);
 

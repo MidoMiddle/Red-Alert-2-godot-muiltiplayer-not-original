@@ -43,6 +43,12 @@ public sealed class SandboxMapTests
             old.Bridges.Select(b => new BridgePlacement(b.Type.Id, b.From, b.To)),
             map.Bridges);
 
+        // So do the building lines (M7 step 7), as structures.
+        Assert.Equal(
+            old.StartBuildings.Select(b => new StructurePlacement(Rts.Simulation.World.BuildingTypes.Get(b.Kind).Id, b.Cell, b.Owner.Value, b.Facing))
+                .OrderBy(s => s.Type, StringComparer.Ordinal).ThenBy(s => s.Cell.Y).ThenBy(s => s.Cell.X),
+            map.Structures);
+
         Assert.All(map.Heights, h => Assert.Equal(0, h));
     }
 
@@ -52,7 +58,7 @@ public sealed class SandboxMapTests
         // Golden value: the canonical text and SHA-256 must not depend on the OS or the runtime.
         var map = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));
 
-        Assert.Equal("988ce1552ad2fb919bb1fd820867627c2b178a331f3c13ca5d95b4febb1b664c", MapHasher.Hash(map));
+        Assert.Equal("fbf3303d1bf08b9956e40a4282ac3aa168f20eff3beda86ff7bb1167d2f80a94", MapHasher.Hash(map));
     }
 
     [Fact]

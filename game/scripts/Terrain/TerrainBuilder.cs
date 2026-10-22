@@ -48,6 +48,9 @@ public partial class TerrainBuilder : Node3D
         var objects = new MapObjects { Name = "MapObjects" };
         AddChild(objects);
         objects.Show(world.Map, Heights);
+        var buildings = new Buildings { Name = "Buildings" };
+        AddChild(buildings);
+        buildings.Show(Heights);
     }
 
     public override void _ExitTree()

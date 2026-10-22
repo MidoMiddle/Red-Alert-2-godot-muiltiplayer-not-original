@@ -97,7 +97,7 @@ if (args.Length == 3 && args[0] == "convert")
     var id = Path.GetFileNameWithoutExtension(args[2]);
     var map = TestMapConverter.Convert(TestMapParser.Parse(File.ReadAllText(args[1])), id, char.ToUpperInvariant(id[0]) + id[1..]);
     File.WriteAllText(args[2], RtsMapWriter.Write(map));
-    Console.WriteLine($"wrote {args[2]} · {map.Objects.Length} objects · {map.Bridges.Length} bridges · hash {MapHasher.Hash(map)}");
+    Console.WriteLine($"wrote {args[2]} · {map.Objects.Length} objects · {map.Bridges.Length} bridges · {map.Structures.Length} buildings · hash {MapHasher.Hash(map)}");
     return 0;
 }
 

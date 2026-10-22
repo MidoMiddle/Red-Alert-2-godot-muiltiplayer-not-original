@@ -392,4 +392,11 @@ objects:
   - { type: wall_stone, cell: [10, 42], variant: 0 }
 bridges:
   - { type: bridge_wood_low, from: [2, 57], to: [10, 57] }
-structures: []
+structures:
+  - { type: neutral_apartment, cell: [40, 53], owner: neutral, facing: 0 }
+  - { type: neutral_house_a, cell: [36, 52], owner: neutral, facing: 2 }
+  - { type: neutral_house_a, cell: [36, 56], owner: neutral, facing: 6 }
+  - { type: neutral_shed, cell: [40, 58], owner: neutral, facing: 0 }
+  - { type: tech_airfield, cell: [55, 52], owner: neutral, facing: 0 }
+  - { type: tech_hospital, cell: [50, 56], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [46, 52], owner: neutral, facing: 0 }

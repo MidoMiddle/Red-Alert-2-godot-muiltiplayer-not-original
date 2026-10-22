@@ -16,6 +16,7 @@ public static class StateHasher
 {
     // Tags are only for the hash; the M0 TestUnit was 1.
     private const byte UnitTag = 2;
+    private const byte BuildingTag = 3;
 
     public static ulong Compute(GameWorld world)
     {
@@ -89,6 +90,17 @@ public static class StateHasher
                     hash.Add(resume.X);
                     hash.Add(resume.Y);
                 }
+                break;
+
+            case Building building:
+                // Rules v18 (M7 step 7): the minimal building of the map.
+                hash.Add(BuildingTag);
+                AddCommon(hash, building);
+                hash.Add((byte)building.Kind);
+                hash.Add(building.Cell.X);
+                hash.Add(building.Cell.Y);
+                hash.Add(building.Facing);
+                hash.Add(building.Hp);
                 break;
 
             default:

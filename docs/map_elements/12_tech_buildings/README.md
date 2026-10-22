@@ -36,7 +36,7 @@
 
 ## 3. Механики у нас
 
-Данные — [M7_maps.md](../../implementation/M7_maps.md), 4.8; эффекты — [M11_content.md](../../implementation/M11_content.md), M11a.
+Данные — [M7_maps.md](../../implementation/M7_maps.md), 4.8; эффекты — [M11_content.md](../../implementation/M11_content.md), M11a. **Сделано в M7, шаг 7:** нефтевышка, госпиталь и аэродром — здания с пятном и прочностью, флаг захвата есть, эффектов нет.
 
 | Механика | Решение |
 |---|---|

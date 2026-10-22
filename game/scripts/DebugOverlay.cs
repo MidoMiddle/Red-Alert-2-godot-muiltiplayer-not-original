@@ -20,7 +20,7 @@ public partial class DebugOverlay : CanvasLayer
     private const string SharedControls =
         "Drag LMB box select · Shift+click add/remove · double click same type · Ctrl+1…9 group · 1…9 select (twice: camera) · Shift+1…9 add · " +
         "Shift+order queue · Ctrl+Shift+order attack-move · Z+orders waypoints, then order without Z · S stop · X scatter\n" +
-        "K damage map object or bridge (debug) · Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "K damage map object, bridge or building (debug) · Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
         "arrows/edge/wheel camera · F1…F4 bookmark (Ctrl: save)\n" +
         "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph";
 
@@ -61,7 +61,7 @@ public partial class DebugOverlay : CanvasLayer
             $"{mode}  {state}\n" +
             $"tick {simulation.CurrentTick}   ticks/s {_host.MeasuredTicksPerSecond}   FPS {Engine.GetFramesPerSecond():0}\n" +
             $"units {units}   spawn {UnitArchetypes.Get(_host.SpawnType).Id}   checksum {simulation.LastChecksum?.ToString() ?? "-"}\n" +
-            DescribeCell(simulation.World.Map, _input.CellUnderPointer) + "\n" +
+            DescribeCell(simulation.World, _input.CellUnderPointer) + "\n" +
             PathText.DescribeQueue(simulation.World.PathRequests.Requests.Count, simulation.World.PathRequests.ExpandedLastTick, simulation.World.PathRequests.Budget) + "\n" +
             (_pathPreview is null ? "" : _pathPreview.Description + "\n") +
             (_cellOverlay is null ? "" : _cellOverlay.Description + "\n") +
@@ -77,8 +77,9 @@ public partial class DebugOverlay : CanvasLayer
             : null;
 
     /// <summary><c>cell 12,30 Rough · foot 90 track 90 wheel 75</c>; a tree or impassable land shows as such.</summary>
-    private static string DescribeCell(MapGrid map, CellPos? pointer)
+    private static string DescribeCell(GameWorld world, CellPos? pointer)
     {
+        var map = world.Map;
         if (pointer is not { } cell)
         {
             return "cell -";
@@ -104,6 +105,12 @@ public partial class DebugOverlay : CanvasLayer
             { } => " + broken bridge",
             null => "",
         };
+
+        // A building on the cell (M7 step 7): "neutral_house_a 600/800 (Neutral)".
+        if (world.BuildingAt(cell) is { } building)
+        {
+            land += $" + {building.Type.Id} {building.Hp}/{building.Type.MaxHp} ({building.Owner})";
+        }
         var foot = map.SpeedPercent(cell, Locomotor.Foot);
         var track = map.SpeedPercent(cell, Locomotor.Track);
         var wheel = map.SpeedPercent(cell, Locomotor.Wheel);

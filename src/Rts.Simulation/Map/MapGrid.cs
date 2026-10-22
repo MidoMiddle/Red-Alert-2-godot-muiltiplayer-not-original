@@ -12,11 +12,15 @@ public readonly record struct MapObjectState(MapObjectKind Kind, CellPos Cell, i
     public static MapObjectState New(MapObjectKind kind, CellPos cell, int variant) => new(kind, cell, variant, MapObjectTypes.Get(kind).MaxHp, false);
 }
 
+/// <summary>A building the map places at the start of a match (M7 step 7): north-west cell, owner (0 neutral), facing 0…7.</summary>
+public sealed record BuildingState(World.BuildingKind Kind, CellPos Cell, World.PlayerId Owner, int Facing);
+
 /// <summary>
 /// The map as the simulation sees it (docs/implementation/M2_unit_control.md, 4.3; M7_maps.md, 4.1–4.7): per cell a logical
 /// <see cref="LandType"/> and a plain obstacle flag (tests), the corner heights, the map objects (trees, boulders,
-/// fences, walls, lamp posts) and the low bridges. Structure of arrays indexed <c>y * Width + x</c>, cheap to hash and to
-/// scan. Part of the simulation state: trees fall, fences are crushed and bridges are blown up during a match.
+/// fences, walls, lamp posts), the low bridges, and the buildings the map places with the cells they take. Structure of arrays
+/// indexed <c>y * Width + x</c>, cheap to hash and to scan. Part of the simulation state: trees fall, fences are crushed,
+/// bridges are blown up and buildings destroyed during a match.
 /// </summary>
 public sealed class MapGrid
 {
@@ -26,6 +30,8 @@ public sealed class MapGrid
     private readonly Dictionary<int, List<MapObject>> _objectsByCell = new();
     private readonly List<Bridge> _bridges = new();
     private readonly Dictionary<int, BridgeSegment> _segmentsByCell = new();
+    private readonly List<BuildingState> _startBuildings = new();
+    private readonly bool[] _building;
     private CornerHeightGrid _heights;
     private Passability _passability;
     private ulong? _digest;
@@ -43,19 +49,21 @@ public sealed class MapGrid
         _land = new LandType[width * height];
         Array.Fill(_land, LandType.Clear);
         _blocked = new bool[width * height];
+        _building = new bool[width * height];
         _heights = new CornerHeightGrid(width, height);
         _passability = new Passability(this);
     }
 
     /// <summary>
     /// A map from raw layers, one byte per cell in index order: land type values and obstacle flags (0 or 1), and the corner
-    /// levels (<c>(W+1) × (H+1)</c>; an empty layer means flat ground), then the map objects and the bridges. Used by the replay
-    /// reader and the map loader; throws on unknown land types, flags or levels, and on a bridge that does not run over water
-    /// from shore to shore (see <see cref="TryAddBridge"/>).
+    /// levels (<c>(W+1) × (H+1)</c>; an empty layer means flat ground), then the map objects, the bridges and the buildings of the
+    /// start. Used by the replay reader and the map loader; throws on unknown land types, flags or levels, on a bridge that does
+    /// not run over water from shore to shore (see <see cref="TryAddBridge"/>) and on a building out of place (see
+    /// <see cref="TryAddBuilding"/>).
     /// </summary>
     public static MapGrid FromLayers(
         int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked, ReadOnlySpan<byte> heights = default,
-        IReadOnlyList<MapObjectState>? objects = null, IReadOnlyList<BridgeState>? bridges = null)
+        IReadOnlyList<MapObjectState>? objects = null, IReadOnlyList<BridgeState>? bridges = null, IReadOnlyList<BuildingState>? buildings = null)
     {
         var grid = new MapGrid(width, height);
         if (land.Length != grid._land.Length || blocked.Length != grid._blocked.Length)
@@ -108,6 +116,14 @@ public sealed class MapGrid
             }
         }
 
+        foreach (var state in buildings ?? [])
+        {
+            if (grid.TryAddBuilding(state) is { } problem)
+            {
+                throw new ArgumentException($"Building {grid._startBuildings.Count + 1} is not valid: {problem}.");
+            }
+        }
+
         grid._passability = new Passability(grid);
         grid._digest = null;
         grid.Version++;
@@ -133,6 +149,12 @@ public sealed class MapGrid
     /// <summary>The bridge segment on the cell, standing or destroyed; null when no bridge crosses it.</summary>
     public BridgeSegment? BridgeAt(CellPos cell) => _segmentsByCell.GetValueOrDefault(IndexOf(cell));
 
+    /// <summary>The buildings the map places at the start, in order: the world makes them its first entities.</summary>
+    public IReadOnlyList<BuildingState> StartBuildings => _startBuildings;
+
+    /// <summary>True when a standing building takes the cell.</summary>
+    public bool HasBuilding(CellPos cell) => _building[IndexOf(cell)];
+
     /// <summary>Every bridge, in id order.</summary>
     public IReadOnlyList<Bridge> Bridges => _bridges;
 
@@ -154,11 +176,14 @@ public sealed class MapGrid
     /// <summary>True when something on the cell stops at least one kind of mover (a tree, boulder, fence, wall, or the plain flag).</summary>
     public bool IsBlocked(CellPos cell) => ObstacleMask(cell) != 0;
 
-    /// <summary>The movers stopped on the cell, one bit per <see cref="Locomotor"/>: the plain flag stops all, objects their own.</summary>
+    /// <summary>
+    /// The movers stopped on the cell, one bit per <see cref="Locomotor"/>: the plain flag and a standing building stop all,
+    /// objects their own.
+    /// </summary>
     public byte ObstacleMask(CellPos cell)
     {
         var index = IndexOf(cell);
-        var mask = _blocked[index] ? MapObjectTypes.AllMovers : (byte)0;
+        var mask = _blocked[index] || _building[index] ? MapObjectTypes.AllMovers : (byte)0;
         if (_objectsByCell.TryGetValue(index, out var inCell))
         {
             foreach (var mapObject in inCell)
@@ -200,8 +225,21 @@ public sealed class MapGrid
     /// <summary>True when a unit with <paramref name="locomotor"/> may stand on the cell: inside the map, not a cliff, passable land, no obstacle.</summary>
     public bool CanEnter(CellPos cell, Locomotor locomotor) => SpeedPercent(cell, locomotor) > 0;
 
-    /// <summary>An independent copy: the match changes its own map, never the one in the settings.</summary>
-    public MapGrid Clone() => FromLayers(Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates());
+    /// <summary>
+    /// An independent copy: the match changes its own map, never the one in the settings. Buildings destroyed in the match stay
+    /// down in the copy.
+    /// </summary>
+    public MapGrid Clone()
+    {
+        var copy = FromLayers(Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings);
+        if (!_building.AsSpan().SequenceEqual(copy._building))
+        {
+            _building.CopyTo(copy._building, 0);
+            copy._passability = new Passability(copy);
+        }
+
+        return copy;
+    }
 
     /// <summary>True when both maps have the same size and the same cells.</summary>
     public bool ContentEquals(MapGrid other) =>
@@ -211,7 +249,9 @@ public sealed class MapGrid
         && _blocked.AsSpan().SequenceEqual(other._blocked)
         && _heights.ContentEquals(other._heights)
         && ObjectsEqual(other)
-        && BridgesEqual(other);
+        && BridgesEqual(other)
+        && System.Linq.Enumerable.SequenceEqual(_startBuildings, other._startBuildings)
+        && _building.AsSpan().SequenceEqual(other._building);
 
     /// <summary>Land layer as bytes in cell index order, the replay layout.</summary>
     public byte[] LandBytes()
@@ -350,6 +390,62 @@ public sealed class MapGrid
         return null;
     }
 
+    /// <summary>
+    /// Adds a building of the start (docs/implementation/M7_maps.md, 4.8) and takes its cells, or returns what is wrong with it
+    /// and adds nothing: a known kind, owner 0…8, facing 0…7, and a footprint on the map over flat cells of one level, not
+    /// water or rock, with no obstacle, map object, bridge or other building.
+    /// </summary>
+    internal string? TryAddBuilding(BuildingState state)
+    {
+        if (!World.BuildingTypes.IsKnown(state.Kind))
+        {
+            return $"unknown building kind {(int)state.Kind}";
+        }
+
+        if (state.Owner.Value is < 0 or > World.PlayerId.MaxPlayers || state.Facing is < 0 or > 7)
+        {
+            return $"owner {state.Owner.Value} must be 0…{World.PlayerId.MaxPlayers} and facing {state.Facing} 0…7";
+        }
+
+        var type = World.BuildingTypes.Get(state.Kind);
+        var far = new CellPos(state.Cell.X + type.Width - 1, state.Cell.Y + type.Height - 1);
+        if (!Contains(state.Cell) || !Contains(far))
+        {
+            return $"{type.Id} at {Text(state.Cell)} reaches outside the {Width}x{Height} map";
+        }
+
+        var level = _heights.CellLevel(state.Cell);
+        for (var y = state.Cell.Y; y <= far.Y; y++)
+        {
+            for (var x = state.Cell.X; x <= far.X; x++)
+            {
+                var cell = new CellPos(x, y);
+                var index = IndexOf(cell);
+                if (_heights.ShapeAt(cell) != CellShape.Flat || _heights.CellLevel(cell) != level)
+                {
+                    return $"cell {Text(cell)} is not flat ground at the level of the rest";
+                }
+
+                if (IsWater(_land[index]) || _land[index] == LandType.Rock)
+                {
+                    return $"cell {Text(cell)} is {_land[index]}";
+                }
+
+                if (_blocked[index] || _building[index] || _objectsByCell.ContainsKey(index) || _segmentsByCell.ContainsKey(index))
+                {
+                    return $"cell {Text(cell)} is taken";
+                }
+            }
+        }
+
+        _startBuildings.Add(state);
+        SetBuildingCells(state.Cell, far, true);
+        return null;
+    }
+
+    /// <summary>A building fell: its cells open (no ruins in M7).</summary>
+    internal void ClearBuilding(CellPos from, CellPos to) => SetBuildingCells(from, to, false);
+
     /// <summary>Takes hit points off a bridge segment without destroying it (the hash sees it; nothing else changes).</summary>
     internal void SetSegmentHp(BridgeSegment segment, int hp)
     {
@@ -394,7 +490,7 @@ public sealed class MapGrid
     public int Version { get; private set; }
 
     /// <summary>
-    /// FNV-1a of the land layer, the obstacle layer, the corner heights, the map objects and the bridges, in index order, for the state hash. Computed once and kept
+    /// FNV-1a of the land layer, the obstacle layer, the corner heights, the map objects, the bridges and the buildings, in index order, for the state hash. Computed once and kept
     /// until a cell changes, so the per-tick hash does not walk the whole map (docs/implementation/M2_unit_control.md, 4.15).
     /// </summary>
     internal ulong Digest => _digest ??= ComputeDigest();
@@ -450,7 +546,38 @@ public sealed class MapGrid
             }
         }
 
+        // Rules v18 (M7 step 7): the buildings of the start and the cells standing buildings take.
+        hash.Add(_startBuildings.Count);
+        foreach (var building in _startBuildings)
+        {
+            hash.Add((byte)building.Kind);
+            hash.Add(building.Cell.X);
+            hash.Add(building.Cell.Y);
+            hash.Add(building.Owner.Value);
+            hash.Add(building.Facing);
+        }
+
+        foreach (var taken in _building)
+        {
+            hash.Add(taken);
+        }
+
         return hash.Value;
+    }
+
+    private void SetBuildingCells(CellPos from, CellPos to, bool taken)
+    {
+        for (var y = from.Y; y <= to.Y; y++)
+        {
+            for (var x = from.X; x <= to.X; x++)
+            {
+                _building[y * Width + x] = taken;
+                _passability.Update(this, new CellPos(x, y));
+            }
+        }
+
+        _digest = null;
+        Version++;
     }
 
     private static string Text(CellPos cell) => $"{cell.X},{cell.Y}";

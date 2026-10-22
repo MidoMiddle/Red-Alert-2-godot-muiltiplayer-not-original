@@ -22,11 +22,12 @@ namespace Rts.Simulation.Replays;
 /// v5 (M7 step 2) adds the corner heights, (W+1) × (H+1) bytes after the cell layers; v6 (M7 step 5) adds the map objects after
 /// them (u32 count, then u8 kind | u16 x | u16 y | u8 variant | i32 hp | u8 destroyed each) and marks command format v4;
 /// v7 (M7 step 6) adds the bridges after the objects (u32 count, then u8 kind | u16 fromX | u16 fromY | u16 toX | u16 toY |
-/// i32 hp per segment from the first end each).
+/// i32 hp per segment from the first end each); v8 (M7 step 7) adds the buildings of the start after the bridges (u32 count, then
+/// u8 kind | u16 x | u16 y | u8 owner | u8 facing each).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 7;
+    public const ushort FormatVersion = 8;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -40,6 +41,9 @@ public static class ReplayFormat
     // u8 kind | u16 fromX | u16 fromY | u16 toX | u16 toY, then i32 hp per segment.
     private const int BridgeHeaderSize = 1 + 2 * 4;
 
+    // u8 kind | u16 x | u16 y | u8 owner | u8 facing.
+    private const int BuildingSize = 1 + 2 + 2 + 1 + 1;
+
     // 512 × 512 cells: far above any map we plan, small enough to reject garbage sizes before allocating.
     private const long MaxMapCells = 512 * 512;
 
@@ -52,6 +56,8 @@ public static class ReplayFormat
         {
             mapSize += BridgeHeaderSize + 4 * bridge.Segments.Count;
         }
+
+        mapSize += map is null ? 0 : 4 + BuildingSize * map.StartBuildings.Count;
 
         var buffer = new byte[HeaderSize + mapSize + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
         var span = buffer.AsSpan();
@@ -104,6 +110,18 @@ public static class ReplayFormat
                     BinaryPrimitives.WriteInt32LittleEndian(span[offset..], segment.Hp);
                     offset += 4;
                 }
+            }
+
+            BinaryPrimitives.WriteUInt32LittleEndian(span[offset..], (uint)map.StartBuildings.Count);
+            offset += 4;
+            foreach (var building in map.StartBuildings)
+            {
+                span[offset] = (byte)building.Kind;
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 1)..], (ushort)building.Cell.X);
+                BinaryPrimitives.WriteUInt16LittleEndian(span[(offset + 3)..], (ushort)building.Cell.Y);
+                span[offset + 5] = (byte)building.Owner.Value;
+                span[offset + 6] = (byte)building.Facing;
+                offset += BuildingSize;
             }
         }
 
@@ -221,10 +239,32 @@ public static class ReplayFormat
                 bridges[i] = new BridgeState(kind, from, to, System.Collections.Immutable.ImmutableArray.Create(hp));
             }
 
+            Require(source[next..], 4);
+            var buildingCount = BinaryPrimitives.ReadUInt32LittleEndian(source[next..]);
+            if (buildingCount > (uint)cells)
+            {
+                throw new InvalidDataException($"Invalid building count {buildingCount}.");
+            }
+
+            next += 4;
+            Require(source[next..], BuildingSize * (int)buildingCount);
+            var buildings = new BuildingState[buildingCount];
+            for (var i = 0; i < buildings.Length; i++)
+            {
+                var at = source[(next + BuildingSize * i)..];
+                buildings[i] = new BuildingState(
+                    (World.BuildingKind)at[0],
+                    new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(at[1..]), BinaryPrimitives.ReadUInt16LittleEndian(at[3..])),
+                    new World.PlayerId(at[5]),
+                    at[6]);
+            }
+
+            next += BuildingSize * (int)buildingCount;
             try
             {
                 map = MapGrid.FromLayers(
-                    width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners), objects, bridges);
+                    width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners), objects, bridges,
+                    buildings);
             }
             catch (ArgumentException error)
             {

@@ -94,6 +94,13 @@ object lamp_post 34 46
 object lamp_post 34 48
 object lamp_post 34 50
 bridge bridge_wood_low 2 57 10 57
+building neutral_house_a 36 52 0 2
+building neutral_house_a 36 56 0 6
+building neutral_apartment 40 53
+building neutral_shed 40 58
+building tech_oil_derrick 46 52
+building tech_hospital 50 56
+building tech_airfield 55 52
 unit heavy_tank 18 19 player=1
 unit heavy_tank 19 19 player=1
 unit heavy_tank 20 19 player=1

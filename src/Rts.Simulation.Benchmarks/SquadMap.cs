@@ -41,9 +41,10 @@ public static class SquadMap
                 continue;
             }
 
-            if (line.StartsWith("object ", StringComparison.Ordinal) || line.StartsWith("bridge ", StringComparison.Ordinal))
+            if (line.StartsWith("object ", StringComparison.Ordinal) || line.StartsWith("bridge ", StringComparison.Ordinal)
+                || line.StartsWith("building ", StringComparison.Ordinal))
             {
-                // Map objects and bridges of the sandbox (M7 steps 5–6) stay as they are.
+                // Map objects, bridges and buildings of the sandbox (M7 steps 5–7) stay as they are.
                 objectLines.Add(line);
                 continue;
             }
