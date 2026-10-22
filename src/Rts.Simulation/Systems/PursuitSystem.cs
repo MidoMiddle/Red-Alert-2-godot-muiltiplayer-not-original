@@ -18,11 +18,20 @@ namespace Rts.Simulation.Systems;
 /// more than a cell off, an aggressive one stays where the fight ended.</item>
 /// </list>
 /// A unit in a fight is <see cref="Unit.Engaged"/>: arriving where it drove does not move its route on to the next leg.
+/// A crushing vehicle that chose an enemy soldier it can crush by itself — aggressive, guarding or on an attack-move — and has it within
+/// <see cref="AutoCrushReach"/> cells drives into its cell instead of stopping in range, firing on the way, and asks a new path on its tick whenever the soldier changed cells
+/// (RA2 <c>AutoCrush</c>, step 14, owner's decision). A target the player ordered is fought from range, as before.
 /// </summary>
 public static class PursuitSystem
 {
     /// <summary>How far, in cells, a guarding unit follows a target from its anchor (4.11).</summary>
     public const int GuardLeash = 6;
+
+    /// <summary>
+    /// How near, in cells, an enemy soldier must be for a crushing vehicle to drive over it by itself (step 14): a rifle's reach. Soldiers
+    /// that fire from farther, such as rocket troopers, are fought from range.
+    /// </summary>
+    public const int AutoCrushReach = 4;
 
     public static void Update(GameWorld world)
     {
@@ -42,7 +51,8 @@ public static class PursuitSystem
             }
 
             var weapons = TargetingSystem.WeaponsOf(unit);
-            if (WeaponSystem.Reaches(rules, weapons, DamageCalculator.Distance(unit.Position, goal)))
+            var crushing = CrushesOnItsOwn(world, unit);
+            if (!crushing && WeaponSystem.Reaches(rules, weapons, DamageCalculator.Distance(unit.Position, goal)))
             {
                 if (unit.ChaseCell is not null || (unit.IsAttackMoving && !unit.Engaged && (unit.MoveTarget is not null || unit.PathPending)))
                 {
@@ -61,7 +71,8 @@ public static class PursuitSystem
             }
 
             var cell = goal.ToCell();
-            if (unit.ChaseCell is not { } last || (TargetingSystem.IsLookTick(world, unit.Id) && Chebyshev(cell, last) > 1))
+            var drift = Chebyshev(cell, unit.ChaseCell ?? cell);
+            if (unit.ChaseCell is null || (TargetingSystem.IsLookTick(world, unit.Id) && (drift > 1 || (crushing && (drift > 0 || unit.MoveTarget is null)))))
             {
                 UnitOrders.MoveTo(world, unit, goal);
                 unit.ChaseCell = cell;
@@ -70,6 +81,16 @@ public static class PursuitSystem
             unit.Engaged = true;
         }
     }
+
+    /// <summary>
+    /// Whether the unit goes to crush its target by itself: a crusher that chose a crushable soldier of another player within
+    /// <see cref="AutoCrushReach"/>, not by an order, and may move to fight (not holding its position).
+    /// </summary>
+    private static bool CrushesOnItsOwn(GameWorld world, Unit unit) =>
+        unit.Archetype.Crusher && unit.TargetOrder == TargetOrder.None && (unit.Stance != Stance.HoldPosition || unit.IsAttackMoving)
+        && unit.Target is { } id && world.TryGet(id, out var target) && target is Unit { IsAlive: true, Archetype.Crushable: true } soldier
+        && soldier.Owner != unit.Owner && !soldier.Owner.IsNeutral
+        && DamageCalculator.Distance(unit.Position, soldier.Position) <= AutoCrushReach * WorldPos.LeptonsPerCell;
 
     /// <summary>Where the unit fires at: the nearest point of its living target, the point of a forced attack, or none.</summary>
     private static WorldPos? GoalOf(GameWorld world, Unit unit)

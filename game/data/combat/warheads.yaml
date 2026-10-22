@@ -5,7 +5,7 @@
 small_arms:  # RA2 SA: rifles and machine guns, strong against infantry
   kind: warhead
   name: Small Arms
-  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 80%, plate: 80%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
   infantry_death: normal
 
 ap_shell:  # RA2 AP: tank shells, strong against vehicles

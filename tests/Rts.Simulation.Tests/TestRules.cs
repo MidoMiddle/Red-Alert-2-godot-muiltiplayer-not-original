@@ -281,7 +281,7 @@ internal static class TestRules
             builder.Add(new ArmorDef { Id = armor, Name = armor });
         }
 
-        Warhead(builder, "small_arms", [100, 80, 70, 50, 25, 25, 75, 50, 25, 100, 100], "normal");
+        Warhead(builder, "small_arms", [100, 80, 80, 50, 25, 25, 75, 50, 25, 100, 100], "normal");
         Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 100, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true);
         Warhead(builder, "electric", [100, 100, 100, 85, 100, 100, 50, 50, 50, 100, 100], "electro");
         Warhead(builder, "flak_ground", [150, 100, 50, 60, 10, 10, 30, 10, 10, 100, 100], "explode", spread: Fixed.One, atMax: 25);

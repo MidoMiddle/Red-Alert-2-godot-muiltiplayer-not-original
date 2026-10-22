@@ -59,6 +59,7 @@
     <Compile Include="../../game/scripts/Input/WaypointDraft.cs" Link="Client/Controls/WaypointDraft.cs" />
     <Compile Include="../../game/scripts/Input/CursorChoice.cs" Link="Client/Controls/CursorChoice.cs" />
     <Compile Include="../../game/scripts/Input/PlayerSwitch.cs" Link="Client/Controls/PlayerSwitch.cs" />
+    <Compile Include="../../tools/Rts.MapTool/Skirmish.cs" Link="Balance/Skirmish.cs" />
     <Compile Include="../../game/scripts/App/Faction.cs" Link="Client/Faction.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarLayout.cs" Link="Client/Hud/SidebarLayout.cs" />
     <Compile Include="../../game/scripts/Hud/CommandBarLayout.cs" Link="Client/Hud/CommandBarLayout.cs" />

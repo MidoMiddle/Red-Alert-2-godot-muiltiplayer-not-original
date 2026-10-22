@@ -29,6 +29,7 @@
     <Compile Include="../../tools/Rts.MapTool/ReadyMaps.cs" Link="Tools/ReadyMaps.cs" />
     <!-- The end-to-end run of M3 step 14 on the real data. -->
     <Compile Include="../../tools/Rts.MapTool/EconomyRun.cs" Link="Tools/EconomyRun.cs" />
+    <Compile Include="../../tools/Rts.MapTool/Skirmish.cs" Link="Tools/Skirmish.cs" />
   </ItemGroup>
 
   <!-- The M2 rules of the simulation tests: game/data must give the same rules (M3 step 4). -->

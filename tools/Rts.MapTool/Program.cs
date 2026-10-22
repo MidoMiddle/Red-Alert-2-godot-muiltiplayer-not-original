@@ -13,6 +13,8 @@ using Rts.Simulation.Map;
 // dotnet run --project tools/Rts.MapTool -- ready-maps game/data/maps        write the four ready maps of step 14
 // dotnet run --project tools/Rts.MapTool -- economy [map] [minutes]               the end-to-end run of M3 step 14 on game/data: MCV, base,
 //     ten tanks; prints the timeline, credits and income by the minute
+// dotnet run --project tools/Rts.MapTool -- balance [credits]                   balance v0 of M4 step 14: every ground fighter of the Union
+//     against every other on equal credits (2700 without a number); prints the winner and its value left
 // dotnet run --project tools/Rts.MapTool -- rules [folder]                   load the data files below a folder: counts and data hash, or every error;
 //     without a folder game/data, with what the engine needs from it
 if (args.Length == 2 && args[0] == "check")
@@ -52,6 +54,14 @@ if (args.Length is 1 or 2 && args[0] == "rules")
         Console.Error.WriteLine($"{e.Errors.Count} errors");
         return 1;
     }
+}
+
+if (args.Length is 1 or 2 && args[0] == "balance")
+{
+    var credits = args.Length == 2 ? int.Parse(args[1], System.Globalization.CultureInfo.InvariantCulture) : 2700;
+    var data = Rts.Data.GameData.LoadDirectory(Path.Combine("game", Rts.Data.GameData.Folder));
+    Console.Write(Rts.MapTool.Skirmish.Matrix(data.Rules, credits));
+    return 0;
 }
 
 if (args.Length is >= 1 and <= 3 && args[0] == "economy")

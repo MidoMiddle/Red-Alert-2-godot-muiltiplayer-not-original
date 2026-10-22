@@ -164,6 +164,52 @@ public sealed class CrushTests
         Assert.Equal(End, tank.Position);
     }
 
+    /// <summary>Plays <paramref name="ticks"/> ticks without orders and gives the events.</summary>
+    private static List<SimEvent> Play(GameSimulation simulation, int ticks)
+    {
+        var events = new List<SimEvent>();
+        for (var tick = 0; tick < ticks; tick++)
+        {
+            simulation.Step();
+            events.AddRange(simulation.LastTickEvents);
+        }
+
+        return events;
+    }
+
+    [Fact]
+    public void An_aggressive_tank_drives_over_an_enemy_soldier_within_four_cells_by_itself()
+    {
+        var simulation = Match();
+        var tank = Spawn(simulation, Player1, UnitType.HeavyTank, 10, 10);
+        var conscript = Spawn(simulation, Player2, UnitType.Conscript, 14, 10);
+        conscript.Stance = Stance.HoldPosition;
+
+        var events = Play(simulation, 200);
+
+        Assert.Contains(conscript.Id, Crushed(events, tank));
+    }
+
+    [Fact]
+    public void A_tank_holding_its_position_and_a_soldier_beyond_four_cells_are_not_driven_over()
+    {
+        var simulation = Match();
+        var holding = Spawn(simulation, Player1, UnitType.HeavyTank, 10, 10);
+        holding.Stance = Stance.HoldPosition;
+        var near = Spawn(simulation, Player2, UnitType.Engineer, 13, 10);
+        var tank = Spawn(simulation, Player1, UnitType.HeavyTank, 10, 20);
+        var far = Spawn(simulation, Player2, UnitType.Rocketeer, 16, 20);                 // 6 cells: in sight and range, beyond the reach
+        far.Stance = Stance.HoldPosition;
+
+        var events = Play(simulation, 120);
+
+        Assert.Empty(Crushed(events, holding));
+        Assert.Equal(new CellPos(10, 10).Center, holding.Position);
+        Assert.Empty(Crushed(events, tank));
+        Assert.Equal(far.Id, tank.Target);
+        Assert.True(near.IsAlive || events.OfType<EntityDestroyed>().Any(e => e.Entity == near.Id && e.Cause == DeathCause.Weapon));
+    }
+
     [Fact]
     public void The_same_crush_gives_the_same_state()
     {

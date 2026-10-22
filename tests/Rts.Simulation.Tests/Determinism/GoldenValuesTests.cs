@@ -203,11 +203,12 @@ public sealed class GoldenValuesTests
         // Rules v32 (M4 step 8): vehicles crush the soldiers of the other player they drive over; the first crush comes after tick 100.
         // Rules v35 (M4 step 11): the fog of war: the grids of what every player sees are hashed, and units fight only what they see.
         // Rules v36 (M4 step 13): the hash covers the tick of the last attack notice of every player (none here); the states are the same.
+        // Rules v37 (M4 step 14): tanks drive over the enemy soldiers within four cells by themselves; the first difference after tick 100.
         StateChecksum[] expected =
         [
             new(100, 0x926dcd240a5652e5UL),
-            new(500, 0xe476668859ba36f1UL),
-            new(1000, 0xfe4b6b0f14d5ad63UL),
+            new(500, 0xca88cafe993d24a0UL),
+            new(1000, 0x588328657cc34d40UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -264,6 +265,7 @@ public sealed class GoldenValuesTests
         // Rules v34 (M4 step 10): only the version changes; the scenario has no defenses.
         // Rules v35 (M4 step 11): the version and the checksums change: what the players see is hashed.
         // Rules v36 (M4 step 13): the version and the checksums change: a new field of every player is hashed.
-        Assert.Equal((22268, 5405242624878447589UL), (bytes.Length, hash.Value));
+        // Rules v37 (M4 step 14): the version and the checksums change: tanks crush the soldiers near them by themselves.
+        Assert.Equal((22268, 5712222143413413457UL), (bytes.Length, hash.Value));
     }
 }
