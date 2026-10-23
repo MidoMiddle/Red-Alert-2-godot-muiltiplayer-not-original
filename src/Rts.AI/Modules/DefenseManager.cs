@@ -22,7 +22,7 @@ namespace Rts.AI.Modules;
 /// back to what it did (<see cref="AiPlan.EndDefense"/>), the squads called back go home.</item>
 /// </list>
 /// </summary>
-public sealed class DefenseManager(AiSettings settings) : IAiModule
+public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? team = null) : IAiModule
 {
     private readonly List<Squad> _out = new();
     private int _lastSeen;
@@ -43,6 +43,7 @@ public sealed class DefenseManager(AiSettings settings) : IAiModule
             if ((plan.Threat is not null || plan.Strategy == StrategyState.Defending) && tick - _lastSeen >= settings.ThreatClearTicks)
             {
                 plan.EndDefense();
+                team?.Clear(context.View.Me);
             }
         }
 
@@ -58,6 +59,8 @@ public sealed class DefenseManager(AiSettings settings) : IAiModule
         }
 
         plan.Defend();
+        // A base attacked by more than it holds calls its allied bots for help (M8 step 11).
+        team?.Request(new Team.DefenseRequest(context.View.Me, known.Middle, known.Strength, tick));
         plan.AttackedFrom = known.Middle;
         Recall(plan, known, defense);
     }

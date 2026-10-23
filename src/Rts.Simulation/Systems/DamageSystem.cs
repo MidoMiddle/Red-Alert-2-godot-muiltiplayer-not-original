@@ -99,10 +99,13 @@ public static class DamageSystem
         }
     }
 
-    /// <summary>A building of a player hit by another: <see cref="UnderAttack"/>, unless the last one is less than 10 seconds old.</summary>
+    /// <summary>
+    /// A building of a player hit by another, not an ally (M8 step 11): <see cref="UnderAttack"/>, unless the last one is less than 10
+    /// seconds old.
+    /// </summary>
     private static void WarnOfAttack(GameWorld world, Building building, Hit hit, List<SimEvent>? events)
     {
-        if (building.Owner.IsNeutral || building.Owner.Value > PlayerId.MaxPlayers || hit.Owner == building.Owner)
+        if (building.Owner.IsNeutral || building.Owner.Value > PlayerId.MaxPlayers || world.AreAllies(hit.Owner, building.Owner))
         {
             return;
         }

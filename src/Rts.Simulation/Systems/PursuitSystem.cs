@@ -90,7 +90,7 @@ public static class PursuitSystem
     private static bool CrushesOnItsOwn(GameWorld world, Unit unit) =>
         unit.Archetype.Crusher && unit.TargetOrder == TargetOrder.None && (unit.Stance != Stance.HoldPosition || unit.IsAttackMoving)
         && unit.Target is { } id && world.TryGet(id, out var target) && target is Unit { IsAlive: true, Archetype.Crushable: true } soldier
-        && soldier.Owner != unit.Owner && !soldier.Owner.IsNeutral
+        && !world.AreAllies(soldier.Owner, unit.Owner) && !soldier.Owner.IsNeutral
         && DamageCalculator.Distance(unit.Position, soldier.Position) <= AutoCrushReach * WorldPos.LeptonsPerCell;
 
     /// <summary>Where the unit fires at: the nearest point of its living target, the point of a forced attack, or none.</summary>

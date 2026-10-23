@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Rts.AI.Profiles;
 using Rts.AI.Squads;
+using Rts.AI.Team;
 using Rts.AI.View;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -39,9 +40,14 @@ namespace Rts.AI.Modules;
 /// <item><b>retreating</b> — below <see cref="AiSettings.RetreatAtStrengthPercent"/> of its strength when it set out, or with nothing
 /// left to attack: a plain move back to the gathering point, where it joins the squad gathering there.</item>
 /// </list>
+/// <item><b>the team</b> (M8, 4.8, step 11) — with allied bots a ready squad announces its attack on the <see cref="TeamBlackboard"/> and
+/// waits for their answers, <see cref="WaitForAllies"/> at the most, then sets out for the attack of the team, the strongest announced;
+/// the squad at home joins an attack of the team (<see cref="AiPlan.JoinAttack"/>) with half the units it needs, whatever its own window;
+/// to help an ally (<see cref="AiPlan.HelpAt"/>) up to <see cref="HelpPercent"/> of the army goes there as a squad of its own, as a
+/// squad called back does, and comes home once the ally has looked safe for <see cref="HelpHoldTicks"/>.</item>
 /// No unit is given the order it has and still carries out: a command of the bot always changes something.
 /// </summary>
-public sealed class SquadManager(AiSettings settings) : IAiModule
+public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = null) : IAiModule
 {
     /// <summary>A unit this near its point, in cells, is there.</summary>
     public const int ArrivedCells = 4;
@@ -57,6 +63,18 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
     /// <summary>How far behind the middle of the squad a wounded unit falls back, in cells.</summary>
     public const int BehindCells = 3;
+
+    /// <summary>How long a squad that announced its attack waits for the answers of its allies, in ticks: 30 s (M8, 4.8).</summary>
+    public const int WaitForAllies = 450;
+
+    /// <summary>The share of its army, in percent, a bot sends to help an ally (M8, 4.8).</summary>
+    public const int HelpPercent = 40;
+
+    /// <summary>
+    /// How long a squad that helps an ally stays once the ally looks safe, in ticks: 30 s. The threat at an ally's base is read from what
+    /// the bot sees there, and that comes and goes as buildings fall and the enemy moves.
+    /// </summary>
+    public const int HelpHoldTicks = 450;
 
     /// <summary>How far a unit of «Brutal» steps back from an enemy it outranges, in cells (M8 step 5).</summary>
     public const int KiteCells = 2;
@@ -86,6 +104,12 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
     // The tick the first wave may set out on, drawn in the window of the personality on the first turn (M8 step 8), and when the last went.
     private int? _attackAt;
+
+    // The tick the bot announced its attack to its team on, while it waits for the answers or is out (M8 step 11).
+    private int? _announcedAt;
+
+    // Since when the ally its squad helps has looked safe: the squad goes home after HelpHoldTicks (step 11).
+    private int? _allySafeSince;
     private int _lastWave;
     private readonly string[] _priority = settings.TargetPriority.Split(',');
 
@@ -118,7 +142,11 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
             Members(squad);
             squad.Strength = Strength(context.Memory);
             squad.Centre = Centre().ToCell();
-            if (squad.Recalled)
+            if (squad.HelpCell is { } help)
+            {
+                Help(context, squad, help, gather);
+            }
+            else if (squad.Recalled)
             {
                 Defend(context, squad, gather);
             }
@@ -147,6 +175,93 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
             Gathering(gathering).AddAll(merged);
             _squads.Remove(merged);
+        }
+
+        Team(context);
+    }
+
+    /// <summary>
+    /// The team (step 11): tells it about the squad at home, sends help to an ally or calls it home, and withdraws the attack it
+    /// announced once no squad of the bot is out any more.
+    /// </summary>
+    private void Team(AiContext context)
+    {
+        var plan = context.Plan;
+        var home = _squads.Find(squad => squad.State is SquadState.Gathering or SquadState.Ready);
+        (plan.GatheringUnits, plan.GatheringStrength, plan.NeededUnits) = (home?.Units.Count ?? 0, home?.Strength ?? 0, Needed());
+
+        var helping = _squads.Find(squad => squad.HelpCell is not null);
+        if (plan.HelpAt is { } cell)
+        {
+            _allySafeSince = null;
+            if (helping is not null)
+            {
+                helping.HelpCell = cell;
+            }
+        }
+
+        if (plan.HelpAt is { } at && helping is null && home is not null)
+        {
+            var army = 0;
+            foreach (var squad in _squads)
+            {
+                army += squad.Units.Count;
+            }
+
+            var count = IntMath.Min(home.Units.Count, army * HelpPercent / 100);
+            if (count > 0)
+            {
+                var help = new Squad(++_formed) { State = SquadState.Defending, HelpCell = at };
+                var sent = 0;
+                home.RemoveAll(id =>
+                {
+                    if (sent >= count)
+                    {
+                        return false;
+                    }
+
+                    help.Add(id);
+                    sent++;
+                    return true;
+                });
+                _squads.Add(help);
+            }
+        }
+        else if (plan.HelpAt is null && helping is not null)
+        {
+            _allySafeSince ??= context.Tick;
+            if (context.Tick - _allySafeSince.Value >= HelpHoldTicks)
+            {
+                (helping.HelpCell, helping.Beaten, helping.State, _allySafeSince) = (null, false, SquadState.Retreating, null);
+            }
+        }
+
+        if (team is not null && _announcedAt is not null && !_squads.Exists(squad => squad.State is SquadState.Moving or SquadState.Fighting)
+            && context.Tick - _announcedAt.Value > WaitForAllies)
+        {
+            team.Withdraw(context.View.Me);
+            _announcedAt = null;
+        }
+    }
+
+    /// <summary>A squad that helps an ally (step 11): as a squad called back to the bot's own base, but to the ally's.</summary>
+    private void Help(AiContext context, Squad squad, CellPos cell, CellPos? gather)
+    {
+        squad.State = SquadState.Defending;
+        _batch.Clear();
+        foreach (var unit in _members)
+        {
+            if (Distance(unit.Position.ToCell(), cell) > RecallCells)
+            {
+                Want(unit, OrderKind.Move, cell, default);
+            }
+        }
+
+        Issue(context, OrderKind.Move, cell, default);
+        _members.RemoveAll(unit => Distance(unit.Position.ToCell(), cell) > RecallCells);
+        if (_members.Count > 0)
+        {
+            Engage(context, cell, cell, gather ?? cell);
         }
     }
 
@@ -254,7 +369,12 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         var strong = due || stalled
             || (squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent);
         squad.State = strong ? SquadState.Ready : SquadState.Gathering;
-        if (!strong || Early(context) || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre))
+        // The attack of the team (step 11): with half the units it needs, whatever its own window.
+        if (context.Plan.JoinAttack is { } joined && squad.Units.Count * 2 >= Needed() && squad.Units.Count > 0 && context.Plan.AttackAllowed)
+        {
+            (squad.TargetBuilding, squad.TargetCell) = (null, joined);
+        }
+        else if (!strong || Early(context) || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre) || WaitsForAllies(context, squad))
         {
             return;
         }
@@ -268,6 +388,39 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         _waves++;
         _lastWave = context.Tick;
         Attack(context, squad, gather);
+    }
+
+    /// <summary>
+    /// Whether a ready squad still waits for its allies (step 11): it announces its attack first, then waits until every allied bot has
+    /// answered, <see cref="WaitForAllies"/> at the most; it sets out for the attack of the team, the strongest announced. Alone it never
+    /// waits.
+    /// </summary>
+    private bool WaitsForAllies(AiContext context, Squad squad)
+    {
+        if (team is null || team.Bots.Length < 2)
+        {
+            return false;
+        }
+
+        var me = context.View.Me;
+        if (_announcedAt is null)
+        {
+            team.Announce(new AttackIntent(me, squad.TargetCell!.Value, squad.Strength, context.Tick));
+            _announcedAt = context.Tick;
+            return true;
+        }
+
+        if (!team.AllAnswered(me) && context.Tick - _announcedAt.Value < WaitForAllies)
+        {
+            return true;
+        }
+
+        if (team.TeamAttack() is { } attack && attack.Player != me)
+        {
+            (squad.TargetBuilding, squad.TargetCell) = (null, attack.Target);
+        }
+
+        return false;
     }
 
     /// <summary>

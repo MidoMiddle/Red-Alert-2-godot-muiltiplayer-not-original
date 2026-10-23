@@ -20,6 +20,7 @@ public sealed class GameWorld
     private readonly List<Entity> _entities = new();
     private readonly PlayerState[] _players;
     private readonly Visibility.VisibilityGrid[] _vision;
+    private readonly int[] _allies;
     private int _nextEntityId = 1;
 
     /// <summary>
@@ -63,7 +64,8 @@ public sealed class GameWorld
             _entities.Add(new Building(AllocateId(), start.Owner, start.Kind, start.Cell, start.Facing));
         }
 
-        // A match: the factions and the starting units of its players (M5 step 2).
+        // A match: the factions and the starting units of its players (M5 step 2), and the players of a team are allies (M8 step 11).
+        _allies = Alliances(match);
         Match = match;
         if (match is not null)
         {
@@ -325,10 +327,41 @@ public sealed class GameWorld
             : throw new ArgumentOutOfRangeException(nameof(player), player, "Only the players 1…8 see.");
 
     /// <summary>
-    /// The players whose sight a player shares, as a mask of bit <c>player − 1</c> (M4, 4.14). Until the teams of the lobby (M6) every
-    /// player is alone.
+    /// The allies of a player and the player itself, as a mask of bit <c>player − 1</c> (M4, 4.14; M8 step 11): the players of its team
+    /// in the match (<see cref="Matches.MatchPlayer.Team"/>). They share their sight; none of them is the enemy of another — not a target,
+    /// not crushed, not chased. Without a match every player is alone. Follows from the setup, which the replay keeps: not state.
     /// </summary>
-    public int AlliesOf(PlayerId player) => player.Value is >= 1 and <= PlayerId.MaxPlayers ? 1 << (player.Value - 1) : 0;
+    public int AlliesOf(PlayerId player) => player.Value is >= 1 and <= PlayerId.MaxPlayers ? _allies[player.Value - 1] : 0;
+
+    /// <summary>Whether <paramref name="a"/> and <paramref name="b"/> are one player or allies; the neutral player is nobody's ally.</summary>
+    public bool AreAllies(PlayerId a, PlayerId b) =>
+        a == b || (b.Value is >= 1 and <= PlayerId.MaxPlayers && (AlliesOf(a) & (1 << (b.Value - 1))) != 0);
+
+    /// <summary>Every player its own bit; the players of one team of <paramref name="match"/> each other's too.</summary>
+    private static int[] Alliances(Matches.MatchSetup? match)
+    {
+        var allies = new int[PlayerId.MaxPlayers];
+        for (var i = 0; i < allies.Length; i++)
+        {
+            allies[i] = 1 << i;
+        }
+
+        if (match is not null)
+        {
+            foreach (var a in match.Players)
+            {
+                foreach (var b in match.Players)
+                {
+                    if (a.Team == b.Team && a.Slot is >= 1 and <= PlayerId.MaxPlayers && b.Slot is >= 1 and <= PlayerId.MaxPlayers)
+                    {
+                        allies[a.Slot - 1] |= 1 << (b.Slot - 1);
+                    }
+                }
+            }
+        }
+
+        return allies;
+    }
 
     /// <summary>The economy of a player 1…8.</summary>
     public PlayerState Player(PlayerId player) =>

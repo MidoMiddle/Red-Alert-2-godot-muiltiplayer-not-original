@@ -31,9 +31,14 @@ internal sealed class Scene
 
     /// <param name="perceptionDelay">How late the bot notices an enemy (M8 step 3): none unless a test is about it.</param>
     /// <param name="rules">The rules of the scene: those of the simulation tests unless a scene needs the game's — its costs, its weapons.</param>
-    public Scene(ImmutableArray<CellPos> mapStarts = default, int perceptionDelay = 0, Rts.Simulation.Rules.GameRules? rules = null)
+    /// <param name="match">A match of the scene, for its teams (M8 step 11): its players start with their vehicles on the starts.</param>
+    public Scene(
+        ImmutableArray<CellPos> mapStarts = default, int perceptionDelay = 0, Rts.Simulation.Rules.GameRules? rules = null,
+        Rts.Simulation.Matches.MatchSetup? match = null)
     {
-        Simulation = rules is null
+        Simulation = match is not null
+            ? new GameSimulation(SimulationSettings.ForMatch(match, new MapGrid(64, 64)), TestRules.Standard)
+            : rules is null
             ? new GameSimulation(new SimulationSettings(1, new MapGrid(64, 64)), TestRules.Standard)
             : new GameSimulation(new SimulationSettings(1, new MapGrid(64, 64, rules.Land)), rules);
         var starts = mapStarts.IsDefault ? Corners : mapStarts;

@@ -197,7 +197,7 @@ public static class TargetingSystem
         var bestScore = int.MinValue;
         foreach (var id in nearby)
         {
-            if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || candidate.Owner == me.Owner || candidate.Owner.IsNeutral
+            if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || world.AreAllies(candidate.Owner, me.Owner) || candidate.Owner.IsNeutral
                 || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate))
             {
                 continue;

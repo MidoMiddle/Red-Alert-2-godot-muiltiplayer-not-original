@@ -13,4 +13,7 @@ public enum AiModuleKind
     Scouting,
     Squads,
     Defense,
+
+    /// <summary>The team of the bot (M8 step 11): the board of the allied bots and the person of the team.</summary>
+    Team,
 }

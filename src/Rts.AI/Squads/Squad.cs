@@ -43,6 +43,9 @@ public sealed class Squad
     /// <summary>Where a beaten squad falls back to instead of the gathering point: a defense of its own, for «Brutal» (M8 step 5).</summary>
     public CellPos? RetreatPoint { get; internal set; }
 
+    /// <summary>Where it helps an ally whose base is attacked (M8 step 11); null for a squad of the bot's own.</summary>
+    public CellPos? HelpCell { get; internal set; }
+
     /// <summary>Called back by the defense to fight the threat at the base (step 9).</summary>
     public bool Recalled { get; internal set; }
 

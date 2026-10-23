@@ -29,7 +29,7 @@ public static class CrushSystem
         {
             var id = reservations.InfantryAt(cell, spot);
             if (id != EntityId.None && (!world.TryGet(id, out var entity) || entity is not Unit { Archetype.Crushable: true } soldier
-                || soldier.Owner == vehicle.Owner))
+                || world.AreAllies(soldier.Owner, vehicle.Owner)))
             {
                 return false;
             }

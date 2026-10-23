@@ -172,7 +172,7 @@ public static class CommandProcessor
     private static bool ApplyAttack(GameWorld world, AttackCommand command)
     {
         if (!world.TryGet(command.Target, out var target) || !target.IsAlive || target is not (Unit or Building)
-            || target is Building { Def.Wall: true } || target.Owner == command.Player || target.Owner.IsNeutral || !Vision.Sees(world, command.Player, target))
+            || target is Building { Def.Wall: true } || world.AreAllies(target.Owner, command.Player) || target.Owner.IsNeutral || !Vision.Sees(world, command.Player, target))
         {
             return false;
         }

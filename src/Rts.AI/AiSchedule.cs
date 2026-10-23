@@ -20,6 +20,7 @@ public static class AiSchedule
         AiModuleKind.Scouting => settings.ScoutingPeriod,
         AiModuleKind.Squads => settings.TacticsPeriod,
         AiModuleKind.Defense => settings.DefensePeriod,
+        AiModuleKind.Team => settings.TacticsPeriod,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 
@@ -33,6 +34,7 @@ public static class AiSchedule
         AiModuleKind.Scouting => 5,
         AiModuleKind.Squads => 0,
         AiModuleKind.Defense => 3,
+        AiModuleKind.Team => 1,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 

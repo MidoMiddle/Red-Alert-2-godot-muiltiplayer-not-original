@@ -263,6 +263,8 @@ public sealed class StateHasherTests
         "_players", "<PowerDirty>k__BackingField", "<TechDirty>k__BackingField",
         // The match setup: fixed, the replay keeps it; its result follows from the ticks of defeat (M5 step 10).
         "<Match>k__BackingField", "<Result>k__BackingField",
+        // The allies (M8 step 11): fixed by the teams of the match setup as the world is made.
+        "_allies",
         // The statistics (M5 step 11): what the players did, worked out from the game; it does not depend on them.
         "<Stats>k__BackingField",
     })]

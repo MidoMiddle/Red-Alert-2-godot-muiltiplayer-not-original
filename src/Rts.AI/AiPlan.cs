@@ -89,6 +89,23 @@ public sealed class AiPlan
     /// <summary>The squads of the bot (step 8), in the order they were formed; the squad manager keeps them.</summary>
     public IReadOnlyList<Squad> Squads { get; internal set; } = [];
 
+    // M8 step 11, the team (Team/TeamCoordinator): what the squads tell the team, and what the team asks of the squads.
+
+    /// <summary>The units of the squad gathering at home, as the squads last counted them.</summary>
+    public int GatheringUnits { get; internal set; }
+
+    /// <summary>Its strength.</summary>
+    public int GatheringStrength { get; internal set; }
+
+    /// <summary>The units it needs to set out by itself.</summary>
+    public int NeededUnits { get; internal set; }
+
+    /// <summary>Where the attack of the team goes that the squad at home joins; null for none.</summary>
+    public CellPos? JoinAttack { get; internal set; }
+
+    /// <summary>Where an ally is attacked and the bot helps; null for nowhere.</summary>
+    public CellPos? HelpAt { get; internal set; }
+
     /// <summary>The economy's needs of this turn, in place of those of its last one.</summary>
     internal void SetEconomyWants(IEnumerable<int> wants)
     {
