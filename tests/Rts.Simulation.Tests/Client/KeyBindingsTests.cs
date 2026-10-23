@@ -233,6 +233,17 @@ public sealed class KeyBindingsTests
     }
 
     [Fact]
+    public void F10ToF12AreTheFogThePlayerAndTheBotOfTheDebugBuilds()
+    {
+        var bindings = new KeyBindings();
+
+        Assert.Equal("F10", bindings.KeyOf("debug_reveal"));
+        Assert.Equal("F11", bindings.KeyOf("debug_switch_player"));
+        // M5 step 13: the overlay of the bot; Shift+F12 stays for the window of M8.
+        Assert.Equal("F12", bindings.KeyOf("debug_ai"));
+    }
+
+    [Fact]
     public void AnOlderFileWithSpawnOnTKeepsTypeSelectOnT()
     {
         var raw = new Dictionary<string, string>

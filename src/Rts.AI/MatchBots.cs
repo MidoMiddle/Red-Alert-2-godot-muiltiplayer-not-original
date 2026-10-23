@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Rts.AI.Modules;
 using Rts.Simulation;
 using Rts.Simulation.Ai;
@@ -16,21 +17,29 @@ public static class MatchBots
         ? Medium(player.Id, SettingsOf(player.Difficulty), player.Start, setup)
         : throw new ArgumentException($"{player.Id} is played by a person.", nameof(player));
 
-    /// <summary>Attaches the bots of the match of <paramref name="simulation"/>; none without a match setup. Only for a live match.</summary>
-    public static void AttachAll(GameSimulation simulation)
+    /// <summary>
+    /// Attaches the bots of the match of <paramref name="simulation"/> and returns them, for the debug overlay (step 13); none without a
+    /// match setup. Only for a live match.
+    /// </summary>
+    public static IReadOnlyList<AiPlayer> AttachAll(GameSimulation simulation)
     {
+        var bots = new List<AiPlayer>();
         if (simulation.Settings.Match is not { } setup)
         {
-            return;
+            return bots;
         }
 
         foreach (var player in setup.Players)
         {
             if (player.Kind == PlayerKind.Ai)
             {
-                simulation.AttachAi(Create(setup, player));
+                var bot = (AiPlayer)Create(setup, player);
+                simulation.AttachAi(bot);
+                bots.Add(bot);
             }
         }
+
+        return bots;
     }
 
     /// <summary>The bot of M5 so far: its economy (step 4), its base by the build order and where there is room (step 5), its army (step 6), its scouting (step 7), its squads (step 8), its strategist and the defense of its base (step 9).</summary>

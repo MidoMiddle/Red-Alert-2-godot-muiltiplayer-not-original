@@ -84,6 +84,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
         var gathering = Account(context);
         var gather = GatherPoint(view, context.Memory);
+        context.Plan.GatherPoint = gather;
         Squad? merged = null;
         foreach (var squad in _squads)
         {
@@ -210,7 +211,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
             Issue(context, OrderKind.AttackMove, point, default);
         }
 
-        var enemy = EnemyStrength(context.View, context.Memory);
+        var enemy = context.Memory.EnemyStrength(context.View);
         var strong = squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent;
         squad.State = strong ? SquadState.Ready : SquadState.Gathering;
         if (!strong || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre))
@@ -575,27 +576,6 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         }
 
         return start;
-    }
-
-    /// <summary>The strength of the enemy the bot knows of: its armies remembered and its defenses (cost × the share of hit points left).</summary>
-    private static int EnemyStrength(AiWorldView view, AiMemory memory)
-    {
-        var strength = 0;
-        foreach (var army in memory.Armies)
-        {
-            strength += army.Strength;
-        }
-
-        foreach (var building in memory.Buildings)
-        {
-            var def = view.Rules.Database.Buildings[building.DefIndex];
-            if (def.Primary.Length > 0 && def.Hp > 0)
-            {
-                strength += def.Cost * building.Hp / def.Hp;
-            }
-        }
-
-        return strength;
     }
 
     private void Members(Squad squad)

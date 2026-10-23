@@ -44,6 +44,12 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
 
     public void Update(AiContext context)
     {
+        Scouting(context);
+        context.Plan.ScoutErrand = _errand;
+    }
+
+    private void Scouting(AiContext context)
+    {
         var view = context.View;
         var scout = Scout(context);
         if (scout is null)

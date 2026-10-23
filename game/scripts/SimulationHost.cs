@@ -133,6 +133,9 @@ public partial class SimulationHost : Node
 
     public bool IsPlayback => _playback is not null;
 
+    /// <summary>The bots of the live match, for the debug overlay of step 13; none in the sandbox and in a replay, which runs no bots.</summary>
+    public IReadOnlyList<AiPlayer> Bots { get; private set; } = [];
+
     public bool Paused { get; set; }
 
     /// <summary>The path queue of the last ticks, for the debug graph (F8).</summary>
@@ -214,7 +217,7 @@ public partial class SimulationHost : Node
         {
             // A match (M5 step 2): the starting units come with the world, the bots think inside the simulation.
             Simulation = new GameSimulation(SimulationSettings.ForMatch(_match, map.Grid), Data.Rules);
-            MatchBots.AttachAll(Simulation);
+            Bots = MatchBots.AttachAll(Simulation);
             LocalPlayer = _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
             CallDeferred(MethodName.LookAtStart);
             GD.Print($"[host] match on {_match.MapId}, seed {_match.Seed}: " +
@@ -222,6 +225,7 @@ public partial class SimulationHost : Node
         }
         else
         {
+            Bots = [];
             Simulation = IsBattle
                 ? BattleScenario.Create(map.Grid, Data.Rules)
                 : new GameSimulation(new SimulationSettings(MatchSeed, map.Grid), Data.Rules);
@@ -263,6 +267,7 @@ public partial class SimulationHost : Node
 
         // Without bots: their commands are in the replay (M5, 4.4).
         Simulation = ReplayPlayer.CreateSimulation(replay, Data.Rules);
+        Bots = [];
         PlayerColors.Match = replay.Settings.Match;
         _recorder = null;
         _playback = replay;

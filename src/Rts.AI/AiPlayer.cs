@@ -51,6 +51,12 @@ public sealed class AiPlayer : IAiController
     /// <summary>What the bot sees and remembers; null before its first turn.</summary>
     public AiContext? Context => _context;
 
+    /// <summary>
+    /// A copy of what the bot thinks, for the debug overlay (docs/implementation/M5_first_bot.md, 4.13, step 13); null before its first
+    /// turn. Made from what the bot holds after its last turn: asking changes nothing in the bot or the match.
+    /// </summary>
+    public Debug.AiDebugSnapshot? Snapshot() => _context is null ? null : Debug.AiDebugSnapshot.Of(_context);
+
     public void Think(AiTurn turn)
     {
         _context ??= new AiContext(new AiWorldView(turn.World, Player, _start, _mapStarts), new AiMemory());

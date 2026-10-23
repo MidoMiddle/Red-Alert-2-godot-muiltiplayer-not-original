@@ -77,6 +77,30 @@ public sealed class AiMemory
         : PossibleEnemyStarts.Count > 0 ? PossibleEnemyStarts[0]
         : null;
 
+    /// <summary>
+    /// The strength of the enemy the bot knows of (4.6, step 8): its armies remembered and its defenses, cost × the share of hit points
+    /// left. A squad sets out only stronger than this.
+    /// </summary>
+    public int EnemyStrength(AiWorldView view)
+    {
+        var strength = 0;
+        foreach (var army in Armies)
+        {
+            strength += army.Strength;
+        }
+
+        foreach (var building in Buildings)
+        {
+            var def = view.Rules.Database.Buildings[building.DefIndex];
+            if (def.Primary.Length > 0 && def.Hp > 0)
+            {
+                strength += def.Cost * building.Hp / def.Hp;
+            }
+        }
+
+        return strength;
+    }
+
     /// <summary>The strength of a unit as of a squad (4.6): its cost × the share of its hit points left.</summary>
     public int StrengthOf(Unit unit) => unit.MaxHp > 0 && _costs is { } costs ? costs[(int)unit.Type] * unit.Hp / unit.MaxHp : 0;
 

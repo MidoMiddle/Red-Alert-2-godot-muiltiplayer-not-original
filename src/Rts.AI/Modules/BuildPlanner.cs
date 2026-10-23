@@ -83,6 +83,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             if (_placement.TryFind(view, context.Memory, yard, ready.DefIndex, out var corner) && corner is { } place)
             {
                 context.Issue(new PlaceBuildingCommand(view.Me, context.ExecuteTick, context.NextSequence(), ready.DefIndex, place));
+                context.Plan.LastPlacement = (ready.DefIndex, place);
             }
 
             return;

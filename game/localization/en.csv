@@ -227,6 +227,7 @@ UI_KEY_DEBUG_SELL,Sell the building under the cursor (debug)
 UI_KEY_DEBUG_REPAIR,Repair the building under the cursor on / off (debug)
 UI_KEY_DEBUG_REVEAL,Show the whole map through the fog of war (debug)
 UI_KEY_DEBUG_SWITCH_PLAYER,Play as the next player (debug builds)
+UI_KEY_DEBUG_AI,Show what the bot thinks (debug builds)
 UI_KEY_CANCEL_SELECTION,Cancel selection or menu
 UI_KEY_WAITING,Press a key...
 UI_KEYS_SWAPPED,{0} was used by {1}. {1} now uses {2}.

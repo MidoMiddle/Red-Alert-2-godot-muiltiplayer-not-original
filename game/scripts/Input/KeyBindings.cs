@@ -73,6 +73,7 @@ public sealed class KeyBindings
         new KeyAction("debug_repair", "UI_KEY_DEBUG_REPAIR", "J"),
         new KeyAction("debug_reveal", "UI_KEY_DEBUG_REVEAL", "F10"),
         new KeyAction("debug_switch_player", "UI_KEY_DEBUG_SWITCH_PLAYER", "F11"),
+        new KeyAction("debug_ai", "UI_KEY_DEBUG_AI", "F12"),
         new KeyAction("cancel_selection", "UI_KEY_CANCEL_SELECTION", "Escape"),
     };
 

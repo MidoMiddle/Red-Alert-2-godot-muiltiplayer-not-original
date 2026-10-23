@@ -70,6 +70,15 @@ public sealed class AiPlan
     /// <summary>While the base is defended the army does not save the money of the next building for it (step 9).</summary>
     public bool ArmyFirst { get; internal set; }
 
+    /// <summary>Where the squads gather (step 8); for the debug overlay (step 13), no module decides by it. Null without a start.</summary>
+    public CellPos? GatherPoint { get; internal set; }
+
+    /// <summary>Where the scout goes now (step 7), for the debug overlay; null while it waits at home.</summary>
+    public CellPos? ScoutErrand { get; internal set; }
+
+    /// <summary>The building the planner placed last and where (step 5), for the debug overlay; null before the first.</summary>
+    public (int DefIndex, CellPos Cell)? LastPlacement { get; internal set; }
+
     /// <summary>The squads of the bot (step 8), in the order they were formed; the squad manager keeps them.</summary>
     public IReadOnlyList<Squad> Squads { get; internal set; } = [];
 

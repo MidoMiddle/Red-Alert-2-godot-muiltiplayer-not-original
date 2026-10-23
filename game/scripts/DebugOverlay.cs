@@ -24,7 +24,7 @@ public partial class DebugOverlay : CanvasLayer
         "Shift+order queue · Ctrl+Shift+order attack-move · Z+orders waypoints, then order without Z · S stop · X scatter\n" +
         "K damage map object, bridge or building (debug) · Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
         "arrows/edge/wheel camera · F1…F4 bookmark (Ctrl: save)\n" +
-        "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph · F10 fog revealed";
+        "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph · F10 fog revealed · F12 AI";
 
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
