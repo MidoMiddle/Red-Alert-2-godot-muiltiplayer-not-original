@@ -3,6 +3,7 @@ using Godot;
 using Rts.Client.Terrain;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Effects;
@@ -10,7 +11,7 @@ namespace Rts.Client.Effects;
 /// <summary>
 /// The shots in flight (docs/implementation/M4_combat.md, 4.8, step 13), drawn from the <see cref="Projectile"/> entities and moved
 /// smoothly between the ticks: a dark ball for a shell along its arc, a grey one for flak, a long body with a trail of smoke for a
-/// rocket. A shot over a cell the local player does not see is not drawn (the fog, step 12). Symbolic
+/// rocket. A shot over a cell the local player's team does not see is not drawn (the fog, step 12; M6, A6). Symbolic
 /// (docs/implementation/conventions.md, section 12).
 /// </summary>
 public partial class ProjectileViews : Node3D
@@ -81,7 +82,7 @@ public partial class ProjectileViews : Node3D
             }
 
             var seen = FogOfWar.Current is not { Revealed: false }
-                || world.VisionOf(SimulationHost.LocalPlayer).IsVisible(projectile.Position.ToCell());
+                || Vision.IsVisible(world, SimulationHost.LocalPlayer, projectile.Position.ToCell());
             view.Root.Visible = seen;
             if (view.Trail is not null)
             {

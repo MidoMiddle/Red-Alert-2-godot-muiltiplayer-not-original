@@ -11,6 +11,9 @@ UI_MAIN_SANDBOX,Test Sandbox
 UI_MAIN_QUICK_SKIRMISH,Quick Skirmish (debug)
 UI_QUICK_SKIRMISH_TITLE,Quick Skirmish
 UI_QUICK_SKIRMISH_WHO,You against a Medium bot
+UI_QUICK_SKIRMISH_WHO_2V2,You and a Medium bot ally against two Medium bots
+UI_QUICK_SKIRMISH_MODE_1V1,Mode: 1 vs 1
+UI_QUICK_SKIRMISH_MODE_2V2,Mode: 2 vs 2
 UI_QUICK_SKIRMISH_START,Start
 UI_QUICK_SKIRMISH_NO_MAPS,No map with two starts or more
 UI_MAIN_SKIRMISH,Skirmish

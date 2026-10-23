@@ -862,8 +862,10 @@ public partial class PlayerInput : Node
 
         foreach (var id in _candidates)
         {
-            // A unit hidden by the fog (M4 step 12) cannot be pointed at.
-            if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit || !Terrain.FogOfWar.Shows(world, unit))
+            // A unit hidden by the fog (M4 step 12) cannot be pointed at; an ally's is no target either (M6, A6): an order on it is a move
+            // to the ground under it, as an attack on an ally is refused.
+            if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit || !Terrain.FogOfWar.Shows(world, unit)
+                || (unit.Owner != SimulationHost.LocalPlayer && world.AreAllies(SimulationHost.LocalPlayer, unit.Owner)))
             {
                 continue;
             }
@@ -884,11 +886,11 @@ public partial class PlayerInput : Node
             return picked;
         }
 
-        // M4 step 7: the building on the cell is a target, for an attack when it belongs to another player and is no wall; one the
-        // player does not see now — in the shroud, or a ghost in the fog (step 12) — is only ground.
+        // M4 step 7: the building on the cell is a target, for an attack when it belongs to a player not of the team (M6,
+        // A6) and is no wall; one the player does not see now — in the shroud, or a ghost in the fog (step 12) — is only ground.
         if (GroundAt(at) is { } point && world.BuildingAt(point.ToCell()) is { IsAlive: true } building && Terrain.FogOfWar.Shows(world, building))
         {
-            var enemy = building.Owner != SimulationHost.LocalPlayer && !building.Owner.IsNeutral && building.Def is not { Wall: true };
+            var enemy = !world.AreAllies(SimulationHost.LocalPlayer, building.Owner) && !building.Owner.IsNeutral && building.Def is not { Wall: true };
             return new PointerTarget(enemy ? PointerTargetKind.OtherBuilding : PointerTargetKind.Ground, Building: building.Id);
         }
 

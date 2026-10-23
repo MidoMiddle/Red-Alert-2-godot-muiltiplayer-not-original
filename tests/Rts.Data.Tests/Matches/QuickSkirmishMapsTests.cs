@@ -80,6 +80,36 @@ public sealed class QuickSkirmishMapsTests
     }
 
     [Fact]
+    public void Two_against_two_on_four_corners_puts_the_person_and_a_bot_ally_on_the_top_corners()
+    {
+        // M6, A6: the quick skirmish's «Mode: 2 vs 2», the setup the fog of the whole team is seen in.
+        var map = Read("four-corners");
+        var setup = MatchSetups.TwoOnTwo(map, GameDataFiles.Rules.DefaultFaction.Id, seed: 9);
+        var grid = map.ToMapGrid();
+
+        Assert.True(MatchSetups.IsPlayableTwoOnTwo(map));
+        Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
+        Assert.Equal(
+            [(1, PlayerKind.Human, 1, 0), (2, PlayerKind.Ai, 1, 1), (3, PlayerKind.Ai, 2, 2), (4, PlayerKind.Ai, 2, 3)],
+            setup.Players.Select(player => (player.Slot, player.Kind, player.Team, player.Color)));
+        Assert.Equal(map.Starts.Take(4).Select(start => start.Cell), setup.Players.Select(player => player.Start));
+
+        var world = new GameSimulation(SimulationSettings.ForMatch(setup, grid), GameDataFiles.Rules).World;
+        Assert.Equal(0b0011, world.AlliesOf(new PlayerId(1)));
+        Assert.Equal(0b1100, world.AlliesOf(new PlayerId(3)));
+        Assert.All(setup.Players, player => Assert.Equal(4, world.Entities.OfType<Unit>().Count(unit => unit.Owner == player.Id)));
+    }
+
+    [Fact]
+    public void A_map_of_two_starts_is_no_two_against_two()
+    {
+        var map = Read("twin-rivers");
+
+        Assert.False(MatchSetups.IsPlayableTwoOnTwo(map));
+        Assert.Throws<ArgumentException>(() => MatchSetups.TwoOnTwo(map, "union", 1));
+    }
+
+    [Fact]
     public void A_map_without_two_starts_is_not_a_match()
     {
         var sandbox = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));

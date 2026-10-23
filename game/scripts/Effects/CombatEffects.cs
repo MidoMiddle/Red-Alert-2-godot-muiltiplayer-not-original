@@ -7,6 +7,7 @@ using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Effects;
@@ -230,9 +231,9 @@ public partial class CombatEffects : Node3D
 
     private Known? Know(EntityId id) => _known.TryGetValue(id, out var known) ? known : null;
 
-    /// <summary>Whether the local player sees the point now; with no fog, or the fog revealed, everything is seen.</summary>
+    /// <summary>Whether the local player's team sees the point now (M6, A6); with no fog, or the fog revealed, everything is seen.</summary>
     private static bool Seen(GameWorld world, WorldPos point) =>
-        FogOfWar.Current is not { Revealed: false } || world.VisionOf(SimulationHost.LocalPlayer).IsVisible(point.ToCell());
+        FogOfWar.Current is not { Revealed: false } || Vision.IsVisible(world, SimulationHost.LocalPlayer, point.ToCell());
 
     private void AddBall(Vector3 at, float from, float to, float life, Color color, bool flat = false)
     {

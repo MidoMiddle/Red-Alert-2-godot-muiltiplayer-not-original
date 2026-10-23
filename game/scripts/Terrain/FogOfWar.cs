@@ -5,8 +5,9 @@ using Rts.Simulation.World;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// The fog of war on screen (docs/implementation/M4_combat.md, 4.15, M4 step 12). Every frame each cell of the local player's
-/// <see cref="VisibilityGrid"/> moves its shade toward shroud, fog or visible (<see cref="FogShades"/>); the shades go into a texture
+/// The fog of war on screen (docs/implementation/M4_combat.md, 4.15, M4 step 12). Every frame each cell moves its shade toward shroud,
+/// fog or visible as the local player's team knows it — the <see cref="VisibilityGrid"/>s of the player and its allies together
+/// (<see cref="Vision.StateAt"/>, M6, A6) — by <see cref="FogShades"/>; the shades go into a texture
 /// of one texel per cell, which <c>shaders/fog.gdshader</c> lays over the whole picture in one pass, and into a black mask for the
 /// minimap. The debug key <c>debug_reveal</c> (F10) shows the whole map — the ground, the enemies, their buildings as they stand —
 /// without touching the simulation. Only one exists at a time: <see cref="Current"/>.
@@ -43,11 +44,12 @@ public partial class FogOfWar : Node3D
     public void Conceal() => Revealed = false;
 
     /// <summary>
-    /// Whether the local player is to see <paramref name="entity"/> on screen: its own always, another's while seen (step 11), all
-    /// while the fog is revealed or where there is no fog.
+    /// Whether the local player is to see <paramref name="entity"/> on screen: its own and its allies' always (M6, A6), another's while
+    /// its team sees it (step 11), all while the fog is revealed or where there is no fog.
     /// </summary>
     public static bool Shows(GameWorld world, Entity entity) =>
-        Current is not { Revealed: false } || entity.Owner == SimulationHost.LocalPlayer || Vision.Sees(world, SimulationHost.LocalPlayer, entity);
+        Current is not { Revealed: false } || world.AreAllies(SimulationHost.LocalPlayer, entity.Owner)
+        || Vision.Sees(world, SimulationHost.LocalPlayer, entity);
 
     public override void _Ready()
     {
@@ -96,14 +98,14 @@ public partial class FogOfWar : Node3D
             Start(world);
         }
 
-        var grid = world.VisionOf(SimulationHost.LocalPlayer);
+        var (width, height) = (world.WidthCells, world.HeightCells);
         var changed = false;
-        for (var y = 0; y < grid.Height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (var x = 0; x < grid.Width; x++)
+            for (var x = 0; x < width; x++)
             {
-                var index = y * grid.Width + x;
-                var target = FogShades.Target(grid.StateAt(new Rts.Simulation.Geometry.CellPos(x, y)), Revealed);
+                var index = y * width + x;
+                var target = FogShades.Target(Vision.StateAt(world, SimulationHost.LocalPlayer, new Rts.Simulation.Geometry.CellPos(x, y)), Revealed);
                 var shade = _shades[index];
                 if (shade == target)
                 {
@@ -119,9 +121,9 @@ public partial class FogOfWar : Node3D
 
         if (changed)
         {
-            _image!.SetData(grid.Width, grid.Height, false, Image.Format.R8, _shades);
+            _image!.SetData(width, height, false, Image.Format.R8, _shades);
             _fogTexture!.Update(_image);
-            _maskImage!.SetData(grid.Width, grid.Height, false, Image.Format.Rgba8, _mask);
+            _maskImage!.SetData(width, height, false, Image.Format.Rgba8, _mask);
             MinimapMask!.Update(_maskImage);
         }
     }

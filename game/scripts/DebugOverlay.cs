@@ -7,6 +7,7 @@ using Rts.Client.Debug;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
@@ -86,7 +87,7 @@ public partial class DebugOverlay : CanvasLayer
     /// while F10 shows the whole map (step 12).
     /// </summary>
     private static string DescribeVision(GameWorld world, CellPos? pointer) =>
-        (pointer is { } cell ? " · " + world.VisionOf(SimulationHost.LocalPlayer).StateAt(cell).ToString().ToLowerInvariant() : "")
+        (pointer is { } cell ? " · " + Vision.StateAt(world, SimulationHost.LocalPlayer, cell).ToString().ToLowerInvariant() : "")
         + (Terrain.FogOfWar.Current is { Revealed: true } ? " · fog revealed" : "");
 
     /// <summary>The selected unit when exactly one is selected and alive.</summary>

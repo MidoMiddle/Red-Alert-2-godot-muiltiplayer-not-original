@@ -4,6 +4,7 @@ using Rts.Simulation.Combat;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
+using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Audio;
@@ -86,7 +87,7 @@ public partial class CombatSounds : Node
         return world.TryGet(id, out var entity) && entity is Building building ? Aim.CentreOf(building) : null;
     }
 
-    /// <summary>Whether the local player sees the point now; with no fog, or the fog revealed, everything is seen.</summary>
+    /// <summary>Whether the local player's team sees the point now (M6, A6); with no fog, or the fog revealed, everything is seen.</summary>
     private static bool Seen(GameWorld world, WorldPos point) =>
-        FogOfWar.Current is not { Revealed: false } || world.VisionOf(SimulationHost.LocalPlayer).IsVisible(point.ToCell());
+        FogOfWar.Current is not { Revealed: false } || Vision.IsVisible(world, SimulationHost.LocalPlayer, point.ToCell());
 }

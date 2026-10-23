@@ -30,6 +30,43 @@ public static class Vision
         return false;
     }
 
+    /// <summary>
+    /// Whether the player or one of its allies sees <paramref name="cell"/> now (M6, A6): the fog on screen is the team's. Unlike
+    /// <see cref="Sees"/>, <see cref="Matches.PlayerModifiers.RevealMap"/> opens no cell: the screen shows a person, not a bot.
+    /// </summary>
+    public static bool IsVisible(GameWorld world, PlayerId player, Geometry.CellPos cell)
+    {
+        var allies = world.AlliesOf(player);
+        for (var i = 0; i < PlayerId.MaxPlayers; i++)
+        {
+            if ((allies & (1 << i)) != 0 && world.VisionOf(new PlayerId(i + 1)).IsVisible(cell))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Whether the player or one of its allies has ever seen <paramref name="cell"/> (M6, A6).</summary>
+    public static bool IsExplored(GameWorld world, PlayerId player, Geometry.CellPos cell)
+    {
+        var allies = world.AlliesOf(player);
+        for (var i = 0; i < PlayerId.MaxPlayers; i++)
+        {
+            if ((allies & (1 << i)) != 0 && world.VisionOf(new PlayerId(i + 1)).IsExplored(cell))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>What the team of the player knows of <paramref name="cell"/> (M6, A6); a player alone, its own grid's state.</summary>
+    public static CellVisibility StateAt(GameWorld world, PlayerId player, Geometry.CellPos cell) =>
+        IsVisible(world, player, cell) ? CellVisibility.Visible : IsExplored(world, player, cell) ? CellVisibility.Fog : CellVisibility.Shroud;
+
     private static bool SeenBy(VisibilityGrid grid, Entity entity)
     {
         switch (entity)

@@ -6,8 +6,9 @@ using Rts.Simulation.World;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// The buildings of the players as one player knows them (docs/implementation/M4_combat.md, 4.15, step 12): its own always; another's
-/// as it stands while seen, as last seen — a ghost — while in the fog, even after it fell there, until its cells are seen again; never
+/// The buildings of the players as one player knows them (docs/implementation/M4_combat.md, 4.15, step 12): its own and its allies'
+/// always (M6, A6); another's as it stands while its team sees it, as last seen — a ghost — while in the fog, even after it fell there,
+/// until its team sees its cells again; never
 /// one that was never seen. Only a picture: the simulation does not know of ghosts and takes no order on them. With the fog revealed
 /// every building shows as it stands. Each viewer remembers on its own (M4 step 16): with the debug switch of the player (F11) a
 /// building that fell while another player looked stays a ghost for the one that saw it. Pure, tested in Rts.Simulation.Tests.
@@ -46,7 +47,7 @@ public sealed class BuildingGhosts
                 continue;
             }
 
-            if (revealed || building.Owner == viewer)
+            if (revealed || world.AreAllies(viewer, building.Owner))
             {
                 _shown.Add(new Shown(building, building.BuildUpLeft, Ghost: false));
             }
@@ -76,7 +77,7 @@ public sealed class BuildingGhosts
                 continue;
             }
 
-            if (AnyCellVisible(world.VisionOf(viewer), building))
+            if (AnyCellVisible(world, viewer, building))
             {
                 (forgotten ??= []).Add(id);
             }
@@ -103,13 +104,13 @@ public sealed class BuildingGhosts
         public Dictionary<EntityId, int> Growth { get; } = new();
     }
 
-    private static bool AnyCellVisible(VisibilityGrid grid, Building building)
+    private static bool AnyCellVisible(GameWorld world, PlayerId viewer, Building building)
     {
         for (var y = building.Cell.Y; y <= building.FarCell.Y; y++)
         {
             for (var x = building.Cell.X; x <= building.FarCell.X; x++)
             {
-                if (grid.IsVisible(new CellPos(x, y)))
+                if (Vision.IsVisible(world, viewer, new CellPos(x, y)))
                 {
                     return true;
                 }
