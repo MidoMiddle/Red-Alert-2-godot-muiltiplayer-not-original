@@ -51,9 +51,9 @@ Seamless tileable grayscale height map of gentle small water ripples, black and 
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `frozen_water.png` | | | |
-| `water_height.png` | | | |
-| `water_normal.png` (из `water_height`) | | | |
+| `frozen_water.png` | заглушка (скрипт) | 2026-10-23 | не финальная, заменить генератором |
+| `water_height.png` | заглушка (скрипт) | 2026-10-23 | не финальная, заменить генератором |
+| `water_normal.png` (из `water_height`) | скрипт, из заглушки | 2026-10-23 | пересчитать из финальной карты высот |
 
 ## Открытые вопросы
 
