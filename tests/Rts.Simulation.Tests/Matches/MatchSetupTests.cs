@@ -25,9 +25,15 @@ public sealed class MatchSetupTests
         Assert.Null(Problem(OneOnOne()));
     }
 
+    [Fact]
+    public void Bots_alone_can_play_a_match()
+    {
+        // The matches of the Arena (docs/implementation/M8_ai_difficulty.md, 4.10, step 4): every seat a bot.
+        Assert.Null(Problem(OneOnOne() with { Players = [Player(1, PlayerKind.Ai, 10, 10), Player(2, PlayerKind.Ai, 50, 50)] }));
+    }
+
     [Theory]
     [InlineData("one player")]
-    [InlineData("no person")]
     [InlineData("slot taken twice")]
     [InlineData("slot 9")]
     [InlineData("shared start")]
@@ -45,7 +51,6 @@ public sealed class MatchSetupTests
         var setup = mistake switch
         {
             "one player" => good with { Players = [Player(1, PlayerKind.Human, 10, 10)] },
-            "no person" => good with { Players = [Player(1, PlayerKind.Ai, 10, 10), Player(2, PlayerKind.Ai, 50, 50)] },
             "slot taken twice" => good with { Players = [Player(1, PlayerKind.Human, 10, 10), Player(1, PlayerKind.Ai, 50, 50, color: 1)] },
             "slot 9" => good with { Players = [Player(1, PlayerKind.Human, 10, 10), Player(9, PlayerKind.Ai, 50, 50, color: 1)] },
             "shared start" => good with { Players = [Player(1, PlayerKind.Human, 10, 10), Player(2, PlayerKind.Ai, 10, 10) with { StartIndex = 1 }] },

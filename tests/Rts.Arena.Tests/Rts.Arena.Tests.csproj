@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The smoke tests of the Arena (docs/implementation/M8_ai_difficulty.md, 4.10, step 4). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer runtime when only .NET 10 is installed (see docs/implementation/M0_foundation.md, 4.1). -->
+    <RollForward>Major</RollForward>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../tools/Rts.Arena/Rts.Arena.csproj" />
+  </ItemGroup>
+
+  <!-- The data files of the game: the Arena plays its matches by them. -->
+  <ItemGroup>
+    <Compile Include="../Rts.Data.Tests/GameDataFiles.cs" Link="GameDataFiles.cs" />
+  </ItemGroup>
+
+</Project>

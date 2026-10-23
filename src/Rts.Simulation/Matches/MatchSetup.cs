@@ -70,8 +70,8 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
 
     /// <summary>
     /// What is wrong with the match on a map of <paramref name="width"/> × <paramref name="height"/> by <paramref name="rules"/>, or null
-    /// when it can be played: 2–8 players in different slots 1–8, a person among them, different starts of the map and different
-    /// colours, known factions, credits not negative, a speed of 1–6.
+    /// when it can be played: 2–8 players in different slots 1–8 — people, bots or both; bots alone are a match of the Arena (M8 step 4) —
+    /// different starts of the map and different colours, known factions, credits not negative, a speed of 1–6.
     /// </summary>
     public string? Problem(int width, int height, RulesDatabase rules)
     {
@@ -103,7 +103,6 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
             }
         }
 
-        var humans = 0;
         for (var i = 0; i < Players.Length; i++)
         {
             var player = Players[i];
@@ -150,11 +149,9 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
                     return $"{other.Id} and {player.Id} share a colour";
                 }
             }
-
-            humans += player.Kind == PlayerKind.Human ? 1 : 0;
         }
 
-        return humans == 0 ? "nobody plays: a match needs a person" : null;
+        return null;
     }
 
     public bool Equals(MatchSetup? other) =>

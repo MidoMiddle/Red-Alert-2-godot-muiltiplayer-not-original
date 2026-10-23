@@ -20,6 +20,9 @@ obj/
 mono_crash.*.json
 .mono/
 
+# The results of the Arena (docs/implementation/M8_ai_difficulty.md, 4.10): CSV and replays of bot matches, made anew on every run
+arena-results/
+
 # BenchmarkDotNet reports (docs/implementation/M2_unit_control.md, 4.15: results go to the journal)
 BenchmarkDotNet.Artifacts/
 

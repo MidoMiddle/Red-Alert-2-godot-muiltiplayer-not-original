@@ -388,6 +388,39 @@ dotnet test RtsGame.sln
 dotnet test tests/Rts.AI.Tests
 ```
 
+### Arena: боты против ботов (M8, шаг 4)
+
+Партии бот-против-бота без окна, с максимальной скоростью. Результат — таблица и повторы:
+
+```bash
+dotnet run --project tools/Rts.Arena -c Release -- run --a medium:balanced --b easy:balanced --map frozen-crossing --games 2
+```
+
+- **Профиль бота** — `уровень[:характер[:фракция]]`: уровни `easy`, `medium`, `hard`, `brutal`; характер по умолчанию `balanced`, фракция — `union`.
+- **Ключи:**
+  - `--minutes` — предел партии, потом ничья (60);
+  - `--seed` — seed первой партии, дальше +1 (1000);
+  - `--out` — папка результатов (`arena-results/<дата-время>`);
+  - `--data` — данные игры (`game/data`).
+- **В папке результатов:**
+  - `results.csv` — строка на партию: победитель, длительность, что построено и потеряно, руда, траты, тик первой атаки, проверка повтора. Одинаковый запуск даёт тот же файл байт в байт;
+  - `timings.csv` — время ИИ на ход;
+  - `game-0001.rtsreplay`… — повторы.
+- **Проверить повтор ещё раз** (код 0 — совпал):
+
+  ```bash
+  dotnet run --project tools/Rts.Arena -c Release -- replay arena-results/<папка>/game-0001.rtsreplay --a medium:balanced --b easy:balanced
+  ```
+
+Подробно — [tools/Rts.Arena/README.md](../tools/Rts.Arena/README.md).
+
+Что проверить:
+- [ ] Команда `run` выше печатает две строки `game N, seed …: … replay match` и путь к `results.csv`; в файле заголовок и две строки.
+- [ ] `replay` по одному из повторов печатает `: match`.
+- [ ] Неверный профиль (`--a insane`) — строка `rts-arena: 'insane' … is not a level: one of easy, medium, hard, brutal`, код 2.
+
+### Запуск без окна
+
 ```bash
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path game -- --smoke
 ```

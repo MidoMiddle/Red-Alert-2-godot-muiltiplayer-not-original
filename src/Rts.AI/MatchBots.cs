@@ -19,8 +19,14 @@ public static class MatchBots
     /// <paramref name="rules"/> (M5 step 14, M8 step 1) — the numbers of the code when the data has none: it knows its start and every
     /// start of the map.
     /// </summary>
-    public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules) => player.Kind == PlayerKind.Ai
-        ? Medium(player.Id, SettingsOf(player.Difficulty, player.Faction, rules), player.Start, setup)
+    public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules) => Create(setup, player, rules, BalancedId);
+
+    /// <summary>
+    /// The bot of <paramref name="player"/> with the personality <paramref name="personality"/> of the data — the Arena chooses it (M8 step
+    /// 4); the match setup does not keep it yet (step 13).
+    /// </summary>
+    public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules, string personality) => player.Kind == PlayerKind.Ai
+        ? Medium(player.Id, SettingsOf(player.Difficulty, player.Faction, rules, personality), player.Start, setup)
         : throw new ArgumentException($"{player.Id} is played by a person.", nameof(player));
 
     /// <summary>The «Medium» bot of <paramref name="player"/> with <paramref name="settings"/> of its own — the tuning of step 14, a person's seat played by a bot in the arena.</summary>
@@ -75,10 +81,10 @@ public static class MatchBots
 
     /// <summary>
     /// The settings of a bot of <paramref name="faction"/> at a level: the level of the data of <paramref name="rules"/> with the build order
-    /// and the army of «Balanced» (<see cref="AiProfile"/>). Without the personality in the data — the build order and the army of the code;
-    /// without the level — the «Medium» of the code, and no other level.
+    /// and the army of <paramref name="personality"/> (<see cref="AiProfile"/>). Without «Balanced» in the data — the build order and the army
+    /// of the code; without the level — the «Medium» of the code, and no other level. Another personality the data does not have is a mistake.
     /// </summary>
-    public static AiSettings SettingsOf(AiDifficulty difficulty, string faction, GameRules rules)
+    public static AiSettings SettingsOf(AiDifficulty difficulty, string faction, GameRules rules, string personality = BalancedId)
     {
         var database = rules.Database;
         if (!database.TryGetDifficulty(LevelId(difficulty), out var level))
@@ -88,6 +94,13 @@ public static class MatchBots
                 : throw new ArgumentException($"The data has no level '{LevelId(difficulty)}'.", nameof(difficulty));
         }
 
-        return database.TryGetPersonality(BalancedId, out var personality) ? AiProfile.Of(level, personality, faction).Settings : AiSettings.From(level);
+        if (database.TryGetPersonality(personality, out var chosen))
+        {
+            return AiProfile.Of(level, chosen, faction).Settings;
+        }
+
+        return personality == BalancedId
+            ? AiSettings.From(level)
+            : throw new ArgumentException($"The data has no personality '{personality}'.", nameof(personality));
     }
 }
