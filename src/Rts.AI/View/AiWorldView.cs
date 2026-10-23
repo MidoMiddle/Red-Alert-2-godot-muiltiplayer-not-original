@@ -12,7 +12,8 @@ namespace Rts.AI.View;
 /// The world as one bot may know it (docs/implementation/M5_first_bot.md, 4.5) — the only way its modules read the world:
 /// <list type="bullet">
 /// <item>its own units and buildings and those of its allies in full;</item>
-/// <item>enemies only while its player sees them (<see cref="Vision.Sees"/>);</item>
+/// <item>enemies only while its player sees them (<see cref="Vision.Sees"/>), and only once the bot has noticed them — the
+/// <see cref="Perception"/> of M8 step 3;</item>
 /// <item>land and ore only in explored cells; in the shroud a cell counts as enterable, as the units of a person take it;</item>
 /// <item>in the fog a foreign building does not block a cell: what the bot knows of it is in its <see cref="AiMemory"/>.</item>
 /// <item>with the open map of «Brutal» (<see cref="Rts.Simulation.Matches.PlayerModifiers.RevealMap"/>, M8 step 2) every cell is in sight
@@ -29,13 +30,17 @@ public sealed class AiWorldView
     private readonly List<Entity> _enemies = new();
     private GameWorld _world;
 
-    internal AiWorldView(GameWorld world, PlayerId me, CellPos? start, ImmutableArray<CellPos> mapStarts)
+    internal AiWorldView(GameWorld world, PlayerId me, CellPos? start, ImmutableArray<CellPos> mapStarts, int perceptionDelay = 0)
     {
         _world = world;
         Me = me;
         Start = start;
         MapStarts = mapStarts.IsDefault ? [] : mapStarts;
+        Perception = new PerceptionBuffer(perceptionDelay);
     }
+
+    /// <summary>What the bot has noticed of what its player sees (M8 step 3).</summary>
+    public PerceptionBuffer Perception { get; }
 
     /// <summary>The player of the bot.</summary>
     public PlayerId Me { get; }
@@ -66,7 +71,7 @@ public sealed class AiWorldView
     /// <summary>The living units and buildings of the allies, in full.</summary>
     public IReadOnlyList<Entity> Allied => _allied;
 
-    /// <summary>The living units and buildings of the enemies that the bot's player sees now.</summary>
+    /// <summary>The living units and buildings of the enemies that the bot's player sees now and the bot has noticed.</summary>
     public IReadOnlyList<Entity> VisibleEnemies => _enemies;
 
     /// <summary>Whether <paramref name="player"/> is the bot's player or an ally of it.</summary>
@@ -75,8 +80,12 @@ public sealed class AiWorldView
     /// <summary>Whether <paramref name="player"/> plays against the bot: not neutral, not an ally.</summary>
     public bool IsEnemy(PlayerId player) => !player.IsNeutral && !IsAlly(player);
 
-    /// <summary>Whether the bot's player sees <paramref name="entity"/> now.</summary>
-    public bool Sees(Entity entity) => Vision.Sees(_world, Me, entity);
+    /// <summary>Whether the bot's player sees <paramref name="entity"/> now — an enemy only once the bot has noticed it.</summary>
+    public bool Sees(Entity entity) =>
+        Vision.Sees(_world, Me, entity) && (!IsEnemy(entity.Owner) || !Perception.IsNoticing(entity.Id.Value, Tick));
+
+    /// <summary>Whether <paramref name="entity"/>, an enemy in sight, is not yet noticed: not to be taken for gone.</summary>
+    public bool IsNoticing(Entity entity) => Perception.IsNoticing(entity.Id.Value, Tick);
 
     public bool Contains(CellPos cell) => _world.Map.Contains(cell);
 
@@ -174,11 +183,13 @@ public sealed class AiWorldView
             {
                 _allied.Add(entity);
             }
-            else if (IsEnemy(entity.Owner) && Vision.Sees(world, Me, entity))
+            else if (IsEnemy(entity.Owner) && Vision.Sees(world, Me, entity) && Perception.Sight(entity.Id.Value, tick))
             {
                 _enemies.Add(entity);
             }
         }
+
+        Perception.EndTick(tick, Player.LastUnderAttack);
     }
 
     private static int Bit(PlayerId player) => player.Value is >= 1 and <= PlayerId.MaxPlayers ? 1 << (player.Value - 1) : 0;

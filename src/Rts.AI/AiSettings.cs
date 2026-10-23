@@ -147,7 +147,10 @@ public sealed record AiSettings
     /// <summary>A unit of a fighting squad with less than this share of its hit points, in percent, falls back behind the squad.</summary>
     public int WoundedPercent { get; init; } = 35;
 
-    /// <summary>How long enemies stand at the base before the bot takes notice, in ticks (4.7, M8's <c>perceptionDelay</c>).</summary>
+    /// <summary>
+    /// How late the bot learns of an enemy in sight or an attack on its base, in ticks (M8, 4.3, <c>perceptionDelay</c>;
+    /// <see cref="View.PerceptionBuffer"/>, step 3).
+    /// </summary>
     public int PerceptionDelay { get; init; } = 15;
 
     /// <summary>The base is safe again once no enemy has been at it this long, in ticks (4.6: 10 s).</summary>

@@ -26,6 +26,7 @@ namespace Rts.AI.Modules;
 public sealed class EconomyManager(AiSettings settings) : IAiModule
 {
     private readonly List<int> _wants = new();
+    private readonly List<(CellPos Cell, int Distance)> _fields = new();
     private int _mostRefineries;
     private int? _soldAt;
     private int? _idleSince;
@@ -245,12 +246,14 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         return false;
     }
 
-    /// <summary>The explored ore nearest the bot's refineries that no known enemy is near; null without one.</summary>
+    /// <summary>
+    /// The explored ore nearest the bot's refineries that no known enemy is near — or, as often as the level errs, one of the three nearest
+    /// (M8 step 3); null without one.
+    /// </summary>
     private CellPos? SafeField(AiContext context, int refinery)
     {
         var view = context.View;
-        CellPos? best = null;
-        var bestDistance = int.MaxValue;
+        _fields.Clear();
         for (var y = 0; y < view.Height; y++)
         {
             for (var x = 0; x < view.Width; x++)
@@ -270,14 +273,25 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
                     }
                 }
 
-                if (distance < bestDistance)
+                // The three nearest, in order; of two as near, the first in the walk — north to south, west to east.
+                var at = _fields.Count;
+                while (at > 0 && distance < _fields[at - 1].Distance)
                 {
-                    (best, bestDistance) = (cell, distance);
+                    at--;
+                }
+
+                if (at < AiChoice.Top && distance != int.MaxValue)
+                {
+                    _fields.Insert(at, (cell, distance));
+                    if (_fields.Count > AiChoice.Top)
+                    {
+                        _fields.RemoveAt(AiChoice.Top);
+                    }
                 }
             }
         }
 
-        return best;
+        return _fields.Count == 0 ? null : context.Choose(_fields).Cell;
     }
 
     /// <summary>The faction's cheapest building that gives power; -1 when it has none.</summary>

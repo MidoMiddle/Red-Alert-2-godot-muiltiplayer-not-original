@@ -32,6 +32,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         [ProductionCategory.Infantry, ProductionCategory.Vehicle, ProductionCategory.Building, ProductionCategory.Defense];
 
     private readonly List<(int Unit, long Share)> _target = new();
+    private readonly List<(int Unit, long Shortfall, int Order)> _short = new();
     private int[] _have = [];
 
     public AiModuleKind Kind => AiModuleKind.Production;
@@ -64,7 +65,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         // is saved for it rather than spent on a cheaper kind, which would tilt the army.
         while (open != 0)
         {
-            var unit = Shortest(rules, open, army);
+            var unit = Shortest(context, rules, open, army);
             if (unit < 0)
             {
                 return;
@@ -178,11 +179,13 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         return units == 0 ? null : infantry * 2 > units ? UnitCategory.Infantry : (units - infantry) * 2 > units ? UnitCategory.Vehicle : null;
     }
 
-    /// <summary>The unit of the factory categories in <paramref name="open"/> (bits) short of its share by the most; -1 for none.</summary>
-    private int Shortest(RulesDatabase rules, int open, int army)
+    /// <summary>
+    /// The unit of the factory categories in <paramref name="open"/> (bits) short of its share by the most — or, as often as the level
+    /// errs, one of the three shortest (M8 step 3); -1 for none.
+    /// </summary>
+    private int Shortest(AiContext context, RulesDatabase rules, int open, int army)
     {
-        var best = -1;
-        var bestShortfall = long.MinValue;
+        _short.Clear();
         foreach (var (unit, share) in _target)
         {
             if ((open & (1 << (int)CategoryOf(rules.Units[unit]))) == 0)
@@ -192,13 +195,20 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
 
             // In hundredths of a percent: what the share asks of the army with one more, less what there is. Only a kind short of it.
             var shortfall = share * (army + 1) - (long)_have[unit] * 10_000;
-            if (shortfall > 0 && shortfall > bestShortfall)
+            if (shortfall > 0)
             {
-                (best, bestShortfall) = (unit, shortfall);
+                _short.Add((unit, shortfall, _short.Count));
             }
         }
 
-        return best;
+        if (_short.Count == 0)
+        {
+            return -1;
+        }
+
+        // The shortest first; of two as short, the first of the army.
+        _short.Sort((a, b) => a.Shortfall != b.Shortfall ? b.Shortfall.CompareTo(a.Shortfall) : a.Order.CompareTo(b.Order));
+        return context.Choose(_short).Unit;
     }
 
     /// <summary>Counts the fighting units of the bot — those with a weapon, not the harvesters — and those queued, by kind; returns the sum.</summary>

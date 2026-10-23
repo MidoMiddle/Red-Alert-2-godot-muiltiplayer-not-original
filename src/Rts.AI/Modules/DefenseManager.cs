@@ -11,9 +11,10 @@ namespace Rts.AI.Modules;
 /// The defense of the base of a bot (docs/implementation/M5_first_bot.md, 4.6, step 9), every 5 ticks:
 /// <list type="bullet">
 /// <item><b>the threat</b> — the armed enemy units the bot sees within <see cref="AiSettings.BaseCells"/> of a building of its own,
-/// harvesters aside; once they have stood there <see cref="AiSettings.PerceptionDelay"/> ticks it goes into <see cref="AiPlan.Threat"/>:
+/// harvesters aside, as the bot has noticed them (<see cref="View.PerceptionBuffer"/>, M8 step 3) — in <see cref="AiPlan.Threat"/>:
 /// the one nearest the start, which the squad at home goes for (<see cref="SquadManager"/>), their middle and their strength;</item>
-/// <item><b>the defense</b> — when the base was hit lately (<see cref="PlayerState.LastUnderAttack"/>, the <c>UnderAttack</c> of M4) and
+/// <item><b>the defense</b> — when the base was hit lately (<see cref="PlayerState.LastUnderAttack"/>, the <c>UnderAttack</c> of M4, as the
+/// bot learns it — late by its perception) and
 /// the threat is stronger than the defenses, the squads at home and those called back, the strategist goes into defending
 /// (<see cref="AiPlan.Defend"/>) and the squads out, the nearest first, are called back until they cover the threat; the middle of the
 /// threat is kept as the side it came from (<see cref="AiPlan.AttackedFrom"/>) for a defense there;</item>
@@ -24,7 +25,6 @@ namespace Rts.AI.Modules;
 public sealed class DefenseManager(AiSettings settings) : IAiModule
 {
     private readonly List<Squad> _out = new();
-    private int? _since;
     private int _lastSeen;
 
     public AiModuleKind Kind => AiModuleKind.Defense;
@@ -35,16 +35,11 @@ public sealed class DefenseManager(AiSettings settings) : IAiModule
         var tick = context.Tick;
         if (AtBase(context) is { } threat)
         {
-            _since ??= tick;
             _lastSeen = tick;
-            if (tick - _since.Value >= settings.PerceptionDelay)
-            {
-                plan.Threat = threat;
-            }
+            plan.Threat = threat;
         }
         else
         {
-            _since = null;
             if ((plan.Threat is not null || plan.Strategy == StrategyState.Defending) && tick - _lastSeen >= settings.ThreatClearTicks)
             {
                 plan.EndDefense();
@@ -115,7 +110,7 @@ public sealed class DefenseManager(AiSettings settings) : IAiModule
 
     /// <summary>Whether a building of the bot was hit lately.</summary>
     private bool Attacked(AiContext context) =>
-        context.View.Player.LastUnderAttack is { } last && context.Tick - last < settings.ThreatClearTicks;
+        context.View.Perception.KnownAttack is { } last && context.Tick - last < settings.ThreatClearTicks + context.View.Perception.Delay;
 
     /// <summary>What holds the base: its defenses (cost × the share of hit points left), the squads at home and those called back.</summary>
     private static int Defense(AiContext context)

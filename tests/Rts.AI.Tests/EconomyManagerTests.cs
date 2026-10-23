@@ -17,6 +17,7 @@ public sealed class EconomyManagerTests
         scene.Look();
         var context = scene.Context();
         new EconomyManager(AiSettings.Medium).Update(context);
+        context.End();
         return context.Plan.Wants;
     }
 
@@ -78,6 +79,7 @@ public sealed class EconomyManagerTests
         scene.Look();
         var context = scene.Context();
         new EconomyManager(AiSettings.Medium).Update(context);
+        context.End();
         scene.Simulation.Step();
         scene.Simulation.Step();
 

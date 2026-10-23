@@ -17,7 +17,9 @@ public sealed class BuildPlannerTests
         scene.Look();
         var context = scene.Context();
         new EconomyManager(AiSettings.Medium).Update(context);
+        context.End();
         new BuildPlanner(AiSettings.Medium).Update(context);
+        context.End();
         return scene.RunCommands().OfType<ProduceCommand>().Select(command => command.DefIndex).ToList();
     }
 
@@ -62,7 +64,9 @@ public sealed class BuildPlannerTests
         var context = scene.Context();
         context.Plan.AttackedFrom = from;
         new EconomyManager(AiSettings.Medium).Update(context);
+        context.End();
         new BuildPlanner(AiSettings.Medium).Update(context);
+        context.End();
         return scene.RunCommands().OfType<ProduceCommand>().Select(command => command.DefIndex).ToList();
     }
 

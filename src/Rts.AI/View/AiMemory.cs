@@ -40,6 +40,7 @@ public sealed class AiMemory
     private readonly SortedList<int, (long X, long Y, int Units, int Infantry, int Strength)> _blocks = new();
     private readonly HashSet<int> _seen = new();
     private readonly List<CellPos> _starts = new();
+    private readonly SortedDictionary<int, int> _exploredSince = new();
     private readonly List<int> _forgotten = new();
     private int[]? _costs;
     private bool _startsKnown;
@@ -137,7 +138,9 @@ public sealed class AiMemory
         _forgotten.Clear();
         foreach (var remembered in _buildings.Values)
         {
-            if (!_seen.Contains(remembered.Id.Value) && AnyVisible(view, remembered.Cell, remembered.FarCell))
+            // A building in sight that the bot is still noticing (M8 step 3) is not gone.
+            if (!_seen.Contains(remembered.Id.Value) && !view.Perception.IsNoticing(remembered.Id.Value, view.Tick)
+                && AnyVisible(view, remembered.Cell, remembered.FarCell))
             {
                 _forgotten.Add(remembered.Id.Value);
             }
@@ -210,7 +213,17 @@ public sealed class AiMemory
             _startsKnown = true;
         }
 
-        _starts.RemoveAll(view.IsExplored);
+        // A start is crossed off once it has been in view as long as the bot needs to notice what is there (M8 step 3); a scout that
+        // turned away the moment it came into view would leave the enemy there unnoticed.
+        foreach (var start in _starts)
+        {
+            if (view.IsExplored(start))
+            {
+                _exploredSince.TryAdd(Key(start.X, start.Y), view.Tick);
+            }
+        }
+
+        _starts.RemoveAll(start => _exploredSince.TryGetValue(Key(start.X, start.Y), out var since) && view.Tick - since >= view.Perception.Delay);
     }
 
     private static bool AnyVisible(AiWorldView view, CellPos from, CellPos to)

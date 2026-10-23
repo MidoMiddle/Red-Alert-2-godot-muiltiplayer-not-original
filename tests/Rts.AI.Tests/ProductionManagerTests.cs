@@ -97,6 +97,7 @@ public sealed class ProductionManagerTests
         var context = scene.Context();
         context.Plan.NextBuilding = radar;
         new ProductionManager(AiSettings.Medium).Update(context);
+        context.End();
 
         Assert.Empty(scene.RunCommands().OfType<ProduceCommand>());
     }
@@ -113,6 +114,7 @@ public sealed class ProductionManagerTests
         context.Plan.NextBuilding = radar;
         context.Plan.Defend();
         new ProductionManager(AiSettings.Medium).Update(context);
+        context.End();
 
         Assert.NotEmpty(scene.RunCommands().OfType<ProduceCommand>());
     }
@@ -125,6 +127,7 @@ public sealed class ProductionManagerTests
         var context = scene.Context();
         context.Plan.ArmyAllowed = false;
         new ProductionManager(AiSettings.Medium).Update(context);
+        context.End();
 
         Assert.Empty(scene.RunCommands().OfType<ProduceCommand>());
     }

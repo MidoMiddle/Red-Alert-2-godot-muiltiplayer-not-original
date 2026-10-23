@@ -66,6 +66,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     private readonly HashSet<int> _fellBack = new();
     private readonly List<Unit> _members = new();
     private readonly List<EntityId> _batch = new();
+    private readonly List<(RememberedBuilding Building, int Rank, int Distance)> _targets = new();
     private int _formed;
     private int _waves;
 
@@ -422,15 +423,15 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     }
 
     /// <summary>
-    /// Keeps the target of the squad while the memory has it; else the building of the most important kind nearest the squad, else
-    /// the place it went to, else where the enemy was last seen or the nearest start where it may be. False with none.
+    /// Keeps the target of the squad while the memory has it; else the building of the most important kind nearest the squad — or, as
+    /// often as the level errs, one of the three first (M8 step 3) — else the place it went to, else where the enemy was last seen or the
+    /// nearest start where it may be. False with none.
     /// </summary>
-    private static bool Retarget(AiContext context, Squad squad, CellPos centre)
+    private bool Retarget(AiContext context, Squad squad, CellPos centre)
     {
         var memory = context.Memory;
         var rules = context.View.Rules.Database;
-        RememberedBuilding? best = null;
-        var (bestRank, bestDistance) = (int.MaxValue, int.MaxValue);
+        _targets.Clear();
         foreach (var building in memory.Buildings)
         {
             if (building.Id == squad.TargetBuilding)
@@ -438,17 +439,15 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
                 return true;
             }
 
-            var rank = Rank(rules.Buildings[building.DefIndex]);
-            var distance = Distance(centre, building.Cell);
-            if (rank < bestRank || (rank == bestRank && distance < bestDistance))
-            {
-                (best, bestRank, bestDistance) = (building, rank, distance);
-            }
+            _targets.Add((building, Rank(rules.Buildings[building.DefIndex]), Distance(centre, building.Cell)));
         }
 
-        if (best is not null)
+        if (_targets.Count > 0)
         {
-            (squad.TargetBuilding, squad.TargetCell) = (best.Id, best.Cell);
+            _targets.Sort((a, b) => a.Rank != b.Rank ? a.Rank.CompareTo(b.Rank)
+                : a.Distance != b.Distance ? a.Distance.CompareTo(b.Distance) : a.Building.Id.Value.CompareTo(b.Building.Id.Value));
+            var chosen = context.Choose(_targets).Building;
+            (squad.TargetBuilding, squad.TargetCell) = (chosen.Id, chosen.Cell);
             return true;
         }
 

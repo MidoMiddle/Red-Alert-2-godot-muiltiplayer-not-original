@@ -34,6 +34,7 @@ public sealed class SquadManagerTests
         var before = scene.Simulation.ExecutedCommands.Count;
         context.Begin(new Rts.Simulation.Ai.AiTurn(scene.Simulation, Scene.Me) { Tick = tick });
         squads.Update(context);
+        context.End();
         scene.Simulation.Step();
         scene.Simulation.Step();
         return scene.Simulation.ExecutedCommands.Skip(before).Where(command => command.Player == Scene.Me).ToList();

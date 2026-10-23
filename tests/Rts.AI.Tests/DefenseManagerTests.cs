@@ -20,9 +20,9 @@ public sealed class DefenseManagerTests
         defense.Update(context);
     }
 
-    private static (Scene Scene, DefenseManager Defense, AiContext Context) Base()
+    private static (Scene Scene, DefenseManager Defense, AiContext Context) Base(int perceptionDelay = 0)
     {
-        var scene = new Scene();
+        var scene = new Scene(perceptionDelay: perceptionDelay);
         scene.Build(Scene.Me, "construction_yard", 7, 7);
         return (scene, new DefenseManager(AiSettings.Medium), scene.Context());
     }
@@ -30,9 +30,10 @@ public sealed class DefenseManagerTests
     private static int Strength(Scene scene, UnitType type) => scene.Memory.StrengthOf(scene.World.SpawnUnit(Scene.Me, type, new CellPos(60, 60).Center));
 
     [Fact]
-    public void Enemies_at_the_base_are_a_threat_once_they_have_stood_there_the_perception_delay()
+    public void Enemies_at_the_base_are_a_threat_once_the_bot_has_noticed_them()
     {
-        var (scene, defense, context) = Base();
+        // The delay is the bot's perception (M8 step 3): the tank is news to the bot only so many ticks after it came into sight.
+        var (scene, defense, context) = Base(AiSettings.Medium.PerceptionDelay);
         scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 14, 10);
 
         Turn(scene, defense, context, 0);

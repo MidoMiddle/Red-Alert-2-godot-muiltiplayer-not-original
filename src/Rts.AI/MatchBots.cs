@@ -61,7 +61,8 @@ public static class MatchBots
                 new SquadManager(settings), new DefenseManager(settings),
             ],
             start,
-            setup.MapStarts);
+            setup.MapStarts,
+            setup.Seed);
 
     /// <summary>The id of «Medium» in the data: ids are shared by all the data, and <c>medium</c> is an armour.</summary>
     public static readonly string MediumId = DifficultyDef.IdOf(AiDifficulty.Medium);

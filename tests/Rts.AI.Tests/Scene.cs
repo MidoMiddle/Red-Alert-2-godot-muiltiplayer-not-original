@@ -21,11 +21,20 @@ internal sealed class Scene
     /// <summary>Four starts in the corners; the bot's own is the first.</summary>
     public static readonly ImmutableArray<CellPos> Corners = [new(8, 8), new(56, 56), new(56, 8), new(8, 56)];
 
-    public Scene(ImmutableArray<CellPos> mapStarts = default)
+    /// <summary>
+    /// The settings of the turns of a scene: «Medium» with no limit to its commands and no mistakes — the scenes test what a module decides,
+    /// not the imperfection of M8 (ActionBudgetTests, AiChoiceTests).
+    /// </summary>
+    public static readonly AiSettings Settings = AiSettings.Medium with { ActionsPerSecond = 1000, MistakePercent = 0 };
+
+    private AiContext? _last;
+
+    /// <param name="perceptionDelay">How late the bot notices an enemy (M8 step 3): none unless a test is about it.</param>
+    public Scene(ImmutableArray<CellPos> mapStarts = default, int perceptionDelay = 0)
     {
         Simulation = new GameSimulation(new SimulationSettings(1, new MapGrid(64, 64)), TestRules.Standard);
         var starts = mapStarts.IsDefault ? Corners : mapStarts;
-        View = new AiWorldView(World, Me, starts[0], starts);
+        View = new AiWorldView(World, Me, starts[0], starts, perceptionDelay);
         Memory = new AiMemory();
     }
 
@@ -40,8 +49,9 @@ internal sealed class Scene
     /// <summary>A turn for a module of the bot, after the last <see cref="Look"/>: its commands go to the next tick.</summary>
     public AiContext Context()
     {
-        var context = new AiContext(View, Memory);
+        var context = new AiContext(View, Memory, Settings);
         context.Begin(new Rts.Simulation.Ai.AiTurn(Simulation, Me) { Tick = View.Tick });
+        _last = context;
         return context;
     }
 
@@ -55,6 +65,8 @@ internal sealed class Scene
     /// <summary>The commands the bot gave on its last turn, once they have run (two steps: the bot's tick, then theirs).</summary>
     public List<Rts.Simulation.Commands.Command> RunCommands()
     {
+        _last?.End();
+        _last = null;
         Simulation.Step();
         Simulation.Step();
         return Simulation.ExecutedCommands.Where(command => command.Player == Me).ToList();

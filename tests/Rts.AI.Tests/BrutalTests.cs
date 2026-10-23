@@ -32,8 +32,12 @@ public sealed class BrutalTests
     public void Only_brutal_sees_the_whole_map(AiDifficulty difficulty, bool sees)
     {
         var match = new BotMatch(difficulty: difficulty);
-        match.Step();
-        match.Step();
+        // Past the perception of «Brutal», 3 ticks (M8 step 3): seen is not yet known.
+        for (var i = 0; i < 6; i++)
+        {
+            match.Step();
+        }
+
         var view = match.Brain!.Context!.View;
         var person = match.Setup.Players.Single(player => player.Kind == PlayerKind.Human);
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Rts.AI.View;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -27,6 +28,8 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
 
     /// <summary>The scout is there when it stands this near its goal, in cells.</summary>
     public const int ArrivedCells = 2;
+
+    private readonly List<(CellPos Cell, int Distance)> _blocks = new();
 
     /// <summary>The places an outing looks at, one after another, before it turns home.</summary>
     public const int PlacesAnOuting = 4;
@@ -149,8 +152,9 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
     }
 
     /// <summary>
-    /// Where to look next: the middle of the unexplored block nearest the bot's base; with every block explored, the enemy building not
-    /// seen for the longest, if that is older than <see cref="StaleTicks"/>. Null for nowhere.
+    /// Where to look next: the middle of the unexplored block nearest the bot's base — or, as often as the level errs, one of the three
+    /// nearest (M8 step 3); with every block explored, the enemy building not seen for the longest, if that is older than
+    /// <see cref="StaleTicks"/>. Null for nowhere.
     /// </summary>
     private CellPos? NextErrand(AiContext context)
     {
@@ -158,23 +162,25 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         var memory = context.Memory;
         var home = view.Start ?? new CellPos(view.Width / 2, view.Height / 2);
         var size = settings.ScoutBlockCells;
-        CellPos? best = null;
-        var bestDistance = int.MaxValue;
+        _blocks.Clear();
         for (var y = size / 2; y < view.Height; y += size)
         {
             for (var x = size / 2; x < view.Width; x += size)
             {
                 var middle = new CellPos(x, y);
-                if (view.StateOf(middle) == CellVisibility.Shroud && Distance(middle, home) < bestDistance)
+                if (view.StateOf(middle) == CellVisibility.Shroud)
                 {
-                    (best, bestDistance) = (middle, Distance(middle, home));
+                    _blocks.Add((middle, Distance(middle, home)));
                 }
             }
         }
 
-        if (best is not null)
+        if (_blocks.Count > 0)
         {
-            return best;
+            // The nearest first; of two as near, the first in the walk above — north to south, west to east.
+            _blocks.Sort((a, b) => a.Distance != b.Distance ? a.Distance.CompareTo(b.Distance)
+                : a.Cell.Y != b.Cell.Y ? a.Cell.Y.CompareTo(b.Cell.Y) : a.Cell.X.CompareTo(b.Cell.X));
+            return context.Choose(_blocks).Cell;
         }
 
         RememberedBuilding? stalest = null;

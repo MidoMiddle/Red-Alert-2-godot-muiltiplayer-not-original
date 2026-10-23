@@ -10,7 +10,8 @@ namespace Rts.AI;
 
 /// <summary>
 /// One bot (docs/implementation/M5_first_bot.md, 3, 4.3, 4.5): on every turn it looks at the world through its <see cref="AiWorldView"/>,
-/// brings its <see cref="AiMemory"/> up to date, then lets the modules whose tick has come think, in the order of <see cref="AiModuleKind"/>.
+/// brings its <see cref="AiMemory"/> up to date, then lets the modules whose tick has come think, in the order of <see cref="AiModuleKind"/>;
+/// their commands go out through its <see cref="ActionBudget"/> at the end of the turn (M8 step 3).
 /// At most one module of a kind. Without modules it only looks and remembers.
 /// </summary>
 public sealed class AiPlayer : IAiController
@@ -18,19 +19,23 @@ public sealed class AiPlayer : IAiController
     private readonly IAiModule[] _modules;
     private readonly CellPos? _start;
     private readonly ImmutableArray<CellPos> _mapStarts;
+    private readonly ulong _seed;
     private AiContext? _context;
 
     /// <summary>
     /// The bot of <paramref name="player"/>. <paramref name="start"/> and <paramref name="mapStarts"/> — its start and every start of the
-    /// map — come from the match setup; a bot outside a match knows none.
+    /// map — come from the match setup; a bot outside a match knows none. <paramref name="seed"/>, the seed of the match, draws its mistakes
+    /// (M8 step 3): the same on every machine and when the bots of a replay run again.
     /// </summary>
     public AiPlayer(
-        PlayerId player, AiSettings settings, IReadOnlyList<IAiModule>? modules = null, CellPos? start = null, ImmutableArray<CellPos> mapStarts = default)
+        PlayerId player, AiSettings settings, IReadOnlyList<IAiModule>? modules = null, CellPos? start = null, ImmutableArray<CellPos> mapStarts = default,
+        ulong seed = 0)
     {
         Player = player;
         Settings = settings;
         _start = start;
         _mapStarts = mapStarts;
+        _seed = seed;
         var ordered = new List<IAiModule>(modules ?? []);
         ordered.Sort((a, b) => a.Kind.CompareTo(b.Kind));
         for (var i = 1; i < ordered.Count; i++)
@@ -59,7 +64,7 @@ public sealed class AiPlayer : IAiController
 
     public void Think(AiTurn turn)
     {
-        _context ??= new AiContext(new AiWorldView(turn.World, Player, _start, _mapStarts), new AiMemory());
+        _context ??= new AiContext(new AiWorldView(turn.World, Player, _start, _mapStarts, Settings.PerceptionDelay), new AiMemory(), Settings, _seed);
         _context.View.Refresh(turn.World, turn.Tick);
         _context.Memory.Update(_context.View);
         _context.Begin(turn);
@@ -67,8 +72,11 @@ public sealed class AiPlayer : IAiController
         {
             if (AiSchedule.IsDue(Settings, module.Kind, Player, turn.Tick))
             {
+                _context.Module = module.Kind;
                 module.Update(_context);
             }
         }
+
+        _context.End();
     }
 }
