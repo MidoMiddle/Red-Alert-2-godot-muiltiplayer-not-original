@@ -1,0 +1,76 @@
+# Черновики записей набора умеренного климата (docs/temperate_elements). Игра эти файлы не читает.
+# Схема, статусы и классы прочности: docs/elements_data/README.md. Статусы всех папок: index/temperate.md.
+# hp: здание низкая 300, средняя 800, высокая 1500; объект карты низкая 50, средняя 400, высокая 1500 (предложение, баланс в M4).
+# «Блокирует всех наземных» записано как blocks: all (в коде AllMovers: все движители, корабли на объектах не стоят).
+# Здания: блокировка задаётся видом здания, ключ blocks не ставим (как в примере neutral_factory_hall).
+# Без записи: лиственное дерево и фруктовый сад (вид pine_tree уже в коде), поле (тип земли), трактор, скот.
+
+hedge:
+  kind: map_object
+  hp: 400           # средняя
+  blocks: all       # всех наземных
+  crushed_by: []    # гусеницами не давится: плотная, как стена
+  burns: true       # горит, сухая ветка
+  # в документе не задано: stump (пень), speed (замедление), explodes (взрыв)
+
+hay_bale:
+  kind: map_object
+  hp: 50            # низкая
+  blocks: all       # всех наземных
+  burns: true       # горит очень быстро, быстрее дерева
+  # после горения остаётся чёрный остаток, клетка проходима; пень в документе не назван
+  # в документе не задано: crushed_by (сминание), stump (пень), speed (замедление), explodes (взрыв)
+
+well:
+  kind: map_object
+  hp: 1500          # высокая, камень
+  blocks: all       # всех наземных
+  burns: false      # не горит
+  # крыша может обрушиться от урона, сруб остаётся блокирующим; ресурсов и лечения нет
+  # в документе не задано: crushed_by (сминание), stump (пень), speed (замедление), explodes (взрыв)
+
+water_tower:
+  kind: map_object
+  hp: 400           # средняя, металл
+  burns: false      # не горит
+  # концепция (docs/temperate_elements/README.md) относит башню к зданиям; здесь объект по документу элемента
+  # в документе не задано: blocks (каких движителей блокирует основание, одна клетка), crushed_by (сминание), stump (пень), speed (замедление), explodes (взрыв)
+
+neutral_farmhouse:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 800           # средняя, дерево
+  garrison: 3       # предварительно; в документе открыто: 2 или 3
+  capturable: false
+  burns: true       # горит, дерево
+  # значения как у городского дома neutral_house_a (map.yaml), отличается горением
+  # в документе не задано: explodes (взрыв), height (высота)
+
+neutral_barn:
+  kind: neutral_building
+  footprint: [3, 2]
+  hp: 800           # средняя, дерево
+  garrison: 0       # комнат нет
+  capturable: false
+  burns: true       # горит, дерево и сено внутри
+  # в документе не задано: explodes (взрыв), height (высота)
+
+neutral_silo:
+  kind: neutral_building
+  footprint: [1, 1]
+  hp: 1500          # высокая, бетон
+  garrison: 0       # внутри только зерно
+  capturable: false
+  burns: false      # бетон не горит
+  # взрыв при пожаре внутри — открытый вопрос в документе
+  # значения как у neutral_smokestack (industrial.yaml): возможно один вид
+  # в документе не задано: explodes (взрыв), height (высота)
+
+neutral_windmill:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 800           # средняя, дерево
+  garrison: 0       # гарнизона нет
+  capturable: false
+  burns: true       # горит, дерево
+  # в документе не задано: explodes (взрыв), height (высота)

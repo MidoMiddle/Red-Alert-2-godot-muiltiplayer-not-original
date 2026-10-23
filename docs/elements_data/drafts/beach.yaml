@@ -1,0 +1,181 @@
+# Черновики записей пляжного набора (docs/beach_elements). Игра эти файлы не читает.
+# Схема, статусы и классы прочности: docs/elements_data/README.md.
+# hp: объект карты низкая 50, средняя 400, высокая 1500; здание низкая 300, средняя 800, высокая 1500 (предложение, баланс в M4).
+# Здания: блокировка всех наземных задаётся видом здания, ключ blocks не ставим (как в примере neutral_factory_hall).
+# blocks: all означает «всех наземных» (в коде AllMovers, как у pine_tree).
+# Владелец (нейтральный), «влияет на победу: нет» и варианты моделей в схеме нет, здесь не записаны.
+# Без записи: песок (тип земли beach уже в коде), отдыхающие (житель), пирс (мост без segment_hp в документе). См. index/beach.md.
+
+# 02 Пальма. Статус: ждёт M11e.
+palm:
+  kind: map_object
+  hp: 400           # средняя, как pine_tree в коде
+  blocks: all       # всех наземных
+  stump: true       # пень остаётся, клетка проходима
+  burns: true       # листья горят быстро
+  garrison: 0
+  capturable: false
+  # в документе не задано: crushed_by (сминание), speed (замедление), explodes (взрыв), height (высота)
+
+# 03 Коряга. Статус: ждёт M11e.
+driftwood:
+  kind: map_object
+  hp: 400           # средняя
+  blocks: all       # блокирует всех наземных
+  burns: false      # не горит
+  garrison: 0
+  capturable: false
+  # расхождение: документ «разрушается тяжёлым оружием, как валун», но валун неразрушим (09_props, boulder в коде: MaxHp 0)
+  # в документе не задано: crushed_by (сминание), speed (замедление), stump (пень, остаток — обломки), explodes (взрыв), height (высота)
+
+# 03 Прибрежный мусор (та же папка, отдельный объект). Статус: ждёт M11e.
+driftwood_debris:
+  kind: map_object
+  hp: 50            # низкая
+  blocks: []        # не блокирует
+  garrison: 0
+  capturable: false
+  # id производный от папки 03, подтвердить
+  # в документе не задано: burns (горит), crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 04 Пляжный зонтик. Статус: ждёт M11e.
+beach_umbrella:
+  kind: map_object
+  hp: 50            # низкая, тонкий столб
+  blocks: []        # не блокирует
+  burns: false
+  garrison: 0
+  capturable: false
+  # в документе не задано: crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 05 Шезлонг. Статус: ждёт M11e.
+sun_lounger:
+  kind: map_object
+  hp: 50            # низкая
+  blocks: []        # не блокирует
+  burns: false
+  garrison: 0
+  capturable: false
+  # в документе не задано: crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 06 Пляжная кабинка. Статус: ждёт M11e.
+neutral_beach_cabin:
+  kind: neutral_building
+  footprint: [1, 1]
+  hp: 800           # средняя (дерево)
+  garrison: 0       # в документе garrisonable: false
+  capturable: false
+  burns: true       # деревянные стены
+  # в документе не задано: explodes (взрыв), height (высота)
+
+# 07 Пляжный душ. Статус: ждёт M11e.
+beach_shower:
+  kind: map_object
+  hp: 50            # низкая
+  blocks: []        # не блокирует
+  garrison: 0
+  capturable: false
+  # в документе не задано: burns (горит), crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 08 Пляжный бар. Статус: ждёт M11e.
+neutral_beach_bar:
+  kind: neutral_building
+  footprint: [3, 2]
+  hp: 800           # средняя
+  garrison: 0       # открытая конструкция, без комнат
+  capturable: false
+  burns: true       # навес
+  # блокируют стойка и опоры; столики и стулья — декор
+  # доход владельцу: нет, как у магазина; пункт владельца 4, в записи не отражён
+  # в документе не задано: explodes (взрыв), height (высота)
+
+# 09 Волейбольная сетка. Статус: ждёт M11e.
+volleyball_net:
+  kind: map_object
+  hp: 50            # низкая: сетка рвётся, стойки ломаются
+  blocks: []        # не блокирует
+  garrison: 0
+  capturable: false
+  # в документе не задано: burns (горит), crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 11 Вышка спасателей. Статус: ждёт M11e, ждёт M11a.
+neutral_lifeguard_tower:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 800           # средняя (дерево)
+  garrison: 2       # предварительно (документ); пункт владельца 3 пляж не перечисляет
+  capturable: false
+  burns: true       # дерево
+  # в документе не задано: explodes (взрыв), height (высота)
+
+# 12 Маяк. Статус: ждёт M11e, ждёт M11a, ждёт M11b.
+neutral_lighthouse:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 1500          # высокая (камень)
+  garrison: 4       # предварительно (документ); пункт владельца 3 пляж не перечисляет
+  capturable: false
+  burns: false
+  # бонус обзора над водой и навигация для флота: открытые вопросы документа, в записи не отражены
+  # в документе не задано: explodes (взрыв), height (высота)
+
+# 13 Буй. Статус: ждёт M11e, ждёт M11b.
+buoy:
+  kind: map_object
+  hp: 50            # низкая
+  blocks: []        # не блокирует ни пехоту, ни флот
+  garrison: 0
+  capturable: false
+  # навигационная метка для флота: открытый вопрос документа (M11b)
+  # в документе не задано: burns (горит), crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 15 Слип. Статус: ждёт M11e, ждёт M11b.
+slipway:
+  kind: map_object
+  hp: 1500          # высокая (бетон)
+  blocks: []        # наклон проходим
+  garrison: 0
+  capturable: false
+  # скорость по склону как у рельефа, в объект не записана; высадка амфибий: M11b
+  # в документе не задано: burns (горит), crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 16 Волнорез. Статус: ждёт M11e.
+breakwater:
+  kind: map_object
+  hp: 1500          # высокая; разрушается тяжёлым оружием (правила оружия в схеме нет)
+  blocks: all       # всех, суша и вода
+  garrison: 0
+  capturable: false
+  # блок для флота: связь с M11b в документе не указана
+  # в документе не задано: burns (горит), crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)
+
+# 17 Лодка на песке. Статус: ждёт M11e.
+beached_boat:
+  kind: map_object
+  hp: 400           # средняя (дерево)
+  blocks: all       # всех наземных, одна клетка
+  stump: true       # остаётся обломок, клетка проходима (как пень)
+  burns: true       # дерево
+  garrison: 0
+  capturable: false
+  # в документе не задано: crushed_by (сминание), speed (замедление), explodes (взрыв), height (высота)
+
+# 18 Сарай для лодок. Статус: ждёт M11e.
+neutral_boat_shed:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 800           # средняя (дерево)
+  garrison: 0       # склад, без комнат
+  capturable: false
+  burns: true       # дерево
+  # в документе не задано: explodes (взрыв), height (высота)
+
+# 19 Рыбацкие сети. Статус: ждёт M11e.
+fishing_nets:
+  kind: map_object
+  hp: 50            # низкая по таблице; в тексте документа «механики нет» (расхождение)
+  blocks: []        # не блокирует
+  burns: false
+  garrison: 0
+  capturable: false
+  # в документе не задано: crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв), height (высота)

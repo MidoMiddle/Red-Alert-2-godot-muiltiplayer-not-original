@@ -1,0 +1,115 @@
+# Черновики записей городского набора (docs/city_elements). Игра эти файлы не читает.
+# Схема, статусы и классы прочности: docs/elements_data/README.md.
+# hp: здание низкая 300, средняя 800, высокая 1500; объект карты низкая 50 (предложение, баланс в M4).
+# footprint и height: ориентир из документов, сверить с моделью.
+# Здания: блокировка всех наземных задаётся видом здания, ключ blocks не ставим (как в примере neutral_factory_hall).
+# Гарнизон: вместимость предварительная, пункт владельца 3. Доход: пункт владельца 4, ключа в схеме нет.
+# Без записи: декор, светофор, переход, автобусная остановка (см. index/city.md).
+# Дом 01 (neutral_house_a) и дом 02 (neutral_apartment): записи ведёт map.yaml, здесь не дублируются.
+
+neutral_school:
+  kind: neutral_building
+  footprint: [3, 2]
+  hp: 1500          # высокая
+  garrison: 6       # пункт владельца 3
+  capturable: false
+  # в документе не задано: burns (горит), explodes (взрыв), height (высота)
+
+neutral_office:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 1500          # высокая
+  garrison: 5       # пункт владельца 3
+  capturable: false
+  # в документе не задано: burns (горит), explodes (взрыв), height (высота)
+
+neutral_church:
+  kind: neutral_building
+  footprint: [2, 3]
+  hp: 800           # средняя
+  garrison: 4       # пункт владельца 3
+  capturable: false
+  # в документе не задано: burns (горит), explodes (взрыв), height (высота)
+
+neutral_shop:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 800           # средняя
+  garrison: 0       # гарнизона нет
+  capturable: false
+  # доход владельцу: пункт владельца 4, в записи не отражён
+  # в документе не задано: burns (горит), explodes (взрыв), height (высота)
+
+neutral_kiosk:
+  kind: neutral_building
+  footprint: [1, 1]
+  hp: 300           # низкая
+  garrison: 0       # гарнизона нет
+  capturable: false
+  burns: true       # деревянный навес
+  # в документе не задано: explodes (взрыв), height (высота)
+
+street_stall:
+  kind: map_object
+  hp: 50            # низкая, класс для объекта карты
+  blocks: [track, wheel]  # колёса и гусеницы; пехота проходит
+  burns: false
+  # в документе не задано: crushed_by (сминание), speed (замедление), stump (пень), explodes (взрыв)
+
+neutral_skyscraper:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 1500          # высокая
+  garrison: 10      # пункт владельца 3: верхний предел, сверить с балансом
+  capturable: false
+  height: 9         # ориентир из документа
+  # в документе не задано: burns (горит), explodes (взрыв)
+
+neutral_cafe:
+  kind: neutral_building
+  footprint: [2, 1]
+  hp: 800           # средняя
+  garrison: 0       # комнат для бойцов нет
+  capturable: false
+  burns: true       # деревянная веранда, предложение в документе
+  height: 3         # ориентир из документа
+  # в документе не задано: explodes (взрыв)
+
+neutral_bank:
+  kind: neutral_building
+  footprint: [3, 2]
+  hp: 1500          # высокая, камень
+  garrison: 4       # пункт владельца 3
+  capturable: false
+  height: 5         # ориентир из документа
+  # доход владельцу: пункт владельца 4, в записи не отражён
+  # в документе не задано: burns (горит), explodes (взрыв)
+
+neutral_hotel:
+  kind: neutral_building
+  footprint: [3, 2]
+  hp: 1500          # высокая
+  garrison: 6       # пункт владельца 3
+  capturable: false
+  height: 8         # ориентир из документа
+  # в документе не задано: burns (горит), explodes (взрыв)
+
+neutral_fire_station:
+  kind: neutral_building
+  footprint: [3, 2]
+  hp: 1500          # высокая
+  garrison: 4       # пункт владельца 3
+  capturable: false
+  height: 6         # ориентир из документа
+  # в документе не задано: burns (горит), explodes (взрыв)
+
+neutral_auto_repair:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 800           # средняя
+  garrison: 0       # боксы без комнат
+  capturable: false # не техздание
+  burns: false
+  height: 3         # ориентир из документа
+  # пересечение с tech_machine_shop (M11a): см. index/city.md
+  # в документе не задано: explodes (взрыв)

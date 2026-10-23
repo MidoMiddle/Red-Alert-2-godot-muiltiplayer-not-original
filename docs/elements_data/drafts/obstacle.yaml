@@ -1,0 +1,30 @@
+# Черновик записей набора obstacle (docs/obstacle_elements). Игра эти файлы не читает: см. docs/elements_data/README.md.
+# Будущий файл: game/data/neutral/objects.yaml (в документах элементов назван obstacles.yaml).
+# Значения anti_tank_hedgehog совпадают с src/Rts.Simulation/Map/MapObjectTypes.cs.
+
+# 01_barbed_wire
+barbed_wire:
+  kind: map_object
+  hp: 50 # документ: прочность «низкая»; число по классу README (объект карты)
+  blocks: [foot, wheel] # документ: пехота и колёса; амфибия, ховер, флот в документе не заданы
+  crushed_by: [track] # документ: гусеницы давят и проходят
+  burns: false # документ: не горит
+  # в документе не задано: explodes, пень
+
+# 02_anti_tank_hedgehog
+anti_tank_hedgehog:
+  kind: map_object
+  hp: 400 # документ: прочность «средняя»; совпадает с кодом
+  blocks: [track, wheel] # документ: гусеницы и колёса; пехота проходит; ховер и амфибия — открытый вопрос
+  crushed_by: [] # документ: гусеницы не давят сталь
+  stump: false # в документе не задано; из кода
+  burns: false # документ: не горит
+  # в документе не задано: explodes
+
+# 03_mine
+mine:
+  kind: map_object
+  blocks: [] # документ: не блокирует проход
+  explodes: true # документ: урон по площади при срабатывании
+  # в документе не задано: hp, burns, stump
+  # срабатывает на наземных юнитах (пехота, колёса, гусеницы) один раз; скрыта; владелец (карта или игрок): в схеме ключей нет

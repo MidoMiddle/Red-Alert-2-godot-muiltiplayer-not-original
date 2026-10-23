@@ -1,0 +1,67 @@
+# Промзона: черновик записей (docs/industrial_elements). Игра этот файл не читает.
+# Все шесть элементов уже в коде (MapObjectTypes.cs, BuildingTypes.cs) и на карте-примере game/maps/test/elements.txt: статус «в игре».
+# У зданий blocks не пишется: блокирует футпринт (как в примере README).
+# Ключи документа (blocks: ground, passable, crushable, garrisonable, garrison_capacity, indestructible, effect, burns_before_explosion) переведены в ключи схемы или в комментарии.
+# Промзона без кода: отдельных элементов нет. Правило «взрываются только резервуары» выражено флагами explodes.
+
+# 04 Трубопровод. В коде (MapObjectTypes.cs). Статус: в игре.
+pipeline:
+  kind: map_object
+  hp: 50  # низкая: выстрел ломает сегмент, клетка открывается
+  blocks: [track, wheel]  # пехота проходит
+  crushed_by: []  # металл, гусеницами не давится
+  explodes: false
+  burns: false
+
+# 01 Топливный резервуар. В коде (BuildingTypes.cs). Статус: в игре, ждёт решения 8.
+neutral_fuel_tank:
+  kind: neutral_building
+  footprint: [1, 1]
+  hp: 800  # средняя
+  garrison: 0
+  capturable: false
+  explodes: true  # урон по площади при разрушении
+  burns: true  # горит перед взрывом, короткая задержка: предложение документа
+  # радиус взрыва: пункт 8; в документе предложено 2 клетки, ключа радиуса в схеме нет
+
+# 02 Дымовая труба. В коде (BuildingTypes.cs). Статус: в игре, ждёт решения 1.
+neutral_smokestack:
+  kind: neutral_building
+  footprint: [1, 1]
+  hp: 1500  # высокая
+  garrison: 0
+  capturable: false
+  explodes: false
+  burns: false
+  # видна ли за туманом: пункт 1; дым — клиентский эффект, в схеме ключа нет
+
+# 03 Градирня. В коде (BuildingTypes.cs). Статус: в игре, ждёт решения 1.
+neutral_cooling_tower:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 1500  # документ: неразрушим, признака в модели нет
+  garrison: 0
+  capturable: false
+  explodes: false
+  burns: false
+  # видна ли за туманом: пункт 1; пар — клиентский эффект, в схеме ключа нет
+
+# 05 Заводской цех. В коде (BuildingTypes.cs). Статус: в игре, ждёт M11a, ждёт решения 3.
+neutral_factory_hall:
+  kind: neutral_building
+  footprint: [4, 3]
+  hp: 800  # средняя: кирпич и металл
+  garrison: 6  # предварительно (пункт 3): документ дает 6 или 8
+  capturable: false  # не техздание, инженер не берёт
+  explodes: false
+  burns: false
+
+# 06 Котельная. В коде (BuildingTypes.cs). Статус: в игре, ждёт M11a, ждёт решения 3.
+neutral_boiler_house:
+  kind: neutral_building
+  footprint: [2, 2]
+  hp: 800  # средняя
+  garrison: 2  # предварительно; пункт 3 в README ind 06 не перечисляет
+  capturable: false
+  explodes: false
+  burns: false
