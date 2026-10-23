@@ -34,9 +34,15 @@ public static class MapValidator
         var ground = MapChecks.BaseGrid(map);
         foreach (var placement in map.Objects)
         {
-            if (!MapObjectTypes.TryGetById(placement.Type, out _))
+            if (!MapObjectTypes.TryGetById(placement.Type, out var type))
             {
                 problems.Add(new MapProblem(ProblemLevel.Error, $"Unknown map object '{placement.Type}'", placement.Cell));
+            }
+            else if (type.Kind is MapObjectKind.OreSource or MapObjectKind.GemSource && map.Contains(placement.Cell)
+                     && map.Ore[placement.Cell.Y * map.Width + placement.Cell.X] != 0)
+            {
+                // No harvester reaches it under the drill, and the source never throws onto its own cell.
+                problems.Add(new MapProblem(ProblemLevel.Warning, $"Ore under the {placement.Type}", placement.Cell));
             }
         }
 

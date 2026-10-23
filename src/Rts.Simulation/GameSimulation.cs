@@ -144,8 +144,9 @@ public sealed class GameSimulation
         World.Spatial.Sync(World);
         Probe?.Invoke("index");
 
-        // 5. Ore grows and spreads (by its interval), then technologies, when the buildings changed.
+        // 5. Ore grows and spreads (by its interval), the sources erupt (M3 step 16), then technologies, when the buildings changed.
         OreGrowthSystem.Update(World);
+        OreSourceSystem.Update(World, _events);
         TechTree.Update(World, _events);
         Probe?.Invoke("ore and tech");
 

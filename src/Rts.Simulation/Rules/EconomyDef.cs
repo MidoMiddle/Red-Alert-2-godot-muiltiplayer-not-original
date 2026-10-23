@@ -4,7 +4,7 @@ namespace Rts.Simulation.Rules;
 
 /// <summary>
 /// The general rules of the economy (docs/implementation/M3_base_economy.md, 4.10, 4.12): one record of the data, <c>economy</c>.
-/// Production multipliers, ore, selling and repairs.
+/// Production multipliers, ore and its sources, selling and repairs.
 /// </summary>
 public sealed record EconomyDef : IDefinition
 {
@@ -38,6 +38,12 @@ public sealed record EconomyDef : IDefinition
 
     /// <summary>The chance of such a cell to seed a neighbour in a round, as a fraction.</summary>
     public required Fixed OreSpreadChance { get; init; }
+
+    /// <summary>Ticks between two eruptions of an ore or gem source (M3 step 16).</summary>
+    public required int SourceInterval { get; init; }
+
+    /// <summary>How far from its cell a source throws ore, in cells: within the circle dx² + dy² ≤ radius².</summary>
+    public required int SourceRadius { get; init; }
 
     /// <summary>The share of the cost a sold building gives back at full hit points, as a fraction (M3 step 11).</summary>
     public required Fixed SellRefund { get; init; }

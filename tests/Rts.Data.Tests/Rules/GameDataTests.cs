@@ -47,8 +47,8 @@ public sealed class GameDataTests
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids.
-        Assert.Equal(0x10b8e5a450a357f6UL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources).
+        Assert.Equal(0x6d7d5c62a8f38695UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -156,6 +156,9 @@ public sealed class GameDataTests
     [InlineData("ore_growth_chance: 20%", "ore_growth_chance: 120%", "'ore_growth_chance' of 'economy' must be 0% to 100%")]
     [InlineData("ore_spread_stage: 6", "ore_spread_stage: 12", "'ore_spread_stage' of 'economy' must be 0 to 11")]
     [InlineData("ore_value: 25", "ore_value: 0", "'ore_value' of 'economy' must be above zero")]
+    [InlineData("source_interval: 4s", "source_interval: 0s", "'source_interval' of 'economy' must be above zero")]
+    [InlineData("source_radius: 3", "source_radius: 0", "'source_radius' of 'economy' must be 1 to 8")]
+    [InlineData("source_radius: 3", "source_radius: 9", "'source_radius' of 'economy' must be 1 to 8")]
     public void An_economy_rate_out_of_its_range_is_reported(string text, string replacement, string reason)
     {
         var error = Assert.Single(ErrorsWith("shared/economy.yaml", text, replacement));

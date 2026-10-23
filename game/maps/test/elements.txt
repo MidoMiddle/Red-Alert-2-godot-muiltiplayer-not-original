@@ -30,3 +30,8 @@ building neutral_smokestack 16 2
 building neutral_cooling_tower 18 2
 building neutral_factory_hall 14 9
 building neutral_boiler_house 20 9
+// Ore and gem sources (docs/map_elements/06_ore, M3 step 16): each drill renews the field around it, within source_radius.
+object ore_source 5 9
+ore 2 8 3 3 5
+object gem_source 10 9
+gems 11 8 2 3

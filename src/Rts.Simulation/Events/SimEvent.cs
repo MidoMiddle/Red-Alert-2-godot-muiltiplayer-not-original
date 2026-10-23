@@ -144,6 +144,12 @@ public sealed record ProductionCancelled(int Tick, PlayerId Player, ProductionKi
 /// <summary>A harvester took the last stage of ore off <paramref name="Cell"/> (docs/implementation/M3_base_economy.md, 4.13).</summary>
 public sealed record OreDepleted(int Tick, CellPos Cell) : SimEvent(Tick);
 
+/// <summary>
+/// The ore or gem source of map object id <paramref name="Source"/> threw a stage of <paramref name="Kind"/> onto <paramref name="Cell"/>
+/// (docs/implementation/M3_base_economy.md, 4.12, step 16): for the client's drill and particles, not kept in the simulation.
+/// </summary>
+public sealed record OreSourceErupted(int Tick, int Source, CellPos Cell, Map.OreKind Kind) : SimEvent(Tick);
+
 /// <summary>A harvester stands in the dock of <paramref name="Refinery"/> and starts to unload.</summary>
 public sealed record HarvesterUnloading(int Tick, EntityId Harvester, EntityId Refinery) : SimEvent(Tick);
 

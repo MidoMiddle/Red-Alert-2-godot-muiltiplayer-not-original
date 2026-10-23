@@ -213,6 +213,8 @@ internal static class TestRules
             OreGrowthChance = Percent(20),
             OreSpreadStage = 6,
             OreSpreadChance = Percent(5),
+            SourceInterval = 60,
+            SourceRadius = 3,
             SellRefund = Percent(50),
             RepairCost = Percent(50),
             RepairRate = 5,

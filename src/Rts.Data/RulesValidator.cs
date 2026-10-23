@@ -6,6 +6,7 @@ using Rts.Data.Yaml;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 using YamlDotNet.RepresentationModel;
 
@@ -294,7 +295,10 @@ internal static class RulesValidator
             }
         }
 
-        /// <summary>The slowest rate under low power 0–100 %, the bonus of a factory at least 0, the fastest rate at least 100 %.</summary>
+        /// <summary>
+        /// The slowest rate under low power 0–100 %, the bonus of a factory at least 0, the fastest rate at least 100 %, a source
+        /// erupts now and then within a radius of 1 to <see cref="OreSourceSystem.MaxRadius"/>.
+        /// </summary>
         public void Economy(EconomyDef economy)
         {
             if (economy.LowPowerMinRate < Fixed.Zero || economy.LowPowerMinRate > Fixed.One)
@@ -331,6 +335,12 @@ internal static class RulesValidator
             if (economy.OreSpreadStage is < 0 or > OreCell.MaxStage)
             {
                 Error(economy.Id, "ore_spread_stage", $"'ore_spread_stage' of '{economy.Id}' must be 0 to {OreCell.MaxStage}");
+            }
+
+            Positive(economy.Id, "source_interval", economy.SourceInterval);
+            if (economy.SourceRadius is < 1 or > OreSourceSystem.MaxRadius)
+            {
+                Error(economy.Id, "source_radius", $"'source_radius' of '{economy.Id}' must be 1 to {OreSourceSystem.MaxRadius}");
             }
         }
 

@@ -271,9 +271,10 @@ public sealed class MapEditSession
                 PaintWater(_brush.Cells(Map, cell));
                 break;
             case EditTool.Ore:
+                var sources = SourceCells();
                 foreach (var under in _brush.Cells(Map, cell))
                 {
-                    if (!IsWaterOrRock(Map.LandAt(under)))
+                    if (!IsWaterOrRock(Map.LandAt(under)) && !sources.Contains(under))
                     {
                         Set(EditLayer.Ore, Map.CellIndex(under), (byte)_options.Ore);
                     }
@@ -325,11 +326,12 @@ public sealed class MapEditSession
 
     /// <summary>
     /// Objects of the chosen type on the free cells under the brush, each cell with a chance of the density; which cells and
-    /// which model come from a hash of the cell and the stroke number, so the same stroke always gives the same wood.
+    /// which model come from a hash of the cell and the stroke number, so the same stroke always gives the same wood. An ore or gem
+    /// source takes the ore off its cell: no harvester would reach it there.
     /// </summary>
     private void PlaceObjects(List<CellPos> cells)
     {
-        if (!MapObjectTypes.TryGetById(_options.ObjectType, out _))
+        if (!MapObjectTypes.TryGetById(_options.ObjectType, out var type))
         {
             Message = $"unknown map object '{_options.ObjectType}'";
             return;
@@ -348,6 +350,11 @@ public sealed class MapEditSession
             TouchLists();
             Map.ObjectList.Add(new MapObjectPlacement(_options.ObjectType, under, (int)(hash / 100 % 4)));
             taken.Add(under);
+            if (IsSource(type))
+            {
+                Set(EditLayer.Ore, Map.CellIndex(under), 0);
+            }
+
             Version++;
         }
     }
@@ -484,6 +491,23 @@ public sealed class MapEditSession
     }
 
     /// <summary>Cells where nothing more can stand: map objects, bridge segments, building footprints.</summary>
+    /// <summary>The cells of the ore and gem sources: the ore brush leaves them bare.</summary>
+    private HashSet<CellPos> SourceCells()
+    {
+        var cells = new HashSet<CellPos>();
+        foreach (var mapObject in Map.Objects)
+        {
+            if (MapObjectTypes.TryGetById(mapObject.Type, out var type) && IsSource(type))
+            {
+                cells.Add(mapObject.Cell);
+            }
+        }
+
+        return cells;
+    }
+
+    private static bool IsSource(MapObjectType type) => type.Kind is MapObjectKind.OreSource or MapObjectKind.GemSource;
+
     private HashSet<CellPos> TakenCells()
     {
         var taken = new HashSet<CellPos>();

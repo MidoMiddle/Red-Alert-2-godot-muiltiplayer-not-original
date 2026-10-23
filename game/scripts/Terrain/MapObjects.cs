@@ -8,7 +8,7 @@ namespace Rts.Client.Terrain;
 /// <summary>
 /// Symbolic map objects on the ground (docs/implementation/conventions.md, section 12; M7_maps.md, 4.7): a dark green cone on
 /// a trunk for a tree and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a low steel
-/// block for an anti-tank hedgehog, a thin dark pipe for a pipeline, a tall
+/// block for an anti-tank hedgehog, a thin dark pipe for a pipeline (ore and gem sources: <see cref="OreSources"/>), a tall
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
 /// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell. One MultiMesh
 /// per shape (and per direction for bridges). Rebuilt whenever the map changes (a tree felled, a bridge blown up), which is rare.
@@ -84,6 +84,8 @@ public partial class MapObjects : Node3D
                 (MapObjectKind.Pipeline, true) => null,
                 (MapObjectKind.Snowdrift, false) => drifts,
                 (MapObjectKind.Snowdrift, true) => null,
+                // Drawn and animated by OreSources.
+                (MapObjectKind.OreSource or MapObjectKind.GemSource, _) => null,
                 _ => throw new System.ArgumentOutOfRangeException(nameof(mapObject), mapObject.Kind, "No symbolic look for this kind."),
             };
             list?.Add(at);

@@ -102,6 +102,36 @@ public sealed class MapValidatorTests
     }
 
     [Fact]
+    public void A_source_takes_the_ore_off_its_cell_keeps_it_bare_and_ore_under_one_is_a_warning()
+    {
+        var session = Arena(2, (8, 8), (30, 30));
+        Stroke(session, EditTool.Ore, new Brush(BrushShape.Square, 3), null, (20, 20));
+        Stroke(session, EditTool.Objects, Dot, new EditOptions { ObjectType = "ore_source", Density = 100 }, (20, 20));
+        Stroke(session, EditTool.Ore, new Brush(BrushShape.Square, 3), null, (20, 20));
+
+        var map = session.Map.ToDefinition();
+        Assert.Equal(0, map.Ore[20 * map.Width + 20]);
+        Assert.NotEqual(0, map.Ore[20 * map.Width + 21]);
+        Assert.Contains(map.Objects, o => o.Type == "ore_source" && o.Cell == new CellPos(20, 20));
+        Assert.DoesNotContain(MapValidator.Check(map), p => p.Message.Contains("under"));
+
+        // Saved and read back, the source is an object of the map and of its grid.
+        var read = RtsMapReader.Read(RtsMapWriter.Write(map));
+        Assert.True(read.ContentEquals(map));
+        Assert.Equal(new CellPos(20, 20), Assert.Single(read.ToMapGrid().Sources).Cell);
+
+        // Undone, the source gives its cell its ore back (the second ore stroke changed nothing, so it left no step to undo).
+        Assert.True(session.Undo());
+        Assert.NotEqual(0, session.Map.ToDefinition().Ore[20 * map.Width + 20]);
+
+        var ore = map.Ore.ToArray();
+        ore[20 * map.Width + 20] = 5;
+        var underOre = new MapDefinition(map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players,
+            map.Starts, map.TextureLegend, map.Heights, map.Land, map.Texture, ore.ToImmutableArray(), map.Objects, map.Bridges, map.Structures);
+        Assert.Contains(MapValidator.Check(underOre), p => p.Level == ProblemLevel.Warning && p.Cell == new CellPos(20, 20) && p.Message.Contains("under the ore_source"));
+    }
+
+    [Fact]
     public void With_three_players_the_starts_should_be_about_as_far_from_their_neighbours()
     {
         Assert.DoesNotContain(Check(Arena(3, (6, 20), (30, 8), (30, 32))), p => p.Message.Contains("far"));

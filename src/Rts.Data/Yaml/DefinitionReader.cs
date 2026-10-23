@@ -62,7 +62,8 @@ internal static class DefinitionReader
     private static readonly string[] EconomyKeys =
     [
         "name", "low_power_min_rate", "multiple_factory_bonus", "max_factory_rate", "ore_value", "gem_value", "ore_growth_interval",
-        "ore_growth_chance", "ore_spread_stage", "ore_spread_chance", "sell_refund", "repair_cost", "repair_rate",
+        "ore_growth_chance", "ore_spread_stage", "ore_spread_chance", "source_interval", "source_radius", "sell_refund", "repair_cost",
+        "repair_rate",
     ];
 
     /// <summary>The kind of an entry, one of the known kinds.</summary>
@@ -470,6 +471,8 @@ internal static class DefinitionReader
             OreGrowthChance = fields.Required("ore_growth_chance", Scalars.Percent, Fixed.Zero),
             OreSpreadStage = fields.Required("ore_spread_stage", Scalars.Int, 0),
             OreSpreadChance = fields.Required("ore_spread_chance", Scalars.Percent, Fixed.Zero),
+            SourceInterval = fields.Required("source_interval", Scalars.Ticks, 0),
+            SourceRadius = fields.Required("source_radius", Scalars.Int, 0),
             SellRefund = fields.Required("sell_refund", Scalars.Percent, Fixed.Zero),
             RepairCost = fields.Required("repair_cost", Scalars.Percent, Fixed.Zero),
             RepairRate = fields.Required("repair_rate", Scalars.Int, 0),

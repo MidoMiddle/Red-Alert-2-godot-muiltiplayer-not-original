@@ -13,6 +13,8 @@ public enum MapObjectKind : byte
     AntiTankHedgehog = 6,
     Pipeline = 7,
     Snowdrift = 8,
+    OreSource = 9,
+    GemSource = 10,
 }
 
 /// <summary>
@@ -40,7 +42,7 @@ public sealed record MapObjectType(
 }
 
 /// <summary>
-/// The map objects of the rules so far (winter and industrial sets), kept in code until the data files of M3
+/// The map objects of the rules so far (winter and industrial sets, the ore and gem sources), kept in code until the data files of M3
 /// (map_objects.yaml) like the land table. Hit points are a rough guide until the balance of M4: the RA2 numbers for map
 /// objects are not confirmed in our documents.
 /// </summary>
@@ -71,6 +73,9 @@ public static class MapObjectTypes
         new(MapObjectKind.AntiTankHedgehog, "anti_tank_hedgehog", TrackAndWheel, MaxHp: 400, CrushMask: 0, LeavesStump: false),
         new(MapObjectKind.Pipeline, "pipeline", TrackAndWheel, MaxHp: 50, CrushMask: 0, LeavesStump: false),
         new(MapObjectKind.Snowdrift, "snowdrift", 0, MaxHp: 0, CrushMask: Bit(Locomotor.Track), LeavesStump: false, Speeds: SnowdriftSpeeds),
+        // The drill towers of ore and gem fields (M3 step 16): in everyone's way, never destroyed; OreSourceSystem makes them erupt.
+        new(MapObjectKind.OreSource, "ore_source", AllMovers, MaxHp: 0, CrushMask: 0, LeavesStump: false),
+        new(MapObjectKind.GemSource, "gem_source", AllMovers, MaxHp: 0, CrushMask: 0, LeavesStump: false),
     ];
 
     public static IReadOnlyList<MapObjectType> All => Types;

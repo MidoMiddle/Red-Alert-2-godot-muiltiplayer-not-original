@@ -28,6 +28,7 @@ public sealed class MapGrid
     private readonly bool[] _blocked;
     private readonly List<MapObject> _objects = new();
     private readonly Dictionary<int, List<MapObject>> _objectsByCell = new();
+    private readonly List<MapObject> _sources = new();
     private readonly List<Bridge> _bridges = new();
     private readonly Dictionary<int, BridgeSegment> _segmentsByCell = new();
     private readonly List<BuildingState> _startBuildings = new();
@@ -106,6 +107,11 @@ public sealed class MapGrid
 
             var mapObject = new MapObject(grid._objects.Count + 1, state.Kind, state.Cell, state.Variant, state.Hp, state.Destroyed);
             grid._objects.Add(mapObject);
+            if (state.Kind is MapObjectKind.OreSource or MapObjectKind.GemSource)
+            {
+                grid._sources.Add(mapObject);
+            }
+
             var index = grid.IndexOf(state.Cell);
             if (!grid._objectsByCell.TryGetValue(index, out var inCell))
             {
@@ -247,6 +253,9 @@ public sealed class MapGrid
 
     /// <summary>Every map object, destroyed ones (stumps and the like) included, in id order.</summary>
     public IReadOnlyList<MapObject> Objects => _objects;
+
+    /// <summary>The ore and gem sources among <see cref="Objects"/> (M3 step 16), in id order.</summary>
+    public IReadOnlyList<MapObject> Sources => _sources;
 
     /// <summary>The objects on a cell, in id order; empty when there are none.</summary>
     public IReadOnlyList<MapObject> ObjectsAt(CellPos cell) =>

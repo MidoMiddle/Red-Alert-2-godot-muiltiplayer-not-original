@@ -30,6 +30,8 @@ public static class MapPreview
     public static readonly (float R, float G, float B) Fence = (0.5f, 0.35f, 0.2f);
     public static readonly (float R, float G, float B) Building = (0.72f, 0.66f, 0.55f);
     public static readonly (float R, float G, float B) SnowDrift = (0.78f, 0.84f, 0.9f);
+    public static readonly (float R, float G, float B) OreSource = (0.95f, 0.8f, 0.15f);
+    public static readonly (float R, float G, float B) GemSource = (0.35f, 0.8f, 1f);
 
     /// <summary>The cached picture of the map with this <see cref="MapHasher.Hash"/>.</summary>
     public static string CachePath(string hash) => $"{CacheDirectory}/{hash}.png";
@@ -103,6 +105,10 @@ public static class MapPreview
                     return Fence;
                 case MapObjectKind.Snowdrift:
                     return SnowDrift;
+                case MapObjectKind.OreSource:
+                    return OreSource;
+                case MapObjectKind.GemSource:
+                    return GemSource;
             }
         }
 

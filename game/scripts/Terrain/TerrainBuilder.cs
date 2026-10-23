@@ -56,6 +56,7 @@ public partial class TerrainBuilder : Node3D
         AddChild(new Buildings { Name = "Buildings" });
         AddChild(new PlayerBuildings { Name = "PlayerBuildings" });
         AddChild(new OreField { Name = "OreField" });
+        AddChild(new OreSources { Name = "OreSources" });
     }
 
     public override void _Process(double delta)
