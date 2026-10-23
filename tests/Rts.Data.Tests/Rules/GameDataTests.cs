@@ -47,8 +47,8 @@ public sealed class GameDataTests
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick.
-        Assert.Equal(0xdcc296a5262211adUL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality.
+        Assert.Equal(0x957e88567091e171UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

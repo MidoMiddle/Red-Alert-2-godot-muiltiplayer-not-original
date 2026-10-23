@@ -4,9 +4,9 @@ aggressor:
   kind: personality
   name: Aggressor
   weights: { economy: 0.8, defense: 0.4, army: 1.5, tech: 0.6, harassment: 0.7 }
-  armies: { union: standard_army }
+  armies: { union: aggressor_army }
   build_orders:
-    union: { simple: standard, standard: standard, optimized: standard }
+    union: { simple: aggressor_simple, standard: aggressor_standard, optimized: aggressor_optimized }
   first_attack: { min: 180s, max: 300s }
   wave_interval: 120s
   retreat_threshold: 60%

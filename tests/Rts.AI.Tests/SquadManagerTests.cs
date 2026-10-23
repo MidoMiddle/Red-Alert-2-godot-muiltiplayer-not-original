@@ -15,8 +15,11 @@ public sealed class SquadManagerTests
 {
     private static readonly CellPos Gather = new(14, 14);
 
-    /// <summary>Squads of two units, so that the scenes stay small.</summary>
-    private static readonly AiSettings Small = AiSettings.Medium with { MinAttackArmy = 2 };
+    /// <summary>
+    /// Squads of two units, so that the scenes stay small; out at once and wave after wave — the window of the first attack and the
+    /// interval of the waves (M8 step 8) are tested apart, in <see cref="AttackTimingTests"/>.
+    /// </summary>
+    private static readonly AiSettings Small = AiSettings.Medium with { MinAttackArmy = 2, FirstAttackFrom = 0, WaveInterval = 0 };
 
     /// <summary>
     /// One turn of the squads after <paramref name="tick"/>: the world plays on to it, <paramref name="then"/> changes the scene; the
@@ -90,7 +93,7 @@ public sealed class SquadManagerTests
     public void A_squad_sets_out_with_enough_units_and_strength_and_the_next_wave_needs_more()
     {
         var scene = new Scene();
-        var settings = AiSettings.Medium with { MinAttackArmy = 4 };
+        var settings = AiSettings.Medium with { MinAttackArmy = 4, FirstAttackFrom = 0, WaveInterval = 0 };
         var squads = new SquadManager(settings);
         var context = scene.Context();
         for (var i = 0; i < 3; i++)
@@ -201,7 +204,7 @@ public sealed class SquadManagerTests
     public void Defenses_come_before_factories_and_the_yard_last()
     {
         var rules = TestRules.Standard.Database;
-        int Rank(string id) => SquadManager.Rank(rules.Buildings[rules.IndexOfBuilding(id)]);
+        int Rank(string id) => SquadManager.Rank(rules.Buildings[rules.IndexOfBuilding(id)], AiSettings.Medium.TargetPriority.Split(','));
 
         Assert.True(Rank("refinery") < Rank("tesla_coil"));
         Assert.True(Rank("tesla_coil") < Rank("war_factory"));

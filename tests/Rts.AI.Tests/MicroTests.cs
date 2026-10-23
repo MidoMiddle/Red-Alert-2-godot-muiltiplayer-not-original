@@ -18,7 +18,7 @@ namespace Rts.AI.Tests;
 public sealed class MicroTests(ITestOutputHelper output)
 {
     private static AiSettings Level(MicroLevel micro, int threshold = 70) =>
-        AiSettings.Medium with { MinAttackArmy = 2, Micro = micro, RetreatThresholdPercent = threshold };
+        AiSettings.Medium with { MinAttackArmy = 2, Micro = micro, RetreatThresholdPercent = threshold, FirstAttackFrom = 0, WaveInterval = 0 };
 
     private static AiSettings Data(string level) =>
         AiSettings.From(GameDataFiles.Rules.Database.TryGetDifficulty(level, out var def) ? def : throw new ArgumentException(level));
@@ -191,7 +191,7 @@ public sealed class MicroTests(ITestOutputHelper output)
     /// </summary>
     private (int Lost, int Left) Battle(string level, int tanks = 3, int conscripts = 6, int mineCount = 6)
     {
-        var settings = Data(level) with { MinAttackArmy = mineCount, AttackThresholdPercent = 0 };
+        var settings = Data(level) with { MinAttackArmy = mineCount, AttackThresholdPercent = 0, FirstAttackFrom = 0, WaveInterval = 0 };
         var scene = new Scene(rules: GameDataFiles.Rules);
         var mine = Enumerable.Range(0, mineCount).Select(i => scene.Spawn(Scene.Me, UnitType.HeavyTank, 13 + i % 3, 13 + i / 3)).ToList();
         for (var i = 0; i < tanks; i++)

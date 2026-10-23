@@ -1,15 +1,92 @@
 # The build orders of the bots of the Union (docs/implementation/M5_first_bot.md, 4.7, step 5): the buildings in the order a bot
-# builds them first. A step may come twice — the second refinery. A defense is placed facing the enemy by the bot itself.
+# builds them first. A step may come twice — the second refinery. A defense is placed facing the enemy by the bot itself. Every
+# personality has three, one for each quality a level asks for: simple, standard, optimized (M8, 4.7, step 8).
+
+# «Balanced»: the build order of M5 for «Medium» and above; «Easy» stops at the war factory.
 standard:
   kind: build_order
   faction: union
   steps: [reactor, refinery, barracks, war_factory, refinery, reactor, radar, tesla_coil]
 
-# The army of the bots of the Union (step 6): the share of every kind of unit. Against an enemy of mostly infantry the units of
-# against_infantry gain, against mostly vehicles those of against_vehicles; a kind that cannot be built yet leaves its share to the rest.
+balanced_simple:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, barracks, war_factory]
+
+# «Aggressor»: the barracks before the refinery, a second war factory soon, no defense.
+aggressor_simple:
+  kind: build_order
+  faction: union
+  steps: [reactor, barracks, refinery, war_factory]
+
+aggressor_standard:
+  kind: build_order
+  faction: union
+  steps: [reactor, barracks, refinery, war_factory, reactor, war_factory]
+
+aggressor_optimized:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, barracks, war_factory, war_factory, reactor]
+
+# «Builder»: two refineries, a sentry gun at once, two tesla coils once the radar stands.
+builder_simple:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, barracks, sentry_bunker, war_factory]
+
+builder_standard:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, barracks, sentry_bunker, refinery, reactor, war_factory, radar, tesla_coil, tesla_coil]
+
+builder_optimized:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, refinery, barracks, sentry_bunker, war_factory, reactor, radar, tesla_coil, tesla_coil]
+
+# «Saboteur»: the war factory early, for the fast flak tracks of its raids.
+saboteur_standard:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, barracks, war_factory, reactor, radar]
+
+saboteur_optimized:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, war_factory, barracks, reactor, radar]
+
+# The armies of the bots of the Union (step 6): the share of every kind of unit; a kind that cannot be built yet leaves its share
+# empty. against_infantry and against_vehicles are the counter table (M8 step 7): the share of the army a level picks against the enemy
+# goes to them by the infantry and the vehicles it fields. The shares are rounded to fixed point one by one and must still make 100%
+# exactly: 35%, 25%, 20%, 10% and 10% do not, 35%, 20%, 20%, 15% and 10% do.
 standard_army:
   kind: army
   faction: union
   shares: { heavy_tank: 40%, conscript: 25%, rocketeer: 20%, support_vehicle: 10%, tesla_tank: 5% }
+  against_infantry: [heavy_tank, support_vehicle]
+  against_vehicles: [rocketeer, tesla_tank]
+
+# «Aggressor»: tanks first.
+aggressor_army:
+  kind: army
+  faction: union
+  shares: { heavy_tank: 50%, conscript: 20%, rocketeer: 15%, support_vehicle: 10%, tesla_tank: 5% }
+  against_infantry: [heavy_tank, support_vehicle]
+  against_vehicles: [rocketeer, tesla_tank]
+
+# «Builder»: a heavier mix, more tesla tanks once the battle lab stands.
+builder_army:
+  kind: army
+  faction: union
+  shares: { heavy_tank: 35%, rocketeer: 20%, conscript: 20%, support_vehicle: 15%, tesla_tank: 10% }
+  against_infantry: [heavy_tank, support_vehicle]
+  against_vehicles: [rocketeer, tesla_tank]
+
+# «Saboteur»: the flak track, the fastest of the Union, for its raids.
+saboteur_army:
+  kind: army
+  faction: union
+  shares: { support_vehicle: 40%, heavy_tank: 25%, rocketeer: 20%, conscript: 10%, tesla_tank: 5% }
   against_infantry: [heavy_tank, support_vehicle]
   against_vehicles: [rocketeer, tesla_tank]

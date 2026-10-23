@@ -216,4 +216,27 @@ public sealed record AiSettings
     /// <c>Medium</c> on. The personality's <c>retreat_threshold</c> (<see cref="AiProfile"/>); 70 — «Balanced».
     /// </summary>
     public int RetreatThresholdPercent { get; init; } = 70;
+
+    // M8, 4.7, step 8: the attacks of the personality.
+
+    /// <summary>
+    /// The earliest tick of the first attack: the <c>first_attack_delay</c> of the level, or for a level that leaves it to the
+    /// personality the start of its window (<see cref="FirstAttackBy"/> then its end).
+    /// </summary>
+    public int FirstAttackFrom { get; init; } = 5400;
+
+    /// <summary>
+    /// The end of the window of the first attack, for the levels that leave it to the personality: the first squad sets out by then with
+    /// <see cref="AllInUnits"/> or more, ready or not. 0 — no end: the level of «Easy» and «Medium» waits for its army.
+    /// </summary>
+    public int FirstAttackBy { get; init; }
+
+    /// <summary>The ticks at least between two waves (<c>wave_interval</c> of the personality).</summary>
+    public int WaveInterval { get; init; } = 2700;
+
+    /// <summary>
+    /// The order a squad goes for the enemy buildings in, the <c>target_priority</c> of the personality: its words joined by commas, so that
+    /// settings compare by value.
+    /// </summary>
+    public string TargetPriority { get; init; } = "harvesters,defense,production,core,army,power";
 }

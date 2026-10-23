@@ -4,14 +4,14 @@
 # A personality: what the strategist weighs (0 or more, no need to make a whole); the army and the build orders for every faction — a
 # build order for each quality a level asks for; the window of the first attack for the levels that leave it to the personality (Hard,
 # Brutal); the time between waves; a fighting squad turns back below this share of the enemy's strength near it; the targets in the
-# order a squad goes for them, every one once. The armies and build orders of their own come with step 8.
+# order a squad goes for them, every one once. Each has its own build orders and army in ai/union.yaml (step 8).
 balanced:
   kind: personality
   name: Balanced
   weights: { economy: 1, defense: 1, army: 1, tech: 1, harassment: 1 }
   armies: { union: standard_army }
   build_orders:
-    union: { simple: standard, standard: standard, optimized: standard }
+    union: { simple: balanced_simple, standard: standard, optimized: standard }
   first_attack: { min: 360s, max: 480s }
   wave_interval: 180s
   retreat_threshold: 70%

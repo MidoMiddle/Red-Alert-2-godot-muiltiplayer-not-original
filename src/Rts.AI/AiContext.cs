@@ -65,6 +65,9 @@ public sealed class AiContext
     /// </summary>
     public T Choose<T>(IReadOnlyList<T> ranked) => ranked[AiChoice.Pick(ranked.Count, Settings.MistakePercent, _random)];
 
+    /// <summary>A number from 0 to <paramref name="count"/> − 1 from the random numbers of the bot (step 8: when in its window it attacks).</summary>
+    public int Roll(int count) => count <= 1 ? 0 : _random.NextInt(count);
+
     internal void Begin(AiTurn turn) => _turn = turn;
 
     /// <summary>The commands whose turn has come go out (M8 step 3).</summary>

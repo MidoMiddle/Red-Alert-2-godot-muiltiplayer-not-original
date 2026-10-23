@@ -21,9 +21,11 @@ namespace Rts.AI.Modules;
 /// for every wave sent) and <see cref="AiSettings.AttackThresholdPercent"/> of the enemy strength the bot knows of — or, with
 /// <see cref="AiSettings.AllInUnits"/> at least, once it has not grown for <see cref="AiSettings.AllInTicks"/> since the ore ran out
 /// (<see cref="AiPlan.OreGone"/>): an army that stopped growing for want of money goes with what it has; it sets out when the plan lets it (<see cref="AiPlan.AttackAllowed"/>), and a new
-/// squad gathers;</item>
+/// squad gathers. By the personality (M8, 4.7, step 8): the first wave not before a tick of the window of the first attack, drawn once
+/// (<see cref="AiSettings.FirstAttackFrom"/>), and by its end (<see cref="AiSettings.FirstAttackBy"/>) with what it has, if that is
+/// <see cref="AiSettings.AllInUnits"/> or more; every next one <see cref="AiSettings.WaveInterval"/> after the last at the soonest;</item>
 /// <item><b>moving</b> — attack-move to the target, the units ahead waiting for those behind; the target is an enemy building of the
-/// memory — refineries, defenses, factories, the construction yard, the rest, the nearest of the first kind there is — else where
+/// memory — in the order of <see cref="AiSettings.TargetPriority"/> (<see cref="Rank"/>), the nearest of the first kind there is — else where
 /// the enemy was last seen or may be; unarmed enemy units near it — harvesters, an MCV — and the target building in sight are
 /// attacked;</item>
 /// <item><b>fighting</b> — while an armed enemy is near, by the micro of the level (M8, 4.4, step 5, <see cref="AiSettings.Micro"/>):
@@ -81,6 +83,11 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     private readonly HashSet<int> _kiting = new();
     private int _formed;
     private int _waves;
+
+    // The tick the first wave may set out on, drawn in the window of the personality on the first turn (M8 step 8), and when the last went.
+    private int? _attackAt;
+    private int _lastWave;
+    private readonly string[] _priority = settings.TargetPriority.Split(',');
 
     // The gathering squad at its largest so far and when it last grew: one that stopped growing sets out with what it has (step 14).
     private int _gathered;
@@ -242,9 +249,12 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         // Only with the ore gone, and counted from then: before, an army that does not grow is one still waiting for its factories.
         var stalled = _oreGoneAt is { } gone && squad.Units.Count >= settings.AllInUnits
             && context.Tick - IntMath.Max(_grewAt, gone) >= settings.AllInTicks;
-        var strong = stalled || (squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent);
+        // The end of the window of the first attack (step 8): out with what it has.
+        var due = _waves == 0 && settings.FirstAttackBy > 0 && context.Tick >= settings.FirstAttackBy && squad.Units.Count >= settings.AllInUnits;
+        var strong = due || stalled
+            || (squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent);
         squad.State = strong ? SquadState.Ready : SquadState.Gathering;
-        if (!strong || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre))
+        if (!strong || Early(context) || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre))
         {
             return;
         }
@@ -256,7 +266,24 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         squad.Regroup = null;
         squad.RegroupUntil = 0;
         _waves++;
+        _lastWave = context.Tick;
         Attack(context, squad, gather);
+    }
+
+    /// <summary>
+    /// Whether it is too soon to set out (step 8): before the tick of the first attack — drawn once in the window of the personality — or
+    /// within <see cref="AiSettings.WaveInterval"/> of the last wave.
+    /// </summary>
+    private bool Early(AiContext context)
+    {
+        if (_waves > 0)
+        {
+            return context.Tick < _lastWave + settings.WaveInterval;
+        }
+
+        var window = settings.FirstAttackBy - settings.FirstAttackFrom;
+        _attackAt ??= settings.FirstAttackFrom + (window > 0 ? context.Roll(window + 1) : 0);
+        return context.Tick < _attackAt;
     }
 
     /// <summary>The units a squad needs before it may set out: <see cref="AiSettings.MinAttackArmy"/>, grown for every wave sent.</summary>
@@ -649,7 +676,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
                 return true;
             }
 
-            _targets.Add((building, Rank(rules.Buildings[building.DefIndex]), Distance(centre, building.Cell)));
+            _targets.Add((building, Rank(rules.Buildings[building.DefIndex], _priority), Distance(centre, building.Cell)));
         }
 
         if (_targets.Count > 0)
@@ -699,13 +726,23 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         return best;
     }
 
-    /// <summary>Which enemy buildings a squad attacks first (4.6): refineries, defenses, factories, the construction yard, the rest.</summary>
-    internal static int Rank(BuildingDef def) =>
-        def.DockCell is not null ? 0
-        : def.Primary.Length > 0 ? 1
-        : def.Produces.Contains(ProductionCategory.Building) ? 3
-        : def.Produces.Length > 0 ? 2
-        : 4;
+    /// <summary>
+    /// Which enemy buildings a squad attacks first: the place of the kind of <paramref name="def"/> in <paramref name="priority"/>, the
+    /// <c>target_priority</c> of the personality (M8 step 8) — <c>harvesters</c> the refineries, where they unload; <c>defense</c> those with
+    /// a weapon; <c>production</c> the barracks and the factories; <c>core</c> the construction yard; <c>power</c> the power plants. The
+    /// rest — the radar, the battle lab — after all of them; <c>army</c> has no building.
+    /// </summary>
+    internal static int Rank(BuildingDef def, string[] priority)
+    {
+        var kind = def.DockCell is not null ? "harvesters"
+            : def.Primary.Length > 0 ? "defense"
+            : def.Produces.Contains(ProductionCategory.Building) ? "core"
+            : def.Produces.Length > 0 ? "production"
+            : def.Power > 0 ? "power"
+            : null;
+        var place = kind is null ? -1 : System.Array.IndexOf(priority, kind);
+        return place >= 0 ? place : priority.Length;
+    }
 
     private static CellPos? NearestStart(AiMemory memory, CellPos from)
     {

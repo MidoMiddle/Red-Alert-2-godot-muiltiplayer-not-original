@@ -103,6 +103,24 @@ public sealed class ArenaTests : IDisposable
     }
 
     [Fact]
+    public void The_aggressor_attacks_first_at_least_three_minutes_before_the_builder()
+    {
+        // M8 step 8, the step is done when: «Hard» leaves the first attack to the personality — 3–5 minutes for the aggressor, 10–12 for
+        // the builder. Two matches of 15 minutes, the sides swapping starts.
+        var (code, output, error) = Arena(
+            "run", "--a", "hard:aggressor", "--b", "hard:builder", "--map", "frozen-crossing", "--games", "2", "--minutes", "15", "--out", _folder);
+        Assert.Equal(0, code);
+        Assert.Empty(error);
+
+        var columns = ArenaCommand.ResultColumns.ToList();
+        var rows = File.ReadAllLines(Path.Combine(_folder, "results.csv")).Skip(1).Select(line => line.Split(',')).ToList();
+        var aggressor = rows.Select(row => int.Parse(row[columns.IndexOf("a_first_attack")])).ToList();
+        var builder = rows.Select(row => int.Parse(row[columns.IndexOf("b_first_attack")])).ToList();
+        Assert.All(aggressor.Concat(builder), tick => Assert.True(tick >= 0, output));
+        Assert.True(builder.Average() - aggressor.Average() >= 3 * 900, $"aggressor {string.Join(", ", aggressor)}, builder {string.Join(", ", builder)}");
+    }
+
+    [Fact]
     public void A_replay_is_checked_again_from_its_file_and_a_spoilt_one_does_not_match()
     {
         TwoShortMatches(_folder);

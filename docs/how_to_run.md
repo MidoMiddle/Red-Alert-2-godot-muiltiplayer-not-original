@@ -583,7 +583,7 @@ dotnet run --project tools/Rts.MapTool -- rules tests/Rts.Data.Tests/Rules/Datas
 ```
 
 Что проверить:
-- [ ] `rules` печатает `units 8 · buildings 11 · weapons 10 · locomotors 6 · terrains 8 · factions 1 · armor 11 · warheads 7 · projectiles 5 · build orders 1` и `data hash 9a455b524565d0b9` (M4, шаг 10: в хеш вошли угроза `threat`, режим `stance`, давка `crusher` и `crushable`, стена `wall`, энергия обороны `powered` и обзор зданий `sight`; M5, шаги 5–6 — порядки постройки и составы армии ботов).
+- [ ] `rules` печатает `units 8 · buildings 11 · weapons 10 · locomotors 6 · terrains 8 · factions 1 · armor 11 · warheads 7 · projectiles 5 · build orders 10` и `data hash 957e88567091e171` (M4, шаг 10: в хеш вошли угроза `threat`, режим `stance`, давка `crusher` и `crushable`, стена `wall`, энергия обороны `powered` и обзор зданий `sight`; M5, шаги 5–6 — порядки постройки и составы армии ботов; M8, шаги 1–8 — уровни, характеры, их порядки и армии).
 - [ ] Песочница играется, как раньше. В `factions/union/units.yaml` у `heavy_tank` поставь `speed: 72` и запусти песочницу — тяжёлый танк едет вдвое быстрее. Верни `36`.
 - [ ] Испорть ключ в `shared/terrain.yaml` (например, `name` → `nmae`) и запусти песочницу из Терминала — в консоли `ERROR: [data] res://data/shared/terrain.yaml:строка:столбец: unknown key 'nmae' in …`, игра закрывается. Верни.
 - [ ] `rules tests/Rts.Data.Tests/Rules/Dataset` печатает `units 4 · buildings 4 · weapons 1 · locomotors 3 · terrains 2 · factions 1 · armor 3 · warheads 1 · projectiles 1` и `data hash 250b724c61efddf3`.

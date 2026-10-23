@@ -109,6 +109,39 @@ public sealed class ProfileTests
         Assert.Equal(percent, AiProfile.Of(Level("ai_hard"), Personality(personality), "union").Settings.RetreatThresholdPercent);
     }
 
+    [Theory]
+    // Step 8: refineries 2 × economy, defenses 3 × defense (half up), the second war factory at 4000 / army credits; the first attack
+    // in the window of the personality for «Hard», from 6:00 with no end for «Medium»; the waves apart by the personality.
+    [InlineData("ai_hard", "builder", 3, 5, 5000, 9000, 10800, 3600)]
+    [InlineData("ai_hard", "aggressor", 2, 1, 2667, 2700, 4500, 1800)]
+    [InlineData("ai_hard", "saboteur", 2, 2, 4444, 3600, 5400, 1350)]
+    [InlineData("ai_medium", "aggressor", 2, 1, 2667, 5400, 0, 1800)]
+    [InlineData("ai_medium", "balanced", 2, 3, 4000, 5400, 0, 2700)]
+    public void The_weights_and_the_attacks_of_a_personality_go_into_the_settings(
+        string level, string personality, int refineries, int defenses, int secondFactory, int from, int by, int waves)
+    {
+        var settings = AiProfile.Of(Level(level), Personality(personality), "union").Settings;
+
+        Assert.Equal(
+            (refineries, defenses, secondFactory, from, by, waves),
+            (settings.MaxRefineries, settings.MaxDefenses, settings.SecondFactoryCredits, settings.FirstAttackFrom, settings.FirstAttackBy, settings.WaveInterval));
+        Assert.Equal(string.Join(",", Personality(personality).TargetPriority), settings.TargetPriority);
+    }
+
+    [Fact]
+    public void Every_personality_has_its_own_build_orders_and_army()
+    {
+        // Step 8: «Balanced» keeps the build order and the army of M5.
+        var mine = new[] { "aggressor", "builder", "saboteur" }.Select(Personality).ToList();
+
+        Assert.All(mine, personality => Assert.NotEqual("standard_army", AiProfile.ArmyOf(personality, "union")));
+        Assert.All(mine, personality => Assert.NotEqual("standard", AiProfile.BuildOrderOf(personality, "union", BuildOrderQuality.Optimized)));
+        Assert.Equal("standard", AiProfile.BuildOrderOf(Personality("balanced"), "union", BuildOrderQuality.Standard));
+        Assert.Equal(
+            mine.Count,
+            mine.Select(personality => AiProfile.BuildOrderOf(personality, "union", BuildOrderQuality.Standard)).Distinct().Count());
+    }
+
     [Fact]
     public void A_personality_reads_as_the_bot_needs_it()
     {
@@ -127,11 +160,12 @@ public sealed class ProfileTests
     }
 
     [Theory]
-    [InlineData(AiDifficulty.Easy, 1)]
-    [InlineData(AiDifficulty.Medium, 3)]
-    [InlineData(AiDifficulty.Hard, 8)]
-    [InlineData(AiDifficulty.Brutal, 12)]
-    public void A_bot_of_every_level_is_made_from_the_data(AiDifficulty difficulty, int actions)
+    // «Easy» takes the simple build order of «Balanced» (step 8), the others its standard and optimized one, the order of M5.
+    [InlineData(AiDifficulty.Easy, 1, "balanced_simple")]
+    [InlineData(AiDifficulty.Medium, 3, "standard")]
+    [InlineData(AiDifficulty.Hard, 8, "standard")]
+    [InlineData(AiDifficulty.Brutal, 12, "standard")]
+    public void A_bot_of_every_level_is_made_from_the_data(AiDifficulty difficulty, int actions, string buildOrder)
     {
         var bot = new MatchPlayer(2, PlayerKind.Ai, difficulty, "union", 1, 2, 1, new CellPos(50, 50));
         var setup = new MatchSetup("clear", 1, new MatchOptions(), [new MatchPlayer(1, PlayerKind.Human, AiDifficulty.Medium, "union", 0, 1, 0, new CellPos(10, 10)), bot],
@@ -140,7 +174,7 @@ public sealed class ProfileTests
         var player = (AiPlayer)MatchBots.Create(setup, bot, GameDataFiles.Rules);
 
         Assert.Equal(actions, player.Settings.ActionsPerSecond);
-        Assert.Equal(("standard", "standard_army"), (player.Settings.BuildOrder, player.Settings.Army));
+        Assert.Equal((buildOrder, "standard_army"), (player.Settings.BuildOrder, player.Settings.Army));
     }
 
     [Fact]
