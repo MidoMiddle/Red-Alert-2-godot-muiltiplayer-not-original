@@ -34,6 +34,7 @@ public partial class MatchHud : CanvasLayer
         sidebar.Minimap.Bind(host, camera);
         var pause = GetNode<PauseMenu>("../PauseMenu");
         pause.Bind(host);
+        GetNode<Rts.Client.UI.MatchResults>("../MatchResults").Bind(host);
         sidebar.MenuRequested += pause.Open;
         // Built: the buildings of the match statistics (M5 step 11), as the panel opens; captured comes with M11.
         sidebar.StatsRequested += () =>

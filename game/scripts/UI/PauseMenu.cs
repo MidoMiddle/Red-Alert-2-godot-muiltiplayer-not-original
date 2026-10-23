@@ -100,9 +100,15 @@ public partial class PauseMenu : CanvasLayer
 
     private void LeaveToMainMenu()
     {
-        // Unpause first: the router's fade runs on a tween, and a paused tree would hold it.
-        GetTree().Paused = false;
         _open = false;
+        LeaveMatch(GetTree());
+    }
+
+    /// <summary>Leaves the match unsaved: to the main menu, or back to the map editor that started it. The results screen leaves so too.</summary>
+    public static void LeaveMatch(SceneTree tree)
+    {
+        // Unpause first: the router's fade runs on a tween, and a paused tree would hold it.
+        tree.Paused = false;
 
         // A match started by «Play» in the map editor goes back to the editor (M7 step 12).
         if (SceneRouter.Instance?.Args.ContainsKey(Rts.Client.Editor.MapEditorScene.FromEditorArgument) == true)

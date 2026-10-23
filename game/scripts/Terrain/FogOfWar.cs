@@ -39,6 +39,9 @@ public partial class FogOfWar : Node3D
     /// <summary>Shows the whole map from now on: a player who lost the match watches the rest of it (M5 step 10).</summary>
     public void Reveal() => Revealed = true;
 
+    /// <summary>The fog as the player sees it again: a new match after the one lost (M5 step 12).</summary>
+    public void Conceal() => Revealed = false;
+
     /// <summary>
     /// Whether the local player is to see <paramref name="entity"/> on screen: its own always, another's while seen (step 11), all
     /// while the fog is revealed or where there is no fog.

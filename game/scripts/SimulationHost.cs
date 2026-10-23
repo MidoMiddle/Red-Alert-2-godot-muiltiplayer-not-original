@@ -128,6 +128,9 @@ public partial class SimulationHost : Node
     /// </summary>
     public event Action<SimEvent>? EventRaised;
 
+    /// <summary>A live session (re)started: R, or Play Again of the results (M5 step 12) — what showed the end of the last one goes.</summary>
+    public event Action? SessionStarted;
+
     public bool IsPlayback => _playback is not null;
 
     public bool Paused { get; set; }
@@ -239,6 +242,7 @@ public partial class SimulationHost : Node
         }
 
         GD.Print("[host] live session started");
+        SessionStarted?.Invoke();
     }
 
     public void StartPlayback()
@@ -597,6 +601,18 @@ public partial class SimulationHost : Node
 
     private bool IsOwnLiving(EntityId id) =>
         Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer;
+
+    /// <summary>The same match once more with a new seed, on the spot (M5 step 12, the results screen).</summary>
+    public void PlayAgain()
+    {
+        if (_match is null)
+        {
+            return;
+        }
+
+        _match = _match with { Seed = MatchSetups.NewSeed() };
+        StartLiveSession();
+    }
 
     /// <summary>Whether the person at the keyboard is in a match that goes on and has not lost it: then they may surrender (M5 step 10).</summary>
     public bool CanSurrender =>

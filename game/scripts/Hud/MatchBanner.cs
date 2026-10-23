@@ -18,6 +18,7 @@ public partial class MatchBanner : Label
     {
         _host = host;
         host.EventRaised += OnEvent;
+        host.SessionStarted += Reset;
     }
 
     /// <summary>The key the banner shows for an event, or null when it changes nothing.</summary>
@@ -48,7 +49,15 @@ public partial class MatchBanner : Label
         if (_host is not null)
         {
             _host.EventRaised -= OnEvent;
+            _host.SessionStarted -= Reset;
         }
+    }
+
+    /// <summary>A new session: no banner, and the fog the defeat lifted comes back.</summary>
+    private void Reset()
+    {
+        Visible = false;
+        FogOfWar.Current?.Conceal();
     }
 
     private void OnEvent(SimEvent simEvent)

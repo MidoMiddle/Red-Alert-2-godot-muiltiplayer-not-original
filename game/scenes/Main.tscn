@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
 [ext_resource type="Script" path="res://scripts/SimulationHost.cs" id="2_host"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="9_pause"]
 [ext_resource type="PackedScene" path="res://scenes/hud/Hud.tscn" id="10_hud"]
 [ext_resource type="Script" path="res://scripts/Units/HarvesterMarks.cs" id="11_marks"]
+[ext_resource type="PackedScene" path="res://scenes/ui/MatchResults.tscn" id="12_results"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -66,5 +67,7 @@ theme_override_font_sizes/font_size = 22
 text = "..."
 
 [node name="PauseMenu" parent="." instance=ExtResource("9_pause")]
+
+[node name="MatchResults" parent="." instance=ExtResource("12_results")]
 
 [node name="Hud" parent="." instance=ExtResource("10_hud")]
