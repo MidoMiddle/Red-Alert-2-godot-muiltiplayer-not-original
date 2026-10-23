@@ -398,7 +398,7 @@ public static class ReplayFormat
             var kind = source[offset + 1];
             var difficulty = source[offset + 2];
             offset += 3;
-            if (kind > (byte)PlayerKind.Ai || difficulty != (byte)AiDifficulty.Medium)
+            if (kind > (byte)PlayerKind.Ai || difficulty is < (byte)AiDifficulty.Medium or > (byte)AiDifficulty.Brutal)
             {
                 throw new InvalidDataException($"Invalid kind {kind} or difficulty {difficulty} of player {i + 1}.");
             }

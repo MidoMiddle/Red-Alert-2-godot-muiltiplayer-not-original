@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Rts.AI.Modules;
+using Rts.AI.Profiles;
 using Rts.Simulation;
 using Rts.Simulation.Ai;
 using Rts.Simulation.Geometry;
@@ -14,11 +15,12 @@ namespace Rts.AI;
 public static class MatchBots
 {
     /// <summary>
-    /// The bot of <paramref name="player"/> in <paramref name="setup"/>, by its level in the data of <paramref name="rules"/> (step 14) — the
-    /// numbers of the code when the data has none: it knows its start and every start of the map.
+    /// The bot of <paramref name="player"/> in <paramref name="setup"/>, by its level and the personality «Balanced» in the data of
+    /// <paramref name="rules"/> (M5 step 14, M8 step 1) — the numbers of the code when the data has none: it knows its start and every
+    /// start of the map.
     /// </summary>
     public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules) => player.Kind == PlayerKind.Ai
-        ? Medium(player.Id, SettingsOf(player.Difficulty, rules), player.Start, setup)
+        ? Medium(player.Id, SettingsOf(player.Difficulty, player.Faction, rules), player.Start, setup)
         : throw new ArgumentException($"{player.Id} is played by a person.", nameof(player));
 
     /// <summary>The «Medium» bot of <paramref name="player"/> with <paramref name="settings"/> of its own — the tuning of step 14, a person's seat played by a bot in the arena.</summary>
@@ -64,10 +66,34 @@ public static class MatchBots
     /// <summary>The id of «Medium» in the data: ids are shared by all the data, and <c>medium</c> is an armour.</summary>
     public const string MediumId = "ai_medium";
 
-    /// <summary>The settings of a level: from the data of <paramref name="rules"/>, else those of the code.</summary>
-    public static AiSettings SettingsOf(AiDifficulty difficulty, GameRules rules) => difficulty switch
+    /// <summary>The personality every bot plays until the skirmish screen offers the choice (M8 steps 8, 13).</summary>
+    public const string BalancedId = "balanced";
+
+    /// <summary>The id of a level in the data (M8 step 1): <c>ai_easy</c>, <c>ai_medium</c>, <c>ai_hard</c>, <c>ai_brutal</c>.</summary>
+    public static string LevelId(AiDifficulty difficulty) => difficulty switch
     {
-        AiDifficulty.Medium => rules.Database.TryGetDifficulty(MediumId, out var level) ? AiSettings.From(level) : AiSettings.Medium,
+        AiDifficulty.Easy => "ai_easy",
+        AiDifficulty.Medium => MediumId,
+        AiDifficulty.Hard => "ai_hard",
+        AiDifficulty.Brutal => "ai_brutal",
         _ => throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, null),
     };
+
+    /// <summary>
+    /// The settings of a bot of <paramref name="faction"/> at a level: the level of the data of <paramref name="rules"/> with the build order
+    /// and the army of «Balanced» (<see cref="AiProfile"/>). Without the personality in the data — the build order and the army of the code;
+    /// without the level — the «Medium» of the code, and no other level.
+    /// </summary>
+    public static AiSettings SettingsOf(AiDifficulty difficulty, string faction, GameRules rules)
+    {
+        var database = rules.Database;
+        if (!database.TryGetDifficulty(LevelId(difficulty), out var level))
+        {
+            return difficulty == AiDifficulty.Medium
+                ? AiSettings.Medium
+                : throw new ArgumentException($"The data has no level '{LevelId(difficulty)}'.", nameof(difficulty));
+        }
+
+        return database.TryGetPersonality(BalancedId, out var personality) ? AiProfile.Of(level, personality, faction).Settings : AiSettings.From(level);
+    }
 }

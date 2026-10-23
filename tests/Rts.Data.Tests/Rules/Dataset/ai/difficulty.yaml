@@ -1,10 +1,8 @@
-# The levels of the bots (docs/implementation/M5_first_bot.md, 4.7, step 14; the whole table of levels comes with M8, 4.2). Only
-# «Medium» for now — `ai_medium`: ids are shared by all the data, and `medium` is an armour. Periods are in ticks (15 a second); every key
-# is required.
+# A level of the bots (docs/implementation/M5_first_bot.md, 4.7, step 14; M8, 4.2): «Medium» of game/data/ai/difficulty.yaml, written
+# out in full — `ai_medium`: ids are shared by all the data, and `medium` is an armour. Periods are in ticks (15 a second); every key is
+# required.
 ai_medium:
   kind: difficulty
-  build_order: standard
-  army: standard_army
   # How often each module thinks, in ticks: the strategist every 3 s and the squads every second, as «Medium» of M8.
   strategy_period: 45
   economy_period: 15
@@ -52,3 +50,16 @@ ai_medium:
   threat_clear: 10s
   base_cells: 8
   max_defenses: 3
+  # M8, 4.2: the imperfection, the micro, scouting, the counters, the first attack, the squads, the harvesters, the expansion, the
+  # quality of the build order, the rebuilding.
+  actions_per_second: 3
+  mistake_chance: 10%
+  micro: focus
+  scouting: periodic
+  counter_pick: 30%
+  first_attack_delay: 360s
+  parallel_squads: 2
+  defend_harvesters: yes
+  expansion: late
+  build_order_quality: standard
+  rebuild_destroyed: yes

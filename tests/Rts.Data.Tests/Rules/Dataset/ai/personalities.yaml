@@ -1,0 +1,12 @@
+# One personality of the bots (M8 step 1), as game/data/ai/personalities/balanced.yaml.
+balanced:
+  kind: personality
+  name: Balanced
+  weights: { economy: 1, defense: 1, army: 1, tech: 1, harassment: 1 }
+  armies: { union: standard_army }
+  build_orders:
+    union: { simple: standard, standard: standard, optimized: standard }
+  first_attack: { min: 360s, max: 480s }
+  wave_interval: 180s
+  retreat_threshold: 70%
+  target_priority: [harvesters, defense, production, core, army, power]

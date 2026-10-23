@@ -1,0 +1,13 @@
+# «Builder» (docs/implementation/M8_ai_difficulty.md, 4.7): defense and the economy, dense turrets, the first attack not before 10 minutes
+# and with a big army. The keys — as in balanced.yaml.
+builder:
+  kind: personality
+  name: Builder
+  weights: { economy: 1.4, defense: 1.5, army: 0.8, tech: 1.0, harassment: 0.2 }
+  armies: { union: standard_army }
+  build_orders:
+    union: { simple: standard, standard: standard, optimized: standard }
+  first_attack: { min: 600s, max: 720s }
+  wave_interval: 240s
+  retreat_threshold: 80%
+  target_priority: [defense, production, core, army, power, harvesters]

@@ -1,10 +1,12 @@
+using Rts.AI.Profiles;
 using Rts.Simulation.Rules;
 
 namespace Rts.AI;
 
 /// <summary>
-/// The parameters of a level of difficulty (docs/implementation/M5_first_bot.md, 4.3, 4.7): how often each module thinks, in ticks.
-/// Only «Medium» for now, in code; it moves to <c>game/data/ai/difficulty.yaml</c> in step 14.
+/// The parameters of a level of difficulty (docs/implementation/M5_first_bot.md, 4.3, 4.7; docs/implementation/M8_ai_difficulty.md, 4.2):
+/// how often each module thinks, in ticks, and the rest of a <c>difficulty</c> of the data — the profile of a level. The build order and
+/// the army come from the personality (<see cref="AiProfile"/>), by <see cref="Quality"/> and the faction of the bot.
 /// </summary>
 public sealed record AiSettings
 {
@@ -14,7 +16,10 @@ public sealed record AiSettings
     /// </summary>
     public static readonly AiSettings Medium = new();
 
-    /// <summary>The settings of a level of the data (step 14): every number by its key.</summary>
+    /// <summary>
+    /// The settings of a level of the data (step 14, M8 step 1): every number by its key. The build order and the army stay those of the
+    /// code until <see cref="AiProfile"/> gives the personality's.
+    /// </summary>
     public static AiSettings From(DifficultyDef level)
     {
         var values = level.Values;
@@ -31,9 +36,7 @@ public sealed record AiSettings
             HarvestersPerRefinery = values["harvesters_per_refinery"],
             PowerReservePercent = values["power_reserve"],
             DangerCells = values["danger_cells"],
-            BuildOrder = level.BuildOrder,
             SecondFactoryCredits = values["second_factory_credits"],
-            Army = level.Army,
             CounterShiftPercent = values["counter_shift"],
             ScoutingInterval = values["scouting_interval"],
             ScoutBlockCells = values["scout_block_cells"],
@@ -56,6 +59,17 @@ public sealed record AiSettings
             SellTicks = values["sell_every"],
             InfantryQueued = values["infantry_queued"],
             VehiclesQueued = values["vehicles_queued"],
+            ActionsPerSecond = values["actions_per_second"],
+            MistakePercent = values["mistake_chance"],
+            Micro = (MicroLevel)values["micro"],
+            Scouting = (ScoutingLevel)values["scouting"],
+            CounterPickPercent = values["counter_pick"],
+            FirstAttackDelay = values["first_attack_delay"],
+            ParallelSquads = values["parallel_squads"],
+            DefendHarvesters = values["defend_harvesters"] == 1,
+            Expansion = (ExpansionLevel)values["expansion"],
+            Quality = (BuildOrderQuality)values["build_order_quality"],
+            Rebuild = (RebuildLevel)values["rebuild_destroyed"],
         };
     }
 
@@ -165,4 +179,36 @@ public sealed record AiSettings
     /// queue runs first come, first served.
     /// </summary>
     public int VehiclesQueued { get; init; } = 1;
+
+    // M8, 4.2: read from the data since M8 step 1; the bot acts on them from the step of each — the budget and the mistakes from step 3,
+    // the micro from step 5, scouting from step 6, the counters from step 7.
+
+    /// <summary>The commands the bot gives a second at most (M8, 4.3, <c>actionsPerSecond</c>).</summary>
+    public int ActionsPerSecond { get; init; } = 3;
+
+    /// <summary>The chance, in percent, that the bot takes one of the three best choices at random instead of the best (4.3).</summary>
+    public int MistakePercent { get; init; } = 10;
+
+    public MicroLevel Micro { get; init; } = MicroLevel.Focus;
+
+    public ScoutingLevel Scouting { get; init; } = ScoutingLevel.Periodic;
+
+    /// <summary>The share of the army, in percent, picked against what the enemy fields (4.6, <c>counterPick</c>).</summary>
+    public int CounterPickPercent { get; init; } = 30;
+
+    /// <summary>The earliest first attack, in ticks; 0 — the window of the personality decides (Hard, Brutal).</summary>
+    public int FirstAttackDelay { get; init; } = 5400;
+
+    /// <summary>The squads that act at once.</summary>
+    public int ParallelSquads { get; init; } = 2;
+
+    /// <summary>Whether the bot answers an attack on its harvesters.</summary>
+    public bool DefendHarvesters { get; init; } = true;
+
+    public ExpansionLevel Expansion { get; init; } = ExpansionLevel.Late;
+
+    /// <summary>Which build order of its personality the bot takes (<c>buildOrderQuality</c>).</summary>
+    public BuildOrderQuality Quality { get; init; } = BuildOrderQuality.Standard;
+
+    public RebuildLevel Rebuild { get; init; } = RebuildLevel.Yes;
 }

@@ -58,8 +58,8 @@ public sealed class MatchBotsTests
     {
         // The modules are tested with AiSettings.Medium: the data must say the same, or those tests test another bot. Tuned in the data,
         // the code follows (M5 step 14).
-        Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, GameDataFiles.Rules));
-        Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, TestRules.Standard));
+        Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, "union", GameDataFiles.Rules));
+        Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, "union", TestRules.Standard));
     }
 
     [Fact]

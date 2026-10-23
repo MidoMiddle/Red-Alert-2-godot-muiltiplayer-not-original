@@ -33,8 +33,9 @@ game/data/
 │       ├── buildings.yaml
 │       ├── units.yaml
 │       └── weapons.yaml    оружие юнитов и обороны
-├── ai/                     боты (M5)
-│   ├── difficulty.yaml     уровни ботов: «Средний» (ai_medium)
+├── ai/                     боты (M5, M8)
+│   ├── difficulty.yaml     уровни ботов: ai_easy, ai_medium, ai_hard, ai_brutal
+│   ├── personalities/      характеры ботов, по файлу на характер (M8)
 │   └── union.yaml          порядки постройки и состав армии Союза
 └── maps/                   готовые карты (формат — rtsmap.md)
 ```
@@ -164,7 +165,7 @@ reactor:  # Tesla Reactor
 | `faction` | `id` фракции |
 | `steps` | `id` зданий этой фракции по порядку; здание может повторяться (второй ОПЗ) |
 
-Оборону бот сам ставит на сторону вероятного врага — отдельного ключа не нужно. Какой порядок берёт бот, задаёт уровень сложности (`standard` у «Среднего»).
+Оборону бот сам ставит на сторону вероятного врага — отдельного ключа не нужно. Какой порядок берёт бот, задаёт характер (`build_orders`), а какое из трёх качеств — уровень (`build_order_quality`).
 
 ### `army` (боты, M5)
 
@@ -177,15 +178,14 @@ reactor:  # Tesla Reactor
 | `against_infantry` | Юниты, которые получают долю, когда у врага больше половины пехоты (давят, косят) |
 | `against_vehicles` | Юниты, которые получают долю, когда у врага больше половины техники (противотанковые) |
 
-Сдвиг к контрам — 20 пунктов у «Среднего». Он забирается у остальных юнитов пропорционально их долям. Какой состав берёт бот, задаёт уровень сложности: у «Среднего» — `standard_army`.
+Сдвиг к контрам — 20 пунктов у «Среднего». Он забирается у остальных юнитов пропорционально их долям. Какой состав берёт бот, задаёт характер (`armies`): у всех пока `standard_army`.
 
-### `difficulty` (боты, M5 шаг 14)
+### `difficulty` (боты, M5 шаг 14, M8 шаг 1)
 
-Уровень бота. Пока один — `ai_medium`, «Средний»; полная таблица уровней — M8. Id не `medium`: id общие на все данные, а `medium` — броня. Все ключи обязательны.
+Уровень бота: `ai_easy`, `ai_medium`, `ai_hard`, `ai_brutal` — «Лёгкий», «Средний», «Сложный», «Жестокий». Id не `medium`: id общие на все данные, а `medium` — броня. Все ключи обязательны. Общее для уровней лежит в шаблоне `ai_level` (`abstract: true`), уровень наследует его и пишет своё.
 
 | Ключи | Что | Как пишется |
 |---|---|---|
-| `build_order`, `army` | Порядок постройки и состав армии | id записей `build_order` и `army` |
 | `strategy_period`, `economy_period`, `build_period`, `production_period`, `scouting_period`, `tactics_period`, `defense_period` | Как часто думает каждый модуль | тики, > 0 |
 | `max_refineries`, `harvesters_per_refinery`, `power_reserve`, `danger_cells`, `second_factory_credits` | Экономика | числа; `power_reserve` — % |
 | `counter_shift`, `infantry_queued`, `vehicles_queued` | Армия | `counter_shift` — % |
@@ -193,8 +193,38 @@ reactor:  # Tesla Reactor
 | `min_attack_army`, `attack_growth_per_wave`, `attack_threshold`, `retreat_at_strength`, `gather_cells`, `squad_spread_cells`, `engage_cells`, `wounded`, `sweep_places` | Отряды | доли — %; рост волн ≥ 100 %, отступление < 100 % |
 | `all_in_after`, `all_in_units`, `sell_every` | Когда руда кончилась | длительности — `120s`, `30s` |
 | `perception_delay`, `threat_clear`, `base_cells`, `max_defenses` | Оборона базы | длительности — `1s`, `10s` |
+| `actions_per_second`, `mistake_chance` | Лимит команд в секунду, шанс взять не лучший вариант из трёх (M8, 4.3) | число > 0; % |
+| `micro` | Микро в бою (M8, 4.4) | `none`, `focus`, `retreat_wounded`, `keep_range` |
+| `scouting` | Разведка (M8, 4.6) | `none`, `periodic`, `constant`, `constant_expansions` |
+| `counter_pick` | Доля армии против состава врага | % |
+| `first_attack_delay` | Самая ранняя атака | длительность; `0s` — по окну характера |
+| `parallel_squads` | Отрядов одновременно | число > 0 |
+| `defend_harvesters` | Защищает ли харвестеры | `no`, `yes` |
+| `expansion` | Второй ОПЗ у дальних полей | `none`, `late`, `early` |
+| `build_order_quality` | Какой порядок характера брать | `simple`, `standard`, `optimized` |
+| `rebuild_destroyed` | Восстановление потерянного | `partial`, `yes`, `priority` |
 
-Код держит те же числа в `AiSettings.Medium`. Тест требует равенства: модули проверяются на числах игры.
+- Слово не из списка — ошибка в его строке, с перечнем допустимых слов.
+- Доли (`power_reserve`, `counter_shift`, `wounded`, `mistake_chance`, `counter_pick`) — не больше 100 %.
+- Ключи M8 бот пока не использует: они нужны шагам 3–7 M8, но уже проверяются и входят в хеш.
+- Код держит числа «Среднего» в `AiSettings.Medium`. Тест требует равенства: модули проверяются на числах игры.
+
+### `personality` (боты, M8 шаг 1)
+
+Характер бота: как он играет; уровень — насколько хорошо. Файлы — `ai/personalities/`, по одному на характер: `balanced`, `aggressor`, `builder`, `saboteur`. Пока бот партии всегда «Сбалансированный»; выбор характера — шаги 8 и 13 M8. Все ключи обязательны.
+
+| Ключ | Что | Как пишется |
+|---|---|---|
+| `name` | Название | текст |
+| `weights` | Что важнее стратегу | `{ economy: 1, defense: 1, army: 1, tech: 1, harassment: 1 }` — все пять, числа ≥ 0, в сумме не обязательно 1 |
+| `armies` | Армия на каждую фракцию | `{ union: standard_army }` — id записей `army` этой фракции |
+| `build_orders` | Порядки на каждую фракцию, по качеству | `union: { simple: …, standard: …, optimized: … }` — id записей `build_order` этой фракции |
+| `first_attack` | Окно первой атаки для уровней «по характеру» | `{ min: 360s, max: 480s }`, min ≤ max |
+| `wave_interval` | Между волнами | длительность > 0 |
+| `retreat_threshold` | Отряд отходит, когда своя сила ниже этой доли вражеской рядом | больше 0 %, не больше 100 % |
+| `target_priority` | Цели по порядку | все шесть ровно раз: `production`, `army`, `power`, `harvesters`, `defense`, `core` |
+
+У каждой фракции данных должны быть армия и три порядка в каждом характере: новая фракция без них не загрузится. Ошибка во вложенном поле указывает на его строку и столбец: лишний ключ — с перечнем допустимых, пропущенный — по имени.
 
 ### `economy` (ровно одна запись)
 

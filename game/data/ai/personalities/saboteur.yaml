@@ -1,0 +1,13 @@
+# «Saboteur» (docs/implementation/M8_ai_difficulty.md, 4.7): raids of small fast squads on the harvesters and the power plants, from more
+# than one side. The keys — as in balanced.yaml.
+saboteur:
+  kind: personality
+  name: Saboteur
+  weights: { economy: 1.0, defense: 0.6, army: 0.9, tech: 0.8, harassment: 1.6 }
+  armies: { union: standard_army }
+  build_orders:
+    union: { simple: standard, standard: standard, optimized: standard }
+  first_attack: { min: 240s, max: 360s }
+  wave_interval: 90s
+  retreat_threshold: 80%
+  target_priority: [harvesters, power, production, army, defense, core]

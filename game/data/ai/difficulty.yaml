@@ -1,17 +1,17 @@
-# The levels of the bots (docs/implementation/M5_first_bot.md, 4.7, step 14; the whole table of levels comes with M8, 4.2). Only
-# «Medium» for now — `ai_medium`: ids are shared by all the data, and `medium` is an armour. Periods are in ticks (15 a second); every key
-# is required.
-ai_medium:
+# The levels of the bots (docs/implementation/M8_ai_difficulty.md, 4.2; «Medium» as tuned in M5, step 14). Ids are shared by all the
+# data, and `medium` is an armour: hence `ai_`. Periods are in ticks (15 a second); every key is required.
+#
+# What the levels share sits in the template `ai_level`; a level writes what makes it differ. The numbers of 4.2 are where they start —
+# the Arena tunes them (M8 step 10). «Medium» keeps those of M5: its first wave is 6 units, not 8 of the table.
+
+ai_level:
   kind: difficulty
-  build_order: standard
-  army: standard_army
-  # How often each module thinks, in ticks: the strategist every 3 s and the squads every second, as «Medium» of M8.
-  strategy_period: 45
+  abstract: true
+  # How often each module thinks, in ticks. The strategist and the squads are set by every level.
   economy_period: 15
   build_period: 15
   production_period: 15
   scouting_period: 45
-  tactics_period: 15
   defense_period: 5
   # The economy: refineries at most, harvesters for each, a reactor below this reserve of power, harvesters kept this many cells from a
   # known enemy, a second war factory once this much money is left.
@@ -28,12 +28,10 @@ ai_medium:
   scouting_interval: 180s
   scout_block_cells: 16
   scout_danger_cells: 6
-  # Squads: the first wave of 6 units (8:05 on Frozen Crossing), every next one a quarter bigger; out only as strong as the enemy known;
-  # back home below 30% of the strength it set out with. Gathered 6 cells from the start toward the enemy; a unit 6 cells off makes the
-  # squad wait; an armed enemy within 8 cells is fought; a unit below 35% of its hit points falls back.
-  min_attack_army: 6
+  # Squads: every next wave a quarter bigger; back home below 30% of the strength it set out with. Gathered 6 cells from the start
+  # toward the enemy; a unit 6 cells off makes the squad wait; an armed enemy within 8 cells is fought; a unit below 35% of its hit
+  # points falls back.
   attack_growth_per_wave: 125%
-  attack_threshold: 100%
   retreat_at_strength: 30%
   gather_cells: 6
   squad_spread_cells: 6
@@ -46,9 +44,98 @@ ai_medium:
   all_in_after: 120s
   all_in_units: 3
   sell_every: 30s
-  # Defense: enemies at the base are noticed after 1 s and forgotten 10 s after the last; within 8 cells of a building is at the base;
-  # three defenses at most, those of the build order and those toward the attacks.
-  perception_delay: 1s
+  # Defense: enemies at the base are forgotten 10 s after the last; within 8 cells of a building is at the base; three defenses at most,
+  # those of the build order and those toward the attacks.
   threat_clear: 10s
   base_cells: 8
   max_defenses: 3
+
+# Every level below sets the same keys, in this order:
+# - how often the strategist and the squads think, in ticks; how late enemies at the base are noticed;
+# - a squad sets out with this many units at least, as strong as this share of the enemy known;
+# - the commands a second at most; the chance to take one of the three best choices at random;
+# - the micro of a fight: none, focus, retreat_wounded, keep_range; scouting: none, periodic, constant, constant_expansions;
+# - the share of the army picked against what the enemy fields; the earliest first attack (0s: the personality's window);
+# - the squads at once; whether harvesters under attack are defended (no, yes); a refinery by the far fields: none, late, early;
+# - which build order of the personality: simple, standard, optimized; what is lost is built again: partial, yes, priority.
+# The bot of M5 acts on the first two lines; the rest wait for the steps of M8 that use them (3–7).
+
+ai_easy:
+  kind: difficulty
+  inherits: ai_level
+  strategy_period: 90
+  tactics_period: 30
+  perception_delay: 3s
+  min_attack_army: 4
+  attack_threshold: 60%
+  actions_per_second: 1
+  mistake_chance: 25%
+  micro: none
+  scouting: none
+  counter_pick: 0%
+  first_attack_delay: 600s
+  parallel_squads: 1
+  defend_harvesters: no
+  expansion: none
+  build_order_quality: simple
+  rebuild_destroyed: partial
+
+ai_medium:
+  kind: difficulty
+  inherits: ai_level
+  strategy_period: 45
+  tactics_period: 15
+  perception_delay: 1s
+  min_attack_army: 6
+  attack_threshold: 100%
+  actions_per_second: 3
+  mistake_chance: 10%
+  micro: focus
+  scouting: periodic
+  counter_pick: 30%
+  first_attack_delay: 360s
+  parallel_squads: 2
+  defend_harvesters: yes
+  expansion: late
+  build_order_quality: standard
+  rebuild_destroyed: yes
+
+ai_hard:
+  kind: difficulty
+  inherits: ai_level
+  strategy_period: 15
+  tactics_period: 5
+  perception_delay: 0.4s
+  min_attack_army: 12
+  attack_threshold: 130%
+  actions_per_second: 8
+  mistake_chance: 2%
+  micro: retreat_wounded
+  scouting: constant
+  counter_pick: 70%
+  first_attack_delay: 0s
+  parallel_squads: 4
+  defend_harvesters: yes
+  expansion: early
+  build_order_quality: optimized
+  rebuild_destroyed: priority
+
+ai_brutal:
+  kind: difficulty
+  inherits: ai_level
+  strategy_period: 15
+  tactics_period: 3
+  perception_delay: 0.2s
+  min_attack_army: 12
+  attack_threshold: 120%
+  actions_per_second: 12
+  mistake_chance: 0%
+  micro: keep_range
+  scouting: constant_expansions
+  counter_pick: 90%
+  first_attack_delay: 0s
+  parallel_squads: 4
+  defend_harvesters: yes
+  expansion: early
+  build_order_quality: optimized
+  rebuild_destroyed: priority

@@ -15,7 +15,7 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty", "personality"];
 
     private static readonly string[] UnitKeys =
     [
@@ -49,6 +49,15 @@ internal static class DefinitionReader
     private static readonly string[] BuildOrderKeys = ["faction", "steps"];
 
     private static readonly string[] ArmyKeys = ["faction", "shares", "against_infantry", "against_vehicles"];
+
+    private static readonly string[] PersonalityKeys =
+    [
+        "name", "weights", "armies", "build_orders", "first_attack", "wave_interval", "retreat_threshold", "target_priority",
+    ];
+
+    private static readonly string[] WeightKeys = ["economy", "defense", "army", "tech", "harassment"];
+
+    private static readonly string[] QualityKeys = ["simple", "standard", "optimized"];
 
     private static readonly string[] EconomyKeys =
     [
@@ -245,10 +254,13 @@ internal static class DefinitionReader
         };
     }
 
-    /// <summary>A level of the bots (M5 step 14): its build order and army, and every number of <see cref="DifficultyDef.Keys"/>.</summary>
+    /// <summary>
+    /// A level of the bots (M5 step 14, M8 step 1): every value of <see cref="DifficultyDef.Keys"/>; a word of a choice that is not in
+    /// <see cref="DifficultyDef.Choices"/> is an error at it that names the words there are.
+    /// </summary>
     public static DifficultyDef Difficulty(RawDefinition definition, bool complete)
     {
-        var keys = new List<string> { "build_order", "army" };
+        var keys = new List<string>();
         foreach (var (key, _) in DifficultyDef.Keys)
         {
             keys.Add(key);
@@ -262,17 +274,170 @@ internal static class DefinitionReader
             {
                 DifficultyValue.Percent => WholePercent(fields.Required(key, Scalars.Percent, Fixed.Zero)),
                 DifficultyValue.Duration => fields.Required(key, Scalars.Ticks, 0),
+                DifficultyValue.Choice => fields.Required(key, (fileName, node) => ChoiceIndex(fileName, node, DifficultyDef.Choices[key]), 0),
                 _ => fields.Required(key, Scalars.Int, 0),
             };
         }
 
-        return new DifficultyDef
+        return new DifficultyDef { Id = definition.Id, Values = values.ToImmutable() };
+    }
+
+    /// <summary>The place of a word in <paramref name="words"/>.</summary>
+    private static int ChoiceIndex(string fileName, YamlNode node, ImmutableArray<string> words) =>
+        words.IndexOf(Scalars.Choice(fileName, node, [.. words]));
+
+    /// <summary>
+    /// A personality of the bots (M8 step 1): its weights, its army and build orders for every faction, its attacks and its targets. A
+    /// mapping that misses a key or has one it does not know is an error at that place.
+    /// </summary>
+    public static PersonalityDef Personality(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, PersonalityKeys);
+        var (firstMin, firstMax) = fields.Required("first_attack", FirstAttackOf, (0, 0));
+        return new PersonalityDef
         {
             Id = definition.Id,
-            BuildOrder = fields.Required("build_order", Scalars.Id, ""),
-            Army = fields.Required("army", Scalars.Id, ""),
-            Values = values.ToImmutable(),
+            Name = fields.Required("name", Scalars.Text, ""),
+            Weights = fields.Required("weights", WeightsOf, default),
+            Armies = fields.Required("armies", ArmiesOf, ImmutableArray<FactionArmy>.Empty),
+            BuildOrders = fields.Required("build_orders", BuildOrdersOf, ImmutableArray<FactionBuildOrders>.Empty),
+            FirstAttackMin = firstMin,
+            FirstAttackMax = firstMax,
+            WaveInterval = fields.Required("wave_interval", Scalars.Ticks, 0),
+            RetreatThreshold = fields.Required("retreat_threshold", Scalars.Percent, Fixed.Zero),
+            TargetPriority = fields.Required("target_priority", TargetPriorityOf, ImmutableArray<string>.Empty),
         };
+    }
+
+    /// <summary><c>{ economy: 1, defense: 0.5, army: 1.5, tech: 1, harassment: 0.2 }</c>: every weight there, each a number.</summary>
+    private static PersonalityWeights WeightsOf(string fileName, YamlNode node)
+    {
+        var weights = Mapping(fileName, node, "weights", WeightKeys, "{ economy: 1, defense: 1, army: 1, tech: 1, harassment: 1 }");
+        Fixed Weight(string key) => Scalars.FixedNumber(fileName, weights[key]);
+        return new PersonalityWeights(Weight("economy"), Weight("defense"), Weight("army"), Weight("tech"), Weight("harassment"));
+    }
+
+    /// <summary><c>{ min: 360s, max: 480s }</c>.</summary>
+    private static (int Min, int Max) FirstAttackOf(string fileName, YamlNode node)
+    {
+        var window = Mapping(fileName, node, "first_attack", ["min", "max"], "{ min: 360s, max: 480s }");
+        return (Scalars.Ticks(fileName, window["min"]), Scalars.Ticks(fileName, window["max"]));
+    }
+
+    /// <summary><c>{ union: standard_army }</c>: an army for every faction, sorted by faction.</summary>
+    private static ImmutableArray<FactionArmy> ArmiesOf(string fileName, YamlNode node)
+    {
+        var armies = ImmutableArray.CreateBuilder<FactionArmy>();
+        foreach (var (faction, value) in ByFaction(fileName, node, "{ union: standard_army }"))
+        {
+            armies.Add(new FactionArmy(faction, Scalars.Id(fileName, value)));
+        }
+
+        return armies.ToImmutable();
+    }
+
+    /// <summary><c>{ union: { simple: …, standard: …, optimized: … } }</c>: the three build orders for every faction, sorted by faction.</summary>
+    private static ImmutableArray<FactionBuildOrders> BuildOrdersOf(string fileName, YamlNode node)
+    {
+        var orders = ImmutableArray.CreateBuilder<FactionBuildOrders>();
+        foreach (var (faction, value) in ByFaction(fileName, node, "{ union: { simple: standard, standard: standard, optimized: standard } }"))
+        {
+            var byQuality = Mapping(fileName, value, $"the build orders of '{faction}'", QualityKeys, "{ simple: standard, standard: standard, optimized: standard }");
+            orders.Add(new FactionBuildOrders(
+                faction, Scalars.Id(fileName, byQuality["simple"]), Scalars.Id(fileName, byQuality["standard"]), Scalars.Id(fileName, byQuality["optimized"])));
+        }
+
+        return orders.ToImmutable();
+    }
+
+    /// <summary><c>[production, army, power, harvesters, defense, core]</c>: every target once, in the order a squad goes for them.</summary>
+    private static ImmutableArray<string> TargetPriorityOf(string fileName, YamlNode node)
+    {
+        var example = $"[{string.Join(", ", PersonalityDef.Targets)}]";
+        if (node is not YamlSequenceNode sequence)
+        {
+            throw RulesFormatException.At(fileName, node, $"expected a list of every target in order, such as {example}");
+        }
+
+        var targets = ImmutableArray.CreateBuilder<string>(sequence.Children.Count);
+        foreach (var child in sequence.Children)
+        {
+            var target = Scalars.Choice(fileName, child, [.. PersonalityDef.Targets]);
+            if (targets.Contains(target))
+            {
+                throw RulesFormatException.At(fileName, child, $"target '{target}' repeats");
+            }
+
+            targets.Add(target);
+        }
+
+        foreach (var target in PersonalityDef.Targets)
+        {
+            if (!targets.Contains(target))
+            {
+                throw RulesFormatException.At(fileName, node, $"target_priority leaves out '{target}': every one of {example} goes in once");
+            }
+        }
+
+        return targets.MoveToImmutable();
+    }
+
+    /// <summary>A mapping with exactly <paramref name="keys"/>: the value of each by key.</summary>
+    private static Dictionary<string, YamlNode> Mapping(string fileName, YamlNode node, string what, string[] keys, string example)
+    {
+        if (node is not YamlMappingNode mapping)
+        {
+            throw RulesFormatException.At(fileName, node, $"expected {what} as a mapping such as {example}");
+        }
+
+        var values = new Dictionary<string, YamlNode>(StringComparer.Ordinal);
+        foreach (var entry in mapping)
+        {
+            var key = Scalars.Text(fileName, entry.Key);
+            if (Array.IndexOf(keys, key) < 0)
+            {
+                throw RulesFormatException.At(fileName, entry.Key, $"unknown key '{key}' in {what}; it has {string.Join(", ", keys)}");
+            }
+
+            values[key] = entry.Value;
+        }
+
+        foreach (var key in keys)
+        {
+            if (!values.ContainsKey(key))
+            {
+                throw RulesFormatException.At(fileName, node, $"'{key}' is missing from {what}");
+            }
+        }
+
+        return values;
+    }
+
+    /// <summary>A mapping from faction ids, at least one, sorted by faction.</summary>
+    private static List<(string Faction, YamlNode Value)> ByFaction(string fileName, YamlNode node, string example)
+    {
+        if (node is not YamlMappingNode { Children.Count: > 0 } mapping)
+        {
+            throw RulesFormatException.At(fileName, node, $"expected a mapping from factions such as {example}");
+        }
+
+        var factions = new SortedDictionary<string, YamlNode>(StringComparer.Ordinal);
+        foreach (var entry in mapping)
+        {
+            var faction = Scalars.Id(fileName, entry.Key);
+            if (!factions.TryAdd(faction, entry.Value))
+            {
+                throw RulesFormatException.At(fileName, entry.Key, $"faction '{faction}' repeats");
+            }
+        }
+
+        var list = new List<(string Faction, YamlNode Value)>(factions.Count);
+        foreach (var (faction, value) in factions)
+        {
+            list.Add((faction, value));
+        }
+
+        return list;
     }
 
     /// <summary>125% read as a fraction, 1.25, back to the whole percent, 125.</summary>

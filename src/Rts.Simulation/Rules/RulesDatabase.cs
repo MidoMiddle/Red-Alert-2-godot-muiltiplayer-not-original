@@ -22,7 +22,8 @@ public sealed class RulesDatabase
         ImmutableArray<ProjectileDef> projectiles,
         ImmutableArray<BuildOrderDef> buildOrders,
         ImmutableArray<ArmyDef> armies,
-        ImmutableArray<DifficultyDef> difficulties)
+        ImmutableArray<DifficultyDef> difficulties,
+        ImmutableArray<PersonalityDef> personalities)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -37,6 +38,7 @@ public sealed class RulesDatabase
         BuildOrders = buildOrders;
         Armies = armies;
         Difficulties = difficulties;
+        Personalities = personalities;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -67,8 +69,11 @@ public sealed class RulesDatabase
     /// <summary>The armies the bots build (M5 step 6).</summary>
     public ImmutableArray<ArmyDef> Armies { get; }
 
-    /// <summary>The levels of the bots (M5 step 14).</summary>
+    /// <summary>The levels of the bots (M5 step 14; all four — M8 step 1).</summary>
     public ImmutableArray<DifficultyDef> Difficulties { get; }
+
+    /// <summary>The personalities of the bots (M8 step 1).</summary>
+    public ImmutableArray<PersonalityDef> Personalities { get; }
 
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
 
@@ -77,6 +82,8 @@ public sealed class RulesDatabase
     public bool TryGetArmy(string id, out ArmyDef definition) => TryFind(Armies, id, out definition);
 
     public bool TryGetDifficulty(string id, out DifficultyDef definition) => TryFind(Difficulties, id, out definition);
+
+    public bool TryGetPersonality(string id, out PersonalityDef definition) => TryFind(Personalities, id, out definition);
 
     public bool TryGetTerrain(string id, out TerrainDef definition) => TryFind(Terrains, id, out definition);
 

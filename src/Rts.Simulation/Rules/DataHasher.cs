@@ -164,18 +164,50 @@ public static class DataHasher
             Add(hash, army.AgainstVehicles);
         }
 
-        // The levels of the bots (M5 step 14), every number in the order of the keys.
+        // The levels of the bots (M5 step 14; M8 step 1), every number in the order of the keys, a choice by the place of its word.
         hash.Add(rules.Difficulties.Length);
         foreach (var difficulty in rules.Difficulties)
         {
             Add(hash, difficulty.Id);
-            Add(hash, difficulty.BuildOrder);
-            Add(hash, difficulty.Army);
             hash.Add(difficulty.Values.Count);
             foreach (var (key, _) in DifficultyDef.Keys)
             {
                 hash.Add(difficulty.Values.TryGetValue(key, out var value) ? value : int.MinValue);
             }
+        }
+
+        // The personalities of the bots (M8 step 1); the name is the screen's.
+        hash.Add(rules.Personalities.Length);
+        foreach (var personality in rules.Personalities)
+        {
+            Add(hash, personality.Id);
+            var weights = personality.Weights;
+            hash.Add(weights.Economy.Raw);
+            hash.Add(weights.Defense.Raw);
+            hash.Add(weights.Army.Raw);
+            hash.Add(weights.Tech.Raw);
+            hash.Add(weights.Harassment.Raw);
+            hash.Add(personality.Armies.Length);
+            foreach (var army in personality.Armies)
+            {
+                Add(hash, army.Faction);
+                Add(hash, army.Army);
+            }
+
+            hash.Add(personality.BuildOrders.Length);
+            foreach (var orders in personality.BuildOrders)
+            {
+                Add(hash, orders.Faction);
+                Add(hash, orders.Simple);
+                Add(hash, orders.Standard);
+                Add(hash, orders.Optimized);
+            }
+
+            hash.Add(personality.FirstAttackMin);
+            hash.Add(personality.FirstAttackMax);
+            hash.Add(personality.WaveInterval);
+            hash.Add(personality.RetreatThreshold.Raw);
+            Add(hash, personality.TargetPriority);
         }
 
         hash.Add(rules.Economies.Length);

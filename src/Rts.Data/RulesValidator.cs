@@ -74,6 +74,11 @@ internal static class RulesValidator
             checker.Difficulty(difficulty);
         }
 
+        foreach (var personality in rules.Personalities)
+        {
+            checker.Personality(personality);
+        }
+
         foreach (var warhead in rules.Warheads)
         {
             checker.Warhead(warhead);
@@ -380,34 +385,25 @@ internal static class RulesValidator
         }
 
         /// <summary>
-        /// An army of the bots (M5 step 6): of a known faction, its shares — units of that faction — make a whole, and the units that
-        /// gain against infantry or vehicles are among them.
-        /// </summary>
-        /// <summary>
-        /// A level of the bots (M5 step 14): its build order and army are in the data, every period is above zero, no other number is below
-        /// zero, a squad turns back below a share of its strength under 100%, and every wave is at least as big as the one before.
+        /// A level of the bots (M5 step 14, M8 step 1): every period, the actions a second and the squads at once are above zero, no other
+        /// number is below zero, a chance or a share is 100% at most, a squad turns back below a share of its strength under 100%, and
+        /// every wave is at least as big as the one before. The words of a choice are checked as the file is read.
         /// </summary>
         public void Difficulty(DifficultyDef difficulty)
         {
-            if (!rules.TryGetBuildOrder(difficulty.BuildOrder, out _))
-            {
-                Error(difficulty.Id, "build_order", Missing(difficulty.Id, "build order", difficulty.BuildOrder));
-            }
-
-            if (!rules.TryGetArmy(difficulty.Army, out _))
-            {
-                Error(difficulty.Id, "army", Missing(difficulty.Id, "army", difficulty.Army));
-            }
-
             foreach (var (key, value) in difficulty.Values)
             {
-                if (key.EndsWith("_period", StringComparison.Ordinal))
+                if (key.EndsWith("_period", StringComparison.Ordinal) || key is "actions_per_second" or "parallel_squads")
                 {
                     Positive(difficulty.Id, key, value);
                 }
                 else if (value < 0)
                 {
                     Error(difficulty.Id, key, $"'{key}' of '{difficulty.Id}' must not be below zero");
+                }
+                else if (value > 100 && key is "power_reserve" or "counter_shift" or "wounded" or "mistake_chance" or "counter_pick")
+                {
+                    Error(difficulty.Id, key, $"'{key}' of '{difficulty.Id}' is a share: 100% at most");
                 }
             }
 
@@ -422,6 +418,94 @@ internal static class RulesValidator
             }
         }
 
+        /// <summary>
+        /// A personality of the bots (M8 step 1): no weight below zero; for every faction of the data an army and three build orders, each in
+        /// the data and of that faction, and none for a faction there is not; the first attack not later than its window allows; waves
+        /// apart; a squad that turns back before it is outmatched completely.
+        /// </summary>
+        public void Personality(PersonalityDef personality)
+        {
+            var id = personality.Id;
+            var weights = personality.Weights;
+            foreach (var (key, weight) in new[]
+            {
+                ("economy", weights.Economy), ("defense", weights.Defense), ("army", weights.Army), ("tech", weights.Tech), ("harassment", weights.Harassment),
+            })
+            {
+                if (weight < Fixed.Zero)
+                {
+                    PathError(id, "weights", [key], $"the weight '{key}' of '{id}' must not be below zero");
+                }
+            }
+
+            foreach (var faction in rules.Factions)
+            {
+                if (!personality.Armies.Any(army => army.Faction == faction.Id))
+                {
+                    Error(id, "armies", $"'{id}' has no army for faction '{faction.Id}'");
+                }
+
+                if (!personality.BuildOrders.Any(orders => orders.Faction == faction.Id))
+                {
+                    Error(id, "build_orders", $"'{id}' has no build orders for faction '{faction.Id}'");
+                }
+            }
+
+            foreach (var (faction, army) in personality.Armies)
+            {
+                if (!rules.TryGetFaction(faction, out _))
+                {
+                    PathError(id, "armies", [faction], Missing(id, "faction", faction), atValue: false);
+                }
+                else if (!rules.TryGetArmy(army, out var definition))
+                {
+                    PathError(id, "armies", [faction], Missing(id, "army", army));
+                }
+                else if (definition.Faction != faction && rules.TryGetFaction(definition.Faction, out _))
+                {
+                    PathError(id, "armies", [faction], $"'{id}' gives '{faction}' the army '{army}', which belongs to '{definition.Faction}'");
+                }
+            }
+
+            foreach (var orders in personality.BuildOrders)
+            {
+                if (!rules.TryGetFaction(orders.Faction, out _))
+                {
+                    PathError(id, "build_orders", [orders.Faction], Missing(id, "faction", orders.Faction), atValue: false);
+                    continue;
+                }
+
+                foreach (var (quality, order) in new[] { ("simple", orders.Simple), ("standard", orders.Standard), ("optimized", orders.Optimized) })
+                {
+                    if (!rules.TryGetBuildOrder(order, out var definition))
+                    {
+                        PathError(id, "build_orders", [orders.Faction, quality], Missing(id, "build order", order));
+                    }
+                    else if (definition.Faction != orders.Faction && rules.TryGetFaction(definition.Faction, out _))
+                    {
+                        PathError(
+                            id, "build_orders", [orders.Faction, quality],
+                            $"'{id}' gives '{orders.Faction}' the build order '{order}', which belongs to '{definition.Faction}'");
+                    }
+                }
+            }
+
+            if (personality.FirstAttackMin > personality.FirstAttackMax)
+            {
+                PathError(id, "first_attack", ["min"], $"the first attack of '{id}' would start after its window ends: min must not be above max");
+            }
+
+            Positive(id, "wave_interval", personality.WaveInterval);
+            if (personality.RetreatThreshold <= Fixed.Zero || personality.RetreatThreshold > Fixed.One)
+            {
+                Error(id, "retreat_threshold", $"'retreat_threshold' of '{id}' must be above 0% and 100% at most");
+            }
+        }
+
+        /// <summary>
+        /// An army of the bots (M5 step 6): of a known faction, its shares — units of that faction — make a whole, and the units that
+        /// gain against infantry or vehicles are among them.
+        /// </summary>
         public void Army(ArmyDef army)
         {
             FactionOf(army.Id, army.Faction);
@@ -608,6 +692,7 @@ internal static class RulesValidator
             : rules.TryGetBuildOrder(id, out _) ? "build order"
             : rules.TryGetArmy(id, out _) ? "army"
             : rules.TryGetDifficulty(id, out _) ? "difficulty"
+            : rules.TryGetPersonality(id, out _) ? "personality"
             : null;
 
         private void Positive(string id, string key, int value)
@@ -645,16 +730,27 @@ internal static class RulesValidator
         private void SpeedError(string id, string locomotor, string reason) => MapKeyError(id, "speed", locomotor, reason);
 
         /// <summary>An error at one key of a mapping field, such as an armor of <c>verses</c>.</summary>
-        private void MapKeyError(string id, string field, string mapKey, string reason)
+        private void MapKeyError(string id, string field, string mapKey, string reason) => PathError(id, field, [mapKey], reason, atValue: false);
+
+        /// <summary>
+        /// An error inside a mapping field, by the keys down to it — <c>build_orders</c>, <c>union</c>, <c>simple</c>: at the value of the
+        /// last key, or at the key itself; as deep as the file goes.
+        /// </summary>
+        private void PathError(string id, string field, string[] path, string reason, bool atValue = true)
         {
             var (fileName, node) = Place(id, field);
-            if (node is YamlMappingNode mapping)
+            foreach (var step in path)
             {
+                if (node is not YamlMappingNode mapping)
+                {
+                    break;
+                }
+
                 foreach (var entry in mapping)
                 {
-                    if (entry.Key is YamlScalarNode { Value: { } key } && key == mapKey)
+                    if (entry.Key is YamlScalarNode { Value: { } key } && key == step)
                     {
-                        node = entry.Key;
+                        node = atValue || step != path[^1] ? entry.Value : entry.Key;
                         break;
                     }
                 }

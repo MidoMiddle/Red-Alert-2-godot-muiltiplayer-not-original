@@ -95,6 +95,32 @@ public sealed class MatchReplayTests
         Assert.NotEqual(ReplayStatus.Match, other.Status);
     }
 
+    [Theory]
+    [InlineData(AiDifficulty.Easy)]
+    [InlineData(AiDifficulty.Medium)]
+    [InlineData(AiDifficulty.Hard)]
+    [InlineData(AiDifficulty.Brutal)]
+    public void The_level_of_a_bot_comes_back_from_the_replay(AiDifficulty difficulty)
+    {
+        // M8 step 1: the four levels in the byte of the level; «Medium» keeps the byte of M5.
+        var setup = MatchSetupTests.OneOnOne();
+        setup = setup with { Players = [setup.Players[0], setup.Players[1] with { Difficulty = difficulty }] };
+        var recorder = new ReplayRecorder(new GameSimulation(SimulationSettings.ForMatch(setup, new MapGrid(64, 64)), TestRules.Standard));
+
+        Assert.Equal(difficulty, ReplayFormat.Read(ReplayFormat.Write(recorder.Build())).Settings.Match!.Players[1].Difficulty);
+    }
+
+    [Fact]
+    public void A_replay_with_a_level_there_is_not_is_refused()
+    {
+        var setup = MatchSetupTests.OneOnOne();
+        setup = setup with { Players = [setup.Players[0], setup.Players[1] with { Difficulty = (AiDifficulty)5 }] };
+        var recorder = new ReplayRecorder(new GameSimulation(SimulationSettings.ForMatch(setup, new MapGrid(64, 64)), TestRules.Standard));
+
+        var error = Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(ReplayFormat.Write(recorder.Build())));
+        Assert.Contains("difficulty 5", error.Message);
+    }
+
     [Fact]
     public void A_replay_without_a_match_has_no_bot_commands()
     {

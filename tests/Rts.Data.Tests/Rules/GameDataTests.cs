@@ -45,8 +45,24 @@ public sealed class GameDataTests
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
-        // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order.
-        Assert.Equal(0xf75264da1c8f7c36UL, GameDataFiles.Current.Hash);
+        // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities).
+        Assert.Equal(0x8c7eb50f5a4c4cd1UL, GameDataFiles.Current.Hash);
+    }
+
+    [Fact]
+    public void The_game_data_has_the_four_levels_and_the_four_personalities_of_the_bots()
+    {
+        // M8 step 1, 4.2 and 4.7: every level and every personality loads, every personality plays the Union.
+        var database = GameDataFiles.Rules.Database;
+
+        Assert.Equal(["ai_brutal", "ai_easy", "ai_hard", "ai_medium"], database.Difficulties.Select(level => level.Id));
+        Assert.Equal(["aggressor", "balanced", "builder", "saboteur"], database.Personalities.Select(personality => personality.Id));
+        Assert.All(database.Personalities, personality =>
+        {
+            Assert.Equal("union", Assert.Single(personality.Armies).Faction);
+            Assert.Equal("union", Assert.Single(personality.BuildOrders).Faction);
+        });
     }
 
     [Fact]

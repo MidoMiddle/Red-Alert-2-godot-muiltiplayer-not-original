@@ -247,12 +247,11 @@ internal static class TestRules
             AgainstInfantry = ["heavy_tank", "support_vehicle"],
             AgainstVehicles = ["rocketeer", "tesla_tank"],
         });
-        // «Medium» of game/data/ai/difficulty.yaml (M5 step 14): periods and counts, percentages as whole percent, durations in ticks.
+        // «Medium» of game/data/ai/difficulty.yaml (M5 step 14, M8 step 1): periods and counts, percentages as whole percent, durations in
+        // ticks, a choice by the place of its word.
         builder.Add(new DifficultyDef
         {
             Id = "ai_medium",
-            BuildOrder = "standard",
-            Army = "standard_army",
             Values = new Dictionary<string, int>
             {
                 ["strategy_period"] = 45, ["economy_period"] = 15, ["build_period"] = 15, ["production_period"] = 15,
@@ -264,7 +263,24 @@ internal static class TestRules
                 ["gather_cells"] = 6, ["squad_spread_cells"] = 6, ["engage_cells"] = 8, ["wounded"] = 35, ["sweep_places"] = 6,
                 ["all_in_after"] = 1800, ["all_in_units"] = 3, ["sell_every"] = 450,
                 ["perception_delay"] = 15, ["threat_clear"] = 150, ["base_cells"] = 8, ["max_defenses"] = 3,
+                ["actions_per_second"] = 3, ["mistake_chance"] = 10, ["micro"] = 1, ["scouting"] = 1, ["counter_pick"] = 30,
+                ["first_attack_delay"] = 5400, ["parallel_squads"] = 2, ["defend_harvesters"] = 1, ["expansion"] = 1,
+                ["build_order_quality"] = 1, ["rebuild_destroyed"] = 1,
             }.ToImmutableSortedDictionary(StringComparer.Ordinal),
+        });
+        // «Balanced» of game/data/ai/personalities (M8 step 1): the build order and the army above for every quality.
+        builder.Add(new PersonalityDef
+        {
+            Id = "balanced",
+            Name = "Balanced",
+            Weights = new PersonalityWeights(Fixed.One, Fixed.One, Fixed.One, Fixed.One, Fixed.One),
+            Armies = [new FactionArmy("union", "standard_army")],
+            BuildOrders = [new FactionBuildOrders("union", "standard", "standard", "standard")],
+            FirstAttackMin = 5400,
+            FirstAttackMax = 7200,
+            WaveInterval = 2700,
+            RetreatThreshold = Fixed.FromRatio(70, 100),
+            TargetPriority = ["harvesters", "defense", "production", "core", "army", "power"],
         });
         return builder.Build();
     }

@@ -17,6 +17,7 @@ public sealed class RulesValidatorTests
     private const string Projectiles = "combat/projectiles.yaml";
     private const string BuildOrders = "ai/union.yaml";
     private const string Levels = "ai/difficulty.yaml";
+    private const string Personalities = "ai/personalities.yaml";
 
     /// <summary>The files of the test dataset as (name, text), in the order <see cref="RulesLoader.LoadDirectory"/> reads them.</summary>
     private static List<(string FileName, string Text)> Dataset() =>
@@ -147,9 +148,15 @@ public sealed class RulesValidatorTests
     }
 
     [Theory]
-    [InlineData("build_order: standard", "build_order: rush", "'ai_medium' refers to build order 'rush', which is not defined")]
-    [InlineData("army: standard_army", "army: elite", "'ai_medium' refers to army 'elite', which is not defined")]
     [InlineData("tactics_period: 15", "tactics_period: 0", "'tactics_period' of 'ai_medium' must be above zero")]
+    [InlineData("actions_per_second: 3", "actions_per_second: 0", "'actions_per_second' of 'ai_medium' must be above zero")]
+    [InlineData("parallel_squads: 2", "parallel_squads: 0", "'parallel_squads' of 'ai_medium' must be above zero")]
+    [InlineData("mistake_chance: 10%", "mistake_chance: 120%", "'mistake_chance' of 'ai_medium' is a share: 100% at most")]
+    [InlineData("wounded: 35%", "wounded: 101%", "'wounded' of 'ai_medium' is a share: 100% at most")]
+    [InlineData("micro: focus", "micro: smart", "'smart' must be one of none, focus, retreat_wounded, keep_range")]
+    [InlineData("defend_harvesters: yes", "defend_harvesters: true", "'true' must be one of no, yes")]
+    [InlineData("build_order_quality: standard", "build_order_quality: best", "'best' must be one of simple, standard, optimized")]
+    [InlineData("  rebuild_destroyed: yes\n", "", "'ai_medium' has no 'rebuild_destroyed'")]
     [InlineData("gather_cells: 6", "gather_cells: -1", "'gather_cells' of 'ai_medium' must not be below zero")]
     [InlineData("retreat_at_strength: 30%", "retreat_at_strength: 100%", "'ai_medium' would turn back before it lost anything")]
     [InlineData("attack_growth_per_wave: 125%", "attack_growth_per_wave: 90%", "the waves of 'ai_medium' would shrink")]
@@ -159,6 +166,67 @@ public sealed class RulesValidatorTests
         var errors = Errors(Edited(Dataset(), Levels, text, replacement));
 
         Assert.Contains(errors, error => error.FileName == Levels && error.Reason.Contains(reason, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_wrong_word_of_a_level_is_reported_at_the_word()
+    {
+        var error = Fails(Levels, "micro: focus", "micro: smart");
+
+        Assert.Equal((Levels, 57, 10), (error.FileName, error.Line, error.Column));
+    }
+
+    [Theory]
+    [InlineData("economy: 1,", "economy: -1,", "the weight 'economy' of 'balanced' must not be below zero")]
+    [InlineData("economy: 1,", "economy: much,", "'much' must be a number such as 1.25")]
+    [InlineData("harassment: 1 }", "harassment: 1, luck: 2 }", "unknown key 'luck' in weights; it has economy, defense, army, tech, harassment")]
+    [InlineData(" tech: 1,", "", "'tech' is missing from weights")]
+    [InlineData("{ union: standard_army }", "{ union: elite_army }", "'balanced' refers to army 'elite_army', which is not defined")]
+    [InlineData("{ union: standard_army }", "{ union: standard_army, allies: standard_army }", "'balanced' refers to faction 'allies', which is not defined")]
+    [InlineData("  armies: { union: standard_army }\n", "", "'balanced' has no 'armies'")]
+    [InlineData("simple: standard,", "simple: rush,", "'balanced' refers to build order 'rush', which is not defined")]
+    [InlineData("optimized: standard }", "optimized: standard_army }", "'balanced' refers to build order 'standard_army', but 'standard_army' is army")]
+    [InlineData(", optimized: standard }", " }", "'optimized' is missing from the build orders of 'union'")]
+    [InlineData("    union: { simple", "    allies: { simple", "'balanced' has no build orders for faction 'union'")]
+    [InlineData("min: 360s, max: 480s", "min: 500s, max: 480s", "the first attack of 'balanced' would start after its window ends")]
+    [InlineData("wave_interval: 180s", "wave_interval: 0s", "'wave_interval' of 'balanced' must be above zero")]
+    [InlineData("retreat_threshold: 70%", "retreat_threshold: 0%", "'retreat_threshold' of 'balanced' must be above 0% and 100% at most")]
+    [InlineData("army, power]", "army, army]", "target 'army' repeats")]
+    [InlineData("army, power]", "army, pwer]", "'pwer' must be one of production, army, power, harvesters, defense, core")]
+    [InlineData(", army, power]", ", army]", "target_priority leaves out 'power'")]
+    public void A_personality_of_the_bots_is_checked_like_the_rest(string text, string replacement, string reason)
+    {
+        var errors = Errors(Edited(Dataset(), Personalities, text, replacement));
+
+        Assert.Contains(errors, error => error.FileName == Personalities && error.Reason.Contains(reason, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_mistake_inside_a_personality_is_reported_where_it_is_written()
+    {
+        var weight = Fails(Personalities, "economy: 1,", "economy: -1,");
+        var order = Fails(Personalities, "simple: standard,", "simple: rush,");
+        var missing = Fails(Personalities, ", optimized: standard }", " }");
+
+        Assert.Equal((5, 23), (weight.Line, weight.Column));
+        Assert.Equal((8, 22), (order.Line, order.Column));
+        Assert.Equal((8, 12), (missing.Line, missing.Column));
+    }
+
+    [Fact]
+    public void A_personality_gives_every_faction_its_own_army_and_build_orders()
+    {
+        // A second faction with an army of its own: the personality that gives it the army of the Union is wrong.
+        var files = Edited(Dataset(), Personalities, "{ union: standard_army }", "{ union: standard_army, soviet: standard_army }");
+        files.Add((
+            "zz.yaml",
+            "soviet:\n  kind: faction\n  name: Soviet\n  mcv: mcv\n  construction_yard: construction_yard\n  refinery: refinery\n" +
+            "  harvester: harvester\n"));
+
+        var errors = Errors(files);
+
+        Assert.Contains(errors, error => error.Reason == "'balanced' gives 'soviet' the army 'standard_army', which belongs to 'union'");
+        Assert.Contains(errors, error => error.Reason == "'balanced' has no build orders for faction 'soviet'");
     }
 
     [Fact]
@@ -327,8 +395,11 @@ public sealed class RulesValidatorTests
 
         var errors = Errors(files);
 
+        // A faction of its own needs its own army and build orders in every personality of the bots, too (M8 step 1).
         Assert.Equal(
             [
+                "'balanced' has no army for faction 'soviet'",
+                "'balanced' has no build orders for faction 'soviet'",
                 "'soviet' refers to unit 'mcv', but it belongs to 'union'",
                 "'soviet' refers to building 'construction_yard', but it belongs to 'union'",
                 "'soviet' refers to building 'refinery', but it belongs to 'union'",

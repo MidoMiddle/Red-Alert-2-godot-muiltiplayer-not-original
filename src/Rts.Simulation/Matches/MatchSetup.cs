@@ -13,10 +13,16 @@ public enum PlayerKind : byte
     Ai = 1,
 }
 
-/// <summary>The level of a bot; only «Medium» in M5, the others come with M8.</summary>
+/// <summary>
+/// The level of a bot (docs/implementation/M8_ai_difficulty.md, 4.2). «Medium» keeps the byte it had in M5, so the replays and messages
+/// of M5 read the same; the levels of M8 come after it.
+/// </summary>
 public enum AiDifficulty : byte
 {
     Medium = 1,
+    Easy = 2,
+    Hard = 3,
+    Brutal = 4,
 }
 
 /// <summary>The options of a match (docs/implementation/M5_first_bot.md, 4.11).</summary>

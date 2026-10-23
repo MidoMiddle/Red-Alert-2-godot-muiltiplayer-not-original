@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace Rts.Simulation.Rules;
@@ -13,12 +15,16 @@ public enum DifficultyValue
 
     /// <summary><c>3s</c>, kept in ticks.</summary>
     Duration,
+
+    /// <summary>A word of <see cref="DifficultyDef.Choices"/>, <c>focus</c>, kept as its place in the list.</summary>
+    Choice,
 }
 
 /// <summary>
-/// A level of the bots (docs/implementation/M5_first_bot.md, 4.7, step 14; the whole table of levels — M8, 4.2): how often every module
-/// thinks, the economy, the base, the army, scouting, squads and defense, by <see cref="Keys"/>; the build order and the army it uses.
-/// Data like the rest: checked as it loads — every key there — and hashed, so that every machine of a match runs the same bot.
+/// A level of the bots (docs/implementation/M5_first_bot.md, 4.7, step 14; docs/implementation/M8_ai_difficulty.md, 4.2, step 1): how often
+/// every module thinks, the economy, the base, the army, scouting, squads and defense, and the imperfection of M8, by <see cref="Keys"/>.
+/// The build order and the army are the personality's (<see cref="PersonalityDef"/>); the level says only which quality of build order
+/// it takes. Data like the rest: checked as it loads — every key there — and hashed, so that every machine of a match runs the same bot.
 /// </summary>
 public sealed record DifficultyDef : IDefinition
 {
@@ -38,16 +44,32 @@ public sealed record DifficultyDef : IDefinition
         ("all_in_after", DifficultyValue.Duration), ("all_in_units", DifficultyValue.Count), ("sell_every", DifficultyValue.Duration),
         ("perception_delay", DifficultyValue.Duration), ("threat_clear", DifficultyValue.Duration), ("base_cells", DifficultyValue.Count),
         ("max_defenses", DifficultyValue.Count),
+        // M8, 4.2: what makes the levels differ. The bot of M8 step 1 reads them; the steps that follow make it act on them.
+        ("actions_per_second", DifficultyValue.Count), ("mistake_chance", DifficultyValue.Percent), ("micro", DifficultyValue.Choice),
+        ("scouting", DifficultyValue.Choice), ("counter_pick", DifficultyValue.Percent), ("first_attack_delay", DifficultyValue.Duration),
+        ("parallel_squads", DifficultyValue.Count), ("defend_harvesters", DifficultyValue.Choice), ("expansion", DifficultyValue.Choice),
+        ("build_order_quality", DifficultyValue.Choice), ("rebuild_destroyed", DifficultyValue.Choice),
     ];
+
+    /// <summary>The words of every <see cref="DifficultyValue.Choice"/> key, from the weakest bot to the strongest.</summary>
+    public static readonly ImmutableSortedDictionary<string, ImmutableArray<string>> Choices = ImmutableSortedDictionary.CreateRange(
+        StringComparer.Ordinal,
+        [
+            Choice("micro", "none", "focus", "retreat_wounded", "keep_range"),
+            Choice("scouting", "none", "periodic", "constant", "constant_expansions"),
+            Choice("defend_harvesters", "no", "yes"),
+            Choice("expansion", "none", "late", "early"),
+            Choice("build_order_quality", "simple", "standard", "optimized"),
+            Choice("rebuild_destroyed", "partial", "yes", "priority"),
+        ]);
 
     public required string Id { get; init; }
 
-    /// <summary>The <c>build_order</c> of the data the bot follows.</summary>
-    public required string BuildOrder { get; init; }
-
-    /// <summary>The <c>army</c> of the data the bot builds.</summary>
-    public required string Army { get; init; }
-
-    /// <summary>The numbers by <see cref="Keys"/>: counts as they are, percentages as whole percent, durations in ticks.</summary>
+    /// <summary>
+    /// The numbers by <see cref="Keys"/>: counts as they are, percentages as whole percent, durations in ticks, a choice as the place of
+    /// its word in <see cref="Choices"/>.
+    /// </summary>
     public required ImmutableSortedDictionary<string, int> Values { get; init; }
+
+    private static KeyValuePair<string, ImmutableArray<string>> Choice(string key, params string[] words) => new(key, [.. words]);
 }

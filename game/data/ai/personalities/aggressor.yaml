@@ -1,0 +1,13 @@
+# «Aggressor» (docs/implementation/M8_ai_difficulty.md, 4.7): the army far above defense, an early rush at 3–5 minutes, a wave every two
+# minutes, production and the army first. The keys — as in balanced.yaml.
+aggressor:
+  kind: personality
+  name: Aggressor
+  weights: { economy: 0.8, defense: 0.4, army: 1.5, tech: 0.6, harassment: 0.7 }
+  armies: { union: standard_army }
+  build_orders:
+    union: { simple: standard, standard: standard, optimized: standard }
+  first_attack: { min: 180s, max: 300s }
+  wave_interval: 120s
+  retreat_threshold: 60%
+  target_priority: [production, army, power, harvesters, defense, core]
