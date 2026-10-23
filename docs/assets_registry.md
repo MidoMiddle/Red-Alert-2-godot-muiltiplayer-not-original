@@ -13,4 +13,4 @@
 
 | Файл | Способ | Тариф | Дата | Промт | Референс | Лицензия | Исходник |
 |---|---|---|---|---|---|---|---|
-| `game/assets/models/obstacle/anti_tank_hedgehog/obstacle_anti_tank_hedgehog.glb` | Blender 5.2.3, вручную: процедурная геометрия по [appearance.md](obstacle_elements/02_anti_tank_hedgehog/appearance.md) | — | 2026-10-23 | — | [02 Противотанковый еж: как выглядит](obstacle_elements/02_anti_tank_hedgehog/appearance.md) | собственная работа проекта | `assets_src/models/obstacle/anti_tank_hedgehog/anti_tank_hedgehog.blend` |
+| `game/assets/models/obstacle/anti_tank_hedgehog/obstacle_anti_tank_hedgehog.glb` | Blender 5.2.3, вручную: геометрия и процедурный материал по [appearance.md](obstacle_elements/02_anti_tank_hedgehog/appearance.md), текстуры запечены 1024² (albedo, normal, ORM) | — | 2026-10-23 | — | [02 Противотанковый еж: как выглядит](obstacle_elements/02_anti_tank_hedgehog/appearance.md) | собственная работа проекта | `assets_src/models/obstacle/anti_tank_hedgehog/anti_tank_hedgehog.blend`; запечённые текстуры `assets_src/models/obstacle/anti_tank_hedgehog/bake/` |
