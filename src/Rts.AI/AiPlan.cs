@@ -67,6 +67,12 @@ public sealed class AiPlan
     /// <summary>Where the last threat the defense of the base was too weak for came from; null before one (step 9).</summary>
     public CellPos? AttackedFrom { get; internal set; }
 
+    /// <summary>
+    /// Until this tick the bot hits back (M8 step 10a): it beat an attack at its base with an army no weaker than the attack, and the enemy
+    /// is what it sees — what is left of its army has just gone.
+    /// </summary>
+    public int CounterUntil { get; internal set; }
+
     /// <summary>While the base is defended the army does not save the money of the next building for it (step 9).</summary>
     public bool ArmyFirst { get; internal set; }
 

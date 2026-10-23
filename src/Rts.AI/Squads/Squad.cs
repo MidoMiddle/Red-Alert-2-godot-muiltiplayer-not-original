@@ -58,6 +58,9 @@ public sealed class Squad
     /// <summary>The places it swept for an enemy it knows nothing of (step 14), so it does not come back to them.</summary>
     internal List<CellPos> Swept { get; } = new();
 
+    /// <summary>A raid waits at a field for a harvester until this tick (M8 step 10a); 0 while it does not wait.</summary>
+    internal int AmbushUntil { get; set; }
+
     internal void Add(EntityId unit) => _units.Add(unit);
 
     internal void AddAll(Squad other) => _units.AddRange(other._units);

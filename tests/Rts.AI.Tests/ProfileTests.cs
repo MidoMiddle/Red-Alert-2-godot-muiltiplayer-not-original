@@ -62,7 +62,8 @@ public sealed class ProfileTests
     public void The_levels_share_what_the_steps_of_m8_have_not_yet_made_differ()
     {
         // The economy, the base, scouting, the squads and the defense of M5: alike on every level but what the Arena tuned (step 10) — how
-        // often «Easy» sees to its economy, base and army, the soldiers it queues, the harvesters by the count or by the ore.
+        // often «Easy» sees to its economy, base and army, the soldiers it queues, the harvesters by the count or by the ore — and what «Hard»
+        // and «Brutal» must know before they attack (step 10a).
         var medium = AiSettings.From(Level("ai_medium"));
         foreach (var id in new[] { "ai_easy", "ai_hard", "ai_brutal" })
         {
@@ -76,7 +77,7 @@ public sealed class ProfileTests
                     CounterPickPercent = medium.CounterPickPercent, FirstAttackDelay = medium.FirstAttackDelay, ParallelSquads = medium.ParallelSquads,
                     DefendHarvesters = medium.DefendHarvesters, Expansion = medium.Expansion, Quality = medium.Quality, Rebuild = medium.Rebuild,
                     EconomyPeriod = medium.EconomyPeriod, BuildPeriod = medium.BuildPeriod, ProductionPeriod = medium.ProductionPeriod,
-                    InfantryQueued = medium.InfantryQueued, HarvestersByOre = medium.HarvestersByOre,
+                    InfantryQueued = medium.InfantryQueued, HarvestersByOre = medium.HarvestersByOre, Knowledge = medium.Knowledge,
                 });
         }
     }
@@ -187,6 +188,17 @@ public sealed class ProfileTests
         // The rules of the simulation tests have «Medium» only.
         Assert.Throws<ArgumentException>(() => MatchBots.SettingsOf(AiDifficulty.Hard, "union", TestRules.Standard));
         Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, "union", TestRules.Standard));
+    }
+
+    [Theory]
+    // M8 step 10a: what a level must know before it attacks — «Hard» and «Brutal» the army itself.
+    [InlineData("ai_easy", AttackKnowledge.Base)]
+    [InlineData("ai_medium", AttackKnowledge.Base)]
+    [InlineData("ai_hard", AttackKnowledge.Army)]
+    [InlineData("ai_brutal", AttackKnowledge.Army)]
+    public void What_a_level_must_know_before_it_attacks_comes_from_the_data(string level, AttackKnowledge knowledge)
+    {
+        Assert.Equal(knowledge, AiSettings.From(Level(level)).Knowledge);
     }
 
     [Theory]

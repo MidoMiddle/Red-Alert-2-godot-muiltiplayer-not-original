@@ -50,7 +50,7 @@ public sealed record DifficultyDef : IDefinition
         ("actions_per_second", DifficultyValue.Count), ("mistake_chance", DifficultyValue.Percent), ("micro", DifficultyValue.Choice),
         ("scouting", DifficultyValue.Choice), ("counter_pick", DifficultyValue.Percent), ("first_attack_delay", DifficultyValue.Duration),
         ("parallel_squads", DifficultyValue.Count), ("defend_harvesters", DifficultyValue.Choice), ("expansion", DifficultyValue.Choice),
-        ("build_order_quality", DifficultyValue.Choice), ("rebuild_destroyed", DifficultyValue.Choice),
+        ("build_order_quality", DifficultyValue.Choice), ("rebuild_destroyed", DifficultyValue.Choice), ("attack_knowledge", DifficultyValue.Choice),
         // M8, 4.5 (step 2): the bonuses of the player, not of the bot — the simulation gives them at the start of a match.
         ("income_bonus", DifficultyValue.Percent), ("build_speed_bonus", DifficultyValue.Percent), ("reveal_map", DifficultyValue.Choice),
     ];
@@ -66,6 +66,7 @@ public sealed record DifficultyDef : IDefinition
             Choice("expansion", "none", "late", "early"),
             Choice("build_order_quality", "simple", "standard", "optimized"),
             Choice("rebuild_destroyed", "partial", "yes", "priority"),
+            Choice("attack_knowledge", "base", "army"),
             Choice("reveal_map", "no", "yes"),
         ]);
 

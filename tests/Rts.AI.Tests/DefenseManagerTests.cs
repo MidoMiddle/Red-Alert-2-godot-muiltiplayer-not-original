@@ -166,4 +166,35 @@ public sealed class DefenseManagerTests
         Assert.False(context.Plan.AttackAllowed);
         Assert.True(context.Plan.ArmyFirst);
     }
+
+    [Theory]
+    // M8 step 10a: an attack beaten back by an army no weaker than it was at its strongest, and that army not more than twice the attack,
+    // opens a minute of hitting back. Tanks all cost the same here: strengths are counts.
+    [InlineData(3, 2, true)]
+    [InlineData(1, 2, false)]
+    [InlineData(5, 2, false)]
+    public void An_attack_beaten_back_at_the_base_opens_a_minute_of_hitting_back(int tanks, int attackers, bool counter)
+    {
+        var (scene, defense, context) = Base();
+        for (var i = 0; i < tanks; i++)
+        {
+            scene.Spawn(Scene.Me, UnitType.HeavyTank, 10 + i, 12);
+        }
+
+        var enemies = Enumerable.Range(0, attackers).Select(i => scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 14, 8 + i)).ToList();
+        Turn(scene, defense, context, 0);
+        Assert.NotNull(context.Plan.Threat);
+
+        foreach (var enemy in enemies)
+        {
+            enemy.MarkDead();
+        }
+
+        scene.World.RemoveDead();
+        var tick = AiSettings.Medium.ThreatClearTicks + 1;
+        Turn(scene, defense, context, tick);
+
+        Assert.Null(context.Plan.Threat);
+        Assert.Equal(counter, context.Plan.CounterUntil > tick);
+    }
 }

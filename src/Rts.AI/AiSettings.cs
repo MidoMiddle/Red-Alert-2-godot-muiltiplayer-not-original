@@ -70,6 +70,7 @@ public sealed record AiSettings
             Expansion = (ExpansionLevel)values["expansion"],
             Quality = (BuildOrderQuality)values["build_order_quality"],
             Rebuild = (RebuildLevel)values["rebuild_destroyed"],
+            Knowledge = (AttackKnowledge)values["attack_knowledge"],
         };
     }
 
@@ -219,6 +220,9 @@ public sealed record AiSettings
     public BuildOrderQuality Quality { get; init; } = BuildOrderQuality.Standard;
 
     public RebuildLevel Rebuild { get; init; } = RebuildLevel.Yes;
+
+    /// <summary>What the bot must know of the enemy before it attacks (M8 step 10a, <c>attack_knowledge</c>).</summary>
+    public AttackKnowledge Knowledge { get; init; } = AttackKnowledge.Base;
 
     /// <summary>
     /// A fighting squad turns back when its strength falls below this share of the enemy's near it, in percent (M8, 4.4, step 5) — from

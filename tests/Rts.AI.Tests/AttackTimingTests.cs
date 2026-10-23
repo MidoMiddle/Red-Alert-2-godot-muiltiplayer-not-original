@@ -1,4 +1,5 @@
 using Rts.AI.Modules;
+using Rts.AI.Profiles;
 using Rts.AI.Squads;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -116,10 +117,10 @@ public sealed class AttackTimingTests
     }
 
     /// <summary>A squad of four tanks at its gathering point with <paramref name="threshold"/>, the enemy unseen: does it set out?</summary>
-    private static SquadState Unseen(int threshold, Action<Scene>? enemy = null)
+    private static SquadState Unseen(int threshold, Action<Scene>? enemy = null, AttackKnowledge knowledge = AttackKnowledge.Base)
     {
         var (scene, context) = Gathered(4);
-        var squads = new SquadManager(Out with { AssumedEnemyPercent = 150, AttackThresholdPercent = threshold });
+        var squads = new SquadManager(Out with { AssumedEnemyPercent = 150, AttackThresholdPercent = threshold, Knowledge = knowledge });
         Turn(scene, squads, context, 0, () => enemy?.Invoke(scene));
         return context.Plan.Squads.Single().State;
     }
@@ -184,5 +185,29 @@ public sealed class AttackTimingTests
 
         Assert.Equal(SquadState.Gathering, context.Plan.Squads.Single().State);
         Assert.True(context.Plan.LookAtTheEnemy);
+    }
+
+    [Fact]
+    public void A_bot_that_must_see_the_army_does_not_trust_a_look_into_a_base_without_it()
+    {
+        // M8 step 10a, attack_knowledge: army — «Hard» saw the yard of «Medium», not its army beside it, and lost its own attacking.
+        void Yard(Scene scene) => scene.Build(Scene.Enemy, "construction_yard", 18, 14);
+
+        Assert.Contains(Unseen(100, Yard), new[] { SquadState.Moving, SquadState.Fighting });
+        Assert.Equal(SquadState.Gathering, Unseen(100, Yard, AttackKnowledge.Army));
+    }
+
+    [Fact]
+    public void Hitting_back_a_squad_takes_the_enemy_for_what_it_sees()
+    {
+        // M8 step 10a: an attack beaten at the base (DefenseManager) — for a minute the enemy is what the bot sees.
+        var (scene, context) = Gathered(4);
+        var squads = new SquadManager(Out with { AssumedEnemyPercent = 150, Knowledge = AttackKnowledge.Army });
+        Turn(scene, squads, context, 0);
+        Assert.Equal(SquadState.Gathering, context.Plan.Squads.Single().State);
+
+        context.Plan.CounterUntil = 15 + 900;
+        Turn(scene, squads, context, 15);
+        Assert.Contains(context.Plan.Squads.Single().State, new[] { SquadState.Moving, SquadState.Fighting });
     }
 }

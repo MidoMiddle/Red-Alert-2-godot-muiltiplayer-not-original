@@ -16,7 +16,11 @@ public sealed record RememberedBuilding(EntityId Id, PlayerId Owner, int DefInde
 /// average, how strong they were (cost × the share of hit points left, as the strength of a squad in 4.6), how many and how many of them
 /// infantry (step 6), when.
 /// </summary>
-public sealed record ArmySighting(int BlockX, int BlockY, WorldPos Centre, int Strength, int Units, int Infantry, int SeenTick);
+public sealed record ArmySighting(int BlockX, int BlockY, WorldPos Centre, int Strength, int Units, int Infantry, int SeenTick)
+{
+    /// <summary>Of the units the armed ones but the harvesters (M8 step 10a): a harvester alone guards nothing.</summary>
+    public int Armed { get; init; }
+}
 
 /// <summary>An enemy harvester where the bot saw it last (M8 step 10): what a raid goes for.</summary>
 public sealed record HarvesterSighting(EntityId Id, CellPos Cell, int SeenTick);
@@ -44,7 +48,7 @@ public sealed class AiMemory
     private readonly SortedList<int, RememberedBuilding> _buildings = new();
     private readonly SortedList<int, ArmySighting> _armies = new();
     private readonly SortedList<int, HarvesterSighting> _harvesters = new();
-    private readonly SortedList<int, (long X, long Y, int Units, int Infantry, int Strength)> _blocks = new();
+    private readonly SortedList<int, (long X, long Y, int Units, int Infantry, int Strength, int Armed)> _blocks = new();
     private readonly HashSet<int> _seen = new();
     private readonly List<CellPos> _starts = new();
     private readonly SortedDictionary<int, int> _exploredSince = new();
@@ -230,13 +234,14 @@ public sealed class AiMemory
             _blocks.TryGetValue(key, out var block);
             var strength = StrengthOf(unit);
             var infantry = unit.Archetype.Category == UnitCategory.Infantry ? 1 : 0;
-            _blocks[key] = (block.X + unit.Position.X, block.Y + unit.Position.Y, block.Units + 1, block.Infantry + infantry, block.Strength + strength);
+            _blocks[key] = (block.X + unit.Position.X, block.Y + unit.Position.Y, block.Units + 1, block.Infantry + infantry, block.Strength + strength,
+                block.Armed + (unit.Archetype.Armed && unit.Harvester is null ? 1 : 0));
         }
 
         foreach (var (key, block) in _blocks)
         {
             var centre = new WorldPos((int)(block.X / block.Units), (int)(block.Y / block.Units));
-            _armies[key] = new ArmySighting(key % 1024, key / 1024, centre, block.Strength, block.Units, block.Infantry, view.Tick);
+            _armies[key] = new ArmySighting(key % 1024, key / 1024, centre, block.Strength, block.Units, block.Infantry, view.Tick) { Armed = block.Armed };
         }
 
         _forgotten.Clear();

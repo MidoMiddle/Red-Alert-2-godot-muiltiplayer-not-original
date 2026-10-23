@@ -67,6 +67,15 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     /// <summary>How long a squad that announced its attack waits for the answers of its allies, in ticks: 30 s (M8, 4.8).</summary>
     public const int WaitForAllies = 450;
 
+    /// <summary>A harvester seen within this many ticks is a target of a raid: 30 s (M8 step 10a).</summary>
+    public const int RaidFreshTicks = 450;
+
+    /// <summary>How long a raid waits for a harvester at a field, in ticks: 30 s (M8 step 10a).</summary>
+    public const int AmbushTicks = 450;
+
+    /// <summary>The field of an enemy refinery is the explored ore nearest it within this many cells (M8 step 10a).</summary>
+    public const int RaidFieldCells = 16;
+
     /// <summary>The share of its army, in percent, a bot sends to help an ally (M8, 4.8).</summary>
     public const int HelpPercent = 40;
 
@@ -457,6 +466,12 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     /// </summary>
     private int Assumed(AiContext context)
     {
+        // Hitting back after an attack beaten at home (step 10a): the enemy is what the bot sees.
+        if (context.Tick < context.Plan.CounterUntil)
+        {
+            return 0;
+        }
+
         var own = 0;
         foreach (var unit in context.View.OwnUnits)
         {
@@ -474,7 +489,10 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         // home — and next to nothing there, a fourth of what is assumed at most: a base with an army shows part of it to a scout that
         // keeps out of the reach of the defenders.
         var core = context.Memory.CoreSeenTick;
-        var emptyBase = core >= 0 && context.Tick - core < EnemyEstimate.ForgetTicks && (long)estimate.ArmyStrength * 4 <= assumed;
+        // Not for a bot that must see the army itself (step 10a, attack_knowledge: army): a scout of «Hard» saw the yard of «Medium» and
+        // not its army beside it, and «Hard» lost its own attacking into it.
+        var emptyBase = settings.Knowledge == AttackKnowledge.Base
+            && core >= 0 && context.Tick - core < EnemyEstimate.ForgetTicks && (long)estimate.ArmyStrength * 4 <= assumed;
         return (fresh && (long)estimate.ArmyStrength * 2 >= assumed) || emptyBase ? 0 : assumed;
     }
 
@@ -505,6 +523,37 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         {
             // Nothing left to attack: the wave is over.
             squad.State = SquadState.Retreating;
+            return;
+        }
+
+        if (settings.Raids && squad.TargetBuilding is null && squad.TargetCell is { } field && Distance(centre, field) <= ArrivedCells
+            && Nearest(context, centre, armed: true) is null && Nearest(context, centre, armed: false) is null)
+        {
+            // A raid at a field with no harvester (step 10a): it waits for one, then on to the next field.
+            if (squad.AmbushUntil == 0)
+            {
+                squad.AmbushUntil = context.Tick + AmbushTicks;
+            }
+
+            if (context.Tick < squad.AmbushUntil)
+            {
+                return;
+            }
+
+            (squad.AmbushUntil, squad.TargetCell) = (0, null);
+            squad.Swept.Add(field);
+            if (!Retarget(context, squad, centre))
+            {
+                squad.State = SquadState.Retreating;
+                return;
+            }
+        }
+
+        if (settings.Raids && NearestHarvester(context, centre) is { } harvester)
+        {
+            // A raid kills the harvester within reach first, under fire too: what it came for (step 10a).
+            squad.State = SquadState.Fighting;
+            Strike(context, harvester, wounded: true);
             return;
         }
 
@@ -863,7 +912,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     {
         var memory = context.Memory;
         var rules = context.View.Rules.Database;
-        if (settings.Raids && Raid(memory, centre) is { } field)
+        if (settings.Raids && Raid(context, squad, centre) is { } field)
         {
             (squad.TargetBuilding, squad.TargetCell) = (null, field);
             return true;
@@ -904,28 +953,113 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     }
 
     /// <summary>
-    /// A raid (M8 step 10): the cell of the enemy harvester the bot saw nearest <paramref name="centre"/> — of two as near, the one seen
-    /// later, then the older; null when it remembers none.
+    /// A raid (M8 steps 10, 10a): the enemy harvester seen within <see cref="RaidFreshTicks"/> nearest <paramref name="centre"/> that no
+    /// armed enemy the bot knows of guards; else the field of an enemy refinery its harvesters work, the one farthest from what guards them,
+    /// that the squad has not waited at yet; null for none.
     /// </summary>
-    private static CellPos? Raid(AiMemory memory, CellPos centre)
+    private CellPos? Raid(AiContext context, Squad squad, CellPos centre)
     {
+        var memory = context.Memory;
         HarvesterSighting? best = null;
         foreach (var sighting in memory.Harvesters)
         {
-            if (best is null)
+            if (context.Tick - sighting.SeenTick > RaidFreshTicks || Guarded(context, sighting.Cell) < settings.DangerCells)
             {
-                best = sighting;
                 continue;
             }
 
-            var (distance, bestDistance) = (Distance(sighting.Cell, centre), Distance(best.Cell, centre));
-            if (distance < bestDistance || (distance == bestDistance && sighting.SeenTick > best.SeenTick))
+            if (best is null || Distance(sighting.Cell, centre) < Distance(best.Cell, centre))
             {
                 best = sighting;
             }
         }
 
-        return best?.Cell;
+        if (best is not null)
+        {
+            return best.Cell;
+        }
+
+        var rules = context.View.Rules.Database;
+        CellPos? field = null;
+        var safest = -1;
+        foreach (var building in memory.Buildings)
+        {
+            if (rules.Buildings[building.DefIndex].DockCell is null || FieldOf(context.View, building.Cell) is not { } ore || squad.Swept.Contains(ore))
+            {
+                continue;
+            }
+
+            var guard = Guarded(context, ore);
+            if (guard > safest)
+            {
+                (field, safest) = (ore, guard);
+            }
+        }
+
+        return field;
+    }
+
+    /// <summary>The explored ore nearest <paramref name="refinery"/> within <see cref="RaidFieldCells"/>: where its harvesters work.</summary>
+    private static CellPos? FieldOf(AiWorldView view, CellPos refinery)
+    {
+        CellPos? best = null;
+        for (var y = refinery.Y - RaidFieldCells; y <= refinery.Y + RaidFieldCells; y++)
+        {
+            for (var x = refinery.X - RaidFieldCells; x <= refinery.X + RaidFieldCells; x++)
+            {
+                var cell = new CellPos(x, y);
+                if (view.Contains(cell) && !view.OreAt(cell).IsEmpty && (best is null || Distance(cell, refinery) < Distance(best.Value, refinery)))
+                {
+                    best = cell;
+                }
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>
+    /// The enemy harvester in sight nearest <paramref name="centre"/> within <see cref="AiSettings.EngageCells"/>; equal ones to the smaller id;
+    /// null for none (step 10a). The War Miner is armed: the search for the unarmed never finds it.
+    /// </summary>
+    private Unit? NearestHarvester(AiContext context, CellPos centre)
+    {
+        Unit? best = null;
+        var bestDistance = settings.EngageCells + 1;
+        foreach (var enemy in context.View.VisibleEnemies)
+        {
+            if (enemy is Unit { Harvester: not null } harvester && Distance(centre, harvester.Position.ToCell()) is var distance
+                && (distance < bestDistance || (distance == bestDistance && best is not null && harvester.Id.Value < best.Id.Value)))
+            {
+                (best, bestDistance) = (harvester, distance);
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>How far the armed enemy the bot knows of nearest <paramref name="cell"/> is — an army or a defense; very far with none.</summary>
+    private static int Guarded(AiContext context, CellPos cell)
+    {
+        var nearest = int.MaxValue;
+        foreach (var army in context.Memory.Armies)
+        {
+            if (army.Armed > 0)
+            {
+                nearest = IntMath.Min(nearest, Distance(cell, army.Centre.ToCell()));
+            }
+        }
+
+        var rules = context.View.Rules.Database;
+        foreach (var building in context.Memory.Buildings)
+        {
+            if (rules.Buildings[building.DefIndex].Primary.Length > 0)
+            {
+                nearest = IntMath.Min(nearest, Distance(cell, building.Cell));
+            }
+        }
+
+        return nearest;
     }
 
     /// <summary>

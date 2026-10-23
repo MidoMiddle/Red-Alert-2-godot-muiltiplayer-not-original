@@ -62,3 +62,13 @@ public enum RebuildLevel
     /// <summary>All of it, before the rest.</summary>
     Priority,
 }
+
+/// <summary>What the bot must know of the enemy before it attacks one it has not seen whole (M8 step 10a, <c>attack_knowledge</c>).</summary>
+public enum AttackKnowledge
+{
+    /// <summary>A look at its army, or into its base with next to nothing there: a bot that looks seldom knows a passive enemy so.</summary>
+    Base,
+
+    /// <summary>A look at its army only, or an attack of it beaten at home: a look into a base does not show the army beside it.</summary>
+    Army,
+}

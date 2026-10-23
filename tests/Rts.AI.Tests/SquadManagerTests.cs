@@ -396,4 +396,80 @@ public sealed class SquadManagerTests
         Turn(scene, new SquadManager(Small), other, 15);
         Assert.Equal(refinery.Id, other.Plan.Squads.Single().TargetBuilding);
     }
+
+    /// <summary>
+    /// The scene of the raids (M8 step 10a): an enemy refinery at (50, 50), its field at (46, 50), both seen once; the squad of the bot
+    /// raids. <paramref name="more"/> adds to the scene before the look.
+    /// </summary>
+    private static (Scene Scene, SquadManager Squads, AiContext Context) Raiding(Action<Scene>? more = null)
+    {
+        var scene = new Scene();
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 14, 14);
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 15, 14);
+        scene.Build(Scene.Enemy, "refinery", 50, 50);
+        scene.World.Map.SetOre(new CellPos(46, 50), new Rts.Simulation.Map.OreCell(Rts.Simulation.Map.OreKind.Ore, 5));
+        more?.Invoke(scene);
+        var vision = scene.World.VisionOf(Scene.Me);
+        vision.Reveal(new CellPos(45, 40), 14);
+        scene.Look(0);
+        vision.Hide(new CellPos(45, 40), 14);
+        return (scene, new SquadManager(Small with { Raids = true }), scene.Context());
+    }
+
+    [Fact]
+    public void A_raid_leaves_a_guarded_harvester_and_goes_for_the_field_of_the_refinery()
+    {
+        // M8 step 10a: the harvester seen beside an armed enemy is no target; the field its refinery's harvesters work is.
+        var (scene, squads, context) = Raiding(scene =>
+        {
+            scene.Spawn(Scene.Enemy, UnitType.Harvester, 40, 30);
+            scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 41, 30);
+        });
+
+        Turn(scene, squads, context, 1);
+
+        Assert.Equal((null, new CellPos(46, 50)), (context.Plan.Squads.Single().TargetBuilding, context.Plan.Squads.Single().TargetCell));
+    }
+
+    [Fact]
+    public void A_raid_strikes_the_harvester_within_reach_first_under_fire_too()
+    {
+        var (scene, squads, context, a, b) = SetOut(Small with { Raids = true, RetreatThresholdPercent = 0 });
+        Unit? harvester = null;
+
+        var commands = Turn(scene, squads, context, 15, () =>
+        {
+            Scene.Move(a, 24, 24);
+            Scene.Move(b, 24, 25);
+            harvester = scene.Spawn(Scene.Enemy, UnitType.Harvester, 27, 24);
+            scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 28, 26);
+        });
+
+        var attack = Assert.Single(commands.OfType<AttackCommand>());
+        Assert.Equal(harvester!.Id, attack.Target);
+    }
+
+    [Fact]
+    public void A_raid_waits_at_an_empty_field_then_leaves_it()
+    {
+        // M8 step 10a: no harvester at the field — it waits for one 30 s, then the field is done with.
+        var (scene, squads, context) = Raiding();
+        Turn(scene, squads, context, 1);
+        var squad = context.Plan.Squads.Single();
+        Assert.Equal(new CellPos(46, 50), squad.TargetCell);
+        var tanks = scene.World.Entities.OfType<Unit>().Where(unit => unit.Owner == Scene.Me).ToList();
+
+        Turn(scene, squads, context, 15, () =>
+        {
+            foreach (var tank in tanks)
+            {
+                Scene.Move(tank, 46, 50);
+            }
+        });
+        Assert.Contains(squad.State, new[] { SquadState.Moving, SquadState.Fighting });
+        Assert.DoesNotContain(new CellPos(46, 50), squad.Swept);
+
+        Turn(scene, squads, context, 15 + SquadManager.AmbushTicks + 15);
+        Assert.Contains(new CellPos(46, 50), squad.Swept);
+    }
 }

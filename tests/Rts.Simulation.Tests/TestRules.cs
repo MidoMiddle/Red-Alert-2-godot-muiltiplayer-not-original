@@ -265,7 +265,7 @@ internal static class TestRules
                 ["perception_delay"] = 15, ["threat_clear"] = 150, ["base_cells"] = 8, ["max_defenses"] = 3,
                 ["actions_per_second"] = 3, ["mistake_chance"] = 10, ["micro"] = 1, ["scouting"] = 1, ["counter_pick"] = 30,
                 ["first_attack_delay"] = 5400, ["parallel_squads"] = 2, ["defend_harvesters"] = 1, ["expansion"] = 1,
-                ["build_order_quality"] = 1, ["rebuild_destroyed"] = 1,
+                ["build_order_quality"] = 1, ["rebuild_destroyed"] = 1, ["attack_knowledge"] = 0,
                 ["income_bonus"] = 0, ["build_speed_bonus"] = 0, ["reveal_map"] = 0,
             }.ToImmutableSortedDictionary(StringComparer.Ordinal),
         };

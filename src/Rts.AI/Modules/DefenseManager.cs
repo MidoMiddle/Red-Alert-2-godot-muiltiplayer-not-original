@@ -24,8 +24,14 @@ namespace Rts.AI.Modules;
 /// </summary>
 public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? team = null) : IAiModule
 {
+    /// <summary>How long a bot hits back after it beat an attack at its base, in ticks: 60 s (M8 step 10a).</summary>
+    public const int CounterTicks = 900;
+
     private readonly List<Squad> _out = new();
     private int _lastSeen;
+
+    // The strongest the threat at the base was while it lasted (step 10a).
+    private int _peak;
 
     public AiModuleKind Kind => AiModuleKind.Defense;
 
@@ -37,11 +43,20 @@ public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? tea
         {
             _lastSeen = tick;
             plan.Threat = threat;
+            _peak = IntMath.Max(_peak, threat.Strength);
         }
         else
         {
             if ((plan.Threat is not null || plan.Strategy == StrategyState.Defending) && tick - _lastSeen >= settings.ThreatClearTicks)
             {
+                // Beaten back, by an army no weaker than the attack at its strongest and the attack half of it at least: hit back now.
+                var army = Army(context);
+                if (_peak > 0 && army >= _peak && (long)_peak * 2 >= army)
+                {
+                    plan.CounterUntil = tick + CounterTicks;
+                }
+
+                _peak = 0;
                 plan.EndDefense();
                 team?.Clear(context.View.Me);
             }
@@ -63,6 +78,21 @@ public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? tea
         team?.Request(new Team.DefenseRequest(context.View.Me, known.Middle, known.Strength, tick));
         plan.AttackedFrom = known.Middle;
         Recall(plan, known, defense);
+    }
+
+    /// <summary>The strength of the bot's own army: its armed units but the harvesters.</summary>
+    private static int Army(AiContext context)
+    {
+        var strength = 0;
+        foreach (var unit in context.View.OwnUnits)
+        {
+            if (unit.Archetype.Armed && unit.Harvester is null)
+            {
+                strength += context.Memory.StrengthOf(unit);
+            }
+        }
+
+        return strength;
     }
 
     /// <summary>The armed enemy units at the base: the one nearest the start, their middle, their strength; null for none.</summary>

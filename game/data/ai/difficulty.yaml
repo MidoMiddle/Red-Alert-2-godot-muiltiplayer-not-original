@@ -50,6 +50,9 @@ ai_level:
   threat_clear: 10s
   base_cells: 8
   max_defenses: 3
+  # What a bot must know of the enemy before it attacks one it has not seen whole (M8 step 10a): base — a look at its army, or into its
+  # base with next to nothing there; army — a look at its army only, or an attack of it beaten at home.
+  attack_knowledge: base
   # The bonuses of the player (M8, 4.5): credits above the ore unloaded, faster production at the same cost, the whole map in sight. Only
   # «Brutal» has them, and the menu names them.
   income_bonus: 0%
@@ -134,6 +137,7 @@ ai_hard:
   expansion: early
   build_order_quality: optimized
   rebuild_destroyed: priority
+  attack_knowledge: army
 
 # «Brutal» plays as «Hard» does, and with bonuses: ×1.4 income, ×1.2 build speed, the map open (M8, 4.5; the income tuned by the Arena
 # from ×1.25 in step 10, for 70 % of the matches decided against «Hard»).
@@ -156,6 +160,7 @@ ai_brutal:
   expansion: early
   build_order_quality: optimized
   rebuild_destroyed: priority
+  attack_knowledge: army
   income_bonus: 40%
   build_speed_bonus: 20%
   reveal_map: yes
