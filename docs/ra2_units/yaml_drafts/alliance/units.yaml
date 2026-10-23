@@ -1,0 +1,384 @@
+# Заготовки юнитов Альянса (рабочее имя alliance). Не данные игры и не код. Здания Альянса и их id ещё не
+# описаны: airforce_command, airforce_command_us, naval_yard, service_depot, power_plant — временные.
+
+alliance_gi:  # RA2 GI; техуровень 1; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Rifle Infantry
+  faction: alliance
+  cost: 200
+  build_time: 8.4s
+  hp: 125
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  sight: 5
+  prerequisites: [barracks]
+  primary: alliance_gi_primary  # RA2 M60; оружие ещё не описано
+  secondary: alliance_gi_secondary  # RA2 Para; оружие ещё не описано
+
+alliance_engineer:  # RA2 Engineer; техуровень 1; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Engineer
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 75
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  sight: 4
+  prerequisites: [barracks]
+  primary: alliance_engineer_primary  # RA2 DefuseKit; оружие ещё не описано
+  secondary: alliance_engineer_secondary  # RA2 VirtualScanner; оружие ещё не описано
+
+alliance_attack_dog:  # RA2 Allied Attack Dog; техуровень 2; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Guard Dog
+  faction: alliance
+  cost: 200
+  build_time: 8.4s
+  hp: 100
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  speed: 48
+  sight: 9
+  prerequisites: [barracks]
+  primary: alliance_attack_dog_primary  # RA2 GoodTeeth; оружие ещё не описано
+  secondary: alliance_attack_dog_secondary  # RA2 VirtualScanner; оружие ещё не описано
+
+alliance_rocketeer:  # RA2 Rocketeer; техуровень 3; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Jetpack Rocketeer
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 125
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  speed: 54
+  sight: 8
+  prerequisites: [barracks, [airforce_command, airforce_command_us]]
+  primary: alliance_rocketeer_primary  # RA2 20mm; оружие ещё не описано
+
+alliance_spy:  # RA2 Spy; техуровень 5; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Spy
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 100
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: flak
+  sight: 9
+  prerequisites: [barracks, tech_center]
+  primary: alliance_spy_primary  # RA2 MakeupKit; оружие ещё не описано
+
+alliance_navy_seal:  # RA2 Navy SEAL; техуровень -1, в скирмише не строится; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Commando
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 125
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: flak
+  speed: 30
+  sight: 8
+  prerequisites: [barracks, [airforce_command, airforce_command_us]]
+  primary: alliance_navy_seal_primary  # RA2 MP5; оружие ещё не описано
+  secondary: alliance_navy_seal_secondary  # RA2 Sapper; оружие ещё не описано
+
+alliance_chrono_legionnaire:  # RA2 Chrono Legionnaire; техуровень 10; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Time Trooper
+  faction: alliance
+  cost: 1500
+  build_time: 63s
+  hp: 125
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  speed: 30
+  sight: 8
+  prerequisites: [barracks, tech_center]
+  primary: alliance_chrono_legionnaire_primary  # RA2 NeutronRifle; оружие ещё не описано
+
+alliance_tanya:  # RA2 Tanya; техуровень 9; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Elite Commando
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 125
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: flak
+  speed: 30
+  sight: 8
+  prerequisites: [barracks, tech_center]
+  primary: alliance_tanya_primary  # RA2 DoublePistols; оружие ещё не описано
+  secondary: alliance_tanya_secondary  # RA2 Sapper; оружие ещё не описано
+
+alliance_sniper:  # RA2 Sniper; техуровень 1; страны: Великобритания
+  kind: unit
+  inherits: base_infantry
+  name: Sniper
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 125
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  sight: 8
+  prerequisites: [barracks, [airforce_command, airforce_command_us]]
+  primary: alliance_sniper_primary  # RA2 AWP; оружие ещё не описано
+
+alliance_mcv:  # RA2 Allied MCV; техуровень 10; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Mobile Construction Vehicle
+  faction: alliance
+  cost: 3000
+  build_time: 126s
+  hp: 1000
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 24  # RA2 Speed 4
+  sight: 6
+  prerequisites: [war_factory, service_depot]
+
+alliance_chrono_miner:  # RA2 Chrono Miner; техуровень 1; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Chrono Harvester
+  faction: alliance
+  cost: 1400
+  build_time: 58.8s
+  hp: 1000
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: medium
+  locomotor: TODO  # RA2 4A582747, тип не сверен
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 24  # RA2 Speed 4
+  sight: 4
+  prerequisites: [war_factory, refinery]
+  primary: alliance_chrono_miner_primary  # RA2 none; оружие ещё не описано
+
+alliance_nighthawk:  # RA2 Night Hawk Transport; техуровень 7; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Transport Helicopter
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 175
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: fly  # RA2 Jumpjet/fly; TODO: тип передвижения fly нет в locomotors.yaml
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 84  # RA2 Speed 14
+  sight: 7
+  prerequisites: [war_factory]
+  primary: alliance_nighthawk_primary  # RA2 BlackHawkCannon; оружие ещё не описано
+
+alliance_grizzly_tank:  # RA2 Grizzly Battle Tank; техуровень 2; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Battle Tank
+  faction: alliance
+  cost: 700
+  build_time: 29.4s
+  hp: 300
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 42  # RA2 Speed 7
+  sight: 8
+  prerequisites: [war_factory]
+  primary: alliance_grizzly_tank_primary  # RA2 105mm; оружие ещё не описано
+
+alliance_ifv:  # RA2 IFV; техуровень 3; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Infantry Fighting Vehicle
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 200
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 60  # RA2 Speed 10
+  sight: 8
+  prerequisites: [war_factory]
+  primary: alliance_ifv_primary  # RA2 HoverMissile; оружие ещё не описано
+
+alliance_prism_tank:  # RA2 Prism Tank; техуровень 8; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Beam Tank
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 150
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 24  # RA2 Speed 4
+  sight: 8
+  prerequisites: [war_factory, tech_center]
+
+alliance_mirage_tank:  # RA2 Mirage Tank; техуровень 9; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Holo Tank
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 200
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 42  # RA2 Speed 7
+  sight: 9
+  prerequisites: [war_factory, tech_center]
+  primary: alliance_mirage_tank_primary  # RA2 MirageGun; оружие ещё не описано
+
+alliance_tank_destroyer:  # RA2 Tank Destroyer; техуровень 2; страны: Германия
+  kind: unit
+  inherits: base_vehicle
+  name: Tank Hunter
+  faction: alliance
+  cost: 900
+  build_time: 37.8s
+  hp: 400
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 30  # RA2 Speed 5
+  sight: 8
+  prerequisites: [war_factory, [airforce_command, airforce_command_us]]
+  primary: alliance_tank_destroyer_primary  # RA2 SABOT; оружие ещё не описано
+
+alliance_harrier:  # RA2 Harrier (Intruder); техуровень 3; страны: США, Великобритания, Франция, Германия
+  kind: unit
+  inherits: TODO_base_aircraft
+  name: Strike Jet
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 150
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: fly  # RA2 Jumpjet/fly; TODO: тип передвижения fly нет в locomotors.yaml
+  turret: false
+  speed: 84  # RA2 Speed 14; конверсия ×6 проверить для этого типа
+  sight: 8
+  prerequisites: [[airforce_command, airforce_command_us]]
+  primary: alliance_harrier_primary  # RA2 Maverick; оружие ещё не описано
+
+alliance_black_eagle:  # RA2 Black Eagle; техуровень 3; страны: Корея
+  kind: unit
+  inherits: TODO_base_aircraft
+  name: Heavy Strike Jet
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 200
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: fly  # RA2 Jumpjet/fly; TODO: тип передвижения fly нет в locomotors.yaml
+  turret: false
+  speed: 84  # RA2 Speed 14; конверсия ×6 проверить для этого типа
+  sight: 8
+  prerequisites: [[airforce_command, airforce_command_us]]
+  primary: alliance_black_eagle_primary  # RA2 Maverick2; оружие ещё не описано
+
+alliance_amphibious_transport:  # RA2 Amphibious Transport; техуровень 4; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Landing Craft
+  faction: alliance
+  cost: 900
+  build_time: 37.8s
+  hp: 300
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: amphibious  # RA2 amphibious
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 36  # RA2 Speed 6
+  sight: 6
+  prerequisites: [naval_yard]
+
+alliance_dolphin:  # RA2 Dolphin; техуровень 5; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Naval Scout
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 200
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 2457  # RA2 ROT 6
+  speed: 48  # RA2 Speed 8
+  sight: 4
+  prerequisites: [naval_yard, tech_center]
+  primary: alliance_dolphin_primary  # RA2 SonicZap; оружие ещё не описано
+
+alliance_destroyer:  # RA2 Destroyer; техуровень 4; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Destroyer
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 36  # RA2 Speed 6
+  sight: 7
+  prerequisites: [naval_yard]
+  primary: alliance_destroyer_primary  # RA2 155mm; оружие ещё не описано
+  secondary: alliance_destroyer_secondary  # RA2 ASWLauncher; оружие ещё не описано
+
+alliance_aegis_cruiser:  # RA2 Aegis Cruiser; техуровень 7; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Air Defense Cruiser
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 800
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 409  # RA2 ROT 1
+  speed: 24  # RA2 Speed 4
+  sight: 8
+  prerequisites: [naval_yard, [airforce_command, airforce_command_us]]
+  primary: alliance_aegis_cruiser_primary  # RA2 Medusa; оружие ещё не описано
+
+alliance_aircraft_carrier:  # RA2 Aircraft Carrier; техуровень 7; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Aircraft Carrier
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 800
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 409  # RA2 ROT 1
+  speed: 24  # RA2 Speed 4
+  sight: 7
+  prerequisites: [naval_yard, tech_center]
+  primary: alliance_aircraft_carrier_primary  # RA2 HornetLauncher; оружие ещё не описано

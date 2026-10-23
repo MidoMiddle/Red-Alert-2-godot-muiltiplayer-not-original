@@ -1,0 +1,16 @@
+# Заготовка юнита Культа (рабочее имя culture). Не данные игры и не код. Здания Культа не описаны:
+# пока здесь взяты здания Союза как заглушки (TODO).
+
+yuri:  # RA2 Yuri; техуровень 10; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Psionic Commander
+  faction: culture
+  cost: 1200
+  build_time: 50.4s
+  hp: 100
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  sight: 12
+  prerequisites: [barracks, tech_center]
+  primary: yuri_primary  # RA2 MindControl; оружие ещё не описано
+  secondary: yuri_secondary  # RA2 PsiWave; оружие ещё не описано

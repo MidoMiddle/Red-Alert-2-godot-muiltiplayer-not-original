@@ -1,0 +1,249 @@
+# Заготовки юнитов сверх MVP, фракция Союз (рабочее имя union). Не данные игры и не код.
+# Сверено с правилами RA2 1.006; TODO — то, что ещё не решено. Перенос в game/data/factions/union/ в M11.
+
+attack_dog:  # RA2 Attack Dog; техуровень 2; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Attack Dog
+  faction: union
+  cost: 200
+  build_time: 8.4s
+  hp: 100
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  speed: 48
+  sight: 9
+  prerequisites: [barracks]
+  primary: attack_dog_primary  # RA2 BadTeeth; оружие ещё не описано
+  secondary: attack_dog_secondary  # RA2 VirtualScanner; оружие ещё не описано
+
+tesla_trooper:  # RA2 Shock Trooper; техуровень 5; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Tesla Trooper
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 130
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: plate
+  sight: 6
+  prerequisites: [barracks]
+  primary: tesla_trooper_primary  # RA2 ElectricBolt; оружие ещё не описано
+  secondary: tesla_trooper_secondary  # RA2 AssaultBolt; оружие ещё не описано
+
+crazy_ivan:  # RA2 Crazy Ivan; техуровень 5; страны: все страны фракции
+  kind: unit
+  inherits: base_infantry
+  name: Saboteur
+  faction: union
+  cost: 600
+  build_time: 25.2s
+  hp: 125
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  sight: 6
+  prerequisites: [barracks, radar]
+  primary: crazy_ivan_primary  # RA2 IvanBomber; оружие ещё не описано
+
+terrorist:  # RA2 Terrorist; техуровень 5; страны: Куба
+  kind: unit
+  inherits: base_infantry
+  name: Demolition Trooper
+  faction: union
+  cost: 200
+  build_time: 8.4s
+  hp: 75
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: flak
+  speed: 36
+  sight: 9
+  prerequisites: [barracks, radar]
+  primary: terrorist_primary  # RA2 TerrorBomb; оружие ещё не описано
+
+desolator:  # RA2 Desolator; техуровень 8; страны: Ирак
+  kind: unit
+  inherits: base_infantry
+  name: Radiation Trooper
+  faction: union
+  cost: 600
+  build_time: 25.2s
+  hp: 150
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: plate
+  sight: 6
+  prerequisites: [barracks, radar]
+  primary: desolator_primary  # RA2 RadBeamWeapon; оружие ещё не описано
+  secondary: desolator_secondary  # RA2 RadEruptionWeapon; оружие ещё не описано
+
+v3_launcher:  # RA2 V3 Launcher; техуровень 3; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Rocket Artillery
+  faction: union
+  cost: 800
+  build_time: 33.6s
+  hp: 150
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 24  # RA2 Speed 4
+  sight: 7
+  prerequisites: [war_factory, radar]
+  primary: v3_launcher_primary  # RA2 V3Launcher; оружие ещё не описано
+
+apocalypse_tank:  # RA2 Apocalypse Tank; техуровень 7; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Super Heavy Tank
+  faction: union
+  cost: 1750
+  build_time: 73.5s
+  hp: 800
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 24  # RA2 Speed 4
+  sight: 6
+  prerequisites: [war_factory, tech_center]
+  primary: apocalypse_tank_primary  # RA2 120mmx; оружие ещё не описано
+  secondary: apocalypse_tank_secondary  # RA2 MammothTusk; оружие ещё не описано
+
+terror_drone:  # RA2 Terror Drone; техуровень 4; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Combat Drone
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 100
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: special_1
+  turret: false
+  turn_rate: 16384  # RA2 ROT 40
+  speed: 60  # RA2 Speed 10
+  sight: 4
+  prerequisites: [war_factory]
+  primary: terror_drone_primary  # RA2 DroneJump; оружие ещё не описано
+  secondary: terror_drone_secondary  # RA2 VirtualScanner; оружие ещё не описано
+
+demolition_truck:  # RA2 Demolitions Truck; техуровень 10; страны: Ливия
+  kind: unit
+  inherits: base_vehicle
+  name: Demolition Truck
+  faction: union
+  cost: 1500
+  build_time: 63s
+  hp: 150
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 30  # RA2 Speed 5
+  sight: 5
+  prerequisites: [war_factory, radar]
+  primary: demolition_truck_primary  # RA2 Demobomb; оружие ещё не описано
+  secondary: demolition_truck_secondary  # RA2 none; оружие ещё не описано
+
+kirov_airship:  # RA2 Kirov Airship; техуровень 10; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Heavy Airship
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 2000
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: fly  # RA2 Jumpjet/fly; TODO: тип передвижения fly нет в locomotors.yaml
+  turret: false
+  turn_rate: 4096  # RA2 ROT 10
+  speed: 30  # RA2 Speed 5
+  sight: 8
+  prerequisites: [war_factory, tech_center]
+  primary: kirov_airship_primary  # RA2 BlimpBomb; оружие ещё не описано
+
+hover_transport:  # RA2 Armored Transport; техуровень 2; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Hovercraft
+  faction: union
+  cost: 900
+  build_time: 37.8s
+  hp: 300
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  locomotor: hover  # RA2 hover
+  turret: false
+  turn_rate: 2048  # RA2 ROT 5
+  speed: 36  # RA2 Speed 6
+  sight: 6
+  prerequisites: [naval_yard]
+
+typhoon_sub:  # RA2 Typhoon Attack Sub; техуровень 2; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Attack Submarine
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 819  # RA2 ROT 2
+  speed: 24  # RA2 Speed 4
+  sight: 4
+  prerequisites: [naval_yard]
+  primary: typhoon_sub_primary  # RA2 SubTorpedo; оружие ещё не описано
+
+sea_scorpion:  # RA2 Sea Scorpion; техуровень 6; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Anti-Air Hydrofoil
+  faction: union
+  cost: 600
+  build_time: 25.2s
+  hp: 400
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 2457  # RA2 ROT 6
+  speed: 48  # RA2 Speed 8
+  sight: 8
+  prerequisites: [naval_yard, radar]
+  primary: sea_scorpion_primary  # RA2 FlakTrackGun; оружие ещё не описано
+  secondary: sea_scorpion_secondary  # RA2 FlakWeapon; оружие ещё не описано
+
+giant_squid:  # RA2 Giant Squid; техуровень 9; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Giant Squid
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 200
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  armor: light
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 16384  # RA2 ROT 40
+  speed: 48  # RA2 Speed 8
+  sight: 5
+  prerequisites: [naval_yard, tech_center]
+  primary: giant_squid_primary  # RA2 SquidGrab; оружие ещё не описано
+  secondary: giant_squid_secondary  # RA2 SquidPunch; оружие ещё не описано
+
+dreadnought:  # RA2 Dreadnought; техуровень 6; страны: все страны фракции
+  kind: unit
+  inherits: base_vehicle
+  name: Missile Battleship
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 800
+  threat: TODO  # очки угрозы для ИИ, не заданы в RA2
+  locomotor: naval  # RA2 Ship
+  turret: false
+  turn_rate: 409  # RA2 ROT 1
+  speed: 24  # RA2 Speed 4
+  sight: 7
+  prerequisites: [naval_yard, tech_center]
+  primary: dreadnought_primary  # RA2 DredLauncher; оружие ещё не описано
