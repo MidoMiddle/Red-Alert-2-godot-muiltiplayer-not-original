@@ -12,6 +12,7 @@ public enum MapObjectKind : byte
     LampPost = 5,
     AntiTankHedgehog = 6,
     Pipeline = 7,
+    Snowdrift = 8,
 }
 
 /// <summary>
@@ -19,13 +20,23 @@ public enum MapObjectKind : byte
 /// <see cref="Locomotor"/> (bit = locomotor − 1): <see cref="BlockMask"/> are the movers it stops, <see cref="CrushMask"/>
 /// the ones that crush it by driving in. <see cref="MaxHp"/> 0 means it cannot be destroyed. A tree leaves a stump.
 /// </summary>
-public sealed record MapObjectType(MapObjectKind Kind, string Id, byte BlockMask, int MaxHp, byte CrushMask, bool LeavesStump)
+public sealed record MapObjectType(
+    MapObjectKind Kind,
+    string Id,
+    byte BlockMask,
+    int MaxHp,
+    byte CrushMask,
+    bool LeavesStump,
+    IReadOnlyDictionary<Locomotor, int>? Speeds = null)
 {
     public bool Destructible => MaxHp > 0;
 
     public bool Blocks(Locomotor locomotor) => (BlockMask & MapObjectTypes.Bit(locomotor)) != 0;
 
     public bool CrushedBy(Locomotor locomotor) => (CrushMask & MapObjectTypes.Bit(locomotor)) != 0;
+
+    /// <summary>The speed this kind gives <paramref name="locomotor"/> on its cell, in percent: 100 unless the kind slows it.</summary>
+    public int SpeedPercentFor(Locomotor locomotor) => Speeds is { } table && table.TryGetValue(locomotor, out var percent) ? percent : 100;
 }
 
 /// <summary>
@@ -41,6 +52,14 @@ public static class MapObjectTypes
     /// <summary>Tracks and wheels: what a hedgehog or a pipe stops. Foot units pass; hover and amphibious units pass too (an open question).</summary>
     private static readonly byte TrackAndWheel = (byte)(Bit(Locomotor.Track) | Bit(Locomotor.Wheel));
 
+    /// <summary>A snowdrift slows foot, tracks and wheels; the rest drive at full speed (docs/map_elements/20_snowdrift).</summary>
+    private static readonly IReadOnlyDictionary<Locomotor, int> SnowdriftSpeeds = new Dictionary<Locomotor, int>
+    {
+        [Locomotor.Foot] = 60,
+        [Locomotor.Track] = 80,
+        [Locomotor.Wheel] = 50,
+    };
+
     private static readonly MapObjectType[] Types =
     [
         new(MapObjectKind.PineTree, "pine_tree", AllMovers, MaxHp: 400, CrushMask: 0, LeavesStump: true),
@@ -51,6 +70,7 @@ public static class MapObjectTypes
         new(MapObjectKind.LampPost, "lamp_post", 0, MaxHp: 50, CrushMask: AllMovers, LeavesStump: false),
         new(MapObjectKind.AntiTankHedgehog, "anti_tank_hedgehog", TrackAndWheel, MaxHp: 400, CrushMask: 0, LeavesStump: false),
         new(MapObjectKind.Pipeline, "pipeline", TrackAndWheel, MaxHp: 50, CrushMask: 0, LeavesStump: false),
+        new(MapObjectKind.Snowdrift, "snowdrift", 0, MaxHp: 0, CrushMask: Bit(Locomotor.Track), LeavesStump: false, Speeds: SnowdriftSpeeds),
     ];
 
     public static IReadOnlyList<MapObjectType> All => Types;

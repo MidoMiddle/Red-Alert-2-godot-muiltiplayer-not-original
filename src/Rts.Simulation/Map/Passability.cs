@@ -1,4 +1,5 @@
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 
 namespace Rts.Simulation.Map;
 
@@ -39,7 +40,9 @@ internal sealed class Passability
         for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             var blocked = (obstacles & MapObjectTypes.Bit(locomotor)) != 0;
-            _percent[((int)locomotor - 1) * _cells + index] = blocked ? (byte)0 : (byte)map.Speeds.CellPercent(locomotor, land, shape);
+            var landPercent = map.Speeds.CellPercent(locomotor, land, shape);
+            var percent = blocked ? 0 : IntMath.DivRound((long)landPercent * map.ObjectSpeedPercent(cell, locomotor), 100);
+            _percent[((int)locomotor - 1) * _cells + index] = (byte)percent;
         }
     }
 }

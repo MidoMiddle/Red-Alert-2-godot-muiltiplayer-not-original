@@ -52,6 +52,7 @@ public partial class MapObjects : Node3D
         var rocks = new List<Vector3>();
         var hedgehogs = new List<Vector3>();
         var pipes = new List<Vector3>();
+        var drifts = new List<Vector3>();
         for (var y = 0; y < _map.Height; y++)
         {
             for (var x = 0; x < _map.Width; x++)
@@ -81,6 +82,8 @@ public partial class MapObjects : Node3D
                 (MapObjectKind.AntiTankHedgehog, true) => null,
                 (MapObjectKind.Pipeline, false) => pipes,
                 (MapObjectKind.Pipeline, true) => null,
+                (MapObjectKind.Snowdrift, false) => drifts,
+                (MapObjectKind.Snowdrift, true) => null,
                 _ => throw new System.ArgumentOutOfRangeException(nameof(mapObject), mapObject.Kind, "No symbolic look for this kind."),
             };
             list?.Add(at);
@@ -102,6 +105,7 @@ public partial class MapObjects : Node3D
         AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
         AddInstances("Hedgehogs", new BoxMesh { Size = new Vector3(0.9f, 0.3f, 0.9f) }, new Color(0.3f, 0.31f, 0.34f), hedgehogs, 0.15f);
         AddInstances("Pipes", new BoxMesh { Size = new Vector3(0.98f, 0.12f, 0.12f) }, new Color(0.22f, 0.25f, 0.28f), pipes, 0.06f);
+        AddInstances("Snowdrifts", new SphereMesh { Radius = 0.45f, Height = 0.22f }, new Color(0.9f, 0.93f, 0.97f), drifts, 0.11f);
     }
 
     /// <summary>The deck of a standing segment lies flat just above the water, so units on it seem to drive on the planks.</summary>

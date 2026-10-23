@@ -19,3 +19,8 @@ object anti_tank_hedgehog 4 5
 object pipeline 10 3
 object pipeline 11 3
 object pipeline 12 3
+// Winter snowdrift (docs/map_elements/20_snowdrift): slows foot, tracks and wheels; tracks flatten it.
+object snowdrift 16 6
+object snowdrift 16 7
+object snowdrift 17 6
+object snowdrift 17 7

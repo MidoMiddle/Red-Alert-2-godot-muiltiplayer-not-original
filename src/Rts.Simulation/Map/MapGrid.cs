@@ -223,6 +223,28 @@ public sealed class MapGrid
         return mask;
     }
 
+    /// <summary>
+    /// The slowest speed the standing objects on the cell give <paramref name="locomotor"/>, in percent: a snowdrift slows, a
+    /// tree or a fence does not. 100 when no object slows it.
+    /// </summary>
+    public int ObjectSpeedPercent(CellPos cell, Locomotor locomotor)
+    {
+        var percent = 100;
+        if (_objectsByCell.TryGetValue(IndexOf(cell), out var inCell))
+        {
+            foreach (var mapObject in inCell)
+            {
+                var speed = mapObject.Type.SpeedPercentFor(locomotor);
+                if (mapObject.IsAlive && speed < percent)
+                {
+                    percent = speed;
+                }
+            }
+        }
+
+        return percent;
+    }
+
     /// <summary>Every map object, destroyed ones (stumps and the like) included, in id order.</summary>
     public IReadOnlyList<MapObject> Objects => _objects;
 
