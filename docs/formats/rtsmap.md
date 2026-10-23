@@ -112,6 +112,11 @@ structures:
   | `tech_oil_derrick` | 2 × 2 | 1000 |
   | `tech_hospital` | 3 × 3 | 1500 |
   | `tech_airfield` | 4 × 3 | 2000 |
+  | `neutral_fuel_tank` | 1 × 1 | 800 |
+  | `neutral_smokestack` | 1 × 1 | 1500 |
+  | `neutral_cooling_tower` | 2 × 2 | 1500 |
+  | `neutral_factory_hall` | 4 × 3 | 800 |
+  | `neutral_boiler_house` | 2 × 2 | 800 |
 
 ## 5. Канонический вид и хеш
 

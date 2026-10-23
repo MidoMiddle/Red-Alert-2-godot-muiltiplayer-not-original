@@ -241,4 +241,31 @@ public sealed class BuildingTests
         Assert.Equal(bytes, ReplayFormat.Write(read));
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
     }
+
+    [Theory]
+    [InlineData(BuildingKind.NeutralFuelTank, 1, 1, 800, 0)]
+    [InlineData(BuildingKind.NeutralSmokestack, 1, 1, 1500, 0)]
+    [InlineData(BuildingKind.NeutralCoolingTower, 2, 2, 1500, 0)]
+    [InlineData(BuildingKind.NeutralFactoryHall, 4, 3, 800, 6)]
+    [InlineData(BuildingKind.NeutralBoilerHouse, 2, 2, 800, 2)]
+    public void An_industrial_building_has_its_footprint_and_closes_it_to_every_ground_mover(
+        BuildingKind kind, int width, int height, int hp, int garrison)
+    {
+        var type = BuildingTypes.Get(kind);
+        Assert.Equal((width, height, hp, garrison, false), (type.Width, type.Height, type.MaxHp, type.Garrison, type.Capturable));
+
+        var map = MapGrid.FromLayers(Width, Height, ClearLand(), new byte[Width * Height], default, null, null,
+            [new BuildingState(kind, new CellPos(4, 4), PlayerId.Neutral, 0)]);
+        for (var y = 4; y < 4 + height; y++)
+        {
+            for (var x = 4; x < 4 + width; x++)
+            {
+                var cell = new CellPos(x, y);
+                Assert.True(map.HasBuilding(cell));
+                Assert.False(map.CanEnter(cell, Locomotor.Foot));
+                Assert.False(map.CanEnter(cell, Locomotor.Track));
+                Assert.False(map.CanEnter(cell, Locomotor.Wheel));
+            }
+        }
+    }
 }

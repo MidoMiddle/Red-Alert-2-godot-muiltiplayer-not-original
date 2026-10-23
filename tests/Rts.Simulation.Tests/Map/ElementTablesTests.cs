@@ -1,4 +1,5 @@
 using Rts.Simulation.Map;
+using Rts.Simulation.World;
 
 namespace Rts.Simulation.Tests.Map;
 
@@ -36,5 +37,31 @@ public sealed class ElementTablesTests
     {
         Assert.False(MapObjectTypes.IsKnown(0));
         Assert.False(MapObjectTypes.IsKnown((MapObjectKind)(MapObjectTypes.All.Count + 1)));
+    }
+
+    [Fact]
+    public void Every_building_kind_has_its_row_in_its_place()
+    {
+        var kinds = Enum.GetValues<BuildingKind>();
+
+        Assert.Equal(kinds.Length, BuildingTypes.All.Count);
+        foreach (var kind in kinds)
+        {
+            Assert.True(BuildingTypes.IsKnown(kind), kind.ToString());
+            Assert.Equal(kind, BuildingTypes.Get(kind).Kind);
+        }
+    }
+
+    [Fact]
+    public void Building_ids_are_unique_and_found_by_their_id()
+    {
+        var ids = BuildingTypes.All.Select(type => type.Id).ToList();
+
+        Assert.Equal(ids.Count, ids.Distinct().Count());
+        foreach (var type in BuildingTypes.All)
+        {
+            Assert.True(BuildingTypes.TryGetById(type.Id, out var found));
+            Assert.Equal(type, found);
+        }
     }
 }

@@ -69,8 +69,15 @@ public partial class Buildings : Node3D
             BuildingKind.NeutralShed => 0.35f,
             BuildingKind.NeutralHouseA => 0.6f,
             BuildingKind.NeutralApartment => 1.4f,
+            BuildingKind.TechOilDerrick => 0.5f,
+            BuildingKind.TechHospital => 0.5f,
             BuildingKind.TechAirfield => 0.2f,
-            _ => 0.5f,
+            BuildingKind.NeutralFuelTank => 0.6f,
+            BuildingKind.NeutralSmokestack => 1.8f,
+            BuildingKind.NeutralCoolingTower => 1.2f,
+            BuildingKind.NeutralFactoryHall => 0.9f,
+            BuildingKind.NeutralBoilerHouse => 0.6f,
+            _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "No symbolic height for this kind."),
         };
         var centre = new Vector3(cell.X + type.Width / 2f, 0, cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);

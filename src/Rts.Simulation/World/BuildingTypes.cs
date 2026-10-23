@@ -11,6 +11,11 @@ public enum BuildingKind : byte
     TechOilDerrick = 4,
     TechHospital = 5,
     TechAirfield = 6,
+    NeutralFuelTank = 7,
+    NeutralSmokestack = 8,
+    NeutralCoolingTower = 9,
+    NeutralFactoryHall = 10,
+    NeutralBoilerHouse = 11,
 }
 
 /// <summary>
@@ -21,7 +26,8 @@ public enum BuildingKind : byte
 public sealed record BuildingType(BuildingKind Kind, string Id, int Width, int Height, int MaxHp, int Garrison, bool Capturable);
 
 /// <summary>
-/// The neutral buildings and tech buildings of the winter set, kept in code until the data files of M3 (game/data/neutral/).
+/// The neutral buildings and tech buildings of the rules so far (winter and industrial sets), kept in code until the data files of
+/// M3 (game/data/neutral/).
 /// Hit points are a rough guide until the balance of M4.
 /// </summary>
 public static class BuildingTypes
@@ -34,11 +40,16 @@ public static class BuildingTypes
         new(BuildingKind.TechOilDerrick, "tech_oil_derrick", 2, 2, MaxHp: 1000, Garrison: 0, Capturable: true),
         new(BuildingKind.TechHospital, "tech_hospital", 3, 3, MaxHp: 1500, Garrison: 0, Capturable: true),
         new(BuildingKind.TechAirfield, "tech_airfield", 4, 3, MaxHp: 2000, Garrison: 0, Capturable: true),
+        new(BuildingKind.NeutralFuelTank, "neutral_fuel_tank", 1, 1, MaxHp: 800, Garrison: 0, Capturable: false),
+        new(BuildingKind.NeutralSmokestack, "neutral_smokestack", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
+        new(BuildingKind.NeutralCoolingTower, "neutral_cooling_tower", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),
+        new(BuildingKind.NeutralFactoryHall, "neutral_factory_hall", 4, 3, MaxHp: 800, Garrison: 6, Capturable: false),
+        new(BuildingKind.NeutralBoilerHouse, "neutral_boiler_house", 2, 2, MaxHp: 800, Garrison: 2, Capturable: false),
     ];
 
     public static IReadOnlyList<BuildingType> All => Types;
 
-    public static bool IsKnown(BuildingKind kind) => kind >= BuildingKind.NeutralShed && kind <= BuildingKind.TechAirfield;
+    public static bool IsKnown(BuildingKind kind) => kind >= BuildingKind.NeutralShed && (int)kind <= Types.Length;
 
     public static BuildingType Get(BuildingKind kind) =>
         IsKnown(kind) ? Types[(int)kind - 1] : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown building kind.");
