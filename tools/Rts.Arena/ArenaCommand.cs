@@ -15,7 +15,7 @@ public static class ArenaCommand
     private const string Usage =
         "usage: rts-arena run --config <matrix.yaml> [--out folder] [--jobs N] [--data folder]\n" +
         "       rts-arena run --a <profile> --b <profile> --map <id> [--games N] [--minutes M] [--seed S] [--out folder] [--jobs N] [--data folder]\n" +
-        "       rts-arena replay <file.rtsreplay> [--a <profile>] [--b <profile>] [--data folder]\n" +
+        "       rts-arena replay <file.rtsreplay> [--data folder]\n" +
         "a profile is level[:personality[:faction]]: easy, medium, hard or brutal; balanced and union by default";
 
     /// <summary>The columns of <c>results.csv</c>, the same on every run of the same matches.</summary>
@@ -85,8 +85,11 @@ public static class ArenaCommand
     private static int Replay(string file, Dictionary<string, string> options, TextWriter output)
     {
         var data = Data(options);
-        var a = BotProfile.Parse(options.GetValueOrDefault("a") ?? "medium", data.Database);
-        var b = BotProfile.Parse(options.GetValueOrDefault("b") ?? "medium", data.Database);
+        if (options.ContainsKey("a") || options.ContainsKey("b"))
+        {
+            throw new ArenaException("--a and --b are not needed: the replay keeps the level and the personality of every bot");
+        }
+
         if (!File.Exists(file))
         {
             throw new ArenaException($"no replay '{file}'");
@@ -102,7 +105,7 @@ public static class ArenaCommand
             throw new ArenaException($"'{file}' is not a replay: {e.Message}");
         }
 
-        var check = ArenaMatch.Check(replay, data.Rules, player => (player.Value == 1 ? a : b).Personality);
+        var check = ArenaMatch.Check(replay, data.Rules);
         output.WriteLine($"{file}: {check}");
         return check == "match" ? 0 : 1;
     }

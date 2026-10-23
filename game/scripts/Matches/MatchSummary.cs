@@ -15,13 +15,19 @@ public enum MatchOutcome
 
 /// <summary>
 /// A row of the results: a player of the match, whether it is the person at the keyboard, its team, whether it won, and the nine numbers
-/// of <see cref="PlayerStats"/> the table shows, in its order.
+/// of <see cref="PlayerStats"/> the table shows, in its order. A bot shows its level and its personality as the match setup has them
+/// (M8 step 13) — «random» too: the screen asks the bots which one was drawn.
 /// </summary>
-public sealed record SummaryRow(PlayerId Player, bool IsYou, PlayerKind Kind, int Team, bool Won, ImmutableArray<int> Numbers);
+public sealed record SummaryRow(PlayerId Player, bool IsYou, PlayerKind Kind, int Team, bool Won, ImmutableArray<int> Numbers)
+{
+    public AiDifficulty Difficulty { get; init; } = AiDifficulty.Medium;
+
+    public string Personality { get; init; } = MatchPlayer.DefaultPersonality;
+}
 
 /// <summary>
 /// What the results screen shows (docs/implementation/M5_first_bot.md, 4.10, step 12), worked out from the world once the match is
-/// over: the outcome for the person at the keyboard, the length of the match, a row for every player of the match in the order of the
+/// over — or once the person at the keyboard is beaten: the outcome for the person, the length of the match, a row for every player of the match in the order of the
 /// slots, and the series of the strength of every player's army. Pure — no Godot — and tested in Rts.Simulation.Tests.
 /// </summary>
 public sealed record MatchSummary(
@@ -61,11 +67,19 @@ public sealed record MatchSummary(
                     stats.UnitsBuilt, stats.UnitsLost, stats.UnitsDestroyed,
                     stats.BuildingsBuilt, stats.BuildingsLost, stats.BuildingsDestroyed,
                     stats.CreditsHarvested, stats.CreditsSpent, stats.CreditsFromSales,
-                ]));
+                ])
+            {
+                Difficulty = player.Difficulty,
+                Personality = player.Personality,
+            });
             series.Add([.. stats.Samples]);
         }
 
-        var outcome = winners.IsEmpty ? MatchOutcome.Draw : winners.Contains(local) ? MatchOutcome.Victory : MatchOutcome.Defeat;
+        // The person beaten while bots of other teams fight on (M8 step 13: one against three): a defeat, the match not over yet.
+        var beaten = world.Result is null && world.Player(local).DefeatedTick is not null;
+        var outcome = beaten ? MatchOutcome.Defeat
+            : winners.IsEmpty ? MatchOutcome.Draw
+            : winners.Contains(local) ? MatchOutcome.Victory : MatchOutcome.Defeat;
         var duration = world.Stats.Duration;
         return new MatchSummary(outcome, Clock(duration, ticksPerSecond), rows.ToImmutable(), series.ToImmutable(), duration);
     }

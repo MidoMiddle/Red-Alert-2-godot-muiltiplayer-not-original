@@ -52,8 +52,8 @@ public static class ArenaMatch
             seed,
             new MatchOptions(),
             [
-                new MatchPlayer(1, PlayerKind.Ai, a.Level, a.Faction, Color: 0, Team: 1, startA.Slot, startA.Cell),
-                new MatchPlayer(2, PlayerKind.Ai, b.Level, b.Faction, Color: 1, Team: 2, startB.Slot, startB.Cell),
+                new MatchPlayer(1, PlayerKind.Ai, a.Level, a.Faction, Color: 0, Team: 1, startA.Slot, startA.Cell) { Personality = a.Personality },
+                new MatchPlayer(2, PlayerKind.Ai, b.Level, b.Faction, Color: 1, Team: 2, startB.Slot, startB.Cell) { Personality = b.Personality },
             ],
             [.. map.Starts.Select(start => start.Cell)]);
         var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, map.ToMapGrid()), data.Rules);
@@ -90,11 +90,11 @@ public static class ArenaMatch
     }
 
     /// <summary>
-    /// Plays <paramref name="replay"/> back without its bots and with them run again with the personalities of
-    /// <paramref name="personalityOf"/>: <c>match</c> when both give the recorded checksums, else what went wrong, in one word or two. With
-    /// <paramref name="journals"/> the bots run again write their journals into it, by player.
+    /// Plays <paramref name="replay"/> back without its bots and with them run again with the personalities the replay keeps (step 13):
+    /// <c>match</c> when both give the recorded checksums, else what went wrong, in one word or two. With <paramref name="journals"/> the
+    /// bots run again write their journals into it, by player.
     /// </summary>
-    public static string Check(Replay replay, GameRules rules, Func<PlayerId, string> personalityOf, IDictionary<PlayerId, string>? journals = null)
+    public static string Check(Replay replay, GameRules rules, IDictionary<PlayerId, string>? journals = null)
     {
         var plain = ReplayPlayer.Verify(replay, rules);
         if (plain.Status != ReplayStatus.Match)
@@ -106,7 +106,7 @@ public static class ArenaMatch
         var bots = new List<JournalBot>();
         var withBots = ReplayPlayer.VerifyWithBots(replay, rules, player =>
         {
-            var bot = new JournalBot((AiPlayer)MatchBots.Create(setup, player, rules, personalityOf(player.Id)));
+            var bot = new JournalBot((AiPlayer)MatchBots.Create(setup, player, rules));
             bots.Add(bot);
             return bot;
         });
@@ -128,7 +128,7 @@ public static class ArenaMatch
     {
         try
         {
-            return new TimedBot((AiPlayer)MatchBots.Create(setup, player, data.Rules, profile.Personality));
+            return new TimedBot((AiPlayer)MatchBots.Create(setup, player, data.Rules));
         }
         catch (ArgumentException e)
         {

@@ -45,7 +45,7 @@ UI_MAP_INFO_NONE,No map selected
 UI_MAP_INFO,{0} · {1}×{2} · {3} players
 UI_MAP_PREVIEW_RENDERING,Rendering preview…
 UI_MAP_RANDOM,Random map…
-UI_MAP_RANDOM_HINT,Choose the settings and press Generate · the match starts once the bot is ready
+UI_MAP_RANDOM_HINT,Choose the settings and press Generate · then Start plays the map
 UI_EDITOR_TITLE,Map Editor
 UI_EDITOR_NEW_MAP,New map
 UI_EDITOR_NEW,New
@@ -125,17 +125,38 @@ UI_SKIRMISH_COLOR,Color
 UI_SKIRMISH_TEAM,Team
 UI_SKIRMISH_START_POSITION,Start
 UI_SKIRMISH_START_GAME,Start
+UI_SKIRMISH_START_NEEDS_ENEMY,Add a bot in another team to start.
+UI_SKIRMISH_START_NEEDS_MAP,Generate the random map first.
 UI_SLOT_BOT,Bot
 UI_SLOT_CLOSED,Closed
 UI_DIFFICULTY_EASY,Easy
 UI_DIFFICULTY_MEDIUM,Medium
 UI_DIFFICULTY_HARD,Hard
 UI_DIFFICULTY_BRUTAL,Brutal (bonuses)
+UI_DIFFICULTY_EASY_TIP,Builds slowly and attacks late with small waves: for learning the game.
+UI_DIFFICULTY_MEDIUM_TIP,A steady opponent: a full base and the first attack at about six minutes.
+UI_DIFFICULTY_HARD_TIP,Follows the ore and answers your army; strikes back when you attack.
+UI_DIFFICULTY_BRUTAL_TIP,Plays as Hard with bonuses: +40% income and +20% build speed; sees the whole map.
+UI_PERSONALITY_RANDOM_TIP,One of the personalities drawn when the match starts; the results screen shows which.
+UI_PERSONALITY_BALANCED,Balanced
+UI_PERSONALITY_BALANCED_TIP,Economy and defense and army in step; the first attack at 6–8 minutes.
+UI_PERSONALITY_AGGRESSOR,Aggressor
+UI_PERSONALITY_AGGRESSOR_TIP,Army first: an early rush at 3–5 minutes and then a wave every two minutes.
+UI_PERSONALITY_BUILDER,Builder
+UI_PERSONALITY_BUILDER_TIP,Economy and dense defenses; attacks not before 10 minutes and with a big army.
+UI_PERSONALITY_SABOTEUR,Saboteur
+UI_PERSONALITY_SABOTEUR_TIP,Raids your harvesters and power plants with small fast squads from several sides.
 UI_FACTION_UNION,Union
 UI_FACTION_ALLIANCE,Alliance
 UI_FACTION_CULT,Cult
 UI_COLOR_RED,Red
 UI_COLOR_BLUE,Blue
+UI_COLOR_GREEN,Green
+UI_COLOR_YELLOW,Yellow
+UI_COLOR_ORANGE,Orange
+UI_COLOR_PURPLE,Purple
+UI_COLOR_TEAL,Teal
+UI_COLOR_PINK,Pink
 UI_TEAM_NONE,None
 UI_RANDOM,Random
 UI_OPTION_CREDITS,Starting credits
@@ -281,7 +302,8 @@ UI_RESULTS_DRAW,DRAW
 UI_RESULTS_DURATION,Match length {0}
 UI_RESULTS_PLAYER,Player
 UI_RESULTS_YOU,You
-UI_RESULTS_BOT,Bot (Medium)
+UI_RESULTS_BOT,Bot ({0} · {1})
+UI_RESULTS_RANDOM_PERSONALITY,Random → {0}
 UI_RESULTS_WINNER,winner
 UI_RESULTS_UNITS_BUILT,Units built
 UI_RESULTS_UNITS_LOST,Units lost

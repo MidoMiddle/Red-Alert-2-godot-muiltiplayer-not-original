@@ -295,6 +295,8 @@ public sealed class GoldenValuesTests
         // hash); no surrender here, so the commands are the same.
         // Rules v39 (M8 step 2): the version and the checksums change (the bonuses of the players in the hash); the commands are the same.
         // Rules v40 (M8 step 11): only the version changes — the allies come from the teams of a match setup, and there is none here.
-        Assert.Equal((22269, 14221387048978010095UL), (bytes.Length, hash.Value));
+        // Replay format v20 (M8 step 13): the personality of every player in the match setup; there is none here, so only the version
+        // changes.
+        Assert.Equal((22269, 14057511527662429606UL), (bytes.Length, hash.Value));
     }
 }

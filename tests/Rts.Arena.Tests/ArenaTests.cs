@@ -130,7 +130,7 @@ public sealed class ArenaTests : IDisposable
         TwoShortMatches(_folder);
         var file = Path.Combine(_folder, "game-0001.rtsreplay");
 
-        var (code, output, _) = Arena("replay", file, "--a", "medium:balanced", "--b", "easy");
+        var (code, output, _) = Arena("replay", file);
         Assert.Equal(0, code);
         Assert.Contains(": match", output);
 
@@ -139,7 +139,7 @@ public sealed class ArenaTests : IDisposable
         bytes[^1] ^= 0xFF;
         var spoilt = Path.Combine(_folder, "spoilt.rtsreplay");
         File.WriteAllBytes(spoilt, bytes);
-        var (spoiltCode, spoiltOutput, _) = Arena("replay", spoilt, "--a", "medium:balanced", "--b", "easy");
+        var (spoiltCode, spoiltOutput, _) = Arena("replay", spoilt);
         Assert.Equal(1, spoiltCode);
         Assert.Contains("without-bots:desync", spoiltOutput);
     }

@@ -63,7 +63,7 @@ public static class ArenaRunner
             File.WriteAllBytes(file, ReplayFormat.Write(outcome.Replay));
             var journals = new Dictionary<PlayerId, string>();
             checks[game] = ArenaMatch.Check(
-                ReplayFormat.Read(File.ReadAllBytes(file)), data.Rules, player => (player.Value == 1 ? outcome.A : outcome.B).Profile.Personality, journals);
+                ReplayFormat.Read(File.ReadAllBytes(file)), data.Rules, journals);
             foreach (var (player, journal) in journals)
             {
                 File.WriteAllText(Path.Combine(folder, $"game-{game + 1:0000}-p{player.Value}.log"), journal);

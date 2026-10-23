@@ -91,6 +91,21 @@ public sealed class ReplayTests
     }
 
     [Fact]
+    public void The_personalities_of_the_players_are_kept_in_the_replay()
+    {
+        // Format 20 (M8 step 13): a random one as it is — the bots run again draw it the same way.
+        var setup = Matches.MatchSetupTests.OneOnOne();
+        setup = setup with { Players = [setup.Players[0], setup.Players[1] with { Personality = "random" }] };
+        var replay = new Replay(
+            SimulationVersion.Current, DataHasher.NoData, SimulationSettings.ForMatch(setup, new Rts.Simulation.Map.MapGrid(64, 64)), 0, [], []);
+
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay)).Settings.Match!;
+
+        Assert.Equal(["balanced", "random"], read.Players.Select(player => player.Personality));
+        Assert.Equal(setup, read);
+    }
+
+    [Fact]
     public void The_data_hash_is_written_after_the_rules_version_and_read_back()
     {
         var simulation = new GameSimulation(new SimulationSettings(5), TestRules.Standard);

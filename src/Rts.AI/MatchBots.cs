@@ -9,6 +9,7 @@ using Rts.Simulation;
 using Rts.Simulation.Ai;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Matches;
+using Rts.Simulation.Random;
 using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
@@ -18,16 +19,14 @@ namespace Rts.AI;
 public static class MatchBots
 {
     /// <summary>
-    /// The bot of <paramref name="player"/> in <paramref name="setup"/>, by its level and the personality «Balanced» in the data of
-    /// <paramref name="rules"/> (M5 step 14, M8 step 1) — the numbers of the code when the data has none: it knows its start and every
-    /// start of the map.
+    /// The bot of <paramref name="player"/> in <paramref name="setup"/>, by its level and its personality (<see cref="PersonalityOf"/>) in the
+    /// data of <paramref name="rules"/> (M5 step 14, M8 steps 1, 13) — the numbers of the code when the data has none: it knows its start and
+    /// every start of the map.
     /// </summary>
-    public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules) => Create(setup, player, rules, BalancedId);
+    public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules) =>
+        Create(setup, player, rules, PersonalityOf(setup, player, rules.Database));
 
-    /// <summary>
-    /// The bot of <paramref name="player"/> with the personality <paramref name="personality"/> of the data — the Arena chooses it (M8 step
-    /// 4); the match setup does not keep it yet (step 13).
-    /// </summary>
+    /// <summary>The bot of <paramref name="player"/> with the personality <paramref name="personality"/> of the data instead of its own.</summary>
     public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules, string personality) =>
         Create(setup, player, rules, personality, null);
 
@@ -38,13 +37,37 @@ public static class MatchBots
     /// <summary>
     /// Creates the bots of <paramref name="setup"/> (M8 step 11): every team of two bots or more shares one <see cref="TeamBlackboard"/>,
     /// so a match and its replay checked with the bots run again (<see cref="ReplayPlayer.VerifyWithBots"/>) get the same bots. The
-    /// personality of a bot is <paramref name="personalityOf"/>, «Balanced» without it.
+    /// personality of a bot is its own in the setup (<see cref="PersonalityOf"/>, M8 step 13).
     /// </summary>
-    public static Func<MatchPlayer, IAiController> For(MatchSetup setup, GameRules rules, Func<MatchPlayer, string>? personalityOf = null)
+    public static Func<MatchPlayer, IAiController> For(MatchSetup setup, GameRules rules)
     {
         var boards = Boards(setup);
-        return player => Create(setup, player, rules, personalityOf?.Invoke(player) ?? BalancedId, boards.GetValueOrDefault(player.Team));
+        return player => Create(setup, player, rules, PersonalityOf(setup, player, rules.Database), boards.GetValueOrDefault(player.Team));
     }
+
+    /// <summary>
+    /// The personality <paramref name="player"/> plays (M8 step 13): its own in the setup, and for «Random» one of the personalities of the
+    /// data chosen by the seed of the match and the slot — the same on every machine, in the bots of a replay run again and on the results
+    /// screen. «Balanced» when the data has none.
+    /// </summary>
+    public static string PersonalityOf(MatchSetup setup, MatchPlayer player, RulesDatabase database)
+    {
+        if (player.Personality != MatchPlayer.RandomPersonality)
+        {
+            return player.Personality;
+        }
+
+        if (database.Personalities.IsDefaultOrEmpty)
+        {
+            return BalancedId;
+        }
+
+        var random = new DeterministicRandom(setup.Seed, RandomPersonalityStream + (ulong)player.Slot);
+        return database.Personalities[random.NextInt(database.Personalities.Length)].Id;
+    }
+
+    // Streams of their own, apart from the match's random (stream 0): the choice changes nothing in the simulation.
+    private const ulong RandomPersonalityStream = 0x5045_5253_0000;
 
     /// <summary>The boards of the teams of <paramref name="setup"/> with two bots or more, by team.</summary>
     public static IReadOnlyDictionary<int, TeamBlackboard> Boards(MatchSetup setup)
@@ -124,7 +147,7 @@ public static class MatchBots
     /// <summary>The id of «Medium» in the data: ids are shared by all the data, and <c>medium</c> is an armour.</summary>
     public static readonly string MediumId = DifficultyDef.IdOf(AiDifficulty.Medium);
 
-    /// <summary>The personality every bot plays until the skirmish screen offers the choice (M8 steps 8, 13).</summary>
+    /// <summary>The personality of a bot without one of its own: Quick Skirmish, data without personalities (M8 steps 8, 13).</summary>
     public const string BalancedId = "balanced";
 
     /// <summary>The id of a level in the data (M8 step 1): <c>ai_easy</c>, <c>ai_medium</c>, <c>ai_hard</c>, <c>ai_brutal</c>.</summary>

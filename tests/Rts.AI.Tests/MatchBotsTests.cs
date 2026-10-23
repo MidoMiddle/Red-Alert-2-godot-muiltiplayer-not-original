@@ -73,6 +73,53 @@ public sealed class MatchBotsTests
     }
 
     [Fact]
+    public void A_random_personality_is_drawn_from_the_seed_and_the_slot_among_those_of_the_data()
+    {
+        var database = GameDataFiles.Rules.Database;
+        MatchPlayer Bot(int slot, string personality) => Player(slot, PlayerKind.Ai, 50, 50) with { Personality = personality };
+        string Drawn(ulong seed, int slot) => MatchBots.PersonalityOf(Setup() with { Seed = seed }, Bot(slot, "random"), database);
+
+        Assert.Equal("builder", MatchBots.PersonalityOf(Setup(), Bot(2, "builder"), database));
+        Assert.Equal(Drawn(5, 2), Drawn(5, 2));
+        var drawn = Enumerable.Range(1, 100).Select(seed => Drawn((ulong)seed, 2)).ToList();
+        Assert.Equal(database.Personalities.Select(personality => personality.Id).Order(), drawn.Distinct().Order());
+        Assert.Contains(Enumerable.Range(1, 100), seed => Drawn((ulong)seed, 2) != Drawn((ulong)seed, 3));
+    }
+
+    [Fact]
+    public void A_bot_plays_the_personality_of_its_setup_and_a_random_one_as_drawn()
+    {
+        var setup = Setup();
+        setup = setup with
+        {
+            Players = [setup.Players[0], setup.Players[1] with { Personality = "aggressor" }, setup.Players[2] with { Personality = "random" }],
+        };
+
+        Assert.Equal("ai_medium:aggressor", ((AiPlayer)MatchBots.Create(setup, setup.Players[1], GameDataFiles.Rules)).Profile);
+        var drawn = MatchBots.PersonalityOf(setup, setup.Players[2], GameDataFiles.Rules.Database);
+        Assert.Equal($"ai_medium:{drawn}", ((AiPlayer)MatchBots.For(setup, GameDataFiles.Rules)(setup.Players[2])).Profile);
+    }
+
+    [Fact]
+    public void A_match_of_random_personalities_replays_with_its_bots_run_again_from_the_replay_alone()
+    {
+        var setup = Setup();
+        setup = setup with { Players = [.. setup.Players.Select(player => player with { Personality = "random" })] };
+        var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, new MapGrid(64, 64)), GameDataFiles.Rules);
+        MatchBots.AttachAll(simulation);
+        var recorder = new ReplayRecorder(simulation);
+        for (var tick = 0; tick < Ticks; tick++)
+        {
+            simulation.Step();
+            recorder.AfterStep();
+        }
+
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, MatchBots.For(replay.Settings.Match!, GameDataFiles.Rules)).Status);
+    }
+
+    [Fact]
     public void A_match_against_medium_bots_plays_the_same_twice_and_its_replay_with_or_without_them()
     {
         var first = Play();

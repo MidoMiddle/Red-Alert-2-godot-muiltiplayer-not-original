@@ -40,12 +40,34 @@ public sealed class MatchSummaryTests
         Assert.True(person.Rows[0].IsYou && person.Rows[0].Won);
         Assert.False(person.Rows[1].IsYou || person.Rows[1].Won);
         Assert.Equal(MatchSummary.Columns.Length, person.Rows[1].Numbers.Length);
+        // The level and the personality of the bot as its setup has them (M8 step 13).
+        Assert.Equal((AiDifficulty.Medium, "balanced"), (person.Rows[1].Difficulty, person.Rows[1].Personality));
         // The bot's MCV and three conscripts, lost to its surrender.
         Assert.Equal(world.Stats.Of(Bot).UnitsLost, person.Rows[1].Numbers[1]);
         Assert.Equal(4, person.Rows[1].Numbers[1]);
         Assert.Equal(2, person.Series.Length);
         Assert.Equal("0:01", person.Duration);
         Assert.Equal(15, person.DurationTicks);
+    }
+
+    [Fact]
+    public void The_person_beaten_while_two_bots_fight_on_sees_a_defeat()
+    {
+        // One against two bots of their own teams (M8 step 13): the person surrenders, the match goes on.
+        var setup = MatchSetupTests.OneOnOne();
+        setup = setup with { Players = [.. setup.Players, MatchSetupTests.Player(3, PlayerKind.Ai, 50, 10)] };
+        var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, new MapGrid(64, 64)), TestRules.Standard);
+        simulation.Enqueue(new SurrenderCommand(Person, 3, 0));
+        for (var tick = 0; tick < 20; tick++)
+        {
+            simulation.Step();
+        }
+
+        Assert.Null(simulation.World.Result);
+        var summary = MatchSummary.Of(simulation.World, Person, 15)!;
+        Assert.Equal(MatchOutcome.Defeat, summary.Outcome);
+        Assert.Equal(3, summary.Rows.Length);
+        Assert.DoesNotContain(summary.Rows, row => row.Won);
     }
 
     [Fact]

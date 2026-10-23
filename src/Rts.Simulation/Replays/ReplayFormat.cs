@@ -34,11 +34,12 @@ namespace Rts.Simulation.Replays;
 /// setup after the map: u16 length + UTF-8 map id | u8 shortGame | u8 gameSpeed | u8 playerCount, then per player u8 slot | u8 kind |
 /// u8 difficulty | u16 length + UTF-8 faction | u8 colour | u8 team | u8 startIndex | u16 startX | u16 startY; its seed and credits are
 /// those of the header. The commands of a bot are those of an Ai player numbered from <see cref="Ai.AiTurn.FirstSequence"/>; v18 (M5 step 3)
-/// adds every start of the map after the players: u8 count, then u16 x | u16 y each; v19 (M5 step 10) command format v10 (Surrender).
+/// adds every start of the map after the players: u8 count, then u16 x | u16 y each; v19 (M5 step 10) command format v10 (Surrender);
+/// v20 (M8 step 13) adds the personality of every player after its difficulty: u16 length + UTF-8 id, or <c>random</c>.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 19;
+    public const ushort FormatVersion = 20;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -347,6 +348,7 @@ public static class ReplayFormat
             bytes.Add((byte)player.Slot);
             bytes.Add((byte)player.Kind);
             bytes.Add((byte)player.Difficulty);
+            AddText(bytes, player.Personality);
             AddText(bytes, player.Faction);
             bytes.Add((byte)player.Color);
             bytes.Add((byte)player.Team);
@@ -403,11 +405,15 @@ public static class ReplayFormat
                 throw new InvalidDataException($"Invalid kind {kind} or difficulty {difficulty} of player {i + 1}.");
             }
 
+            var personality = ReadText(source, ref offset);
             var faction = ReadText(source, ref offset);
             Require(source[offset..], 7);
             players.Add(new MatchPlayer(
                 slot, (PlayerKind)kind, (AiDifficulty)difficulty, faction, source[offset], source[offset + 1], source[offset + 2],
-                new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 3)..]), BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 5)..]))));
+                new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 3)..]), BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 5)..])))
+            {
+                Personality = personality,
+            });
             offset += 7;
         }
 

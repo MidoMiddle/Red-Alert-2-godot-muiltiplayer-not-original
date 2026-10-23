@@ -1,4 +1,5 @@
 using Godot;
+using Rts.Client.App;
 using Rts.Client.Matches;
 using Rts.Simulation.Events;
 using Rts.Simulation.Matches;
@@ -15,6 +16,8 @@ namespace Rts.Client.UI;
 public partial class MatchResults : CanvasLayer
 {
     public const double DelaySeconds = 4;
+
+    private const float HeaderWidth = 110;
 
     private SimulationHost? _host;
     private Control _overlay = null!;
@@ -114,7 +117,9 @@ public partial class MatchResults : CanvasLayer
 
     private void OnEvent(SimEvent simEvent)
     {
-        if (simEvent is MatchEnded && _host is { IsPlayback: false })
+        // The person beaten opens the results too, while bots of other teams may fight on (M8 step 13); once, whichever comes first.
+        var beaten = simEvent is PlayerDefeated defeated && defeated.Player == SimulationHost.LocalPlayer;
+        if ((simEvent is MatchEnded || beaten) && _host is { IsPlayback: false } && _countdown < 0 && !_overlay.Visible)
         {
             _countdown = DelaySeconds;
         }
@@ -163,14 +168,21 @@ public partial class MatchResults : CanvasLayer
         _table.AddChild(new Label { Text = Tr("UI_RESULTS_PLAYER") });
         foreach (var column in MatchSummary.Columns)
         {
-            _table.AddChild(new Label { Text = Tr(column), HorizontalAlignment = HorizontalAlignment.Right });
+            // Headers wrap: the names of the bots with their level and personality are long (M8 step 13).
+            _table.AddChild(new Label
+            {
+                Text = Tr(column),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                CustomMinimumSize = new Vector2(HeaderWidth, 0),
+            });
         }
 
         foreach (var row in summary.Rows)
         {
             var name = new HBoxContainer();
             name.AddChild(new ColorRect { Color = PlayerColors.Of(row.Player), CustomMinimumSize = new Vector2(18, 18), SizeFlagsVertical = Control.SizeFlags.ShrinkCenter });
-            var text = Tr(row.IsYou ? "UI_RESULTS_YOU" : "UI_RESULTS_BOT") + (row.Won ? $" — {Tr("UI_RESULTS_WINNER")}" : "");
+            var text = (row.IsYou ? Tr("UI_RESULTS_YOU") : BotName(row)) + (row.Won ? $" — {Tr("UI_RESULTS_WINNER")}" : "");
             name.AddChild(new Label { Text = text });
             _table.AddChild(name);
             foreach (var number in row.Numbers)
@@ -178,6 +190,24 @@ public partial class MatchResults : CanvasLayer
                 _table.AddChild(new Label { Text = number.ToString(System.Globalization.CultureInfo.InvariantCulture), HorizontalAlignment = HorizontalAlignment.Right });
             }
         }
+    }
+
+    /// <summary>«Bot (Hard · Aggressor)»; a random personality shows the one drawn: «Bot (Hard · Random → Aggressor)» (M8 step 13).</summary>
+    private string BotName(SummaryRow row)
+    {
+        var personality = row.Personality;
+        if (_host?.Simulation.World.Match is { } match && match.PlayerOf(row.Player) is { } player)
+        {
+            personality = Rts.AI.MatchBots.PersonalityOf(match, player, DataFiles.Current.Rules.Database);
+        }
+
+        var shown = SkirmishNames.Personality(this, personality);
+        if (row.Personality == MatchPlayer.RandomPersonality)
+        {
+            shown = string.Format(Tr("UI_RESULTS_RANDOM_PERSONALITY"), shown);
+        }
+
+        return string.Format(Tr("UI_RESULTS_BOT"), SkirmishNames.Level(this, row.Difficulty), shown);
     }
 
     private void SaveReplay()

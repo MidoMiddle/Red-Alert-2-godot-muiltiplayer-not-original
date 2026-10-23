@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Rules;
 using Rts.Simulation.World;
@@ -38,7 +39,19 @@ public sealed record MatchOptions(int StartingCredits = SimulationSettings.Defau
 public sealed record MatchPlayer(
     int Slot, PlayerKind Kind, AiDifficulty Difficulty, string Faction, int Color, int Team, int StartIndex, CellPos Start)
 {
+    /// <summary>The personality every bot plays unless the skirmish screen chose another (M8 step 13).</summary>
+    public const string DefaultPersonality = "balanced";
+
+    /// <summary>A personality the bot draws at the start of the match from the seed (M8 step 13; <c>MatchBots.PersonalityOf</c>).</summary>
+    public const string RandomPersonality = "random";
+
     public PlayerId Id => new(Slot);
+
+    /// <summary>
+    /// The personality of a bot (M8 step 13): the id of one of the data, or <see cref="RandomPersonality"/>; the replay keeps it as it is,
+    /// a random one is drawn again the same way. A person's is not used.
+    /// </summary>
+    public string Personality { get; init; } = DefaultPersonality;
 }
 
 /// <summary>
@@ -119,6 +132,14 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
             if (!rules.TryGetFaction(player.Faction, out _))
             {
                 return $"{player.Id} plays the faction '{player.Faction}', which is not in the data";
+            }
+
+            // M8 step 13: a personality of the data, or random; data without personalities plays every bot «Balanced» of the code.
+            if (player.Personality != MatchPlayer.RandomPersonality && !rules.TryGetPersonality(player.Personality, out _)
+                && !(rules.Personalities.IsDefaultOrEmpty && player.Personality == MatchPlayer.DefaultPersonality))
+            {
+                return $"{player.Id} plays the personality '{player.Personality}', which is not in the data: "
+                    + string.Join(", ", rules.Personalities.Select(personality => personality.Id)) + " or random";
             }
 
             if (player.Start.X < 0 || player.Start.Y < 0 || player.Start.X >= width || player.Start.Y >= height)

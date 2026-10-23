@@ -206,6 +206,12 @@ public partial class SimulationHost : Node
         StartLiveSession();
     }
 
+    // « hard:aggressor» for a bot in the log of the start — a random personality as drawn (M8 step 13); nothing for a person.
+    private string BotProfile(MatchPlayer player) =>
+        player.Kind == PlayerKind.Ai && _match is not null
+            ? $" {MatchBots.LevelId(player.Difficulty)}:{MatchBots.PersonalityOf(_match, player, Data.Rules.Database)}"
+            : "";
+
     public void StartLiveSession()
     {
         QueueHistory.Clear();
@@ -222,7 +228,7 @@ public partial class SimulationHost : Node
             LocalPlayer = _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
             CallDeferred(MethodName.LookAtStart);
             GD.Print($"[host] match on {_match.MapId}, seed {_match.Seed}: " +
-                     string.Join(", ", _match.Players.Select(player => $"{player.Id} {player.Kind} at {player.Start.X},{player.Start.Y}")));
+                     string.Join(", ", _match.Players.Select(player => $"{player.Id} {player.Kind}{BotProfile(player)} at {player.Start.X},{player.Start.Y}")));
         }
         else
         {

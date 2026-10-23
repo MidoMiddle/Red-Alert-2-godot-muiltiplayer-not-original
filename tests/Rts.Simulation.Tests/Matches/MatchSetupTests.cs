@@ -32,6 +32,19 @@ public sealed class MatchSetupTests
         Assert.Null(Problem(OneOnOne() with { Players = [Player(1, PlayerKind.Ai, 10, 10), Player(2, PlayerKind.Ai, 50, 50)] }));
     }
 
+    [Fact]
+    public void A_bot_plays_a_personality_of_the_data_or_a_random_one()
+    {
+        // M8 step 13: the skirmish screen chooses it; the test data has «Balanced» only.
+        var good = OneOnOne();
+        Assert.Null(Problem(good with { Players = [good.Players[0], good.Players[1] with { Personality = "balanced" }] }));
+        Assert.Null(Problem(good with { Players = [good.Players[0], good.Players[1] with { Personality = "random" }] }));
+        Assert.Equal("balanced", good.Players[1].Personality);
+
+        var problem = Problem(good with { Players = [good.Players[0], good.Players[1] with { Personality = "pacifist" }] });
+        Assert.Equal("P2 plays the personality 'pacifist', which is not in the data: balanced or random", problem);
+    }
+
     [Theory]
     [InlineData("one player")]
     [InlineData("slot taken twice")]

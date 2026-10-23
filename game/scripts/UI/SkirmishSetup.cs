@@ -1,7 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Maps;
+using Rts.Client.Matches;
+using Rts.Simulation.Matches;
 
 namespace Rts.Client.UI;
 
@@ -10,8 +15,10 @@ namespace Rts.Client.UI;
 /// Players and options are on the left, the map and the buttons on the right, as in the classic RA2 setup.
 /// The map list works since M7 step 10: every map of <see cref="MapCatalog"/>, with its preview (cached, or drawn in the
 /// background) and a line of information; its last item, «Random map…» (step 15), shows the generator's settings and a
-/// preview of the map they make. The rest waits for the bot and the match setup of M5: only Back is active, every
-/// other control is disabled and says "Coming soon" on hover.
+/// preview of the map they make. The players and Start work since M8 step 13 (with M6 step 7): a row for every start of the map — the
+/// person, then bots or closed seats with their level, personality, colour, team and start, a hint on hover — the starting credits and
+/// the short game; <see cref="SkirmishConfig"/> keeps the logic and the last config, in <see cref="ConfigPath"/>. Start opens the match
+/// as Quick Skirmish does. The speed, the starting units, superweapons and crates stay locked with "Coming soon" on hover.
 /// </summary>
 public partial class SkirmishSetup : Control
 {
@@ -25,6 +32,24 @@ public partial class SkirmishSetup : Control
     private const int PlayerSeparation = 16;
     private const int OptionSeparation = 24;
     private const int RowSeparation = 12;
+    private const int SwatchSize = 16;
+    private const string MatchScene = "res://scenes/Main.tscn";
+
+    /// <summary>The last config of the screen, for the next time it opens.</summary>
+    public const string ConfigPath = "user://skirmish.cfg";
+
+    /// <summary>
+    /// The random map a match is started on: out of <see cref="MapCatalog.UserDirectory"/>, so it does not join the list of maps; the
+    /// replay keeps the map itself.
+    /// </summary>
+    public const string RandomMapPath = "user://skirmish/random.rtsmap";
+
+    // The names of the colours of PlayerPalette, in its order.
+    private static readonly string[] ColorKeys =
+    [
+        "UI_COLOR_BLUE", "UI_COLOR_RED", "UI_COLOR_GREEN", "UI_COLOR_YELLOW",
+        "UI_COLOR_ORANGE", "UI_COLOR_PURPLE", "UI_COLOR_TEAL", "UI_COLOR_PINK",
+    ];
 
     private List<MapEntry> _maps = [];
     private MapPreviewView _preview = null!;
@@ -32,6 +57,16 @@ public partial class SkirmishSetup : Control
     private Label _mapInfo = null!;
     private MapEntry? _shown;
     private VBoxContainer _random = null!;
+    private MapEntry? _generated;
+    private GridContainer _players = null!;
+    private readonly List<PlayerRow> _rows = [];
+    private OptionButton _credits = null!;
+    private CheckBox _shortGame = null!;
+    private Button _start = null!;
+    private SkirmishConfig _config = SkirmishConfig.For(0);
+
+    // «random», then the personalities of the data, «Balanced» first.
+    private List<string> _personalities = [];
 
     public override void _Ready()
     {
@@ -47,7 +82,14 @@ public partial class SkirmishSetup : Control
         _preview = new MapPreviewView { Name = "PreviewImage", MouseFilter = MouseFilterEnum.Ignore };
         _preview.SetAnchorsPreset(LayoutPreset.FullRect);
         GetNode<Panel>("Column/Scroll/Stack/Preview").AddChild(_preview);
-        BuildMapList();
+        _personalities =
+        [
+            MatchPlayer.RandomPersonality,
+            .. DataFiles.Current.Rules.Database.Personalities
+                .Select(personality => personality.Id)
+                .OrderBy(id => id == MatchPlayer.DefaultPersonality ? 0 : 1),
+        ];
+        _config = LoadConfig() ?? _config;
 
         var content = GetNode<VBoxContainer>("Screen/Scroll/Content");
         content.AddChild(Caption(Tr("UI_SKIRMISH_PLAYERS")));
@@ -57,12 +99,15 @@ public partial class SkirmishSetup : Control
         content.AddChild(BuildOptions());
 
         var actions = GetNode<VBoxContainer>("Column/Scroll/Stack/Actions");
-        actions.AddChild(new Button
+        _start = new Button
         {
-            Text = string.Format(Tr("UI_MENU_ITEM_SOON"), Tr("UI_SKIRMISH_START_GAME")),
-            Disabled = true,
+            Name = "StartGame",
+            Text = Tr("UI_SKIRMISH_START_GAME"),
             CustomMinimumSize = new Vector2(ActionWidth, ActionHeight),
-        });
+        };
+        _start.Pressed += StartGame;
+        actions.AddChild(_start);
+        BuildMapList();
 
         var back = new Button
         {
@@ -72,7 +117,14 @@ public partial class SkirmishSetup : Control
         };
         back.Pressed += OnBackPressed;
         actions.AddChild(back);
-        back.GrabFocus();
+        if (_start.Disabled)
+        {
+            back.GrabFocus();
+        }
+        else
+        {
+            _start.GrabFocus();
+        }
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -99,6 +151,7 @@ public partial class SkirmishSetup : Control
             box.AddChild(DisabledOption(ActionWidth, 0, Tr("UI_MAP_NONE")));
             _previewLabel.Text = Tr("UI_MAP_PREVIEW");
             _mapInfo.Text = Tr("UI_MAP_INFO_NONE");
+            Refresh();
             return;
         }
 
@@ -131,19 +184,27 @@ public partial class SkirmishSetup : Control
             return;
         }
 
-        _shown = null;
+        _shown = _generated;
+        if (_generated is not null)
+        {
+            ShowMap(_generated);
+            return;
+        }
+
         _preview.Show(null, null);
         _previewLabel.Text = Tr("UI_MAP_PREVIEW");
         _mapInfo.Text = Tr("UI_MAP_RANDOM_HINT");
+        Refresh();
     }
 
-    /// <summary>A random map from the settings, checked and shown with its preview; the match itself starts with M5.</summary>
+    /// <summary>A random map from the settings, checked and shown with its preview; Start plays it.</summary>
     private void GenerateRandom(Rts.MapGen.MapGenSettings settings)
     {
         try
         {
             var (map, _) = Rts.MapGen.MapGenerator.Generate(settings);
-            ShowMap(new MapEntry("random", map, Rts.Data.Maps.MapHasher.Hash(map)));
+            _generated = new MapEntry("random", map, Rts.Data.Maps.MapHasher.Hash(map));
+            ShowMap(_generated);
         }
         catch (Rts.MapGen.MapGenException error)
         {
@@ -156,6 +217,7 @@ public partial class SkirmishSetup : Control
     {
         _shown = entry;
         var map = entry.Map;
+        SetSlots(map);
         _mapInfo.Text = string.Format(Tr("UI_MAP_INFO"), map.Name, map.Width, map.Height, map.Players)
             + (map.Description.Length > 0 ? "\n" + map.Description : "");
         var texture = MapPreviews.TryLoad(entry);
@@ -176,14 +238,14 @@ public partial class SkirmishSetup : Control
     }
 
     /// <summary>
-    /// Players table. The first row is the local player, who has no difficulty or personality. The second row is
-    /// the opponent slot: a bot at Medium, the only level until M8, or a closed slot. Later there is one row per start.
+    /// The players table: the captions, then one row for every start of the map shown (<see cref="SkirmishConfig"/>). The first row is the
+    /// person, who has no level or personality; the others are a bot or closed.
     /// </summary>
     private GridContainer BuildPlayers()
     {
-        var grid = new GridContainer { Columns = PlayerColumns };
-        grid.AddThemeConstantOverride("h_separation", PlayerSeparation);
-        grid.AddThemeConstantOverride("v_separation", RowSeparation);
+        _players = new GridContainer { Name = "Players", Columns = PlayerColumns };
+        _players.AddThemeConstantOverride("h_separation", PlayerSeparation);
+        _players.AddThemeConstantOverride("v_separation", RowSeparation);
 
         foreach (var key in new[]
         {
@@ -191,31 +253,96 @@ public partial class SkirmishSetup : Control
             "UI_SKIRMISH_COLOR", "UI_SKIRMISH_TEAM", "UI_SKIRMISH_START_POSITION",
         })
         {
-            grid.AddChild(Caption(Tr(key)));
+            _players.AddChild(Caption(Tr(key)));
         }
 
-        grid.AddChild(Caption(Tr("UI_SKIRMISH_YOU")));
-        grid.AddChild(new Control());
-        grid.AddChild(new Control());
-        grid.AddChild(FactionOption());
-        grid.AddChild(DisabledOption(FieldWidth, 0, Tr("UI_COLOR_RED")));
-        grid.AddChild(TeamOption(0));
-        grid.AddChild(DisabledOption(FieldWidth, 0, "1"));
+        return _players;
+    }
 
-        grid.AddChild(DisabledOption(FieldWidth, 0, Tr("UI_SLOT_BOT"), Tr("UI_SLOT_CLOSED")));
-        grid.AddChild(DisabledOption(
-            FieldWidth, 1, Tr("UI_DIFFICULTY_EASY"), Tr("UI_DIFFICULTY_MEDIUM"), Tr("UI_DIFFICULTY_HARD"), Tr("UI_DIFFICULTY_BRUTAL")));
-        grid.AddChild(DisabledOption(FieldWidth, 0, Tr("UI_RANDOM")));
-        grid.AddChild(FactionOption());
-        grid.AddChild(DisabledOption(FieldWidth, 0, Tr("UI_COLOR_BLUE")));
-        grid.AddChild(TeamOption(2));
-        grid.AddChild(DisabledOption(FieldWidth, 0, Tr("UI_RANDOM")));
+    /// <summary>The rows of the table for <see cref="_config"/>, made again when the map changes the number of starts.</summary>
+    private void BuildRows()
+    {
+        foreach (var row in _rows)
+        {
+            foreach (var control in row.Controls)
+            {
+                _players.RemoveChild(control);
+                control.QueueFree();
+            }
+        }
 
-        return grid;
+        _rows.Clear();
+        for (var index = 0; index < _config.Slots.Length; index++)
+        {
+            var row = index;
+            Control who;
+            if (row == 0)
+            {
+                who = Caption(Tr("UI_SKIRMISH_YOU"));
+            }
+            else
+            {
+                var kind = Option($"Who{row}", Tr("UI_SLOT_BOT"), Tr("UI_SLOT_CLOSED"));
+                kind.ItemSelected += item => Change(row, slot => slot with { Kind = item == 0 ? SlotKind.Bot : SlotKind.Closed });
+                who = kind;
+            }
+
+            var level = Option($"Level{row}");
+            foreach (var difficulty in SkirmishConfig.Levels)
+            {
+                level.AddItem(SkirmishNames.Level(this, difficulty));
+                level.SetItemTooltip(level.ItemCount - 1, SkirmishNames.LevelHint(this, difficulty));
+            }
+
+            level.ItemSelected += item => Change(row, slot => slot with { Difficulty = SkirmishConfig.Levels[(int)item] });
+
+            var personality = Option($"Personality{row}");
+            foreach (var id in _personalities)
+            {
+                personality.AddItem(SkirmishNames.Personality(this, id));
+                personality.SetItemTooltip(personality.ItemCount - 1, SkirmishNames.PersonalityHint(this, id));
+            }
+
+            personality.ItemSelected += item => Change(row, slot => slot with { Personality = _personalities[(int)item] });
+
+            var color = Option($"Color{row}");
+            for (var i = 0; i < PlayerPalette.Colors.Length; i++)
+            {
+                color.AddIconItem(Swatch(i), Tr(ColorKeys[i]));
+            }
+
+            color.ItemSelected += item => Apply(_config.WithColor(row, (int)item));
+
+            var team = Option($"Team{row}", Tr("UI_TEAM_NONE"), "1", "2", "3", "4");
+            team.ItemSelected += item => Change(row, slot => slot with { Team = (int)item });
+
+            var start = Option($"Start{row}", Tr("UI_RANDOM"));
+            for (var i = 1; i <= _config.Slots.Length; i++)
+            {
+                start.AddItem(i.ToString(CultureInfo.InvariantCulture));
+            }
+
+            start.ItemSelected += item => Apply(_config.WithStart(row, item == 0 ? SkirmishConfig.RandomStart : (int)item - 1));
+
+            var placeholder = row == 0;
+            var controls = new Control[]
+            {
+                who, placeholder ? new Control() : level, placeholder ? new Control() : personality, FactionOption(), color, team, start,
+            };
+            foreach (var control in controls)
+            {
+                _players.AddChild(control);
+            }
+
+            _rows.Add(new PlayerRow(controls, who as OptionButton, level, personality, color, team, start));
+        }
+
+        Refresh();
     }
 
     /// <summary>
-    /// Game options as in the design mock. Superweapons and crates come with M11, so they are shown and locked.
+    /// Game options as in the design mock: the starting credits and the short game work (M8 step 13); the speed, the starting units,
+    /// superweapons and crates are shown and locked until they have rules.
     /// </summary>
     private GridContainer BuildOptions()
     {
@@ -224,14 +351,23 @@ public partial class SkirmishSetup : Control
         grid.AddThemeConstantOverride("v_separation", RowSeparation);
 
         grid.AddChild(Caption(Tr("UI_OPTION_CREDITS")));
-        grid.AddChild(DisabledOption(OptionWidth, 1, Tr("UI_CREDITS_5000"), Tr("UI_CREDITS_10000"), Tr("UI_CREDITS_20000")));
+        _credits = new OptionButton { Name = "Credits", CustomMinimumSize = new Vector2(OptionWidth, FieldHeight) };
+        foreach (var key in new[] { "UI_CREDITS_5000", "UI_CREDITS_10000", "UI_CREDITS_20000" })
+        {
+            _credits.AddItem(Tr(key));
+        }
+
+        _credits.ItemSelected += item => Apply(_config with { Credits = SkirmishConfig.CreditChoices[(int)item] });
+        grid.AddChild(_credits);
         grid.AddChild(Caption(Tr("UI_OPTION_GAME_SPEED")));
         grid.AddChild(DisabledSlider());
 
         grid.AddChild(Caption(Tr("UI_OPTION_UNITS")));
         grid.AddChild(DisabledOption(OptionWidth, 0, Tr("UI_UNITS_MCV"), Tr("UI_UNITS_MCV_INFANTRY"), Tr("UI_UNITS_MCV_ARMY")));
         grid.AddChild(Caption(Tr("UI_OPTION_SHORT_GAME")));
-        grid.AddChild(DisabledCheckBox(false));
+        _shortGame = new CheckBox { Name = "ShortGame", SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
+        _shortGame.Toggled += on => Apply(_config with { ShortGame = on });
+        grid.AddChild(_shortGame);
 
         grid.AddChild(Caption(Tr("UI_OPTION_SUPERWEAPONS")));
         grid.AddChild(DisabledCheckBox(true));
@@ -241,17 +377,145 @@ public partial class SkirmishSetup : Control
         return grid;
     }
 
+    /// <summary>Row <paramref name="row"/> changed by <paramref name="change"/>.</summary>
+    private void Change(int row, System.Func<SkirmishSlot, SkirmishSlot> change) => Apply(_config.With(row, change(_config.Slots[row])));
+
+    /// <summary>Takes <paramref name="config"/>, shows it and keeps it for the next time.</summary>
+    private void Apply(SkirmishConfig config)
+    {
+        _config = config;
+        Refresh();
+        SaveConfig();
+    }
+
+    /// <summary>Every control shows <see cref="_config"/>; a closed row has no level or personality; Start waits for an enemy and a map.</summary>
+    private void Refresh()
+    {
+        for (var i = 0; i < _rows.Count; i++)
+        {
+            var slot = _config.Slots[i];
+            var row = _rows[i];
+            var bot = slot.Kind == SlotKind.Bot;
+            if (row.Who is not null)
+            {
+                row.Who.Selected = bot ? 0 : 1;
+            }
+
+            row.Level.Selected = SkirmishConfig.Levels.IndexOf(slot.Difficulty);
+            row.Level.Disabled = !bot;
+            row.Level.TooltipText = SkirmishNames.LevelHint(this, slot.Difficulty);
+            row.Personality.Selected = _personalities.IndexOf(slot.Personality);
+            row.Personality.Disabled = !bot;
+            row.Personality.TooltipText = SkirmishNames.PersonalityHint(this, slot.Personality);
+            row.Color.Selected = slot.Color;
+            row.Team.Selected = slot.Team;
+            row.Start.Selected = slot.Start == SkirmishConfig.RandomStart ? 0 : slot.Start + 1;
+            foreach (var control in new Control[] { row.Color, row.Team, row.Start })
+            {
+                control.Modulate = slot.Kind == SlotKind.Closed ? new Color(1f, 1f, 1f, 0.5f) : Colors.White;
+            }
+        }
+
+        _credits.Selected = Math.Max(0, SkirmishConfig.CreditChoices.IndexOf(_config.Credits));
+        _shortGame.SetPressedNoSignal(_config.ShortGame);
+        _start.Disabled = _shown is null || !_config.CanStart;
+        _start.TooltipText = _shown is null ? Tr("UI_SKIRMISH_START_NEEDS_MAP") : _config.CanStart ? "" : Tr("UI_SKIRMISH_START_NEEDS_ENEMY");
+    }
+
+    /// <summary>The rows for the starts of <paramref name="map"/>, keeping what can be kept of the rows before; personalities the data lost are random.</summary>
+    private void SetSlots(Rts.Data.Maps.MapDefinition map)
+    {
+        var config = SkirmishConfig.For(map.Starts.Length, _config);
+        for (var row = 0; row < config.Slots.Length; row++)
+        {
+            if (!_personalities.Contains(config.Slots[row].Personality))
+            {
+                config = config.With(row, config.Slots[row] with { Personality = MatchPlayer.RandomPersonality });
+            }
+        }
+
+        var rebuild = config.Slots.Length != _rows.Count;
+        _config = config;
+        if (rebuild)
+        {
+            BuildRows();
+        }
+        else
+        {
+            Refresh();
+        }
+    }
+
+    /// <summary>
+    /// Starts the match of the rows on the map shown, as Quick Skirmish does: the scene of the match with the map file and the setup. A
+    /// random map is written to <see cref="RandomMapPath"/> first — the match reads its map from a file.
+    /// </summary>
+    private void StartGame()
+    {
+        if (_shown is not { } entry || !_config.CanStart)
+        {
+            return;
+        }
+
+        var file = entry.File;
+        if (ReferenceEquals(entry, _generated))
+        {
+            DirAccess.MakeDirRecursiveAbsolute(RandomMapPath[..RandomMapPath.LastIndexOf('/')]);
+            using var written = FileAccess.Open(RandomMapPath, FileAccess.ModeFlags.Write);
+            if (written is null)
+            {
+                _mapInfo.Text = string.Format(Tr("UI_EDITOR_GENERATE_FAILED"), FileAccess.GetOpenError().ToString());
+                return;
+            }
+
+            written.StoreString(Rts.Data.Maps.RtsMapWriter.Write(entry.Map));
+            file = RandomMapPath;
+        }
+
+        SaveConfig();
+        var setup = _config.ToSetup(entry.Map, DataFiles.Current.Rules.DefaultFaction.Id, MatchSetups.NewSeed());
+        SceneRouter.Instance?.GoTo(MatchScene, new Dictionary<string, object>
+        {
+            [SimulationHost.MapArgument] = file,
+            [SimulationHost.MatchArgument] = setup,
+        });
+    }
+
+    private void SaveConfig()
+    {
+        using var file = FileAccess.Open(ConfigPath, FileAccess.ModeFlags.Write);
+        file?.StoreString(_config.Save());
+    }
+
+    private static SkirmishConfig? LoadConfig() =>
+        FileAccess.FileExists(ConfigPath) ? SkirmishConfig.Load(FileAccess.GetFileAsString(ConfigPath)) : null;
+
+    /// <summary>A dropdown of <paramref name="items"/>, named for the input scripts.</summary>
+    private static OptionButton Option(string name, params string[] items)
+    {
+        var option = new OptionButton { Name = name, CustomMinimumSize = new Vector2(FieldWidth, FieldHeight) };
+        foreach (var item in items)
+        {
+            option.AddItem(item);
+        }
+
+        return option;
+    }
+
+    /// <summary>A square of colour <paramref name="index"/> of <see cref="PlayerPalette"/>, for the colour dropdown.</summary>
+    private static ImageTexture Swatch(int index)
+    {
+        var (r, g, b) = PlayerPalette.Colors[index];
+        var image = Image.CreateEmpty(SwatchSize, SwatchSize, false, Image.Format.Rgb8);
+        image.Fill(new Color(r, g, b));
+        return ImageTexture.CreateFromImage(image);
+    }
+
     /// <summary>Union is the only faction until M11. Alliance and Cult are listed, Random means Union.</summary>
     private OptionButton FactionOption()
     {
         return DisabledOption(
             FieldWidth, 0, Tr("UI_FACTION_UNION"), Tr("UI_FACTION_ALLIANCE"), Tr("UI_FACTION_CULT"), Tr("UI_RANDOM"));
-    }
-
-    /// <summary>Team: none, then 1 to 4.</summary>
-    private OptionButton TeamOption(int selected)
-    {
-        return DisabledOption(FieldWidth, selected, Tr("UI_TEAM_NONE"), "1", "2", "3", "4");
     }
 
     /// <summary>A dropdown that shows its items and the selected one, but cannot be opened yet.</summary>
@@ -314,4 +578,8 @@ public partial class SkirmishSetup : Control
     {
         SceneRouter.Instance?.Back();
     }
+
+    /// <summary>The controls of a row of the players table, in the order of the columns, and those that show its slot.</summary>
+    private sealed record PlayerRow(
+        Control[] Controls, OptionButton? Who, OptionButton Level, OptionButton Personality, OptionButton Color, OptionButton Team, OptionButton Start);
 }
