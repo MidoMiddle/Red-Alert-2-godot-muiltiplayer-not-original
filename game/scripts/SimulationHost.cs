@@ -8,6 +8,7 @@ using Rts.AI;
 using Rts.Client.App;
 using Rts.Client.Controls;
 using Rts.Client.Debug;
+using Rts.Client.Maps;
 using Rts.Client.Matches;
 using Rts.Client.Units;
 using Rts.Data;
@@ -635,22 +636,19 @@ public partial class SimulationHost : Node
     /// <summary>The map at <paramref name="path"/>, with its definition when it is an <c>.rtsmap</c> (its starts make a match).</summary>
     private (TestMap Map, MapDefinition? Definition) LoadMap(string path)
     {
+        // The loading screen has read and parsed it on a background thread already (docs/implementation/M6_menus_skirmish.md, 4.14).
+        if (PreparedMap.TryTake(path, out var prepared))
+        {
+            return prepared;
+        }
+
         var text = Godot.FileAccess.GetFileAsString(path);
         if (string.IsNullOrEmpty(text))
         {
             throw new InvalidOperationException($"Cannot read {path}: {Godot.FileAccess.GetOpenError()}.");
         }
 
-        if (!path.EndsWith(".rtsmap", StringComparison.Ordinal))
-        {
-            return (TestMapParser.Parse(text, Data.Rules), null);
-        }
-
-        // A map of the M7 format: with two starts or more it is played as a match; the debug squads at the starts are left for
-        // a map with fewer.
-        var definition = RtsMapReader.Read(text);
-        var grid = definition.ToMapGrid();
-        return (new TestMap(grid, StartSquads.Place(definition, grid, Data.Rules)), definition);
+        return PreparedMap.Parse(path, text, Data.Rules);
     }
 
     private void SpawnMapUnits(IReadOnlyList<TestMapUnit> units)

@@ -282,3 +282,14 @@ UI_CMD_GUARD,Guard
 UI_CMD_STOP,Stop the selected units
 UI_CMD_WAYPOINTS,Waypoints: lay out a route on the field
 UI_CMD_BUG,Report a bug
+UI_LOADING_TITLE,Loading
+UI_LOADING_PERCENT,{0} %
+UI_LOADING_DATA,Reading the rules
+UI_LOADING_MAP,Reading the map
+UI_LOADING_TERRAIN,Building the ground
+UI_LOADING_MODELS,Building the units and their models
+UI_LOADING_SHADERS,Warming up the shaders
+UI_LOADING_START,Creating the starting state
+UI_LOADING_HINT_SHIFT,Shift+click on a cameo orders five units at once
+UI_LOADING_HINT_ESC,Esc with nothing selected opens the menu
+UI_LOADING_HINT_SCROLL,In the classic scheme, hold the right button to move the camera

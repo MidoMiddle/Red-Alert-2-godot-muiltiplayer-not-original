@@ -83,6 +83,7 @@
     <Compile Include="../../game/scripts/Debug/PathText.cs" Link="Client/Debug/PathText.cs" />
     <Compile Include="../../game/scripts/Debug/UnitStateText.cs" Link="Client/Debug/UnitStateText.cs" />
     <Compile Include="../../game/scripts/Units/UnitFacing.cs" Link="Client/Units/UnitFacing.cs" />
+    <Compile Include="../../game/scripts/UI/LoadingPlan.cs" Link="Client/UI/LoadingPlan.cs" />
   </ItemGroup>
 
 </Project>

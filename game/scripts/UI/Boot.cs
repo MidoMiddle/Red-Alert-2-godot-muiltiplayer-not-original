@@ -6,9 +6,10 @@ namespace Rts.Client.UI;
 
 /// <summary>
 /// Entry scene. Shows a short splash, then opens the main menu. Debug arguments skip the splash:
-/// <c>--sandbox</c>, <c>--smoke</c>, <c>--check-camera</c>, <c>--check-terrain</c> and <c>--screenshot</c> go to <c>Main</c>, so the M0 checks and the manual
-/// checklist keep working; <c>--ui-menu</c>, <c>--ui-skirmish</c>, <c>--ui-settings</c>, <c>--ui-stub</c> and
-/// <c>--ui-showcase</c> open UI screens for visual checks.
+/// <c>--smoke</c>, <c>--check-camera</c>, <c>--check-terrain</c> and <c>--screenshot</c> go straight to <c>Main</c>, so the M0 checks keep
+/// working; <c>--sandbox</c> goes through the loading screen, as every match does (docs/implementation/M6_menus_skirmish.md, 4.14).
+/// <c>--ui-menu</c>, <c>--ui-skirmish</c>, <c>--ui-settings</c>, <c>--ui-stub</c> and <c>--ui-showcase</c> open UI screens for visual checks;
+/// <c>--ui-loading</c> opens the loading screen and holds it at its end.
 /// </summary>
 public partial class Boot : Control
 {
@@ -53,9 +54,17 @@ public partial class Boot : Control
         {
             OpenDebugScene(StubScene);
         }
-        else if (args.Contains("--sandbox") || args.Contains("--smoke") || args.Contains("--screenshot") || args.Contains("--check-camera") || args.Contains("--check-terrain"))
+        else if (args.Contains("--ui-loading"))
+        {
+            OpenDebugScene(SceneRouter.LoadingScene);
+        }
+        else if (args.Contains("--smoke") || args.Contains("--screenshot") || args.Contains("--check-camera") || args.Contains("--check-terrain"))
         {
             OpenDebugScene(MainScene);
+        }
+        else if (args.Contains("--sandbox"))
+        {
+            OpenDebugScene(SceneRouter.LoadingScene);
         }
     }
 
