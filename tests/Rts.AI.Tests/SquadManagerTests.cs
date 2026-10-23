@@ -454,6 +454,7 @@ public sealed class SquadManagerTests
     {
         // M8 step 10a: no harvester at the field — it waits for one 30 s, then the field is done with.
         var (scene, squads, context) = Raiding();
+        context.Log = new Rts.AI.Debug.AiDecisionLog();
         Turn(scene, squads, context, 1);
         var squad = context.Plan.Squads.Single();
         Assert.Equal(new CellPos(46, 50), squad.TargetCell);
@@ -471,5 +472,9 @@ public sealed class SquadManagerTests
 
         Turn(scene, squads, context, 15 + SquadManager.AmbushTicks + 15);
         Assert.Contains(new CellPos(46, 50), squad.Swept);
+        // Both in the journal (M8 step 12).
+        var journal = string.Join("\n", context.Log.Recent);
+        Assert.Contains("waits for a harvester at the field 46,50", journal);
+        Assert.Contains("leaves the field 46,50", journal);
     }
 }

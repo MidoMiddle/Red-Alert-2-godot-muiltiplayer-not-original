@@ -42,6 +42,7 @@ public sealed class TeamCoordinator(TeamBlackboard? board, ImmutableArray<HumanA
         var plan = context.Plan;
         var me = context.View.Me;
         board?.Forget(context.Tick);
+        plan.Team = board;
         (plan.JoinAttack, plan.HelpAt) = (null, null);
         if (plan.Threat is not null)
         {

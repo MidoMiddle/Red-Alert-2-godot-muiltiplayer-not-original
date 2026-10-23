@@ -41,6 +41,11 @@ public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? tea
         var tick = context.Tick;
         if (AtBase(context) is { } threat)
         {
+            if (plan.Threat is null)
+            {
+                context.Log?.Add(tick, context.Module, $"enemies at the base: strength {threat.Strength} at {threat.Cell.X},{threat.Cell.Y}");
+            }
+
             _lastSeen = tick;
             plan.Threat = threat;
             _peak = IntMath.Max(_peak, threat.Strength);
@@ -55,6 +60,10 @@ public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? tea
                 {
                     plan.CounterUntil = tick + CounterTicks;
                 }
+
+                context.Log?.Add(tick, context.Module, plan.CounterUntil > tick
+                    ? $"the base is safe: the attack of {_peak} at its strongest beaten back by an army of {army} — hitting back for {CounterTicks / 15} s"
+                    : $"the base is safe: the attack of {_peak} at its strongest is gone, the army {army}");
 
                 _peak = 0;
                 plan.EndDefense();
@@ -71,6 +80,11 @@ public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? tea
         if (known.Strength <= defense)
         {
             return;
+        }
+
+        if (plan.Strategy != StrategyState.Defending)
+        {
+            context.Log?.Add(tick, context.Module, $"defends the base: the threat {known.Strength} above its defense {defense}, the squads called back");
         }
 
         plan.Defend();

@@ -75,8 +75,9 @@ How step 10 of M8 tuned them, to do again:
 
 ## Journals
 
-For every kept match, `game-NNNN-pN.log` for each bot: what it thinks — the snapshot of the overlay F12 — once a minute. The journal of
-its decisions comes with the debug window, M8 step 12.
+For every kept match, `game-NNNN-pN.log` for each bot: what it thinks — the snapshot of the overlay F12 — once a minute, and between
+them every decision it took with its reason (M8 step 12): a wave set out and why, a squad turned back, a threat at the base, an outing
+of the scout, a building placed. Read it minute by minute to see why a bot lost.
 
 ## One pair
 

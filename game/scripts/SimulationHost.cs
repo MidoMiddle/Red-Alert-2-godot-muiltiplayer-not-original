@@ -218,6 +218,7 @@ public partial class SimulationHost : Node
             // A match (M5 step 2): the starting units come with the world, the bots think inside the simulation.
             Simulation = new GameSimulation(SimulationSettings.ForMatch(_match, map.Grid), Data.Rules);
             Bots = MatchBots.AttachAll(Simulation);
+            Debug.AiJournalFiles.Attach(Bots, _match);
             LocalPlayer = _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
             CallDeferred(MethodName.LookAtStart);
             GD.Print($"[host] match on {_match.MapId}, seed {_match.Seed}: " +

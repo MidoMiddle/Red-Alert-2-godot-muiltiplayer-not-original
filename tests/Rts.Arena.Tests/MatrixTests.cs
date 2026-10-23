@@ -99,6 +99,8 @@ public sealed class MatrixTests : IDisposable
         Assert.All(rows, row => Assert.Equal("match", row[^1]));
         Assert.Equal(8, Directory.GetFiles(_folder, "game-*.rtsreplay").Length);
         Assert.Equal(3, File.ReadAllText(Path.Combine(_folder, "game-0001-p1.log")).Split("== tick ").Length - 1);
+        // Between the snapshots the decisions with their reasons (M8 step 12).
+        Assert.Contains("BuildPlanner: places", File.ReadAllText(Path.Combine(_folder, "game-0001-p1.log")));
 
         var summary = File.ReadAllText(Path.Combine(_folder, "summary.md"));
         foreach (var section in new[] { "## Wins", "## Profiles", "## Personalities", "## Replays kept", "## Time of the bots" })

@@ -73,6 +73,15 @@ public sealed class AiPlan
     /// </summary>
     public int CounterUntil { get; internal set; }
 
+    /// <summary>The next steps of the build order not done yet, five at the most, for the debug window (M8 step 12).</summary>
+    public IReadOnlyList<string> Upcoming { get; internal set; } = [];
+
+    /// <summary>The army the bot builds toward, the shares in hundredths of a percent with the counters in, for the debug window (M8 step 12).</summary>
+    public IReadOnlyList<(string Unit, long Share)> ArmyTarget { get; internal set; } = [];
+
+    /// <summary>The board of the bot's team, for the debug window (M8 step 12); null alone.</summary>
+    public Team.TeamBlackboard? Team { get; internal set; }
+
     /// <summary>While the base is defended the army does not save the money of the next building for it (step 9).</summary>
     public bool ArmyFirst { get; internal set; }
 

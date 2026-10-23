@@ -64,7 +64,7 @@ public static class MatchBots
 
     private static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules, string personality, TeamBlackboard? board) =>
         player.Kind == PlayerKind.Ai
-            ? Medium(player, SettingsOf(player.Difficulty, player.Faction, rules, personality), setup, board)
+            ? Medium(player, SettingsOf(player.Difficulty, player.Faction, rules, personality), setup, board, $"{LevelId(player.Difficulty)}:{personality}")
             : throw new ArgumentException($"{player.Id} is played by a person.", nameof(player));
 
     /// <summary>
@@ -99,7 +99,7 @@ public static class MatchBots
     /// of its allied bots, if any, and the people of its team. The starts of its allies are not where the enemy may be: the bot does not
     /// get them.
     /// </summary>
-    private static AiPlayer Medium(MatchPlayer player, AiSettings settings, MatchSetup setup, TeamBlackboard? board)
+    private static AiPlayer Medium(MatchPlayer player, AiSettings settings, MatchSetup setup, TeamBlackboard? board, string? profile = null)
     {
         var humans = setup.Players
             .Where(other => other.Kind == PlayerKind.Human && other.Team == player.Team && other.Id != player.Id)
@@ -115,7 +115,10 @@ public static class MatchBots
             ],
             player.Start,
             setup.MapStarts.IsDefault ? setup.MapStarts : [.. setup.MapStarts.Where(start => !allied.Contains(start))],
-            setup.Seed);
+            setup.Seed)
+        {
+            Profile = profile,
+        };
     }
 
     /// <summary>The id of «Medium» in the data: ids are shared by all the data, and <c>medium</c> is an armour.</summary>

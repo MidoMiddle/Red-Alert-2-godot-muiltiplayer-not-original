@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using Rts.AI.View;
 using Rts.Simulation.Commands;
@@ -120,6 +121,12 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
 
         Counter(rules, army, context.Memory.Estimate.Total, whole);
         _target.Sort((a, b) => a.Unit.CompareTo(b.Unit));
+        if (context.Log is not null)
+        {
+            // For the debug window (M8 step 12), only while the journal is on.
+            context.Plan.ArmyTarget = [.. _target.Select(share => (rules.Units[share.Unit].Id, share.Share))];
+        }
+
         return _target.Count;
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using Rts.AI;
@@ -14,6 +15,9 @@ namespace Rts.Client.Debug;
 /// regroups), the gathering point, the scout's errand, the enemy buildings it remembers (paler the older), the enemy armies it
 /// remembers (a diamond by strength), the threat to its base and the building it placed last. The snapshot is asked for
 /// <see cref="RefreshesPerSecond"/> times a second; it changes nothing in the match.
+/// M8 step 12: Shift with the key opens the <see cref="AiDebugWindow"/> and Tab passes to the next bot of the match; the squads are
+/// coloured by their task — a raid, a squad helping an ally, the defense — a raid waiting at a field is ringed, and a bot hitting back
+/// after an attack beaten at its base has a ring round its gathering point. In a release build with <c>--ai-debug</c> too.
 /// </summary>
 public partial class AiDebugOverlay : Node3D
 {
@@ -28,6 +32,9 @@ public partial class AiDebugOverlay : Node3D
     private static readonly Color ThreatColor = new(1f, 0.15f, 0.15f);
     private static readonly Color MemoryColor = new(1f, 0.45f, 0.3f);
     private static readonly Color PlacedColor = new(0.5f, 1f, 0.4f);
+    private static readonly Color RaidColor = new(1f, 0.55f, 1f);
+    private static readonly Color HelpColor = new(0.3f, 1f, 0.6f);
+    private static readonly Color CounterColor = new(1f, 0.85f, 0.4f);
 
     private readonly ImmediateMesh _mesh = new();
     private readonly List<(Vector3 From, Vector3 To, Color Color)> _segments = new();
@@ -35,6 +42,9 @@ public partial class AiDebugOverlay : Node3D
     private Label _panel = null!;
     private double _sinceRefresh;
     private AiDebugSnapshot? _snapshot;
+    private AiDebugWindow _window = null!;
+    private bool _windowOpen;
+    private int _index = -1;
 
     public bool Enabled { get; private set; }
 
@@ -67,13 +77,35 @@ public partial class AiDebugOverlay : Node3D
         _panel.AddThemeColorOverride("font_outline_color", Colors.Black);
         _panel.AddThemeConstantOverride("outline_size", 6);
         layer.AddChild(_panel);
+        _window = new AiDebugWindow();
+        layer.AddChild(_window);
     }
 
     public override void _UnhandledKeyInput(InputEvent inputEvent)
     {
-        if (inputEvent.IsActionPressed("debug_ai", false, true) && OS.IsDebugBuild())
+        if (!AiJournalFiles.Enabled)
         {
-            Enabled = !Enabled;
+            return;
+        }
+
+        if (inputEvent.IsActionPressed("debug_ai", false, false) && inputEvent is InputEventKey key)
+        {
+            // Shift with the key: the window (M8 step 12); alone: the overlay.
+            if (key.ShiftPressed)
+            {
+                _windowOpen = !_windowOpen;
+            }
+            else
+            {
+                Enabled = !Enabled;
+            }
+
+            _sinceRefresh = double.MaxValue;
+            GetViewport().SetInputAsHandled();
+        }
+        else if (_windowOpen && inputEvent is InputEventKey { Pressed: true, Echo: false, Keycode: Key.Tab })
+        {
+            _index = (_host.Bots.Count == 0 ? 0 : (Math.Max(_index, 0) + 1) % _host.Bots.Count);
             _sinceRefresh = double.MaxValue;
             GetViewport().SetInputAsHandled();
         }
@@ -81,8 +113,9 @@ public partial class AiDebugOverlay : Node3D
 
     public override void _Process(double delta)
     {
-        _panel.Visible = Enabled;
-        if (!Enabled)
+        _panel.Visible = Enabled && !_windowOpen;
+        _window.Visible = _windowOpen;
+        if (!Enabled && !_windowOpen)
         {
             _mesh.ClearSurfaces();
             return;
@@ -95,15 +128,31 @@ public partial class AiDebugOverlay : Node3D
             _snapshot = Bot()?.Snapshot();
             // No bot — the sandbox, a replay — no lines.
             _panel.Text = _snapshot?.ToText() ?? string.Empty;
+            if (_windowOpen)
+            {
+                _window.Show(_snapshot, Math.Max(_index, 0), _host.Bots.Count);
+            }
         }
 
-        Draw(_snapshot);
+        if (Enabled)
+        {
+            Draw(_snapshot);
+        }
+        else
+        {
+            _mesh.ClearSurfaces();
+        }
     }
 
-    /// <summary>The bot of the player in view, else the first bot of the match; null without one.</summary>
+    /// <summary>The bot Tab chose; else the bot of the player in view, else the first bot of the match; null without one.</summary>
     private AiPlayer? Bot()
     {
         var bots = _host.Bots;
+        if (_index >= 0 && _index < bots.Count)
+        {
+            return bots[_index];
+        }
+
         foreach (var bot in bots)
         {
             if (bot.Player == SimulationHost.LocalPlayer)
@@ -137,8 +186,19 @@ public partial class AiDebugOverlay : Node3D
 
         foreach (var squad in snapshot.Squads)
         {
-            var color = SquadColor(squad.State);
+            // By the task (M8 step 12): a raid, a squad helping an ally; else by the state.
+            var color = squad.Task switch
+            {
+                "raid" or "ambush" => RaidColor,
+                "help" => HelpColor,
+                _ => SquadColor(squad.State),
+            };
             Cross(squad.Centre, 0.8f, color);
+            if (squad.Task == "ambush")
+            {
+                Diamond(squad.Centre, 2.5f, RaidColor);
+            }
+
             if (squad.Target is { } target && squad.State is not (SquadState.Gathering or SquadState.Ready))
             {
                 Line(squad.Centre, target, color);
@@ -153,6 +213,11 @@ public partial class AiDebugOverlay : Node3D
         if (snapshot.GatherPoint is { } gather)
         {
             Rectangle(new CellPos(gather.X - 1, gather.Y - 1), new CellPos(gather.X + 1, gather.Y + 1), GatherColor);
+            if (snapshot.CounterUntil > snapshot.Tick)
+            {
+                // Hitting back after an attack beaten at the base (M8 step 10a).
+                Rectangle(new CellPos(gather.X - 3, gather.Y - 3), new CellPos(gather.X + 3, gather.Y + 3), CounterColor);
+            }
         }
 
         if (snapshot.ScoutErrand is { } errand && _host.Simulation.World.TryGet(snapshot.Scout ?? default, out var scout)

@@ -209,10 +209,13 @@ public sealed class EnemyEstimateTests
         scene.Look(120);
         context.Begin(new Rts.Simulation.Ai.AiTurn(scene.Simulation, Scene.Me) { Tick = 120 });
         context.Plan.LookAtTheEnemy = true;
+        context.Log = new Rts.AI.Debug.AiDecisionLog();
         scouting.Update(context);
         context.End();
 
         Assert.Equal(new CellPos(40, 40), scouting.Errand);
+        // With its reason in the journal (M8 step 12).
+        Assert.Contains(context.Log.Recent, decision => decision.Text.Contains("looks at the enemy base at 40,40", StringComparison.Ordinal));
     }
 
     [Fact]

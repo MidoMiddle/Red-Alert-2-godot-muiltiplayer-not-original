@@ -97,6 +97,11 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         var anyOre = ore > 0;
         _sawOre |= anyOre;
         var oreGone = _sawOre && !anyOre;
+        if (oreGone && !context.Plan.OreGone)
+        {
+            context.Log?.Add(context.Tick, context.Module, "the ore on the bot's side of the map is gone: no harvesters bought, spare buildings sold for the army");
+        }
+
         context.Plan.OreGone = oreGone;
         var target = oreGone ? 0 : settings.HarvestersPerRefinery * IntMath.Max(refineries, 1);
         if (settings.HarvestersByOre && !oreGone && harvester >= 0)
@@ -263,6 +268,7 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         {
             _soldAt = context.Tick;
             context.Issue(new SellCommand(view.Me, context.ExecuteTick, context.NextSequence(), sell.Id));
+            context.Log?.Add(context.Tick, context.Module, $"sells {sell.Def!.Id}: the ore is gone and the factories stood idle");
         }
     }
 

@@ -27,6 +27,7 @@ public sealed class Strategist : IAiModule
             return;
         }
 
+        var was = plan.Strategy;
         plan.Strategy = StrategyState.Developing;
         foreach (var squad in plan.Squads)
         {
@@ -35,6 +36,11 @@ public sealed class Strategist : IAiModule
                 plan.Strategy = StrategyState.Attacking;
                 break;
             }
+        }
+
+        if (plan.Strategy != was)
+        {
+            context.Log?.Add(context.Tick, context.Module, plan.Strategy == StrategyState.Attacking ? "attacking: a squad is out" : "developing: no squad out");
         }
 
         (plan.AttackAllowed, plan.ArmyFirst, plan.ArmyAllowed) = (true, false, true);

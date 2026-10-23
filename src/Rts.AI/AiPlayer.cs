@@ -60,11 +60,21 @@ public sealed class AiPlayer : IAiController
     /// A copy of what the bot thinks, for the debug overlay (docs/implementation/M5_first_bot.md, 4.13, step 13); null before its first
     /// turn. Made from what the bot holds after its last turn: asking changes nothing in the bot or the match.
     /// </summary>
-    public Debug.AiDebugSnapshot? Snapshot() => _context is null ? null : Debug.AiDebugSnapshot.Of(_context);
+    public Debug.AiDebugSnapshot? Snapshot() => _context is null ? null : Debug.AiDebugSnapshot.Of(_context) with { Profile = Profile };
+
+    /// <summary>
+    /// The journal of its decisions (M8 step 12): null — off, the default — or one the debug window, a developer build or the Arena set; it
+    /// changes nothing the bot does.
+    /// </summary>
+    public Debug.AiDecisionLog? Log { get; set; }
+
+    /// <summary>The level and the personality of the bot, <c>ai_hard:balanced</c>, for the debug window (M8 step 12); null when unknown.</summary>
+    public string? Profile { get; init; }
 
     public void Think(AiTurn turn)
     {
         _context ??= new AiContext(new AiWorldView(turn.World, Player, _start, _mapStarts, Settings.PerceptionDelay), new AiMemory(), Settings, _seed);
+        _context.Log = Log;
         _context.View.Refresh(turn.World, turn.Tick);
         _context.Memory.Update(_context.View);
         _context.Begin(turn);

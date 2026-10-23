@@ -2,11 +2,12 @@ namespace Rts.Simulation.Tests.Client;
 
 /// <summary>
 /// Player-visible text in the client goes through localization keys (docs/implementation/M6_menus_skirmish.md, 4.13).
-/// The debug overlay and the main scene are excluded on purpose: they are for developers, not for players.
+/// The debug overlay, the debug window of the bots (M8 step 12) and the main scene are excluded on purpose: they are for developers, not
+/// for players.
 /// </summary>
 public sealed class UiKeysTests
 {
-    private static readonly string[] ExcludedFiles = ["scripts/DebugOverlay.cs", "scenes/Main.tscn"];
+    private static readonly string[] ExcludedFiles = ["scripts/DebugOverlay.cs", "scripts/Debug/AiDebugWindow.cs", "scenes/Main.tscn"];
 
     [Fact]
     public void Visible_text_in_scenes_and_scripts_comes_from_keys()

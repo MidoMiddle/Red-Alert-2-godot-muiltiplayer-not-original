@@ -39,6 +39,10 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
 
     private readonly BasePlacement _placement = new();
     private readonly List<int> _choices = new();
+    private readonly List<string> _upcoming = new();
+
+    /// <summary>The steps of the build order the debug window shows ahead (M8 step 12).</summary>
+    public const int UpcomingSteps = 5;
     private int[] _have = [];
 
     public AiModuleKind Kind => AiModuleKind.BuildPlanner;
@@ -84,6 +88,8 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             {
                 context.Issue(new PlaceBuildingCommand(view.Me, context.ExecuteTick, context.NextSequence(), ready.DefIndex, place));
                 context.Plan.LastPlacement = (ready.DefIndex, place);
+                context.Log?.Add(context.Tick, context.Module, $"places {view.Rules.Database.Buildings[ready.DefIndex].Id} at {place.X},{place.Y}"
+                    + (_placement.Toward is { } toward ? $", toward the attacks from {toward.X},{toward.Y}" : ""));
             }
 
             return;
@@ -155,6 +161,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
         }
 
         var orderDone = true;
+        _upcoming.Clear();
         if (rules.TryGetBuildOrder(settings.BuildOrder, out var order) && order.Faction == faction.Id)
         {
             var counts = new int[rules.Buildings.Length];
@@ -171,11 +178,25 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 counts[index]++;
                 if (_have[index] < counts[index])
                 {
-                    _choices.Add(view.Player.CanBuildBuilding(index) ? index : -1);
-                    orderDone = false;
-                    break;
+                    if (orderDone)
+                    {
+                        _choices.Add(view.Player.CanBuildBuilding(index) ? index : -1);
+                        orderDone = false;
+                    }
+
+                    // The next steps too, for the debug window (M8 step 12), only while the journal is on.
+                    _upcoming.Add(step);
+                    if (context.Log is null || _upcoming.Count == UpcomingSteps)
+                    {
+                        break;
+                    }
                 }
             }
+        }
+
+        if (context.Log is not null)
+        {
+            context.Plan.Upcoming = [.. _upcoming];
         }
 
         foreach (var wanted in context.Plan.Wants)

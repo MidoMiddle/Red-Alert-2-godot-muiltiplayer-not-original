@@ -101,6 +101,7 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         {
             // Lost: no other unit leaves the army until the next outing.
             (context.Plan.Scout, _errand, _restUntil) = (null, null, context.Tick + settings.ScoutingInterval);
+            context.Log?.Add(context.Tick, context.Module, $"the scout #{last.Value} is lost; the next one at the next outing, in {settings.ScoutingInterval / 15} s");
         }
 
         if (context.Tick < _restUntil && context.Plan.Scout is null && context.Memory.EnemySeen)
@@ -118,6 +119,11 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         var home = view.Start ?? here;
         if (InDanger(context, scout))
         {
+            if (_errand is not null)
+            {
+                context.Log?.Add(context.Tick, context.Module, $"the scout #{scout.Id.Value} runs home from an armed enemy in reach");
+            }
+
             _errand = null;
             _restUntil = context.Tick + settings.ScoutingInterval / 3;
             Order(context, scout, home);
@@ -148,6 +154,7 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         {
             (_errand, _places) = (enemy, PlacesAnOuting - 1);
             _nextOuting = context.Tick + settings.ScoutingInterval;
+            context.Log?.Add(context.Tick, context.Module, $"the scout #{scout.Id.Value} looks at the enemy base at {enemy.X},{enemy.Y}: a squad waits to know the enemy");
         }
 
         // With the known ore gone, out at once: a far field is the only income left (step 14).
@@ -157,6 +164,10 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
             _errand = NextErrand(context);
             _places = 0;
             _nextOuting = context.Tick + settings.ScoutingInterval;
+            if (_errand is { } outing && context.Memory.EnemySeen)
+            {
+                context.Log?.Add(context.Tick, context.Module, $"the scout #{scout.Id.Value} goes out to {outing.X},{outing.Y}");
+            }
         }
 
         Order(context, scout, _errand ?? home);

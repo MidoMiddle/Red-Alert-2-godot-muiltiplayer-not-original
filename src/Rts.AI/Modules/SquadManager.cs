@@ -224,6 +224,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             if (count > 0)
             {
                 var help = new Squad(++_formed) { State = SquadState.Defending, HelpCell = at };
+                context.Log?.Add(context.Tick, context.Module, $"squad {help.Number} of {count} units goes to help an ally at {at.X},{at.Y}");
                 var sent = 0;
                 home.RemoveAll(id =>
                 {
@@ -245,6 +246,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             if (context.Tick - _allySafeSince.Value >= HelpHoldTicks)
             {
                 (helping.HelpCell, helping.Beaten, helping.State, _allySafeSince) = (null, false, SquadState.Retreating, null);
+                context.Log?.Add(context.Tick, context.Module, $"squad {helping.Number} comes home: the ally has looked safe for 30 s");
             }
         }
 
@@ -398,6 +400,19 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             return;
         }
 
+        if (context.Log is { } log)
+        {
+            var why = context.Plan.JoinAttack is not null && squad.TargetCell == context.Plan.JoinAttack ? "the attack of the team"
+                : due ? "the end of the window of the personality"
+                : stalled ? "the ore gone, the army no longer growing"
+                : context.Tick < context.Plan.CounterUntil ? "hitting back after an attack beaten at the base"
+                : $"stronger: {settings.AttackThresholdPercent} % of the enemy";
+            var assumed = Assumed(context);
+            log.Add(context.Tick, context.Module,
+                $"squad {squad.Number} sets out, {squad.Units.Count} units of strength {squad.Strength}, for {Where(squad)} — {why}; the enemy "
+                + $"{known} as seen{(assumed > known ? $", taken for {assumed} unseen" : "")}");
+        }
+
         squad.State = SquadState.Moving;
         (_gathered, _grewAt) = (0, context.Tick);
         squad.StartStrength = squad.Strength;
@@ -408,6 +423,11 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         _lastWave = context.Tick;
         Attack(context, squad, gather);
     }
+
+    /// <summary>Where a squad goes, for the journal: the building it attacks, else the cell.</summary>
+    private static string Where(Squad squad) =>
+        squad.TargetBuilding is { } building ? $"the building #{building.Value} at {squad.TargetCell?.X},{squad.TargetCell?.Y}"
+        : squad.TargetCell is { } cell ? $"{cell.X},{cell.Y}" : "nowhere";
 
     /// <summary>
     /// Whether a ready squad still waits for its allies (step 11): it announces its attack first, then waits until every allied bot has
@@ -425,6 +445,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         if (_announcedAt is null)
         {
             team.Announce(new AttackIntent(me, squad.TargetCell!.Value, squad.Strength, context.Tick));
+            context.Log?.Add(context.Tick, context.Module, $"squad {squad.Number} announces its attack to the team and waits for the answers");
             _announcedAt = context.Tick;
             return true;
         }
@@ -514,6 +535,8 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         var centre = squad.Centre;
         if ((long)squad.Strength * 100 < (long)squad.StartStrength * settings.RetreatAtStrengthPercent)
         {
+            context.Log?.Add(context.Tick, context.Module,
+                $"squad {squad.Number} turns back beaten: strength {squad.Strength} of {squad.StartStrength}, below {settings.RetreatAtStrengthPercent} %");
             squad.State = SquadState.Retreating;
             squad.Beaten = true;
             return;
@@ -522,6 +545,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         if (!Retarget(context, squad, centre))
         {
             // Nothing left to attack: the wave is over.
+            context.Log?.Add(context.Tick, context.Module, $"squad {squad.Number} turns back: nothing left to attack");
             squad.State = SquadState.Retreating;
             return;
         }
@@ -533,6 +557,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             if (squad.AmbushUntil == 0)
             {
                 squad.AmbushUntil = context.Tick + AmbushTicks;
+                context.Log?.Add(context.Tick, context.Module, $"raid {squad.Number} waits for a harvester at the field {field.X},{field.Y}");
             }
 
             if (context.Tick < squad.AmbushUntil)
@@ -542,6 +567,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
 
             (squad.AmbushUntil, squad.TargetCell) = (0, null);
             squad.Swept.Add(field);
+            context.Log?.Add(context.Tick, context.Module, $"raid {squad.Number} leaves the field {field.X},{field.Y}: no harvester came");
             if (!Retarget(context, squad, centre))
             {
                 squad.State = SquadState.Retreating;
@@ -573,8 +599,10 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
 
         if (Nearest(context, centre, armed: true) is { } enemy)
         {
-            if (settings.Micro != MicroLevel.None && Losing(context, squad, centre))
+            if (settings.Micro != MicroLevel.None && Losing(context, squad, centre, out var near))
             {
+                context.Log?.Add(context.Tick, context.Module,
+                    $"squad {squad.Number} turns back, losing the trade: strength {squad.Strength} against {near} near, below {settings.RetreatThresholdPercent} %");
                 (squad.State, squad.Beaten) = (SquadState.Retreating, true);
                 squad.RetreatPoint = settings.Micro == MicroLevel.KeepRange ? NearestDefense(context.View, centre) : null;
                 return;
@@ -762,7 +790,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     /// within <see cref="AiSettings.EngageCells"/> + <see cref="TradeCells"/> of its middle — units by their cost and hit points, defenses
     /// by theirs.
     /// </summary>
-    private bool Losing(AiContext context, Squad squad, CellPos centre)
+    private bool Losing(AiContext context, Squad squad, CellPos centre, out long near)
     {
         var database = context.View.Rules.Database;
         var enemies = 0L;
@@ -782,6 +810,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             };
         }
 
+        near = enemies;
         return (long)squad.Strength * 100 < enemies * settings.RetreatThresholdPercent;
     }
 

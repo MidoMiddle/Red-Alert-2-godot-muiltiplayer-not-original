@@ -44,6 +44,12 @@ public sealed class AiContext
     /// <summary>The module thinking now; its commands wait by its priority.</summary>
     public AiModuleKind Module { get; internal set; }
 
+    /// <summary>
+    /// The journal of the decisions (M8 step 12), null while it is off: a module writes <c>context.Log?.Add(context.Tick, context.Module,
+    /// $"…")</c>, so the text is not even made then.
+    /// </summary>
+    public Debug.AiDecisionLog? Log { get; internal set; }
+
     /// <summary>The tick just executed.</summary>
     public int Tick => _turn.Tick;
 
