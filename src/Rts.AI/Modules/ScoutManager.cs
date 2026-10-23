@@ -18,7 +18,11 @@ namespace Rts.AI.Modules;
 /// <item>Then once in <see cref="AiSettings.ScoutingInterval"/> it goes out to up to <see cref="PlacesAnOuting"/> places one after another,
 /// each the unexplored block of <see cref="AiSettings.ScoutBlockCells"/> cells nearest the base, so that far ore fields are found; with
 /// all explored, the enemy building the bot has not seen for the longest, older than two minutes. After the last it turns home.</item>
-/// <item>An armed enemy within <see cref="AiSettings.ScoutDangerCells"/> of it makes it run home and drop its errand for a while.</item>
+/// <item>An armed enemy within <see cref="AiSettings.ScoutDangerCells"/> of it, or within the reach of its weapon and
+/// <see cref="ReachMarginCells"/> more, makes it run home and drop its errand for a while.</item>
+/// <item>A scout lost is not replaced at once (M8 step 10): the next goes out after <see cref="AiSettings.ScoutingInterval"/>. Before, every
+/// scout that fell took the next cheapest fighter of the army, and a bot of «Medium» fed four to seven of them to the enemy base in the
+/// first quarter of an hour.</item>
 /// </list>
 /// By the level (M8, 4.6, step 6, <see cref="AiSettings.Scouting"/>): «Easy» has no scout at all — its cheapest fighter stays in a squad;
 /// «Medium» scouts as above; «Hard» keeps its scout out — after a place the next one at once, after the unexplored blocks the field of ore
@@ -30,6 +34,9 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
 {
     /// <summary>An enemy building not seen for this long is worth a look, in ticks.</summary>
     public const int StaleTicks = 1800;
+
+    /// <summary>A scout keeps this many cells out of the reach of an armed enemy's weapon (M8 step 10).</summary>
+    public const int ReachMarginCells = 2;
 
     /// <summary>The scout is there when it stands this near its goal, in cells.</summary>
     public const int ArrivedCells = 2;
@@ -90,6 +97,17 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
     private void Scouting(AiContext context)
     {
         var view = context.View;
+        if (context.Plan.Scout is { } last && !Alive(view, last))
+        {
+            // Lost: no other unit leaves the army until the next outing.
+            (context.Plan.Scout, _errand, _restUntil) = (null, null, context.Tick + settings.ScoutingInterval);
+        }
+
+        if (context.Tick < _restUntil && context.Plan.Scout is null && context.Memory.EnemySeen)
+        {
+            return;
+        }
+
         var scout = Scout(context);
         if (scout is null)
         {
@@ -122,6 +140,13 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         {
             // There: on to the next place of the outing, or home after the last, and out again in a while.
             _errand = settings.Scouting >= ScoutingLevel.Constant || ++_places < PlacesAnOuting ? NextErrand(context) : null;
+            _nextOuting = context.Tick + settings.ScoutingInterval;
+        }
+
+        // A squad waits to know the enemy (M8 step 10): a look at its base at once — where its core was seen, else where it likely is.
+        if (_errand is null && context.Plan.LookAtTheEnemy && (context.Memory.CoreSeenCell ?? context.Memory.LikelyEnemyCell()) is { } enemy)
+        {
+            (_errand, _places) = (enemy, PlacesAnOuting - 1);
             _nextOuting = context.Tick + settings.ScoutingInterval;
         }
 
@@ -166,10 +191,27 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         return cheapest;
     }
 
-    /// <summary>Whether an armed enemy the bot sees stands within the danger distance of the scout.</summary>
+    private static bool Alive(AiWorldView view, Rts.Simulation.World.EntityId id)
+    {
+        foreach (var unit in view.OwnUnits)
+        {
+            if (unit.Id == id)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Whether an armed enemy the bot sees stands within the danger distance of the scout: <see cref="AiSettings.ScoutDangerCells"/>, or
+    /// the reach of the enemy's longest weapon and <see cref="ReachMarginCells"/> more — a tesla coil kills from farther than 6 cells.
+    /// </summary>
     private bool InDanger(AiContext context, Unit scout)
     {
         var here = scout.Position.ToCell();
+        var rules = context.View.Rules;
         foreach (var enemy in context.View.VisibleEnemies)
         {
             var armed = enemy switch
@@ -178,8 +220,14 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
                 Building building => building.Weapons.Length > 0,
                 _ => false,
             };
+            if (!armed)
+            {
+                continue;
+            }
+
+            var reach = SquadManager.RangeOf(rules, SquadManager.WeaponsOf(rules, enemy)).ToIntFloor() + 1;
             var at = enemy is Building b ? b.Cell : ((Unit)enemy).Position.ToCell();
-            if (armed && Distance(here, at) <= settings.ScoutDangerCells)
+            if (Distance(here, at) <= IntMath.Max(settings.ScoutDangerCells, reach + ReachMarginCells))
             {
                 return true;
             }

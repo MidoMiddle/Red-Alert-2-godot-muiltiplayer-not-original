@@ -13,6 +13,13 @@ balanced_simple:
   faction: union
   steps: [reactor, refinery, barracks, war_factory]
 
+# The optimized one of «Hard» and «Brutal» (M8 step 10): the army first — the ore of a map is soon mined out, and what goes into the
+# radar and the tesla coil is missing in the battle that decides the match; the second refinery comes after the order.
+balanced_optimized:
+  kind: build_order
+  faction: union
+  steps: [reactor, refinery, barracks, war_factory, reactor]
+
 # «Aggressor»: the barracks before the refinery, a second war factory soon, no defense.
 aggressor_simple:
   kind: build_order

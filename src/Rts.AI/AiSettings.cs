@@ -34,6 +34,7 @@ public sealed record AiSettings
             DefensePeriod = values["defense_period"],
             MaxRefineries = values["max_refineries"],
             HarvestersPerRefinery = values["harvesters_per_refinery"],
+            HarvestersByOre = values["harvesters"] == 1,
             PowerReservePercent = values["power_reserve"],
             DangerCells = values["danger_cells"],
             SecondFactoryCredits = values["second_factory_credits"],
@@ -91,6 +92,14 @@ public sealed record AiSettings
 
     /// <summary>The harvesters the bot keeps for each refinery (4.6).</summary>
     public int HarvestersPerRefinery { get; init; } = 2;
+
+    /// <summary>
+    /// Whether the harvesters follow the ore (M8 step 10, <c>harvesters: by_ore</c>): one for every
+    /// <see cref="Modules.EconomyManager.OrePerHarvester"/> times its cost of ore within <see cref="Modules.EconomyManager.OreReachCells"/>
+    /// of its refineries, one at least,
+    /// <see cref="HarvestersPerRefinery"/> a refinery at most; else always that many (<c>fixed</c>).
+    /// </summary>
+    public bool HarvestersByOre { get; init; }
 
     /// <summary>A reactor is wanted when what is left of the power output falls below this share of it, in percent (4.6).</summary>
     public int PowerReservePercent { get; init; } = 20;
@@ -239,4 +248,18 @@ public sealed record AiSettings
     /// settings compare by value.
     /// </summary>
     public string TargetPriority { get; init; } = "harvesters,defense,production,core,army,power";
+
+    /// <summary>
+    /// Whether the squads raid (M8 step 10): they go for the enemy harvesters the bot saw in the fields before any building — a
+    /// personality whose <c>harassment</c> weighs more than 1, the «Saboteur».
+    /// </summary>
+    public bool Raids { get; init; }
+
+    /// <summary>
+    /// The army a bot assumes the enemy has, in percent of its own, until it has seen it (M8 step 10, <see cref="Modules.SquadManager"/>):
+    /// 150 — a squad of «Medium» (100 %) or «Hard» (130 %) sets out only against an enemy it knows to be weaker, one of «Easy» (60 %) with
+    /// almost all it has; 0 for a bold personality (<see cref="Profiles.AiProfile"/>). Not a key of the data: the scenes of the tests that
+    /// are about other things set it to 0.
+    /// </summary>
+    public int AssumedEnemyPercent { get; init; } = 150;
 }

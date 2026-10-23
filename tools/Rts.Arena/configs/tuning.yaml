@@ -1,0 +1,16 @@
+# The matrix of the tuning of the levels (docs/implementation/M8_ai_difficulty.md, step 10): the three pairs of section 7 and «Hard»
+# against «Easy», 60 matches a pair, about ten minutes. A tuning compares the data before and after — run it with --data on a copy of
+# game/data; tools/Rts.Arena/README.md, «Tune the levels».
+#
+#   dotnet run --project tools/Rts.Arena -c Release -- run --config tools/Rts.Arena/configs/tuning.yaml --data <copy of game/data>
+games: 20
+swapSides: true
+maxGameTime: 60m
+baseSeed: 1000
+maps: [frozen-crossing, twin-rivers, random:size=96,players=2]
+pairs:
+  - { a: hard:balanced, b: medium:balanced }
+  - { a: medium:balanced, b: easy:balanced }
+  - { a: brutal:balanced, b: hard:balanced }
+  - { a: hard:balanced, b: easy:balanced }
+saveReplays: [longest:1]

@@ -13,10 +13,12 @@ ai_level:
   production_period: 15
   scouting_period: 45
   defense_period: 5
-  # The economy: refineries at most, harvesters for each, a reactor below this reserve of power, harvesters kept this many cells from a
-  # known enemy, a second war factory once this much money is left.
+  # The economy: refineries at most, harvesters for each — by the ore within reach of the refineries, one for every four of their cost
+  # (by_ore), or always that many (fixed; M8 step 10) — a reactor below this reserve of power, harvesters kept this many cells from a known
+  # enemy, a second war factory once this much money is left.
   max_refineries: 2
   harvesters_per_refinery: 2
+  harvesters: by_ore
   power_reserve: 20%
   danger_cells: 12
   second_factory_credits: 4000
@@ -64,9 +66,16 @@ ai_level:
 # - which build order of the personality: simple, standard, optimized; what is lost is built again: partial, yes, priority.
 # The bot of M5 acts on the first two lines; the rest wait for the steps of M8 that use them (3–7).
 
+# «Easy» builds slowly (07_ai, 2.3; M8 step 10): its economy, its base and its army are seen to every 8 s, not every second; its barracks
+# keep one soldier queued, not two; it buys harvesters by the count, whatever the ore.
 ai_easy:
   kind: difficulty
   inherits: ai_level
+  economy_period: 120
+  build_period: 120
+  production_period: 120
+  infantry_queued: 1
+  harvesters: fixed
   strategy_period: 90
   tactics_period: 30
   perception_delay: 3s
@@ -84,9 +93,11 @@ ai_easy:
   build_order_quality: simple
   rebuild_destroyed: partial
 
+# «Medium» buys harvesters by the count too (M8 step 10): following the ore is what «Hard» does better.
 ai_medium:
   kind: difficulty
   inherits: ai_level
+  harvesters: fixed
   strategy_period: 45
   tactics_period: 15
   perception_delay: 1s
@@ -124,7 +135,8 @@ ai_hard:
   build_order_quality: optimized
   rebuild_destroyed: priority
 
-# «Brutal» plays as «Hard» does, and with bonuses: ×1.25 income, ×1.2 build speed, the map open (M8, 4.5; tuned by the Arena, step 10).
+# «Brutal» plays as «Hard» does, and with bonuses: ×1.4 income, ×1.2 build speed, the map open (M8, 4.5; the income tuned by the Arena
+# from ×1.25 in step 10, for 70 % of the matches decided against «Hard»).
 ai_brutal:
   kind: difficulty
   inherits: ai_level
@@ -144,6 +156,6 @@ ai_brutal:
   expansion: early
   build_order_quality: optimized
   rebuild_destroyed: priority
-  income_bonus: 25%
+  income_bonus: 40%
   build_speed_bonus: 20%
   reveal_map: yes

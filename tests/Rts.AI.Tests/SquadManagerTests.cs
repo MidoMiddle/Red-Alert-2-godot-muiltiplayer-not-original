@@ -19,7 +19,7 @@ public sealed class SquadManagerTests
     /// Squads of two units, so that the scenes stay small; out at once and wave after wave — the window of the first attack and the
     /// interval of the waves (M8 step 8) are tested apart, in <see cref="AttackTimingTests"/>.
     /// </summary>
-    private static readonly AiSettings Small = AiSettings.Medium with { MinAttackArmy = 2, FirstAttackFrom = 0, WaveInterval = 0 };
+    private static readonly AiSettings Small = AiSettings.Medium with { MinAttackArmy = 2, FirstAttackFrom = 0, WaveInterval = 0, AssumedEnemyPercent = 0 };
 
     /// <summary>
     /// One turn of the squads after <paramref name="tick"/>: the world plays on to it, <paramref name="then"/> changes the scene; the
@@ -93,7 +93,7 @@ public sealed class SquadManagerTests
     public void A_squad_sets_out_with_enough_units_and_strength_and_the_next_wave_needs_more()
     {
         var scene = new Scene();
-        var settings = AiSettings.Medium with { MinAttackArmy = 4, FirstAttackFrom = 0, WaveInterval = 0 };
+        var settings = AiSettings.Medium with { MinAttackArmy = 4, FirstAttackFrom = 0, WaveInterval = 0, AssumedEnemyPercent = 0 };
         var squads = new SquadManager(settings);
         var context = scene.Context();
         for (var i = 0; i < 3; i++)
@@ -117,7 +117,8 @@ public sealed class SquadManagerTests
         vision.Hide(new CellPos(32, 30), 3);
         Assert.Equal(SquadState.Gathering, context.Plan.Squads.Single().State);
 
-        // The army gone and, a minute on, forgotten: it sets out, the first wave, to where the enemy was seen.
+        // The army gone and, three minutes on, faded from what the bot knows (M8 step 10, EnemyEstimate.ForgetTicks): it sets out, the first
+        // wave, to where the enemy was seen.
         foreach (var tank in tanks)
         {
             tank.MarkDead();
@@ -125,7 +126,7 @@ public sealed class SquadManagerTests
 
         scene.World.RemoveDead();
 
-        var commands = Turn(scene, squads, context, 15 + Rts.AI.View.AiMemory.ArmyForgetTicks);
+        var commands = Turn(scene, squads, context, 15 + Rts.AI.View.EnemyEstimate.ForgetTicks);
         var first = context.Plan.Squads.Single();
         Assert.Equal(SquadState.Moving, first.State);
         Assert.Equal(1, squads.Waves);
@@ -138,7 +139,7 @@ public sealed class SquadManagerTests
             scene.Spawn(Scene.Me, UnitType.Conscript, 8 + i, 9);
         }
 
-        Turn(scene, squads, context, 930, () =>
+        Turn(scene, squads, context, 30 + Rts.AI.View.EnemyEstimate.ForgetTicks, () =>
         {
             foreach (var id in first.Units)
             {
@@ -252,8 +253,9 @@ public sealed class SquadManagerTests
     [Fact]
     public void In_a_fight_of_hard_it_fires_at_the_enemy_it_kills_soonest_and_the_wounded_fall_back()
     {
-        // The micro of «Hard» (M8 step 5): tank shells kill the enemy tank sooner than the nearer conscript, which they barely scratch.
-        // The trade is not what this scene is about: with one tank wounded the squad would turn back (MicroTests).
+        // The micro of «Hard» (M8 step 5): tank shells kill the enemy tank sooner than the nearer conscript, which they barely scratch —
+        // within the reach of the tank (M8 step 10). The trade is not what this scene is about: with one tank wounded the squad would turn
+        // back (MicroTests).
         var (scene, squads, context, a, b) = SetOut(Small with { Micro = Rts.AI.Profiles.MicroLevel.RetreatWounded, RetreatThresholdPercent = 0 });
         Unit? tank = null;
 
@@ -261,8 +263,8 @@ public sealed class SquadManagerTests
         {
             Scene.Move(a, 24, 24);
             Scene.Move(b, 24, 25);
-            tank = scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 31, 24);
-            scene.Spawn(Scene.Enemy, UnitType.Conscript, 28, 24);
+            tank = scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 29, 24);
+            scene.Spawn(Scene.Enemy, UnitType.Conscript, 27, 24);
             b.Hp = b.MaxHp / 4;
         });
 
@@ -369,5 +371,29 @@ public sealed class SquadManagerTests
             scene.World.RemoveDead();
         });
         Assert.Empty(context.Plan.Squads);
+    }
+
+    [Fact]
+    public void A_squad_that_raids_goes_for_the_field_an_enemy_harvester_was_seen_at_before_the_refinery()
+    {
+        // M8 step 10: the raids of the «Saboteur»; with no harvester remembered it goes for the buildings as before.
+        var scene = new Scene();
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 14, 14);
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 15, 14);
+        var refinery = scene.Build(Scene.Enemy, "refinery", 50, 50);
+        scene.Spawn(Scene.Enemy, UnitType.Harvester, 40, 30);
+        var vision = scene.World.VisionOf(Scene.Me);
+        vision.Reveal(new CellPos(45, 40), 14);
+        scene.Look(0);
+        vision.Hide(new CellPos(45, 40), 14);
+        var context = scene.Context();
+
+        Turn(scene, new SquadManager(Small with { Raids = true }), context, 1);
+        var squad = context.Plan.Squads.Single();
+        Assert.Equal((null, new CellPos(40, 30)), (squad.TargetBuilding, squad.TargetCell));
+
+        var other = scene.Context();
+        Turn(scene, new SquadManager(Small), other, 15);
+        Assert.Equal(refinery.Id, other.Plan.Squads.Single().TargetBuilding);
     }
 }

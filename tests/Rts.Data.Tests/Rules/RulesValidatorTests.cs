@@ -177,7 +177,7 @@ public sealed class RulesValidatorTests
     {
         var error = Fails(Levels, "micro: focus", "micro: smart");
 
-        Assert.Equal((Levels, 56, 10), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Levels, 57, 10), (error.FileName, error.Line, error.Column));
     }
 
     [Theory]

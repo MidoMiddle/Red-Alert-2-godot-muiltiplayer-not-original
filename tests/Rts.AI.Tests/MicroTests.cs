@@ -18,7 +18,7 @@ namespace Rts.AI.Tests;
 public sealed class MicroTests(ITestOutputHelper output)
 {
     private static AiSettings Level(MicroLevel micro, int threshold = 70) =>
-        AiSettings.Medium with { MinAttackArmy = 2, Micro = micro, RetreatThresholdPercent = threshold, FirstAttackFrom = 0, WaveInterval = 0 };
+        AiSettings.Medium with { MinAttackArmy = 2, Micro = micro, RetreatThresholdPercent = threshold, FirstAttackFrom = 0, WaveInterval = 0, AssumedEnemyPercent = 0 };
 
     private static AiSettings Data(string level) =>
         AiSettings.From(GameDataFiles.Rules.Database.TryGetDifficulty(level, out var def) ? def : throw new ArgumentException(level));
@@ -96,6 +96,29 @@ public sealed class MicroTests(ITestOutputHelper output)
         Assert.Equal(hurt!.Id, attack.Target);
         Assert.Equal(new[] { a.Id, b.Id }, attack.Units);
         Assert.Empty(commands.OfType<MoveCommand>());
+    }
+
+    [Fact]
+    public void A_unit_out_of_the_reach_of_the_focus_attack_moves_to_it_and_one_in_reach_fires()
+    {
+        // M8 step 10: an order to attack walks a unit to its target past the enemies on the way without firing; out of reach — the range of
+        // its weapon and a cell — it attack-moves there instead. A cannon reaches 5.75 cells.
+        var (scene, squads, context, a, b) = SetOut(Level(MicroLevel.Focus, threshold: 0));
+        Unit? tank = null;
+
+        var commands = Turn(scene, squads, context, 15, () =>
+        {
+            Scene.Move(a, 24, 24);
+            Scene.Move(b, 19, 24);
+            tank = scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 29, 24);
+        });
+
+        var attack = Assert.Single(commands.OfType<AttackCommand>());
+        Assert.Equal(tank!.Id, attack.Target);
+        Assert.Equal(new[] { a.Id }, attack.Units);
+        var move = Assert.Single(commands.OfType<AttackMoveCommand>());
+        Assert.Equal(new CellPos(29, 24), move.Target.ToCell());
+        Assert.Equal(new[] { b.Id }, move.Units);
     }
 
     [Fact]

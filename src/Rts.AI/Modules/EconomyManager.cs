@@ -25,6 +25,12 @@ namespace Rts.AI.Modules;
 /// </summary>
 public sealed class EconomyManager(AiSettings settings) : IAiModule
 {
+    /// <summary>The ore within this of a refinery is what its harvesters are bought for, in cells (M8 step 10).</summary>
+    public const int OreReachCells = 24;
+
+    /// <summary>The ore within reach that pays for one more harvester, in its costs (M8 step 10).</summary>
+    public const int OrePerHarvester = 4;
+
     private readonly List<int> _wants = new();
     private readonly List<(CellPos Cell, int Distance)> _fields = new();
     private int _mostRefineries;
@@ -87,11 +93,20 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         }
 
         // Gone only once seen: at the start the field may lie outside the sight of the base.
-        var anyOre = AnyOre(view);
+        var (ore, near) = OreNear(context, refinery);
+        var anyOre = ore > 0;
         _sawOre |= anyOre;
         var oreGone = _sawOre && !anyOre;
         context.Plan.OreGone = oreGone;
         var target = oreGone ? 0 : settings.HarvestersPerRefinery * IntMath.Max(refineries, 1);
+        if (settings.HarvestersByOre && !oreGone && harvester >= 0)
+        {
+            // By the ore (M8 step 10): a harvester for every OrePerHarvester times its cost within OreReachCells of the refineries, one
+            // at least. The ore of a map is soon mined out; a harvester more brings it in sooner, and its 1 400 are missing in the army
+            // that decides the match.
+            var cost = (long)rules.Units[harvester].Cost * OrePerHarvester;
+            target = IntMath.Min(target, IntMath.Max(1, (int)(near / cost)));
+        }
         _wants.Clear();
         var restore = refineries < _mostRefineries && !oreGone;
         if (restore || (_mostRefineries == 0 && !oreGone))
@@ -139,20 +154,78 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
     /// Whether the bot knows of any ore — an explored cell with ore or gems. Without, the base has no more income: it is done
     /// (<see cref="AiPlan.OreGone"/>).
     /// </summary>
-    private static bool AnyOre(AiWorldView view)
+    /// <summary>
+    /// The credits of the explored ore on the bot's side of the map (M8 step 10): nearer one of its refineries than any enemy building it
+    /// knows of and any start where the enemy may be — all of it before the first refinery. The ore by the enemy base, found by a scout, is
+    /// no income the bot can count on: its harvesters die on the way, and while it saw some the bot never took the ore for gone. And of it
+    /// the ore within <see cref="OreReachCells"/> of a refinery, what the harvesters are bought for.
+    /// </summary>
+    private static (long Side, long Near) OreNear(AiContext context, int refinery)
     {
+        var view = context.View;
+        var (side, near) = (0L, 0L);
         for (var y = 0; y < view.Height; y++)
         {
             for (var x = 0; x < view.Width; x++)
             {
-                if (view.OreAt(new CellPos(x, y)).Kind != OreKind.None)
+                var cell = new CellPos(x, y);
+                var ore = view.OreAt(cell);
+                if (ore.Kind == OreKind.None)
                 {
-                    return true;
+                    continue;
+                }
+
+                var ours = OurDistance(view, cell, refinery);
+                if (OnOurSide(context, cell, ours))
+                {
+                    side += view.Rules.CreditsOf(ore);
+                    near += ours <= OreReachCells ? view.Rules.CreditsOf(ore) : 0;
                 }
             }
         }
 
-        return false;
+        return (side, near);
+    }
+
+    /// <summary>The distance of <paramref name="cell"/> from the nearest refinery of the bot; <see cref="int.MaxValue"/> with none.</summary>
+    private static int OurDistance(AiWorldView view, CellPos cell, int refinery)
+    {
+        var ours = int.MaxValue;
+        foreach (var building in view.OwnBuildings)
+        {
+            if (building.DefIndex == refinery)
+            {
+                ours = IntMath.Min(ours, Distance(cell, building.Cell));
+            }
+        }
+
+        return ours;
+    }
+
+    private static bool OnOurSide(AiContext context, CellPos cell, int ours)
+    {
+        if (ours == int.MaxValue)
+        {
+            return true;
+        }
+
+        foreach (var building in context.Memory.Buildings)
+        {
+            if (Distance(cell, building.Cell) < ours)
+            {
+                return false;
+            }
+        }
+
+        foreach (var start in context.Memory.PossibleEnemyStarts)
+        {
+            if (Distance(cell, start) < ours)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

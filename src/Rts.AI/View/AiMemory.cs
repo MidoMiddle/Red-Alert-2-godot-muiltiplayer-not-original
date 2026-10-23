@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.AI.View;
@@ -17,6 +18,9 @@ public sealed record RememberedBuilding(EntityId Id, PlayerId Owner, int DefInde
 /// </summary>
 public sealed record ArmySighting(int BlockX, int BlockY, WorldPos Centre, int Strength, int Units, int Infantry, int SeenTick);
 
+/// <summary>An enemy harvester where the bot saw it last (M8 step 10): what a raid goes for.</summary>
+public sealed record HarvesterSighting(EntityId Id, CellPos Cell, int SeenTick);
+
 /// <summary>
 /// What a bot remembers of what it saw (docs/implementation/M5_first_bot.md, 4.5), brought up to date on every turn from its
 /// <see cref="AiWorldView"/>:
@@ -24,7 +28,9 @@ public sealed record ArmySighting(int BlockX, int BlockY, WorldPos Centre, int S
 /// <item>enemy buildings — kept in the fog; forgotten once a cell of theirs is in sight and they are not there;</item>
 /// <item>enemy armies by block — forgotten after <see cref="ArmyForgetTicks"/> unseen, or once the centre of the block is in sight
 /// without them;</item>
-/// <item>the starts of the map where an enemy may be — every start but the bot's own, until it is explored.</item>
+/// <item>the starts of the map where an enemy may be — every start but the bot's own, until it is explored;</item>
+/// <item>enemy harvesters where they were seen last (M8 step 10) — forgotten after <see cref="EnemyEstimate.ForgetTicks"/>, or once
+/// their cell is in sight without them.</item>
 /// </list>
 /// The state of the bot only, not of the match: it is not hashed, and it is the same on every machine because the bot is deterministic.
 /// </summary>
@@ -37,6 +43,7 @@ public sealed class AiMemory
 
     private readonly SortedList<int, RememberedBuilding> _buildings = new();
     private readonly SortedList<int, ArmySighting> _armies = new();
+    private readonly SortedList<int, HarvesterSighting> _harvesters = new();
     private readonly SortedList<int, (long X, long Y, int Units, int Infantry, int Strength)> _blocks = new();
     private readonly HashSet<int> _seen = new();
     private readonly List<CellPos> _starts = new();
@@ -54,11 +61,23 @@ public sealed class AiMemory
     /// <summary>The enemy armies remembered, by block (row by row).</summary>
     public IList<ArmySighting> Armies => _armies.Values;
 
+    /// <summary>The enemy harvesters remembered, by id.</summary>
+    public IList<HarvesterSighting> Harvesters => _harvesters.Values;
+
     /// <summary>The starts of the map not explored yet, other than the bot's own, in the order of the map.</summary>
     public IReadOnlyList<CellPos> PossibleEnemyStarts => _starts;
 
     /// <summary>Whether the bot has ever seen an enemy unit or building (step 7): the first scouting is over then.</summary>
     public bool EnemySeen { get; private set; }
+
+    /// <summary>
+    /// The last tick the bot saw the core of an enemy — a construction yard or a construction vehicle — where its army waits at home (M8
+    /// step 10); -1 for never.
+    /// </summary>
+    public int CoreSeenTick { get; private set; } = -1;
+
+    /// <summary>Where the bot saw the core of an enemy last (M8 step 10); null for never.</summary>
+    public CellPos? CoreSeenCell { get; private set; }
 
     /// <summary>
     /// Where the bot last saw an enemy away from home — the cell of the first one it saw then, in id order, farther than
@@ -82,8 +101,10 @@ public sealed class AiMemory
         : null;
 
     /// <summary>
-    /// The strength of the enemy the bot knows of (4.6, step 8): its armies remembered and its defenses, cost × the share of hit points
-    /// left. A squad sets out only stronger than this.
+    /// The strength of the enemy the bot knows of (4.6, step 8): its armies and its defenses, cost × the share of hit points left. A squad
+    /// sets out only stronger than this. The armies are those remembered where they stood or, if more, the units of the
+    /// <see cref="Estimate"/>, fading over 3 minutes (M8 step 10): an army that left the place it was seen at is not gone, and a bot
+    /// that took it for nothing set out against an enemy it had not seen for minutes.
     /// </summary>
     public int EnemyStrength(AiWorldView view)
     {
@@ -92,6 +113,8 @@ public sealed class AiMemory
         {
             strength += army.Strength;
         }
+
+        strength = IntMath.Max(strength, Estimate.Total.ArmyStrength);
 
         foreach (var building in Buildings)
         {
@@ -112,9 +135,19 @@ public sealed class AiMemory
     {
         RememberBuildings(view);
         RememberArmies(view);
+        RememberHarvesters(view);
         RememberStarts(view);
         Estimate.Update(view, this);
         EnemySeen |= view.VisibleEnemies.Count > 0;
+        foreach (var enemy in view.VisibleEnemies)
+        {
+            if (enemy is Unit { Type: UnitType.Mcv } || (enemy is Building { DefIndex: >= 0 } core
+                && view.Rules.Database.Buildings[core.DefIndex].Produces.Contains(ProductionCategory.Building)))
+            {
+                (CoreSeenTick, CoreSeenCell) = (view.Tick, enemy is Building yard ? yard.Cell : ((Unit)enemy).Position.ToCell());
+                break;
+            }
+        }
         foreach (var enemy in view.VisibleEnemies)
         {
             var cell = enemy is Building building ? building.Cell : ((Unit)enemy).Position.ToCell();
@@ -153,6 +186,31 @@ public sealed class AiMemory
         foreach (var id in _forgotten)
         {
             _buildings.Remove(id);
+        }
+    }
+
+    private void RememberHarvesters(AiWorldView view)
+    {
+        foreach (var entity in view.VisibleEnemies)
+        {
+            if (entity is Unit { Harvester: not null } unit)
+            {
+                _harvesters[unit.Id.Value] = new HarvesterSighting(unit.Id, unit.Position.ToCell(), view.Tick);
+            }
+        }
+
+        _forgotten.Clear();
+        foreach (var (key, sighting) in _harvesters)
+        {
+            if (sighting.SeenTick != view.Tick && (view.Tick - sighting.SeenTick >= EnemyEstimate.ForgetTicks || view.IsVisible(sighting.Cell)))
+            {
+                _forgotten.Add(key);
+            }
+        }
+
+        foreach (var key in _forgotten)
+        {
+            _harvesters.Remove(key);
         }
     }
 

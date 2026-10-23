@@ -44,7 +44,8 @@ public sealed class AiDebugSnapshotTests
             plan.Squads.Select(squad => (squad.Number, squad.State, squad.Units.Count, squad.TargetCell)),
             snapshot.Squads.Select(squad => (squad.Number, squad.State, squad.Units, squad.Target)));
         Assert.NotNull(snapshot.GatherPoint);
-        Assert.NotNull(snapshot.Scout);
+        // The scout of the plan — none while a lost one waits for the next outing (M8 step 10).
+        Assert.Equal(plan.Scout, snapshot.Scout);
         Assert.Equal(match.World.Player(BotMatch.Bot).Credits, snapshot.Credits);
         Assert.True(snapshot.Harvesters > 0);
         Assert.NotNull(snapshot.LastPlacement);

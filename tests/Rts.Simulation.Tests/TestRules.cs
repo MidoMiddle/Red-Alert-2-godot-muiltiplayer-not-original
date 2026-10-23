@@ -256,7 +256,7 @@ internal static class TestRules
             {
                 ["strategy_period"] = 45, ["economy_period"] = 15, ["build_period"] = 15, ["production_period"] = 15,
                 ["scouting_period"] = 45, ["tactics_period"] = 15, ["defense_period"] = 5,
-                ["max_refineries"] = 2, ["harvesters_per_refinery"] = 2, ["power_reserve"] = 20, ["danger_cells"] = 12,
+                ["max_refineries"] = 2, ["harvesters_per_refinery"] = 2, ["harvesters"] = 0, ["power_reserve"] = 20, ["danger_cells"] = 12,
                 ["second_factory_credits"] = 4000, ["infantry_queued"] = 2, ["vehicles_queued"] = 1,
                 ["scouting_interval"] = 2700, ["scout_block_cells"] = 16, ["scout_danger_cells"] = 6,
                 ["min_attack_army"] = 6, ["attack_growth_per_wave"] = 125, ["attack_threshold"] = 100, ["retreat_at_strength"] = 30,

@@ -154,4 +154,61 @@ public sealed class AiMemoryTests
 
         Assert.Equal([new CellPos(56, 32)], scene.Memory.PossibleEnemyStarts);
     }
+
+    [Fact]
+    public void An_enemy_harvester_is_remembered_where_it_was_seen_until_that_place_is_seen_without_it()
+    {
+        // M8 step 10: what a raid goes for.
+        var scene = new Scene();
+        var harvester = scene.Spawn(Scene.Enemy, UnitType.Harvester, 40, 40);
+        var scout = scene.Spawn(Scene.Me, UnitType.Engineer, 38, 40);
+        scene.Look(10);
+        Scene.Move(scout, 8, 8);
+        Scene.Move(harvester, 50, 50);
+        scene.Look(20);
+
+        var seen = Assert.Single(scene.Memory.Harvesters);
+        Assert.Equal((harvester.Id, new CellPos(40, 40), 10), (seen.Id, seen.Cell, seen.SeenTick));
+
+        Scene.Move(scout, 38, 40);
+        scene.Look(30);
+        Assert.Empty(scene.Memory.Harvesters);
+    }
+
+    [Fact]
+    public void An_army_out_of_sight_still_counts_while_the_estimate_keeps_it()
+    {
+        // M8 step 10: the armies by block are forgotten a minute unseen or once their place is seen empty — the army moved, it is not
+        // gone; the units the estimate keeps count whole for a minute, then fade over two more.
+        var scene = new Scene();
+        var tanks = Enumerable.Range(0, 3).Select(i => scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 40 + i, 40)).ToList();
+        var scout = scene.Spawn(Scene.Me, UnitType.HeavyTank, 36, 40);
+        scene.Look(10);
+        var strength = scene.Memory.EnemyStrength(scene.View);
+        Assert.True(strength > 0);
+
+        foreach (var tank in tanks)
+        {
+            Scene.Move(tank, 56, 8);
+        }
+
+        scene.Look(10 + Rts.AI.View.AiMemory.ArmyForgetTicks);
+        Assert.Empty(scene.Memory.Armies);
+        Assert.Equal(strength, scene.Memory.EnemyStrength(scene.View));
+    }
+
+    [Fact]
+    public void The_core_of_an_enemy_is_remembered_with_the_tick_and_the_place_it_was_seen()
+    {
+        // M8 step 10: a yard or a construction vehicle — where the army of the enemy waits at home.
+        var scene = new Scene();
+        Assert.Null(scene.Memory.CoreSeenCell);
+        scene.Spawn(Scene.Enemy, UnitType.Mcv, 40, 40);
+        var scout = scene.Spawn(Scene.Me, UnitType.Engineer, 38, 40);
+        scene.Look(10);
+        Scene.Move(scout, 8, 8);
+        scene.Look(20);
+
+        Assert.Equal((10, (CellPos?)new CellPos(40, 40)), (scene.Memory.CoreSeenTick, scene.Memory.CoreSeenCell));
+    }
 }

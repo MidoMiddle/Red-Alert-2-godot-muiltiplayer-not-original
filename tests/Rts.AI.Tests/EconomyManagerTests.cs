@@ -86,4 +86,57 @@ public sealed class EconomyManagerTests
         var order = Assert.Single(scene.Simulation.ExecutedCommands.OfType<HarvestCommand>());
         Assert.Equal((new CellPos(8, 24), harvester.Id), (order.Cell, order.Units.Single()));
     }
+
+    /// <summary>One turn of the economy with <paramref name="settings"/>: its plan and the commands it gave, once they ran.</summary>
+    private static (AiPlan Plan, List<Command> Commands) Economy(Scene scene, AiSettings settings, EconomyManager? economy = null)
+    {
+        scene.Look(scene.Simulation.CurrentTick);
+        var context = scene.Context();
+        var before = scene.Simulation.ExecutedCommands.Count;
+        (economy ?? new EconomyManager(settings)).Update(context);
+        context.End();
+        scene.Simulation.Step();
+        scene.Simulation.Step();
+        return (context.Plan, scene.Simulation.ExecutedCommands.Skip(before).ToList());
+    }
+
+    [Fact]
+    public void Ore_on_the_side_of_the_enemy_does_not_keep_the_economy_going()
+    {
+        // M8 step 10: the ore by the enemy base, found by a scout, is no income the bot can count on. (38, 12) is nearer the start (56, 8)
+        // where the enemy may be than the refinery at (6, 12).
+        var scene = new Scene();
+        scene.Build(Scene.Me, "construction_yard", 6, 6);
+        scene.World.Map.SetOre(new CellPos(9, 9), new OreCell(OreKind.Ore, 5));
+        var economy = new EconomyManager(AiSettings.Medium);
+        Assert.False(Economy(scene, AiSettings.Medium, economy).Plan.OreGone);
+
+        scene.Build(Scene.Me, "refinery", 6, 12);
+        scene.World.Map.SetOre(new CellPos(9, 9), OreCell.Empty);
+        scene.World.Map.SetOre(new CellPos(38, 12), new OreCell(OreKind.Ore, 11));
+        scene.Spawn(Scene.Me, UnitType.Engineer, 36, 12);
+
+        Assert.True(Economy(scene, AiSettings.Medium, economy).Plan.OreGone);
+    }
+
+    [Theory]
+    // One full cell of ore, 300 credits — a harvester of the rules of the tests costs 100, four of them are 400: by the ore the one there is
+    // is enough, by the count «Medium» wants two a refinery.
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void By_the_ore_a_bot_buys_no_harvester_the_ore_within_reach_does_not_pay_for(bool byOre, bool buys)
+    {
+        var scene = new Scene();
+        scene.Build(Scene.Me, "construction_yard", 6, 6);
+        scene.Build(Scene.Me, "reactor", 12, 6);
+        scene.Build(Scene.Me, "refinery", 6, 12);
+        scene.Build(Scene.Me, "war_factory", 12, 12);
+        scene.Build(Scene.Me, "reactor", 18, 6);
+        scene.Spawn(Scene.Me, UnitType.Harvester, 10, 18);
+        scene.World.Map.SetOre(new CellPos(8, 20), new OreCell(OreKind.Ore, OreCell.MaxStage));
+
+        var (_, commands) = Economy(scene, AiSettings.Medium with { HarvestersByOre = byOre });
+
+        Assert.Equal(buys, commands.OfType<ProduceCommand>().Any(command => command.Kind == ProductionKind.Unit));
+    }
 }

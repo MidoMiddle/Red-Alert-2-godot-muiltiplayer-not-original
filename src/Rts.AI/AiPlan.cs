@@ -83,6 +83,12 @@ public sealed class AiPlan
     /// <summary>Where the scout goes now (step 7), for the debug overlay; null while it waits at home.</summary>
     public CellPos? ScoutErrand { get; internal set; }
 
+    /// <summary>
+    /// A squad half ready by its own count is to wait only for not knowing the enemy (M8 step 10): the scout goes to look at the enemy base
+    /// at once, whatever its interval.
+    /// </summary>
+    public bool LookAtTheEnemy { get; internal set; }
+
     /// <summary>The building the planner placed last and where (step 5), for the debug overlay; null before the first.</summary>
     public (int DefIndex, CellPos Cell)? LastPlacement { get; internal set; }
 

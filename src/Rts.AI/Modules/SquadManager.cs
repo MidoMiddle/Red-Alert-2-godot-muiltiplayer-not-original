@@ -76,6 +76,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     /// </summary>
     public const int HelpHoldTicks = 450;
 
+
     /// <summary>How far a unit of «Brutal» steps back from an enemy it outranges, in cells (M8 step 5).</summary>
     public const int KiteCells = 2;
 
@@ -99,6 +100,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     private readonly List<(RememberedBuilding Building, int Rank, int Distance)> _targets = new();
     private readonly List<(Entity Enemy, long Kill, int Distance)> _foes = new();
     private readonly HashSet<int> _kiting = new();
+    private readonly List<Unit> _far = new();
     private int _formed;
     private int _waves;
 
@@ -133,6 +135,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             _units[unit.Id.Value] = unit;
         }
 
+        context.Plan.LookAtTheEnemy = false;
         var gathering = Account(context);
         var gather = GatherPoint(view, context.Memory);
         context.Plan.GatherPoint = gather;
@@ -360,15 +363,22 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
 
         _oreGoneAt = context.Plan.OreGone ? _oreGoneAt ?? context.Tick : null;
 
-        var enemy = context.Memory.EnemyStrength(context.View);
+        var known = context.Memory.EnemyStrength(context.View);
+        var enemy = IntMath.Max(known, Assumed(context));
         // Only with the ore gone, and counted from then: before, an army that does not grow is one still waiting for its factories.
         var stalled = _oreGoneAt is { } gone && squad.Units.Count >= settings.AllInUnits
             && context.Tick - IntMath.Max(_grewAt, gone) >= settings.AllInTicks;
         // The end of the window of the first attack (step 8): out with what it has.
-        var due = _waves == 0 && settings.FirstAttackBy > 0 && context.Tick >= settings.FirstAttackBy && squad.Units.Count >= settings.AllInUnits;
+        // Not against an enemy it knows to be stronger (M8 step 10): set out by the clock into the army waiting at home, the squads of
+        // «Hard» were lost at the end of the window, match after match.
+        var due = _waves == 0 && settings.FirstAttackBy > 0 && context.Tick >= settings.FirstAttackBy && squad.Units.Count >= settings.AllInUnits
+            && squad.Strength >= enemy;
         var strong = due || stalled
             || (squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent);
         squad.State = strong ? SquadState.Ready : SquadState.Gathering;
+        // Half ready by its own count, to be held by not knowing the enemy: the scout goes to look meanwhile (step 10).
+        context.Plan.LookAtTheEnemy |= !strong && squad.Units.Count * 2 >= Needed()
+            && (long)squad.Strength * 100 >= (long)known * settings.AttackThresholdPercent;
         // The attack of the team (step 11): with half the units it needs, whatever its own window.
         if (context.Plan.JoinAttack is { } joined && squad.Units.Count * 2 >= Needed() && squad.Units.Count > 0 && context.Plan.AttackAllowed)
         {
@@ -437,6 +447,35 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         var window = settings.FirstAttackBy - settings.FirstAttackFrom;
         _attackAt ??= settings.FirstAttackFrom + (window > 0 ? context.Roll(window + 1) : 0);
         return context.Tick < _attackAt;
+    }
+
+    /// <summary>
+    /// The army the bot assumes the enemy has (M8 step 10): <see cref="AiSettings.AssumedEnemyPercent"/> of its own — the same map and the
+    /// same ore — unless it saw the enemy's army within <see cref="EnemyEstimate.FreshTicks"/> and that was half of it or more. Taken for
+    /// nothing, an enemy unseen for minutes let any squad set out, and the squads of «Medium» and «Hard» ran into the whole army of «Easy»
+    /// waiting at its base; a scout that sees a third of an army at best made «Hard» take «Medium» for a fourth of what it was.
+    /// </summary>
+    private int Assumed(AiContext context)
+    {
+        var own = 0;
+        foreach (var unit in context.View.OwnUnits)
+        {
+            if (unit.Archetype.Armed && unit.Harvester is null)
+            {
+                own += context.Memory.StrengthOf(unit);
+            }
+        }
+
+        var assumed = own * settings.AssumedEnemyPercent / 100;
+        var estimate = context.Memory.Estimate.Total;
+        var fresh = estimate.LastSeenTick >= 0 && context.Tick - estimate.LastSeenTick < EnemyEstimate.FreshTicks;
+        // A look that shows a few units at the gate of the base does not show the army: it counts showing half of what is assumed, or
+        // having seen the core of the enemy (AiMemory.CoreSeenTick) as long as the estimate keeps what it saw — where its army waits at
+        // home — and next to nothing there, a fourth of what is assumed at most: a base with an army shows part of it to a scout that
+        // keeps out of the reach of the defenders.
+        var core = context.Memory.CoreSeenTick;
+        var emptyBase = core >= 0 && context.Tick - core < EnemyEstimate.ForgetTicks && (long)estimate.ArmyStrength * 4 <= assumed;
+        return (fresh && (long)estimate.ArmyStrength * 2 >= assumed) || emptyBase ? 0 : assumed;
     }
 
     /// <summary>The units a squad needs before it may set out: <see cref="AiSettings.MinAttackArmy"/>, grown for every wave sent.</summary>
@@ -546,9 +585,10 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     }
 
     /// <summary>
-    /// A fight by the micro of the level (step 5): «Easy» attack-moves at <paramref name="nearest"/>; else every unit that can hurt it fires
-    /// at the enemy of <see cref="Focus"/>; «Hard» and «Brutal» pull the wounded back behind the squad, once; «Brutal» keeps its
-    /// longer-ranged units out of reach (<see cref="KeepRange"/>), and they fire again on its next turn.
+    /// A fight by the micro of the level (step 5): «Easy» attack-moves at <paramref name="nearest"/>; else every unit that can hurt it and
+    /// reaches it fires at the enemy of <see cref="Focus"/>, the others attack-move to it — firing on the way, not walking past enemies
+    /// under fire (M8 step 10); «Hard» and «Brutal» pull the wounded back behind the squad, once; «Brutal» keeps its longer-ranged units
+    /// out of reach (<see cref="KeepRange"/>), and they fire again on its next turn.
     /// </summary>
     private void Fight(AiContext context, Entity nearest, CellPos centre, CellPos home)
     {
@@ -581,7 +621,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             KeepRange(context, centre);
         }
 
-        Strike(context, focus, wounded: false);
+        Strike(context, focus, wounded: false, reachOnly: true);
         _kiting.Clear();
     }
 
@@ -601,13 +641,15 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
                 continue;
             }
 
-            var shares = 0L;
+            var (shares, reached) = (0L, false);
             foreach (var unit in _members)
             {
-                shares += TargetingSystem.ShareAgainst(rules, unit.Type, enemy);
+                var share = TargetingSystem.ShareAgainst(rules, unit.Type, enemy);
+                shares += share;
+                reached |= share > 0 && Reaches(rules, unit, enemy);
             }
 
-            if (shares > 0)
+            if (shares > 0 && reached)
             {
                 _foes.Add((enemy, HpOf(enemy) * 100L * 1000 / shares, Distance(centre, CellOf(enemy))));
             }
@@ -716,7 +758,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         _ => false,
     };
 
-    private static System.Collections.Immutable.ImmutableArray<int> WeaponsOf(GameRules rules, Entity entity) => entity switch
+    internal static System.Collections.Immutable.ImmutableArray<int> WeaponsOf(GameRules rules, Entity entity) => entity switch
     {
         Unit unit => rules.WeaponsOf(unit.Type),
         Building { DefIndex: >= 0 } building => rules.WeaponsOfBuilding(building.DefIndex),
@@ -730,7 +772,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     };
 
     /// <summary>The longest range of <paramref name="weapons"/>, in cells.</summary>
-    private static Fixed RangeOf(GameRules rules, System.Collections.Immutable.ImmutableArray<int> weapons)
+    internal static Fixed RangeOf(GameRules rules, System.Collections.Immutable.ImmutableArray<int> weapons)
     {
         var longest = Fixed.Zero;
         foreach (var index in weapons)
@@ -821,6 +863,12 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     {
         var memory = context.Memory;
         var rules = context.View.Rules.Database;
+        if (settings.Raids && Raid(memory, centre) is { } field)
+        {
+            (squad.TargetBuilding, squad.TargetCell) = (null, field);
+            return true;
+        }
+
         _targets.Clear();
         foreach (var building in memory.Buildings)
         {
@@ -853,6 +901,31 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
 
         squad.TargetCell = memory.LastEnemyCell ?? NearestStart(memory, centre);
         return squad.TargetCell is not null;
+    }
+
+    /// <summary>
+    /// A raid (M8 step 10): the cell of the enemy harvester the bot saw nearest <paramref name="centre"/> — of two as near, the one seen
+    /// later, then the older; null when it remembers none.
+    /// </summary>
+    private static CellPos? Raid(AiMemory memory, CellPos centre)
+    {
+        HarvesterSighting? best = null;
+        foreach (var sighting in memory.Harvesters)
+        {
+            if (best is null)
+            {
+                best = sighting;
+                continue;
+            }
+
+            var (distance, bestDistance) = (Distance(sighting.Cell, centre), Distance(best.Cell, centre));
+            if (distance < bestDistance || (distance == bestDistance && sighting.SeenTick > best.SeenTick))
+            {
+                best = sighting;
+            }
+        }
+
+        return best?.Cell;
     }
 
     /// <summary>
@@ -938,17 +1011,29 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         return best;
     }
 
-    /// <summary>Orders every unit that can hurt <paramref name="target"/> to fire at it — the wounded that fell back too, when asked.</summary>
-    private void Strike(AiContext context, Entity target, bool wounded)
+    /// <summary>
+    /// Orders every unit that can hurt <paramref name="target"/> to fire at it — the wounded that fell back too, when asked. With
+    /// <paramref name="reachOnly"/> a unit out of its reach attack-moves to it instead (M8 step 10): an order to attack drops what a unit
+    /// does and walks it to its target without firing at the enemies it passes.
+    /// </summary>
+    private void Strike(AiContext context, Entity target, bool wounded, bool reachOnly = false)
     {
         var rules = context.View.Rules;
         var cell = target is Building building ? building.Cell : ((Unit)target).Position.ToCell();
         _batch.Clear();
+        _far.Clear();
         foreach (var unit in _members)
         {
             if ((wounded || !_fellBack.Contains(unit.Id.Value)) && !_kiting.Contains(unit.Id.Value) && TargetingSystem.CanHurt(rules, unit.Type, target))
             {
-                Want(unit, OrderKind.Attack, cell, target.Id);
+                if (reachOnly && !Reaches(rules, unit, target))
+                {
+                    _far.Add(unit);
+                }
+                else
+                {
+                    Want(unit, OrderKind.Attack, cell, target.Id);
+                }
             }
         }
 
@@ -956,7 +1041,19 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         {
             context.Issue(new AttackCommand(context.View.Me, context.ExecuteTick, context.NextSequence(), [.. _batch], target.Id));
         }
+
+        _batch.Clear();
+        foreach (var unit in _far)
+        {
+            Want(unit, OrderKind.AttackMove, cell, default);
+        }
+
+        Issue(context, OrderKind.AttackMove, cell, default);
     }
+
+    /// <summary>Whether <paramref name="target"/> is within the range of the longest weapon of <paramref name="unit"/> and a cell more.</summary>
+    private static bool Reaches(GameRules rules, Unit unit, Entity target) =>
+        Fixed.FromInt(Distance(unit.Position.ToCell(), CellOf(target))) <= RangeOf(rules, rules.WeaponsOf(unit.Type)) + Fixed.One;
 
     private void AttackMoveAll(AiContext context, CellPos point)
     {

@@ -142,4 +142,52 @@ public sealed class ScoutManagerTests
 
         Assert.Equal(second.Id, context.Plan.Scout);
     }
+
+    [Fact]
+    public void A_scout_keeps_out_of_the_reach_of_a_tesla_coil_farther_than_the_danger_distance()
+    {
+        // M8 step 10: a coil reaches 7 cells; the scout runs at 7 + 1 + 2 = 10, not only at the 6 cells of scout_danger_cells.
+        var scene = new Scene(Starts);
+        var conscript = scene.Spawn(Scene.Me, UnitType.Conscript, 8, 8);
+        var context = scene.Context();
+        var scouting = new ScoutManager(AiSettings.Medium);
+        Turn(scene, scouting, context, 0);
+
+        // The coil is seen — by another unit in a match; a conscript sees 5 cells.
+        var vision = scene.World.VisionOf(Scene.Me);
+        var home = Turn(scene, scouting, context, 45, () =>
+        {
+            Scene.Move(conscript, 40, 40);
+            scene.Build(Scene.Enemy, "tesla_coil", 49, 40);
+            vision.Reveal(new CellPos(49, 40), 2);
+        });
+        vision.Hide(new CellPos(49, 40), 2);
+
+        Assert.Equal([new CellPos(8, 8)], home);
+    }
+
+    [Fact]
+    public void A_scout_lost_is_not_replaced_before_the_next_outing()
+    {
+        // M8 step 10: every scout that fell took the next fighter of the army at once, four to seven of them in a quarter of an hour.
+        var scene = new Scene(Starts);
+        var first = scene.Spawn(Scene.Me, UnitType.Conscript, 8, 8);
+        var next = scene.Spawn(Scene.Me, UnitType.Conscript, 9, 9);
+        scene.Build(Scene.Enemy, "reactor", 12, 12);
+        var context = scene.Context();
+        var settings = AiSettings.Medium;
+        var scouting = new ScoutManager(settings);
+        Turn(scene, scouting, context, 0);
+        Assert.Equal(first.Id, context.Plan.Scout);
+
+        Assert.Empty(Turn(scene, scouting, context, 45, () =>
+        {
+            first.MarkDead();
+            scene.World.RemoveDead();
+        }));
+        Assert.Null(context.Plan.Scout);
+
+        Turn(scene, scouting, context, 45 + settings.ScoutingInterval);
+        Assert.Equal(next.Id, context.Plan.Scout);
+    }
 }

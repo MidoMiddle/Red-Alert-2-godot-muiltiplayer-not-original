@@ -45,8 +45,22 @@ Ready matrices, in `configs/`:
 | `acceptance.yaml` | The criteria of M8, section 7: the levels against each other, the personalities of «Hard» against «Balanced»; 900 matches |
 | `personalities.yaml` | Every personality against every other, all «Hard» |
 | `smoke.yaml` | Four matches of ten minutes: a test runs it on every push |
+| `tuning.yaml` | The levels against each other and «Hard» against «Easy», 60 matches a pair: a tuning step (M8 step 10) |
 
 CI runs `acceptance.yaml` once a day and by hand (`.github/workflows/arena.yml`); the results are the artifact `arena-acceptance`.
+
+## Tune the levels
+
+How step 10 of M8 tuned them, to do again:
+
+1. Copy `game/data` somewhere and change the keys of the level or the personality there (`ai/difficulty.yaml`, `ai/personalities`).
+2. Run the same matrix on both: `run --config configs/tuning.yaml --data <copy>`. The seeds are the same, so the matches differ by the
+   change only.
+3. Compare the wins of A among the matches decided. Sixty matches with a third of draws leave about forty decided: a difference below ten
+   points is noise. For a decision, 60 matches a map (`games: 60`) — 180 a pair, about three minutes.
+4. To find what makes a level weak, give it the keys of the other level and bring its own back one group at a time: the group that
+   changes the wins is the one to look at — then in the journals of the kept matches (`game-NNNN-pN.log`), minute by minute.
+5. Confirm with `acceptance.yaml` before the data goes to the game; the summary goes into the journal of the milestone.
 
 ## `summary.md`
 

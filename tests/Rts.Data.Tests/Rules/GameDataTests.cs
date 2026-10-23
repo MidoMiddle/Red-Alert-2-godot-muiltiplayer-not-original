@@ -47,8 +47,8 @@ public sealed class GameDataTests
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality.
-        Assert.Equal(0x957e88567091e171UL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4.
+        Assert.Equal(0xa8e77fdf8c05c3aaUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class GameDataTests
         Assert.Equal(["aggressor", "balanced", "builder", "saboteur"], database.Personalities.Select(personality => personality.Id));
         // M8 step 2, 4.5: only «Brutal» has the bonuses of the player — ×1.25 income, ×1.2 build speed, the map open.
         Assert.Equal(
-            [("ai_brutal", new PlayerModifiers(25, 20, true)), ("ai_easy", default), ("ai_hard", default), ("ai_medium", default)],
+            [("ai_brutal", new PlayerModifiers(40, 20, true)), ("ai_easy", default), ("ai_hard", default), ("ai_medium", default)],
             database.Difficulties.Select(level => (level.Id, PlayerModifiers.Of(level))));
         Assert.All(database.Personalities, personality =>
         {

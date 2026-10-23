@@ -20,7 +20,7 @@ public sealed class BrutalTests
 
         Assert.Empty(match.RefusedBotCommands);
         Assert.Equal(AiDifficulty.Brutal, replay.Settings.Match!.PlayerOf(BotMatch.Bot)!.Difficulty);
-        Assert.Equal(new PlayerModifiers(25, 20, true), new GameSimulation(replay.Settings, GameDataFiles.Rules).World.Player(BotMatch.Bot).Modifiers);
+        Assert.Equal(new PlayerModifiers(40, 20, true), new GameSimulation(replay.Settings, GameDataFiles.Rules).World.Player(BotMatch.Bot).Modifiers);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, GameDataFiles.Rules).Status);
         Assert.Equal(
             ReplayStatus.Match,

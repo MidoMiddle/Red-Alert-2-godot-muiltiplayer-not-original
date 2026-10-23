@@ -188,6 +188,7 @@ reactor:  # Tesla Reactor
 |---|---|---|
 | `strategy_period`, `economy_period`, `build_period`, `production_period`, `scouting_period`, `tactics_period`, `defense_period` | Как часто думает каждый модуль | тики, > 0 |
 | `max_refineries`, `harvesters_per_refinery`, `power_reserve`, `danger_cells`, `second_factory_credits` | Экономика | числа; `power_reserve` — % |
+| `harvesters` | Харвестеры (M8, шаг 10): всегда `harvesters_per_refinery` на ОПЗ — или по руде в 24 клетках от ОПЗ, один на 4 своих цены, не больше того | `fixed`, `by_ore` |
 | `infantry_queued`, `vehicles_queued` | Армия: юнитов в очереди казарм и завода | числа |
 | `scouting_interval`, `scout_block_cells`, `scout_danger_cells` | Разведка | интервал — длительность (`180s`) |
 | `min_attack_army`, `attack_growth_per_wave`, `attack_threshold`, `retreat_at_strength`, `gather_cells`, `squad_spread_cells`, `engage_cells`, `wounded`, `sweep_places` | Отряды | доли — %; рост волн ≥ 100 %, отступление < 100 % |
@@ -203,7 +204,7 @@ reactor:  # Tesla Reactor
 | `expansion` | Второй ОПЗ у дальних полей | `none`, `late`, `early` |
 | `build_order_quality` | Какой порядок характера брать | `simple`, `standard`, `optimized` |
 | `rebuild_destroyed` | Восстановление потерянного | `partial`, `yes`, `priority` |
-| `income_bonus`, `build_speed_bonus` | Бонусы игрока (M8, 4.5): кредитов сверх руды, скорость стройки по той же цене | %, от 0 до 100; у «Жестокого» `25%`, `20%` |
+| `income_bonus`, `build_speed_bonus` | Бонусы игрока (M8, 4.5): кредитов сверх руды, скорость стройки по той же цене | %, от 0 до 100; у «Жестокого» `40%`, `20%` |
 | `reveal_map` | Игрок видит всю карту: его приказы и юниты, туман на экране остаётся | `no`, `yes` |
 
 - Слово не из списка — ошибка в его строке, с перечнем допустимых слов.

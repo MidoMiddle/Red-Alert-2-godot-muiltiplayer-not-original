@@ -32,6 +32,11 @@ public sealed record AiProfile(AiSettings Settings, PersonalityProfile Personali
                 FirstAttackBy = byPersonality ? personality.FirstAttackMax : 0,
                 WaveInterval = personality.WaveInterval,
                 TargetPriority = string.Join(",", personality.TargetPriority),
+                // Step 10: harassment above 1 sends the squads for the harvesters in the fields first; a bold personality — army or
+                // harassment above 1, the «Aggressor» and the «Saboteur» — counts only the enemy it has seen: its rush and its raids
+                // take the risk the cautious ones do not.
+                Raids = weights.Harassment > Fixed.One,
+                AssumedEnemyPercent = weights.Army > Fixed.One || weights.Harassment > Fixed.One ? 0 : settings.AssumedEnemyPercent,
             },
             PersonalityProfile.From(personality));
     }

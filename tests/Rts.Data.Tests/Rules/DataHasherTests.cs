@@ -201,8 +201,8 @@ public sealed class DataHasherTests
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
         // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
-        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units; step 8: crusher and crushable; step 10: wall and powered; step 11: the sight of buildings. M5 step 5: the build orders of the bots (the dataset has one now); step 6: their armies (and one in the dataset); step 14: the levels of the bots (and «Medium» in the dataset). M8 step 1: the build order and the army leave the level for the personality (one in the dataset), the levels gain the keys of M8; step 2: the bonuses of the player in every level; step 7: no counter_shift.
-        Assert.Equal(0x15962b970ecc5fa7UL, Hash(Files()));
+        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units; step 8: crusher and crushable; step 10: wall and powered; step 11: the sight of buildings. M5 step 5: the build orders of the bots (the dataset has one now); step 6: their armies (and one in the dataset); step 14: the levels of the bots (and «Medium» in the dataset). M8 step 1: the build order and the army leave the level for the personality (one in the dataset), the levels gain the keys of M8; step 2: the bonuses of the player in every level; step 7: no counter_shift; step 10: the harvesters of a level, fixed or by the ore.
+        Assert.Equal(0xaab0b216c650c1a5UL, Hash(Files()));
     }
 
     [Fact]

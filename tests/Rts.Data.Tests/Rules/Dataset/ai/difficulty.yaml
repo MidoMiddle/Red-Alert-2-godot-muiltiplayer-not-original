@@ -15,6 +15,7 @@ ai_medium:
   # known enemy, a second war factory once this much money is left.
   max_refineries: 2
   harvesters_per_refinery: 2
+  harvesters: by_ore
   power_reserve: 20%
   danger_cells: 12
   second_factory_credits: 4000

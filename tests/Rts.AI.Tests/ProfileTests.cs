@@ -61,7 +61,8 @@ public sealed class ProfileTests
     [Fact]
     public void The_levels_share_what_the_steps_of_m8_have_not_yet_made_differ()
     {
-        // The economy, the base, scouting, the squads and the defense of M5: alike on every level until the Arena tunes them (step 10).
+        // The economy, the base, scouting, the squads and the defense of M5: alike on every level but what the Arena tuned (step 10) — how
+        // often «Easy» sees to its economy, base and army, the soldiers it queues, the harvesters by the count or by the ore.
         var medium = AiSettings.From(Level("ai_medium"));
         foreach (var id in new[] { "ai_easy", "ai_hard", "ai_brutal" })
         {
@@ -74,6 +75,8 @@ public sealed class ProfileTests
                     ActionsPerSecond = medium.ActionsPerSecond, MistakePercent = medium.MistakePercent, Micro = medium.Micro, Scouting = medium.Scouting,
                     CounterPickPercent = medium.CounterPickPercent, FirstAttackDelay = medium.FirstAttackDelay, ParallelSquads = medium.ParallelSquads,
                     DefendHarvesters = medium.DefendHarvesters, Expansion = medium.Expansion, Quality = medium.Quality, Rebuild = medium.Rebuild,
+                    EconomyPeriod = medium.EconomyPeriod, BuildPeriod = medium.BuildPeriod, ProductionPeriod = medium.ProductionPeriod,
+                    InfantryQueued = medium.InfantryQueued, HarvestersByOre = medium.HarvestersByOre,
                 });
         }
     }
@@ -160,11 +163,12 @@ public sealed class ProfileTests
     }
 
     [Theory]
-    // «Easy» takes the simple build order of «Balanced» (step 8), the others its standard and optimized one, the order of M5.
+    // «Easy» takes the simple build order of «Balanced» (step 8), «Medium» its standard one, the order of M5, «Hard» and «Brutal» the
+    // optimized one, the army first (step 10).
     [InlineData(AiDifficulty.Easy, 1, "balanced_simple")]
     [InlineData(AiDifficulty.Medium, 3, "standard")]
-    [InlineData(AiDifficulty.Hard, 8, "standard")]
-    [InlineData(AiDifficulty.Brutal, 12, "standard")]
+    [InlineData(AiDifficulty.Hard, 8, "balanced_optimized")]
+    [InlineData(AiDifficulty.Brutal, 12, "balanced_optimized")]
     public void A_bot_of_every_level_is_made_from_the_data(AiDifficulty difficulty, int actions, string buildOrder)
     {
         var bot = new MatchPlayer(2, PlayerKind.Ai, difficulty, "union", 1, 2, 1, new CellPos(50, 50));
@@ -183,5 +187,18 @@ public sealed class ProfileTests
         // The rules of the simulation tests have «Medium» only.
         Assert.Throws<ArgumentException>(() => MatchBots.SettingsOf(AiDifficulty.Hard, "union", TestRules.Standard));
         Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, "union", TestRules.Standard));
+    }
+
+    [Theory]
+    // M8 step 10: harassment above 1 — the «Saboteur», 1.6 — sends the squads for the harvesters in the fields first; a bold personality,
+    // army or harassment above 1 — the «Aggressor» and the «Saboteur» — counts only the enemy it has seen, the cautious ones assume 150 %.
+    [InlineData("saboteur", true, 0)]
+    [InlineData("balanced", false, 150)]
+    [InlineData("aggressor", false, 0)]
+    [InlineData("builder", false, 150)]
+    public void Only_a_personality_that_harasses_raids_and_a_bold_one_assumes_nothing(string personality, bool raids, int assumed)
+    {
+        var settings = AiProfile.Of(Level("ai_hard"), Personality(personality), "union").Settings;
+        Assert.Equal((raids, assumed), (settings.Raids, settings.AssumedEnemyPercent));
     }
 }

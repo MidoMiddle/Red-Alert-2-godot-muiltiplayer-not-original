@@ -196,6 +196,26 @@ public sealed class EnemyEstimateTests
     }
 
     [Fact]
+    public void Asked_for_a_look_medium_sends_its_scout_to_the_core_of_the_enemy_before_its_next_outing()
+    {
+        // M8 step 10: a squad waits to know the enemy; the scout resting at home goes where it saw the enemy's construction vehicle.
+        var (scene, scouting, context, _) = Explored(ScoutingLevel.Periodic);
+        scene.Spawn(Scene.Enemy, UnitType.Mcv, 40, 40);
+        var vision = scene.World.VisionOf(Scene.Me);
+        vision.Reveal(new CellPos(40, 40), 3);
+        scene.Look(110);
+        vision.Hide(new CellPos(40, 40), 3);
+
+        scene.Look(120);
+        context.Begin(new Rts.Simulation.Ai.AiTurn(scene.Simulation, Scene.Me) { Tick = 120 });
+        context.Plan.LookAtTheEnemy = true;
+        scouting.Update(context);
+        context.End();
+
+        Assert.Equal(new CellPos(40, 40), scouting.Errand);
+    }
+
+    [Fact]
     public void Medium_rests_at_home_once_everything_is_explored()
     {
         var (errand, _, context) = Scouting(ScoutingLevel.Periodic);
