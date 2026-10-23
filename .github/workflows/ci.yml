@@ -44,7 +44,12 @@ jobs:
         run: dotnet test tests/Rts.MapGen.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=mapgen.trx" --results-directory test-results
 
       - name: AI tests
-        run: dotnet test tests/Rts.AI.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=ai.trx" --results-directory test-results
+        run: dotnet test tests/Rts.AI.Tests -c ${{ matrix.configuration }} --filter "Category!=Arena" --logger "trx;LogFileName=ai.trx" --results-directory test-results
+
+      # 20 matches of bot against bot of up to 40 minutes each (M5 step 14): Release only, about two minutes.
+      - name: AI arena
+        if: matrix.configuration == 'Release'
+        run: dotnet test tests/Rts.AI.Tests -c Release --filter "Category=Arena" --logger "trx;LogFileName=arena.trx" --logger "console;verbosity=detailed" --results-directory test-results
 
       - name: Network tests
         run: dotnet test tests/Rts.Net.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=net.trx" --results-directory test-results

@@ -164,6 +164,20 @@ public static class DataHasher
             Add(hash, army.AgainstVehicles);
         }
 
+        // The levels of the bots (M5 step 14), every number in the order of the keys.
+        hash.Add(rules.Difficulties.Length);
+        foreach (var difficulty in rules.Difficulties)
+        {
+            Add(hash, difficulty.Id);
+            Add(hash, difficulty.BuildOrder);
+            Add(hash, difficulty.Army);
+            hash.Add(difficulty.Values.Count);
+            foreach (var (key, _) in DifficultyDef.Keys)
+            {
+                hash.Add(difficulty.Values.TryGetValue(key, out var value) ? value : int.MinValue);
+            }
+        }
+
         hash.Add(rules.Economies.Length);
         foreach (var economy in rules.Economies)
         {

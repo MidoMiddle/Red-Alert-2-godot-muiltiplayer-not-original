@@ -3,7 +3,7 @@
 standard:
   kind: build_order
   faction: union
-  steps: [reactor, refinery, barracks, refinery, war_factory, reactor, radar, tesla_coil, tech_center]
+  steps: [reactor, refinery, barracks, war_factory, refinery, reactor, radar, tesla_coil]
 
 # The army of the bots of the Union (step 6): the share of every kind of unit. Against an enemy of mostly infantry the units of
 # against_infantry gain, against mostly vehicles those of against_vehicles; a kind that cannot be built yet leaves its share to the rest.

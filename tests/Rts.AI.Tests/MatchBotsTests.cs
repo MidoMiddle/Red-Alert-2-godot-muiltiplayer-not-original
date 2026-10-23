@@ -1,3 +1,4 @@
+using Rts.Data.Tests;
 using Rts.Simulation;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
@@ -48,8 +49,17 @@ public sealed class MatchBotsTests
         Assert.Throws<InvalidOperationException>(() => simulation.AttachAi(new LambdaBot(new PlayerId(4), _ => { })));
         simulation.AttachAi(new LambdaBot(new PlayerId(1), _ => { }));
         simulation.AttachAi(new LambdaBot(new PlayerId(3), _ => { }));
-        Assert.Throws<ArgumentException>(() => MatchBots.Create(Setup(), Setup().Players[0]));
-        Assert.Equal(new PlayerId(2), MatchBots.Create(Setup(), Setup().Players[1]).Player);
+        Assert.Throws<ArgumentException>(() => MatchBots.Create(Setup(), Setup().Players[0], TestRules.Standard));
+        Assert.Equal(new PlayerId(2), MatchBots.Create(Setup(), Setup().Players[1], TestRules.Standard).Player);
+    }
+
+    [Fact]
+    public void Medium_comes_from_the_data_and_is_the_medium_of_the_code()
+    {
+        // The modules are tested with AiSettings.Medium: the data must say the same, or those tests test another bot. Tuned in the data,
+        // the code follows (M5 step 14).
+        Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, GameDataFiles.Rules));
+        Assert.Equal(AiSettings.Medium, MatchBots.SettingsOf(AiDifficulty.Medium, TestRules.Standard));
     }
 
     [Fact]
@@ -71,6 +81,6 @@ public sealed class MatchBotsTests
 
         Assert.Equal(StateHasher.Compute(first.Simulation.World), StateHasher.Compute(second.Simulation.World));
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
-        Assert.Equal(ReplayStatus.Match, ReplayPlayer.VerifyWithBots(replay, TestRules.Standard, player => MatchBots.Create(replay.Settings.Match!, player)).Status);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.VerifyWithBots(replay, TestRules.Standard, player => MatchBots.Create(replay.Settings.Match!, player, TestRules.Standard)).Status);
     }
 }

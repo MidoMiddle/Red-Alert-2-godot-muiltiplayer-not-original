@@ -86,7 +86,8 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
             _nextOuting = context.Tick + settings.ScoutingInterval;
         }
 
-        if (_errand is null && (context.Tick >= _nextOuting || !context.Memory.EnemySeen))
+        // With the known ore gone, out at once: a far field is the only income left (step 14).
+        if (_errand is null && (context.Tick >= _nextOuting || !context.Memory.EnemySeen || context.Plan.OreGone))
         {
             _errand = NextErrand(context);
             _places = 0;

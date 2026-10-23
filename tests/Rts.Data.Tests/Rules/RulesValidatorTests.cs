@@ -16,6 +16,7 @@ public sealed class RulesValidatorTests
     private const string Warheads = "combat/warheads.yaml";
     private const string Projectiles = "combat/projectiles.yaml";
     private const string BuildOrders = "ai/union.yaml";
+    private const string Levels = "ai/difficulty.yaml";
 
     /// <summary>The files of the test dataset as (name, text), in the order <see cref="RulesLoader.LoadDirectory"/> reads them.</summary>
     private static List<(string FileName, string Text)> Dataset() =>
@@ -143,6 +144,21 @@ public sealed class RulesValidatorTests
         var errors = Errors(Edited(Dataset(), BuildOrders, text, replacement));
 
         Assert.Contains(errors, error => error.FileName == BuildOrders && error.Reason.Contains(reason, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("build_order: standard", "build_order: rush", "'ai_medium' refers to build order 'rush', which is not defined")]
+    [InlineData("army: standard_army", "army: elite", "'ai_medium' refers to army 'elite', which is not defined")]
+    [InlineData("tactics_period: 15", "tactics_period: 0", "'tactics_period' of 'ai_medium' must be above zero")]
+    [InlineData("gather_cells: 6", "gather_cells: -1", "'gather_cells' of 'ai_medium' must not be below zero")]
+    [InlineData("retreat_at_strength: 30%", "retreat_at_strength: 100%", "'ai_medium' would turn back before it lost anything")]
+    [InlineData("attack_growth_per_wave: 125%", "attack_growth_per_wave: 90%", "the waves of 'ai_medium' would shrink")]
+    [InlineData("  max_defenses: 3\n", "", "max_defenses")]
+    public void A_level_of_the_bots_is_checked_like_the_rest(string text, string replacement, string reason)
+    {
+        var errors = Errors(Edited(Dataset(), Levels, text, replacement));
+
+        Assert.Contains(errors, error => error.FileName == Levels && error.Reason.Contains(reason, StringComparison.Ordinal));
     }
 
     [Fact]

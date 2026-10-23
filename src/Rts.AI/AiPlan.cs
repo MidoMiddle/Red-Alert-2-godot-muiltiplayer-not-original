@@ -70,6 +70,13 @@ public sealed class AiPlan
     /// <summary>While the base is defended the army does not save the money of the next building for it (step 9).</summary>
     public bool ArmyFirst { get; internal set; }
 
+    /// <summary>
+    /// No ore left that the bot knows of, after it saw some (step 14): the base is done — the planner builds no refinery, radar or tech
+    /// centre any more, the economy sells them for the army once the factories stand idle, the scout goes looking at once; a field found
+    /// turns it back.
+    /// </summary>
+    public bool OreGone { get; internal set; }
+
     /// <summary>Where the squads gather (step 8); for the debug overlay (step 13), no module decides by it. Null without a start.</summary>
     public CellPos? GatherPoint { get; internal set; }
 

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
@@ -13,7 +15,7 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty"];
 
     private static readonly string[] UnitKeys =
     [
@@ -242,6 +244,39 @@ internal static class DefinitionReader
             AgainstVehicles = fields.Optional("against_vehicles", Scalars.IdList, ImmutableArray<string>.Empty),
         };
     }
+
+    /// <summary>A level of the bots (M5 step 14): its build order and army, and every number of <see cref="DifficultyDef.Keys"/>.</summary>
+    public static DifficultyDef Difficulty(RawDefinition definition, bool complete)
+    {
+        var keys = new List<string> { "build_order", "army" };
+        foreach (var (key, _) in DifficultyDef.Keys)
+        {
+            keys.Add(key);
+        }
+
+        var fields = new FieldReader(definition, complete, [.. keys]);
+        var values = ImmutableSortedDictionary.CreateBuilder<string, int>(StringComparer.Ordinal);
+        foreach (var (key, kind) in DifficultyDef.Keys)
+        {
+            values[key] = kind switch
+            {
+                DifficultyValue.Percent => WholePercent(fields.Required(key, Scalars.Percent, Fixed.Zero)),
+                DifficultyValue.Duration => fields.Required(key, Scalars.Ticks, 0),
+                _ => fields.Required(key, Scalars.Int, 0),
+            };
+        }
+
+        return new DifficultyDef
+        {
+            Id = definition.Id,
+            BuildOrder = fields.Required("build_order", Scalars.Id, ""),
+            Army = fields.Required("army", Scalars.Id, ""),
+            Values = values.ToImmutable(),
+        };
+    }
+
+    /// <summary>125% read as a fraction, 1.25, back to the whole percent, 125.</summary>
+    private static int WholePercent(Fixed fraction) => (int)((fraction.Raw * 100 + (1L << (Fixed.FractionalBits - 1))) >> Fixed.FractionalBits);
 
     public static BuildOrderDef BuildOrder(RawDefinition definition, bool complete)
     {

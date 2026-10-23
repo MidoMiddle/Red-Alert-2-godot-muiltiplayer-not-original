@@ -19,6 +19,7 @@ public sealed class RulesBuilder
     private readonly List<FactionDef> _factions = [];
     private readonly List<BuildOrderDef> _buildOrders = [];
     private readonly List<ArmyDef> _armies = [];
+    private readonly List<DifficultyDef> _difficulties = [];
     private readonly List<EconomyDef> _economies = [];
     private readonly List<ArmorDef> _armors = [];
     private readonly List<WarheadDef> _warheads = [];
@@ -63,6 +64,12 @@ public sealed class RulesBuilder
     public RulesBuilder Add(ArmyDef definition)
     {
         _armies.Add(definition);
+        return this;
+    }
+
+    public RulesBuilder Add(DifficultyDef definition)
+    {
+        _difficulties.Add(definition);
         return this;
     }
 
@@ -121,7 +128,8 @@ public sealed class RulesBuilder
             Sorted(_warheads),
             Sorted(_projectiles),
             Sorted(_buildOrders),
-            Sorted(_armies));
+            Sorted(_armies),
+            Sorted(_difficulties));
     }
 
     private IEnumerable<string> AllIds()
@@ -132,6 +140,11 @@ public sealed class RulesBuilder
         }
 
         foreach (var definition in _armies)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _difficulties)
         {
             yield return definition.Id;
         }

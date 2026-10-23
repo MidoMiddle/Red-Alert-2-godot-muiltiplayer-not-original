@@ -161,6 +161,13 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             foreach (var step in order.Steps)
             {
                 var index = rules.IndexOfBuilding(step);
+
+                // With the ore gone the base is done: what only earns or opens technologies is not built again (step 14).
+                if (context.Plan.OreGone && EconomyManager.Spare(rules.Buildings[index]))
+                {
+                    continue;
+                }
+
                 counts[index]++;
                 if (_have[index] < counts[index])
                 {
@@ -181,7 +188,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
 
         if (orderDone)
         {
-            if (_have[refinery] < settings.MaxRefineries)
+            if (_have[refinery] < settings.MaxRefineries && !context.Plan.OreGone)
             {
                 _choices.Add(refinery);
             }

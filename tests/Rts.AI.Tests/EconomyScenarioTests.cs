@@ -49,7 +49,7 @@ public sealed class EconomyScenarioTests
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, GameDataFiles.Rules).Status);
         Assert.Equal(
             ReplayStatus.Match,
-            ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, player => MatchBots.Create(replay.Settings.Match!, player)).Status);
+            ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, player => MatchBots.Create(replay.Settings.Match!, player, GameDataFiles.Rules)).Status);
     }
 
     [Fact]

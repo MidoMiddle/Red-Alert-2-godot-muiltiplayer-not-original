@@ -1,0 +1,54 @@
+# The levels of the bots (docs/implementation/M5_first_bot.md, 4.7, step 14; the whole table of levels comes with M8, 4.2). Only
+# «Medium» for now — `ai_medium`: ids are shared by all the data, and `medium` is an armour. Periods are in ticks (15 a second); every key
+# is required.
+ai_medium:
+  kind: difficulty
+  build_order: standard
+  army: standard_army
+  # How often each module thinks, in ticks: the strategist every 3 s and the squads every second, as «Medium» of M8.
+  strategy_period: 45
+  economy_period: 15
+  build_period: 15
+  production_period: 15
+  scouting_period: 45
+  tactics_period: 15
+  defense_period: 5
+  # The economy: refineries at most, harvesters for each, a reactor below this reserve of power, harvesters kept this many cells from a
+  # known enemy, a second war factory once this much money is left.
+  max_refineries: 2
+  harvesters_per_refinery: 2
+  power_reserve: 20%
+  danger_cells: 12
+  second_factory_credits: 4000
+  # The army: the share that moves to the counters of a mostly-infantry or mostly-vehicle enemy, the units each factory keeps queued.
+  counter_shift: 20%
+  infantry_queued: 2
+  vehicles_queued: 1
+  # Scouting: an outing every 3 minutes into blocks of this many cells; an armed enemy this near sends the scout home.
+  scouting_interval: 180s
+  scout_block_cells: 16
+  scout_danger_cells: 6
+  # Squads: the first wave of 6 units (8:05 on Frozen Crossing), every next one a quarter bigger; out only as strong as the enemy known;
+  # back home below 30% of the strength it set out with. Gathered 6 cells from the start toward the enemy; a unit 6 cells off makes the
+  # squad wait; an armed enemy within 8 cells is fought; a unit below 35% of its hit points falls back.
+  min_attack_army: 6
+  attack_growth_per_wave: 125%
+  attack_threshold: 100%
+  retreat_at_strength: 30%
+  gather_cells: 6
+  squad_spread_cells: 6
+  engage_cells: 8
+  wounded: 35%
+  # A wave that finds nobody sweeps this many unseen blocks for the enemy before it turns home.
+  sweep_places: 6
+  # With the ore gone: a squad of 3 or more that has not grown for 2 minutes sets out with what it has; a building the base can do
+  # without is sold when the factories stood idle 30 s.
+  all_in_after: 120s
+  all_in_units: 3
+  sell_every: 30s
+  # Defense: enemies at the base are noticed after 1 s and forgotten 10 s after the last; within 8 cells of a building is at the base;
+  # three defenses at most, those of the build order and those toward the attacks.
+  perception_delay: 1s
+  threat_clear: 10s
+  base_cells: 8
+  max_defenses: 3

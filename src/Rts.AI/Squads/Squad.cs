@@ -49,6 +49,9 @@ public sealed class Squad
     /// <summary>The tick the waiting for the laggards ends at the latest (or, with no <see cref="Regroup"/>, before which no new one starts).</summary>
     internal int RegroupUntil { get; set; }
 
+    /// <summary>The places it swept for an enemy it knows nothing of (step 14), so it does not come back to them.</summary>
+    internal List<CellPos> Swept { get; } = new();
+
     internal void Add(EntityId unit) => _units.Add(unit);
 
     internal void AddAll(Squad other) => _units.AddRange(other._units);

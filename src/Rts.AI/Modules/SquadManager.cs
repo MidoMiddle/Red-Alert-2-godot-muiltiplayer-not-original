@@ -17,8 +17,10 @@ namespace Rts.AI.Modules;
 /// <list type="bullet">
 /// <item><b>gathering</b> — new units come to the gathering point, <see cref="AiSettings.GatherCells"/> from the start toward the
 /// enemy; <b>ready</b> once it has <see cref="AiSettings.MinAttackArmy"/> units (more by <see cref="AiSettings.AttackGrowthPercent"/>
-/// for every wave sent) and <see cref="AiSettings.AttackThresholdPercent"/> of the enemy strength the bot knows of; it sets out when
-/// the plan lets it (<see cref="AiPlan.AttackAllowed"/>), and a new squad gathers;</item>
+/// for every wave sent) and <see cref="AiSettings.AttackThresholdPercent"/> of the enemy strength the bot knows of — or, with
+/// <see cref="AiSettings.AllInUnits"/> at least, once it has not grown for <see cref="AiSettings.AllInTicks"/> since the ore ran out
+/// (<see cref="AiPlan.OreGone"/>): an army that stopped growing for want of money goes with what it has; it sets out when the plan lets it (<see cref="AiPlan.AttackAllowed"/>), and a new
+/// squad gathers;</item>
 /// <item><b>moving</b> — attack-move to the target, the units ahead waiting for those behind; the target is an enemy building of the
 /// memory — refineries, defenses, factories, the construction yard, the rest, the nearest of the first kind there is — else where
 /// the enemy was last seen or may be; unarmed enemy units near it — harvesters, an MCV — and the target building in sight are
@@ -66,6 +68,11 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     private readonly List<EntityId> _batch = new();
     private int _formed;
     private int _waves;
+
+    // The gathering squad at its largest so far and when it last grew: one that stopped growing sets out with what it has (step 14).
+    private int _gathered;
+    private int _grewAt;
+    private int? _oreGoneAt;
 
     public AiModuleKind Kind => AiModuleKind.Squads;
 
@@ -211,8 +218,18 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
             Issue(context, OrderKind.AttackMove, point, default);
         }
 
+        if (squad.Units.Count > _gathered)
+        {
+            (_gathered, _grewAt) = (squad.Units.Count, context.Tick);
+        }
+
+        _oreGoneAt = context.Plan.OreGone ? _oreGoneAt ?? context.Tick : null;
+
         var enemy = context.Memory.EnemyStrength(context.View);
-        var strong = squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent;
+        // Only with the ore gone, and counted from then: before, an army that does not grow is one still waiting for its factories.
+        var stalled = _oreGoneAt is { } gone && squad.Units.Count >= settings.AllInUnits
+            && context.Tick - IntMath.Max(_grewAt, gone) >= settings.AllInTicks;
+        var strong = stalled || (squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent);
         squad.State = strong ? SquadState.Ready : SquadState.Gathering;
         if (!strong || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre))
         {
@@ -220,6 +237,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         }
 
         squad.State = SquadState.Moving;
+        (_gathered, _grewAt) = (0, context.Tick);
         squad.StartStrength = squad.Strength;
         squad.Beaten = false;
         squad.Regroup = null;
@@ -251,13 +269,25 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
             return;
         }
 
-        if (!Retarget(context, squad, centre)
-            || (squad.TargetBuilding is null && squad.TargetCell is { } place && Distance(centre, place) <= ArrivedCells
-                && Nearest(context, centre, armed: true) is null && Nearest(context, centre, armed: false) is null))
+        if (!Retarget(context, squad, centre))
         {
-            // Nothing left to attack, or no enemy at the place where it might be: the wave is over.
+            // Nothing left to attack: the wave is over.
             squad.State = SquadState.Retreating;
             return;
+        }
+
+        if (squad.TargetBuilding is null && squad.TargetCell is { } place && Distance(centre, place) <= ArrivedCells
+            && Nearest(context, centre, armed: true) is null && Nearest(context, centre, armed: false) is null)
+        {
+            // No enemy where it might be: on to the nearest block of the map unseen now, a few of them, then home (step 14).
+            squad.Swept.Add(place);
+            if (squad.Swept.Count > settings.SweepPlaces || Sweep(context.View, squad, centre) is not { } next)
+            {
+                squad.State = SquadState.Retreating;
+                return;
+            }
+
+            squad.TargetCell = next;
         }
 
         if (Nearest(context, centre, armed: true) is { } enemy)
@@ -434,6 +464,30 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
         squad.TargetCell = memory.LastEnemyCell ?? NearestStart(memory, centre);
         return squad.TargetCell is not null;
+    }
+
+    /// <summary>
+    /// The middle of the block of <see cref="AiSettings.ScoutBlockCells"/> cells nearest the squad that the bot does not see now and the
+    /// squad has not swept; null for none.
+    /// </summary>
+    private CellPos? Sweep(AiWorldView view, Squad squad, CellPos centre)
+    {
+        var size = settings.ScoutBlockCells;
+        CellPos? best = null;
+        for (var y = size / 2; y < view.Height; y += size)
+        {
+            for (var x = size / 2; x < view.Width; x += size)
+            {
+                var middle = new CellPos(x, y);
+                if (!view.IsVisible(middle) && !squad.Swept.Contains(middle)
+                    && (best is null || Distance(middle, centre) < Distance(best.Value, centre)))
+                {
+                    best = middle;
+                }
+            }
+        }
+
+        return best;
     }
 
     /// <summary>Which enemy buildings a squad attacks first (4.6): refineries, defenses, factories, the construction yard, the rest.</summary>

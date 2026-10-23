@@ -5,6 +5,7 @@ using Rts.Simulation;
 using Rts.Simulation.Ai;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Matches;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.AI;
@@ -12,10 +13,16 @@ namespace Rts.AI;
 /// <summary>The bots of a match setup (docs/implementation/M5_first_bot.md, 4.11): one <see cref="AiPlayer"/> for every bot slot.</summary>
 public static class MatchBots
 {
-    /// <summary>The bot of <paramref name="player"/> in <paramref name="setup"/>, by its level: it knows its start and every start of the map.</summary>
-    public static IAiController Create(MatchSetup setup, MatchPlayer player) => player.Kind == PlayerKind.Ai
-        ? Medium(player.Id, SettingsOf(player.Difficulty), player.Start, setup)
+    /// <summary>
+    /// The bot of <paramref name="player"/> in <paramref name="setup"/>, by its level in the data of <paramref name="rules"/> (step 14) — the
+    /// numbers of the code when the data has none: it knows its start and every start of the map.
+    /// </summary>
+    public static IAiController Create(MatchSetup setup, MatchPlayer player, GameRules rules) => player.Kind == PlayerKind.Ai
+        ? Medium(player.Id, SettingsOf(player.Difficulty, rules), player.Start, setup)
         : throw new ArgumentException($"{player.Id} is played by a person.", nameof(player));
+
+    /// <summary>The «Medium» bot of <paramref name="player"/> with <paramref name="settings"/> of its own — the tuning of step 14, a person's seat played by a bot in the arena.</summary>
+    public static AiPlayer Create(MatchSetup setup, MatchPlayer player, AiSettings settings) => Medium(player.Id, settings, player.Start, setup);
 
     /// <summary>
     /// Attaches the bots of the match of <paramref name="simulation"/> and returns them, for the debug overlay (step 13); none without a
@@ -33,7 +40,7 @@ public static class MatchBots
         {
             if (player.Kind == PlayerKind.Ai)
             {
-                var bot = (AiPlayer)Create(setup, player);
+                var bot = (AiPlayer)Create(setup, player, simulation.World.Rules);
                 simulation.AttachAi(bot);
                 bots.Add(bot);
             }
@@ -54,9 +61,13 @@ public static class MatchBots
             start,
             setup.MapStarts);
 
-    private static AiSettings SettingsOf(AiDifficulty difficulty) => difficulty switch
+    /// <summary>The id of «Medium» in the data: ids are shared by all the data, and <c>medium</c> is an armour.</summary>
+    public const string MediumId = "ai_medium";
+
+    /// <summary>The settings of a level: from the data of <paramref name="rules"/>, else those of the code.</summary>
+    public static AiSettings SettingsOf(AiDifficulty difficulty, GameRules rules) => difficulty switch
     {
-        AiDifficulty.Medium => AiSettings.Medium,
+        AiDifficulty.Medium => rules.Database.TryGetDifficulty(MediumId, out var level) ? AiSettings.From(level) : AiSettings.Medium,
         _ => throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, null),
     };
 }

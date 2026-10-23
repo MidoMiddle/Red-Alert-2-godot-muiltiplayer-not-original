@@ -22,17 +22,43 @@ internal sealed class BotMatch
     private readonly List<(int Tick, string Text)> _timeline = [];
     private uint _personSequence;
 
-    public BotMatch(string mapId = "frozen-crossing", ulong seed = 3, bool shortGame = false)
+    /// <param name="bothBots">
+    /// The person's seat played by a bot too — bot against bot, the arena of step 14. A match needs a person, so the seat stays a
+    /// person's: its commands are played back from a replay as they were, only the bot of the other seat is run again.
+    /// </param>
+    /// <param name="settings">The settings of the bots, «Medium» of the data by default (the tuning of step 14).</param>
+    /// <param name="credits">The credits every player starts with; the default of the match when null.</param>
+    /// <param name="noOre">The map without its ore: a match with no income (section 6, «a bot without money»).</param>
+    public BotMatch(
+        string mapId = "frozen-crossing", ulong seed = 3, bool shortGame = false, bool bothBots = false, AiSettings? settings = null,
+        int? credits = null, bool noOre = false)
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(GameDataFiles.Folder, "maps", mapId + ".rtsmap")));
         Setup = MatchSetups.OneOnOne(map, GameDataFiles.Rules.DefaultFaction.Id, seed);
-        Setup = Setup with { Options = Setup.Options with { ShortGame = shortGame } };
-        Simulation = new GameSimulation(SimulationSettings.ForMatch(Setup, map.ToMapGrid()), GameDataFiles.Rules);
-        foreach (var player in Setup.Players.Where(player => player.Kind == PlayerKind.Ai))
+        Setup = Setup with { Options = Setup.Options with { ShortGame = shortGame, StartingCredits = credits ?? Setup.Options.StartingCredits } };
+        var grid = map.ToMapGrid();
+        if (noOre)
         {
-            var bot = (AiPlayer)MatchBots.Create(Setup, player);
+            for (var y = 0; y < grid.Height; y++)
+            {
+                for (var x = 0; x < grid.Width; x++)
+                {
+                    grid.SetOre(new Rts.Simulation.Geometry.CellPos(x, y), Rts.Simulation.Map.OreCell.Empty);
+                }
+            }
+        }
+
+        Simulation = new GameSimulation(SimulationSettings.ForMatch(Setup, grid), GameDataFiles.Rules);
+        foreach (var player in Setup.Players.Where(player => player.Kind == PlayerKind.Ai || bothBots))
+        {
+            var bot = settings is null && player.Kind == PlayerKind.Ai
+                ? (AiPlayer)MatchBots.Create(Setup, player, GameDataFiles.Rules)
+                : MatchBots.Create(Setup, player, settings ?? AiSettings.Medium);
             Simulation.AttachAi(bot);
-            Brain ??= bot;
+            if (player.Id == Bot)
+            {
+                Brain = bot;
+            }
         }
 
         Recorder = new ReplayRecorder(Simulation);
@@ -75,6 +101,37 @@ internal sealed class BotMatch
                 {
                     Simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(person.Id, Simulation.CurrentTick, _personSequence++, type, cell.Center));
                     given++;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gives the person a ready base round their start, as the world stands: a yard, two reactors, barracks and a tesla coil, each on
+    /// the nearest cell the placement rules allow — the passive person «with a base and defense» of section 6. Not by commands: a replay
+    /// of such a match does not play back.
+    /// </summary>
+    public void GivePersonABase()
+    {
+        var person = Setup.Players.First(player => player.Kind == PlayerKind.Human);
+        foreach (var id in new[] { "construction_yard", "reactor", "reactor", "barracks", "tesla_coil" })
+        {
+            var def = Data.Buildings[Data.IndexOfBuilding(id)];
+            var placed = false;
+            for (var ring = 0; ring < 12 && !placed; ring++)
+            {
+                for (var dy = -ring; dy <= ring && !placed; dy++)
+                {
+                    for (var dx = -ring; dx <= ring && !placed; dx++)
+                    {
+                        var cell = new Rts.Simulation.Geometry.CellPos(person.Start.X + dx + 2, person.Start.Y + dy + 2);
+                        if (Rts.Simulation.World.PlacementRules.Check(World, person.Id, def, cell, needsBase: id != "construction_yard")
+                            == Rts.Simulation.World.PlacementProblem.None)
+                        {
+                            World.CreateBuilding(person.Id, def, cell, ready: true, null);
+                            placed = true;
+                        }
+                    }
                 }
             }
         }

@@ -69,6 +69,11 @@ internal static class RulesValidator
             checker.Army(army);
         }
 
+        foreach (var difficulty in rules.Difficulties)
+        {
+            checker.Difficulty(difficulty);
+        }
+
         foreach (var warhead in rules.Warheads)
         {
             checker.Warhead(warhead);
@@ -378,6 +383,45 @@ internal static class RulesValidator
         /// An army of the bots (M5 step 6): of a known faction, its shares — units of that faction — make a whole, and the units that
         /// gain against infantry or vehicles are among them.
         /// </summary>
+        /// <summary>
+        /// A level of the bots (M5 step 14): its build order and army are in the data, every period is above zero, no other number is below
+        /// zero, a squad turns back below a share of its strength under 100%, and every wave is at least as big as the one before.
+        /// </summary>
+        public void Difficulty(DifficultyDef difficulty)
+        {
+            if (!rules.TryGetBuildOrder(difficulty.BuildOrder, out _))
+            {
+                Error(difficulty.Id, "build_order", Missing(difficulty.Id, "build order", difficulty.BuildOrder));
+            }
+
+            if (!rules.TryGetArmy(difficulty.Army, out _))
+            {
+                Error(difficulty.Id, "army", Missing(difficulty.Id, "army", difficulty.Army));
+            }
+
+            foreach (var (key, value) in difficulty.Values)
+            {
+                if (key.EndsWith("_period", StringComparison.Ordinal))
+                {
+                    Positive(difficulty.Id, key, value);
+                }
+                else if (value < 0)
+                {
+                    Error(difficulty.Id, key, $"'{key}' of '{difficulty.Id}' must not be below zero");
+                }
+            }
+
+            if (difficulty.Values.TryGetValue("retreat_at_strength", out var retreat) && retreat >= 100)
+            {
+                Error(difficulty.Id, "retreat_at_strength", $"'{difficulty.Id}' would turn back before it lost anything: retreat_at_strength must be below 100%");
+            }
+
+            if (difficulty.Values.TryGetValue("attack_growth_per_wave", out var growth) && growth < 100)
+            {
+                Error(difficulty.Id, "attack_growth_per_wave", $"the waves of '{difficulty.Id}' would shrink: attack_growth_per_wave must be 100% or more");
+            }
+        }
+
         public void Army(ArmyDef army)
         {
             FactionOf(army.Id, army.Faction);
@@ -563,6 +607,7 @@ internal static class RulesValidator
             : rules.TryGetProjectile(id, out _) ? "projectile"
             : rules.TryGetBuildOrder(id, out _) ? "build order"
             : rules.TryGetArmy(id, out _) ? "army"
+            : rules.TryGetDifficulty(id, out _) ? "difficulty"
             : null;
 
         private void Positive(string id, string key, int value)

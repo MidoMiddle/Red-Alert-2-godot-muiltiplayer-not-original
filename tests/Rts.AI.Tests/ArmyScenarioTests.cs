@@ -90,9 +90,10 @@ public sealed class ArmyScenarioTests
     {
         var match = Once.Value.Match;
 
+        // Every step was built; with the ore gone the base may have sold what earns or only opens technologies since (step 14).
         foreach (var step in GameDataFiles.Rules.Database.BuildOrders.Single(order => order.Id == "standard").Steps.Distinct())
         {
-            Assert.NotEmpty(match.BuildingsOfBot(step));
+            Assert.NotNull(match.When($"placed {step} "));
         }
 
         Assert.Empty(match.RefusedBotCommands);
@@ -108,6 +109,6 @@ public sealed class ArmyScenarioTests
         Assert.Equal(StateHasher.Compute(match.World), StateHasher.Compute(again.World));
         Assert.Equal(
             ReplayStatus.Match,
-            ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, player => MatchBots.Create(replay.Settings.Match!, player)).Status);
+            ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, player => MatchBots.Create(replay.Settings.Match!, player, GameDataFiles.Rules)).Status);
     }
 }

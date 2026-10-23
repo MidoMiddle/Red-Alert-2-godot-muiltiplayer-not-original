@@ -143,6 +143,9 @@ public static class RulesLoader
             case "army":
                 AddUnlessTemplate(template, DefinitionReader.Army(entry, !template), definition => builder.Add(definition));
                 break;
+            case "difficulty":
+                AddUnlessTemplate(template, DefinitionReader.Difficulty(entry, !template), definition => builder.Add(definition));
+                break;
             case "build_order":
                 AddUnlessTemplate(template, DefinitionReader.BuildOrder(entry, !template), definition => builder.Add(definition));
                 break;

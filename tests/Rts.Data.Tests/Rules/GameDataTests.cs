@@ -44,8 +44,9 @@ public sealed class GameDataTests
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
-        // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army.
-        Assert.Equal(0x9a455b524565d0b9UL, GameDataFiles.Current.Hash);
+        // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
+        // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order.
+        Assert.Equal(0xf75264da1c8f7c36UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

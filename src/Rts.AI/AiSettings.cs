@@ -1,3 +1,5 @@
+using Rts.Simulation.Rules;
+
 namespace Rts.AI;
 
 /// <summary>
@@ -6,8 +8,56 @@ namespace Rts.AI;
 /// </summary>
 public sealed record AiSettings
 {
-    /// <summary>«Medium»: the strategist every 3 s and the squads every second, as in M8, 4.2.</summary>
+    /// <summary>
+    /// «Medium» as the code knows it: the strategist every 3 s and the squads every second, as in M8, 4.2. The game takes its «Medium» from
+    /// the data (<see cref="From"/>, <c>game/data/ai/difficulty.yaml</c>, step 14); these are the same numbers, for the tests of the modules.
+    /// </summary>
     public static readonly AiSettings Medium = new();
+
+    /// <summary>The settings of a level of the data (step 14): every number by its key.</summary>
+    public static AiSettings From(DifficultyDef level)
+    {
+        var values = level.Values;
+        return new AiSettings
+        {
+            StrategyPeriod = values["strategy_period"],
+            EconomyPeriod = values["economy_period"],
+            BuildPeriod = values["build_period"],
+            ProductionPeriod = values["production_period"],
+            ScoutingPeriod = values["scouting_period"],
+            TacticsPeriod = values["tactics_period"],
+            DefensePeriod = values["defense_period"],
+            MaxRefineries = values["max_refineries"],
+            HarvestersPerRefinery = values["harvesters_per_refinery"],
+            PowerReservePercent = values["power_reserve"],
+            DangerCells = values["danger_cells"],
+            BuildOrder = level.BuildOrder,
+            SecondFactoryCredits = values["second_factory_credits"],
+            Army = level.Army,
+            CounterShiftPercent = values["counter_shift"],
+            ScoutingInterval = values["scouting_interval"],
+            ScoutBlockCells = values["scout_block_cells"],
+            ScoutDangerCells = values["scout_danger_cells"],
+            MinAttackArmy = values["min_attack_army"],
+            AttackGrowthPercent = values["attack_growth_per_wave"],
+            AttackThresholdPercent = values["attack_threshold"],
+            RetreatAtStrengthPercent = values["retreat_at_strength"],
+            GatherCells = values["gather_cells"],
+            SquadSpreadCells = values["squad_spread_cells"],
+            EngageCells = values["engage_cells"],
+            WoundedPercent = values["wounded"],
+            PerceptionDelay = values["perception_delay"],
+            ThreatClearTicks = values["threat_clear"],
+            BaseCells = values["base_cells"],
+            MaxDefenses = values["max_defenses"],
+            AllInTicks = values["all_in_after"],
+            AllInUnits = values["all_in_units"],
+            SweepPlaces = values["sweep_places"],
+            SellTicks = values["sell_every"],
+            InfantryQueued = values["infantry_queued"],
+            VehiclesQueued = values["vehicles_queued"],
+        };
+    }
 
     public int StrategyPeriod { get; init; } = 45;
 
@@ -60,7 +110,7 @@ public sealed record AiSettings
     public int ScoutDangerCells { get; init; } = 6;
 
     /// <summary>The units the first squad needs before it may set out (4.7, M8's <c>minAttackArmy</c>).</summary>
-    public int MinAttackArmy { get; init; } = 8;
+    public int MinAttackArmy { get; init; } = 6;
 
     /// <summary>How much bigger every next wave is, in percent: 8, 10, 12, 15… units (4.7, <c>attackGrowthPerWave</c>).</summary>
     public int AttackGrowthPercent { get; init; } = 125;
@@ -94,6 +144,18 @@ public sealed record AiSettings
 
     /// <summary>The defenses the bot builds at most, those of the build order and those toward the attacks together.</summary>
     public int MaxDefenses { get; init; } = 3;
+
+    /// <summary>A gathering squad that has not grown this long, in ticks, sets out with what it has (step 14): an army that stopped growing.</summary>
+    public int AllInTicks { get; init; } = 1800;
+
+    /// <summary>The fewest units a squad sets out with when it stopped growing.</summary>
+    public int AllInUnits { get; init; } = 3;
+
+    /// <summary>A wave that finds nobody where it went sweeps up to this many unseen blocks of the map for the enemy before it turns home (step 14).</summary>
+    public int SweepPlaces { get; init; } = 6;
+
+    /// <summary>With the ore gone and the factories idle this long, in ticks, a building the base can do without is sold — one so often (step 14).</summary>
+    public int SellTicks { get; init; } = 450;
 
     /// <summary>The units the barracks keep in their queue (4.6).</summary>
     public int InfantryQueued { get; init; } = 2;

@@ -247,6 +247,25 @@ internal static class TestRules
             AgainstInfantry = ["heavy_tank", "support_vehicle"],
             AgainstVehicles = ["rocketeer", "tesla_tank"],
         });
+        // «Medium» of game/data/ai/difficulty.yaml (M5 step 14): periods and counts, percentages as whole percent, durations in ticks.
+        builder.Add(new DifficultyDef
+        {
+            Id = "ai_medium",
+            BuildOrder = "standard",
+            Army = "standard_army",
+            Values = new Dictionary<string, int>
+            {
+                ["strategy_period"] = 45, ["economy_period"] = 15, ["build_period"] = 15, ["production_period"] = 15,
+                ["scouting_period"] = 45, ["tactics_period"] = 15, ["defense_period"] = 5,
+                ["max_refineries"] = 2, ["harvesters_per_refinery"] = 2, ["power_reserve"] = 20, ["danger_cells"] = 12,
+                ["second_factory_credits"] = 4000, ["counter_shift"] = 20, ["infantry_queued"] = 2, ["vehicles_queued"] = 1,
+                ["scouting_interval"] = 2700, ["scout_block_cells"] = 16, ["scout_danger_cells"] = 6,
+                ["min_attack_army"] = 6, ["attack_growth_per_wave"] = 125, ["attack_threshold"] = 100, ["retreat_at_strength"] = 30,
+                ["gather_cells"] = 6, ["squad_spread_cells"] = 6, ["engage_cells"] = 8, ["wounded"] = 35, ["sweep_places"] = 6,
+                ["all_in_after"] = 1800, ["all_in_units"] = 3, ["sell_every"] = 450,
+                ["perception_delay"] = 15, ["threat_clear"] = 150, ["base_cells"] = 8, ["max_defenses"] = 3,
+            }.ToImmutableSortedDictionary(StringComparer.Ordinal),
+        });
         return builder.Build();
     }
 

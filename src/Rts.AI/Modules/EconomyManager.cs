@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Rts.AI.View;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
 using Rts.Simulation.World;
@@ -26,6 +27,9 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
 {
     private readonly List<int> _wants = new();
     private int _mostRefineries;
+    private int? _soldAt;
+    private int? _idleSince;
+    private bool _sawOre;
 
     public AiModuleKind Kind => AiModuleKind.Economy;
 
@@ -70,10 +74,26 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
             harvesters += item.Kind == ProductionKind.Unit && item.DefIndex == harvester ? 1 : 0;
         }
 
-        var target = settings.HarvestersPerRefinery * IntMath.Max(refineries, 1);
+        // A refinery still growing or in the queue brings its own harvester: not to be ordered as well (step 14, the factory first).
+        foreach (var building in view.OwnBuildings)
+        {
+            harvesters += building.DefIndex == refinery && !building.IsReady ? 1 : 0;
+        }
+
+        foreach (var item in buildingQueue)
+        {
+            harvesters += item.DefIndex == refinery ? 1 : 0;
+        }
+
+        // Gone only once seen: at the start the field may lie outside the sight of the base.
+        var anyOre = AnyOre(view);
+        _sawOre |= anyOre;
+        var oreGone = _sawOre && !anyOre;
+        context.Plan.OreGone = oreGone;
+        var target = oreGone ? 0 : settings.HarvestersPerRefinery * IntMath.Max(refineries, 1);
         _wants.Clear();
-        var restore = refineries < _mostRefineries;
-        if (restore || _mostRefineries == 0)
+        var restore = refineries < _mostRefineries && !oreGone;
+        if (restore || (_mostRefineries == 0 && !oreGone))
         {
             _wants.Add(refinery);
         }
@@ -104,7 +124,77 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         }
 
         KeepHarvestersSafe(context, refinery);
+        if (oreGone)
+        {
+            SellForTheArmy(context);
+        }
+        else
+        {
+            _idleSince = null;
+        }
     }
+
+    /// <summary>
+    /// Whether the bot knows of any ore — an explored cell with ore or gems. Without, the base has no more income: it is done
+    /// (<see cref="AiPlan.OreGone"/>).
+    /// </summary>
+    private static bool AnyOre(AiWorldView view)
+    {
+        for (var y = 0; y < view.Height; y++)
+        {
+            for (var x = 0; x < view.Width; x++)
+            {
+                if (view.OreAt(new CellPos(x, y)).Kind != OreKind.None)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// With the ore gone and the factories idle for <see cref="AiSettings.SellTicks"/> — the army no longer paid for — sells a building
+    /// the base can do without: a refinery, then what only opens technologies (a radar, a tech centre); one in
+    /// <see cref="AiSettings.SellTicks"/>, so that the money goes to the army. The yard, the factories, the power plants and the
+    /// defenses are kept.
+    /// </summary>
+    private void SellForTheArmy(AiContext context)
+    {
+        var view = context.View;
+        var idle = view.Player.Queue(ProductionCategory.Infantry).Count == 0 && view.Player.Queue(ProductionCategory.Vehicle).Count == 0;
+        _idleSince = idle ? _idleSince ?? context.Tick : null;
+        if (_idleSince is not { } since || context.Tick - since < settings.SellTicks || context.Tick - _soldAt < settings.SellTicks)
+        {
+            return;
+        }
+
+        Building? sell = null;
+        foreach (var building in view.OwnBuildings)
+        {
+            if (!building.IsReady || building.Def is not { } def || !Spare(def))
+            {
+                continue;
+            }
+
+            // Refineries first: without ore they are no use at all.
+            if (sell is null || (def.DockCell is not null && sell.Def!.DockCell is null))
+            {
+                sell = building;
+            }
+        }
+
+        if (sell is not null)
+        {
+            _soldAt = context.Tick;
+            context.Issue(new SellCommand(view.Me, context.ExecuteTick, context.NextSequence(), sell.Id));
+        }
+    }
+
+    /// <summary>A building the base can do without once the ore is gone: neither a factory nor the yard, power or a defense.</summary>
+    internal static bool Spare(BuildingDef def) =>
+        def.Produces.Length == 0 && def.Power <= 0 && def.Primary.Length == 0 && !def.Wall;
 
     /// <summary>Sends every harvester that works near a known enemy to the explored ore nearest the refineries that is far enough.</summary>
     private void KeepHarvestersSafe(AiContext context, int refinery)

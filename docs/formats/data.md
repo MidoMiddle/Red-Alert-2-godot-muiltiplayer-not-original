@@ -34,6 +34,7 @@ game/data/
 │       ├── units.yaml
 │       └── weapons.yaml    оружие юнитов и обороны
 ├── ai/                     боты (M5)
+│   ├── difficulty.yaml     уровни ботов: «Средний» (ai_medium)
 │   └── union.yaml          порядки постройки и состав армии Союза
 └── maps/                   готовые карты (формат — rtsmap.md)
 ```
@@ -177,6 +178,23 @@ reactor:  # Tesla Reactor
 | `against_vehicles` | Юниты, которые получают долю, когда у врага больше половины техники (противотанковые) |
 
 Сдвиг к контрам — 20 пунктов у «Среднего». Он забирается у остальных юнитов пропорционально их долям. Какой состав берёт бот, задаёт уровень сложности: у «Среднего» — `standard_army`.
+
+### `difficulty` (боты, M5 шаг 14)
+
+Уровень бота. Пока один — `ai_medium`, «Средний»; полная таблица уровней — M8. Id не `medium`: id общие на все данные, а `medium` — броня. Все ключи обязательны.
+
+| Ключи | Что | Как пишется |
+|---|---|---|
+| `build_order`, `army` | Порядок постройки и состав армии | id записей `build_order` и `army` |
+| `strategy_period`, `economy_period`, `build_period`, `production_period`, `scouting_period`, `tactics_period`, `defense_period` | Как часто думает каждый модуль | тики, > 0 |
+| `max_refineries`, `harvesters_per_refinery`, `power_reserve`, `danger_cells`, `second_factory_credits` | Экономика | числа; `power_reserve` — % |
+| `counter_shift`, `infantry_queued`, `vehicles_queued` | Армия | `counter_shift` — % |
+| `scouting_interval`, `scout_block_cells`, `scout_danger_cells` | Разведка | интервал — длительность (`180s`) |
+| `min_attack_army`, `attack_growth_per_wave`, `attack_threshold`, `retreat_at_strength`, `gather_cells`, `squad_spread_cells`, `engage_cells`, `wounded`, `sweep_places` | Отряды | доли — %; рост волн ≥ 100 %, отступление < 100 % |
+| `all_in_after`, `all_in_units`, `sell_every` | Когда руда кончилась | длительности — `120s`, `30s` |
+| `perception_delay`, `threat_clear`, `base_cells`, `max_defenses` | Оборона базы | длительности — `1s`, `10s` |
+
+Код держит те же числа в `AiSettings.Medium`. Тест требует равенства: модули проверяются на числах игры.
 
 ### `economy` (ровно одна запись)
 

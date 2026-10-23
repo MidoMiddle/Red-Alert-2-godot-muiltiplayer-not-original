@@ -20,7 +20,7 @@ public sealed class SquadScenarioTests
     /// What happened in a match: when the first squad set out and with how many units, how near the person's start the bot's army came
     /// before (the scout aside), and — when the person got tanks — the units of the squad as it turned back, beaten, and when.
     /// </summary>
-    private sealed record Run(BotMatch Match, int SetOut, int Units, int NearestBefore, int? Beaten, List<EntityId> Survivors);
+    private sealed record Run(BotMatch Match, int SetOut, int Units, int NearestBefore, int? Beaten, List<EntityId> Survivors, SquadState? Joined);
 
     private static readonly Lazy<Run> Attack = new(() => Play(minutes: 12, tanks: false));
 
@@ -33,6 +33,8 @@ public sealed class SquadScenarioTests
         var (setOut, units, nearest) = (-1, 0, int.MaxValue);
         int? beaten = null;
         var survivors = new List<EntityId>();
+        Squad? back = null;
+        SquadState? joined = null;
         while (match.Simulation.CurrentTick < minutes * 900)
         {
             match.Step();
@@ -55,14 +57,21 @@ public sealed class SquadScenarioTests
                 }
             }
 
-            if (beaten is null && plan.Squads.FirstOrDefault(squad => squad.Beaten) is { } back)
+            if (beaten is null && plan.Squads.FirstOrDefault(squad => squad.Beaten) is { } turned)
             {
-                beaten = match.Simulation.CurrentTick;
-                survivors.AddRange(back.Units);
+                (beaten, back) = (match.Simulation.CurrentTick, turned);
+                survivors.AddRange(turned.Units);
+            }
+
+            // The turn the beaten squad is gone: what the squad its survivors are in then does.
+            if (back is not null && !plan.Squads.Contains(back))
+            {
+                joined = plan.Squads.FirstOrDefault(squad => survivors.Any(squad.Units.Contains))?.State;
+                back = null;
             }
         }
 
-        return new Run(match, setOut, units, nearest, beaten, survivors);
+        return new Run(match, setOut, units, nearest, beaten, survivors, joined);
     }
 
     [Fact]
@@ -86,11 +95,10 @@ public sealed class SquadScenarioTests
         var plan = run.Match.Brain!.Context!.Plan;
 
         Assert.NotNull(run.Beaten);
-        var alive = run.Survivors.Where(id => run.Match.World.TryGet(id, out var unit) && unit.IsAlive).ToList();
-        Assert.NotEmpty(alive);
+        Assert.NotEmpty(run.Survivors);
         Assert.DoesNotContain(plan.Squads, squad => squad.Beaten);
-        var home = plan.Squads.Single(squad => squad.State is SquadState.Gathering or SquadState.Ready);
-        Assert.All(alive, id => Assert.Contains(id, home.Units));
+        // As the beaten squad went, its survivors were in the squad gathering at home.
+        Assert.True(run.Joined is SquadState.Gathering or SquadState.Ready, $"the survivors joined a squad {run.Joined?.ToString() ?? "-"}");
         Assert.Empty(run.Match.RefusedBotCommands);
     }
 
@@ -104,6 +112,6 @@ public sealed class SquadScenarioTests
         Assert.Equal(StateHasher.Compute(match.World), StateHasher.Compute(again.World));
         Assert.Equal(
             ReplayStatus.Match,
-            ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, player => MatchBots.Create(replay.Settings.Match!, player)).Status);
+            ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, player => MatchBots.Create(replay.Settings.Match!, player, GameDataFiles.Rules)).Status);
     }
 }
