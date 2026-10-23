@@ -13,7 +13,7 @@
 |---|---|---|---|---|---|
 | `ore_cluster` | модель | 1x1 | 0,5 | ≤ 1 000 | нет |
 | `gem_cluster` | модель | 1x1 | 0,5 | ≤ 1 000 | нет |
-| `ore_source` | модель | 1x1 | 2 | ≤ 3 000 | нет |
+| `ore_source` | модель | 1x1 | 3 | ≤ 3 000 | нет |
 
 Плотность руды делает код: несколько экземпляров `ore_cluster` в клетке по данным, а не отдельные модели. Цвета самоцветов — варианты материала, не новые модели.
 
@@ -22,7 +22,7 @@
 Вставить промт в ChatGPT как есть. Результат сохранить в `assets_src/concepts/ore/`.
 
 ```text
-Concept art reference for a resource field in winter: a cluster of golden-yellow ore crystals growing out of snow, a few blue gemstone crystals nearby, and one tall jagged amber crystal formation as a resource source. Three-quarter view from 45 degrees, looking down at about 30 degrees. Realistic materials, square image, no people, no text.
+Concept art reference for a resource field in winter: a cluster of golden-yellow ore crystals growing out of snow, a few blue gemstone crystals nearby, and one steel drilling tower with a rotating drill head as a resource source, with a few golden nuggets thrown up around its base. Three-quarter view from 45 degrees, looking down at about 30 degrees. Realistic materials, square image, no people, no text.
 ```
 
 ## 3. Модели (Meshy и Tripo)
@@ -48,14 +48,16 @@ A cluster of blue faceted gemstone crystals of different sizes, glossy, growing 
 ### 3.3. `ore_source`
 
 ```text
-A tall jagged amber crystal formation like a monolith growing from a small metal base plate in the snow, faceted surfaces, semi-glossy, about two units tall. Realistic physically based materials, clean readable silhouette, game-ready asset, cold winter setting, single isolated object on a plain light grey background.
+A steel lattice drilling tower about one unit wide and three units tall, standing on a small concrete base in the snow, with a rotating drill head at the top and a few golden nuggets around its base. Realistic physically based materials, clean readable silhouette, game-ready asset, cold winter setting, single isolated object on a plain light grey background.
 ```
 
 Нормализация: `--kind prop --footprint 1x1`.
 
 ## 4. Наши требования
 
-- Свечение рудного источника — emissive-материал в Godot, в модели его нет (см. [требования](../generation_requirements.md), раздел 4).
+- Узлы `ore_source`: `tower` (вышка), `drill` (бур; вращается в Godot по вертикальной оси).
+- Выброс руды и самоцветов — частицы в Godot, в модели их нет. Свечение — emissive-материал, как у других источников (см. [требования](../generation_requirements.md), раздел 4).
+- Самоцветный источник — тот же `ore_source` с другим материалом бура (см. [README](README.md), вопрос 3).
 - Кристаллы непрозрачные или полупрозрачные с низким коэффициентом. Прозрачность сильно дорожает рендер.
 - Руда должна быть самым ярким тёплым пятном на зимней карте. Проверяем на камере RA2.
 - Цвет команды не нужен: ресурсы нейтральные.
@@ -71,3 +73,4 @@ A tall jagged amber crystal formation like a monolith growing from a small metal
 ## Открытые вопросы
 
 1. Один цвет на тип самоцветов или разные оттенки для разной ценности.
+2. Одна модель для обоих источников или отдельный `gem_source` (см. [README](README.md), вопрос 3).
