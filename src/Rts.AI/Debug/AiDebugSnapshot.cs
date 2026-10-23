@@ -42,7 +42,8 @@ public sealed record AiDebugSnapshot(
     ImmutableArray<ArmySighting> EnemyArmies,
     int EnemyStrength,
     ImmutableArray<CellPos> PossibleEnemyStarts,
-    CellPos? LastEnemyCell)
+    CellPos? LastEnemyCell,
+    ImmutableArray<EnemyPicture> Enemies)
 {
     /// <summary>The snapshot of the bot of <paramref name="context"/> after its last turn.</summary>
     internal static AiDebugSnapshot Of(AiContext context)
@@ -92,7 +93,8 @@ public sealed record AiDebugSnapshot(
             [.. memory.Armies],
             memory.EnemyStrength(view),
             [.. memory.PossibleEnemyStarts],
-            memory.LastEnemyCell);
+            memory.LastEnemyCell,
+            [.. memory.Estimate.Players]);
     }
 
     /// <summary>The lines of the overlay's panel, the building ids of the data as they are.</summary>
@@ -120,6 +122,14 @@ public sealed record AiDebugSnapshot(
 
         Line(text, $"enemy strength {EnemyStrength} · buildings {EnemyBuildings.Length} · armies {EnemyArmies.Length}"
             + $" · last seen {Cell(LastEnemyCell)} · starts left {PossibleEnemyStarts.Length}");
+        foreach (var enemy in Enemies)
+        {
+            // M8 step 6: what the bot makes of the enemy, the units weighted by how fresh they are.
+            var seen = enemy.LastSeenTick / 15;
+            Line(text, $"{enemy.Player}: units {Count(enemy.Units)} (inf {Count(enemy.Infantry)}, veh {Count(enemy.Vehicles)})"
+                + $" · harvesters {Count(enemy.Harvesters)} · refineries {enemy.Refineries} · tech {enemy.TechLevel} · seen {seen / 60}:{seen % 60:00}");
+        }
+
         if (AttackedFrom is { } from)
         {
             Line(text, $"attacked from {Cell(from)}");
@@ -131,4 +141,7 @@ public sealed record AiDebugSnapshot(
     private static string Cell(CellPos? cell) => cell is { } at ? string.Create(CultureInfo.InvariantCulture, $"{at.X},{at.Y}") : "-";
 
     private static void Line(StringBuilder text, string line) => text.Append(line).Append('\n');
+
+    /// <summary>Hundredths of a unit as a whole number, rounded: 250 — 3.</summary>
+    private static int Count(int hundredths) => (hundredths + 50) / 100;
 }

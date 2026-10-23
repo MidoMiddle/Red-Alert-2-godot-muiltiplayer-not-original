@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rts.AI.Profiles;
 using Rts.AI.View;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -19,6 +20,10 @@ namespace Rts.AI.Modules;
 /// all explored, the enemy building the bot has not seen for the longest, older than two minutes. After the last it turns home.</item>
 /// <item>An armed enemy within <see cref="AiSettings.ScoutDangerCells"/> of it makes it run home and drop its errand for a while.</item>
 /// </list>
+/// By the level (M8, 4.6, step 6, <see cref="AiSettings.Scouting"/>): «Easy» has no scout at all — its cheapest fighter stays in a squad;
+/// «Medium» scouts as above; «Hard» keeps its scout out — after a place the next one at once, after the unexplored blocks the field of ore
+/// it has not seen for the longest, then the enemy buildings; «Brutal» looks at the fields far from its own base first — where an enemy
+/// would build a second refinery.
 /// The same order is never given twice: a command the bot gives always changes something.
 /// </summary>
 public sealed class ScoutManager(AiSettings settings) : IAiModule
@@ -34,6 +39,8 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
     /// <summary>The places an outing looks at, one after another, before it turns home.</summary>
     public const int PlacesAnOuting = 4;
 
+    private readonly List<(CellPos Cell, int SeenAt, int Distance)> _fields = new();
+    private int[]? _seenAt;
     private CellPos? _ordered;
     private CellPos? _errand;
     private int _nextOuting;
@@ -47,8 +54,37 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
 
     public void Update(AiContext context)
     {
+        if (settings.Scouting == ScoutingLevel.None)
+        {
+            return;
+        }
+
+        MarkSeen(context.View);
         Scouting(context);
         context.Plan.ScoutErrand = _errand;
+    }
+
+    /// <summary>Notes the tick of every block whose middle is in sight now (step 6): how old the bot's look at a field is.</summary>
+    private void MarkSeen(AiWorldView view)
+    {
+        var size = settings.ScoutBlockCells;
+        var (columns, rows) = ((view.Width + size - 1) / size, (view.Height + size - 1) / size);
+        if (_seenAt is null || _seenAt.Length != columns * rows)
+        {
+            _seenAt = new int[columns * rows];
+            System.Array.Fill(_seenAt, -1);
+        }
+
+        for (var row = 0; row < rows; row++)
+        {
+            for (var column = 0; column < columns; column++)
+            {
+                if (view.IsVisible(new CellPos(column * size + size / 2, row * size + size / 2)))
+                {
+                    _seenAt[row * columns + column] = view.Tick;
+                }
+            }
+        }
     }
 
     private void Scouting(AiContext context)
@@ -85,12 +121,13 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         if (_errand is { } goal && (Distance(here, goal) <= ArrivedCells || view.IsVisible(goal)))
         {
             // There: on to the next place of the outing, or home after the last, and out again in a while.
-            _errand = ++_places < PlacesAnOuting ? NextErrand(context) : null;
+            _errand = settings.Scouting >= ScoutingLevel.Constant || ++_places < PlacesAnOuting ? NextErrand(context) : null;
             _nextOuting = context.Tick + settings.ScoutingInterval;
         }
 
         // With the known ore gone, out at once: a far field is the only income left (step 14).
-        if (_errand is null && (context.Tick >= _nextOuting || !context.Memory.EnemySeen || context.Plan.OreGone))
+        if (_errand is null
+            && (context.Tick >= _nextOuting || !context.Memory.EnemySeen || context.Plan.OreGone || settings.Scouting >= ScoutingLevel.Constant))
         {
             _errand = NextErrand(context);
             _places = 0;
@@ -153,8 +190,8 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
 
     /// <summary>
     /// Where to look next: the middle of the unexplored block nearest the bot's base — or, as often as the level errs, one of the three
-    /// nearest (M8 step 3); with every block explored, the enemy building not seen for the longest, if that is older than
-    /// <see cref="StaleTicks"/>. Null for nowhere.
+    /// nearest (M8 step 3); with every block explored, for «Hard» and «Brutal» the field not seen for the longest (<see cref="Field"/>,
+    /// step 6), then the enemy building not seen for the longest, if that is older than <see cref="StaleTicks"/>. Null for nowhere.
     /// </summary>
     private CellPos? NextErrand(AiContext context)
     {
@@ -183,6 +220,11 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
             return context.Choose(_blocks).Cell;
         }
 
+        if (settings.Scouting >= ScoutingLevel.Constant && Field(context, stale: true) is { } field)
+        {
+            return field;
+        }
+
         RememberedBuilding? stalest = null;
         foreach (var building in memory.Buildings)
         {
@@ -192,7 +234,85 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
             }
         }
 
-        return stalest?.Cell;
+        // A scout that never goes home has always somewhere to be: the field seen longest ago, however lately that was.
+        return stalest?.Cell ?? (settings.Scouting >= ScoutingLevel.Constant ? Field(context, stale: false) : null);
+    }
+
+    /// <summary>
+    /// «Hard» and «Brutal» (step 6): the middle of an explored block with ore, the one seen longest ago — not seen for
+    /// <see cref="StaleTicks"/> when <paramref name="stale"/> — of two as old the nearer the enemy the bot knows of. «Brutal» only the
+    /// fields farther than <see cref="ExpansionBlocks"/> blocks from its own buildings, where an enemy expands, while there are such. Or,
+    /// as often as the level errs, one of the three first. Null for none.
+    /// </summary>
+    private CellPos? Field(AiContext context, bool stale)
+    {
+        var view = context.View;
+        var size = settings.ScoutBlockCells;
+        var columns = (view.Width + size - 1) / size;
+        var enemy = context.Memory.LikelyEnemyCell() ?? new CellPos(view.Width / 2, view.Height / 2);
+        _fields.Clear();
+        for (var y = size / 2; y < view.Height; y += size)
+        {
+            for (var x = size / 2; x < view.Width; x += size)
+            {
+                var middle = new CellPos(x, y);
+                var seenAt = _seenAt![y / size * columns + x / size];
+                if ((stale && seenAt >= 0 && context.Tick - seenAt < StaleTicks) || !HasOre(view, middle, size))
+                {
+                    continue;
+                }
+
+                _fields.Add((middle, seenAt, Distance(middle, enemy)));
+            }
+        }
+
+        if (settings.Scouting == ScoutingLevel.ConstantExpansions && _fields.Exists(field => FarFromBase(view, field.Cell)))
+        {
+            _fields.RemoveAll(field => !FarFromBase(view, field.Cell));
+        }
+
+        if (_fields.Count == 0)
+        {
+            return null;
+        }
+
+        _fields.Sort((a, b) => a.SeenAt != b.SeenAt ? a.SeenAt.CompareTo(b.SeenAt)
+            : a.Distance != b.Distance ? a.Distance.CompareTo(b.Distance)
+            : a.Cell.Y != b.Cell.Y ? a.Cell.Y.CompareTo(b.Cell.Y) : a.Cell.X.CompareTo(b.Cell.X));
+        return context.Choose(_fields).Cell;
+    }
+
+    /// <summary>A field this many blocks from every building of the bot is far from its base: one an enemy may take (step 6).</summary>
+    public const int ExpansionBlocks = 2;
+
+    private bool FarFromBase(AiWorldView view, CellPos cell)
+    {
+        foreach (var building in view.OwnBuildings)
+        {
+            if (Distance(cell, building.Cell) <= ExpansionBlocks * settings.ScoutBlockCells)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>Whether the block of <paramref name="size"/> cells round <paramref name="middle"/> has ore the bot knows of.</summary>
+    private static bool HasOre(AiWorldView view, CellPos middle, int size)
+    {
+        for (var y = middle.Y - size / 2; y < middle.Y + size / 2; y++)
+        {
+            for (var x = middle.X - size / 2; x < middle.X + size / 2; x++)
+            {
+                if (!view.OreAt(new CellPos(x, y)).IsEmpty)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Sends the scout to <paramref name="cell"/>, unless that is where it was sent last and it still goes or stands there.</summary>

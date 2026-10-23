@@ -45,6 +45,9 @@ public sealed class AiMemory
     private int[]? _costs;
     private bool _startsKnown;
 
+    /// <summary>What the bot makes of every enemy from all it has seen (M8 step 6).</summary>
+    public EnemyEstimate Estimate { get; } = new();
+
     /// <summary>The enemy buildings remembered, by id.</summary>
     public IList<RememberedBuilding> Buildings => _buildings.Values;
 
@@ -110,6 +113,7 @@ public sealed class AiMemory
         RememberBuildings(view);
         RememberArmies(view);
         RememberStarts(view);
+        Estimate.Update(view, this);
         EnemySeen |= view.VisibleEnemies.Count > 0;
         foreach (var enemy in view.VisibleEnemies)
         {
