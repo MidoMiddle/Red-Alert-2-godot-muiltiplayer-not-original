@@ -48,6 +48,11 @@ public static class StateHasher
             // Rules v38 (M5 step 10): the tick the player lost the match on.
             hash.Add(player.DefeatedTick.HasValue);
             hash.Add(player.DefeatedTick ?? 0);
+            // Rules v39 (M8 step 2): the bonuses of the player and the hundredths of income it is owed.
+            hash.Add(player.Modifiers.IncomeBonusPercent);
+            hash.Add(player.Modifiers.BuildSpeedBonusPercent);
+            hash.Add(player.Modifiers.RevealMap);
+            hash.Add(player.IncomeCarry);
             for (var category = Rules.ProductionCategory.Infantry; category <= Rules.ProductionCategory.Defense; category++)
             {
                 var queue = player.Queue(category);

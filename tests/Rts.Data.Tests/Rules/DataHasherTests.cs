@@ -185,6 +185,7 @@ public sealed class DataHasherTests
         ("army against infantry", d => d is ArmyDef a ? a with { AgainstInfantry = [] } : d),
         ("army against vehicles", d => d is ArmyDef a ? a with { AgainstVehicles = [] } : d),
         ("difficulty value", d => d is DifficultyDef l ? l with { Values = l.Values.SetItem("min_attack_army", l.Values["min_attack_army"] + 1) } : d),
+        ("difficulty bonus", d => d is DifficultyDef l ? l with { Values = l.Values.SetItem("income_bonus", l.Values["income_bonus"] + 1) } : d),
         ("difficulty choice", d => d is DifficultyDef l ? l with { Values = l.Values.SetItem("micro", l.Values["micro"] + 1) } : d),
         ("personality weight", d => d is PersonalityDef p ? p with { Weights = p.Weights with { Harassment = p.Weights.Harassment + Fixed.Epsilon } } : d),
         ("personality army", d => d is PersonalityDef p ? p with { Armies = [p.Armies[0] with { Army = "other" }] } : d),
@@ -200,8 +201,8 @@ public sealed class DataHasherTests
     {
         // Changes only when the dataset or the encoding of the hash changes; then the replays of earlier data stop matching it.
         // M3 step 6: the adjacent and extends_base of every building joined the encoding; step 8: produces and the economy records;
-        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units; step 8: crusher and crushable; step 10: wall and powered; step 11: the sight of buildings. M5 step 5: the build orders of the bots (the dataset has one now); step 6: their armies (and one in the dataset); step 14: the levels of the bots (and «Medium» in the dataset). M8 step 1: the build order and the army leave the level for the personality (one in the dataset), the levels gain the keys of M8.
-        Assert.Equal(0x5b53f986f59816bdUL, Hash(Files()));
+        // step 10: the harvest keys of units and the dock of buildings; step 12: the radar of buildings; M4 step 1: armor, warheads, projectiles, the weapons in full, and who carries which; step 3: the turn rate of turrets; step 6: the threat of units and buildings; step 7: the stance of units; step 8: crusher and crushable; step 10: wall and powered; step 11: the sight of buildings. M5 step 5: the build orders of the bots (the dataset has one now); step 6: their armies (and one in the dataset); step 14: the levels of the bots (and «Medium» in the dataset). M8 step 1: the build order and the army leave the level for the personality (one in the dataset), the levels gain the keys of M8; step 2: the bonuses of the player in every level.
+        Assert.Equal(0x8b9d9d0980f7aebaUL, Hash(Files()));
     }
 
     [Fact]

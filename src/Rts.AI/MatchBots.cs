@@ -64,20 +64,13 @@ public static class MatchBots
             setup.MapStarts);
 
     /// <summary>The id of «Medium» in the data: ids are shared by all the data, and <c>medium</c> is an armour.</summary>
-    public const string MediumId = "ai_medium";
+    public static readonly string MediumId = DifficultyDef.IdOf(AiDifficulty.Medium);
 
     /// <summary>The personality every bot plays until the skirmish screen offers the choice (M8 steps 8, 13).</summary>
     public const string BalancedId = "balanced";
 
     /// <summary>The id of a level in the data (M8 step 1): <c>ai_easy</c>, <c>ai_medium</c>, <c>ai_hard</c>, <c>ai_brutal</c>.</summary>
-    public static string LevelId(AiDifficulty difficulty) => difficulty switch
-    {
-        AiDifficulty.Easy => "ai_easy",
-        AiDifficulty.Medium => MediumId,
-        AiDifficulty.Hard => "ai_hard",
-        AiDifficulty.Brutal => "ai_brutal",
-        _ => throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, null),
-    };
+    public static string LevelId(AiDifficulty difficulty) => DifficultyDef.IdOf(difficulty);
 
     /// <summary>
     /// The settings of a bot of <paramref name="faction"/> at a level: the level of the data of <paramref name="rules"/> with the build order

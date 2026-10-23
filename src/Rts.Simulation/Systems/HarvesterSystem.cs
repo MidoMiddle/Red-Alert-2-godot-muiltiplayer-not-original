@@ -294,7 +294,7 @@ public static class HarvesterSystem
             case HarvesterMode.Unloading:
                 var amount = IntMath.Min(unit.Archetype.UnloadRate, harvester.Load);
                 harvester.Load -= amount;
-                world.Player(unit.Owner).Credits += amount;
+                Earn(world.Player(unit.Owner), amount);
                 world.Stats.Harvested(unit.Owner, amount);
                 if (harvester.Load == 0)
                 {
@@ -305,6 +305,17 @@ public static class HarvesterSystem
 
                 break;
         }
+    }
+
+    /// <summary>
+    /// The credits of <paramref name="ore"/> unloaded: as much, and the income bonus of the player on top (M8 step 2), its hundredths kept
+    /// until they make a credit.
+    /// </summary>
+    internal static void Earn(PlayerState player, int ore)
+    {
+        var hundredths = ore * (100 + player.Modifiers.IncomeBonusPercent) + player.IncomeCarry;
+        player.Credits += hundredths / 100;
+        player.IncomeCarry = hundredths % 100;
     }
 
     private static void GoToOre(GameWorld world, Unit unit, Harvester harvester, CellPos cell)

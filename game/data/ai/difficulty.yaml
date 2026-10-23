@@ -49,6 +49,11 @@ ai_level:
   threat_clear: 10s
   base_cells: 8
   max_defenses: 3
+  # The bonuses of the player (M8, 4.5): credits above the ore unloaded, faster production at the same cost, the whole map in sight. Only
+  # «Brutal» has them, and the menu names them.
+  income_bonus: 0%
+  build_speed_bonus: 0%
+  reveal_map: no
 
 # Every level below sets the same keys, in this order:
 # - how often the strategist and the squads think, in ticks; how late enemies at the base are noticed;
@@ -120,6 +125,7 @@ ai_hard:
   build_order_quality: optimized
   rebuild_destroyed: priority
 
+# «Brutal» plays as «Hard» does, and with bonuses: ×1.25 income, ×1.2 build speed, the map open (M8, 4.5; tuned by the Arena, step 10).
 ai_brutal:
   kind: difficulty
   inherits: ai_level
@@ -139,3 +145,6 @@ ai_brutal:
   expansion: early
   build_order_quality: optimized
   rebuild_destroyed: priority
+  income_bonus: 25%
+  build_speed_bonus: 20%
+  reveal_map: yes

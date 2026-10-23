@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rts.Simulation.Matches;
 using Rts.Simulation.Rules;
 
 namespace Rts.Simulation.World;
@@ -41,6 +42,15 @@ public sealed class PlayerState
 
     /// <summary>The tick the player lost the match on, or null while they play (M5 step 10). State: hashed.</summary>
     public int? DefeatedTick { get; internal set; }
+
+    /// <summary>The bonuses of the player (M8 step 2): those of the level of its bot, set as the match starts. Hashed.</summary>
+    public PlayerModifiers Modifiers { get; internal set; }
+
+    /// <summary>
+    /// The hundredths of a credit the income bonus has earned and not yet paid (M8 step 2): 25 ore at +25% are 31 credits and 25 hundredths
+    /// kept, so that a thousand ore make 1250 credits exactly. State: hashed.
+    /// </summary>
+    public int IncomeCarry { get; internal set; }
 
     /// <summary>The player's buildings that stand, ready or growing, in id order.</summary>
     public IReadOnlyList<EntityId> Buildings => BuildingList;

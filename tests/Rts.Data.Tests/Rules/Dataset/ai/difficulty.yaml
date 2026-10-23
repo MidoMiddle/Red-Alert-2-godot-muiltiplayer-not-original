@@ -63,3 +63,7 @@ ai_medium:
   expansion: late
   build_order_quality: standard
   rebuild_destroyed: yes
+  # M8, 4.5: no bonuses but those of «Brutal».
+  income_bonus: 0%
+  build_speed_bonus: 0%
+  reveal_map: no

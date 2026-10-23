@@ -15,6 +15,8 @@ namespace Rts.AI.View;
 /// <item>enemies only while its player sees them (<see cref="Vision.Sees"/>);</item>
 /// <item>land and ore only in explored cells; in the shroud a cell counts as enterable, as the units of a person take it;</item>
 /// <item>in the fog a foreign building does not block a cell: what the bot knows of it is in its <see cref="AiMemory"/>.</item>
+/// <item>with the open map of «Brutal» (<see cref="Rts.Simulation.Matches.PlayerModifiers.RevealMap"/>, M8 step 2) every cell is in sight
+/// and every enemy seen.</item>
 /// </list>
 /// The world itself is not reachable from here, nor anything of it that can be changed. Rebuilt on every turn of the bot; the lists are in
 /// the order of the entity ids.
@@ -78,11 +80,14 @@ public sealed class AiWorldView
 
     public bool Contains(CellPos cell) => _world.Map.Contains(cell);
 
-    public CellVisibility StateOf(CellPos cell) => _world.VisionOf(Me).StateAt(cell);
+    /// <summary>Whether the bot's player sees the whole map (M8 step 2).</summary>
+    public bool RevealsMap => Player.Modifiers.RevealMap;
 
-    public bool IsVisible(CellPos cell) => _world.VisionOf(Me).IsVisible(cell);
+    public CellVisibility StateOf(CellPos cell) => RevealsMap && Contains(cell) ? CellVisibility.Visible : _world.VisionOf(Me).StateAt(cell);
 
-    public bool IsExplored(CellPos cell) => _world.VisionOf(Me).IsExplored(cell);
+    public bool IsVisible(CellPos cell) => (RevealsMap && Contains(cell)) || _world.VisionOf(Me).IsVisible(cell);
+
+    public bool IsExplored(CellPos cell) => (RevealsMap && Contains(cell)) || _world.VisionOf(Me).IsExplored(cell);
 
     /// <summary>The land of an explored cell; null in the shroud and off the map.</summary>
     public LandType? LandAt(CellPos cell) => Contains(cell) && IsExplored(cell) ? _world.Map.LandAt(cell) : null;

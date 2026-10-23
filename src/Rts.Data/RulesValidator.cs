@@ -385,8 +385,8 @@ internal static class RulesValidator
         }
 
         /// <summary>
-        /// A level of the bots (M5 step 14, M8 step 1): every period, the actions a second and the squads at once are above zero, no other
-        /// number is below zero, a chance or a share is 100% at most, a squad turns back below a share of its strength under 100%, and
+        /// A level of the bots (M5 step 14, M8 steps 1–2): every period, the actions a second and the squads at once are above zero, no
+        /// other number is below zero, a chance, a share or a bonus is 100% at most, a squad turns back below a share of its strength under 100%, and
         /// every wave is at least as big as the one before. The words of a choice are checked as the file is read.
         /// </summary>
         public void Difficulty(DifficultyDef difficulty)
@@ -404,6 +404,10 @@ internal static class RulesValidator
                 else if (value > 100 && key is "power_reserve" or "counter_shift" or "wounded" or "mistake_chance" or "counter_pick")
                 {
                     Error(difficulty.Id, key, $"'{key}' of '{difficulty.Id}' is a share: 100% at most");
+                }
+                else if (value > 100 && key is "income_bonus" or "build_speed_bonus")
+                {
+                    Error(difficulty.Id, key, $"'{key}' of '{difficulty.Id}' would more than double: 100% at most");
                 }
             }
 

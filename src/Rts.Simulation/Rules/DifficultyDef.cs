@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Rts.Simulation.Matches;
 
 namespace Rts.Simulation.Rules;
 
@@ -49,6 +50,8 @@ public sealed record DifficultyDef : IDefinition
         ("scouting", DifficultyValue.Choice), ("counter_pick", DifficultyValue.Percent), ("first_attack_delay", DifficultyValue.Duration),
         ("parallel_squads", DifficultyValue.Count), ("defend_harvesters", DifficultyValue.Choice), ("expansion", DifficultyValue.Choice),
         ("build_order_quality", DifficultyValue.Choice), ("rebuild_destroyed", DifficultyValue.Choice),
+        // M8, 4.5 (step 2): the bonuses of the player, not of the bot — the simulation gives them at the start of a match.
+        ("income_bonus", DifficultyValue.Percent), ("build_speed_bonus", DifficultyValue.Percent), ("reveal_map", DifficultyValue.Choice),
     ];
 
     /// <summary>The words of every <see cref="DifficultyValue.Choice"/> key, from the weakest bot to the strongest.</summary>
@@ -61,7 +64,18 @@ public sealed record DifficultyDef : IDefinition
             Choice("expansion", "none", "late", "early"),
             Choice("build_order_quality", "simple", "standard", "optimized"),
             Choice("rebuild_destroyed", "partial", "yes", "priority"),
+            Choice("reveal_map", "no", "yes"),
         ]);
+
+    /// <summary>The id of a level in the data (M8 step 1): <c>ai_easy</c>, <c>ai_medium</c>, <c>ai_hard</c>, <c>ai_brutal</c>.</summary>
+    public static string IdOf(AiDifficulty difficulty) => difficulty switch
+    {
+        AiDifficulty.Easy => "ai_easy",
+        AiDifficulty.Medium => "ai_medium",
+        AiDifficulty.Hard => "ai_hard",
+        AiDifficulty.Brutal => "ai_brutal",
+        _ => throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, null),
+    };
 
     public required string Id { get; init; }
 

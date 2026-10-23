@@ -29,13 +29,18 @@ internal sealed class BotMatch
     /// <param name="settings">The settings of the bots, «Medium» of the data by default (the tuning of step 14).</param>
     /// <param name="credits">The credits every player starts with; the default of the match when null.</param>
     /// <param name="noOre">The map without its ore: a match with no income (section 6, «a bot without money»).</param>
+    /// <param name="difficulty">The level of the bot's seat in the setup (M8): its bonuses as a player, and its settings by default.</param>
     public BotMatch(
         string mapId = "frozen-crossing", ulong seed = 3, bool shortGame = false, bool bothBots = false, AiSettings? settings = null,
-        int? credits = null, bool noOre = false)
+        int? credits = null, bool noOre = false, AiDifficulty difficulty = AiDifficulty.Medium)
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(GameDataFiles.Folder, "maps", mapId + ".rtsmap")));
         Setup = MatchSetups.OneOnOne(map, GameDataFiles.Rules.DefaultFaction.Id, seed);
-        Setup = Setup with { Options = Setup.Options with { ShortGame = shortGame, StartingCredits = credits ?? Setup.Options.StartingCredits } };
+        Setup = Setup with
+        {
+            Options = Setup.Options with { ShortGame = shortGame, StartingCredits = credits ?? Setup.Options.StartingCredits },
+            Players = [.. Setup.Players.Select(player => player.Kind == PlayerKind.Ai ? player with { Difficulty = difficulty } : player)],
+        };
         var grid = map.ToMapGrid();
         if (noOre)
         {

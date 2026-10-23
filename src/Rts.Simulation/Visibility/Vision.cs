@@ -6,13 +6,14 @@ namespace Rts.Simulation.Visibility;
 /// What a player sees (docs/implementation/M4_combat.md, 4.12, 4.14): its own units and buildings always; another's unit while the cell
 /// it stands on is visible to the player or one of its allies; another's building while one cell of its footprint is. Only what is in
 /// sight now counts, not what was seen before (owner's decision, M4 step 11). An order to attack what its player does not see is
-/// dropped, so orders cannot be a map hack; the choice of targets takes only what its owner sees.
+/// dropped, so orders cannot be a map hack; the choice of targets takes only what its owner sees. A player with
+/// <see cref="Matches.PlayerModifiers.RevealMap"/> — «Brutal», named in the menu — sees everything (M8 step 2); its allies do not.
 /// </summary>
 public static class Vision
 {
     public static bool Sees(GameWorld world, PlayerId player, Entity entity)
     {
-        if (entity.Owner == player)
+        if (entity.Owner == player || (!player.IsNeutral && world.Player(player).Modifiers.RevealMap))
         {
             return true;
         }

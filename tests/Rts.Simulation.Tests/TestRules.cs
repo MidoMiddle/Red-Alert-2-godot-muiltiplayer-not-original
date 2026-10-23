@@ -249,7 +249,7 @@ internal static class TestRules
         });
         // «Medium» of game/data/ai/difficulty.yaml (M5 step 14, M8 step 1): periods and counts, percentages as whole percent, durations in
         // ticks, a choice by the place of its word.
-        builder.Add(new DifficultyDef
+        var medium = new DifficultyDef
         {
             Id = "ai_medium",
             Values = new Dictionary<string, int>
@@ -266,7 +266,16 @@ internal static class TestRules
                 ["actions_per_second"] = 3, ["mistake_chance"] = 10, ["micro"] = 1, ["scouting"] = 1, ["counter_pick"] = 30,
                 ["first_attack_delay"] = 5400, ["parallel_squads"] = 2, ["defend_harvesters"] = 1, ["expansion"] = 1,
                 ["build_order_quality"] = 1, ["rebuild_destroyed"] = 1,
+                ["income_bonus"] = 0, ["build_speed_bonus"] = 0, ["reveal_map"] = 0,
             }.ToImmutableSortedDictionary(StringComparer.Ordinal),
+        };
+        builder.Add(medium);
+        // «Brutal» for the bonuses of the player (M8 step 2): «Medium» with the bonuses of game/data — ×1.25 income, ×1.2 build speed, the
+        // map open.
+        builder.Add(medium with
+        {
+            Id = "ai_brutal",
+            Values = medium.Values.SetItem("income_bonus", 25).SetItem("build_speed_bonus", 20).SetItem("reveal_map", 1),
         });
         // «Balanced» of game/data/ai/personalities (M8 step 1): the build order and the army above for every quality.
         builder.Add(new PersonalityDef

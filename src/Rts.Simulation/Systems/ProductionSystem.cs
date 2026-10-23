@@ -68,7 +68,7 @@ public static class ProductionSystem
         }
     }
 
-    /// <summary>The speed of production in per mille: <c>1000 × power × factories</c>.</summary>
+    /// <summary>The speed of production in per mille: <c>1000 × power × factories</c>, and the build speed bonus of the player on top (M8 step 2).</summary>
     public static int RatePermille(GameWorld world, PlayerState player, int factories)
     {
         var economy = world.Rules.Economy;
@@ -80,7 +80,7 @@ public static class ProductionSystem
         }
 
         var factory = IntMath.Min(Permille(economy.MaxFactoryRate), 1000 + Permille(economy.MultipleFactoryBonus) * (factories - 1));
-        return (int)((long)power * factory / 1000);
+        return (int)((long)power * factory * (100 + player.Modifiers.BuildSpeedBonusPercent) / 100_000);
     }
 
     /// <summary>One tick of progress and its payment; false when the player cannot pay it, and the item waits.</summary>

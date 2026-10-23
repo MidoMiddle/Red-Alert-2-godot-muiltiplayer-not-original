@@ -1,4 +1,5 @@
 using Rts.Simulation.Map;
+using Rts.Simulation.Matches;
 using Rts.Simulation.Tests;
 using Rts.Simulation.World;
 
@@ -46,8 +47,8 @@ public sealed class GameDataTests
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities).
-        Assert.Equal(0x8c7eb50f5a4c4cd1UL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level.
+        Assert.Equal(0xb5233d371a029e59UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -58,6 +59,10 @@ public sealed class GameDataTests
 
         Assert.Equal(["ai_brutal", "ai_easy", "ai_hard", "ai_medium"], database.Difficulties.Select(level => level.Id));
         Assert.Equal(["aggressor", "balanced", "builder", "saboteur"], database.Personalities.Select(personality => personality.Id));
+        // M8 step 2, 4.5: only «Brutal» has the bonuses of the player — ×1.25 income, ×1.2 build speed, the map open.
+        Assert.Equal(
+            [("ai_brutal", new PlayerModifiers(25, 20, true)), ("ai_easy", default), ("ai_hard", default), ("ai_medium", default)],
+            database.Difficulties.Select(level => (level.Id, PlayerModifiers.Of(level))));
         Assert.All(database.Personalities, personality =>
         {
             Assert.Equal("union", Assert.Single(personality.Armies).Faction);

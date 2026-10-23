@@ -282,6 +282,7 @@ public sealed class StateHasherTests
     [InlineData(typeof(PlayerState), new[]
     {
         "<Credits>k__BackingField", "_queues", "<LastUnderAttack>k__BackingField", "<DefeatedTick>k__BackingField",
+        "<Modifiers>k__BackingField", "<IncomeCarry>k__BackingField",
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField",
         // Derived from the buildings by PowerSystem and TechTree (M3 step 5).
