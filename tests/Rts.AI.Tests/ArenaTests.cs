@@ -58,6 +58,29 @@ public sealed class ArenaTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void Bot_against_bot_gives_the_same_checksum_on_every_tick_twice()
+    {
+        // Section 6, «determinism»: two runs with one seed, the sum of every tick the same.
+        List<ulong> Run()
+        {
+            var match = new BotMatch("frozen-crossing", seed: 3, bothBots: true);
+            var sums = new List<ulong>();
+            while (match.Simulation.CurrentTick < 12 * 900)
+            {
+                match.Step();
+                sums.Add(match.Simulation.LastChecksum!.Value.Value);
+            }
+
+            return sums;
+        }
+
+        var first = Run();
+
+        Assert.Equal(12 * 900, first.Count);
+        Assert.Equal(first, Run());
+    }
+
+    [Fact]
     [Trait("Category", "Arena")]
     public void Twenty_matches_of_bot_against_bot_up_to_forty_minutes_give_no_error_and_no_refused_command()
     {
