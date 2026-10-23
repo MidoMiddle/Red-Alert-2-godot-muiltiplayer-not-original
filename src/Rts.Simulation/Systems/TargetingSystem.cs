@@ -104,6 +104,9 @@ public static class TargetingSystem
     /// </summary>
     public static bool CanHurt(GameRules rules, UnitType type, Entity target) => BestShare(rules, rules.WeaponsOf(type), target) > 0;
 
+    /// <summary>The share in percent of the damage a unit of <paramref name="type"/> does to <paramref name="target"/> with its best weapon (the bots, M8 step 5).</summary>
+    public static int ShareAgainst(GameRules rules, UnitType type, Entity target) => BestShare(rules, rules.WeaponsOf(type), target);
+
     /// <summary>
     /// The best share in percent of the weapons that hit ground against the candidate's armor; 0 when none can hurt it.
     /// </summary>

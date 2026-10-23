@@ -214,4 +214,10 @@ public sealed record AiSettings
     public BuildOrderQuality Quality { get; init; } = BuildOrderQuality.Standard;
 
     public RebuildLevel Rebuild { get; init; } = RebuildLevel.Yes;
+
+    /// <summary>
+    /// A fighting squad turns back when its strength falls below this share of the enemy's near it, in percent (M8, 4.4, step 5) — from
+    /// <c>Medium</c> on. The personality's <c>retreat_threshold</c> (<see cref="AiProfile"/>); 70 — «Balanced».
+    /// </summary>
+    public int RetreatThresholdPercent { get; init; } = 70;
 }

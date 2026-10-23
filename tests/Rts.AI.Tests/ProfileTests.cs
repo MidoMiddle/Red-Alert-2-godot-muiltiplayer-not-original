@@ -99,6 +99,16 @@ public sealed class ProfileTests
         Assert.Throws<ArgumentException>(() => AiProfile.Of(Level("ai_hard"), personality, "soviet"));
     }
 
+    [Theory]
+    [InlineData("balanced", 70)]
+    [InlineData("aggressor", 60)]
+    [InlineData("builder", 80)]
+    public void A_squad_turns_back_by_the_threshold_of_its_personality(string personality, int percent)
+    {
+        // M8 step 5: the trade a squad gives up on is the personality's, not the level's.
+        Assert.Equal(percent, AiProfile.Of(Level("ai_hard"), Personality(personality), "union").Settings.RetreatThresholdPercent);
+    }
+
     [Fact]
     public void A_personality_reads_as_the_bot_needs_it()
     {

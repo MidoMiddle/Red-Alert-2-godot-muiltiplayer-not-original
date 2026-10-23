@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rts.AI.Profiles;
 using Rts.AI.Squads;
 using Rts.AI.View;
 using Rts.Simulation.Commands;
@@ -25,8 +26,11 @@ namespace Rts.AI.Modules;
 /// memory — refineries, defenses, factories, the construction yard, the rest, the nearest of the first kind there is — else where
 /// the enemy was last seen or may be; unarmed enemy units near it — harvesters, an MCV — and the target building in sight are
 /// attacked;</item>
-/// <item><b>fighting</b> — while an armed enemy is near: every unit that can hurt the nearest one fires at it, the wounded fall back
-/// behind the squad;</item>
+/// <item><b>fighting</b> — while an armed enemy is near, by the micro of the level (M8, 4.4, step 5, <see cref="AiSettings.Micro"/>):
+/// «Easy» attack-moves at the nearest and lets its units choose; from «Medium» on every unit that can hurt it fires at the enemy the squad
+/// kills soonest (<see cref="Focus"/>); «Hard» also pulls the wounded back behind the squad; «Brutal» also keeps a longer-ranged unit out of
+/// the reach of what it fights (<see cref="KeepRange"/>). From «Medium» on a squad that loses the trade — weaker than
+/// <see cref="AiSettings.RetreatThresholdPercent"/> of the enemy near it — turns back, «Brutal» to a defense of its own;</item>
 /// <item><b>defending</b> — called back by <see cref="DefenseManager"/> (<see cref="Squad.Recalled"/>): it goes for the threat at the
 /// base and fights it; the squad at home does the same while there is a threat (<see cref="AiPlan.Threat"/>), and does not set out;
 /// once the base is safe the squads called back go home;</item>
@@ -52,6 +56,12 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     /// <summary>How far behind the middle of the squad a wounded unit falls back, in cells.</summary>
     public const int BehindCells = 3;
 
+    /// <summary>How far a unit of «Brutal» steps back from an enemy it outranges, in cells (M8 step 5).</summary>
+    public const int KiteCells = 2;
+
+    /// <summary>The enemies this much beyond <see cref="AiSettings.EngageCells"/> count in the trade of a fight too, in cells (step 5).</summary>
+    public const int TradeCells = 4;
+
     private enum OrderKind
     {
         Move,
@@ -67,6 +77,8 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
     private readonly List<Unit> _members = new();
     private readonly List<EntityId> _batch = new();
     private readonly List<(RememberedBuilding Building, int Rank, int Distance)> _targets = new();
+    private readonly List<(Entity Enemy, long Kill, int Distance)> _foes = new();
+    private readonly HashSet<int> _kiting = new();
     private int _formed;
     private int _waves;
 
@@ -293,6 +305,13 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
 
         if (Nearest(context, centre, armed: true) is { } enemy)
         {
+            if (settings.Micro != MicroLevel.None && Losing(context, squad, centre))
+            {
+                (squad.State, squad.Beaten) = (SquadState.Retreating, true);
+                squad.RetreatPoint = settings.Micro == MicroLevel.KeepRange ? NearestDefense(context.View, centre) : null;
+                return;
+            }
+
             squad.State = SquadState.Fighting;
             Fight(context, enemy, centre, gather ?? centre);
             return;
@@ -346,22 +365,213 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         }
     }
 
-    /// <summary>Every unit that can hurt <paramref name="focus"/> fires at it; the wounded fall back behind the squad, once.</summary>
-    private void Fight(AiContext context, Entity focus, CellPos centre, CellPos home)
+    /// <summary>
+    /// A fight by the micro of the level (step 5): «Easy» attack-moves at <paramref name="nearest"/>; else every unit that can hurt it fires
+    /// at the enemy of <see cref="Focus"/>; «Hard» and «Brutal» pull the wounded back behind the squad, once; «Brutal» keeps its
+    /// longer-ranged units out of reach (<see cref="KeepRange"/>), and they fire again on its next turn.
+    /// </summary>
+    private void Fight(AiContext context, Entity nearest, CellPos centre, CellPos home)
     {
-        var behind = Toward(centre, home, BehindCells);
-        _batch.Clear();
-        foreach (var unit in _members)
+        if (settings.Micro == MicroLevel.None)
         {
-            if (unit.Hp * 100 < unit.MaxHp * settings.WoundedPercent && _fellBack.Add(unit.Id.Value))
+            _batch.Clear();
+            AttackMoveAll(context, CellOf(nearest));
+            return;
+        }
+
+        var focus = Focus(context, centre) ?? nearest;
+        if (settings.Micro >= MicroLevel.RetreatWounded)
+        {
+            var behind = Toward(centre, home, BehindCells);
+            _batch.Clear();
+            foreach (var unit in _members)
             {
-                Want(unit, OrderKind.Move, behind, default);
+                if (unit.Hp * 100 < unit.MaxHp * settings.WoundedPercent && _fellBack.Add(unit.Id.Value))
+                {
+                    Want(unit, OrderKind.Move, behind, default);
+                }
+            }
+
+            Issue(context, OrderKind.Move, behind, default);
+        }
+
+        _kiting.Clear();
+        if (settings.Micro == MicroLevel.KeepRange)
+        {
+            KeepRange(context, centre);
+        }
+
+        Strike(context, focus, wounded: false);
+        _kiting.Clear();
+    }
+
+    /// <summary>
+    /// The armed enemy in <see cref="AiSettings.EngageCells"/> the squad kills soonest — its hit points over the shares of damage the
+    /// squad does to its armor, Σ <see cref="TargetingSystem.ShareAgainst"/> — or, as often as the level errs, one of the three first;
+    /// of two as soon, the nearer, then the older. Null when none of them can be hurt.
+    /// </summary>
+    private Entity? Focus(AiContext context, CellPos centre)
+    {
+        var rules = context.View.Rules;
+        _foes.Clear();
+        foreach (var enemy in context.View.VisibleEnemies)
+        {
+            if (!Armed(enemy) || Distance(centre, CellOf(enemy)) > settings.EngageCells)
+            {
+                continue;
+            }
+
+            var shares = 0L;
+            foreach (var unit in _members)
+            {
+                shares += TargetingSystem.ShareAgainst(rules, unit.Type, enemy);
+            }
+
+            if (shares > 0)
+            {
+                _foes.Add((enemy, HpOf(enemy) * 100L * 1000 / shares, Distance(centre, CellOf(enemy))));
             }
         }
 
-        Issue(context, OrderKind.Move, behind, default);
-        Strike(context, focus, wounded: false);
+        if (_foes.Count == 0)
+        {
+            return null;
+        }
+
+        _foes.Sort((a, b) => a.Kill != b.Kill ? a.Kill.CompareTo(b.Kill)
+            : a.Distance != b.Distance ? a.Distance.CompareTo(b.Distance) : a.Enemy.Id.Value.CompareTo(b.Enemy.Id.Value));
+        return context.Choose(_foes).Enemy;
     }
+
+    /// <summary>
+    /// «Brutal» (step 5): a unit whose best weapon outranges by a cell or more the nearest armed enemy that can hurt it steps
+    /// <see cref="KiteCells"/> back from it while that enemy is nearer than its own range less a cell — out of the enemy's reach, still in
+    /// its own. It does not fire on this turn.
+    /// </summary>
+    private void KeepRange(AiContext context, CellPos centre)
+    {
+        var view = context.View;
+        foreach (var unit in _members)
+        {
+            if (_fellBack.Contains(unit.Id.Value))
+            {
+                continue;
+            }
+
+            var cell = unit.Position.ToCell();
+            var reach = RangeOf(view.Rules, view.Rules.WeaponsOf(unit.Type));
+            Entity? threat = null;
+            var (threatDistance, threatReach) = (int.MaxValue, Fixed.Zero);
+            foreach (var enemy in view.VisibleEnemies)
+            {
+                var distance = Distance(cell, CellOf(enemy));
+                if (!Armed(enemy) || distance >= threatDistance || !Hurts(view.Rules, enemy, unit))
+                {
+                    continue;
+                }
+
+                (threat, threatDistance, threatReach) = (enemy, distance, RangeOf(view.Rules, WeaponsOf(view.Rules, enemy)));
+            }
+
+            if (threat is not null && reach >= threatReach + Fixed.One && Fixed.FromInt(threatDistance) < reach - Fixed.One)
+            {
+                var from = CellOf(threat);
+                var away = new CellPos(cell.X + (cell.X - from.X), cell.Y + (cell.Y - from.Y));
+                var back = Toward(cell, away, KiteCells);
+                _batch.Clear();
+                Want(unit, OrderKind.Move, back, default);
+                Issue(context, OrderKind.Move, back, default);
+                _kiting.Add(unit.Id.Value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Whether the squad loses the trade (step 5): its strength below <see cref="AiSettings.RetreatThresholdPercent"/> of the armed enemies
+    /// within <see cref="AiSettings.EngageCells"/> + <see cref="TradeCells"/> of its middle — units by their cost and hit points, defenses
+    /// by theirs.
+    /// </summary>
+    private bool Losing(AiContext context, Squad squad, CellPos centre)
+    {
+        var database = context.View.Rules.Database;
+        var enemies = 0L;
+        foreach (var enemy in context.View.VisibleEnemies)
+        {
+            if (!Armed(enemy) || Distance(centre, CellOf(enemy)) > settings.EngageCells + TradeCells)
+            {
+                continue;
+            }
+
+            enemies += enemy switch
+            {
+                Unit unit => context.Memory.StrengthOf(unit),
+                Building building when database.Buildings[building.DefIndex].Hp > 0 =>
+                    (long)database.Buildings[building.DefIndex].Cost * building.Hp / database.Buildings[building.DefIndex].Hp,
+                _ => 0,
+            };
+        }
+
+        return (long)squad.Strength * 100 < enemies * settings.RetreatThresholdPercent;
+    }
+
+    /// <summary>The bot's own defense — a building with a weapon — nearest <paramref name="centre"/>; null without one.</summary>
+    private static CellPos? NearestDefense(Rts.AI.View.AiWorldView view, CellPos centre)
+    {
+        CellPos? best = null;
+        foreach (var building in view.OwnBuildings)
+        {
+            if (building.Weapons.Length > 0 && (best is null || Distance(centre, building.Cell) < Distance(centre, best.Value)))
+            {
+                best = building.Cell;
+            }
+        }
+
+        return best;
+    }
+
+    private static bool Armed(Entity entity) => entity switch
+    {
+        Unit unit => unit.Archetype.Armed,
+        Building building => building.Weapons.Length > 0,
+        _ => false,
+    };
+
+    private static System.Collections.Immutable.ImmutableArray<int> WeaponsOf(GameRules rules, Entity entity) => entity switch
+    {
+        Unit unit => rules.WeaponsOf(unit.Type),
+        Building { DefIndex: >= 0 } building => rules.WeaponsOfBuilding(building.DefIndex),
+        _ => [],
+    };
+
+    private static bool Hurts(GameRules rules, Entity enemy, Unit unit) => enemy switch
+    {
+        Unit attacker => TargetingSystem.CanHurt(rules, attacker.Type, unit),
+        _ => true,
+    };
+
+    /// <summary>The longest range of <paramref name="weapons"/>, in cells.</summary>
+    private static Fixed RangeOf(GameRules rules, System.Collections.Immutable.ImmutableArray<int> weapons)
+    {
+        var longest = Fixed.Zero;
+        foreach (var index in weapons)
+        {
+            if (index >= 0 && rules.Database.Weapons[index].Range > longest)
+            {
+                longest = rules.Database.Weapons[index].Range;
+            }
+        }
+
+        return longest;
+    }
+
+    private static int HpOf(Entity entity) => entity switch
+    {
+        Unit unit => unit.Hp,
+        Building building => building.Hp,
+        _ => 0,
+    };
+
+    private static CellPos CellOf(Entity entity) => entity is Building building ? building.Cell : ((Unit)entity).Position.ToCell();
 
     /// <summary>
     /// A moving squad: waits for its laggards; else attacks an unarmed enemy unit near it — a harvester, an MCV — or its target
@@ -404,10 +614,10 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         AttackMoveAll(context, squad.TargetCell!.Value);
     }
 
-    /// <summary>A beaten squad, or one done: a plain move to the gathering point. True once it is there.</summary>
+    /// <summary>A beaten squad, or one done: a plain move to the gathering point — «Brutal» to its defense (step 5). True once it is there.</summary>
     private bool Retreat(AiContext context, Squad squad, CellPos? gather)
     {
-        if (gather is not { } point)
+        if ((squad.RetreatPoint ?? gather) is not { } point)
         {
             return true;
         }
@@ -546,7 +756,7 @@ public sealed class SquadManager(AiSettings settings) : IAiModule
         _batch.Clear();
         foreach (var unit in _members)
         {
-            if ((wounded || !_fellBack.Contains(unit.Id.Value)) && TargetingSystem.CanHurt(rules, unit.Type, target))
+            if ((wounded || !_fellBack.Contains(unit.Id.Value)) && !_kiting.Contains(unit.Id.Value) && TargetingSystem.CanHurt(rules, unit.Type, target))
             {
                 Want(unit, OrderKind.Attack, cell, target.Id);
             }

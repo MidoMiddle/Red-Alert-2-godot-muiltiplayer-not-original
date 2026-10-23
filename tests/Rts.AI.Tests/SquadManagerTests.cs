@@ -41,13 +41,13 @@ public sealed class SquadManagerTests
     }
 
     /// <summary>Two tanks at the gathering point that set out on the first turn; the scene, the squads, the context.</summary>
-    private static (Scene Scene, SquadManager Squads, AiContext Context, Unit A, Unit B) SetOut()
+    private static (Scene Scene, SquadManager Squads, AiContext Context, Unit A, Unit B) SetOut(AiSettings? settings = null)
     {
         var scene = new Scene();
         var a = scene.Spawn(Scene.Me, UnitType.HeavyTank, 14, 14);
         var b = scene.Spawn(Scene.Me, UnitType.HeavyTank, 15, 14);
         var context = scene.Context();
-        var squads = new SquadManager(Small);
+        var squads = new SquadManager(settings ?? Small);
         Turn(scene, squads, context, 0);
         Assert.Equal(SquadState.Moving, context.Plan.Squads.Single().State);
         return (scene, squads, context, a, b);
@@ -247,23 +247,25 @@ public sealed class SquadManagerTests
     }
 
     [Fact]
-    public void In_a_fight_it_fires_at_the_nearest_armed_enemy_and_the_wounded_fall_back()
+    public void In_a_fight_of_hard_it_fires_at_the_enemy_it_kills_soonest_and_the_wounded_fall_back()
     {
-        var (scene, squads, context, a, b) = SetOut();
-        Unit? near = null;
+        // The micro of «Hard» (M8 step 5): tank shells kill the enemy tank sooner than the nearer conscript, which they barely scratch.
+        // The trade is not what this scene is about: with one tank wounded the squad would turn back (MicroTests).
+        var (scene, squads, context, a, b) = SetOut(Small with { Micro = Rts.AI.Profiles.MicroLevel.RetreatWounded, RetreatThresholdPercent = 0 });
+        Unit? tank = null;
 
         var commands = Turn(scene, squads, context, 15, () =>
         {
             Scene.Move(a, 24, 24);
             Scene.Move(b, 24, 25);
-            scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 31, 24);
-            near = scene.Spawn(Scene.Enemy, UnitType.Conscript, 28, 24);
+            tank = scene.Spawn(Scene.Enemy, UnitType.HeavyTank, 31, 24);
+            scene.Spawn(Scene.Enemy, UnitType.Conscript, 28, 24);
             b.Hp = b.MaxHp / 4;
         });
 
         Assert.Equal(SquadState.Fighting, context.Plan.Squads.Single().State);
         var attack = Assert.Single(commands.OfType<AttackCommand>());
-        Assert.Equal(near!.Id, attack.Target);
+        Assert.Equal(tank!.Id, attack.Target);
         Assert.Equal([a.Id], attack.Units.AsEnumerable());
         // The wounded one three cells back from the middle, toward home.
         var back = Assert.Single(commands.OfType<MoveCommand>());

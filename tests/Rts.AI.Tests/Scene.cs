@@ -30,9 +30,12 @@ internal sealed class Scene
     private AiContext? _last;
 
     /// <param name="perceptionDelay">How late the bot notices an enemy (M8 step 3): none unless a test is about it.</param>
-    public Scene(ImmutableArray<CellPos> mapStarts = default, int perceptionDelay = 0)
+    /// <param name="rules">The rules of the scene: those of the simulation tests unless a scene needs the game's — its costs, its weapons.</param>
+    public Scene(ImmutableArray<CellPos> mapStarts = default, int perceptionDelay = 0, Rts.Simulation.Rules.GameRules? rules = null)
     {
-        Simulation = new GameSimulation(new SimulationSettings(1, new MapGrid(64, 64)), TestRules.Standard);
+        Simulation = rules is null
+            ? new GameSimulation(new SimulationSettings(1, new MapGrid(64, 64)), TestRules.Standard)
+            : new GameSimulation(new SimulationSettings(1, new MapGrid(64, 64, rules.Land)), rules);
         var starts = mapStarts.IsDefault ? Corners : mapStarts;
         View = new AiWorldView(World, Me, starts[0], starts, perceptionDelay);
         Memory = new AiMemory();
