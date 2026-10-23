@@ -7,7 +7,8 @@ namespace Rts.Client.Terrain;
 
 /// <summary>
 /// Symbolic map objects on the ground (docs/implementation/conventions.md, section 12; M7_maps.md, 4.7): a dark green cone on
-/// a trunk for a tree and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a tall
+/// a trunk for a tree and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a low steel
+/// block for an anti-tank hedgehog, a thin dark pipe for a pipeline, a tall
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
 /// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell. One MultiMesh
 /// per shape (and per direction for bridges). Rebuilt whenever the map changes (a tree felled, a bridge blown up), which is rare.
@@ -49,6 +50,8 @@ public partial class MapObjects : Node3D
         var walls = new List<Vector3>();
         var posts = new List<Vector3>();
         var rocks = new List<Vector3>();
+        var hedgehogs = new List<Vector3>();
+        var pipes = new List<Vector3>();
         for (var y = 0; y < _map.Height; y++)
         {
             for (var x = 0; x < _map.Width; x++)
@@ -69,9 +72,16 @@ public partial class MapObjects : Node3D
                 (MapObjectKind.PineTree, true) => stumps,
                 (MapObjectKind.Boulder, _) => boulders,
                 (MapObjectKind.FenceWood, false) => fences,
+                (MapObjectKind.FenceWood, true) => null,
                 (MapObjectKind.WallStone, false) => walls,
+                (MapObjectKind.WallStone, true) => null,
                 (MapObjectKind.LampPost, false) => posts,
-                _ => null,
+                (MapObjectKind.LampPost, true) => null,
+                (MapObjectKind.AntiTankHedgehog, false) => hedgehogs,
+                (MapObjectKind.AntiTankHedgehog, true) => null,
+                (MapObjectKind.Pipeline, false) => pipes,
+                (MapObjectKind.Pipeline, true) => null,
+                _ => throw new System.ArgumentOutOfRangeException(nameof(mapObject), mapObject.Kind, "No symbolic look for this kind."),
             };
             list?.Add(at);
         }
@@ -90,6 +100,8 @@ public partial class MapObjects : Node3D
         AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f);
         AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f);
         AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
+        AddInstances("Hedgehogs", new BoxMesh { Size = new Vector3(0.9f, 0.3f, 0.9f) }, new Color(0.3f, 0.31f, 0.34f), hedgehogs, 0.15f);
+        AddInstances("Pipes", new BoxMesh { Size = new Vector3(0.98f, 0.12f, 0.12f) }, new Color(0.22f, 0.25f, 0.28f), pipes, 0.06f);
     }
 
     /// <summary>The deck of a standing segment lies flat just above the water, so units on it seem to drive on the planks.</summary>

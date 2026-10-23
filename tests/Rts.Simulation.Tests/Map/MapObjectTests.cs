@@ -223,4 +223,52 @@ public sealed class MapObjectTests
         Assert.Equal(6, map.Objects.Count(o => o.Kind == MapObjectKind.LampPost));
         Assert.Equal(Enumerable.Range(1, map.Objects.Count), map.Objects.Select(o => o.Id));
     }
+
+    [Fact]
+    public void An_anti_tank_hedgehog_stops_tracks_and_wheels_and_nothing_else()
+    {
+        var world = Walled(MapObjectKind.AntiTankHedgehog);
+        var gap = new CellPos(8, 4);
+        var open = new CellPos(2, 4);
+
+        Assert.True(world.Map.CanEnter(gap, Locomotor.Foot));
+        Assert.False(world.Map.CanEnter(gap, Locomotor.Track));
+        Assert.False(world.Map.CanEnter(gap, Locomotor.Wheel));
+        Assert.Equal(world.Map.CanEnter(open, Locomotor.Hover), world.Map.CanEnter(gap, Locomotor.Hover));
+        Assert.Equal(world.Map.CanEnter(open, Locomotor.Amphibious), world.Map.CanEnter(gap, Locomotor.Amphibious));
+    }
+
+    [Fact]
+    public void A_pipeline_stops_tracks_and_wheels_and_opens_at_one_shot()
+    {
+        var world = Walled(MapObjectKind.Pipeline);
+        var gap = new CellPos(8, 4);
+        var pipe = world.Map.ObjectsAt(gap).Single();
+
+        Assert.True(world.Map.CanEnter(gap, Locomotor.Foot));
+        Assert.False(world.Map.CanEnter(gap, Locomotor.Track));
+        Assert.False(world.Map.CanEnter(gap, Locomotor.Wheel));
+
+        Assert.True(CommandProcessor.Apply(world, new DamageMapObjectCommand(Blue, 0, 0, gap, 50), new List<SimEvent>()));
+
+        Assert.True(pipe.Destroyed);
+        Assert.True(world.Map.CanEnter(gap, Locomotor.Track));
+        Assert.True(world.Map.CanEnter(gap, Locomotor.Wheel));
+    }
+
+    [Fact]
+    public void A_hedgehog_opens_when_its_400_hit_points_are_gone()
+    {
+        var world = Walled(MapObjectKind.AntiTankHedgehog);
+        var gap = new CellPos(8, 4);
+        var hedgehog = world.Map.ObjectsAt(gap).Single();
+
+        Assert.True(CommandProcessor.Apply(world, new DamageMapObjectCommand(Blue, 0, 0, gap, 399), new List<SimEvent>()));
+        Assert.False(hedgehog.Destroyed);
+        Assert.False(world.Map.CanEnter(gap, Locomotor.Track));
+
+        Assert.True(CommandProcessor.Apply(world, new DamageMapObjectCommand(Blue, 0, 1, gap, 1), new List<SimEvent>()));
+        Assert.True(hedgehog.Destroyed);
+        Assert.True(world.Map.CanEnter(gap, Locomotor.Track));
+    }
 }

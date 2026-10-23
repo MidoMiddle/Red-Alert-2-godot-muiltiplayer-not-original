@@ -1,0 +1,21 @@
+// Showcase of the element kinds of docs/elements_data: one line of each new kind on flat clear ground.
+// Codes: . clear
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . .
+// Obstacles: an anti-tank hedgehog line and a pipe line (docs/obstacle_elements/02, docs/industrial_elements/04).
+object anti_tank_hedgehog 4 3
+object anti_tank_hedgehog 4 4
+object anti_tank_hedgehog 4 5
+object pipeline 10 3
+object pipeline 11 3
+object pipeline 12 3

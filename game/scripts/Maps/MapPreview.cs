@@ -98,6 +98,7 @@ public static class MapPreview
                 case MapObjectKind.Boulder or MapObjectKind.WallStone:
                     return Stone;
                 case MapObjectKind.FenceWood:
+                case MapObjectKind.AntiTankHedgehog or MapObjectKind.Pipeline:
                     return Fence;
             }
         }
