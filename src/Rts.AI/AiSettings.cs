@@ -37,7 +37,6 @@ public sealed record AiSettings
             PowerReservePercent = values["power_reserve"],
             DangerCells = values["danger_cells"],
             SecondFactoryCredits = values["second_factory_credits"],
-            CounterShiftPercent = values["counter_shift"],
             ScoutingInterval = values["scouting_interval"],
             ScoutBlockCells = values["scout_block_cells"],
             ScoutDangerCells = values["scout_danger_cells"],
@@ -107,12 +106,6 @@ public sealed record AiSettings
 
     /// <summary>The army the bot builds, an <c>army</c> of the data for its faction (4.7, step 6).</summary>
     public string Army { get; init; } = "standard_army";
-
-    /// <summary>
-    /// How many percentage points of the army move to the counters when the enemy seen is mostly infantry or mostly vehicles — the
-    /// coarse counter of «Medium» (4.6, M8's <c>counterComposition: coarse</c>).
-    /// </summary>
-    public int CounterShiftPercent { get; init; } = 20;
 
     /// <summary>How often the scout goes out once the enemy has been found: 3 minutes, as «Medium» of M8.</summary>
     public int ScoutingInterval { get; init; } = 2700;
@@ -196,7 +189,10 @@ public sealed record AiSettings
 
     public ScoutingLevel Scouting { get; init; } = ScoutingLevel.Periodic;
 
-    /// <summary>The share of the army, in percent, picked against what the enemy fields (4.6, <c>counterPick</c>).</summary>
+    /// <summary>
+    /// The share of the army, in percent, picked against what the enemy fields (4.6, <c>counterPick</c>; M8 step 7, the
+    /// <see cref="Modules.ProductionManager"/>); the rest is the army of the personality.
+    /// </summary>
     public int CounterPickPercent { get; init; } = 30;
 
     /// <summary>The earliest first attack, in ticks; 0 — the window of the personality decides (Hard, Brutal).</summary>

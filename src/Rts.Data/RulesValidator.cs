@@ -401,7 +401,7 @@ internal static class RulesValidator
                 {
                     Error(difficulty.Id, key, $"'{key}' of '{difficulty.Id}' must not be below zero");
                 }
-                else if (value > 100 && key is "power_reserve" or "counter_shift" or "wounded" or "mistake_chance" or "counter_pick")
+                else if (value > 100 && key is "power_reserve" or "wounded" or "mistake_chance" or "counter_pick")
                 {
                     Error(difficulty.Id, key, $"'{key}' of '{difficulty.Id}' is a share: 100% at most");
                 }

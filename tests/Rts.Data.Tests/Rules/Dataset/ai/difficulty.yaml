@@ -18,8 +18,7 @@ ai_medium:
   power_reserve: 20%
   danger_cells: 12
   second_factory_credits: 4000
-  # The army: the share that moves to the counters of a mostly-infantry or mostly-vehicle enemy, the units each factory keeps queued.
-  counter_shift: 20%
+  # The army: the units each factory keeps queued. The share picked against what the enemy fields is counter_pick (M8 step 7).
   infantry_queued: 2
   vehicles_queued: 1
   # Scouting: an outing every 3 minutes into blocks of this many cells; an armed enemy this near sends the scout home.

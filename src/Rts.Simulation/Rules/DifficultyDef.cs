@@ -36,7 +36,7 @@ public sealed record DifficultyDef : IDefinition
         ("production_period", DifficultyValue.Count), ("scouting_period", DifficultyValue.Count), ("tactics_period", DifficultyValue.Count),
         ("defense_period", DifficultyValue.Count),
         ("max_refineries", DifficultyValue.Count), ("harvesters_per_refinery", DifficultyValue.Count), ("power_reserve", DifficultyValue.Percent),
-        ("danger_cells", DifficultyValue.Count), ("second_factory_credits", DifficultyValue.Count), ("counter_shift", DifficultyValue.Percent),
+        ("danger_cells", DifficultyValue.Count), ("second_factory_credits", DifficultyValue.Count),
         ("infantry_queued", DifficultyValue.Count), ("vehicles_queued", DifficultyValue.Count),
         ("scouting_interval", DifficultyValue.Duration), ("scout_block_cells", DifficultyValue.Count), ("scout_danger_cells", DifficultyValue.Count),
         ("min_attack_army", DifficultyValue.Count), ("attack_growth_per_wave", DifficultyValue.Percent), ("attack_threshold", DifficultyValue.Percent),

@@ -157,6 +157,7 @@ public sealed class RulesValidatorTests
     [InlineData("defend_harvesters: yes", "defend_harvesters: true", "'true' must be one of no, yes")]
     [InlineData("build_order_quality: standard", "build_order_quality: best", "'best' must be one of simple, standard, optimized")]
     [InlineData("  rebuild_destroyed: yes\n", "", "'ai_medium' has no 'rebuild_destroyed'")]
+    [InlineData("infantry_queued: 2", "counter_shift: 20%\n  infantry_queued: 2", "unknown key 'counter_shift' in 'ai_medium'")]
     [InlineData("income_bonus: 0%", "income_bonus: 150%", "'income_bonus' of 'ai_medium' would more than double: 100% at most")]
     [InlineData("build_speed_bonus: 0%", "build_speed_bonus: -10%", "'-10%' must be a percentage such as 125%")]
     [InlineData("reveal_map: no", "reveal_map: maybe", "'maybe' must be one of no, yes")]
@@ -176,7 +177,7 @@ public sealed class RulesValidatorTests
     {
         var error = Fails(Levels, "micro: focus", "micro: smart");
 
-        Assert.Equal((Levels, 57, 10), (error.FileName, error.Line, error.Column));
+        Assert.Equal((Levels, 56, 10), (error.FileName, error.Line, error.Column));
     }
 
     [Theory]

@@ -11,10 +11,10 @@ namespace Rts.AI.Modules;
 /// The army of a bot (docs/implementation/M5_first_bot.md, 4.6, step 6). The target is the army of the data
 /// (<see cref="AiSettings.Army"/>): the share of every kind of unit the bot can build now — a factory of its category stands and its
 /// prerequisites are there. The shares are not made a whole again: a kind not yet open keeps its share empty, so that the barracks
-/// alone do not turn all the money into infantry before the war factory stands. «Medium» counters coarsely:
-/// when the enemy armies it remembers are more than half infantry, <see cref="AiSettings.CounterShiftPercent"/> points move to the units
-/// of <see cref="ArmyDef.AgainstInfantry"/>, when more than half vehicles to those of <see cref="ArmyDef.AgainstVehicles"/>, taken from the
-/// rest by their shares. Among the factories whose queue holds fewer units than they keep (<see cref="AiSettings.InfantryQueued"/>,
+/// alone do not turn all the money into infantry before the war factory stands. The counters (M8, 4.6, step 7):
+/// <see cref="AiSettings.CounterPickPercent"/> of the army is picked against what the enemy fields — the infantry and the vehicles of
+/// <see cref="EnemyEstimate.Total"/>, fading with age — by the table of the army, <see cref="ArmyDef.AgainstInfantry"/> and
+/// <see cref="ArmyDef.AgainstVehicles"/>; the rest is the army as it is (<see cref="Counter"/>). Among the factories whose queue holds fewer units than they keep (<see cref="AiSettings.InfantryQueued"/>,
 /// <see cref="AiSettings.VehiclesQueued"/>), the kind that
 /// falls shortest of its share — and short it must be: its share of the army with one more is above what there is — is ordered first,
 /// the army counted with what is queued; one a factory a turn, equal ones to the smaller index; a kind that cannot be paid for yet is
@@ -118,65 +118,46 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
             return 0;
         }
 
-        var counters = EnemyMostly(context.Memory) switch
-        {
-            UnitCategory.Infantry => army.AgainstInfantry,
-            UnitCategory.Vehicle => army.AgainstVehicles,
-            _ => default,
-        };
-        if (!counters.IsDefaultOrEmpty)
-        {
-            Shift(rules, counters);
-        }
-
+        Counter(rules, army, context.Memory.Estimate.Total, whole);
         _target.Sort((a, b) => a.Unit.CompareTo(b.Unit));
         return _target.Count;
     }
 
     /// <summary>
-    /// Moves <see cref="AiSettings.CounterShiftPercent"/> points to the units of <paramref name="counters"/> in the target, by their shares,
-    /// taken from the others by theirs; nothing when either side is empty.
+    /// Picks <see cref="AiSettings.CounterPickPercent"/> of the army against <paramref name="enemy"/> (M8 step 7): of the whole of the
+    /// target, <paramref name="whole"/>, the part of the infantry of the enemy goes to the units of <see cref="ArmyDef.AgainstInfantry"/> in
+    /// the target, the part of its vehicles to those of <see cref="ArmyDef.AgainstVehicles"/>, each among them by their shares; a part with
+    /// no unit of the target to take it stays with the army as it is. The target is then that much of this army against the enemy and the
+    /// rest of the army as it is — the whole the same. Nothing with no enemy known or no share to pick.
     /// </summary>
-    private void Shift(RulesDatabase rules, System.Collections.Immutable.ImmutableArray<string> counters)
+    private void Counter(RulesDatabase rules, ArmyDef army, EnemyPicture enemy, long whole)
     {
-        long favoured = 0;
-        long others = 0;
-        foreach (var (unit, share) in _target)
-        {
-            if (counters.Contains(rules.Units[unit].Id))
-            {
-                favoured += share;
-            }
-            else
-            {
-                others += share;
-            }
-        }
-
-        if (favoured == 0 || others == 0)
+        var seen = (long)enemy.Infantry + enemy.Vehicles;
+        if (seen == 0 || settings.CounterPickPercent == 0)
         {
             return;
         }
 
-        var shift = IntMath.Min(settings.CounterShiftPercent * 100, (int)others);
+        var (againstInfantry, againstVehicles) = (0L, 0L);
+        foreach (var (unit, share) in _target)
+        {
+            againstInfantry += army.AgainstInfantry.Contains(rules.Units[unit].Id) ? share : 0;
+            againstVehicles += army.AgainstVehicles.Contains(rules.Units[unit].Id) ? share : 0;
+        }
+
+        // The parts of the enemy no unit of the target answers stay with the army as it is.
+        var (infantry, vehicles) = (againstInfantry > 0 ? enemy.Infantry : 0L, againstVehicles > 0 ? enemy.Vehicles : 0L);
+        var asItIs = seen - infantry - vehicles;
+        var pick = settings.CounterPickPercent;
         for (var i = 0; i < _target.Count; i++)
         {
             var (unit, share) = _target[i];
-            _target[i] = (unit, counters.Contains(rules.Units[unit].Id) ? share + shift * share / favoured : share - shift * share / others);
+            var id = rules.Units[unit].Id;
+            var counter = share * asItIs / seen
+                + (army.AgainstInfantry.Contains(id) ? whole * infantry / seen * share / againstInfantry : 0)
+                + (army.AgainstVehicles.Contains(id) ? whole * vehicles / seen * share / againstVehicles : 0);
+            _target[i] = (unit, (share * (100 - pick) + counter * pick) / 100);
         }
-    }
-
-    /// <summary>Infantry when more than half of the enemy units remembered are infantry, vehicles when more than half are not; else null.</summary>
-    internal static UnitCategory? EnemyMostly(AiMemory memory)
-    {
-        var (units, infantry) = (0, 0);
-        foreach (var army in memory.Armies)
-        {
-            units += army.Units;
-            infantry += army.Infantry;
-        }
-
-        return units == 0 ? null : infantry * 2 > units ? UnitCategory.Infantry : (units - infantry) * 2 > units ? UnitCategory.Vehicle : null;
     }
 
     /// <summary>

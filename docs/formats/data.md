@@ -178,7 +178,7 @@ reactor:  # Tesla Reactor
 | `against_infantry` | Юниты, которые получают долю, когда у врага больше половины пехоты (давят, косят) |
 | `against_vehicles` | Юниты, которые получают долю, когда у врага больше половины техники (противотанковые) |
 
-Сдвиг к контрам — 20 пунктов у «Среднего». Он забирается у остальных юнитов пропорционально их долям. Какой состав берёт бот, задаёт характер (`armies`): у всех пока `standard_army`.
+`against_infantry` и `against_vehicles` — таблица контр (M8, шаг 7). Доля армии `counter_pick` уровня строится под состав врага: доля его пехоты уходит юнитам `against_infantry`, доля техники — `against_vehicles`, остальное — доли `shares`. Какой состав берёт бот, задаёт характер (`armies`): у всех пока `standard_army`.
 
 ### `difficulty` (боты, M5 шаг 14, M8 шаг 1)
 
@@ -188,7 +188,7 @@ reactor:  # Tesla Reactor
 |---|---|---|
 | `strategy_period`, `economy_period`, `build_period`, `production_period`, `scouting_period`, `tactics_period`, `defense_period` | Как часто думает каждый модуль | тики, > 0 |
 | `max_refineries`, `harvesters_per_refinery`, `power_reserve`, `danger_cells`, `second_factory_credits` | Экономика | числа; `power_reserve` — % |
-| `counter_shift`, `infantry_queued`, `vehicles_queued` | Армия | `counter_shift` — % |
+| `infantry_queued`, `vehicles_queued` | Армия: юнитов в очереди казарм и завода | числа |
 | `scouting_interval`, `scout_block_cells`, `scout_danger_cells` | Разведка | интервал — длительность (`180s`) |
 | `min_attack_army`, `attack_growth_per_wave`, `attack_threshold`, `retreat_at_strength`, `gather_cells`, `squad_spread_cells`, `engage_cells`, `wounded`, `sweep_places` | Отряды | доли — %; рост волн ≥ 100 %, отступление < 100 % |
 | `all_in_after`, `all_in_units`, `sell_every` | Когда руда кончилась | длительности — `120s`, `30s` |
@@ -196,7 +196,7 @@ reactor:  # Tesla Reactor
 | `actions_per_second`, `mistake_chance` | Лимит команд в секунду, шанс взять не лучший вариант из трёх (M8, 4.3) | число > 0; % |
 | `micro` | Микро в бою (M8, 4.4) | `none`, `focus`, `retreat_wounded`, `keep_range` |
 | `scouting` | Разведка (M8, 4.6) | `none`, `periodic`, `constant`, `constant_expansions` |
-| `counter_pick` | Доля армии против состава врага | % |
+| `counter_pick` | Доля армии под состав врага (M8, шаг 7): по таблице контр `army`, остальное — армия характера | % |
 | `first_attack_delay` | Самая ранняя атака | длительность; `0s` — по окну характера |
 | `parallel_squads` | Отрядов одновременно | число > 0 |
 | `defend_harvesters` | Защищает ли харвестеры | `no`, `yes` |
@@ -207,7 +207,7 @@ reactor:  # Tesla Reactor
 | `reveal_map` | Игрок видит всю карту: его приказы и юниты, туман на экране остаётся | `no`, `yes` |
 
 - Слово не из списка — ошибка в его строке, с перечнем допустимых слов.
-- Доли (`power_reserve`, `counter_shift`, `wounded`, `mistake_chance`, `counter_pick`) — не больше 100 %.
+- Доли (`power_reserve`, `wounded`, `mistake_chance`, `counter_pick`) — не больше 100 %.
 - Ключи M8 бот пока не использует: они нужны шагам 3–7 M8, но уже проверяются и входят в хеш.
 - Бонусы игрока действуют с шага 2 M8: их берёт симуляция при старте партии — у бота этого уровня, не у человека.
 - Код держит числа «Среднего» в `AiSettings.Medium`. Тест требует равенства: модули проверяются на числах игры.

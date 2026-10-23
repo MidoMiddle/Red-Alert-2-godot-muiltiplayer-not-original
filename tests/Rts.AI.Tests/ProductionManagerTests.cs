@@ -40,32 +40,87 @@ public sealed class ProductionManagerTests
             target);
     }
 
-    [Fact]
-    public void Against_an_army_of_infantry_the_tanks_gain_and_against_vehicles_the_rocketeers()
+    /// <summary>A base and, in sight of a tank of the bot at (50, 40), the enemy units of <paramref name="enemies"/> in a row.</summary>
+    private static Scene Facing(params UnitType[] enemies)
     {
         var scene = Base();
-        // A scout near enemy infantry: the memory sees four conscripts.
         scene.Spawn(Scene.Me, UnitType.HeavyTank, 50, 40);
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < enemies.Length; i++)
         {
-            scene.Spawn(Scene.Enemy, UnitType.Conscript, 52 + i, 42);
+            scene.Spawn(Scene.Enemy, enemies[i], 52 + i, 42);
         }
 
-        var infantry = Target(scene, new ProductionManager(AiSettings.Medium));
-        // 20 points to the heavy tank and the flak track (4000 : 1000), taken from conscript and rocketeer (2500 : 2000).
-        Assert.Equal(4000 + 2000 * 4000 / 5000, infantry["heavy_tank"]);
-        Assert.Equal(1000 + 2000 * 1000 / 5000, infantry["support_vehicle"]);
-        Assert.Equal(2500 - 2000 * 2500 / 4500, infantry["conscript"]);
+        return scene;
+    }
 
-        var vehicles = Base();
-        vehicles.Spawn(Scene.Me, UnitType.HeavyTank, 50, 40);
-        for (var i = 0; i < 4; i++)
+    private static readonly UnitType[] FourConscripts = [UnitType.Conscript, UnitType.Conscript, UnitType.Conscript, UnitType.Conscript];
+
+    [Theory]
+    // The heavy tank and the flak track answer infantry (4000 and 1000 of the army). Against all infantry the army picked against it is
+    // theirs alone, 7600 and 1900 of the whole 9500; the level picks that share of the army: none, 30 %, 70 %.
+    [InlineData(0, 4000, 1000, 2500, 2000)]
+    [InlineData(30, 5080, 1270, 1750, 1400)]
+    [InlineData(70, 6520, 1630, 750, 600)]
+    public void Against_masses_of_infantry_the_higher_level_picks_more_of_what_beats_it(int pick, int tank, int flak, int conscript, int rocketeer)
+    {
+        var target = Target(Facing(FourConscripts), new ProductionManager(AiSettings.Medium with { CounterPickPercent = pick }));
+
+        Assert.Equal((tank, flak, conscript, rocketeer), (target["heavy_tank"], target["support_vehicle"], target["conscript"], target["rocketeer"]));
+        Assert.Equal(9500, target.Values.Sum());
+    }
+
+    [Fact]
+    public void Against_vehicles_the_rocketeers_gain_and_what_cannot_be_built_leaves_its_part_to_them()
+    {
+        // The tesla tank answers vehicles too, but there is no tech centre: the rocketeer takes the whole part.
+        var target = Target(Facing(UnitType.HeavyTank, UnitType.HeavyTank), new ProductionManager(AiSettings.Medium with { CounterPickPercent = 70 }));
+
+        Assert.Equal(2000 * 30 / 100 + 9500 * 70 / 100, target["rocketeer"]);
+        Assert.Equal(4000 * 30 / 100, target["heavy_tank"]);
+    }
+
+    [Fact]
+    public void Against_a_mixed_enemy_both_counters_gain_by_its_mix()
+    {
+        // Half infantry, half vehicles: half the whole for the heavy tank and the flak track, half for the rocketeer.
+        var target = Target(
+            Facing(UnitType.Conscript, UnitType.Conscript, UnitType.HeavyTank, UnitType.HeavyTank),
+            new ProductionManager(AiSettings.Medium with { CounterPickPercent = 100 }));
+
+        Assert.Equal((3800, 950, 4750, 0), (target["heavy_tank"], target["support_vehicle"], target["rocketeer"], target["conscript"]));
+    }
+
+    [Fact]
+    public void An_enemy_forgotten_leaves_the_army_as_it_is()
+    {
+        var scene = Facing(FourConscripts);
+        var production = new ProductionManager(AiSettings.Medium with { CounterPickPercent = 70 });
+        Target(scene, production);
+        foreach (var unit in scene.World.Entities.OfType<Unit>().Where(unit => unit.Owner == Scene.Enemy))
         {
-            vehicles.Spawn(Scene.Enemy, UnitType.HeavyTank, 52 + i, 42);
+            Scene.Move(unit, 60, 60);
         }
 
-        // The tesla tank is not open: all 20 points go to the rocketeer.
-        Assert.Equal(2000 + 2000, Target(vehicles, new ProductionManager(AiSettings.Medium))["rocketeer"]);
+        scene.Look(Rts.AI.View.EnemyEstimate.ForgetTicks);
+        production.Target(scene.Context());
+
+        Assert.Equal(4000, production.Shares.Single(share => share.Unit == Unit("heavy_tank")).Share);
+    }
+
+    [Theory]
+    // The army is the tank of the bot that sees the conscripts. «Easy» picks nothing against them: the conscript falls shortest of its
+    // 25 %. «Hard» picks 70 %: the flak track and the heavy tank grow, the conscript shrinks, and the flak track is ordered first.
+    [InlineData(0, "conscript")]
+    [InlineData(70, "support_vehicle")]
+    public void Against_infantry_the_first_order_follows_the_pick_of_the_level(int pick, string first)
+    {
+        var scene = Facing(FourConscripts);
+        scene.Look();
+        var context = scene.Context();
+        new ProductionManager(AiSettings.Medium with { CounterPickPercent = pick }).Update(context);
+        context.End();
+
+        Assert.Equal(Unit(first), scene.RunCommands().OfType<ProduceCommand>().First().DefIndex);
     }
 
     [Fact]
