@@ -30,6 +30,12 @@ public sealed class TimedBot(AiPlayer bot) : IAiController
     /// <summary>The tick its first squad set out, or -1 while none has.</summary>
     public int FirstAttack { get; private set; } = -1;
 
+    /// <summary>The turns longer than the peak budget of 4.11, <see cref="SlowTurn"/> (step 9).</summary>
+    public int SlowTurns { get; private set; }
+
+    /// <summary>The peak budget of a turn of a bot (M8, 4.11): 4 ms.</summary>
+    public static readonly TimeSpan SlowTurn = TimeSpan.FromMilliseconds(4);
+
     public void Think(AiTurn turn)
     {
         _watch.Restart();
@@ -38,6 +44,7 @@ public sealed class TimedBot(AiPlayer bot) : IAiController
         Turns++;
         Total += _watch.Elapsed;
         Longest = _watch.Elapsed > Longest ? _watch.Elapsed : Longest;
+        SlowTurns += _watch.Elapsed > SlowTurn ? 1 : 0;
         if (FirstAttack < 0 && Bot.Context?.Plan.Squads.Any(squad => squad.State == SquadState.Moving) == true)
         {
             FirstAttack = turn.Tick;

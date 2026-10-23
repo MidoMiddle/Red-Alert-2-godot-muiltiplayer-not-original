@@ -1,0 +1,18 @@
+# The matrix of the criteria of M8 (docs/implementation/M8_ai_difficulty.md, section 7): 50 matches a pair on two ready maps and a random
+# one, the sides swapping starts. «Hard» beats «Medium», «Medium» beats «Easy» (80 %), «Brutal» beats «Hard» (70 %), few draws; the
+# personalities of «Hard» against «Balanced» — when they attack first, how many harvesters they destroy. The numbers are tuned by step 10.
+#
+#   dotnet run --project tools/Rts.Arena -c Release -- run --config tools/Rts.Arena/configs/acceptance.yaml
+games: 50
+swapSides: true
+maxGameTime: 60m
+baseSeed: 1000
+maps: [frozen-crossing, twin-rivers, random:size=96,players=2]
+pairs:
+  - { a: hard:balanced, b: medium:balanced }
+  - { a: medium:balanced, b: easy:balanced }
+  - { a: brutal:balanced, b: hard:balanced }
+  - { a: hard:aggressor, b: hard:balanced }
+  - { a: hard:builder, b: hard:balanced }
+  - { a: hard:saboteur, b: hard:balanced }
+saveReplays: [upsets, longest:3]

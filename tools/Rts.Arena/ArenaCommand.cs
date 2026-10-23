@@ -13,7 +13,8 @@ namespace Rts.Arena;
 public static class ArenaCommand
 {
     private const string Usage =
-        "usage: rts-arena run --a <profile> --b <profile> --map <id> [--games N] [--minutes M] [--seed S] [--out folder] [--data folder]\n" +
+        "usage: rts-arena run --config <matrix.yaml> [--out folder] [--jobs N] [--data folder]\n" +
+        "       rts-arena run --a <profile> --b <profile> --map <id> [--games N] [--minutes M] [--seed S] [--out folder] [--jobs N] [--data folder]\n" +
         "       rts-arena replay <file.rtsreplay> [--a <profile>] [--b <profile>] [--data folder]\n" +
         "a profile is level[:personality[:faction]]: easy, medium, hard or brutal; balanced and union by default";
 
@@ -21,8 +22,9 @@ public static class ArenaCommand
     public static readonly string[] ResultColumns =
     [
         "game", "map", "seed", "a", "b", "a_start", "b_start", "winner", "end_tick", "end_time",
-        "a_units_built", "a_units_lost", "a_buildings_built", "a_buildings_lost", "a_harvested", "a_spent", "a_first_attack",
-        "b_units_built", "b_units_lost", "b_buildings_built", "b_buildings_lost", "b_harvested", "b_spent", "b_first_attack", "replay",
+        "a_units_built", "a_units_lost", "a_buildings_built", "a_buildings_lost", "a_harvested", "a_spent", "a_first_attack", "a_units", "a_harvesters_killed",
+        "b_units_built", "b_units_lost", "b_buildings_built", "b_buildings_lost", "b_harvested", "b_spent", "b_first_attack", "b_units", "b_harvesters_killed",
+        "replay",
     ];
 
     public static int Execute(string[] args, TextWriter output, TextWriter error)
@@ -54,37 +56,30 @@ public static class ArenaCommand
     private static int Run(Dictionary<string, string> options, TextWriter output)
     {
         var data = Data(options);
-        var a = BotProfile.Parse(Required(options, "a"), data.Database);
-        var b = BotProfile.Parse(Required(options, "b"), data.Database);
-        var map = Map(options, Required(options, "map"));
-        var games = Number(options, "games", 1);
-        var minutes = Number(options, "minutes", 60);
-        var seed = (ulong)Number(options, "seed", 1000);
-        var folder = options.GetValueOrDefault("out") ?? Path.Combine("arena-results", DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture));
-        Directory.CreateDirectory(folder);
-
-        var results = new List<string> { string.Join(",", ResultColumns) };
-        var timings = new List<string> { "game,a_ai_ms_per_turn,a_ai_ms_longest,b_ai_ms_per_turn,b_ai_ms_longest,match_seconds" };
-        var mismatches = 0;
-        output.WriteLine($"{a} against {b} on {map.Id}: {games} matches of up to {minutes} minutes");
-        for (var game = 0; game < games; game++)
+        ArenaConfig config;
+        if (options.TryGetValue("config", out var file))
         {
-            var outcome = ArenaMatch.Play(data, map, a, b, game, seed + (ulong)game, minutes);
-            var file = Path.Combine(folder, $"game-{game + 1:0000}.rtsreplay");
-            File.WriteAllBytes(file, ReplayFormat.Write(outcome.Replay));
-            var check = ArenaMatch.Check(ReplayFormat.Read(File.ReadAllBytes(file)), data.Rules, player => (player.Value == 1 ? a : b).Personality);
-            mismatches += check == "match" ? 0 : 1;
-            results.Add(Row(outcome, check));
-            timings.Add(Timing(outcome));
-            output.WriteLine(
-                $"game {game + 1}, seed {outcome.Seed}: {(outcome.Winner == "draw" ? "draw" : $"{outcome.Winner.ToUpperInvariant()} won")} at {Clock(outcome.EndTick)}, " +
-                $"replay {check}");
+            if (!File.Exists(file))
+            {
+                throw new ArenaException($"no matrix '{file}'");
+            }
+
+            config = ArenaConfig.Read(file, File.ReadAllText(file), data.Database, DataFolder(options));
+        }
+        else
+        {
+            // One pair on one map, every replay kept and checked: the minimal Arena of step 4.
+            var a = BotProfile.Parse(Required(options, "a"), data.Database);
+            var b = BotProfile.Parse(Required(options, "b"), data.Database);
+            var id = Required(options, "map");
+            var map = new MapSpec(id, Map(options, id), null);
+            config = new ArenaConfig(
+                Number(options, "games", 1), true, Number(options, "minutes", 60) * ArenaMatch.TicksPerMinute, (ulong)Number(options, "seed", 1000),
+                [map], [new ArenaPair(a, b)], ReplaySelection.Every);
         }
 
-        File.WriteAllLines(Path.Combine(folder, "results.csv"), results);
-        File.WriteAllLines(Path.Combine(folder, "timings.csv"), timings);
-        output.WriteLine($"results in {Path.Combine(folder, "results.csv")}");
-        return mismatches == 0 ? 0 : 1;
+        var folder = options.GetValueOrDefault("out") ?? Path.Combine("arena-results", DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture));
+        return ArenaRunner.Run(config, data, folder, Number(options, "jobs", Environment.ProcessorCount), output);
     }
 
     private static int Replay(string file, Dictionary<string, string> options, TextWriter output)
@@ -111,31 +106,6 @@ public static class ArenaCommand
         output.WriteLine($"{file}: {check}");
         return check == "match" ? 0 : 1;
     }
-
-    private static string Row(MatchOutcome outcome, string check)
-    {
-        string Side(SideResult side) => string.Join(
-            ",",
-            side.UnitsBuilt, side.UnitsLost, side.BuildingsBuilt, side.BuildingsLost, side.Harvested, side.Spent, side.FirstAttack);
-
-        return string.Join(
-            ",",
-            outcome.Game + 1, outcome.Map, outcome.Seed, outcome.A.Profile, outcome.B.Profile, outcome.A.StartIndex, outcome.B.StartIndex,
-            outcome.Winner, outcome.EndTick, Clock(outcome.EndTick), Side(outcome.A), Side(outcome.B), check);
-    }
-
-    private static string Timing(MatchOutcome outcome)
-    {
-        static string Ms(TimeSpan time) => time.TotalMilliseconds.ToString("0.000", CultureInfo.InvariantCulture);
-        static string PerTurn(SideResult side) => Ms(side.AiTurns == 0 ? TimeSpan.Zero : side.AiTotal / side.AiTurns);
-
-        return string.Join(
-            ",",
-            outcome.Game + 1, PerTurn(outcome.A), Ms(outcome.A.AiLongest), PerTurn(outcome.B), Ms(outcome.B.AiLongest),
-            outcome.Wall.TotalSeconds.ToString("0.0", CultureInfo.InvariantCulture));
-    }
-
-    private static string Clock(int tick) => $"{tick / ArenaMatch.TicksPerMinute}:{tick % ArenaMatch.TicksPerMinute / 15:00}";
 
     /// <summary>The <c>--key value</c> pairs after <paramref name="from"/>.</summary>
     private static Dictionary<string, string> Options(string[] args, int from)

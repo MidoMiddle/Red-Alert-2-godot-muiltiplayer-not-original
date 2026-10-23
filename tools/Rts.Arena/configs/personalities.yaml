@@ -1,0 +1,16 @@
+# Every personality against every other, all of them «Hard» (docs/implementation/M8_ai_difficulty.md, 4.7, 4.10).
+#
+#   dotnet run --project tools/Rts.Arena -c Release -- run --config tools/Rts.Arena/configs/personalities.yaml
+games: 20
+swapSides: true
+maxGameTime: 60m
+baseSeed: 5000
+maps: [frozen-crossing, twin-rivers]
+pairs:
+  - { a: hard:aggressor, b: hard:balanced }
+  - { a: hard:aggressor, b: hard:builder }
+  - { a: hard:aggressor, b: hard:saboteur }
+  - { a: hard:balanced, b: hard:builder }
+  - { a: hard:balanced, b: hard:saboteur }
+  - { a: hard:builder, b: hard:saboteur }
+saveReplays: [longest:2]

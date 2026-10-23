@@ -13,8 +13,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The tests count the harvesters destroyed through the same code as a match (step 9). -->
+    <InternalsVisibleTo Include="Rts.Arena.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../src/Rts.Data/Rts.Data.csproj" />
     <ProjectReference Include="../../src/Rts.AI/Rts.AI.csproj" />
+    <ProjectReference Include="../../src/Rts.MapGen/Rts.MapGen.csproj" />
   </ItemGroup>
 
 </Project>

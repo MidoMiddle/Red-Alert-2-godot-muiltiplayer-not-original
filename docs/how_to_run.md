@@ -412,6 +412,19 @@ dotnet run --project tools/Rts.Arena -c Release -- run --a medium:balanced --b e
   dotnet run --project tools/Rts.Arena -c Release -- replay arena-results/<папка>/game-0001.rtsreplay --a medium:balanced --b easy:balanced
   ```
 
+**Матрица** (M8, шаг 9) — пары ботов на нескольких картах, параллельно по ядрам, с отчётом `summary.md`:
+
+```bash
+dotnet run --project tools/Rts.Arena -c Release -- run --config tools/Rts.Arena/configs/acceptance.yaml
+```
+
+- **Готовые матрицы** — `tools/Rts.Arena/configs/`:
+  - `acceptance.yaml` — критерии M8, 900 партий;
+  - `personalities.yaml` — характеры друг против друга;
+  - `smoke.yaml` — 4 короткие партии.
+- **`summary.md`** — победы по парам с 95 % интервалом, первая атака и уничтоженные харвестеры по профилям и характерам, время ботов.
+- **Повторы** сохраняются только те, что просит матрица (`saveReplays`), и рядом — журнал каждого бота (`game-NNNN-pN.log`, снимок F12 раз в минуту).
+
 Подробно — [tools/Rts.Arena/README.md](../tools/Rts.Arena/README.md).
 
 Что проверить:

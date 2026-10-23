@@ -1,0 +1,10 @@
+# The smoke run of the Arena (docs/implementation/M8_ai_difficulty.md, «Arena in CI»): four matches of ten minutes on a small map — nothing
+# falls over, and the kept replay plays back.
+games: 4
+swapSides: true
+maxGameTime: 10m
+baseSeed: 1
+maps: [frozen-crossing]
+pairs:
+  - { a: medium:balanced, b: easy:balanced }
+saveReplays: [longest:1]

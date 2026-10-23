@@ -44,6 +44,9 @@ public sealed record BotProfile(AiDifficulty Level, string Personality, string F
         return new BotProfile(level, personality, faction);
     }
 
+    /// <summary>How strong the level is: «Easy» 0, «Medium» 1, «Hard» 2, «Brutal» 3 — a win of a lower one is an upset.</summary>
+    public int Rank => Level switch { AiDifficulty.Easy => 0, AiDifficulty.Medium => 1, AiDifficulty.Hard => 2, _ => 3 };
+
     /// <summary>As the profile is written: <c>hard:balanced:union</c>.</summary>
-    public override string ToString() => $"{Levels[Level switch { AiDifficulty.Easy => 0, AiDifficulty.Medium => 1, AiDifficulty.Hard => 2, _ => 3 }]}:{Personality}:{Faction}";
+    public override string ToString() => $"{Levels[Rank]}:{Personality}:{Faction}";
 }

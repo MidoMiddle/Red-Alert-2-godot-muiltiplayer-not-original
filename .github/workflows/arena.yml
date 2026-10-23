@@ -1,0 +1,35 @@
+# The Arena of the bots (docs/implementation/M8_ai_difficulty.md, 4.10, «Arena in CI»): the matrix of the criteria of the milestone,
+# acceptance.yaml, once a day and by hand. Its summary.md, results.csv and the replays it keeps are the artifact of the run. The smoke
+# run of every push is a test of Rts.Arena.Tests, in CI.
+name: Arena
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  acceptance:
+    name: acceptance matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run acceptance.yaml
+        run: dotnet run --project tools/Rts.Arena -c Release -- run --config tools/Rts.Arena/configs/acceptance.yaml --out arena-results/acceptance
+
+      - name: Upload the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arena-acceptance
+          path: arena-results/acceptance

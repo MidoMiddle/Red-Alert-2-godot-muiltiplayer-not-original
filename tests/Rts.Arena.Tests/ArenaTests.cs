@@ -69,7 +69,7 @@ public sealed class ArenaTests : IDisposable
 
         Assert.Equal(0, code);
         Assert.Empty(error);
-        Assert.Contains("game 2, seed 1001", output);
+        Assert.Contains("game 2, medium:balanced:union against easy:balanced:union on frozen-crossing, seed 1001", output);
         var lines = File.ReadAllLines(Path.Combine(_folder, "results.csv"));
         Assert.Equal(3, lines.Length);
         Assert.Equal(string.Join(",", ArenaCommand.ResultColumns), lines[0]);
