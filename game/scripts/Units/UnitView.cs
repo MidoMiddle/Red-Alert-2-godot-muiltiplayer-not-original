@@ -1,4 +1,5 @@
 using Godot;
+using Rts.Simulation.Map;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Units;
@@ -6,12 +7,15 @@ namespace Rts.Client.Units;
 /// <summary>
 /// Symbolic look of one unit (docs/implementation/conventions.md, section 12): a primitive per type in the team colour,
 /// a dark nose that shows where the hull points, and a turret on top for types that have one.
-/// Infantry is a thin column, vehicles are boxes sized by role. The model looks along −Z; the parent sets the yaw.
+/// Infantry is a thin column, vehicles are boxes sized by role. Track belts or wheels show how a vehicle moves, and a
+/// hopper (harvester) or a crane (MCV) shows its role. The model looks along −Z; the parent sets the yaw.
 /// </summary>
 public partial class UnitView : Node3D
 {
     private static readonly StandardMaterial3D DarkMaterial = new() { AlbedoColor = new Color(0.12f, 0.12f, 0.14f) };
     private static readonly StandardMaterial3D EngineerMaterial = new() { AlbedoColor = new Color(0.95f, 0.8f, 0.15f) };
+    private static readonly StandardMaterial3D HopperMaterial = new() { AlbedoColor = new Color(0.55f, 0.42f, 0.22f) };
+    private static readonly StandardMaterial3D TrackMaterial = new() { AlbedoColor = new Color(0.36f, 0.36f, 0.38f) };
 
     private MeshInstance3D _body = null!;
     private Node3D? _turret;
@@ -78,6 +82,8 @@ public partial class UnitView : Node3D
         var size = VehicleSize(archetype.Type);
         _body = AddPart(new BoxMesh { Size = size }, new Vector3(0, size.Y / 2, 0));
         AddPart(new BoxMesh { Size = new Vector3(size.X * 0.6f, 0.04f, 0.12f) }, new Vector3(0, size.Y + 0.02f, -size.Z / 2 + 0.08f), DarkMaterial);
+        AddLocomotorMarks(archetype.Locomotor, size);
+        AddRoleMarks(archetype.Type, size);
 
         if (!archetype.HasTurret)
         {
@@ -97,6 +103,54 @@ public partial class UnitView : Node3D
         {
             var barrel = size.Z * 0.45f;
             AddPart(new BoxMesh { Size = new Vector3(0.06f, 0.06f, barrel) }, new Vector3(0, turretSize.Y / 2, -turretSize.Z / 2 - barrel / 2), DarkMaterial, _turret);
+        }
+    }
+
+    /// <summary>Track belts for tracked vehicles, four wheels for wheeled ones: the shape shows how the unit moves.</summary>
+    private void AddLocomotorMarks(Locomotor locomotor, Vector3 size)
+    {
+        const float TrackWidth = 0.1f;
+        const float WheelRadius = 0.11f;
+        if (locomotor == Locomotor.Track)
+        {
+            foreach (var side in new[] { -1f, 1f })
+            {
+                AddPart(new BoxMesh { Size = new Vector3(TrackWidth, size.Y * 0.9f, size.Z * 0.96f) },
+                    new Vector3(side * (size.X / 2 + TrackWidth / 2), size.Y * 0.45f, 0), TrackMaterial);
+            }
+        }
+        else if (locomotor == Locomotor.Wheel)
+        {
+            foreach (var side in new[] { -1f, 1f })
+            {
+                foreach (var z in new[] { -size.Z * 0.32f, size.Z * 0.32f })
+                {
+                    // The cylinder stands up by default; turning it 90° on Z lays the axle across the hull.
+                    var wheel = AddPart(new CylinderMesh { TopRadius = WheelRadius, BottomRadius = WheelRadius, Height = 0.08f },
+                        new Vector3(side * (size.X / 2 + 0.02f), WheelRadius, z), DarkMaterial);
+                    wheel.Rotation = new Vector3(0, 0, Mathf.Pi / 2);
+                }
+            }
+        }
+    }
+
+    /// <summary>The extra shape of the two roles that look like tanks: an ore hopper for the harvester, a crane for the MCV.</summary>
+    private void AddRoleMarks(UnitType type, Vector3 size)
+    {
+        switch (type)
+        {
+            case UnitType.Harvester:
+                // Hopper on the rear part of the roof, behind the turret.
+                AddPart(new BoxMesh { Size = new Vector3(size.X * 0.8f, 0.12f, size.Z * 0.3f) },
+                    new Vector3(0, size.Y + 0.06f, size.Z * 0.36f), HopperMaterial);
+                break;
+            case UnitType.Mcv:
+                // Mast and jib of the construction crane, front right.
+                AddPart(new BoxMesh { Size = new Vector3(0.05f, 0.3f, 0.05f) },
+                    new Vector3(size.X * 0.3f, size.Y + 0.15f, -size.Z * 0.3f), DarkMaterial);
+                AddPart(new BoxMesh { Size = new Vector3(0.04f, 0.04f, size.Z * 0.5f) },
+                    new Vector3(size.X * 0.3f, size.Y + 0.3f, -size.Z * 0.05f), DarkMaterial);
+                break;
         }
     }
 
