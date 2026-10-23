@@ -13,6 +13,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <!-- The sound definitions are read with the same YAML library as the rules (Rts.Data), docs/implementation/M6_menus_skirmish.md, 4.8. -->
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -85,6 +87,10 @@
     <Compile Include="../../game/scripts/Debug/UnitStateText.cs" Link="Client/Debug/UnitStateText.cs" />
     <Compile Include="../../game/scripts/Units/UnitFacing.cs" Link="Client/Units/UnitFacing.cs" />
     <Compile Include="../../game/scripts/UI/LoadingPlan.cs" Link="Client/UI/LoadingPlan.cs" />
+    <Compile Include="../../game/scripts/Audio/SoundPriority.cs" Link="Client/Audio/SoundPriority.cs" />
+    <Compile Include="../../game/scripts/Audio/VoicePool.cs" Link="Client/Audio/VoicePool.cs" />
+    <Compile Include="../../game/scripts/Audio/ScreenPlacement.cs" Link="Client/Audio/ScreenPlacement.cs" />
+    <Compile Include="../../game/scripts/Audio/SoundLibrary.cs" Link="Client/Audio/SoundLibrary.cs" />
   </ItemGroup>
 
 </Project>

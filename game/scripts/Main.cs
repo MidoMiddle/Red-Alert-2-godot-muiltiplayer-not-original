@@ -46,6 +46,7 @@ public partial class Main : Node3D
         AddChild(new RouteLines { Name = "RouteLines" });
         AddChild(new Effects.CombatEffects { Name = "CombatEffects" });
         AddChild(new Effects.ProjectileViews { Name = "ProjectileViews" });
+        AddChild(new Audio.CombatSounds { Name = "CombatSounds" });
         AddChild(new Terrain.FogOfWar { Name = "FogOfWar" });
         // The health bars lie under the HUD (M4 step 13).
         var bars = new CanvasLayer { Name = "Bars", Layer = 0 };

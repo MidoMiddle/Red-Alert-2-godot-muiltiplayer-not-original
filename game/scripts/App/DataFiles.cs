@@ -13,6 +13,9 @@ public static class DataFiles
 {
     public const string Root = "res://" + GameData.Folder;
 
+    /// <summary>The folder of <see cref="Root"/> that holds the sounds, not the rules (<c>game/data/audio</c>).</summary>
+    private const string AudioFolder = "audio";
+
     private static GameData? _current;
 
     /// <summary>The loaded data.</summary>
@@ -69,6 +72,12 @@ public static class DataFiles
 
         foreach (var name in DirAccess.GetDirectoriesAt(folder))
         {
+            // The sound definitions are read by the audio code, not as rules (docs/implementation/M6_menus_skirmish.md, 4.8).
+            if (prefix.Length == 0 && name == AudioFolder)
+            {
+                continue;
+            }
+
             Collect($"{folder}/{name}", $"{prefix}{name}/", files);
         }
     }

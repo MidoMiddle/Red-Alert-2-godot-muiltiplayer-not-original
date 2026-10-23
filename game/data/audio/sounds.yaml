@@ -1,0 +1,59 @@
+# Sound definitions (docs/implementation/M6_menus_skirmish.md, 4.8; the code is game/scripts/Audio/SoundLibrary.cs).
+# Files are relative to game/assets/audio/ and come with the first sound set (step 14). A sound whose files are not there
+# stays silent, and the console says so once. Priorities: EVA 100, voices 80, interface 70, blasts 60, shots 50, movement 30,
+# ambience 10 (SoundPriority.cs).
+sounds:
+  snd_shot:
+    files: [sfx/shot_01.wav, sfx/shot_02.wav, sfx/shot_03.wav]
+    bus: SFX
+    volume: -6            # dB
+    pitch: [0.95, 1.05]   # random pitch, between these factors
+    priority: 50          # 0-100, the more important the higher
+    maxConcurrent: 6      # of this sound at once
+    cooldownMs: 40        # not sooner than this after the last one
+    positional: true      # placed by its point on the screen
+  snd_impact:
+    files: [sfx/impact_01.wav, sfx/impact_02.wav]
+    bus: SFX
+    volume: -9
+    pitch: [0.9, 1.1]
+    priority: 60
+    maxConcurrent: 8
+    cooldownMs: 60
+    positional: true
+  snd_explosion:
+    files: [sfx/explosion_01.wav, sfx/explosion_02.wav, sfx/explosion_03.wav]
+    bus: SFX
+    volume: -3
+    pitch: [0.9, 1.05]
+    priority: 60
+    maxConcurrent: 4
+    cooldownMs: 80
+    positional: true
+  snd_unit_death:
+    files: [sfx/death_01.wav, sfx/death_02.wav]
+    bus: SFX
+    volume: -6
+    pitch: [0.92, 1.08]
+    priority: 60
+    maxConcurrent: 4
+    cooldownMs: 100
+    positional: true
+  snd_ui_hover:
+    files: [ui/hover_01.wav]
+    bus: UI
+    volume: -12
+    pitch: [1.0, 1.0]
+    priority: 70
+    maxConcurrent: 1
+    cooldownMs: 60
+    positional: false
+  snd_ui_click:
+    files: [ui/click_01.wav]
+    bus: UI
+    volume: -9
+    pitch: [0.98, 1.02]
+    priority: 70
+    maxConcurrent: 2
+    cooldownMs: 60
+    positional: false

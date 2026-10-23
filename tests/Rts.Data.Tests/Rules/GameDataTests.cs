@@ -12,11 +12,10 @@ public sealed class GameDataTests
 {
     private const string Terrain = "shared/terrain.yaml";
 
+    /// <summary>The files the loader reads, the same list as <c>GameData.LoadDirectory</c>: without the sounds of <c>audio/</c>.</summary>
     private static List<(string FileName, string Text)> Files() =>
-        Directory.GetFiles(GameDataFiles.Folder, "*.yaml", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(GameDataFiles.Folder, path).Replace('\\', '/'))
-            .OrderBy(name => name, StringComparer.Ordinal)
-            .Select(name => (name, File.ReadAllText(Path.Combine(GameDataFiles.Folder, name)).Replace("\r\n", "\n")))
+        RulesLoader.FilesBelow(GameDataFiles.Folder)
+            .Select(file => (file.FileName, file.Text.Replace("\r\n", "\n")))
             .ToList();
 
     /// <summary>The errors of the game data with one text replaced in one file.</summary>
