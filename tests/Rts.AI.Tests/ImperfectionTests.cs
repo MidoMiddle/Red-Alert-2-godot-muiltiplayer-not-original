@@ -119,6 +119,7 @@ public sealed class ImperfectionTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData(AiDifficulty.Easy, 45)]
     [InlineData(AiDifficulty.Hard, 6)]

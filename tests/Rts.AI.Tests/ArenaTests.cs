@@ -17,6 +17,7 @@ namespace Rts.AI.Tests;
 /// economy are not; the winners come with the ore sources of the maps (docs/map_elements/06_ore).
 /// </para>
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class ArenaTests(ITestOutputHelper output)
 {
     private static readonly string[] MapIds = ["frozen-crossing", "twin-rivers", "taiga-front", "four-corners"];

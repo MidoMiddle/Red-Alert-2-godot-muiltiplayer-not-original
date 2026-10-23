@@ -62,6 +62,7 @@ public sealed class ArenaTests : IDisposable
         Assert.Equal(2, Arena("dance").Code);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void Two_matches_give_their_results_and_replays_that_match()
     {
@@ -84,6 +85,7 @@ public sealed class ArenaTests : IDisposable
         Assert.Equal(3, File.ReadAllLines(Path.Combine(_folder, "timings.csv")).Length);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void The_same_matches_give_the_same_results_byte_for_byte()
     {
@@ -102,6 +104,7 @@ public sealed class ArenaTests : IDisposable
         }
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void The_aggressor_attacks_first_at_least_three_minutes_before_the_builder()
     {
@@ -120,6 +123,7 @@ public sealed class ArenaTests : IDisposable
         Assert.True(builder.Average() - aggressor.Average() >= 3 * 900, $"aggressor {string.Join(", ", aggressor)}, builder {string.Join(", ", builder)}");
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void A_replay_is_checked_again_from_its_file_and_a_spoilt_one_does_not_match()
     {

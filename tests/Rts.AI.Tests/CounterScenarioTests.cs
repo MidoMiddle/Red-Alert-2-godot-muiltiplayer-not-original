@@ -11,6 +11,7 @@ namespace Rts.AI.Tests;
 /// money enough sees masses of infantry, and its production runs for three minutes with the level's share picked against them — «Hard»
 /// builds more of what beats infantry than «Medium», and «Medium» more than «Easy».
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class CounterScenarioTests(ITestOutputHelper output)
 {
     private static int CounterPick(string level) =>

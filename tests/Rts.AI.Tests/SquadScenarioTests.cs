@@ -12,6 +12,7 @@ namespace Rts.AI.Tests;
 /// gathers at its base, sets out and destroys the units of a person who does nothing; against a person who gets six tanks as it sets
 /// out it is beaten, turns back and its survivors join the next squad.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class SquadScenarioTests
 {
     private static readonly PlayerId Person = new(1);

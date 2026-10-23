@@ -76,6 +76,7 @@ public sealed class MatrixTests : IDisposable
         Assert.Contains(reason, error.Message);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void A_matrix_runs_every_match_in_order_and_writes_its_summary_its_replays_and_journals()
     {
@@ -109,6 +110,7 @@ public sealed class MatrixTests : IDisposable
         Assert.Contains("| hard:aggressor:union | hard:builder:union | random:size=64;players=2 | 2 |", summary);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void One_at_a_time_or_four_at_once_the_results_are_the_same()
     {
@@ -123,6 +125,7 @@ public sealed class MatrixTests : IDisposable
         Assert.Equal(new[] { "game-0001.rtsreplay" }, Directory.GetFiles(one, "*.rtsreplay").Select(Path.GetFileName));
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void The_smoke_matrix_of_ci_runs()
     {

@@ -11,6 +11,7 @@ namespace Rts.AI.Tests;
 /// The scouting of the «Medium» bot in a match by the real data (docs/implementation/M5_first_bot.md, step 7): it finds the person in
 /// good time, on maps of two starts and of four, explores far, and gives no refused command.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class ScoutScenarioTests
 {
     /// <summary>Plays <paramref name="map"/> for <paramref name="minutes"/>; returns the tick the bot first saw something of the person.</summary>

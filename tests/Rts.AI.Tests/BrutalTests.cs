@@ -11,6 +11,7 @@ namespace Rts.AI.Tests;
 /// </summary>
 public sealed class BrutalTests
 {
+    [Trait("Category", "Slow")]
     [Fact]
     public void A_match_against_brutal_plays_back_from_its_replay_with_the_same_bonuses()
     {

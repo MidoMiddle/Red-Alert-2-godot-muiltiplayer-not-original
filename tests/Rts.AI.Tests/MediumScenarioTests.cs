@@ -8,6 +8,7 @@ namespace Rts.AI.Tests;
 /// nothing: when its first wave sets out, that it beats a person with a base and a tesla coil, that it rebuilds a lost refinery, and
 /// that with no money and no ore it does nothing wrong.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class MediumScenarioTests
 {
     /// <summary>The tick the first squad of the bot sets out, or -1 before <paramref name="minutes"/> are over.</summary>

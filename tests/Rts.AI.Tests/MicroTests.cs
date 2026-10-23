@@ -226,6 +226,7 @@ public sealed class MicroTests(ITestOutputHelper output)
         return (lost, enemies);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void In_the_same_battle_the_squad_of_hard_loses_fewer_units_than_that_of_easy()
     {

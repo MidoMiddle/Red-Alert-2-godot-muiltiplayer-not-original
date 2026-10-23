@@ -10,6 +10,7 @@ namespace Rts.AI.Tests;
 /// (docs/implementation/M5_first_bot.md, section 6, step 10): before the 15th minute, in the normal game and in the short one, where the
 /// person's MCV is their last «building».
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class VictoryScenarioTests
 {
     private const int Limit = 15 * 900;

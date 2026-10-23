@@ -43,8 +43,10 @@ jobs:
       - name: Map generator tests
         run: dotnet test tests/Rts.MapGen.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=mapgen.trx" --results-directory test-results
 
+      # The scenarios that play matches on real maps for minutes (Category=Slow) run in Release only: Debug is several times slower
+      # (docs/implementation/M8_ai_difficulty.md, step 9a).
       - name: AI tests
-        run: dotnet test tests/Rts.AI.Tests -c ${{ matrix.configuration }} --filter "Category!=Arena" --logger "trx;LogFileName=ai.trx" --results-directory test-results
+        run: dotnet test tests/Rts.AI.Tests -c ${{ matrix.configuration }} --filter "${{ matrix.configuration == 'Debug' && 'Category!=Arena&Category!=Slow' || 'Category!=Arena' }}" --logger "trx;LogFileName=ai.trx" --results-directory test-results
 
       # 20 matches of bot against bot of up to 40 minutes each (M5 step 14): Release only, about two minutes.
       - name: AI arena
@@ -55,7 +57,7 @@ jobs:
         run: dotnet test tests/Rts.Net.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=net.trx" --results-directory test-results
 
       - name: Arena tests
-        run: dotnet test tests/Rts.Arena.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=arena-tool.trx" --results-directory test-results
+        run: dotnet test tests/Rts.Arena.Tests -c ${{ matrix.configuration }} --filter "${{ matrix.configuration == 'Debug' && 'Category!=Slow' || 'Category!=None' }}" --logger "trx;LogFileName=arena-tool.trx" --results-directory test-results
 
       - name: Upload test results
         if: failure()

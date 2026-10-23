@@ -382,6 +382,18 @@ dotnet test RtsGame.sln
 
 Прогоняет все тесты — симуляции, данных, генератора карт, анализатора детерминизма и ботов (M5); у каждого проекта в конце должно быть `Пройден!` / `Passed!`.
 
+Тесты ботов и Arena, которые играют партии минутами (категория `Slow`, M8 шаг 9а), в Debug идут медленно. Быстрый набор — без них, как CI в Debug:
+
+```bash
+dotnet test tests/Rts.AI.Tests --filter "Category!=Arena&Category!=Slow"
+```
+
+Полный — в Release, как CI в Release:
+
+```bash
+dotnet test tests/Rts.AI.Tests -c Release --filter "Category!=Arena"
+```
+
 Только боты (M5, шаг 1: расписание модулей, ход бота, детерминизм с ботами):
 
 ```bash

@@ -13,6 +13,7 @@ namespace Rts.AI.Tests;
 /// first wave is out on the way, the person gets four tanks behind the bot's base and sends them at its yard. The bot goes into the
 /// defense, calls the wave back, destroys the tanks and, ten seconds after the last, goes back to what it did.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class DefenseScenarioTests
 {
     private const int Tanks = 4;

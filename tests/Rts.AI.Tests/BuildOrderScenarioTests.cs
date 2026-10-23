@@ -11,6 +11,7 @@ namespace Rts.AI.Tests;
 /// its order, the exits of the factories and the docks of the refineries stay open to the rest of the map, and no command of the bot is
 /// refused.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class BuildOrderScenarioTests
 {
     private static readonly string[] Order =

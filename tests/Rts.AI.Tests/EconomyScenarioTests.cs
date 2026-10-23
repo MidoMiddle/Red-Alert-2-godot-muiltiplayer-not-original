@@ -12,6 +12,7 @@ namespace Rts.AI.Tests;
 /// reactor, a refinery, a war factory, keeps two harvesters a refinery and builds again what it loses — without a command that changes
 /// nothing.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class EconomyScenarioTests
 {
     private static readonly Lazy<BotMatch> TenMinutes = new(() => new BotMatch().PlayTo(10));

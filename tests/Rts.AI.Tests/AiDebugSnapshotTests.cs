@@ -7,6 +7,7 @@ namespace Rts.AI.Tests;
 /// The snapshot of the debug overlay (docs/implementation/M5_first_bot.md, 4.13, step 13): what it shows of the bot on Frozen Crossing
 /// with its first wave out, that it is a copy, and that asking for it changes nothing in the match.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class AiDebugSnapshotTests
 {
     /// <summary>

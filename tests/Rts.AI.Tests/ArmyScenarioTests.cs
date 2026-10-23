@@ -10,6 +10,7 @@ namespace Rts.AI.Tests;
 /// The army of the «Medium» bot in a match by the real data (docs/implementation/M5_first_bot.md, step 6): its factories do not stand
 /// idle while there is money, its army keeps near the shares of the data, and its base still gets built.
 /// </summary>
+[Trait("Category", "Slow")]
 public sealed class ArmyScenarioTests
 {
     private const int Minutes = 15;
