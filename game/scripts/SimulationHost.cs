@@ -581,18 +581,21 @@ public partial class SimulationHost : Node
         _speedIndex = Math.Clamp(_speedIndex + direction, 0, SpeedMultipliers.Length - 1);
 
     /// <summary>Writes the live session to user://replays and remembers the path for playback.</summary>
-    public string? SaveReplay()
+    public string? SaveReplay() => SaveReplay(ReplayDirectory, $"replay-{Simulation.CurrentTick}");
+
+    /// <summary>Writes the live session as <paramref name="name"/> into <paramref name="folder"/> (M8 step 14: next to a playtest record).</summary>
+    public string? SaveReplay(string folder, string name)
     {
         if (_recorder is null)
         {
             return null;
         }
 
-        var directory = ProjectSettings.GlobalizePath(ReplayDirectory);
+        var directory = ProjectSettings.GlobalizePath(folder);
         Directory.CreateDirectory(directory);
-        var fileName = $"replay-{Simulation.CurrentTick}{ReplayFormat.FileExtension}";
+        var fileName = $"{name}{ReplayFormat.FileExtension}";
         File.WriteAllBytes(Path.Combine(directory, fileName), ReplayFormat.Write(_recorder.Build()));
-        LastReplayPath = $"{ReplayDirectory}/{fileName}";
+        LastReplayPath = $"{folder}/{fileName}";
         ReplayStatus = $"saved {LastReplayPath}";
         GD.Print($"[host] {ReplayStatus}");
         return LastReplayPath;

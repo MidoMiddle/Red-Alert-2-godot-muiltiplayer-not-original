@@ -25,6 +25,17 @@ public sealed class SettingsValuesTests
     }
 
     [Fact]
+    public void ThePlaytestSurveyIsOffWithoutTheKeyAndComesBackFromTheFile()
+    {
+        // M8 step 14: a file of before has no key — the survey is off, the format is the same.
+        Assert.False(SettingsValues.Defaults.PlaytestSurvey);
+        Assert.False(SettingsValues.Parse(new Dictionary<string, string>()).PlaytestSurvey);
+        var on = SettingsValues.Defaults with { PlaytestSurvey = true };
+        Assert.Equal("true", on.ToRaw()["interface/playtest_survey"]);
+        Assert.True(SettingsValues.Parse(on.ToRaw()).PlaytestSurvey);
+    }
+
+    [Fact]
     public void HealthBarsReadTheirModeAndFallBackOnAnUnknownOne()
     {
         Assert.Equal(HealthBarMode.Always, SettingsValues.Parse(new Dictionary<string, string> { ["interface/health_bars"] = "always" }).HealthBars);

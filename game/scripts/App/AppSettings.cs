@@ -75,6 +75,12 @@ public partial class AppSettings : Node
         Save();
     }
 
+    public void SetPlaytestSurvey(bool enabled)
+    {
+        Values = Values with { PlaytestSurvey = enabled };
+        Save();
+    }
+
     public void SetInterfaceScale(int percent)
     {
         Values = Values with { InterfaceScale = percent };

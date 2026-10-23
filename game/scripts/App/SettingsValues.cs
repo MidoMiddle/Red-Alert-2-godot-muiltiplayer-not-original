@@ -43,7 +43,8 @@ public sealed record SettingsValues(
     int ScrollSpeed,
     bool EdgeScroll,
     bool CameraDrag,
-    HealthBarMode HealthBars = HealthBarMode.Damaged)
+    HealthBarMode HealthBars = HealthBarMode.Damaged,
+    bool PlaytestSurvey = false)
 {
     /// <summary>Layout version of the file, written as <c>meta/format</c>.</summary>
     public const int FormatVersion = 1;
@@ -72,6 +73,7 @@ public sealed record SettingsValues(
     private const string EdgeScrollKey = "controls/edge_scroll";
     private const string CameraDragKey = "controls/camera_drag";
     private const string HealthBarsKey = "interface/health_bars";
+    private const string PlaytestSurveyKey = "interface/playtest_survey";
 
     /// <summary>Resolutions of the Graphics tab. This is the size of a windowed game; fullscreen uses the screen.</summary>
     public static WindowSize[] ResolutionChoices { get; } =
@@ -86,7 +88,7 @@ public sealed record SettingsValues(
 
     /// <summary>
     /// What the game uses without a settings file: windowed 1280 × 720, VSync, no frame limit, 100 % and full volume, Classic
-    /// scheme, scroll speed 5, edge scrolling and camera drag on, health bars of the selected and the damaged.
+    /// scheme, scroll speed 5, edge scrolling and camera drag on, health bars of the selected and the damaged, no playtest survey (M8 step 14).
     /// </summary>
     public static SettingsValues Defaults { get; } = new(
         WindowMode.Windowed,
@@ -115,7 +117,8 @@ public sealed record SettingsValues(
             Math.Clamp(ParseInteger(raw, ScrollSpeedKey, fallback.ScrollSpeed), MinScrollSpeed, MaxScrollSpeed),
             ParseBool(raw, EdgeScrollKey, fallback.EdgeScroll),
             ParseBool(raw, CameraDragKey, fallback.CameraDrag),
-            ParseHealthBars(raw, fallback.HealthBars));
+            ParseHealthBars(raw, fallback.HealthBars),
+            ParseBool(raw, PlaytestSurveyKey, fallback.PlaytestSurvey));
     }
 
     /// <summary>The values as file contents, keyed by <c>section/key</c>. Every known key is written.</summary>
@@ -136,6 +139,7 @@ public sealed record SettingsValues(
             [EdgeScrollKey] = EdgeScroll ? "true" : "false",
             [CameraDragKey] = CameraDrag ? "true" : "false",
             [HealthBarsKey] = HealthBars.ToString().ToLowerInvariant(),
+            [PlaytestSurveyKey] = PlaytestSurvey ? "true" : "false",
         };
     }
 

@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Matches;
@@ -27,6 +28,12 @@ public partial class MatchResults : CanvasLayer
     private ArmyGraph _graph = null!;
     private Button _save = null!;
     private Label _saved = null!;
+    private Button _again = null!;
+    private Button _exit = null!;
+    private VBoxContainer _column = null!;
+    private PlaytestSurvey? _survey;
+    private Label _army = null!;
+    private MatchSummary? _summary;
     private double _countdown = -1;
 
     /// <summary>Whether the results are up.</summary>
@@ -60,6 +67,7 @@ public partial class MatchResults : CanvasLayer
         var column = new VBoxContainer();
         column.AddThemeConstantOverride("separation", 14);
         panel.AddChild(column);
+        _column = column;
 
         _title = new Label { HorizontalAlignment = HorizontalAlignment.Center };
         _title.AddThemeFontSizeOverride("font_size", 56);
@@ -72,7 +80,8 @@ public partial class MatchResults : CanvasLayer
         _table.AddThemeConstantOverride("h_separation", 18);
         column.AddChild(_table);
 
-        column.AddChild(new Label { Text = Tr("UI_RESULTS_ARMY") });
+        _army = new Label { Text = Tr("UI_RESULTS_ARMY") };
+        column.AddChild(_army);
         _graph = new ArmyGraph { CustomMinimumSize = new Vector2(900, 220) };
         column.AddChild(_graph);
 
@@ -84,12 +93,14 @@ public partial class MatchResults : CanvasLayer
         var again = AddButton("UI_RESULTS_PLAY_AGAIN", buttons);
         again.Name = "PlayAgain";
         again.Pressed += () => _host?.PlayAgain();
+        _again = again;
         _save = AddButton("UI_RESULTS_SAVE_REPLAY", buttons);
         _save.Name = "SaveReplay";
         _save.Pressed += SaveReplay;
         var exit = AddButton("UI_RESULTS_EXIT", buttons);
         exit.Name = "ExitResults";
         exit.Pressed += () => PauseMenu.LeaveMatch(GetTree());
+        _exit = exit;
     }
 
     public override void _ExitTree()
@@ -140,12 +151,69 @@ public partial class MatchResults : CanvasLayer
             _ => "UI_RESULTS_DRAW",
         });
         _duration.Text = string.Format(Tr("UI_RESULTS_DURATION"), summary.Duration);
-        FillTable(summary);
-        _graph.Plot(summary);
+        _summary = summary;
         _saved.Text = "";
         _save.Disabled = false;
+        OpenSurvey();
+        FillTable(summary);
+        _graph.Plot(summary);
         _overlay.Show();
         GetTree().Paused = true;
+    }
+
+    /// <summary>
+    /// The survey of the tests by people (M8 step 14) when the settings ask for it and bots played: it takes the place of the graph, the
+    /// personalities stay hidden and the buttons wait until it is sent or skipped.
+    /// </summary>
+    private void OpenSurvey()
+    {
+        CloseSurvey();
+        if (AppSettings.Instance?.Values.PlaytestSurvey != true
+            || _host?.Simulation.World.Match is not { } match
+            || !match.Players.Any(player => player.Kind == PlayerKind.Ai))
+        {
+            return;
+        }
+
+        _survey = new PlaytestSurvey();
+        _survey.Build(match, SimulationHost.LocalPlayer, player => BotName(new SummaryRow(player.Id, false, player.Kind, player.Team, false, [])
+        {
+            Difficulty = player.Difficulty,
+            Personality = player.Personality,
+        }));
+        _survey.Submitted += answers =>
+        {
+            if (_host is not null && PlaytestFiles.Save(_host, answers) is { } path)
+            {
+                _saved.Text = string.Format(Tr("UI_SURVEY_SAVED"), path);
+            }
+
+            Reveal();
+        };
+        _survey.Skipped += Reveal;
+        _column.AddChild(_survey);
+        _column.MoveChild(_survey, _army.GetIndex());
+        _graph.Visible = _army.Visible = false;
+        _again.Disabled = _save.Disabled = _exit.Disabled = true;
+    }
+
+    /// <summary>The survey answered or skipped: the personalities, the graph and the buttons come back.</summary>
+    private void Reveal()
+    {
+        CloseSurvey();
+        _again.Disabled = _exit.Disabled = false;
+        _save.Disabled = _saved.Text.Length > 0;
+        if (_summary is not null)
+        {
+            FillTable(_summary);
+        }
+    }
+
+    private void CloseSurvey()
+    {
+        _survey?.QueueFree();
+        _survey = null;
+        _graph.Visible = _army.Visible = true;
     }
 
     private void Close()
@@ -195,6 +263,12 @@ public partial class MatchResults : CanvasLayer
     /// <summary>«Bot (Hard · Aggressor)»; a random personality shows the one drawn: «Bot (Hard · Random → Aggressor)» (M8 step 13).</summary>
     private string BotName(SummaryRow row)
     {
+        if (_survey is not null)
+        {
+            // Hidden while the survey asks the person to guess it (M8 step 14).
+            return string.Format(Tr("UI_RESULTS_BOT"), SkirmishNames.Level(this, row.Difficulty), Tr("UI_SURVEY_HIDDEN"));
+        }
+
         var personality = row.Personality;
         if (_host?.Simulation.World.Match is { } match && match.PlayerOf(row.Player) is { } player)
         {

@@ -56,6 +56,7 @@ public partial class Settings : Control
     private Label _scrollSpeedValue = null!;
     private CheckBox _edgeScroll = null!;
     private CheckBox _cameraDrag = null!;
+    private CheckBox _playtestSurvey = null!;
     private OptionButton _healthBars = null!;
 
     private static AppSettings Store =>
@@ -240,6 +241,13 @@ public partial class Settings : Control
         AddRow(rows, "UI_SETTINGS_HEALTH_BARS", _healthBars);
         AddRow(rows, "UI_SETTINGS_CONFIRM_SELL", NewCheckBox(true), locked: true);
         AddRow(rows, "UI_SETTINGS_HINTS", NewCheckBox(true), locked: true);
+
+        // M8 step 14: the survey of the tests by people on the results screen.
+        _playtestSurvey = NewCheckBox(false);
+        _playtestSurvey.Name = "PlaytestSurvey";
+        _playtestSurvey.TooltipText = Tr("UI_SETTINGS_PLAYTEST_SURVEY_HINT");
+        _playtestSurvey.Toggled += enabled => Store.SetPlaytestSurvey(enabled);
+        AddRow(rows, "UI_SETTINGS_PLAYTEST_SURVEY", _playtestSurvey);
     }
 
     /// <summary>Adds a tab page. Long pages scroll, so the tab stays usable at a large interface scale.</summary>
@@ -417,6 +425,7 @@ public partial class Settings : Control
         _edgeScroll.SetPressedNoSignal(values.EdgeScroll);
         _cameraDrag.SetPressedNoSignal(values.CameraDrag);
         _healthBars.Selected = (int)values.HealthBars;
+        _playtestSurvey.SetPressedNoSignal(values.PlaytestSurvey);
     }
 
     /// <summary>Opens the tab named by <c>--tab</c>, so the tabs can be checked from the command line.</summary>

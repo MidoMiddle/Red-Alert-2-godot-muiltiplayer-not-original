@@ -221,6 +221,8 @@ UI_HEALTH_BARS_DAMAGED,Selected and damaged
 UI_HEALTH_BARS_SELECTED,Selected only
 UI_SETTINGS_CONFIRM_SELL,Confirm selling
 UI_SETTINGS_HINTS,Hints
+UI_SETTINGS_PLAYTEST_SURVEY,Playtest survey
+UI_SETTINGS_PLAYTEST_SURVEY_HINT,After every match against bots: a short survey for the tests by people; the personalities stay hidden until you answer
 UI_KEYS_HEADER,Key bindings
 UI_KEY_CAMERA_UP,Camera up
 UI_KEY_CAMERA_DOWN,Camera down
@@ -304,6 +306,22 @@ UI_RESULTS_PLAYER,Player
 UI_RESULTS_YOU,You
 UI_RESULTS_BOT,Bot ({0} · {1})
 UI_RESULTS_RANDOM_PERSONALITY,Random → {0}
+UI_SURVEY_TITLE,Playtest survey
+UI_SURVEY_ROLE,You play as
+UI_SURVEY_NEWCOMER,Newcomer to RTS
+UI_SURVEY_VETERAN,RA2 veteran
+UI_SURVEY_DIFFICULTY,How hard (1 easy · 5 crushing)
+UI_SURVEY_STUPID,Where the bot was stupid
+UI_SURVEY_UNFAIR,Where the bot was unfair
+UI_SURVEY_WHERE_HINT,What and when · empty if nothing
+UI_SURVEY_GUESS,Personality of {0}
+UI_SURVEY_CANNOT_TELL,Can't tell
+UI_SURVEY_ALLY,How much your ally helped (1 · 5)
+UI_SURVEY_NOTES,Notes
+UI_SURVEY_SUBMIT,Submit
+UI_SURVEY_SKIP,Skip
+UI_SURVEY_SAVED,Saved {0}
+UI_SURVEY_HIDDEN,?
 UI_RESULTS_WINNER,winner
 UI_RESULTS_UNITS_BUILT,Units built
 UI_RESULTS_UNITS_LOST,Units lost
