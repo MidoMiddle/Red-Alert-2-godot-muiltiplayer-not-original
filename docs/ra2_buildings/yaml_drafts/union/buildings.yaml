@@ -1,0 +1,111 @@
+# Черновик зданий: union. Игра этот файл не загружает: см. docs/ra2_buildings/yaml_drafts/README.md.
+# TODO — значение не подтверждено источниками; при переносе в game/data загрузчик на null упадёт, значит надо заполнить.
+
+naval_shipyard:  # производство (флот), ремонт кораблей
+  kind: building
+  inherits: base_building
+  name: Naval Shipyard
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 1500
+  footprint: [4, 4]
+  armor: concrete
+  power: -20
+  extends_base: false
+  adjacent: null  # TODO: правила дают 12; схема допускает 0–10
+  sight: 10
+  produces: [vehicle]
+  exit_cell: null  # TODO: клетка выхода из art.ini
+  prerequisites: [refinery]
+  # M11b: корабли на воде
+
+service_depot:  # поддержка (ремонт техники)
+  kind: building
+  inherits: base_building
+  name: Service Depot
+  faction: union
+  cost: 800
+  build_time: 33.6s
+  hp: 1200
+  footprint: [4, 3]
+  armor: wood
+  power: -20
+  sight: 5
+  prerequisites: [war_factory]
+  # не описано: ремонт техники (правило не написано)
+
+nuclear_reactor:  # энергия (поздняя игра)
+  kind: building
+  inherits: base_building
+  name: Nuclear Reactor
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 1000
+  footprint: [4, 4]
+  armor: concrete
+  power: 2000
+  sight: 5
+  prerequisites: [tech_center]
+  # не описано: смертельный взрыв и тег POWER
+
+iron_curtain:  # супероружие (поддержка)
+  kind: building
+  inherits: base_building
+  name: Iron Curtain
+  faction: union
+  cost: 2500
+  build_time: 105s
+  hp: 750
+  footprint: [3, 3]
+  armor: concrete
+  power: -200
+  sight: 4
+  prerequisites: [tech_center]
+  # M11a: суперорудие (неуязвимость группы)
+
+nuclear_missile_silo:  # супероружие (ударное)
+  kind: building
+  inherits: base_building
+  name: Nuclear Missile Silo
+  faction: union
+  cost: 5000
+  build_time: 210s
+  hp: 1000
+  footprint: [3, 3]
+  armor: concrete
+  power: -200
+  sight: 4
+  prerequisites: [tech_center]
+  # M11a: суперорудие (ракетный удар)
+
+industrial_plant:  # экономика (скидка на технику)
+  kind: building
+  inherits: base_building
+  name: Industrial Plant
+  faction: union
+  cost: 2500
+  build_time: 105s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 3×3 (по artmd.ini; не подтверждено вторым источником)
+  armor: wood
+  power: -200
+  sight: 4
+  prerequisites: [tech_center]
+  # не описано: скидка на технику (YR)
+
+battle_bunker:  # оборона (гарнизонная)
+  kind: building
+  inherits: base_building
+  name: Battle Bunker
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 600
+  footprint: [2, 2]
+  armor: steel
+  extends_base: false
+  sight: 6
+  prerequisites: [construction_yard]
+  # M11a: гарнизон

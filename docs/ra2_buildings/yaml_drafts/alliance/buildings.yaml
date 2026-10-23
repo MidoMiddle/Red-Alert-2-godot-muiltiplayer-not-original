@@ -1,0 +1,310 @@
+# Черновик зданий: alliance. Игра этот файл не загружает: см. docs/ra2_buildings/yaml_drafts/README.md.
+# TODO — значение не подтверждено источниками; при переносе в game/data загрузчик на null упадёт, значит надо заполнить.
+
+alliance_construction_yard:  # ядро
+  kind: building
+  inherits: base_building
+  name: Construction Yard
+  faction: alliance
+  cost: 3000
+  build_time: 126s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 4×4 (по порту OpenRA; art.ini не проверен — не подтверждено)
+  armor: concrete
+  sight: 8
+  produces: [building, defense]
+
+alliance_power_plant:  # энергия
+  kind: building
+  inherits: base_building
+  name: Power Plant
+  faction: alliance
+  cost: 800
+  build_time: 33.6s
+  hp: 750
+  footprint: [2, 2]
+  armor: wood
+  power: 200
+  sight: 4
+  prerequisites: [alliance_construction_yard]
+
+alliance_barracks:  # производство (пехота)
+  kind: building
+  inherits: base_building
+  name: Barracks
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 500
+  footprint: null  # TODO: размер не подтверждён; карточка: 2×3 (по порту OpenRA — не подтверждено)
+  armor: steel
+  power: -10
+  sight: 5
+  produces: [infantry]
+  exit_cell: null  # TODO: клетка выхода из art.ini
+  prerequisites: [alliance_power_plant]
+
+alliance_ore_refinery:  # экономика
+  kind: building
+  inherits: base_building
+  name: Ore Refinery
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 4×3 (по порту OpenRA — не подтверждено)
+  armor: wood
+  power: -50
+  sight: 6
+  dock_cell: null  # TODO: клетка дока из art.ini
+  prerequisites: [alliance_power_plant]
+
+alliance_war_factory:  # производство (техника)
+  kind: building
+  inherits: base_building
+  name: War Factory
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 5×3 (по порту OpenRA — не подтверждено)
+  armor: wood
+  power: -25
+  sight: 4
+  produces: [vehicle]
+  exit_cell: null  # TODO: клетка выхода из art.ini
+  prerequisites: [alliance_ore_refinery, alliance_barracks]
+
+alliance_air_force_command:  # информация (радар) + производство (авиация) + тех-уровень 2
+  kind: building
+  inherits: base_building
+  name: Air Force Command
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  footprint: null  # TODO: размер не подтверждён; карточка: 3×2 (по порту OpenRA — не подтверждено)
+  armor: steel
+  power: -50
+  sight: 5
+  radar: true
+  prerequisites: [alliance_ore_refinery]
+  # M11b: самолёты на аэродроме
+
+alliance_naval_shipyard:  # производство (флот) + ремонт кораблей
+  kind: building
+  inherits: base_building
+  name: Naval Shipyard
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 1500
+  footprint: [4, 4]
+  armor: concrete
+  power: -25
+  extends_base: false
+  adjacent: null  # TODO: правила дают 12; схема допускает 0–10
+  sight: 10
+  produces: [vehicle]
+  exit_cell: null  # TODO: клетка выхода из art.ini
+  prerequisites: [alliance_ore_refinery]
+  # M11b: корабли на воде
+
+alliance_service_depot:  # поддержка (ремонт техники)
+  kind: building
+  inherits: base_building
+  name: Service Depot
+  faction: alliance
+  cost: 800
+  build_time: 33.6s
+  hp: 1200
+  footprint: null  # TODO: размер не подтверждён; карточка: 3×3 (по порту OpenRA — не подтверждено)
+  armor: wood
+  power: -25
+  sight: 5
+  prerequisites: [alliance_war_factory]
+  # M11c: ремонт техники (правило не написано)
+
+alliance_battle_lab:  # высокий тех (тех-3), в YR также Силовой щит
+  kind: building
+  inherits: base_building
+  name: Battle Lab
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 500
+  footprint: null  # TODO: размер не подтверждён; карточка: 3×3 (не подтверждено; порт OpenRA даёт 3×2)
+  armor: wood
+  power: -100
+  sight: 6
+  prerequisites: [alliance_war_factory, alliance_air_force_command]
+
+alliance_ore_purifier:  # экономика (бонус к доходу)
+  kind: building
+  inherits: base_building
+  name: Ore Purifier
+  faction: alliance
+  cost: 2500
+  build_time: 105s
+  hp: 900
+  footprint: null  # TODO: размер не подтверждён; карточка: 3×3 (по порту OpenRA — не подтверждено)
+  armor: wood
+  power: -200
+  sight: 5
+  prerequisites: [alliance_battle_lab]
+  # не описано: +25% к разгрузке руды
+
+alliance_spy_satellite_uplink:  # информация
+  kind: building
+  inherits: base_building
+  name: Spy Satellite Uplink
+  faction: alliance
+  cost: 1500
+  build_time: 63s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 2×2 (по порту OpenRA — не подтверждено)
+  armor: wood
+  power: -100
+  sight: 5
+  radar: true
+  prerequisites: [alliance_battle_lab]
+  # не описано: раскрытие карты
+
+alliance_robot_control_center:  # поддержка (управление юнитами)
+  kind: building
+  inherits: base_building
+  name: Robot Control Center
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 600
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено (порт OpenRA не содержит YR-зданий)
+  armor: wood
+  power: -100
+  sight: 6
+  prerequisites: [alliance_war_factory]
+  # не описано: роботы (YR)
+
+alliance_chronosphere:  # супероружие (поддержка / телепортация)
+  kind: building
+  inherits: base_building
+  name: Chronosphere
+  faction: alliance
+  cost: 2500
+  build_time: 105s
+  hp: 750
+  footprint: null  # TODO: размер не подтверждён; карточка: 4×3 (по порту OpenRA — не подтверждено)
+  armor: concrete
+  power: -200
+  sight: 5
+  prerequisites: [alliance_battle_lab]
+  # M11c: суперорудие (групповая телепортация)
+
+alliance_weather_control_device:  # супероружие (атакующее)
+  kind: building
+  inherits: base_building
+  name: Weather Control Device
+  faction: alliance
+  cost: 5000
+  build_time: 210s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 3×3 (по порту OpenRA — не подтверждено)
+  armor: concrete
+  power: -200
+  sight: 5
+  prerequisites: [alliance_battle_lab]
+  # M11c: суперорудие (погодный удар)
+
+alliance_pillbox:  # оборона (против пехоты)
+  kind: building
+  inherits: base_defense
+  name: Pillbox
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 400
+  footprint: [1, 1]
+  armor: steel
+  adjacent: 4
+  sight: 7
+  primary: null  # TODO: оружие обороны (weapons.yaml, M4)
+  prerequisites: [alliance_barracks]
+
+alliance_patriot_missile_system:  # оборона (ПВО)
+  kind: building
+  inherits: base_defense
+  name: Patriot Missile System
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 900
+  footprint: [1, 1]
+  armor: steel
+  power: -50
+  adjacent: 4
+  sight: 10
+  primary: null  # TODO: оружие обороны (weapons.yaml, M4)
+  prerequisites: [alliance_barracks]
+  # M11b: только воздушные цели
+
+alliance_prism_tower:  # оборона (против наземных целей)
+  kind: building
+  inherits: base_defense
+  name: Prism Tower
+  faction: alliance
+  cost: 1500
+  build_time: 63s
+  hp: 600
+  footprint: [1, 1]
+  armor: steel
+  power: -75
+  sight: 8
+  primary: null  # TODO: оружие обороны (weapons.yaml, M4)
+  prerequisites: [alliance_air_force_command]
+  # M11c: цепочка призм
+
+alliance_gap_generator:  # информация (маскировка базы)
+  kind: building
+  inherits: base_building
+  name: Gap Generator
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  footprint: null  # TODO: размер не подтверждён; карточка: 1×1 (размер по умолчанию; не подтверждено)
+  armor: wood
+  power: -100
+  sight: 5
+  prerequisites: [alliance_battle_lab]
+  # M11c: обратный туман
+
+alliance_grand_cannon:  # оборона (дальнобойная артиллерия)
+  kind: building
+  inherits: base_defense
+  name: Grand Cannon
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 900
+  footprint: null  # TODO: размер не подтверждён; карточка: 2×2 (по порту OpenRA — не подтверждено)
+  armor: steel
+  power: -100
+  sight: 10
+  primary: null  # TODO: оружие обороны (weapons.yaml, M4)
+  prerequisites: [alliance_air_force_command]
+  # M11c: только страна Франция
+
+alliance_wall:  # оборона (пассивное препятствие)
+  kind: building
+  inherits: base_defense
+  name: Wall
+  faction: alliance
+  cost: 100
+  build_time: 4.2s
+  hp: 300
+  footprint: [1, 1]
+  armor: concrete
+  adjacent: 8
+  sight: 1
+  wall: true
+  prerequisites: [alliance_barracks]

@@ -1,0 +1,148 @@
+# Черновик зданий: neutral. Игра этот файл не загружает: см. docs/ra2_buildings/yaml_drafts/README.md.
+# TODO — значение не подтверждено источниками; при переносе в game/data загрузчик на null упадёт, значит надо заполнить.
+
+tech_oil_derrick:  # экономика
+  kind: building
+  inherits: base_building
+  name: Oil Derrick
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 1000
+  footprint: [2, 2]
+  armor: steel
+  sight: 6
+  # M11a: доход и захват
+
+tech_hospital:  # поддержка (лечение пехоты)
+  kind: building
+  inherits: base_building
+  name: Hospital
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: null  # TODO: прочность: в M7 1500, в правилах 800; решить
+  footprint: null  # TODO: размер в M7 3×3, карточка расходится; решить
+  armor: concrete
+  sight: 6
+  # M11a: лечение пехоты
+
+tech_airfield:  # поддержка (десант)
+  kind: building
+  inherits: base_building
+  name: Airfield
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: null  # TODO: прочность: в M7 2000, в правилах 800; решить
+  footprint: null  # TODO: размер в M7 4×3, карточка расходится; решить
+  armor: concrete
+  sight: 6
+  # M11a: десант
+
+tech_machine_shop:  # поддержка (ремонт техники)
+  kind: building
+  inherits: base_building
+  name: Machine Shop
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 800
+  footprint: [3, 3]
+  armor: concrete
+  sight: 6
+  # M11a: ремонт техники
+
+tech_secret_lab:  # технологии (доступ к чужому юниту/зданию)
+  kind: building
+  inherits: base_building
+  name: Secret Lab
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 1000
+  footprint: [3, 3]
+  armor: steel
+  sight: 6
+  # не описано: доступ к юнитам
+
+tech_power_plant:  # энергия
+  kind: building
+  inherits: base_building
+  name: Power Plant
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 800
+  footprint: [2, 2]
+  armor: concrete
+  power: 200
+  sight: 6
+  # M11a: энергия после захвата
+
+tech_outpost:  # оборона + ремонт техники
+  kind: building
+  inherits: base_defense
+  name: Outpost
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 2000
+  footprint: [4, 3]
+  armor: concrete
+  sight: 6
+  primary: null  # TODO: оружие обороны (weapons.yaml, M4)
+  # не описано: ремонтная площадка и турель
+
+tech_bridge_repair_hut:  # инфраструктура карты (ремонт мостов)
+  kind: building
+  inherits: base_building
+  name: Bridge Repair Hut
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: null  # TODO: прочность не подтверждена
+  footprint: [1, 1]
+  armor: null  # TODO: броня не подтверждена
+  extends_base: false
+  adjacent: 0
+  sight: null  # TODO: обзор не найден в правилах
+  # M11a: инженер чинит мост
+
+neutral_shed:
+  kind: building
+  inherits: base_building
+  name: Shed
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 300
+  footprint: [1, 1]
+  armor: null  # TODO: броня не подтверждена
+  sight: null  # TODO: обзор не найден в правилах
+
+neutral_house_a:
+  kind: building
+  inherits: base_building
+  name: House A
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 800
+  footprint: [2, 2]
+  armor: null  # TODO: броня не подтверждена
+  sight: null  # TODO: обзор не найден в правилах
+  # M11a: гарнизон 3
+
+neutral_apartment:
+  kind: building
+  inherits: base_building
+  name: Apartment
+  faction: neutral
+  cost: null  # TODO: не строится; схема требует cost больше нуля (решить при переносе)
+  build_time: null  # TODO: не строится
+  hp: 1500
+  footprint: [3, 3]
+  armor: null  # TODO: броня не подтверждена
+  sight: null  # TODO: обзор не найден в правилах
+  # M11a: гарнизон 10

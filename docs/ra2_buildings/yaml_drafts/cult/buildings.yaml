@@ -1,0 +1,255 @@
+# Черновик зданий: cult. Игра этот файл не загружает: см. docs/ra2_buildings/yaml_drafts/README.md.
+# TODO — значение не подтверждено источниками; при переносе в game/data загрузчик на null упадёт, значит надо заполнить.
+
+cult_construction_yard:  # ядро
+  kind: building
+  inherits: base_building
+  name: Construction Yard
+  faction: cult
+  cost: 3000
+  build_time: 126s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 4×4 (не подтверждено)
+  armor: concrete
+  sight: 10
+  produces: [building, defense]
+
+cult_bio_reactor:  # энергия
+  kind: building
+  inherits: base_building
+  name: Bio Reactor
+  faction: cult
+  cost: 600
+  build_time: 25.2s
+  hp: 700
+  footprint: null  # TODO: размер не подтверждён; карточка: 2×2 по README (как у союзной электростанции); источники расходятся: статья электростанции даёт 2×3 для пустого реактора; `Foundation` не подтверждено
+  armor: wood
+  power: 150
+  sight: 4
+  prerequisites: [cult_construction_yard]
+  # не описано: +100 за каждого занятого
+
+cult_barracks:  # производство
+  kind: building
+  inherits: base_building
+  name: Barracks
+  faction: cult
+  cost: 500
+  build_time: 21s
+  hp: 500
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: steel
+  power: -10
+  sight: 5
+  produces: [infantry]
+  exit_cell: null  # TODO: клетка выхода из art.ini
+  prerequisites: [cult_bio_reactor]
+
+cult_slave_miner:  # экономика (мобильный перерабатывающий завод + сборщик)
+  kind: building
+  inherits: base_defense
+  name: Slave Miner
+  faction: cult
+  cost: 1500
+  build_time: 63s
+  hp: 2000
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: medium
+  sight: 6
+  dock_cell: null  # TODO: клетка дока из art.ini
+  primary: null  # TODO: оружие обороны (weapons.yaml, M4)
+  prerequisites: [cult_bio_reactor]
+  # M11d: рабовладельческий рудник и рабы
+
+cult_war_factory:  # производство
+  kind: building
+  inherits: base_building
+  name: War Factory
+  faction: cult
+  cost: 2000
+  build_time: 84s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: wood
+  power: -25
+  sight: 4
+  produces: [vehicle]
+  exit_cell: null  # TODO: клетка выхода из art.ini
+  prerequisites: [cult_slave_miner, cult_barracks]
+  # M11b: самолёты
+
+cult_psychic_radar:  # информация (радар + детектор + тех-уровень 2)
+  kind: building
+  inherits: base_building
+  name: Psychic Radar
+  faction: cult
+  cost: 1000
+  build_time: 42s
+  hp: 750
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: wood
+  power: -50
+  sight: 10
+  radar: true
+  prerequisites: [cult_slave_miner]
+  # M11d: раскрытие целей атак
+
+cult_submarine_pen:  # производство (флот)
+  kind: building
+  inherits: base_building
+  name: Submarine Pen
+  faction: cult
+  cost: 1000
+  build_time: 42s
+  hp: 1500
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено (ставится на воду)
+  armor: concrete
+  power: -25
+  extends_base: false
+  adjacent: null  # TODO: правила дают 12; схема допускает 0–10
+  sight: 10
+  produces: [vehicle]
+  exit_cell: null  # TODO: клетка выхода из art.ini
+  prerequisites: [cult_slave_miner]
+  # M11b: подлодки
+
+cult_grinder:  # экономика (утилизация юнитов)
+  kind: building
+  inherits: base_building
+  name: Grinder
+  faction: cult
+  cost: 600
+  build_time: 25.2s
+  hp: 900
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: wood
+  power: -50
+  sight: 6
+  prerequisites: [cult_war_factory]
+  # M11d: переработка юнитов
+
+cult_cloning_vats:  # производство (клонирование пехоты)
+  kind: building
+  inherits: base_building
+  name: Cloning Vats
+  faction: cult
+  cost: 2500
+  build_time: 105s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: wood
+  power: -200
+  sight: 5
+  prerequisites: [cult_battle_lab]
+  # M11d: клонирование
+
+cult_battle_lab:  # тех-центр (уровень 3)
+  kind: building
+  inherits: base_building
+  name: Battle Lab
+  faction: cult
+  cost: 2000
+  build_time: 84s
+  hp: 500
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: wood
+  power: -100
+  sight: 6
+  prerequisites: [cult_war_factory, cult_psychic_radar]
+  # не описано: силовой щит (сверхспособность)
+
+cult_gattling_cannon:  # оборона (против пехоты и авиации)
+  kind: building
+  inherits: base_building
+  name: Gattling Cannon
+  faction: cult
+  cost: 1000
+  build_time: 42s
+  hp: 810
+  footprint: null  # TODO: размер не подтверждён; карточка: 1×1 (не подтверждено)
+  armor: steel
+  power: -50
+  powered: true
+  extends_base: false
+  adjacent: 4
+  sight: 10
+  prerequisites: [cult_barracks]
+  # M11b: цели в воздухе (наземная часть — M4)
+
+cult_psychic_tower:  # оборона (контроль разума)
+  kind: building
+  inherits: base_defense
+  name: Psychic Tower
+  faction: cult
+  cost: 1500
+  build_time: 63s
+  hp: 455
+  footprint: null  # TODO: размер не подтверждён; карточка: 1×1 (не подтверждено)
+  armor: steel
+  power: -100
+  sight: 5
+  primary: null  # TODO: оружие обороны (weapons.yaml, M4)
+  prerequisites: [cult_psychic_radar]
+  # M11d: башня контроля разума
+
+cult_tank_bunker:  # оборона (гарнизон для техники)
+  kind: building
+  inherits: base_building
+  name: Tank Bunker
+  faction: cult
+  cost: 400
+  build_time: 16.8s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: 2×2 или больше (по ModEnc, бункер с основанием 1×1 не работает; точное значение не подтверждено)
+  armor: steel
+  extends_base: false
+  adjacent: 3
+  sight: 6
+  prerequisites: [cult_construction_yard]
+  # M11a: гарнизон (правила для техники не написаны)
+
+cult_genetic_mutator:  # супероружие (поддержка)
+  kind: building
+  inherits: base_building
+  name: Genetic Mutator
+  faction: cult
+  cost: 2500
+  build_time: 105s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: concrete
+  power: -200
+  sight: 5
+  prerequisites: [cult_battle_lab]
+  # M11d: сверхспособность (мутация)
+
+cult_psychic_dominator:  # супероружие (атакующее)
+  kind: building
+  inherits: base_building
+  name: Psychic Dominator
+  faction: cult
+  cost: 5000
+  build_time: 210s
+  hp: 1000
+  footprint: null  # TODO: размер не подтверждён; карточка: не подтверждено
+  armor: concrete
+  power: -200
+  sight: 5
+  prerequisites: [cult_battle_lab]
+  # не описано: контроль разума в области
+
+cult_citadel_wall:  # оборона (пассивная преграда)
+  kind: building
+  inherits: base_defense
+  name: Citadel Wall
+  faction: cult
+  cost: 100
+  build_time: 4.2s
+  hp: 300
+  footprint: [1, 1]
+  armor: concrete
+  adjacent: 8
+  sight: 1
+  wall: true
+  prerequisites: [cult_barracks]
+  # пробел: ремонт стен не описан
