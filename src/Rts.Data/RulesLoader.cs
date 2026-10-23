@@ -104,10 +104,14 @@ public static class RulesLoader
     /// </summary>
     public static RulesDatabase LoadDirectory(string root) => Load(FilesBelow(root));
 
-    /// <summary>Every <c>.yaml</c> file below <paramref name="root"/> as (relative path with '/', text), in path order.</summary>
+    /// <summary>
+    /// Every <c>.yaml</c> file below <paramref name="root"/> as (relative path with '/', text), in path order, except the sounds of
+    /// <c>audio/</c>: the audio code reads them, not the rules (by the owner's decision, docs/implementation/M6_menus_skirmish.md, 4.8).
+    /// </summary>
     internal static List<(string FileName, string Text)> FilesBelow(string root) =>
         Directory.GetFiles(root, "*.yaml", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
+            .Where(name => !name.StartsWith("audio/", StringComparison.Ordinal))
             .OrderBy(name => name, StringComparer.Ordinal)
             .Select(name => (name, File.ReadAllText(Path.Combine(root, name))))
             .ToList();
