@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -81,6 +81,9 @@ public sealed class StateHasherTests
             case "bomb shooter": moving.BombShooter = idle.Id; break;
             case "bomb owner": moving.BombOwner = new PlayerId(2); break;
             case "deployed": moving.Deployed = true; break;
+            case "passenger": moving.Passengers.Add(new Occupant(world.Rules.Unit(UnitType.Conscript), 125)); break;
+            case "parasite": moving.Parasite = UnitType.Conscript; break;
+            case "parasite ticks": moving.ParasiteTicks = 7; break;
             case "warp ticks": moving.WarpTicks = 3; break;
             case "blackout": world.Player(Player1).BlackoutUntil = 50; break;
             case "radiation": world.Radiation[7] = 100; break;
@@ -262,6 +265,8 @@ public sealed class StateHasherTests
         "<Target>k__BackingField", "<Weapons>k__BackingField", "<Stance>k__BackingField", "<Anchor>k__BackingField",
         "<TargetOrder>k__BackingField", "<TargetPoint>k__BackingField", "<Engaged>k__BackingField", "<ChaseCell>k__BackingField", "<EnterTarget>k__BackingField",
         "<Deployed>k__BackingField", "<WarpTicks>k__BackingField",
+        "<Passengers>k__BackingField", "<Parasite>k__BackingField", "<ParasiteOwner>k__BackingField", "<ParasiteHp>k__BackingField",
+        "<ParasiteWeapon>k__BackingField", "<ParasiteTicks>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {
@@ -320,7 +325,7 @@ public sealed class StateHasherTests
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField",
         // Derived from the buildings by PowerSystem and TechTree (M3 step 5).
-        "<BuildingList>k__BackingField", "<PowerOutput>k__BackingField", "<PowerDrain>k__BackingField", "<LowPower>k__BackingField",
+        "<BuildingList>k__BackingField", "<PowerOutput>k__BackingField", "<PowerDrain>k__BackingField", "<LowPower>k__BackingField", "<RobotsOnline>k__BackingField",
         "_units", "_buildings",
         // Derived from the ready buildings by TechTree (stage 2c): the discount on vehicles and the bonus of the ore.
         "<VehicleDiscountPercent>k__BackingField", "<BuildingIncomeBonusPercent>k__BackingField",

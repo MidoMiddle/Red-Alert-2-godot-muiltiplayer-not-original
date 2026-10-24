@@ -42,7 +42,7 @@ public static class TargetingSystem
             }
 
             if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || entity.ErasedBy is not null
-                || entity is Unit { WarpTicks: > 0 })
+                || entity is Unit { WarpTicks: > 0 } || (entity is Unit robot && Defenses.IsAsleep(world, robot)))
             {
                 continue;
             }
@@ -53,7 +53,7 @@ public static class TargetingSystem
                 case Unit unit when unit.Weapons.Length > 0 && unit.TargetOrder == TargetOrder.None && !IsMoving(unit)
                     && !unit.Archetype.Has(UnitTalents.Passive):
                     {
-                        var weapons = rules.WeaponsOf(unit.Type);
+                        var weapons = rules.WeaponsOf(unit);
                         var reach = Reach(rules, weapons);
                         if (!unit.Archetype.Harvests && unit.Stance != Stance.HoldPosition)
                         {
@@ -239,6 +239,9 @@ public static class TargetingSystem
                 // left by those that only plant bombs.
                 || Fooled(me, candidate)
                 || (candidate.BombTicks > 0 && BombSystem.PlantsOnly(rules, weapons))
+                // A parasite (stage 3d) leaves a vehicle with one inside, a ship and a flier.
+                || (candidate is Unit { Parasite: not 0 } or Unit { Archetype.Category: UnitCategory.Naval or UnitCategory.Aircraft }
+                    && ParasiteSystem.ParasitesOnly(rules, weapons))
                 || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate))
             {
                 continue;

@@ -51,7 +51,7 @@ public static class PursuitSystem
                 continue;
             }
 
-            var weapons = rules.WeaponsOf(unit.Type);
+            var weapons = rules.WeaponsOf(unit);
             var crushing = CrushesOnItsOwn(world, unit);
             world.TryGet(unit.Target ?? EntityId.None, out var chased);
             var layer = TargetingSystem.LayerOf(chased);

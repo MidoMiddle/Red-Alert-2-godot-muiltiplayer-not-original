@@ -47,7 +47,11 @@ public sealed record UnitArchetype(
     bool Jumpjet = false,
     UnitTalents Talents = UnitTalents.None,
     int DeathWeapon = -1,
-    int DeployWeapon = -1)
+    int DeployWeapon = -1,
+    int Size = 1,
+    int PassengerSlots = 0,
+    int PassengerSizeLimit = 0,
+    int IfvWeapon = -1)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;

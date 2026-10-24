@@ -653,12 +653,14 @@ public partial class PlayerInput : Node
     /// mend or infiltrate): an order there sends it in.
     /// </summary>
     private EntityId? EnterAt(WorldPos point) =>
-        _host.Simulation.World.BuildingAt(point.ToCell()) is { } building ? EnterAt(building.Id) : null;
+        Hovered is { } hovered && EnterAt(hovered) is { } transport ? transport
+        : _host.Simulation.World.BuildingAt(point.ToCell()) is { } building ? EnterAt(building.Id) : null;
 
     private EntityId? EnterAt(EntityId id)
     {
         var world = _host.Simulation.World;
-        if (!world.TryGet(id, out var entity) || entity is not Building building || !Terrain.FogOfWar.Shows(world, building))
+        // A building, or an own transport under the pointer (stage 3d).
+        if (!world.TryGet(id, out var entity) || entity is not (Building or Unit) || !Terrain.FogOfWar.Shows(world, entity))
         {
             return null;
         }
@@ -666,9 +668,9 @@ public partial class PlayerInput : Node
         foreach (var selected in Selection.Units)
         {
             if (world.TryGet(selected, out var unit) && unit is Unit soldier && soldier.Owner == SimulationHost.LocalPlayer
-                && Rts.Simulation.Systems.EntrySystem.ActionOf(world, soldier, building) != Rts.Simulation.Systems.EntryAction.None)
+                && Rts.Simulation.Systems.EntrySystem.ActionOf(world, soldier, entity) != Rts.Simulation.Systems.EntryAction.None)
             {
-                return building.Id;
+                return entity.Id;
             }
         }
 

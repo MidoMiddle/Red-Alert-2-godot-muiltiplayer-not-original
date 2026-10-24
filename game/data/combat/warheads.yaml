@@ -173,3 +173,21 @@ mirage:  # the holo tank's gun; the verses are ours
   name: Mirage
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 75%, heavy: 50%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
   infantry_death: normal
+
+drone_parasite:  # RA2 ParasiteDog of the terror drone: into a vehicle, eating it 50 every 60 frames; a soldier dies at once; nothing to buildings
+  kind: warhead
+  name: Drone
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 0% }
+  parasite: true
+  parasite_damage: 50
+  parasite_delay: 4s
+  infantry_death: normal
+
+demolition_blast:  # RA2 Demobomb: the demolition truck going off; the area and verses are ours, RadLevel=100 is RA2's
+  kind: warhead
+  name: Demolition Blast
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  spread: 3
+  percent_at_max: 50%
+  radiation: 100
+  infantry_death: explode

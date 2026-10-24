@@ -69,7 +69,7 @@ public static class MovementSystem
         foreach (var entity in world.Entities)
         {
             // Held by a temporal beam (stage 3a), a unit stands still; so does a deployed one (stage 3b).
-            if (entity is not Unit { IsAlive: true, ErasedBy: null, Deployed: false } unit)
+            if (entity is not Unit { IsAlive: true, ErasedBy: null, Deployed: false } unit || Combat.Defenses.IsAsleep(world, unit))
             {
                 continue;
             }

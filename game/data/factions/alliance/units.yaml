@@ -14,6 +14,7 @@ alliance_rifleman:  # rifle infantry
   primary: alliance_rifle
   sight: 5
   prerequisites: [alliance_barracks]
+  ifv_weapon: ifv_machine_gun
 
 alliance_mcv:  # deploys into the Command Yard
   kind: unit
@@ -28,6 +29,7 @@ alliance_mcv:  # deploys into the Command Yard
   sight: 6
   turret: false
   prerequisites: [alliance_war_factory]
+  size: 6
 
 alliance_harvester:  # the refinery's free harvester
   kind: unit

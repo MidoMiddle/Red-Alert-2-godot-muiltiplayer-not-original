@@ -47,6 +47,18 @@ public sealed record WarheadDef : IDefinition
     /// <summary>The level of toxin it leaves on the ground of its area (stage 3b: the toxin trooper's eruption, RA2 <c>RadLevel</c>).</summary>
     public int Radiation { get; init; }
 
+    /// <summary>
+    /// The shooter climbs into the vehicle it hits and eats it from inside (stage 3d: the combat drone, RA2 <c>Parasite</c>): it does
+    /// <see cref="ParasiteDamage"/> every <see cref="ParasiteDelay"/> ticks; anything else it hits takes the weapon's damage.
+    /// </summary>
+    public bool Parasite { get; init; }
+
+    /// <summary>The damage a parasite does from inside.</summary>
+    public int ParasiteDamage { get; init; }
+
+    /// <summary>The ticks between two bites from inside.</summary>
+    public int ParasiteDelay { get; init; }
+
     /// <summary>How infantry dies of it, for the client: an id such as <c>explode</c>; the simulation does not use it.</summary>
     public string InfantryDeath { get; init; } = "";
 
@@ -55,6 +67,7 @@ public sealed record WarheadDef : IDefinition
         other is not null && Id == other.Id && Name == other.Name && Verses.SequenceEqual(other.Verses) && Spread == other.Spread
         && PercentAtMax == other.PercentAtMax && WallDamage == other.WallDamage && AffectsAir == other.AffectsAir
         && Temporal == other.Temporal && Bomb == other.Bomb && BombDelay == other.BombDelay && Radiation == other.Radiation
+        && Parasite == other.Parasite && ParasiteDamage == other.ParasiteDamage && ParasiteDelay == other.ParasiteDelay
         && InfantryDeath == other.InfantryDeath;
 
     public override int GetHashCode() => unchecked((Id.Length * 31) + Verses.Length);

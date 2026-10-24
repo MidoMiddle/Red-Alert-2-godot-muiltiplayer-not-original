@@ -62,6 +62,7 @@ alliance_spy:  # passes for the enemy's own soldier, goes into its buildings (st
   prerequisites: [alliance_barracks, alliance_battle_lab]
   infiltrator: true
   disguised: true
+  ifv_weapon: ifv_machine_gun
 
 alliance_chrono_legionnaire:  # erases its target from time (stage 3a); jumps where it is sent (stage 3b)
   kind: unit
@@ -77,6 +78,7 @@ alliance_chrono_legionnaire:  # erases its target from time (stage 3a); jumps wh
   prerequisites: [alliance_barracks, alliance_battle_lab]
   primary: alliance_neutron_rifle
   teleports: true
+  ifv_weapon: ifv_neutron_rifle
 
 alliance_tanya:  # hero: one shot kills a soldier (stage 3a), C4 brings a building down (stage 3b)
   kind: unit
@@ -93,6 +95,7 @@ alliance_tanya:  # hero: one shot kills a soldier (stage 3a), C4 brings a buildi
   prerequisites: [alliance_barracks, alliance_battle_lab]
   primary: alliance_double_pistols
   secondary: alliance_c4
+  ifv_weapon: ifv_smg
 
 alliance_sniper:  # long-range anti-infantry (stage 3a)
   kind: unit
@@ -107,8 +110,9 @@ alliance_sniper:  # long-range anti-infantry (stage 3a)
   sight: 8
   prerequisites: [alliance_barracks, alliance_air_force_command]
   primary: alliance_sniper_rifle
+  ifv_weapon: ifv_sniper
 
-alliance_ifv:  # weapon by its passenger
+alliance_ifv:  # carries one soldier and fires its weapon, its own missiles when empty (stage 3d)
   kind: unit
   inherits: base_vehicle
   name: Infantry Fighting Vehicle
@@ -121,7 +125,10 @@ alliance_ifv:  # weapon by its passenger
   speed: 60
   sight: 8
   prerequisites: [alliance_war_factory]
-  ability_later: true
+  primary: alliance_ifv_missiles
+  passengers: 1
+  passenger_size: 1
+  passenger_weapon: true
 
 alliance_prism_tank:  # a beam that splits to the enemies round its target (stage 3c)
   kind: unit
@@ -228,7 +235,7 @@ alliance_black_eagle:  # heavier strike jet
   prerequisites: [alliance_air_force_command]
   ability_later: true
 
-alliance_amphibious_transport:  # carries units over water
+alliance_amphibious_transport:  # carries 12 slots of units over water and land (stage 3d)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -244,7 +251,8 @@ alliance_amphibious_transport:  # carries units over water
   turret: false
   locomotor: amphibious
   prerequisites: [alliance_naval_shipyard]
-  ability_later: true
+  passengers: 12
+  passenger_size: 6
 
 alliance_dolphin:  # sonic attack
   kind: unit
@@ -315,3 +323,20 @@ alliance_aircraft_carrier:  # launches its own jets
   locomotor: naval
   prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
   ability_later: true
+
+alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); RA2 Robot Tank, the numbers are ours
+  kind: unit
+  inherits: base_vehicle
+  name: Robot Tank
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 200
+  threat: 20
+  armor: light
+  speed: 42
+  sight: 6
+  locomotor: hover
+  prerequisites: [alliance_war_factory, alliance_robot_control_center]
+  primary: alliance_robot_gun
+  robotic: true

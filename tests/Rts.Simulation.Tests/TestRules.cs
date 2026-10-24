@@ -145,7 +145,7 @@ internal static class TestRules
         builder.Add(InfantryDef(UnitType.Conscript, sight: 5) with { Armor = "flak", Primary = "conscript_rifle", Threat = 10 });
         builder.Add(InfantryDef(UnitType.Rocketeer, sight: 5) with { Primary = "rocketeer_rocket", Threat = 15 });
         builder.Add(InfantryDef(UnitType.Engineer, sight: 4) with { Threat = 5, Engineer = true });
-        builder.Add(VehicleDef(UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6) with { Threat = 5 });
+        builder.Add(VehicleDef(UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6) with { Threat = 5, Size = 6 });
         builder.Add(VehicleDef(UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4, "war_factory", "refinery") with
         {
             HarvestCapacity = 1000,

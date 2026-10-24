@@ -60,6 +60,27 @@ public sealed class Unit : Entity
     /// <summary>The ticks the unit still phases in after a jump (stage 3b: the time trooper): it neither moves nor fires. State: hashed.</summary>
     public int WarpTicks { get; internal set; }
 
+    /// <summary>The units it carries, in the order they boarded (stage 3d: the transports, the IFV). State: hashed.</summary>
+    public System.Collections.Generic.List<Occupant> Passengers { get; } = [];
+
+    /// <summary>
+    /// The type of the parasite inside this vehicle (stage 3d: a combat drone eating it from inside); 0 for none. State: hashed with
+    /// the four below.
+    /// </summary>
+    public UnitType Parasite { get; internal set; }
+
+    /// <summary>The player of the parasite.</summary>
+    public PlayerId ParasiteOwner { get; internal set; }
+
+    /// <summary>The hit points the parasite had when it went in, and has when it comes out.</summary>
+    public int ParasiteHp { get; internal set; }
+
+    /// <summary>The weapon it went in with, by its place in the rules: its warhead says how it eats.</summary>
+    public int ParasiteWeapon { get; internal set; } = -1;
+
+    /// <summary>The ticks until its next bite.</summary>
+    public int ParasiteTicks { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 

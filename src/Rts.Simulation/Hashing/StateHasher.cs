@@ -244,6 +244,21 @@ public static class StateHasher
                 hash.Add(unit.Deployed);
                 hash.Add(unit.WarpTicks);
 
+                // Rules v52 (stage 3d): the passengers, the parasite inside.
+                hash.Add(unit.Passengers.Count);
+                foreach (var passenger in unit.Passengers)
+                {
+                    hash.Add((byte)passenger.Type);
+                    hash.Add(passenger.Hp);
+                    AddWeapons(hash, null, passenger.Weapons);
+                }
+
+                hash.Add((byte)unit.Parasite);
+                hash.Add(unit.ParasiteOwner.Value);
+                hash.Add(unit.ParasiteHp);
+                hash.Add(unit.ParasiteWeapon);
+                hash.Add(unit.ParasiteTicks);
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)

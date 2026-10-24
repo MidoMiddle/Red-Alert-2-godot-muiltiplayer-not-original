@@ -3,6 +3,7 @@ using Rts.Client.App;
 using Rts.Client.Terrain;
 using Rts.Client.Units;
 using Rts.Simulation.Combat;
+using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Hud;
@@ -58,6 +59,13 @@ public partial class HealthBars : Control
             {
                 // A bomb on it (stage 3b): a red square that blinks faster as the time runs out.
                 DrawBomb(camera, entity, world.CurrentTick);
+            }
+
+            if (entity is Unit { Archetype.PassengerSlots: > 0 } transport && world.AreAllies(SimulationHost.LocalPlayer, transport.Owner))
+            {
+                // The slots of a transport (stage 3d), for its own team.
+                var top = WorldCoords.ToGodotOnGround(transport.Position, UnitHeight + Units.UnitAltitude.Of(transport.Archetype));
+                DrawGarrison(camera, top, TransportSystem.SlotsTaken(world, transport), transport.Archetype.PassengerSlots);
             }
 
             if (entity is Building { Def: { GarrisonCapacity: > 0 } bunker } garrisoned)

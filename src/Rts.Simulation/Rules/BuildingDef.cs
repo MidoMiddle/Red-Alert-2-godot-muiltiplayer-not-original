@@ -138,4 +138,7 @@ public sealed record BuildingDef : IDefinition
 
     /// <summary>What an infiltrator of another player does to it (stage 3b); <see cref="SpyEffect.None"/> takes none.</summary>
     public SpyEffect SpyEffect { get; init; }
+
+    /// <summary>While it stands ready and online, its owner's robots work (stage 3d: the drone control hub).</summary>
+    public bool ControlsRobots { get; init; }
 }

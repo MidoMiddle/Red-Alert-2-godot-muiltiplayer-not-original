@@ -105,6 +105,12 @@ public static class RepairSystem
                 player.Credits -= price;
                 world.Stats.Spent(unit.Owner, price);
                 world.SetHp(unit, unit.Hp + gain, events);
+                if (unit.Parasite != 0)
+                {
+                    // The workshop pulls the parasite out (stage 3d).
+                    ParasiteSystem.Clear(unit);
+                    events?.Add(new ParasiteKilled(world.CurrentTick, unit.Id));
+                }
             }
         }
     }

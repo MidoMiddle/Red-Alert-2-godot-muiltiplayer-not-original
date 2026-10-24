@@ -188,3 +188,15 @@ public sealed record BombPlanted(int Tick, EntityId Target, EntityId Shooter, in
 
 /// <summary><paramref name="Unit"/> jumped from <paramref name="From"/> to <paramref name="To"/> and phases in for a while (stage 3b).</summary>
 public sealed record UnitTeleported(int Tick, EntityId Unit, WorldPos From, WorldPos To) : SimEvent(Tick);
+
+/// <summary><paramref name="Unit"/> boarded <paramref name="Transport"/> and left the map (stage 3d).</summary>
+public sealed record UnitBoarded(int Tick, EntityId Unit, EntityId Transport) : SimEvent(Tick);
+
+/// <summary>A passenger came out of <paramref name="Transport"/> as <paramref name="Unit"/>, a new unit (stage 3d).</summary>
+public sealed record UnitUnloaded(int Tick, EntityId Unit, EntityId Transport) : SimEvent(Tick);
+
+/// <summary>The parasite <paramref name="Parasite"/> went into <paramref name="Host"/> (stage 3d).</summary>
+public sealed record ParasiteEntered(int Tick, EntityId Parasite, EntityId Host) : SimEvent(Tick);
+
+/// <summary>A workshop mending <paramref name="Host"/> killed the parasite inside (stage 3d).</summary>
+public sealed record ParasiteKilled(int Tick, EntityId Host) : SimEvent(Tick);

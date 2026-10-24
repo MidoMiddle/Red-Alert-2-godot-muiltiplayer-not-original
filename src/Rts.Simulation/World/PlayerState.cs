@@ -49,6 +49,12 @@ public sealed class PlayerState
     /// </summary>
     public int BlackoutUntil { get; internal set; }
 
+    /// <summary>
+    /// Whether the player's robots work: it has a ready, online building that controls robots (stage 3d). Derived from the buildings and
+    /// the power by <see cref="Systems.PowerSystem"/>, not hashed.
+    /// </summary>
+    public bool RobotsOnline { get; internal set; }
+
     /// <summary>The bonuses of the player (M8 step 2): those of the level of its bot, set as the match starts. Hashed.</summary>
     public PlayerModifiers Modifiers { get; internal set; }
 

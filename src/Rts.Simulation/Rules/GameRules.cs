@@ -28,6 +28,9 @@ public sealed class GameRules
     private readonly int[] _buildingArmor;
     private readonly int[] _buildingWeapon;
     private readonly ImmutableArray<int>[] _unitWeapons;
+
+    // Every weapon alone in the first place, the second empty: what a passenger gives an IFV (stage 3d).
+    private readonly ImmutableArray<int>[] _single;
     private readonly ImmutableArray<int>[] _buildingWeapons;
 
     private GameRules(
@@ -43,6 +46,11 @@ public sealed class GameRules
 
         // The weapons of every unit type and building, laid out once (M4 step 15), so a tick builds no arrays for them.
         _unitWeapons = System.Array.ConvertAll(units, unit => ImmutableArray.Create(unit.Primary, unit.Secondary));
+        _single = new ImmutableArray<int>[database.Weapons.Length];
+        for (var weapon = 0; weapon < _single.Length; weapon++)
+        {
+            _single[weapon] = ImmutableArray.Create(weapon, -1);
+        }
         _buildingWeapons = System.Array.ConvertAll(buildingWeapon, weapon => ImmutableArray.Create(weapon));
     }
 
@@ -170,7 +178,11 @@ public sealed class GameRules
                 unit.Jumpjet,
                 TalentsOf(unit),
                 database.IndexOfWeapon(unit.DeathWeapon),
-                database.IndexOfWeapon(unit.DeployWeapon));
+                database.IndexOfWeapon(unit.DeployWeapon),
+                unit.Size > 0 ? unit.Size : unit.Category == UnitCategory.Infantry ? 1 : 3,
+                unit.PassengerSlots,
+                unit.PassengerSizeLimit,
+                database.IndexOfWeapon(unit.IfvWeapon));
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -309,6 +321,20 @@ public sealed class GameRules
         return problems;
     }
 
+    /// <summary>
+    /// The weapons <paramref name="unit"/> fires now: its type's, or — an IFV (stage 3d) — the weapon its first passenger gives it, in the
+    /// first place.
+    /// </summary>
+    public ImmutableArray<int> WeaponsOf(Unit unit)
+    {
+        if (unit.Archetype.Has(UnitTalents.PassengerWeapon) && unit.Passengers.Count > 0 && Unit(unit.Passengers[0].Type).IfvWeapon is >= 0 and var given)
+        {
+            return _single[given];
+        }
+
+        return WeaponsOf(unit.Type);
+    }
+
     /// <summary>The armor of a shot of <paramref name="weapon"/> that can be brought down (stage 3c); the first armor without one.</summary>
     public int ArmorOfShot(int weapon) =>
         Database.TryGetProjectile(Database.Weapons[weapon].Projectile, out var shot) ? IntMath.Max(0, Database.IndexOfArmor(shot.Armor)) : 0;
@@ -317,7 +343,8 @@ public sealed class GameRules
         (unit.Engineer ? UnitTalents.Engineer : 0) | (unit.Infiltrator ? UnitTalents.Infiltrator : 0)
         | (unit.Disguised ? UnitTalents.Disguised : 0) | (unit.DetectsDisguise ? UnitTalents.DetectsDisguise : 0)
         | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0)
-        | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0);
+        | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0)
+        | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0) | (unit.Robotic ? UnitTalents.Robotic : 0);
 
     private static Locomotor? LocomotorOf(string id)
     {

@@ -44,7 +44,7 @@
 | alliance_battle_lab | Research Lab | высокий тех | Battle Lab | работает |
 | alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | работает: руда приносит на 25 % больше (этап 2в) |
 | alliance_spy_satellite_uplink | Orbital Uplink | открывает карту | Spy Satellite Uplink | работает: радар; пока стоит с энергией, вся карта разведана (этап 2г) |
-| alliance_robot_control_center | Drone Control Hub | управление роботами | Robot Control Center | позже |
+| alliance_robot_control_center | Drone Control Hub | управление роботами | Robot Control Center | работает: пока стоит с энергией, Robot Tank работают (этап 3г) |
 | alliance_chronosphere | Phase Gate | переброска группы | Chronosphere | позже (M11c) |
 | alliance_weather_control_device | Storm Generator | шторм над областью | Weather Control Device | позже (M11c) |
 | alliance_gap_generator | Veil Generator | скрывает базу | Gap Generator | работает: с энергией закрывает 10 клеток вокруг от врага (этап 2г) |
@@ -81,10 +81,10 @@
 | desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); развёрнутый (D) заражает землю ядом, яд ранит всех на земле, кроме него (этап 3б) |
 | rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | работает: ракета на 5–18 клеток, только по приказу; ПВО может её сбить (этап 3в) |
 | apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | работает: две пушки по земле, ракеты только по воздуху (этап 3в); самолечение — позже |
-| terror_drone | Combat Drone | climbs into vehicles | Terror Drone | строится, без оружия — этап 3 |
-| demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | строится, без оружия — этап 3 |
+| terror_drone | Combat Drone | climbs into vehicles | Terror Drone | работает: запрыгивает в технику и ест её изнутри по 50 раз в 4 с, пехоту убивает сразу; мастерская его вытаскивает (этап 3г) |
+| demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | работает: только по приказу подъезжает и взрывается (300), взрывается и подбитым, оставляет немного яда (этап 3г) |
 | kirov_airship | Heavy Airship | bomber airship | Kirov Airship | летает, строится (этап 2б), без оружия — этап 3 |
-| hover_transport | Hovercraft | carries units over water | Hover Transport | строится верфью (этап 2а), без оружия — этап 3 |
+| hover_transport | Hovercraft | carries units over water | Hover Transport | работает: 12 слотов (пехота 1, техника 3, MCV и Super Heavy Tank 6), по воде и суше; высадка — D (этап 3г) |
 | typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | строится верфью (этап 2а), без оружия — этап 3 |
 | sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | строится верфью (этап 2а), без оружия — этап 3 |
 | giant_squid | Trained Squid | grabs ships | Giant Squid | строится верфью (этап 2а), без оружия — этап 3 |
@@ -101,14 +101,15 @@
 | alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | работает: луч замораживает и стирает цель, прерванный — цель цела (этап 3а); прыгает туда, куда послан, и проявляется (этап 3б) |
 | alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | работает: пистолеты убивают пехотинца с выстрела (этап 3а); C4 сносит здание целиком за 2 с (этап 3б) |
 | alliance_sniper | Marksman | long-range anti-infantry | Sniper | работает: винтовка на 14 клеток против пехоты (этап 3а) |
-| alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | строится, без оружия — этап 3 |
+| alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | работает: пустой — ракеты по земле и воздуху; с пехотинцем — его оружие по таблице RA2 (этап 3г); ремонт с инженером — позже |
 | alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | работает: луч 100, до 5 осколков по 30 в радиусе 3 клеток, здания — вдвое (этап 3в) |
 | alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | работает: стоя на месте, для врага — дерево, его не выбирают целью; сам за целью не едет (этап 3в) |
 | alliance_tank_destroyer | Tank Hunter | anti-tank gun | Tank Destroyer | работает: подкалиберная пушка 150, полный урон по лёгкой и тяжёлой технике, по пехоте 2 % (этап 3в) |
 | alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | летает, строится (этап 2б), без оружия — этап 3 |
 | alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | летает, строится (этап 2б), без оружия — этап 3 |
 | alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | летает, строится (этап 2б), без оружия — этап 3 |
-| alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | строится верфью (этап 2а), без оружия — этап 3 |
+| alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | работает: 12 слотов, по воде и суше; высадка — D (этап 3г) |
+| alliance_robot_tank | Robot Tank | works only with the hub | Robot Tank | работает: пушка; без Drone Control Hub с энергией стоит и не стреляет; числа свои (этап 3г) |
 | alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | строится верфью (этап 2а), без оружия — этап 3 |
 | alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | строится верфью (этап 2а), без оружия — этап 3 |
 | alliance_aegis_cruiser | Air Defense Cruiser | anti-air missiles | Aegis Cruiser | строится верфью (этап 2а), без оружия — этап 3 |

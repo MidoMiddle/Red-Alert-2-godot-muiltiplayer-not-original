@@ -42,7 +42,7 @@ public static class WeaponSystem
             switch (entity)
             {
                 // Held by a temporal beam (stage 3a), nothing fires.
-                case Unit { IsAlive: true, ErasedBy: null, WarpTicks: 0 } unit when unit.Weapons.Length > 0:
+                case Unit { IsAlive: true, ErasedBy: null, WarpTicks: 0 } unit when unit.Weapons.Length > 0 && !Defenses.IsAsleep(world, unit):
                     Unit(world, rules, unit, shots, events);
                     break;
                 case Building { IsAlive: true, IsReady: true, ErasedBy: null } building when building.Weapons.Length > 0:
@@ -157,7 +157,7 @@ public static class WeaponSystem
         }
 
         var distance = DamageCalculator.Distance(unit.Position, aimAt);
-        var slots = rules.WeaponsOf(unit.Type);
+        var slots = rules.WeaponsOf(unit);
         EntityId? targetId = hasTarget ? target.Id : null;
         var layer = hasTarget ? TargetingSystem.LayerOf(target) : WeaponTargets.Ground;
         if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, layer, events, hasTarget ? target : null) is { } weapon)

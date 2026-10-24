@@ -25,6 +25,9 @@ public enum EntryAction
 
     /// <summary>An infiltrator goes into a building of another player (<see cref="BuildingDef.SpyEffect"/>).</summary>
     Infiltrate,
+
+    /// <summary>A unit boards its own transport (stage 3d, <see cref="TransportSystem"/>).</summary>
+    Board,
 }
 
 /// <summary>
@@ -48,10 +51,15 @@ public static class EntrySystem
     /// <summary>The share of its owner's credits an infiltrator takes from a refinery, in percent (RA2 <c>SpyMoneyStealPercent=.5</c>).</summary>
     public const int StealPercent = 50;
 
-    /// <summary>What <paramref name="unit"/> would do going into <paramref name="building"/> now.</summary>
-    public static EntryAction ActionOf(GameWorld world, Unit unit, Building building)
+    /// <summary>What <paramref name="unit"/> would do going into <paramref name="target"/>, a building or a transport, now.</summary>
+    public static EntryAction ActionOf(GameWorld world, Unit unit, Entity target)
     {
-        if (building is not { IsAlive: true, IsReady: true, Def: { } def } || unit.Archetype.Category != UnitCategory.Infantry
+        if (target is Unit transport)
+        {
+            return TransportSystem.CanBoard(world, unit, transport) ? EntryAction.Board : EntryAction.None;
+        }
+
+        if (target is not Building building || building is not { IsAlive: true, IsReady: true, Def: { } def } || unit.Archetype.Category != UnitCategory.Infantry
             || unit.Archetype.Flies)
         {
             return EntryAction.None;
@@ -80,25 +88,25 @@ public static class EntrySystem
     /// Sends the units among <paramref name="units"/> that can do something in the building to it, each to a place of its own round the
     /// cell beside it nearest to the first of them. False when none can.
     /// </summary>
-    internal static bool Order(GameWorld world, List<Unit> units, EntityId buildingId)
+    internal static bool Order(GameWorld world, List<Unit> units, EntityId targetId)
     {
-        if (!world.TryGet(buildingId, out var entity) || entity is not Building building)
+        if (!world.TryGet(targetId, out var target) || target is not (Building or Unit))
         {
             return false;
         }
 
-        var going = units.FindAll(unit => ActionOf(world, unit, building) != EntryAction.None);
+        var going = units.FindAll(unit => ActionOf(world, unit, target) != EntryAction.None);
         if (going.Count == 0)
         {
             return false;
         }
 
-        var door = Door(world, building, going[0]);
+        var door = Door(world, target, going[0]);
         foreach (var (unit, destination) in GroupDestinations.Assign(world, going, door))
         {
             UnitOrders.ForgetTarget(unit);
             UnitOrders.GiveRoute(world, unit, [new UnitOrder(destination, AttackMove: false)], loop: false, append: false);
-            unit.EnterTarget = building.Id;
+            unit.EnterTarget = target.Id;
         }
 
         return true;
@@ -107,7 +115,7 @@ public static class EntrySystem
     /// <summary>After the movement: the soldiers at the door go in; those that cannot get there or do it forget the order.</summary>
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
-        List<(Unit Unit, Building Building, EntryAction Action)>? entering = null;
+        List<(Unit Unit, Entity Target, EntryAction Action)>? entering = null;
         foreach (var entity in world.Entities)
         {
             if (entity is not Unit { IsAlive: true, EnterTarget: { } id } unit)
@@ -115,14 +123,14 @@ public static class EntrySystem
                 continue;
             }
 
-            var action = world.TryGet(id, out var target) && target is Building building ? ActionOf(world, unit, building) : EntryAction.None;
+            var action = world.TryGet(id, out var target) ? ActionOf(world, unit, target) : EntryAction.None;
             if (action == EntryAction.None)
             {
                 unit.EnterTarget = null;
             }
-            else if (Outside((Building)target, unit.Position.ToCell()) <= DoorReach)
+            else if (Outside(target!, unit.Position.ToCell()) <= DoorReach)
             {
-                (entering ??= []).Add((unit, (Building)target, action));
+                (entering ??= []).Add((unit, target!, action));
             }
             else if (unit.MoveTarget is null && !unit.PathPending)
             {
@@ -132,25 +140,29 @@ public static class EntrySystem
 
         // After the walk: a building taken lets its soldiers out, and the list of entities must not change while walked. One by one,
         // in id order, each asks again: the bunker may have filled, the building changed hands.
-        foreach (var (unit, building, _) in entering ?? [])
+        foreach (var (unit, target, _) in entering ?? [])
         {
             unit.EnterTarget = null;
-            switch (ActionOf(world, unit, building))
+            var building = target as Building;
+            switch (ActionOf(world, unit, target))
             {
+                case EntryAction.Board:
+                    TransportSystem.Board(world, unit, (Unit)target, events);
+                    break;
                 case EntryAction.Garrison:
-                    GarrisonSystem.Enter(world, unit, building, events);
+                    GarrisonSystem.Enter(world, unit, building!, events);
                     break;
                 case EntryAction.Capture:
-                    Capture(world, building, unit.Owner, events);
+                    Capture(world, building!, unit.Owner, events);
                     unit.MarkDead();
                     break;
                 case EntryAction.Mend:
-                    world.SetHp(building, building.MaxHp, events);
+                    world.SetHp(building!, building!.MaxHp, events);
                     events?.Add(new BuildingMended(world.CurrentTick, building.Id));
                     unit.MarkDead();
                     break;
                 case EntryAction.Infiltrate:
-                    Infiltrate(world, building, unit.Owner, events);
+                    Infiltrate(world, building!, unit.Owner, events);
                     unit.MarkDead();
                     break;
             }
@@ -210,24 +222,31 @@ public static class EntrySystem
         events?.Add(new BuildingInfiltrated(world.CurrentTick, building.Id, spy, effect, credits));
     }
 
-    /// <summary>How many cells <paramref name="cell"/> lies outside the footprint: 0 inside, 1 in the ring around it, and so on.</summary>
-    private static int Outside(Building building, CellPos cell) =>
-        IntMath.Max(
-            IntMath.Max(building.Cell.X - cell.X, cell.X - building.FarCell.X),
-            IntMath.Max(IntMath.Max(building.Cell.Y - cell.Y, cell.Y - building.FarCell.Y), 0));
+    /// <summary>
+    /// How many cells <paramref name="cell"/> lies outside the footprint of a building, or off the cell of a transport: 0 inside, 1 in the
+    /// ring around it, and so on.
+    /// </summary>
+    private static int Outside(Entity target, CellPos cell)
+    {
+        var (near, far) = target is Building building ? (building.Cell, building.FarCell) : (((Unit)target).Position.ToCell(), ((Unit)target).Position.ToCell());
+        return IntMath.Max(
+            IntMath.Max(near.X - cell.X, cell.X - far.X),
+            IntMath.Max(IntMath.Max(near.Y - cell.Y, cell.Y - far.Y), 0));
+    }
 
     /// <summary>The cell of the ring around the footprint nearest to the soldier that it can enter; the footprint's corner without one.</summary>
-    private static WorldPos Door(GameWorld world, Building building, Unit soldier)
+    private static WorldPos Door(GameWorld world, Entity target, Unit soldier)
     {
         var from = soldier.Position.ToCell();
+        var (near, far) = target is Building building ? (building.Cell, building.FarCell) : (((Unit)target).Position.ToCell(), ((Unit)target).Position.ToCell());
         CellPos? best = null;
         var bestDistance = int.MaxValue;
-        for (var y = building.Cell.Y - 1; y <= building.FarCell.Y + 1; y++)
+        for (var y = near.Y - 1; y <= far.Y + 1; y++)
         {
-            for (var x = building.Cell.X - 1; x <= building.FarCell.X + 1; x++)
+            for (var x = near.X - 1; x <= far.X + 1; x++)
             {
                 var cell = new CellPos(x, y);
-                if (Outside(building, cell) != 1 || !world.Map.CanEnter(cell, soldier.Archetype.Locomotor))
+                if (Outside(target, cell) != 1 || !world.Map.CanEnter(cell, soldier.Archetype.Locomotor))
                 {
                     continue;
                 }
@@ -240,6 +259,6 @@ public static class EntrySystem
             }
         }
 
-        return (best ?? building.Cell).Center;
+        return (best ?? near).Center;
     }
 }

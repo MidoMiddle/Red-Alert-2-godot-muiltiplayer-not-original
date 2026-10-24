@@ -32,6 +32,7 @@ tesla_trooper:  # electric infantry (stage 3a)
   sight: 6
   prerequisites: [barracks]
   primary: shock_bolt
+  ifv_weapon: ifv_shock_bolt
 
 crazy_ivan:  # plants a bomb that goes off in 30 seconds (stage 3b)
   kind: unit
@@ -80,6 +81,7 @@ desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the 
   primary: toxin_beam_gun
   deploy_weapon: toxin_eruption_gun
   radiation_immune: true
+  ifv_weapon: ifv_toxin_beam
 
 rocket_artillery:  # a rocket from afar, only when ordered; anti-air can bring it down (stage 3c)
   kind: unit
@@ -112,8 +114,9 @@ apocalypse_tank:  # twin cannons at the ground, missiles at the air (stage 3c)
   prerequisites: [war_factory, tech_center]
   primary: apocalypse_cannons
   secondary: apocalypse_tusks
+  size: 6
 
-terror_drone:  # climbs into vehicles
+terror_drone:  # jumps into a vehicle and eats it from inside, kills a soldier at once (stage 3d)
   kind: unit
   inherits: base_vehicle
   name: Combat Drone
@@ -127,9 +130,10 @@ terror_drone:  # climbs into vehicles
   sight: 4
   turret: false
   prerequisites: [war_factory]
-  ability_later: true
+  primary: drone_jump
+  size: 2
 
-demolition_truck:  # drives into the target and blows up
+demolition_truck:  # drives into its target and blows up, only when ordered; blows up when killed too (stage 3d)
   kind: unit
   inherits: base_vehicle
   name: Demolition Truck
@@ -143,7 +147,9 @@ demolition_truck:  # drives into the target and blows up
   sight: 5
   turret: false
   prerequisites: [war_factory, radar]
-  ability_later: true
+  primary: demolition_truck_bomb
+  death_weapon: demolition_truck_bomb
+  passive: true
 
 kirov_airship:  # bomber airship
   kind: unit
@@ -164,7 +170,7 @@ kirov_airship:  # bomber airship
   prerequisites: [war_factory, tech_center]
   ability_later: true
 
-hover_transport:  # carries units over water
+hover_transport:  # carries 12 slots of units over water and land (stage 3d)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -179,7 +185,8 @@ hover_transport:  # carries units over water
   turret: false
   locomotor: hover
   prerequisites: [naval_shipyard]
-  ability_later: true
+  passengers: 12
+  passenger_size: 6
 
 typhoon_sub:  # torpedoes ships
   kind: unit

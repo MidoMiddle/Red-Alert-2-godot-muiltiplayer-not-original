@@ -22,13 +22,14 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic",
     ];
 
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
-        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -38,7 +39,7 @@ internal static class DefinitionReader
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "parasite", "parasite_damage", "parasite_delay", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual", "hp", "armor"];
 
@@ -117,6 +118,12 @@ internal static class DefinitionReader
             DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
             RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),
             DisguiseWhenStill = fields.Optional("disguise_when_still", Scalars.Flag, false),
+            PassengerSlots = fields.Optional("passengers", Scalars.Int, 0),
+            PassengerSizeLimit = fields.Optional("passenger_size", Scalars.Int, 0),
+            Size = fields.Optional("size", Scalars.Int, 0),
+            PassengerWeapon = fields.Optional("passenger_weapon", Scalars.Flag, false),
+            IfvWeapon = fields.Optional("ifv_weapon", Scalars.Id, ""),
+            Robotic = fields.Optional("robotic", Scalars.Flag, false),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -170,6 +177,7 @@ internal static class DefinitionReader
             ChainMax = fields.Optional("chain_max", Scalars.Int, 0),
             Capturable = fields.Optional("capturable", Scalars.Flag, true),
             SpyEffect = fields.Optional("spy_effect", SpyEffectOf, SpyEffect.None),
+            ControlsRobots = fields.Optional("controls_robots", Scalars.Flag, false),
         };
     }
 
@@ -219,6 +227,9 @@ internal static class DefinitionReader
             Bomb = fields.Optional("bomb", Scalars.Id, ""),
             BombDelay = fields.Optional("bomb_delay", Scalars.Ticks, 0),
             Radiation = fields.Optional("radiation", Scalars.Int, 0),
+            Parasite = fields.Optional("parasite", Scalars.Flag, false),
+            ParasiteDamage = fields.Optional("parasite_damage", Scalars.Int, 0),
+            ParasiteDelay = fields.Optional("parasite_delay", Scalars.Ticks, 0),
             InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
         };
     }

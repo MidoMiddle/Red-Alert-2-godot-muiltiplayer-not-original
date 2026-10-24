@@ -32,6 +32,7 @@ public static class PowerSystem
             player.BuildingList.Clear();
             var output = 0;
             var drain = 0;
+            var robotControl = false;
             foreach (var entity in world.Entities)
             {
                 if (entity is Building { IsAlive: true, Def: { } def } building && building.Owner == player.Id)
@@ -41,6 +42,7 @@ public static class PowerSystem
                     {
                         output += def.Power > 0 ? def.Power : 0;
                         drain += def.Power < 0 ? -def.Power : 0;
+                        robotControl |= def.ControlsRobots;
                     }
                 }
             }
@@ -59,6 +61,9 @@ public static class PowerSystem
                 player.LowPower = low;
                 events?.Add(low ? new LowPower(world.CurrentTick, player.Id) : new PowerRestored(world.CurrentTick, player.Id));
             }
+
+            // The robots work while a robot control stands ready and has power (stage 3d: the drone control hub is powered).
+            player.RobotsOnline = robotControl && !low;
         }
     }
 }

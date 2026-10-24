@@ -11,6 +11,7 @@ conscript:  # Conscript
   armor: flak
   primary: conscript_rifle
   sight: 5
+  ifv_weapon: ifv_machine_gun
 
 rocketeer:  # Flak Trooper
   kind: unit
@@ -48,6 +49,7 @@ mcv:  # MCV
   speed: 24
   sight: 6
   turret: false
+  size: 6
 
 harvester:  # War Miner
   kind: unit

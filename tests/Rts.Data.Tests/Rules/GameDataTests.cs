@@ -36,8 +36,9 @@ public sealed class GameDataTests
 
         // The Union and the Alliance: every building that can be built, those whose ability comes in M11 among them.
         Assert.Equal(23, database.Units.Count(unit => unit.Faction == "union"));
-        Assert.Equal(23, database.Units.Count(unit => unit.Faction == "alliance"));
-        Assert.Equal(46, database.Units.Length);
+        // Stage 3d: the Alliance's robot tank.
+        Assert.Equal(24, database.Units.Count(unit => unit.Faction == "alliance"));
+        Assert.Equal(47, database.Units.Length);
         Assert.Equal(18, database.Buildings.Count(building => building.Faction == "union"));
         Assert.Equal(20, database.Buildings.Count(building => building.Faction == "alliance"));
         Assert.Equal(6, database.Locomotors.Length);
@@ -52,8 +53,8 @@ public sealed class GameDataTests
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources). The Alliance: the faction, its buildings, units, weapons and bots, the starting infantry and the default faction; the late buildings of the Union. Every unit of both factions, ships and aircraft available later. Stage 2a: the shipyards on the water build the ships. Stage 2b: the aircraft fly, from the air command and the Union's war factory. Stage 2c: the workshops, the discount, the bonus of the ore, the blast of the atomic plant. Stage 2d: the orbital uplink reveals the map, the veil generator veils. Stage 2e: the bunker holds five soldiers, the lens towers chain. Stage 3a: the weapons of eight soldiers, the jet pack, the temporal beam. Stage 3b: engineers, the infiltrator, the bombs, the toxin on the ground, the jump; what can be taken and infiltrated. Stage 3c: the weapons of five vehicles, the splitting beam, the rocket anti-air can bring down, the holo tank.
-        Assert.Equal(0x3234c94c2c848bccUL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources). The Alliance: the faction, its buildings, units, weapons and bots, the starting infantry and the default faction; the late buildings of the Union. Every unit of both factions, ships and aircraft available later. Stage 2a: the shipyards on the water build the ships. Stage 2b: the aircraft fly, from the air command and the Union's war factory. Stage 2c: the workshops, the discount, the bonus of the ore, the blast of the atomic plant. Stage 2d: the orbital uplink reveals the map, the veil generator veils. Stage 2e: the bunker holds five soldiers, the lens towers chain. Stage 3a: the weapons of eight soldiers, the jet pack, the temporal beam. Stage 3b: engineers, the infiltrator, the bombs, the toxin on the ground, the jump; what can be taken and infiltrated. Stage 3c: the weapons of five vehicles, the splitting beam, the rocket anti-air can bring down, the holo tank. Stage 3d: the drone, the demolition truck, the transports, the IFV and its passengers' weapons, the robot tank and its hub.
+        Assert.Equal(0x46db18f93826ae61UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -90,7 +91,8 @@ public sealed class GameDataTests
         {
             var unit = rules.Unit(type);
             string Weapon(int index) => index < 0 ? "" : rules.Database.Weapons[index].Id;
-            return (unit with { Primary = 0, Secondary = 0 }, Weapon(unit.Primary), Weapon(unit.Secondary));
+            // Stage 3d: the weapon a soldier gives the IFV is the game's alone; the tests have no IFV.
+            return (unit with { Primary = 0, Secondary = 0, IfvWeapon = 0 }, Weapon(unit.Primary), Weapon(unit.Secondary));
         }
 
         Assert.True(rules.Land.ContentEquals(TestRules.Standard.Land));

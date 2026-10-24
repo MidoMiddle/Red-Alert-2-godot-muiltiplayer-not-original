@@ -29,4 +29,10 @@ public enum UnitTalents
 
     /// <summary>Standing still, it passes for a tree (<see cref="Rules.UnitDef.DisguiseWhenStill"/>).</summary>
     StillDisguise = 128,
+
+    /// <summary>Fires its passenger's weapon (<see cref="Rules.UnitDef.PassengerWeapon"/>: the IFV).</summary>
+    PassengerWeapon = 256,
+
+    /// <summary>Works only with a robot control of its owner's (<see cref="Rules.UnitDef.Robotic"/>).</summary>
+    Robotic = 512,
 }

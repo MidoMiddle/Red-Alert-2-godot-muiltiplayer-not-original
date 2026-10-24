@@ -392,7 +392,7 @@ public partial class SimulationHost : Node
     public List<EntityId> IssueEnter(IReadOnlyList<EntityId> units, EntityId building)
     {
         var world = Simulation.World;
-        var target = world.TryGet(building, out var entity) ? entity as Building : null;
+        var target = world.TryGet(building, out var entity) && entity is Building or Unit ? entity : null;
         var going = units.Where(id => target is not null && world.TryGet(id, out var unit) && unit is Unit soldier
             && Rts.Simulation.Systems.EntrySystem.ActionOf(world, soldier, target) != Rts.Simulation.Systems.EntryAction.None).ToList();
         if (going.Count > 0)
@@ -437,7 +437,7 @@ public partial class SimulationHost : Node
         {
             // An MCV, or a unit with a deploy weapon (stage 3b: the toxin trooper).
             if (Simulation.World.TryGet(unit, out var entity) && entity is Unit { IsAlive: true } mcv && mcv.Owner == LocalPlayer
-                && (mcv.Archetype.Id == Simulation.World.Player(LocalPlayer).Faction.Mcv || mcv.Archetype.DeployWeapon >= 0))
+                && (mcv.Archetype.Id == Simulation.World.Player(LocalPlayer).Faction.Mcv || mcv.Archetype.DeployWeapon >= 0 || mcv.Passengers.Count > 0))
             {
                 Issue(new DeployCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, unit));
             }

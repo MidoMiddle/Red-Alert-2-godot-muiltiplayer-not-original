@@ -170,7 +170,7 @@ alliance_spy_satellite_uplink:  # a radar; while ready and online, the whole map
   reveals_map: true
   prerequisites: [alliance_battle_lab]
 
-alliance_robot_control_center:  # drives robot units, M11
+alliance_robot_control_center:  # while ready and powered, the robot tanks work (stage 3d)
   kind: building
   inherits: base_building
   name: Drone Control Hub
@@ -181,8 +181,9 @@ alliance_robot_control_center:  # drives robot units, M11
   sight: 6
   footprint: [2, 2]
   power: -100
-  ability_later: true
   prerequisites: [alliance_war_factory]
+  controls_robots: true
+  powered: true
 
 alliance_chronosphere:  # superweapon: moves a group across the map, M11c
   kind: building

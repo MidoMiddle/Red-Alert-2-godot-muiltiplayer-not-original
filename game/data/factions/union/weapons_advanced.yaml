@@ -113,3 +113,40 @@ v3_rocket:  # of the Rocket Artillery, RA2 V3: 200 at 5 to 18 cells; the reload 
   min_range: 5
   projectile: v3_shot
   warhead: v3_blast
+
+drone_jump:  # of the Combat Drone, RA2 DroneJump: 1000 so that a soldier dies at once; the reload is ours
+  kind: weapon
+  name: Drone Jump
+  damage: 1000
+  reload: 2s
+  range: 1.83
+  projectile: pounce
+  warhead: drone_parasite
+
+demolition_truck_bomb:  # of the Demolition Truck, RA2 Demobomb: firing it, it blows up (suicide)
+  kind: weapon
+  name: Demolition Bomb
+  damage: 300
+  reload: 1s
+  range: 1
+  projectile: shell
+  warhead: demolition_blast
+  suicide: true
+
+ifv_shock_bolt:  # what the Shock Infantry gives the IFV, RA2 CRElectricBolt
+  kind: weapon
+  name: IFV Shock Bolt
+  damage: 60
+  reload: 3s
+  range: 6
+  projectile: bolt
+  warhead: electric
+
+ifv_toxin_beam:  # what the Toxin Trooper gives the IFV, RA2 CRRadBeamWeapon
+  kind: weapon
+  name: IFV Toxin Beam
+  damage: 175
+  reload: 2s
+  range: 7
+  projectile: toxin_beam
+  warhead: toxin

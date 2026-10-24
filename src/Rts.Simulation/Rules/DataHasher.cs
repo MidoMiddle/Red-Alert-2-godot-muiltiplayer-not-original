@@ -97,6 +97,12 @@ public static class DataHasher
             Add(hash, unit.DeployWeapon);
             hash.Add(unit.RadiationImmune);
             hash.Add(unit.DisguiseWhenStill);
+            hash.Add(unit.PassengerSlots);
+            hash.Add(unit.PassengerSizeLimit);
+            hash.Add(unit.Size);
+            hash.Add(unit.PassengerWeapon);
+            Add(hash, unit.IfvWeapon);
+            hash.Add(unit.Robotic);
             hash.Add(unit.AvailableLater);
         }
 
@@ -154,6 +160,7 @@ public static class DataHasher
             hash.Add(building.ChainMax);
             hash.Add(building.Capturable);
             hash.Add((byte)building.SpyEffect);
+            hash.Add(building.ControlsRobots);
         }
 
         hash.Add(rules.Factions.Length);
@@ -286,6 +293,9 @@ public static class DataHasher
             Add(hash, warhead.Bomb);
             hash.Add(warhead.BombDelay);
             hash.Add(warhead.Radiation);
+            hash.Add(warhead.Parasite);
+            hash.Add(warhead.ParasiteDamage);
+            hash.Add(warhead.ParasiteDelay);
         }
 
         hash.Add(rules.Projectiles.Length);

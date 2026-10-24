@@ -158,3 +158,61 @@ alliance_mirage_gun:  # of the Holo Tank, RA2 MirageGun
   range: 7
   projectile: bullet
   warhead: mirage
+
+alliance_ifv_missiles:  # of the IFV with no soldier inside, RA2 HoverMissile: two of 25, at the ground and the air (one range for both, ours)
+  kind: weapon
+  name: IFV Missiles
+  damage: 25
+  reload: 3.33s
+  range: 6
+  min_range: 1
+  projectile: rocket
+  warhead: missile
+  burst: 2
+  burst_delay: 0.2s
+  targets: [ground, air]
+
+ifv_machine_gun:  # what a rifleman, a conscript or an infiltrator gives the IFV, RA2 CRM60
+  kind: weapon
+  name: IFV Machine Gun
+  damage: 20
+  reload: 1s
+  range: 6
+  projectile: bullet
+  warhead: small_arms
+
+ifv_smg:  # what the Elite Commando gives the IFV, RA2 CRMP5
+  kind: weapon
+  name: IFV Submachine Gun
+  damage: 125
+  reload: 1.33s
+  range: 6
+  projectile: bullet
+  warhead: hollow_point
+
+ifv_sniper:  # what the Marksman gives the IFV, RA2 AWPE
+  kind: weapon
+  name: IFV Sniper Rifle
+  damage: 125
+  reload: 4s
+  range: 14
+  projectile: bullet
+  warhead: hollow_point
+
+ifv_neutron_rifle:  # what the Time Trooper gives the IFV, RA2 CRNeutronRifle
+  kind: weapon
+  name: IFV Neutron Rifle
+  damage: 10
+  reload: 1s
+  range: 6
+  projectile: chrono_beam
+  warhead: chrono
+
+alliance_robot_gun:  # of the Robot Tank; the numbers are ours
+  kind: weapon
+  name: Robot Gun
+  damage: 40
+  reload: 1.33s
+  range: 5.5
+  projectile: bullet
+  warhead: light_mg

@@ -195,7 +195,7 @@ public static class CommandProcessor
         var any = false;
         foreach (var unit in OwnUnits(world, command))
         {
-            if (unit.Weapons.Length > 0 && TargetingSystem.BestShare(world.Rules, world.Rules.WeaponsOf(unit.Type), target) > 0)
+            if (unit.Weapons.Length > 0 && TargetingSystem.BestShare(world.Rules, world.Rules.WeaponsOf(unit), target) > 0)
             {
                 Order(world, unit, TargetOrder.Attack, target.Id, null);
                 any = true;
@@ -227,7 +227,7 @@ public static class CommandProcessor
         var any = false;
         foreach (var unit in OwnUnits(world, command))
         {
-            if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.Hits(world.Rules, world.Rules.WeaponsOf(unit.Type), TargetingSystem.LayerOf(target)))
+            if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.Hits(world.Rules, world.Rules.WeaponsOf(unit), TargetingSystem.LayerOf(target)))
             {
                 Order(world, unit, TargetOrder.Force, target?.Id, target is null ? command.Point : null);
                 any = true;
@@ -512,6 +512,13 @@ public static class CommandProcessor
     /// </summary>
     private static bool ApplyDeploy(GameWorld world, DeployCommand command, List<SimEvent>? events)
     {
+        // A transport with passengers (stage 3d) lets them out.
+        if (world.TryGet(command.Unit, out var carrier) && carrier is Unit { IsAlive: true, Passengers.Count: > 0 } transport
+            && transport.Owner == command.Player)
+        {
+            return TransportSystem.Unload(world, transport, events);
+        }
+
         // A unit with a deploy weapon (stage 3b: the toxin trooper) deploys where it stands, or undeploys.
         if (world.TryGet(command.Unit, out var deploying) && deploying is Unit { IsAlive: true, Archetype.DeployWeapon: >= 0 } trooper
             && trooper.Owner == command.Player)

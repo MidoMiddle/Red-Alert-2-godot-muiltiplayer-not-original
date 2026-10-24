@@ -116,6 +116,26 @@ public sealed record UnitDef : IDefinition
     /// </summary>
     public bool DisguiseWhenStill { get; init; }
 
+    /// <summary>
+    /// The room it has for passengers, in slots (stage 3d: the transports, RA2 <c>Passengers</c>); 0 for a unit that carries none.
+    /// </summary>
+    public int PassengerSlots { get; init; }
+
+    /// <summary>The largest passenger it takes, in slots (RA2 <c>SizeLimit</c>).</summary>
+    public int PassengerSizeLimit { get; init; }
+
+    /// <summary>The slots it takes as a passenger (RA2 <c>Size</c>); 0 for the default — 1 for infantry, 3 for anything else.</summary>
+    public int Size { get; init; }
+
+    /// <summary>It fires the weapon of its passenger instead of its own (stage 3d: the IFV, RA2 <c>IFVMode</c>).</summary>
+    public bool PassengerWeapon { get; init; }
+
+    /// <summary>The weapon an IFV fires with this soldier inside; empty for none (the IFV keeps its own).</summary>
+    public string IfvWeapon { get; init; } = "";
+
+    /// <summary>It works only while its owner has a ready, powered building that controls robots (stage 3d: the robot tank).</summary>
+    public bool Robotic { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

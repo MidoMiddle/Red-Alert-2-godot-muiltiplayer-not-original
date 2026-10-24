@@ -31,7 +31,7 @@ public sealed class CommandProcessorTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(47)]
+    [InlineData(48)]
     [InlineData(255)]
     public void Spawn_of_an_unknown_unit_type_is_ignored(int type)
     {

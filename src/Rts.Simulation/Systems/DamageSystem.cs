@@ -123,6 +123,12 @@ public static class DamageSystem
             return;
         }
 
+        if (warhead.Parasite && ParasiteSystem.Enter(world, hit, warhead, events))
+        {
+            // A parasite (stage 3d) goes into the vehicle it hit; a soldier it hits takes the damage below.
+            return;
+        }
+
         if (warhead.Temporal)
         {
             // A temporal beam (stage 3a) hurts nothing: it holds its target for the erasure.

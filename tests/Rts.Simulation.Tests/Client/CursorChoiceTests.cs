@@ -112,6 +112,9 @@ public sealed class CursorChoiceTests
         var enemy = new PointerTarget(PointerTargetKind.OtherBuilding, Building: new EntityId(5));
         Assert.Equal(CursorKind.Enter, CursorChoice.For(Context(enemy, selected: true), true, spot: new PointerSpot(Enter: true)));
         Assert.Equal(CursorKind.Attack, CursorChoice.For(Context(enemy, selected: true), true));
+        // Stage 3d: an own transport a selected unit can board shows the enter cursor, not the select one.
+        Assert.Equal(CursorKind.Enter, CursorChoice.For(Context(OwnUnit, selected: true), true, spot: new PointerSpot(Enter: true)));
+        Assert.Equal(CursorKind.Select, CursorChoice.For(Context(OwnUnit, selected: true), true));
     }
 
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);

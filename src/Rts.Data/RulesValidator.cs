@@ -163,6 +163,13 @@ internal static class RulesValidator
             WeaponOf(unit.Id, "secondary", unit.Secondary);
             WeaponOf(unit.Id, "death_weapon", unit.DeathWeapon);
             WeaponOf(unit.Id, "deploy_weapon", unit.DeployWeapon);
+            WeaponOf(unit.Id, "ifv_weapon", unit.IfvWeapon);
+            NotNegative(unit.Id, "passengers", unit.PassengerSlots);
+            NotNegative(unit.Id, "size", unit.Size);
+            if (unit.PassengerSlots > 0 && unit.PassengerSizeLimit <= 0)
+            {
+                Error(unit.Id, "passenger_size", $"'{unit.Id}' carries passengers but takes none: 'passenger_size' must be above zero");
+            }
             foreach (var (key, has) in new[] { ("engineer", unit.Engineer), ("infiltrator", unit.Infiltrator), ("teleports", unit.Teleports) })
             {
                 if (has && unit.Category != UnitCategory.Infantry)
@@ -340,6 +347,10 @@ internal static class RulesValidator
             }
 
             NotNegative(warhead.Id, "radiation", warhead.Radiation);
+            if (warhead.Parasite && (warhead.ParasiteDamage <= 0 || warhead.ParasiteDelay <= 0))
+            {
+                Error(warhead.Id, "parasite", $"the parasite of '{warhead.Id}' needs a 'parasite_damage' and a 'parasite_delay' above zero");
+            }
         }
 
         /// <summary>Nothing negative; a projectile that flies needs a speed, a homing one also a turn rate and a lifetime.</summary>

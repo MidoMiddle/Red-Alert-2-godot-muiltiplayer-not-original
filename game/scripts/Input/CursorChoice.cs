@@ -30,7 +30,7 @@ public enum CursorKind
 
     /// <summary>
     /// Over a building a selected unit can go into: an own bunker with room for soldiers (stage 2e), a building for an engineer to take
-    /// or mend, or for an infiltrator (stage 3b).
+    /// or mend, or for an infiltrator (stage 3b); or over an own transport a selected unit can board (stage 3d).
     /// </summary>
     Enter,
 }
@@ -83,14 +83,14 @@ public static class CursorChoice
             return CursorKind.ForceAttack;
         }
 
-        if (context.Target.Kind == PointerTargetKind.OwnUnit && !groundOrder)
-        {
-            return CursorKind.Select;
-        }
-
         if (context.HasSelection && spot.Enter && !groundOrder && !context.Ctrl && context.Target.Kind != PointerTargetKind.OtherUnit)
         {
             return CursorKind.Enter;
+        }
+
+        if (context.Target.Kind == PointerTargetKind.OwnUnit && !groundOrder)
+        {
+            return CursorKind.Select;
         }
 
         if (context.HasSelection && !groundOrder && context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OtherBuilding)
