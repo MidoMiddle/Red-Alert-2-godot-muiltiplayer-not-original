@@ -543,7 +543,8 @@ public static class CommandProcessor
         if (world.TryGet(command.Unit, out var packing) && packing is Building { IsAlive: true, IsReady: true, Def: { } packed } yardBuilding
             && yardBuilding.Owner == command.Player && packed.Id == faction.ConstructionYard)
         {
-            return Undeploy(world, yardBuilding, faction, events);
+            // Unless the match turned «MCV Repacks» off.
+            return world.Match is not { Options.McvRepacks: false } && Undeploy(world, yardBuilding, faction, events);
         }
 
         if (!world.TryGet(command.Unit, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Owner != command.Player

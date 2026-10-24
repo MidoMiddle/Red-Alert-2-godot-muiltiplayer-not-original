@@ -146,9 +146,13 @@ public static class SuperweaponSystem
     /// </summary>
     public static SuperweaponKind KindOf(GameWorld world, Building building) =>
         building.Owner.IsNeutral ? SuperweaponKind.None
+        : building.Def is { } off && IsStrike(off.Superweapon) && world.Match is { Options.Superweapons: false } ? SuperweaponKind.None
         : building.Def is not { } def ? building.Type.Superweapon
         : def.SuperweaponCountries.IsDefaultOrEmpty || def.SuperweaponCountries.Contains(world.Player(building.Owner).Country) ? def.Superweapon
         : SuperweaponKind.None;
+
+    /// <summary>The superweapons the match option «Superweapons» turns off: all but the paradrops.</summary>
+    public static bool IsStrike(SuperweaponKind kind) => kind is not (SuperweaponKind.None or SuperweaponKind.Paradrop);
 
     /// <summary>The ticks the superweapon of a building charges.</summary>
     public static int RechargeOf(Building building) => building.Def is { } def ? def.Recharge : building.Type.Recharge;

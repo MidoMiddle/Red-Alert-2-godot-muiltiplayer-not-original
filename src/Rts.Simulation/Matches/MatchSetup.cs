@@ -34,8 +34,18 @@ public enum AiDifficulty : byte
 /// The fog of war: on, only what is in sight now is seen; off, whatever the team has explored stays in sight (<see cref="Visibility.Vision"/>).
 /// On unless said otherwise — the matches of the Arena and of the tests; the skirmish screen offers it off by default.
 /// </param>
+/// <param name="McvRepacks">The construction yard packs up into its MCV with D (RA2 «MCV Repacks»).</param>
+/// <param name="Superweapons">The superweapons can be built (RA2 «Superweapons»); off, the Bastion Field Projector, the missile silo, the
+/// Phase Gate and the Storm Generator are not in the tree. The paradrops stay.</param>
+/// <param name="DestroyableBridges">The bridges fall to shots (RA2 «Destroyable Bridges»); off, a shot at a bridge stops at it.</param>
 public sealed record MatchOptions(
-    int StartingCredits = SimulationSettings.DefaultStartingCredits, bool ShortGame = false, int GameSpeed = 4, bool FogOfWar = true);
+    int StartingCredits = SimulationSettings.DefaultStartingCredits,
+    bool ShortGame = false,
+    int GameSpeed = 4,
+    bool FogOfWar = true,
+    bool McvRepacks = true,
+    bool Superweapons = true,
+    bool DestroyableBridges = true);
 
 /// <summary>
 /// One player of a match (docs/implementation/M5_first_bot.md, 4.11). <see cref="Slot"/> is its <see cref="PlayerId"/>. The start is

@@ -38,11 +38,12 @@ namespace Rts.Simulation.Replays;
 /// v20 (M8 step 13) adds the personality of every player after its difficulty: u16 length + UTF-8 id, or <c>random</c>; v21 (the fog
 /// of war, an option of the skirmish screen) adds u8 fogOfWar after the game speed; v22 (stage 2e) command format v11 (Garrison,
 /// Evacuate); v23 (stage 2d) command format v12 (Superweapon); v24 (loose ends, stage 5) adds the country of every player after its
-/// faction: u16 length + UTF-8 id, empty for the whole faction.
+/// faction: u16 length + UTF-8 id, empty for the whole faction; v25 (the skirmish screen of RA2) adds u8 mcvRepacks | u8 superweapons |
+/// u8 destroyableBridges after the fog of war.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 24;
+    public const ushort FormatVersion = 25;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -346,6 +347,9 @@ public static class ReplayFormat
         bytes.Add(setup.Options.ShortGame ? (byte)1 : (byte)0);
         bytes.Add((byte)setup.Options.GameSpeed);
         bytes.Add(setup.Options.FogOfWar ? (byte)1 : (byte)0);
+        bytes.Add(setup.Options.McvRepacks ? (byte)1 : (byte)0);
+        bytes.Add(setup.Options.Superweapons ? (byte)1 : (byte)0);
+        bytes.Add(setup.Options.DestroyableBridges ? (byte)1 : (byte)0);
         bytes.Add((byte)setup.Players.Length);
         foreach (var player in setup.Players)
         {
@@ -387,12 +391,20 @@ public static class ReplayFormat
         }
 
         var mapId = ReadText(source, ref offset);
-        Require(source[offset..], 4);
+        Require(source[offset..], 7);
         var shortGame = source[offset];
         var speed = source[offset + 1];
         var fog = source[offset + 2];
-        var count = source[offset + 3];
-        offset += 4;
+        var repacks = source[offset + 3];
+        var superweapons = source[offset + 4];
+        var bridges = source[offset + 5];
+        var count = source[offset + 6];
+        offset += 7;
+        if (repacks > 1 || superweapons > 1 || bridges > 1)
+        {
+            throw new InvalidDataException($"Invalid option flags {repacks}, {superweapons}, {bridges}.");
+        }
+
         if (shortGame > 1)
         {
             throw new InvalidDataException($"Invalid short game flag {shortGame}.");
@@ -440,7 +452,9 @@ public static class ReplayFormat
             offset += 4;
         }
 
-        return new MatchSetup(mapId, seed, new MatchOptions(credits, shortGame == 1, speed, fog == 1), players.MoveToImmutable(), starts.MoveToImmutable());
+        return new MatchSetup(
+            mapId, seed, new MatchOptions(credits, shortGame == 1, speed, fog == 1, repacks == 1, superweapons == 1, bridges == 1), players.MoveToImmutable(),
+            starts.MoveToImmutable());
     }
 
     private static void AddText(List<byte> bytes, string text)

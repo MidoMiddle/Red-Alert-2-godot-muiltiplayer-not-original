@@ -625,6 +625,16 @@ public partial class SimulationHost : Node
         GD.Print($"[host] spawn type {UnitTypes.IdOf(SpawnType)}");
     }
 
+    /// <summary>The step of <see cref="SpeedMultipliers"/> for the game speed 1–6 of the skirmish screen.</summary>
+    public static int SpeedIndexOf(int gameSpeed) => gameSpeed switch
+    {
+        <= 1 => 0,
+        2 => 1,
+        3 or 4 => 2,
+        5 => 3,
+        _ => 4,
+    };
+
     public void ChangeSpeed(int direction) =>
         _speedIndex = Math.Clamp(_speedIndex + direction, 0, SpeedMultipliers.Length - 1);
 
@@ -705,6 +715,12 @@ public partial class SimulationHost : Node
         if (_match?.PlayerOf(LocalPlayer) is { } player)
         {
             GetNodeOrNull<RtsCamera>("../CameraRig")?.CenterOn(WorldCoords.ToGodotOnGround(player.Start.Center));
+        }
+
+        if (_match is { } chosen)
+        {
+            // The speed of the skirmish screen, 1–6 as in RA2: 1 and 2 slow, 3 and 4 normal, 5 fast, 6 fastest.
+            _speedIndex = SpeedIndexOf(chosen.Options.GameSpeed);
         }
     }
 

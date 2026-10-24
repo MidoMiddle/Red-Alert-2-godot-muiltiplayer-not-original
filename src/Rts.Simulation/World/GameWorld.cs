@@ -311,6 +311,12 @@ public sealed class GameWorld
 
         if (Map.BridgeAt(cell) is { IsIntact: true } segment)
         {
+            if (Match is { Options.DestroyableBridges: false })
+            {
+                // «Destroyable Bridges» off: the shot stops at the bridge.
+                return true;
+            }
+
             if (segment.Hp > amount)
             {
                 Map.SetSegmentHp(segment, segment.Hp - amount);

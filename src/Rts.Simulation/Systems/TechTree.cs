@@ -59,7 +59,8 @@ public static class TechTree
             {
                 buildings[i] = rules.Buildings[i].Faction == faction && rules.Buildings[i].Id != player.Faction.ConstructionYard
                     && AllOwned(rules.Buildings[i].Prerequisites, owned)
-                    && Allowed(player.Country, rules.Buildings[i].Countries, rules.Buildings[i].ForbiddenCountries);
+                    && Allowed(player.Country, rules.Buildings[i].Countries, rules.Buildings[i].ForbiddenCountries)
+                    && (world.Match is not { Options.Superweapons: false } || !SuperweaponSystem.IsStrike(rules.Buildings[i].Superweapon));
             }
 
             player.SetAvailable(units, buildings);
