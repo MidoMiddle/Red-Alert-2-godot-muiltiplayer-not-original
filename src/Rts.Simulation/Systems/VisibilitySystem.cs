@@ -11,6 +11,11 @@ namespace Rts.Simulation.Systems;
 /// remembers the circle it added (<see cref="Entity.SightCell"/>, <see cref="Entity.SightRadius"/>): when it changes, the old circle
 /// is taken away and the new one added; when the entity dies, its circle goes. An unchanged entity costs nothing. Neutral entities and
 /// shots see nothing.
+/// <para>
+/// Stage 2d: a ready and online veil generator (<see cref="Rules.BuildingDef.VeilRadius"/>) adds its veil to its owner's grid the same
+/// way, and takes it away when it falls, goes offline or is sold; an orbital uplink (<see cref="Rules.BuildingDef.RevealsMap"/>) keeps
+/// its owner's whole map explored while it stands ready and online.
+/// </para>
 /// </summary>
 public static class VisibilitySystem
 {
@@ -42,6 +47,37 @@ public static class VisibilitySystem
             entity.SightCell = cell;
             entity.SightRadius = radius;
         }
+
+        foreach (var entity in world.Entities)
+        {
+            if (entity is not Building { Def: { } def } building || building.Owner.IsNeutral || building.Owner.Value > PlayerId.MaxPlayers)
+            {
+                continue;
+            }
+
+            var working = building.IsAlive && building.IsReady && Combat.Defenses.IsOnline(world, building);
+            if (def.RevealsMap && working)
+            {
+                world.VisionOf(building.Owner).ExploreAll();
+            }
+
+            var veil = def.VeilRadius > 0 && working ? def.VeilRadius : 0;
+            if (veil != building.VeilRadius)
+            {
+                var middle = MiddleOf(building);
+                var grid = world.VisionOf(building.Owner);
+                if (building.VeilRadius > 0)
+                {
+                    grid.Veil(middle, building.VeilRadius, -1);
+                }
+
+                if (veil > 0)
+                {
+                    grid.Veil(middle, veil, 1);
+                }
+                building.VeilRadius = veil;
+            }
+        }
     }
 
     /// <summary>The cell and radius the entity sees from now; no cell when it sees nothing.</summary>
@@ -57,10 +93,12 @@ public static class VisibilitySystem
             case Unit unit when world.Contains(unit.Position):
                 return (unit.Position.ToCell(), SightRules.SightOf(unit, world.Map));
             case Building { Def: { Sight: > 0 } def } building:
-                var middle = new CellPos(building.Cell.X + building.Width / 2, building.Cell.Y + building.Height / 2);
+                var middle = MiddleOf(building);
                 return (middle, SightRules.SightAt(world.Map, middle, def.Sight));
             default:
                 return (null, 0);
         }
     }
+
+    private static CellPos MiddleOf(Building building) => new(building.Cell.X + building.Width / 2, building.Cell.Y + building.Height / 2);
 }

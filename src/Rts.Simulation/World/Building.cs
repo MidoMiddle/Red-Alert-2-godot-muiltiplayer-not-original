@@ -81,6 +81,12 @@ public sealed class Building : Entity
     /// </summary>
     public int BuildUpLeft { get; internal set; }
 
+    /// <summary>
+    /// The radius of the veil this building added to its owner's <see cref="Visibility.VisibilityGrid"/> (stage 2d); 0 while it adds
+    /// none. Derived from the building and its owner's power, so not hashed: the grids are.
+    /// </summary>
+    internal int VeilRadius { get; set; }
+
     /// <summary>True once the building has grown.</summary>
     public bool IsReady => BuildUpLeft == 0;
 

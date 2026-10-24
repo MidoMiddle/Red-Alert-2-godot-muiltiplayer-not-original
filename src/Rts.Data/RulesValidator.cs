@@ -25,6 +25,9 @@ internal static class RulesValidator
     /// <summary>The largest side of a building footprint, in cells.</summary>
     public const int MaxFootprint = 6;
 
+    /// <summary>The widest veil of a veil generator, in cells (RA2's gap generator: 10).</summary>
+    public const int MaxVeilRadius = 20;
+
     /// <param name="sources">The resolved entry of every definition in <paramref name="rules"/>, by id.</param>
     public static void Check(RulesDatabase rules, IReadOnlyDictionary<string, RawDefinition> sources, List<RulesError> errors)
     {
@@ -210,6 +213,11 @@ internal static class RulesValidator
             if (building.IncomeBonusPercent is < 0 or > 100)
             {
                 Error(building.Id, "income_bonus", $"'income_bonus' of '{building.Id}' must be 0% to 100%");
+            }
+
+            if (building.VeilRadius is < 0 or > MaxVeilRadius)
+            {
+                Error(building.Id, "veil_radius", $"'veil_radius' of '{building.Id}' must be 0 to {MaxVeilRadius} cells");
             }
         }
 

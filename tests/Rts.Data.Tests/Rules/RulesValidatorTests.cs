@@ -424,6 +424,8 @@ public sealed class RulesValidatorTests
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  adjacent: 11\n", "'adjacent' of 'reactor' must be 0 to 10 cells")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  vehicle_discount: 95%\n", "'vehicle_discount' of 'reactor' must be 0% to 90%")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  income_bonus: 150%\n", "'income_bonus' of 'reactor' must be 0% to 100%")]
+    [InlineData(Buildings, "  power: 150\n", "  power: 150\n  veil_radius: 21\n", "'veil_radius' of 'reactor' must be 0 to 20 cells")]
+    [InlineData(Buildings, "  power: 150\n", "  power: 150\n  veil_radius: -1\n", "'veil_radius' of 'reactor' must be 0 to 20 cells")]
     [InlineData(Weapons, "damage: 120", "damage: -5", "'damage' of 'heavy_tank_cannon' must not be negative")]
     [InlineData(Weapons, "reload: 2s", "reload: 2s\n  burst: 0", "'burst' of 'heavy_tank_cannon' must be above zero")]
     [InlineData(Weapons, "range: 5.5", "range: 5.5\n  min_range: 5.5", "'min_range' of 'heavy_tank_cannon' must be 0 or more and below its range")]

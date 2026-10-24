@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
         "building hp", "building target", "building reload",
     };
 
@@ -72,6 +72,8 @@ public sealed class StateHasherTests
             case "defeated": world.Player(new PlayerId(2)).DefeatedTick = 0; break;
             case "vision": world.VisionOf(new PlayerId(1)).Reveal(new CellPos(1, 1), 0); world.VisionOf(new PlayerId(1)).Hide(new CellPos(1, 1), 0); world.VisionOf(new PlayerId(2)).Reveal(new CellPos(30, 30), 1); break;
             case "explored": world.VisionOf(new PlayerId(3)).Reveal(new CellPos(2, 2), 0); world.VisionOf(new PlayerId(3)).Hide(new CellPos(2, 2), 0); break;
+            case "veil": world.VisionOf(new PlayerId(4)).Veil(new CellPos(5, 5), 2, 1); break;
+            case "explore all": world.VisionOf(new PlayerId(5)).ExploreAll(); break;
             case "stance": moving.Stance = Stance.Guard; break;
             case "anchor": moving.Anchor += new WorldPos(1, 0); break;
             case "target order": moving.TargetOrder = TargetOrder.Attack; break;
@@ -223,7 +225,7 @@ public sealed class StateHasherTests
         // The sight circle an entity added (M4 step 11): derived from where it stands; the grids it went into are hashed.
         "<SightCell>k__BackingField", "<SightRadius>k__BackingField",
     })]
-    [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[] { "_counts", "_explored", "<Width>k__BackingField", "<Height>k__BackingField" })]
+    [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[] { "_counts", "_explored", "_veils", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(Unit), new[]
     {
         "<Archetype>k__BackingField", "<Harvester>k__BackingField", "<Position>k__BackingField", "<MoveTarget>k__BackingField", "<Speed>k__BackingField",
@@ -329,6 +331,8 @@ public sealed class StateHasherTests
         "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
+        // The veil it added (stage 2d): derived from the building and its owner's power; the grids it went into are hashed.
+        "<VeilRadius>k__BackingField",
     })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)

@@ -149,7 +149,7 @@ alliance_ore_purifier:  # the ore brings 25% more (stage 2c)
   income_bonus: 25%
   prerequisites: [alliance_battle_lab]
 
-alliance_spy_satellite_uplink:  # reveals the map, M11; a radar meanwhile
+alliance_spy_satellite_uplink:  # a radar; while ready and online, the whole map is explored (stage 2d)
   kind: building
   inherits: base_building
   name: Orbital Uplink
@@ -160,8 +160,9 @@ alliance_spy_satellite_uplink:  # reveals the map, M11; a radar meanwhile
   sight: 5
   footprint: [2, 2]
   power: -100
+  powered: true
   radar: true
-  ability_later: true
+  reveals_map: true
   prerequisites: [alliance_battle_lab]
 
 alliance_robot_control_center:  # drives robot units, M11
@@ -208,7 +209,7 @@ alliance_weather_control_device:  # superweapon: a storm over an area, M11c
   ability_later: true
   prerequisites: [alliance_battle_lab]
 
-alliance_gap_generator:  # hides the base from the enemy, M11c
+alliance_gap_generator:  # veils 10 cells round it from the enemy while ready and online (stage 2d)
   kind: building
   inherits: base_building
   name: Veil Generator
@@ -219,7 +220,8 @@ alliance_gap_generator:  # hides the base from the enemy, M11c
   sight: 5
   footprint: [1, 1]
   power: -100
-  ability_later: true
+  powered: true
+  veil_radius: 10
   prerequisites: [alliance_battle_lab]
 
 alliance_pillbox:  # light defence, machine gun

@@ -108,6 +108,17 @@ public static class StateHasher
         {
             hash.Add(word);
         }
+
+        // The veils of the veil generators (stage 2d): nothing while no cell is veiled, so a match without them hashes as before.
+        var veils = grid.Veils;
+        for (var i = 0; i < veils.Length; i++)
+        {
+            if (veils[i] != 0)
+            {
+                hash.Add(-1 - i);
+                hash.Add((int)veils[i]);
+            }
+        }
     }
 
     private static void AddWeapons(Fnv1a64 hash, EntityId? target, Combat.WeaponInstance[] weapons)

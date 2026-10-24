@@ -218,4 +218,35 @@ public sealed class VisibilityTests
 
         Assert.NotEqual(before, StateHasher.Compute(world));
     }
+
+    [Fact]
+    public void Exploring_the_whole_map_marks_every_cell_and_nothing_past_the_last()
+    {
+        // 90 x 90 = 8100 cells: the last word of the marks holds 36 of them (stage 2d, the orbital uplink).
+        var world = new GameWorld(seed: 1, widthCells: 90, heightCells: 90, TestRules.Standard);
+        var grid = world.VisionOf(Player1);
+
+        grid.ExploreAll();
+
+        Assert.True(grid.IsExplored(new CellPos(0, 0)));
+        Assert.True(grid.IsExplored(new CellPos(89, 89)));
+        Assert.False(grid.IsVisible(new CellPos(45, 45)));
+        Assert.Equal((1UL << 36) - 1, grid.Explored[^1]);
+    }
+
+    [Fact]
+    public void A_veil_counts_like_sight_and_goes_when_taken_away()
+    {
+        var grid = World().VisionOf(Player1);
+
+        grid.Veil(new CellPos(20, 20), 3, 1);
+        grid.Veil(new CellPos(22, 20), 3, 1);
+        Assert.True(grid.IsVeiled(new CellPos(17, 20)));
+        Assert.Equal(2, grid.Veils[20 * 40 + 21]);
+
+        grid.Veil(new CellPos(20, 20), 3, -1);
+        Assert.False(grid.IsVeiled(new CellPos(17, 20)));
+        Assert.True(grid.IsVeiled(new CellPos(25, 20)));
+        Assert.False(grid.IsExplored(new CellPos(20, 20)), "a veil explores nothing");
+    }
 }

@@ -309,6 +309,7 @@ public sealed class GoldenValuesTests
         // Rules v44 (stage 2a): the version and the checksums change — the naval queue is hashed; the commands are the same.
         // Rules v45 (stage 2b): the same again with the aircraft queue.
         // Rules v46 (stage 2c, the workshops, the discount, the bonus of the ore, the blast): only the version changes.
-        Assert.Equal((22269, 3088348900364268772UL), (bytes.Length, hash.Value));
+        // Rules v47 (stage 2d, the uplink and the veil): only the version changes — no veil here, and the veils are hashed only when one is.
+        Assert.Equal((22269, 7652284386323155575UL), (bytes.Length, hash.Value));
     }
 }

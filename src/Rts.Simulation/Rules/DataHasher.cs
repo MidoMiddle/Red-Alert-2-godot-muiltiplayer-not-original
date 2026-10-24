@@ -132,6 +132,8 @@ public static class DataHasher
             hash.Add(building.VehicleDiscountPercent);
             hash.Add(building.IncomeBonusPercent);
             Add(hash, building.DeathWeapon);
+            hash.Add(building.RevealsMap);
+            hash.Add(building.VeilRadius);
         }
 
         hash.Add(rules.Factions.Length);

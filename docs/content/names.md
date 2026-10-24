@@ -43,11 +43,11 @@
 | alliance_service_depot | Repair Bay | ремонт техники | Service Depot | работает: чинит технику и корабли рядом, за деньги (этап 2в) |
 | alliance_battle_lab | Research Lab | высокий тех | Battle Lab | работает |
 | alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | работает: руда приносит на 25 % больше (этап 2в) |
-| alliance_spy_satellite_uplink | Orbital Uplink | открывает карту | Spy Satellite Uplink | радар работает; карта позже |
+| alliance_spy_satellite_uplink | Orbital Uplink | открывает карту | Spy Satellite Uplink | работает: радар; пока стоит с энергией, вся карта разведана (этап 2г) |
 | alliance_robot_control_center | Drone Control Hub | управление роботами | Robot Control Center | позже |
 | alliance_chronosphere | Phase Gate | переброска группы | Chronosphere | позже (M11c) |
 | alliance_weather_control_device | Storm Generator | шторм над областью | Weather Control Device | позже (M11c) |
-| alliance_gap_generator | Veil Generator | скрывает базу | Gap Generator | позже (M11c) |
+| alliance_gap_generator | Veil Generator | скрывает базу | Gap Generator | работает: с энергией закрывает 10 клеток вокруг от врага (этап 2г) |
 | alliance_pillbox | Gun Nest | пулемёт | Pillbox | работает |
 | alliance_patriot_missile_system | Sky Guard | ПВО | Patriot Missile System | работает: бьёт по авиации (этап 2б) |
 | alliance_prism_tower | Lens Tower | лучевая оборона | Prism Tower | работает; цепочки башен позже (M11c) |
