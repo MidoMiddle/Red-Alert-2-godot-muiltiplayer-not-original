@@ -12,17 +12,19 @@ namespace Rts.MapGen.Stages;
 internal static class Ore
 {
     public const int HomeRadius = 3;
-    private const int ContestedRadius = 2;
+    public const int ContestedRadius = 2;
+
+    /// <summary>The centres of the home and the contested field of <paramref name="start"/> on a map of side <paramref name="n"/>.</summary>
+    public static (CellPos Home, CellPos Contested) Centres(CellPos start, int n)
+    {
+        // Towards the centre, in doubled coordinates so a start on either side of it gets the mirrored direction.
+        var (dx, dy) = (IntMath.Sign(n - (2 * start.X + 1)), IntMath.Sign(n - (2 * start.Y + 1)));
+        return (new CellPos(start.X + dx * 5, start.Y + dy * 5), new CellPos((start.X + n / 2) / 2, (start.Y + n / 2) / 2));
+    }
 
     public static void Place(GenMap map, out CellPos contested)
     {
-        var start = map.Starts[0].Cell;
-        var n = map.N;
-
-        // Towards the centre, in doubled coordinates so a start on either side of it gets the mirrored direction.
-        var (dx, dy) = (IntMath.Sign(n - (2 * start.X + 1)), IntMath.Sign(n - (2 * start.Y + 1)));
-        var home = new CellPos(start.X + dx * 5, start.Y + dy * 5);
-        contested = new CellPos((start.X + n / 2) / 2, (start.Y + n / 2) / 2);
+        (var home, contested) = Centres(map.Starts[0].Cell, map.N);
         var value = map.Settings.Resources switch { Amount.Low => 3, Amount.Medium => 5, _ => 8 };
         Field(map, home, HomeRadius, value);
         Field(map, contested, ContestedRadius, IntMath.Min(value + 1, 9));

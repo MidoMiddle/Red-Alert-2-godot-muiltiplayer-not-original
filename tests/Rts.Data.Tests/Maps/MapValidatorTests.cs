@@ -102,6 +102,21 @@ public sealed class MapValidatorTests
     }
 
     [Fact]
+    public void A_start_with_fewer_drills_near_it_than_another_is_a_warning()
+    {
+        // M8 step 10b: the fields that grow back are fair like the ore.
+        var session = Arena(2, (8, 8), (30, 30));
+        Stroke(session, EditTool.Objects, Dot, new EditOptions { ObjectType = "ore_source", Density = 100 }, (14, 14));
+        Assert.Contains(Check(session), p => p.Level == ProblemLevel.Warning && p.Message == "The starts have 0 to 1 ore drills within 12 cells");
+
+        Stroke(session, EditTool.Objects, Dot, new EditOptions { ObjectType = "ore_source", Density = 100 }, (24, 24));
+        Assert.DoesNotContain(Check(session), p => p.Message.Contains("drills"));
+
+        Stroke(session, EditTool.Objects, Dot, new EditOptions { ObjectType = "gem_source", Density = 100 }, (25, 25));
+        Assert.Contains(Check(session), p => p.Message == "The starts have 0 to 1 gem drills within 12 cells");
+    }
+
+    [Fact]
     public void A_source_takes_the_ore_off_its_cell_keeps_it_bare_and_ore_under_one_is_a_warning()
     {
         var session = Arena(2, (8, 8), (30, 30));

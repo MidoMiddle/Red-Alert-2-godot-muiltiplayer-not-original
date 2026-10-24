@@ -46,6 +46,12 @@ public partial class MapGenOptions : VBoxContainer
         grid.AddChild(Choice([Tr("UI_EDITOR_WATER_NONE"), Tr("UI_EDITOR_WATER_RIVERS"), Tr("UI_EDITOR_WATER_LAKES")], 1, i => Chosen = Chosen with { Water = (WaterKind)i }));
         grid.AddChild(Choice([Tr("UI_EDITOR_FOREST_LOW"), Tr("UI_EDITOR_FOREST_MEDIUM"), Tr("UI_EDITOR_FOREST_HIGH")], 1, i => Chosen = Chosen with { Forest = (Amount)i }));
         grid.AddChild(Choice([Tr("UI_EDITOR_ORE_LOW"), Tr("UI_EDITOR_ORE_MEDIUM"), Tr("UI_EDITOR_ORE_HIGH")], 1, i => Chosen = Chosen with { Resources = (Amount)i }));
+
+        // M8 step 10b: the drills that make the fields grow back, in the order of DrillKind.
+        var drills = Choice([Tr("UI_EDITOR_DRILLS_NONE"), Tr("UI_EDITOR_DRILLS_ORE"), Tr("UI_EDITOR_DRILLS_ORE_GEMS")], (int)Chosen.Drills,
+            i => Chosen = Chosen with { Drills = (DrillKind)i });
+        drills.TooltipText = Tr("UI_EDITOR_DRILLS_HINT");
+        grid.AddChild(drills);
         if (ShowLighting)
         {
             var ids = Rts.Data.Maps.MapLighting.Ids;

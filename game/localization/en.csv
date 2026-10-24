@@ -69,6 +69,10 @@ UI_EDITOR_FOREST_HIGH,Dense forest
 UI_EDITOR_ORE_LOW,Poor ore
 UI_EDITOR_ORE_MEDIUM,Ore
 UI_EDITOR_ORE_HIGH,Rich ore
+UI_EDITOR_DRILLS_NONE,No drills
+UI_EDITOR_DRILLS_ORE,Ore drills
+UI_EDITOR_DRILLS_ORE_GEMS,Ore and gem drills
+UI_EDITOR_DRILLS_HINT,Drills make the ore grow back: one at every home field · a gem drill in every contested field
 UI_EDITOR_GENERATE,Generate
 UI_EDITOR_GENERATED,Generated from seed {0}
 UI_EDITOR_GENERATE_FAILED,Not generated: {0}

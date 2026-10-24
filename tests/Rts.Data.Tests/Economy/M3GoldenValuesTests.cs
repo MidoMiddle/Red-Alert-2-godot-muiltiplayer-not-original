@@ -35,7 +35,9 @@ public sealed class M3GoldenValuesTests
         // M4 step 13, rules v36: the tick of the last attack notice of every player is hashed; the run is the same, the credits too.
         // M5 step 10, rules v38: the tick every player lost the match on is hashed (none, no match); the run is the same, the credits too.
         // M8 step 2, rules v39: the bonuses of every player and the hundredths of income owed are hashed (none); the run is the same, the credits too.
-        Assert.Equal((6322, 0x32b60c1547659f02UL), (fifth.Credits, fifth.Checksum));
+        // M8 step 10b, the same rules: Frozen Crossing has its drills — an ore drill at home, a gem drill in the middle — so the fields
+        // grow back while the harvester works them: 650 more credits by minute 5.
+        Assert.Equal((6972, 0x79873326c72f7f70UL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

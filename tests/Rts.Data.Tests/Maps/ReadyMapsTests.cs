@@ -60,7 +60,9 @@ public sealed class ReadyMapsTests
         var corners = Committed("four-corners");
         Assert.Equal((128, 128, 4), (corners.Width, corners.Height, corners.Players));
         Assert.Equal(4, corners.CornerHeight(64, 64));
-        Assert.True(corners.Ore[58 * 128 + 58] >= 10, "gems on the plateau");
+        // The gem field and its drill at the centre of it (M8 step 10b).
+        Assert.True(corners.Ore[58 * 128 + 59] >= 10, "gems on the plateau");
+        Assert.Contains(corners.Objects, o => o is { Type: "gem_source", Cell: { X: 58, Y: 58 } });
         Assert.Contains(corners.Structures, s => s is { Type: "tech_oil_derrick", Cell: { X: 63, Y: 63 } });
     }
 

@@ -48,10 +48,51 @@ public sealed class MapGeneratorTests
     [Fact]
     public void The_reference_map_has_the_same_hash_on_every_system()
     {
-        // Golden value: 64 x 64, two players mirrored, hills, rivers, seed 1. Changes only with the generator's rules.
+        // Golden value: 64 x 64, two players mirrored, hills, rivers, seed 1. Changes only with the generator's rules. M8 step 10b:
+        // the drills of the fields; without them the map is the one of before, byte for byte.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
+        var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("ef702a7e37981baa7526928ab49b7e9b1e91eef6b3c5c15b8672ddbbfd675145", MapHasher.Hash(map));
+        Assert.Equal("48be7fdeb573438e197f7aeb7666ad0428a268380ea70eb6080fe8299ab8b451", MapHasher.Hash(map));
+        Assert.Equal("ef702a7e37981baa7526928ab49b7e9b1e91eef6b3c5c15b8672ddbbfd675145", MapHasher.Hash(none));
+    }
+
+    [Theory]
+    [MemberData(nameof(Sets))]
+    public void Every_start_gets_an_ore_drill_at_home_and_a_gem_drill_in_its_contested_field(MapGenSettings settings)
+    {
+        foreach (var seed in new uint[] { 3, 17, 99 })
+        {
+            var (map, _) = MapGenerator.Generate(settings with { Seed = seed });
+            AssertDrills(map, settings.Players, gems: true, $"seed {seed}");
+            Assert.EndsWith("drills OreAndGems.", map.Description);
+        }
+
+        var (ore, _) = MapGenerator.Generate(settings with { Seed = 3, Drills = DrillKind.Ore });
+        AssertDrills(ore, settings.Players, gems: false, "ore only");
+        Assert.DoesNotContain(ore.Objects, o => o.Type == Drills.GemSource);
+        Assert.DoesNotContain(MapGenerator.Generate(settings with { Seed = 3, Drills = DrillKind.None }).Map.Objects, o => o.Type is Drills.OreSource or Drills.GemSource);
+    }
+
+    [Theory]
+    [MemberData(nameof(Sets))]
+    public void A_ready_map_made_without_drills_gets_them_in_the_same_fields_and_only_them(MapGenSettings settings)
+    {
+        var (bare, _) = MapGenerator.Generate(settings with { Seed = 17, Drills = DrillKind.None });
+
+        var drilled = Drills.AddTo(bare, settings.Symmetry, DrillKind.OreAndGems);
+
+        AssertDrills(drilled, settings.Players, gems: true, "added");
+        Assert.Equal(bare.Description.TrimEnd('.') + ", drills OreAndGems.", drilled.Description);
+        Assert.Equal(bare.Land, drilled.Land);
+        Assert.Equal(bare.Heights, drilled.Heights);
+        Assert.Equal(bare.Objects.Length + 2 * settings.Players, drilled.Objects.Length);
+        var cleared = Enumerable.Range(0, bare.Ore.Length).Where(i => bare.Ore[i] != drilled.Ore[i]).ToList();
+        Assert.All(cleared, i => Assert.Contains(drilled.Objects, o => o.Cell.Y * bare.Width + o.Cell.X == i && o.Type is Drills.OreSource or Drills.GemSource));
+        Assert.DoesNotContain(MapValidator.Check(drilled), p => p.Message.Contains("drill", StringComparison.OrdinalIgnoreCase) || p.Message.Contains("source", StringComparison.Ordinal));
+
+        var again = Assert.Throws<ArgumentException>(() => Drills.AddTo(drilled, settings.Symmetry, DrillKind.OreAndGems));
+        Assert.Contains("has drills already", again.Message);
     }
 
     [Theory]
@@ -85,7 +126,11 @@ public sealed class MapGeneratorTests
                         var image = symmetry.Cell(k, cell);
                         Assert.Equal(map.LandAt(cell), map.LandAt(image));
                         Assert.Equal(map.Ore[y * map.Width + x], map.Ore[image.Y * map.Width + image.X]);
-                        Assert.Equal(objects.Contains(("pine_tree", cell)), objects.Contains(("pine_tree", image)));
+                        foreach (var type in new[] { "pine_tree", Drills.OreSource, Drills.GemSource })
+                        {
+                            Assert.Equal(objects.Contains((type, cell)), objects.Contains((type, image)));
+                        }
+
                         Assert.Equal(bridgeCells.Contains(cell), bridgeCells.Contains(image));
                         Assert.Equal(buildingCells.Contains(cell), buildingCells.Contains(image));
                     }
@@ -105,6 +150,10 @@ public sealed class MapGeneratorTests
         {
             var (map, used) = MapGenerator.Generate(settings with { Seed = seed });
             AssertGoodMap(map, settings, $"seed {seed} (used {used})");
+
+            // Every map on the first attempt (M7 step 13); the drills of M8 step 10b block no path.
+            Assert.Equal(seed, used);
+            AssertDrills(map, settings.Players, gems: true, $"seed {seed}");
         }
     }
 
@@ -205,6 +254,22 @@ public sealed class MapGeneratorTests
             Assert.True(map.Bridges.Length >= 2, $"{what}: {map.Bridges.Length} bridges");
         }
     }
+
+    /// <summary>One ore drill in the home field of every start — and a gem drill in its contested field — with no ore under any.</summary>
+    private static void AssertDrills(MapDefinition map, int players, bool gems, string what)
+    {
+        var ore = map.Objects.Where(o => o.Type == Drills.OreSource).ToList();
+        var gem = map.Objects.Where(o => o.Type == Drills.GemSource).ToList();
+        Assert.True(ore.Count == players && gem.Count == (gems ? players : 0), $"{what}: {ore.Count} ore drills, {gem.Count} gem drills");
+        Assert.All(ore.Concat(gem), drill => Assert.Equal(0, map.Ore[drill.Cell.Y * map.Width + drill.Cell.X]));
+        foreach (var start in map.Starts)
+        {
+            // The home field is five cells from the start diagonally (radius 3): its drill within 9 cells of the start.
+            Assert.Contains(ore, drill => Distance2(drill.Cell, start.Cell) <= 9 * 9);
+        }
+    }
+
+    private static int Distance2(CellPos a, CellPos b) => (a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y);
 
     private static int OreNear(MapDefinition map, CellPos start)
     {

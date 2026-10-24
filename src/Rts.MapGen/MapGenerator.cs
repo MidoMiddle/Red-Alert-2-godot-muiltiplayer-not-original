@@ -16,7 +16,7 @@ public sealed class MapGenException(string message, IReadOnlyList<MapProblem> pr
 /// The random map generator (docs/implementation/M7_maps.md, 4.14). Integers and hashes only, so one seed and the same settings
 /// give the same map on every system. Stages: heights (<see cref="Relief"/>), <see cref="Starts"/>, water
 /// (<see cref="Water"/>), then smoothing — the whole map for hills, ramps, starts and river banks for mountains — lakes and
-/// shores, <see cref="Bridges"/>, <see cref="Ore"/>, <see cref="Roads"/>, an oil derrick by the contested ore, rough patches
+/// shores, <see cref="Bridges"/>, <see cref="Ore"/>, the drills of the fields (<see cref="Drills"/>, M8 step 10b), <see cref="Roads"/>, an oil derrick by the contested ore, rough patches
 /// and the forest (<see cref="Features"/>). The map is symmetric by construction (<see cref="Symmetry"/>). A map with errors
 /// of <see cref="MapValidator"/> is made again from seed + 1, at most <see cref="Attempts"/> times; the seed used is in the
 /// map's id (<c>random-SEED</c>) and description.
@@ -98,6 +98,7 @@ public static class MapGenerator
         }
 
         Ore.Place(map, out var contested);
+        PlaceDrills(map);
         Roads.Place(map);
         Features.Buildings(map, contested);
         Features.Rough(map);
@@ -107,7 +108,19 @@ public static class MapGenerator
         var name = $"Random {settings.Size} ({seed})";
         var description = $"Generated from seed {seed}: {settings.Players} players, {settings.Symmetry}, {settings.Relief}, water {settings.Water}, " +
                           $"forest {settings.Forest}, resources {settings.Resources}.";
-        return map.ToDefinition(name, description);
+        return map.ToDefinition(name, Drills.WithDrills(description, settings.Drills));
+    }
+
+    // The drills of the settings (M8 step 10b) before the roads, which go round them; the ore under them goes. A field with no cell
+    // for one keeps none — the map stays fair, its images alike.
+    private static void PlaceDrills(GenMap map)
+    {
+        var (placements, _) = Drills.For(map.ToDefinition("work", ""), map.Symmetry, map.Settings.Drills);
+        foreach (var placement in placements)
+        {
+            map.Objects.Add(placement);
+            map.Ore[placement.Cell.Y * map.N + placement.Cell.X] = 0;
+        }
     }
 
     /// <summary>The image <paramref name="k"/> of a cell under the symmetry of the settings, for tests and tools.</summary>

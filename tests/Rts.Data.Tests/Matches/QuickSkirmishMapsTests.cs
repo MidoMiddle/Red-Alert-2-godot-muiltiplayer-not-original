@@ -71,6 +71,60 @@ public sealed class QuickSkirmishMapsTests
         Assert.All(simulation.LastTickEvents.OfType<CannotDeploy>(), refusal => Assert.Equal(PlacementProblem.NotFlat, refusal.Problem));
     }
 
+    [Theory]
+    [MemberData(nameof(Maps))]
+    public void Every_ready_map_but_the_relief_test_has_an_ore_drill_by_every_start_and_a_gem_drill_for_each(string id)
+    {
+        // M8 step 10b: the fields grow back. The relief test of M7 is a test of slopes, without them.
+        var map = Read(id);
+        var ore = map.Objects.Where(o => o.Type == "ore_source").ToList();
+        var gems = map.Objects.Where(o => o.Type == "gem_source").ToList();
+        if (id == "relief_test")
+        {
+            Assert.Empty(ore.Concat(gems));
+            return;
+        }
+
+        Assert.Equal((map.Starts.Length, map.Starts.Length), (ore.Count, gems.Count));
+        Assert.All(map.Starts, start => Assert.Contains(ore, drill => Distance2(drill.Cell, start.Cell) <= 12 * 12));
+        Assert.All(ore.Concat(gems), drill => Assert.Equal(0, map.Ore[drill.Cell.Y * map.Width + drill.Cell.X]));
+        Assert.DoesNotContain(MapValidator.Check(map), problem => problem.Message.Contains("drill") || problem.Message.Contains("under the"));
+    }
+
+    [Fact]
+    public void In_a_match_the_gem_drills_of_frozen_crossing_add_gems_within_a_minute()
+    {
+        // Gems neither grow nor spread: only the drills add them.
+        var map = Read("frozen-crossing");
+        var setup = MatchSetups.OneOnOne(map, GameDataFiles.Rules.DefaultFaction.Id, seed: 3);
+        var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, map.ToMapGrid()), GameDataFiles.Rules);
+        var before = Gems(simulation.World.Map);
+        for (var tick = 0; tick < 900; tick++)
+        {
+            simulation.Step();
+        }
+
+        Assert.True(Gems(simulation.World.Map) > before, $"gems {before} → {Gems(simulation.World.Map)}");
+    }
+
+    private static int Gems(Rts.Simulation.Map.MapGrid grid)
+    {
+        var sum = 0;
+        for (var y = 0; y < grid.Height; y++)
+        {
+            for (var x = 0; x < grid.Width; x++)
+            {
+                var ore = grid.OreAt(new Rts.Simulation.Geometry.CellPos(x, y));
+                sum += ore.Kind == Rts.Simulation.Map.OreKind.Gems ? ore.Stage + 1 : 0;
+            }
+        }
+
+        return sum;
+    }
+
+    private static int Distance2(Rts.Simulation.Geometry.CellPos a, Rts.Simulation.Geometry.CellPos b) =>
+        (a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y);
+
     [Fact]
     public void One_against_one_puts_the_person_on_the_first_start_and_the_bot_on_the_second()
     {

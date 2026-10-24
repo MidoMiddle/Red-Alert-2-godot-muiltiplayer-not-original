@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
@@ -19,7 +20,7 @@ public sealed record MapProblem(ProblemLevel Level, string Message, CellPos? Cel
 /// The checks of the map editor (docs/implementation/M7_maps.md, 4.13): starts — as many as players, where tracks can stand,
 /// at least <see cref="EdgeMargin"/> cells from the edge, reachable from each other; every bridge and building where the
 /// rules allow it; ore within <see cref="OreRadius"/> cells of every start and about as much at each (within
-/// <see cref="BalancePercent"/> %); with three players or more, about the same distance from every start to its nearest
+/// <see cref="BalancePercent"/> %) and as many drills of each kind (M8 step 10b); with three players or more, about the same distance from every start to its nearest
 /// opponent. Errors keep a map out of play; it can still be saved.
 /// </summary>
 public static class MapValidator
@@ -81,6 +82,7 @@ public static class MapValidator
             ground.Width, ground.Height, ground.LandBytes(), ground.BlockedBytes(), ground.Heights.LevelBytes(), ground.ObjectStates(), bridgeStates, buildings);
         CheckStarts(map, grid, problems);
         CheckOre(map, problems);
+        CheckDrills(map, problems);
         CheckDistances(map, problems);
         return problems;
     }
@@ -197,6 +199,27 @@ public static class MapValidator
         if (amounts.Count >= 2 && Spread(amounts) is var (min, max) && max > 0 && (max - min) * 100 > BalancePercent * max)
         {
             problems.Add(new MapProblem(ProblemLevel.Warning, $"Ore near the starts differs by more than {BalancePercent} %: {min} to {max}", null));
+        }
+    }
+
+    // M8 step 10b: as many drills of each kind within OreRadius of every start — the fields that grow back are fair too.
+    private static void CheckDrills(MapDefinition map, List<MapProblem> problems)
+    {
+        foreach (var kind in new[] { MapObjectKind.OreSource, MapObjectKind.GemSource })
+        {
+            var counts = new List<int>();
+            foreach (var start in map.Starts)
+            {
+                counts.Add(map.Objects.Count(placement =>
+                    MapObjectTypes.TryGetById(placement.Type, out var type) && type.Kind == kind
+                    && (placement.Cell.X - start.Cell.X) * (placement.Cell.X - start.Cell.X) + (placement.Cell.Y - start.Cell.Y) * (placement.Cell.Y - start.Cell.Y) <= OreRadius * OreRadius));
+            }
+
+            if (counts.Count >= 2 && Spread(counts) is var (min, max) && min != max)
+            {
+                var name = kind == MapObjectKind.OreSource ? "ore drills" : "gem drills";
+                problems.Add(new MapProblem(ProblemLevel.Warning, $"The starts have {min} to {max} {name} within {OreRadius} cells", null));
+            }
         }
     }
 

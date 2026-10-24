@@ -170,6 +170,45 @@ if (args.Length == 2 && args[0] == "ready-maps")
     return 0;
 }
 
+// M8 step 10b: the drills of the fields on maps the generator made before it had them; the symmetry comes from the description.
+if (args.Length >= 2 && args[0] == "add-drills")
+{
+    var kindIndex = Array.IndexOf(args, "--drills");
+    var kind = kindIndex >= 0 && kindIndex + 1 < args.Length && args[kindIndex + 1] == "ore" ? Rts.MapGen.DrillKind.Ore : Rts.MapGen.DrillKind.OreAndGems;
+    var failed = 0;
+    var files = args.Skip(1).Where((_, i) => i + 1 != kindIndex && i + 1 != kindIndex + 1);
+    foreach (var path in files)
+    {
+        try
+        {
+            var map = RtsMapReader.Read(File.ReadAllText(path));
+            var symmetry = System.Text.RegularExpressions.Regex.Match(map.Description, @"^Generated from seed \d+: \d players, (\w+),");
+            if (!symmetry.Success || !Enum.TryParse<Rts.MapGen.MapSymmetry>(symmetry.Groups[1].Value, out var kindOfSymmetry))
+            {
+                throw new ArgumentException("its description does not say the symmetry: it was not made by the generator");
+            }
+
+            var drilled = Rts.MapGen.Drills.AddTo(map, kindOfSymmetry, kind);
+            var errors = MapValidator.Check(drilled).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            if (errors.Count > 0)
+            {
+                throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
+            }
+
+            File.WriteAllText(path, RtsMapWriter.Write(drilled));
+            var drills = drilled.Objects.Where(o => o.Type is Rts.MapGen.Drills.OreSource or Rts.MapGen.Drills.GemSource);
+            Console.WriteLine($"{path}: {string.Join(", ", drills.Select(d => $"{d.Type} {d.Cell.X},{d.Cell.Y}"))} · {MapValidator.Check(drilled).Count} warnings");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
+        {
+            Console.Error.WriteLine($"{path}: not changed — {e.Message}");
+            failed++;
+        }
+    }
+
+    return failed == 0 ? 0 : 1;
+}
+
 if (args.Length >= 2 && args[0] == "generate")
 {
     string Option(string name, string fallback)
@@ -194,6 +233,13 @@ if (args.Length >= 2 && args[0] == "generate")
         Water = Choice("water", Rts.MapGen.WaterKind.Rivers),
         Forest = Choice("forest", Rts.MapGen.Amount.Medium),
         Resources = Choice("resources", Rts.MapGen.Amount.Medium),
+        Drills = Option("drills", "gems") switch
+        {
+            "none" => Rts.MapGen.DrillKind.None,
+            "ore" => Rts.MapGen.DrillKind.Ore,
+            "gems" => Rts.MapGen.DrillKind.OreAndGems,
+            var other => throw new ArgumentException($"--drills {other} is not one of none, ore, gems"),
+        },
         Lighting = Option("lighting", MapLighting.Default),
     };
     var (map, seed) = Rts.MapGen.MapGenerator.Generate(settings);
@@ -204,7 +250,7 @@ if (args.Length >= 2 && args[0] == "generate")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | add-drills <map.rtsmap>… [--drills ore|gems] | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

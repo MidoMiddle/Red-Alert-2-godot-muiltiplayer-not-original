@@ -44,7 +44,7 @@ public enum Amount
 
 /// <summary>
 /// The settings of a random map (docs/implementation/M7_maps.md, 4.14): seed, size (64, 96, 128 or 160), players and symmetry
-/// (two players mirrored or turned by 180°, four turned by 90°), relief, water, forest, resources, climate and time of day.
+/// (two players mirrored or turned by 180°, four turned by 90°), relief, water, forest, resources, drills, climate and time of day.
 /// </summary>
 public sealed record MapGenSettings
 {
@@ -65,6 +65,9 @@ public sealed record MapGenSettings
     public Amount Forest { get; init; } = Amount.Medium;
 
     public Amount Resources { get; init; } = Amount.Medium;
+
+    /// <summary>The drills of the fields (M8 step 10b): ore at home and gems in the contested field unless said otherwise.</summary>
+    public DrillKind Drills { get; init; } = DrillKind.OreAndGems;
 
     public string Climate { get; init; } = "winter";
 

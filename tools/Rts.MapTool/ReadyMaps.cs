@@ -57,6 +57,8 @@ public static class ReadyMaps
         map.Trees(new CellPos(6, 57), 6, 55);
         map.Trees(new CellPos(20, 18), 3, 40);
         map.Trees(new CellPos(9, 48), 3, 40);
+        map.Drill(new CellPos(15, 26), "ore_source");
+        map.Drill(new CellPos(24, 36), "gem_source");
         return map.Finish();
     }
 
@@ -106,6 +108,8 @@ public static class ReadyMaps
         map.Trees(new CellPos(31, 9), 3, 50);
         map.Trees(new CellPos(31, 87), 3, 50);
         map.Trees(new CellPos(14, 62), 4, 35);
+        map.Drill(new CellPos(16, 40), "ore_source");
+        map.Drill(new CellPos(42, 40), "gem_source");
         return map.Finish();
     }
 
@@ -138,6 +142,10 @@ public static class ReadyMaps
         map.Building("neutral_shed", new CellPos(61, 44), 0);
         map.Building("neutral_shed", new CellPos(55, 44), 3);
         map.Forest(new Rect(0, 0, 64, 96), 50, keepOut: new Rect(48, 39, 16, 19));
+        map.Drill(new CellPos(25, 20), "ore_source");
+        map.Drill(new CellPos(25, 75), "ore_source");
+        map.Drill(new CellPos(46, 36), "gem_source");
+        map.Drill(new CellPos(46, 60), "gem_source");
         return map.Finish();
     }
 
@@ -178,6 +186,8 @@ public static class ReadyMaps
         map.Trees(new CellPos(10, 44), 6, 55);
         map.Trees(new CellPos(44, 10), 5, 45);
         map.Trees(new CellPos(30, 52), 4, 40);
+        map.Drill(new CellPos(27, 13), "ore_source");
+        map.Drill(new CellPos(58, 58), "gem_source");
         return map.Finish();
     }
 
@@ -245,6 +255,18 @@ public sealed class MapScript
 
     public void Ore(CellPos centre, int size, int value) =>
         Strokes(EditTool.Ore, new Brush(BrushShape.Circle, size), new EditOptions { Ore = value }, [centre]);
+
+    /// <summary>
+    /// A drill of the fields (M8 step 10b): <c>ore_source</c> or <c>gem_source</c> at the cell and its images — the centre of a field,
+    /// as the generator puts them (<c>Rts.MapGen.Drills</c>). The editor takes the ore off its cell.
+    /// </summary>
+    public void Drill(CellPos cell, string type)
+    {
+        for (var k = 0; k < Order; k++)
+        {
+            Stroke(EditTool.Objects, new Brush(BrushShape.Circle, 1), new EditOptions { ObjectType = type, Density = 100 }, [Cell(k, cell)]);
+        }
+    }
 
     /// <summary>Press on one shore, let go on the other.</summary>
     public void Bridge(CellPos from, CellPos to) => Strokes(EditTool.Bridge, new Brush(BrushShape.Circle, 1), null, [from, to]);
