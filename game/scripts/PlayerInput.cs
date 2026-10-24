@@ -961,7 +961,7 @@ public partial class PlayerInput : Node
             ctrl,
             WaypointMode: WaypointArmed || WaypointHeld(),
             HasWaypoints: !Waypoints.IsEmpty,
-            TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && IsMcv(target.Unit, out _),
+            TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && Deploys(target.Unit),
             OwnFactory: ground is { } point ? FactoryAt(point) : null);
     }
 
@@ -1096,6 +1096,17 @@ public partial class PlayerInput : Node
     }
 
     /// <summary>Whether the unit is an MCV of the local player's faction.</summary>
+    /// <summary>
+    /// Whether a click on this selected unit of the player deploys it, as D does: an MCV, a unit with a deploy weapon (the toxin
+    /// trooper), one that digs in (the GI), a transport with passengers.
+    /// </summary>
+    private bool Deploys(EntityId id)
+    {
+        var world = _host.Simulation.World;
+        return IsMcv(id, out _) || (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit
+            && (unit.Archetype.DeployWeapon >= 0 || unit.Archetype.DeployedWeapon >= 0 || unit.Passengers.Count > 0));
+    }
+
     private bool IsMcv(EntityId id, out Unit mcv)
     {
         var world = _host.Simulation.World;
@@ -1119,12 +1130,24 @@ public partial class PlayerInput : Node
         var own = building is { IsAlive: true, Def: not null } && building.Owner == player;
         // A tech building he took: repaired, never sold.
         var tech = building is { IsAlive: true } && building.Owner == player && Rts.Simulation.Systems.RepairSystem.Repairable(building);
-        var fits = false;
+        // An MCV deploys where its yard fits; any other unit that deploys (a GI digging in, a toxin trooper, a full transport) always.
+        var fits = context.TargetDeploys;
         if (context.TargetDeploys && IsMcv(context.Target.Unit, out var mcv)
             && world.Rules.Database.TryGetBuilding(world.Player(player).Faction.ConstructionYard, out var yard))
         {
             var corner = PlacementPreview.CornerOf(yard.Footprint, mcv.Position);
             fits = PlacementRules.Check(world, player, yard, corner, needsBase: false, ignoreUnit: mcv.Id) == PlacementProblem.None;
+        }
+
+        // What lies under the pointer for a unit to act on: the unit there, else the building.
+        Entity? target = null;
+        if (context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OwnUnit && world.TryGet(context.Target.Unit, out var hovered))
+        {
+            target = hovered;
+        }
+        else if (building is { IsAlive: true })
+        {
+            target = building;
         }
 
         return new PointerSpot(
@@ -1135,7 +1158,69 @@ public partial class PlayerInput : Node
             fits,
             context.Ground is { } door && EnterAt(door) is not null,
             context.Ground is { } bridge && BridgeSappers(bridge).Count > 0,
-            tech);
+            tech,
+            target is null ? Rts.Simulation.Systems.EntryAction.None : EntryOf(target),
+            target is not null && Bombs(target),
+            context.Alt && target is Unit { Archetype.Crushable: true } soldier && !soldier.Owner.IsNeutral
+                && !world.AreAllies(soldier.Owner, player) && Selection.Units.Any(id => world.TryGet(id, out var tank) && tank is Unit { Archetype.Crusher: true }),
+            Tool == PointerTool.Superweapon && world.TryGet(_superweapon, out var armed) && armed is Building weapon
+                ? weapon.Def?.Superweapon ?? (BuildingTypes.IsKnown(weapon.Kind) ? weapon.Type.Superweapon : Rts.Simulation.Rules.SuperweaponKind.None)
+                : Rts.Simulation.Rules.SuperweaponKind.None);
+    }
+
+    /// <summary>What the first selected unit of the player that can go into <paramref name="target"/> would do there.</summary>
+    private Rts.Simulation.Systems.EntryAction EntryOf(Entity target)
+    {
+        var world = _host.Simulation.World;
+        foreach (var id in Selection.Units)
+        {
+            if (world.TryGet(id, out var entity) && entity is Unit unit && unit.Owner == SimulationHost.LocalPlayer
+                && Rts.Simulation.Systems.EntrySystem.ActionOf(world, unit, target) is var action and not Rts.Simulation.Systems.EntryAction.None)
+            {
+                return action;
+            }
+        }
+
+        return Rts.Simulation.Systems.EntryAction.None;
+    }
+
+    /// <summary>
+    /// Whether a selected unit of the player would plant a bomb on <paramref name="target"/>: one of its weapons plants bombs and has a
+    /// share against the target's armor (Ivan's bomb on anything, the commando's C4 on a building but not on a soldier).
+    /// </summary>
+    private bool Bombs(Entity target)
+    {
+        var world = _host.Simulation.World;
+        var rules = world.Rules;
+        var armor = target switch
+        {
+            Unit unit => unit.Archetype.Armor,
+            Building { DefIndex: >= 0 } building => rules.ArmorOfBuilding(building.DefIndex),
+            _ => 0,
+        };
+        foreach (var id in Selection.Units)
+        {
+            if (!world.TryGet(id, out var entity) || entity is not Unit unit || unit.Owner != SimulationHost.LocalPlayer)
+            {
+                continue;
+            }
+
+            foreach (var weapon in rules.WeaponsOf(unit))
+            {
+                if (weapon < 0)
+                {
+                    continue;
+                }
+
+                var warhead = rules.Database.IndexOfWarhead(rules.Database.Weapons[weapon].Warhead);
+                if (rules.Database.Warheads[warhead].Bomb.Length > 0 && rules.Verses(warhead, armor) > Rts.Simulation.Math.Fixed.Zero)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Whether Z is held on its own: with Ctrl, Shift, Alt or Meta it is not the waypoint key.</summary>

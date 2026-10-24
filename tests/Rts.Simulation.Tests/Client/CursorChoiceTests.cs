@@ -1,3 +1,5 @@
+using Rts.Simulation.Rules;
+using Rts.Simulation.Systems;
 using Rts.Client.Controls;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
@@ -118,9 +120,9 @@ public sealed class CursorChoiceTests
     }
 
     [Fact]
-    public void A_bridge_the_commando_can_blow_up_shows_the_attack_cursor()
+    public void A_bridge_the_commando_can_blow_up_shows_the_bomb_cursor()
     {
-        Assert.Equal(CursorKind.Attack, CursorChoice.For(Context(Ground, selected: true), true, spot: new PointerSpot(Bridge: true)));
+        Assert.Equal(CursorKind.Bomb, CursorChoice.For(Context(Ground, selected: true), true, spot: new PointerSpot(Bridge: true)));
         Assert.Equal(CursorKind.Move, CursorChoice.For(Context(Ground, selected: true), true));
         Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(Ground, selected: true) with { Ctrl = true }, true, spot: new PointerSpot(Bridge: true)));
         Assert.Equal(CursorKind.Waypoint, CursorChoice.For(Context(Ground, selected: true) with { WaypointMode = true }, true, spot: new PointerSpot(Bridge: true)));
@@ -133,6 +135,59 @@ public sealed class CursorChoiceTests
         Assert.Equal(CursorKind.Repair, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Repair, new PointerSpot(Damaged: true, Repairable: true)));
         Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Repair, new PointerSpot(Repairable: true)));
         Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Sell, new PointerSpot(Damaged: true, Repairable: true)));
+    }
+
+    [Fact]
+    public void Alt_gives_the_forced_move_and_over_an_enemy_soldier_the_crush()
+    {
+        Assert.Equal(CursorKind.ForceMove, CursorChoice.For(Context(Ground, selected: true) with { Alt = true }, true));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: true) with { Alt = true }, false));
+        Assert.Equal(CursorKind.Crush, CursorChoice.For(Context(OtherUnit, selected: true) with { Alt = true }, true, spot: new PointerSpot(Crush: true)));
+        Assert.Equal(CursorKind.ForceMove, CursorChoice.For(Context(OtherUnit, selected: true) with { Alt = true }, true));
+        // Ctrl with Alt is still a forced attack.
+        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(Ground, selected: true) with { Alt = true, Ctrl = true }, true));
+    }
+
+    [Theory]
+    [InlineData(EntryAction.Garrison, CursorKind.Enter)]
+    [InlineData(EntryAction.Board, CursorKind.Enter)]
+    [InlineData(EntryAction.Capture, CursorKind.Capture)]
+    [InlineData(EntryAction.Mend, CursorKind.EngineerRepair)]
+    [InlineData(EntryAction.RepairBridge, CursorKind.EngineerRepair)]
+    [InlineData(EntryAction.Infiltrate, CursorKind.Infiltrate)]
+    [InlineData(EntryAction.Heal, CursorKind.Heal)]
+    public void Going_into_a_building_shows_what_the_unit_does_there(EntryAction action, CursorKind cursor)
+    {
+        Assert.Equal(cursor, CursorChoice.For(Context(Ground, selected: true), false, spot: new PointerSpot(Enter: true, Entry: action)));
+    }
+
+    [Fact]
+    public void A_bomb_shows_over_what_it_would_go_on()
+    {
+        var enemy = new PointerTarget(PointerTargetKind.OtherBuilding, Building: new EntityId(5));
+        Assert.Equal(CursorKind.Bomb, CursorChoice.For(Context(enemy, selected: true), true, spot: new PointerSpot(Bomb: true)));
+        Assert.Equal(CursorKind.Bomb, CursorChoice.For(Context(OtherUnit, selected: true), true, spot: new PointerSpot(Bomb: true)));
+        Assert.Equal(CursorKind.Attack, CursorChoice.For(Context(OtherUnit, selected: true), true));
+        Assert.Equal(CursorKind.Bomb, CursorChoice.For(Context(Ground, selected: true), true, spot: new PointerSpot(Bridge: true)));
+    }
+
+    [Theory]
+    [InlineData(SuperweaponKind.Missile, CursorKind.Nuke)]
+    [InlineData(SuperweaponKind.Storm, CursorKind.Storm)]
+    [InlineData(SuperweaponKind.Gate, CursorKind.Chrono)]
+    [InlineData(SuperweaponKind.Curtain, CursorKind.IronCurtain)]
+    [InlineData(SuperweaponKind.Paradrop, CursorKind.Paradrop)]
+    public void Each_superweapon_has_its_sight(SuperweaponKind kind, CursorKind cursor)
+    {
+        Assert.Equal(cursor, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Superweapon, new PointerSpot(Superweapon: kind)));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(new PointerContext(null, Ground, false, false), true, PointerTool.Superweapon, new PointerSpot(Superweapon: kind)));
+    }
+
+    [Fact]
+    public void A_selected_unit_that_deploys_shows_the_deploy_cursor()
+    {
+        var unit = Context(OwnUnit, selected: true) with { TargetDeploys = true };
+        Assert.Equal(CursorKind.Deploy, CursorChoice.For(unit, true, spot: new PointerSpot(DeployFits: true)));
     }
 
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);

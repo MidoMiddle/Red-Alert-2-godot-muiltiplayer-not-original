@@ -29,10 +29,49 @@ public enum CursorKind
     Harvest,
 
     /// <summary>
-    /// Over a building a selected unit can go into: an own bunker with room for soldiers (stage 2e), a building for an engineer to take
-    /// or mend, or for an infiltrator (stage 3b); or over an own transport a selected unit can board (stage 3d).
+    /// Over a building a selected unit can go into to sit in it — an own bunker, a civilian building (stage 2e, garrisons) — or over an own
+    /// transport a selected unit can board (stage 3d): green arrows pointing in.
     /// </summary>
     Enter,
+
+    /// <summary>Alt with a selection (RA2 force move): an order moves there, even over an enemy.</summary>
+    ForceMove,
+
+    /// <summary>Alt over an enemy soldier a selected tank can crush (RA2): an order drives over it.</summary>
+    Crush,
+
+    /// <summary>An engineer over a building to take: an enemy's, or a tech building of the neutral side.</summary>
+    Capture,
+
+    /// <summary>An engineer over a building to mend: an own damaged one, a damaged civilian one, a bridge repair hut.</summary>
+    EngineerRepair,
+
+    /// <summary>An infiltrator over an enemy building to go into (stage 3b).</summary>
+    Infiltrate,
+
+    /// <summary>A hurt soldier over its own hospital (the tech hospital): it goes in and comes out whole.</summary>
+    Heal,
+
+    /// <summary>
+    /// A selected unit that plants a bomb over a target it would bomb: Ivan's bomb on anything, the commando's C4 on a building or a
+    /// bridge.
+    /// </summary>
+    Bomb,
+
+    /// <summary>The armed missile silo over the ground.</summary>
+    Nuke,
+
+    /// <summary>The armed storm generator over the ground.</summary>
+    Storm,
+
+    /// <summary>The armed phase gate (RA2 Chronosphere) over the ground: what to move, then where.</summary>
+    Chrono,
+
+    /// <summary>The armed field projector (RA2 Iron Curtain) over the ground.</summary>
+    IronCurtain,
+
+    /// <summary>An armed paradrop over the ground.</summary>
+    Paradrop,
 }
 
 /// <summary>
@@ -46,6 +85,10 @@ public enum CursorKind
 /// <param name="Enter">A building one of the selection can go into (stage 2e, 3b): an order there sends it in.</param>
 /// <param name="Bridge">A standing bridge segment one of the selection can blow up (the commando's C4): an order there plants it.</param>
 /// <param name="Repairable">A tech building of the map the player took (an oil derrick…): the repair mode mends it, the sell mode not.</param>
+/// <param name="Entry">What the first selected unit that can go into the building or transport under the pointer would do there.</param>
+/// <param name="Bomb">A selected unit plants a bomb on the target under the pointer (Ivan, the commando's C4).</param>
+/// <param name="Crush">A selected tank can crush the enemy soldier under the pointer.</param>
+/// <param name="Superweapon">The kind of the superweapon armed, for its sight.</param>
 public readonly record struct PointerSpot(
     bool OwnBuilding = false,
     bool Damaged = false,
@@ -54,7 +97,11 @@ public readonly record struct PointerSpot(
     bool DeployFits = false,
     bool Enter = false,
     bool Bridge = false,
-    bool Repairable = false);
+    bool Repairable = false,
+    Rts.Simulation.Systems.EntryAction Entry = Rts.Simulation.Systems.EntryAction.None,
+    bool Bomb = false,
+    bool Crush = false,
+    Rts.Simulation.Rules.SuperweaponKind Superweapon = Rts.Simulation.Rules.SuperweaponKind.None);
 
 /// <summary>Which cursor to show for what is under the pointer. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CursorChoice
@@ -74,7 +121,16 @@ public static class CursorChoice
             case PointerTool.Build:
                 return CursorKind.Normal;
             case PointerTool.Superweapon:
-                return context.Ground is null ? CursorKind.Forbidden : CursorKind.Attack;
+                // Each superweapon its own sight (RA2).
+                return context.Ground is null ? CursorKind.Forbidden : spot.Superweapon switch
+                {
+                    Rts.Simulation.Rules.SuperweaponKind.Missile => CursorKind.Nuke,
+                    Rts.Simulation.Rules.SuperweaponKind.Storm => CursorKind.Storm,
+                    Rts.Simulation.Rules.SuperweaponKind.Gate => CursorKind.Chrono,
+                    Rts.Simulation.Rules.SuperweaponKind.Curtain => CursorKind.IronCurtain,
+                    Rts.Simulation.Rules.SuperweaponKind.Paradrop => CursorKind.Paradrop,
+                    _ => CursorKind.Attack,
+                };
         }
 
         var groundOrder = context.WaypointMode || (context.Ctrl && context.Shift);
@@ -89,9 +145,22 @@ public static class CursorChoice
             return CursorKind.ForceAttack;
         }
 
+        if (context.HasSelection && context.Alt && !context.Ctrl && !groundOrder)
+        {
+            // A forced move (RA2): over an enemy soldier a tank crushes, anywhere a unit can go.
+            return spot.Crush ? CursorKind.Crush : context.Ground is not null && anyCanEnter ? CursorKind.ForceMove : CursorKind.Forbidden;
+        }
+
         if (context.HasSelection && spot.Enter && !groundOrder && !context.Ctrl && context.Target.Kind != PointerTargetKind.OtherUnit)
         {
-            return CursorKind.Enter;
+            return spot.Entry switch
+            {
+                Rts.Simulation.Systems.EntryAction.Capture => CursorKind.Capture,
+                Rts.Simulation.Systems.EntryAction.Mend or Rts.Simulation.Systems.EntryAction.RepairBridge => CursorKind.EngineerRepair,
+                Rts.Simulation.Systems.EntryAction.Infiltrate => CursorKind.Infiltrate,
+                Rts.Simulation.Systems.EntryAction.Heal => CursorKind.Heal,
+                _ => CursorKind.Enter,
+            };
         }
 
         if (context.Target.Kind == PointerTargetKind.OwnUnit && !groundOrder)
@@ -101,12 +170,12 @@ public static class CursorChoice
 
         if (context.HasSelection && spot.Bridge && !groundOrder && !context.Ctrl && context.Target.Kind == PointerTargetKind.Ground)
         {
-            return CursorKind.Attack;
+            return CursorKind.Bomb;
         }
 
         if (context.HasSelection && !groundOrder && context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OtherBuilding)
         {
-            return CursorKind.Attack;
+            return spot.Bomb ? CursorKind.Bomb : CursorKind.Attack;
         }
 
         if (!context.HasSelection)
