@@ -12,7 +12,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Systems;
 
 /// <summary>
-/// Soldiers inside buildings (stage 2e of filling the game: the fortified bunker, RA2 battle bunker). A <see cref="GarrisonCommand"/>
+/// Soldiers inside buildings (stage 2e of filling the game: the fortified bunker, RA2 battle bunker). A <see cref="EnterCommand"/>
 /// sends the player's soldiers to its ready building that holds soldiers (<see cref="BuildingDef.GarrisonCapacity"/>); after the
 /// movement of the tick each one that stands within <see cref="DoorReach"/> cells of the footprint goes in while there is room: it leaves
 /// the map (no death, no event of one) and becomes an <see cref="Occupant"/> with its hit points. One that stopped farther off, or found
@@ -24,11 +24,13 @@ namespace Rts.Simulation.Systems;
 /// </summary>
 public static class GarrisonSystem
 {
-    /// <summary>How far from the footprint a soldier goes in, in cells: a group of five crowds round the door.</summary>
-    public const int DoorReach = 2;
-
-    /// <summary>Whether the unit may go into a building: soldiers only, and none with a jet pack (stage 3a).</summary>
-    public static bool CanEnter(Unit unit) => unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies;
+    /// <summary>
+    /// Whether the unit may sit in a building: soldiers only — none with a jet pack (stage 3a), no engineer nor infiltrator (stage 3b,
+    /// RA2 <c>Occupier</c>).
+    /// </summary>
+    public static bool CanEnter(Unit unit) =>
+        unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies
+        && !unit.Archetype.Has(UnitTalents.Engineer) && !unit.Archetype.Has(UnitTalents.Infiltrator);
 
     /// <summary>Whether <paramref name="building"/> is a ready building of <paramref name="player"/> that holds soldiers.</summary>
     public static bool Holds(Building building, PlayerId player) =>
@@ -67,67 +69,6 @@ public static class GarrisonSystem
     public static int Wall(Building building) => IntMath.Min(building.Width, building.Height) * WorldPos.LeptonsPerCell / 2;
 
     /// <summary>
-    /// Sends the soldiers among <paramref name="units"/> to the building, each to a place of its own round the cell beside it nearest
-    /// to the first of them. False when the building cannot hold them or none is a soldier.
-    /// </summary>
-    internal static bool Order(GameWorld world, List<Unit> units, EntityId buildingId)
-    {
-        if (!world.TryGet(buildingId, out var entity) || entity is not Building building || units.Count == 0
-            || !Holds(building, units[0].Owner) || !HasRoom(building))
-        {
-            return false;
-        }
-
-        var soldiers = units.FindAll(CanEnter);
-        if (soldiers.Count == 0)
-        {
-            return false;
-        }
-
-        var door = Door(world, building, soldiers[0]);
-        foreach (var (unit, destination) in GroupDestinations.Assign(world, soldiers, door))
-        {
-            UnitOrders.ForgetTarget(unit);
-            UnitOrders.GiveRoute(world, unit, [new UnitOrder(destination, AttackMove: false)], loop: false, append: false);
-            unit.EnterTarget = building.Id;
-        }
-
-        return true;
-    }
-
-    /// <summary>After the movement: the soldiers at the door go in; those that cannot get there or in forget the order.</summary>
-    public static void Update(GameWorld world, List<SimEvent>? events)
-    {
-        foreach (var entity in world.Entities)
-        {
-            if (entity is not Unit { IsAlive: true, EnterTarget: { } id } unit)
-            {
-                continue;
-            }
-
-            if (!world.TryGet(id, out var target) || target is not Building building || !Holds(building, unit.Owner))
-            {
-                unit.EnterTarget = null;
-            }
-            else if (Outside(building, unit.Position.ToCell()) <= DoorReach)
-            {
-                if (HasRoom(building))
-                {
-                    Enter(world, unit, building, events);
-                }
-                else
-                {
-                    unit.EnterTarget = null;
-                }
-            }
-            else if (unit.MoveTarget is null && !unit.PathPending)
-            {
-                unit.EnterTarget = null;
-            }
-        }
-    }
-
-    /// <summary>
     /// The soldiers inside come out around the footprint, in the order they went in, as new units with their hit points; those that
     /// find no free cell within 4 rings stay inside. The building forgets its target once it is empty.
     /// </summary>
@@ -157,44 +98,12 @@ public static class GarrisonSystem
         }
     }
 
-    private static void Enter(GameWorld world, Unit unit, Building building, List<SimEvent>? events)
+    /// <summary>The soldier goes in: it leaves the map without a death and becomes an occupant with its hit points.</summary>
+    internal static void Enter(GameWorld world, Unit unit, Building building, List<SimEvent>? events)
     {
         building.Occupants.Add(new Occupant(unit.Archetype, unit.Hp));
         unit.EnterTarget = null;
         unit.MarkDead();
         events?.Add(new UnitGarrisoned(world.CurrentTick, unit.Id, building.Id));
-    }
-
-    /// <summary>How many cells <paramref name="cell"/> lies outside the footprint: 0 inside, 1 in the ring around it, and so on.</summary>
-    private static int Outside(Building building, CellPos cell) =>
-        IntMath.Max(
-            IntMath.Max(building.Cell.X - cell.X, cell.X - building.FarCell.X),
-            IntMath.Max(IntMath.Max(building.Cell.Y - cell.Y, cell.Y - building.FarCell.Y), 0));
-
-    /// <summary>The cell of the ring around the footprint nearest to the soldier that it can enter; the footprint's corner without one.</summary>
-    private static WorldPos Door(GameWorld world, Building building, Unit soldier)
-    {
-        var from = soldier.Position.ToCell();
-        CellPos? best = null;
-        var bestDistance = int.MaxValue;
-        for (var y = building.Cell.Y - 1; y <= building.FarCell.Y + 1; y++)
-        {
-            for (var x = building.Cell.X - 1; x <= building.FarCell.X + 1; x++)
-            {
-                var cell = new CellPos(x, y);
-                if (Outside(building, cell) != 1 || !world.Map.CanEnter(cell, soldier.Archetype.Locomotor))
-                {
-                    continue;
-                }
-
-                var distance = ((x - from.X) * (x - from.X)) + ((y - from.Y) * (y - from.Y));
-                if (distance < bestDistance)
-                {
-                    (best, bestDistance) = (cell, distance);
-                }
-            }
-        }
-
-        return (best ?? building.Cell).Center;
     }
 }

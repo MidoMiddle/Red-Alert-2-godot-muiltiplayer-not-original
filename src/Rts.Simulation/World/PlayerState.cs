@@ -43,6 +43,12 @@ public sealed class PlayerState
     /// <summary>The tick the player lost the match on, or null while they play (M5 step 10). State: hashed.</summary>
     public int? DefeatedTick { get; internal set; }
 
+    /// <summary>
+    /// The tick until which the player has no power: an infiltrator went into its power plant (stage 3b, RA2 <c>SpyPowerBlackout</c>).
+    /// State: hashed.
+    /// </summary>
+    public int BlackoutUntil { get; internal set; }
+
     /// <summary>The bonuses of the player (M8 step 2): those of the level of its bot, set as the match starts. Hashed.</summary>
     public PlayerModifiers Modifiers { get; internal set; }
 

@@ -25,6 +25,7 @@ reactor:  # power plant, +150
   footprint: [2, 2]
   power: 150
   prerequisites: [construction_yard]
+  spy_effect: blackout
 
 refinery:  # ore processing; gives a free harvester
   kind: building
@@ -40,6 +41,7 @@ refinery:  # ore processing; gives a free harvester
   # The harvesters unload standing under the middle of the refinery.
   dock_cell: [1, 3]
   prerequisites: [reactor]
+  spy_effect: steal_credits
 
 barracks:  # infantry production
   kind: building
@@ -86,6 +88,7 @@ radar:  # radar, minimap
   power: -50
   radar: true
   prerequisites: [refinery]
+  spy_effect: reset_map
 
 tech_center:  # high-tech building; prerequisite only in M3
   kind: building

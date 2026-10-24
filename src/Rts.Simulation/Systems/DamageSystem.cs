@@ -62,11 +62,24 @@ public static class DamageSystem
         var weapon = rules.Database.Weapons[hit.Weapon];
         var warheadIndex = rules.Database.IndexOfWarhead(weapon.Warhead);
         var warhead = rules.Database.Warheads[warheadIndex];
+        if (warhead.Bomb.Length > 0)
+        {
+            // A bomb (stage 3b) hurts nothing now: it is planted on the target.
+            BombSystem.Plant(world, hit, warhead, events);
+            return;
+        }
+
         if (warhead.Temporal)
         {
             // A temporal beam (stage 3a) hurts nothing: it holds its target for the erasure.
             ErasureSystem.Hold(world, hit);
             return;
+        }
+
+        if (warhead.Radiation > 0)
+        {
+            // Toxin (stage 3b) stays on the ground of the area.
+            RadiationSystem.Lay(world, hit.Point, warhead.Spread, warhead.Radiation);
         }
 
         var damage = hit.BonusPercent > 0 ? (int)((long)weapon.Damage * (100 + hit.BonusPercent) / 100) : weapon.Damage;
@@ -148,6 +161,9 @@ public static class DamageSystem
         Building { DefIndex: >= 0 } building => rules.ArmorOfBuilding(building.DefIndex),
         _ => 0,
     };
+
+    /// <summary>Damage that comes of no shot (stage 3b: the toxin on the ground), as a shot's would.</summary>
+    internal static void Hurt(GameWorld world, Entity entity, int amount, Hit hit, List<SimEvent>? events) => Damage(world, entity, amount, hit, events);
 
     private static void Damage(GameWorld world, Entity entity, int amount, Hit hit, List<SimEvent>? events)
     {

@@ -24,6 +24,11 @@ public static class DeathSystem
         world.SetHp(unit, 0, events);
         unit.MarkDead();
         events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, cause, weapon, killerOwner));
+        if (unit.Archetype.DeathWeapon >= 0 && cause != DeathCause.Defeat)
+        {
+            // Its death weapon (stage 3b: the demolition trooper) goes off where it fell, after the movement of the tick.
+            world.DeathBlasts.Add((unit.Owner, unit.Id, unit.Archetype.DeathWeapon, unit.Position));
+        }
     }
 
     /// <summary>

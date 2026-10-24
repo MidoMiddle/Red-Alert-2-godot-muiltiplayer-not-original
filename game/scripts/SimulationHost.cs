@@ -385,15 +385,22 @@ public partial class SimulationHost : Node
     public void IssueForceAttack(IReadOnlyList<EntityId> units, EntityId? target, WorldPos point) =>
         IssueTo(units, ordered => new ForceAttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, point));
 
-    /// <summary>The soldiers among the units go into the player's building that holds soldiers (stage 2e).</summary>
-    public void IssueGarrison(IReadOnlyList<EntityId> units, EntityId building)
+    /// <summary>
+    /// The units that can do something in the building go into it (stage 2e, 3b): soldiers into the player's bunker, engineers to take or
+    /// mend, infiltrators into the enemy's. The others are left to the caller; gives them.
+    /// </summary>
+    public List<EntityId> IssueEnter(IReadOnlyList<EntityId> units, EntityId building)
     {
         var world = Simulation.World;
-        var soldiers = units.Where(id => world.TryGet(id, out var entity) && entity is Unit unit && Rts.Simulation.Systems.GarrisonSystem.CanEnter(unit)).ToList();
-        if (soldiers.Count > 0)
+        var target = world.TryGet(building, out var entity) ? entity as Building : null;
+        var going = units.Where(id => target is not null && world.TryGet(id, out var unit) && unit is Unit soldier
+            && Rts.Simulation.Systems.EntrySystem.ActionOf(world, soldier, target) != Rts.Simulation.Systems.EntryAction.None).ToList();
+        if (going.Count > 0)
         {
-            IssueTo(soldiers, ordered => new GarrisonCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, building));
+            IssueTo(going, ordered => new EnterCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, building));
         }
+
+        return units.Except(going).ToList();
     }
 
     /// <summary>The soldiers inside the player's building come out (stage 2e).</summary>
@@ -428,8 +435,9 @@ public partial class SimulationHost : Node
     {
         foreach (var unit in units)
         {
+            // An MCV, or a unit with a deploy weapon (stage 3b: the toxin trooper).
             if (Simulation.World.TryGet(unit, out var entity) && entity is Unit { IsAlive: true } mcv && mcv.Owner == LocalPlayer
-                && mcv.Archetype.Id == Simulation.World.Player(LocalPlayer).Faction.Mcv)
+                && (mcv.Archetype.Id == Simulation.World.Player(LocalPlayer).Faction.Mcv || mcv.Archetype.DeployWeapon >= 0))
             {
                 Issue(new DeployCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, unit));
             }

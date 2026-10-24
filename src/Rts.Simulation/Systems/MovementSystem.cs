@@ -68,9 +68,16 @@ public static class MovementSystem
     {
         foreach (var entity in world.Entities)
         {
-            // Held by a temporal beam (stage 3a), a unit stands still.
-            if (entity is not Unit { IsAlive: true, ErasedBy: null } unit)
+            // Held by a temporal beam (stage 3a), a unit stands still; so does a deployed one (stage 3b).
+            if (entity is not Unit { IsAlive: true, ErasedBy: null, Deployed: false } unit)
             {
+                continue;
+            }
+
+            // Phasing in after a jump (stage 3b), it waits.
+            if (unit.WarpTicks > 0)
+            {
+                unit.WarpTicks--;
                 continue;
             }
 
@@ -92,6 +99,12 @@ public static class MovementSystem
         if (unit.Archetype.Flies)
         {
             Fly(world, unit, target, events);
+            return;
+        }
+
+        if (unit.Archetype.Has(UnitTalents.Teleports))
+        {
+            Teleport(world, unit, target, events);
             return;
         }
 
@@ -511,6 +524,63 @@ public static class MovementSystem
         }
 
         return new WorldPos((int)stepX, (int)stepY);
+    }
+
+    /// <summary>
+    /// A unit that jumps (stage 3b: the time trooper, RA2 Chrono Legionnaire) appears at once in the free cell nearest to its target,
+    /// within <see cref="JumpSearch"/> rings, and phases in for its distance in leptons over <see cref="WarpFactor"/> ticks, at least
+    /// <see cref="MinWarp"/> (RA2 <c>ChronoDistanceFactor</c>, <c>ChronoMinimumDelay</c>). With no free cell there it stays.
+    /// </summary>
+    private static void Teleport(GameWorld world, Unit unit, WorldPos target, List<SimEvent> events)
+    {
+        var from = unit.Position;
+        if (Landing(world, unit, target.ToCell()) is { } cell)
+        {
+            if (world.Contains(from))
+            {
+                world.Reservations.Leave(from.ToCell(), unit);
+            }
+
+            var subcell = world.Reservations.TryEnter(cell, unit, target);
+            unit.Subcell = IntMath.Max(0, subcell);
+            var landed = unit.Archetype.Placement == UnitPlacement.Subcell && subcell >= 0 ? Reservations.SubcellPoint(cell, subcell) : cell.Center;
+            unit.WarpTicks = IntMath.Max(MinWarp, Combat.DamageCalculator.Distance(from, landed) / WarpFactor);
+            events.Add(new UnitTeleported(world.CurrentTick, unit.Id, from, landed));
+            Arrive(world, unit, landed, events);
+            return;
+        }
+
+        Arrive(world, unit, from, events);
+    }
+
+    /// <summary>How far round its target a jumping unit looks for a free cell, in rings.</summary>
+    public const int JumpSearch = 3;
+
+    /// <summary>Leptons of a jump per tick of phasing in (RA2 <c>ChronoDistanceFactor=48</c>).</summary>
+    public const int WarpFactor = 48;
+
+    /// <summary>The least ticks of phasing in (RA2 <c>ChronoMinimumDelay=16</c>).</summary>
+    public const int MinWarp = 16;
+
+    private static CellPos? Landing(GameWorld world, Unit unit, CellPos target)
+    {
+        for (var ring = 0; ring <= JumpSearch; ring++)
+        {
+            for (var y = target.Y - ring; y <= target.Y + ring; y++)
+            {
+                for (var x = target.X - ring; x <= target.X + ring; x++)
+                {
+                    var cell = new CellPos(x, y);
+                    if (IntMath.Max(IntMath.Abs(x - target.X), IntMath.Abs(y - target.Y)) == ring && world.Map.Contains(cell)
+                        && world.Map.CanEnter(cell, unit.Archetype.Locomotor) && world.Reservations.HasRoomFor(cell, unit))
+                    {
+                        return cell;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private static void Arrive(GameWorld world, Unit unit, WorldPos position, List<SimEvent> events)

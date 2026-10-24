@@ -77,6 +77,39 @@ public sealed record UnitDef : IDefinition
     /// </summary>
     public bool Jumpjet { get; init; }
 
+    /// <summary>
+    /// An engineer (stage 3b): it goes into a building of another player that can be taken and takes it, or into its own damaged one
+    /// and mends it; either way it is spent.
+    /// </summary>
+    public bool Engineer { get; init; }
+
+    /// <summary>An infiltrator (stage 3b, RA2 spy): it goes into a building of another player and does what the building allows.</summary>
+    public bool Infiltrator { get; init; }
+
+    /// <summary>Other players' units and defenses take it for one of their own and do not pick it as a target (RA2 <c>CanDisguise</c>).</summary>
+    public bool Disguised { get; init; }
+
+    /// <summary>It sees through a disguise and picks a disguised unit as any other (RA2 <c>DetectDisguise</c>: the dogs).</summary>
+    public bool DetectsDisguise { get; init; }
+
+    /// <summary>It picks no target by itself and fires only when ordered (RA2 <c>CanPassiveAquire=no</c>: the demolition trooper).</summary>
+    public bool Passive { get; init; }
+
+    /// <summary>The weapon that goes off where it dies (stage 3b: the demolition trooper); empty for none.</summary>
+    public string DeathWeapon { get; init; } = "";
+
+    /// <summary>It jumps to where it is sent instead of walking, and then phases in for a while (stage 3b: the time trooper).</summary>
+    public bool Teleports { get; init; }
+
+    /// <summary>
+    /// The weapon it fires at its own cell, as often as it reloads, while deployed (stage 3b: the toxin trooper's eruption); empty for
+    /// a unit that does not deploy so.
+    /// </summary>
+    public string DeployWeapon { get; init; } = "";
+
+    /// <summary>The toxin on the ground does not hurt it (RA2: the desolator).</summary>
+    public bool RadiationImmune { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

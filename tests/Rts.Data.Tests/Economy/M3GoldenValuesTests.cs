@@ -46,7 +46,8 @@ public sealed class M3GoldenValuesTests
         // minute 5.
         // Stage 2e, rules v48: the same run and credits; the soldiers inside buildings and where soldiers go are hashed.
         // Stage 3a, rules v49: the same run and credits; the temporal beam that holds an entity is hashed.
-        Assert.Equal((5972, 0xf7cecbc129b62b8dUL), (fifth.Credits, fifth.Checksum));
+        // Stage 3b, rules v50: the same run and credits; bombs, the toxin on the ground, deploying, jumps and blackouts are hashed.
+        Assert.Equal((5972, 0x566d6441c09d150bUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

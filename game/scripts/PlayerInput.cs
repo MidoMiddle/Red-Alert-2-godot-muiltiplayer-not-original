@@ -554,9 +554,18 @@ public partial class PlayerInput : Node
                 case ClearSelection:
                     ChangeSelection(Selection.Clear);
                     break;
-                case OrderMove order when !_host.IsPlayback && GarrisonAt(order.Target) is { } bunker:
+                case OrderMove order when !_host.IsPlayback && EnterAt(order.Target) is { } bunker:
                     Voice("entering");
-                    _host.IssueGarrison(Selection.Units, bunker);
+                    _host.IssueEnter(Selection.Units, bunker);
+                    break;
+                case OrderAttack attack when !_host.IsPlayback && EnterAt(attack.Target) is { } entered:
+                    // Stage 3b: engineers and infiltrators go into the enemy building, the others attack it.
+                    Voice("entering");
+                    if (_host.IssueEnter(Selection.Units, entered) is { Count: > 0 } others)
+                    {
+                        _host.IssueAttack(others, entered);
+                    }
+
                     break;
                 case OrderMove order when CanOrder(order.Target):
                     Voice(order.Queue ? "moving (queued)" : "moving");
@@ -640,22 +649,24 @@ public partial class PlayerInput : Node
     /// cell. Otherwise a red cross shows where the order was refused, as RA2 does under the "no" cursor.
     /// </summary>
     /// <summary>
-    /// The player's building that holds soldiers at <paramref name="point"/>, with room, when the selection holds a soldier (stage 2e): an
-    /// order there sends them in.
+    /// The building at <paramref name="point"/> one of the selection can go into (stage 2e, 3b: a bunker of the player, a building to take,
+    /// mend or infiltrate): an order there sends it in.
     /// </summary>
-    private EntityId? GarrisonAt(WorldPos point)
+    private EntityId? EnterAt(WorldPos point) =>
+        _host.Simulation.World.BuildingAt(point.ToCell()) is { } building ? EnterAt(building.Id) : null;
+
+    private EntityId? EnterAt(EntityId id)
     {
         var world = _host.Simulation.World;
-        if (world.BuildingAt(point.ToCell()) is not { } building
-            || !Rts.Simulation.Systems.GarrisonSystem.Holds(building, SimulationHost.LocalPlayer)
-            || !Rts.Simulation.Systems.GarrisonSystem.HasRoom(building))
+        if (!world.TryGet(id, out var entity) || entity is not Building building || !Terrain.FogOfWar.Shows(world, building))
         {
             return null;
         }
 
-        foreach (var id in Selection.Units)
+        foreach (var selected in Selection.Units)
         {
-            if (world.TryGet(id, out var entity) && entity is Unit unit && Rts.Simulation.Systems.GarrisonSystem.CanEnter(unit))
+            if (world.TryGet(selected, out var unit) && unit is Unit soldier && soldier.Owner == SimulationHost.LocalPlayer
+                && Rts.Simulation.Systems.EntrySystem.ActionOf(world, soldier, building) != Rts.Simulation.Systems.EntryAction.None)
             {
                 return building.Id;
             }
@@ -877,7 +888,7 @@ public partial class PlayerInput : Node
             context.Ground is { } at && !world.Map.OreAt(at.ToCell()).IsEmpty,
             Selection.Units.Any(id => world.TryGet(id, out var entity) && entity is Unit { Harvester: not null }),
             fits,
-            context.Ground is { } door && GarrisonAt(door) is not null);
+            context.Ground is { } door && EnterAt(door) is not null);
     }
 
     /// <summary>Whether Z is held on its own: with Ctrl, Shift, Alt or Meta it is not the waypoint key.</summary>

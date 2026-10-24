@@ -20,6 +20,7 @@ naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   produces: [naval]
   exit_cell: [1, 4]
   prerequisites: [refinery]
+  capturable: false
 
 service_depot:  # repairs the vehicles and ships beside it (stage 2c)
   kind: building
@@ -49,6 +50,7 @@ nuclear_reactor:  # late power, +2000; blows up when a shot brings it down (stag
   power: 2000
   death_weapon: atomic_plant_blast
   prerequisites: [tech_center]
+  spy_effect: blackout
 
 iron_curtain:  # superweapon: a group made invulnerable for a while, M11a
   kind: building
@@ -64,6 +66,7 @@ iron_curtain:  # superweapon: a group made invulnerable for a while, M11a
   power: -200
   ability_later: true
   prerequisites: [tech_center]
+  capturable: false
 
 nuclear_missile_silo:  # superweapon: a missile strike, M11a
   kind: building
@@ -79,6 +82,7 @@ nuclear_missile_silo:  # superweapon: a missile strike, M11a
   power: -200
   ability_later: true
   prerequisites: [tech_center]
+  capturable: false
 
 industrial_plant:  # vehicles, ships and aircraft 25% cheaper (stage 2c)
   kind: building
@@ -108,3 +112,4 @@ battle_bunker:  # holds 5 soldiers who fire from inside (stage 2e)
   extends_base: false
   garrison: 5
   prerequisites: [construction_yard]
+  capturable: false

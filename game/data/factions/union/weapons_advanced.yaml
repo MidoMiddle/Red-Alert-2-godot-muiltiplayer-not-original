@@ -34,3 +34,49 @@ war_hound_bite:  # of the War Hound, RA2 BadTeeth: 1000 so that the bite kills a
   range: 1.5
   projectile: pounce
   warhead: bite
+
+ivan_bomber:  # of the Bomb Specialist, RA2 IvanBomber: plants the bomb at hand's reach; the reload is ours
+  kind: weapon
+  name: Bomb
+  damage: 1
+  reload: 2s
+  range: 1.5
+  projectile: pounce
+  warhead: ivan_bomb_plant
+
+ivan_bomb_blast:  # Ivan's bomb going off, RA2 IvanDamage
+  kind: weapon
+  name: Ivan Bomb
+  damage: 400
+  reload: 1s
+  range: 1
+  projectile: shell
+  warhead: ivan_blast
+
+terror_bomb:  # of the Demolition Trooper, RA2 TerrorBomb: firing it, it blows up (suicide), and it does so when killed (death_weapon)
+  kind: weapon
+  name: Terror Bomb
+  damage: 225
+  reload: 1s
+  range: 1.5
+  projectile: shell
+  warhead: terror_blast
+  suicide: true
+
+toxin_eruption_gun:  # the deployed Toxin Trooper, RA2 RadEruptionWeapon: at its own cell every 60 frames
+  kind: weapon
+  name: Toxin Eruption
+  damage: 0
+  reload: 4s
+  range: 1
+  projectile: bullet
+  warhead: toxin_eruption
+
+toxin_ground:  # the toxin on the ground; its damage is the level of the cell (RadiationSystem)
+  kind: weapon
+  name: Toxin
+  damage: 0
+  reload: 1s
+  range: 1
+  projectile: bullet
+  warhead: toxin_site

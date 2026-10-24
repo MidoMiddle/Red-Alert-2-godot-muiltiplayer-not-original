@@ -161,6 +161,15 @@ internal static class RulesValidator
             ArmorOf(unit.Id, unit.Armor);
             WeaponOf(unit.Id, "primary", unit.Primary);
             WeaponOf(unit.Id, "secondary", unit.Secondary);
+            WeaponOf(unit.Id, "death_weapon", unit.DeathWeapon);
+            WeaponOf(unit.Id, "deploy_weapon", unit.DeployWeapon);
+            foreach (var (key, has) in new[] { ("engineer", unit.Engineer), ("infiltrator", unit.Infiltrator), ("teleports", unit.Teleports) })
+            {
+                if (has && unit.Category != UnitCategory.Infantry)
+                {
+                    Error(unit.Id, key, $"'{key}' of '{unit.Id}' is for infantry only");
+                }
+            }
             if (unit.Secondary.Length > 0 && unit.Primary.Length == 0)
             {
                 Error(unit.Id, "secondary", $"'{unit.Id}' has a secondary weapon but no primary one");
@@ -316,6 +325,14 @@ internal static class RulesValidator
             {
                 Error(warhead.Id, "percent_at_max", $"'percent_at_max' of '{warhead.Id}' must be 0% to 100%");
             }
+
+            WeaponOf(warhead.Id, "bomb", warhead.Bomb);
+            if (warhead.Bomb.Length > 0 && warhead.BombDelay <= 0)
+            {
+                Error(warhead.Id, "bomb_delay", $"the bomb of '{warhead.Id}' needs a 'bomb_delay' above 0");
+            }
+
+            NotNegative(warhead.Id, "radiation", warhead.Radiation);
         }
 
         /// <summary>Nothing negative; a projectile that flies needs a speed, a homing one also a turn rate and a lifetime.</summary>

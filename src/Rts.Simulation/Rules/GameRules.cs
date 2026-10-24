@@ -167,7 +167,10 @@ public sealed class GameRules
                 unit.Stance,
                 unit.Crusher,
                 unit.Crushable,
-                unit.Jumpjet);
+                unit.Jumpjet,
+                TalentsOf(unit),
+                database.IndexOfWeapon(unit.DeathWeapon),
+                database.IndexOfWeapon(unit.DeployWeapon));
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -305,6 +308,12 @@ public sealed class GameRules
 
         return problems;
     }
+
+    private static UnitTalents TalentsOf(UnitDef unit) =>
+        (unit.Engineer ? UnitTalents.Engineer : 0) | (unit.Infiltrator ? UnitTalents.Infiltrator : 0)
+        | (unit.Disguised ? UnitTalents.Disguised : 0) | (unit.DetectsDisguise ? UnitTalents.DetectsDisguise : 0)
+        | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0)
+        | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0);
 
     private static Locomotor? LocomotorOf(string id)
     {

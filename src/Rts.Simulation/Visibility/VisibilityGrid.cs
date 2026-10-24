@@ -73,6 +73,19 @@ public sealed class VisibilityGrid
         }
     }
 
+    /// <summary>The player forgets the map it explored (stage 3b: an infiltrator in its radar): only what it sees now stays explored.</summary>
+    internal void ForgetExplored()
+    {
+        Array.Clear(_explored);
+        for (var index = 0; index < _counts.Length; index++)
+        {
+            if (_counts[index] > 0)
+            {
+                _explored[index >> 6] |= 1UL << (index & 63);
+            }
+        }
+    }
+
     /// <summary>A veil generator starts (<paramref name="by"/> 1) or stops (−1) veiling the cells within <paramref name="radius"/>.</summary>
     internal void Veil(CellPos centre, int radius, int by)
     {

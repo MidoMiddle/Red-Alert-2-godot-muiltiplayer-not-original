@@ -44,7 +44,7 @@ internal static class Samples
             new AttackCommand(player, tick, sequence++, Units(14), new EntityId(15)),
             new ForceAttackCommand(player, tick, sequence++, Units(16), null, point),
             new SetStanceCommand(player, tick, sequence++, Units(17, 18), Stance.HoldPosition),
-            new GarrisonCommand(player, tick, sequence++, Units(19, 20), new EntityId(21)),
+            new EnterCommand(player, tick, sequence++, Units(19, 20), new EntityId(21)),
             new EvacuateCommand(player, tick, sequence++, new EntityId(21)),
             new SurrenderCommand(player, tick, sequence),
         ];

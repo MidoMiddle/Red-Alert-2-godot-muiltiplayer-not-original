@@ -14,7 +14,8 @@ public abstract class Entity
 
     public EntityId Id { get; }
 
-    public PlayerId Owner { get; }
+    /// <summary>Whose it is; a building changes hands when an engineer takes it (stage 3b).</summary>
+    public PlayerId Owner { get; internal set; }
 
     public bool IsAlive { get; private set; } = true;
 
@@ -40,4 +41,19 @@ public abstract class Entity
 
     /// <summary>The erasure gathered so far; at 10 × its hit points the entity is gone. State: hashed.</summary>
     public int ErasePoints { get; internal set; }
+
+    /// <summary>
+    /// The ticks until the bomb planted on it goes off (stage 3b: Ivan's bomb, the commando's C4); 0 without one. State: hashed with
+    /// the three below.
+    /// </summary>
+    public int BombTicks { get; internal set; }
+
+    /// <summary>The weapon of the bomb, by its place in the rules; -1 without one.</summary>
+    public int BombWeapon { get; internal set; } = -1;
+
+    /// <summary>Who planted it, for the kills.</summary>
+    public EntityId BombShooter { get; internal set; }
+
+    /// <summary>The player of whoever planted it.</summary>
+    public PlayerId BombOwner { get; internal set; }
 }

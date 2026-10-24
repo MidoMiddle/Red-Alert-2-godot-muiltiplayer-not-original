@@ -44,6 +44,7 @@ public partial class Main : Node3D
         AddChild(new OrderMarkers { Name = "OrderMarkers" });
         AddChild(new RouteLines { Name = "RouteLines" });
         AddChild(new Effects.CombatEffects { Name = "CombatEffects" });
+        AddChild(new Effects.RadiationView { Name = "RadiationView" });
         AddChild(new Effects.ProjectileViews { Name = "ProjectileViews" });
         AddChild(new Audio.CombatSounds { Name = "CombatSounds" });
         AddChild(new Terrain.FogOfWar { Name = "FogOfWar" });

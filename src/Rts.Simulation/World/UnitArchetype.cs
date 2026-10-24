@@ -44,7 +44,10 @@ public sealed record UnitArchetype(
     Stance Stance = Stance.Aggressive,
     bool Crusher = false,
     bool Crushable = false,
-    bool Jumpjet = false)
+    bool Jumpjet = false,
+    UnitTalents Talents = UnitTalents.None,
+    int DeathWeapon = -1,
+    int DeployWeapon = -1)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;
@@ -54,6 +57,9 @@ public sealed record UnitArchetype(
     /// soldier with a jet pack (stage 3a).
     /// </summary>
     public bool Flies => Category == UnitCategory.Aircraft || Jumpjet;
+
+    /// <summary>Whether the unit has <paramref name="talent"/> (stage 3b).</summary>
+    public bool Has(UnitTalents talent) => (Talents & talent) != 0;
 
     /// <summary>True for a unit that gathers ore.</summary>
     public bool Harvests => HarvestCapacity > 0;

@@ -267,6 +267,17 @@ public sealed class RulesValidatorTests
     }
 
     [Fact]
+    public void Only_infantry_takes_buildings_infiltrates_or_jumps()
+    {
+        // Stage 3b.
+        foreach (var key in new[] { "engineer", "infiltrator", "teleports" })
+        {
+            var error = Fails(Units, "  cost: 3000\n", $"  cost: 3000\n  {key}: true\n");
+            Assert.Contains($"'{key}' of 'mcv' is for infantry only", error.Reason);
+        }
+    }
+
+    [Fact]
     public void A_wall_is_one_cell_that_extends_no_base()
     {
         var error = Fails(Buildings, "  power: 150\n", "  power: 150\n  wall: true\n");

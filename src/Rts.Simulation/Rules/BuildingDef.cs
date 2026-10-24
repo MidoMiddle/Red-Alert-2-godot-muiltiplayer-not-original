@@ -132,4 +132,10 @@ public sealed record BuildingDef : IDefinition
 
     /// <summary>The most towers that support one shot.</summary>
     public int ChainMax { get; init; }
+
+    /// <summary>Whether an engineer of another player takes it (stage 3b, RA2 <c>Capturable</c>): not a defense, wall or superweapon.</summary>
+    public bool Capturable { get; init; } = true;
+
+    /// <summary>What an infiltrator of another player does to it (stage 3b); <see cref="SpyEffect.None"/> takes none.</summary>
+    public SpyEffect SpyEffect { get; init; }
 }

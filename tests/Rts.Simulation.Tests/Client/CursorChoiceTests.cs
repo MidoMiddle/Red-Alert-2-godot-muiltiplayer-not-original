@@ -103,11 +103,15 @@ public sealed class CursorChoiceTests
     public void An_own_building_with_room_shows_the_enter_cursor_to_selected_soldiers()
     {
         // Stage 2e: the building's cells are closed to the soldiers, yet an order there sends them in.
-        Assert.Equal(CursorKind.Enter, CursorChoice.For(Context(Ground, selected: true), anyCanEnter: false, spot: new PointerSpot(OwnBuilding: true, Garrison: true)));
+        Assert.Equal(CursorKind.Enter, CursorChoice.For(Context(Ground, selected: true), anyCanEnter: false, spot: new PointerSpot(OwnBuilding: true, Enter: true)));
         Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: true), anyCanEnter: false, spot: new PointerSpot(OwnBuilding: true)));
-        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(Ground, selected: true) with { Ctrl = true }, false, spot: new PointerSpot(Garrison: true)));
-        Assert.Equal(CursorKind.Waypoint, CursorChoice.For(Context(Ground, selected: true) with { WaypointMode = true }, true, spot: new PointerSpot(Garrison: true)));
-        Assert.Equal(CursorKind.Normal, CursorChoice.For(Context(Ground, selected: false), false, spot: new PointerSpot(Garrison: true)));
+        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(Ground, selected: true) with { Ctrl = true }, false, spot: new PointerSpot(Enter: true)));
+        Assert.Equal(CursorKind.Waypoint, CursorChoice.For(Context(Ground, selected: true) with { WaypointMode = true }, true, spot: new PointerSpot(Enter: true)));
+        Assert.Equal(CursorKind.Normal, CursorChoice.For(Context(Ground, selected: false), false, spot: new PointerSpot(Enter: true)));
+        // Stage 3b: an enemy building an engineer or infiltrator of the selection can go into shows the enter cursor, not the attack.
+        var enemy = new PointerTarget(PointerTargetKind.OtherBuilding, Building: new EntityId(5));
+        Assert.Equal(CursorKind.Enter, CursorChoice.For(Context(enemy, selected: true), true, spot: new PointerSpot(Enter: true)));
+        Assert.Equal(CursorKind.Attack, CursorChoice.For(Context(enemy, selected: true), true));
     }
 
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);

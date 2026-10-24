@@ -24,7 +24,7 @@ rocketeer:  # Flak Trooper
   primary: rocketeer_rocket
   sight: 5
 
-engineer:  # Engineer
+engineer:  # Engineer: takes a building of the enemy, mends its own (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Engineer
@@ -34,6 +34,7 @@ engineer:  # Engineer
   hp: 75
   threat: 5
   sight: 4
+  engineer: true
 
 mcv:  # MCV
   kind: unit

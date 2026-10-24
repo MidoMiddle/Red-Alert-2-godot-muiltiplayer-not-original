@@ -49,4 +49,7 @@ public sealed record WeaponDef : IDefinition
 
     /// <summary>The sound of a shot, for the client; the simulation does not use it.</summary>
     public string Report { get; init; } = "";
+
+    /// <summary>Firing it is its shooter's end (stage 3b, RA2 <c>Suicide</c>: the demolition trooper): the shooter dies at once.</summary>
+    public bool Suicide { get; init; }
 }

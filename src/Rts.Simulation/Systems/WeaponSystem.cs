@@ -42,7 +42,7 @@ public static class WeaponSystem
             switch (entity)
             {
                 // Held by a temporal beam (stage 3a), nothing fires.
-                case Unit { IsAlive: true, ErasedBy: null } unit when unit.Weapons.Length > 0:
+                case Unit { IsAlive: true, ErasedBy: null, WarpTicks: 0 } unit when unit.Weapons.Length > 0:
                     Unit(world, rules, unit, shots, events);
                     break;
                 case Building { IsAlive: true, IsReady: true, ErasedBy: null } building when building.Weapons.Length > 0:
@@ -56,6 +56,13 @@ public static class WeaponSystem
 
         foreach (var shot in shots)
         {
+            // A suicide weapon (stage 3b) is no shot: firing it, the shooter dies, and its death weapon goes off.
+            if (rules.Database.Weapons[shot.Weapon].Suicide && world.TryGet(shot.Shooter, out var shooter) && shooter is World.Unit { IsAlive: true } bomber)
+            {
+                DeathSystem.Kill(world, bomber, bomber.Id, bomber.Owner, Events.DeathCause.Weapon, shot.Weapon, events);
+                continue;
+            }
+
             Launch(world, rules, shot, events);
         }
 
@@ -153,7 +160,7 @@ public static class WeaponSystem
         var slots = rules.WeaponsOf(unit.Type);
         EntityId? targetId = hasTarget ? target.Id : null;
         var layer = hasTarget ? TargetingSystem.LayerOf(target) : WeaponTargets.Ground;
-        if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, layer, events) is { } weapon)
+        if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, layer, events, hasTarget ? target : null) is { } weapon)
         {
             shots.Add(new Shot(unit.Owner, unit.Id, weapon, targetId, unit.Position, aimAt));
         }
@@ -174,7 +181,7 @@ public static class WeaponSystem
         var aimAt = Aim.NearestPoint(target, centre);
         var distance = DamageCalculator.Distance(centre, aimAt);
         var slots = rules.WeaponsOfBuilding(building.DefIndex);
-        if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, TargetingSystem.LayerOf(target), events) is { } weapon)
+        if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, TargetingSystem.LayerOf(target), events, target) is { } weapon)
         {
             var bonus = building.Def is { ChainBonusPercent: > 0 } def ? Support(world, building, def, events) * def.ChainBonusPercent : 0;
             shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt, bonus));
@@ -239,7 +246,7 @@ public static class WeaponSystem
         foreach (var occupant in building.Occupants)
         {
             if (occupant.Weapons.Length > 0
-                && Fire(world, rules, building.Id, target.Id, occupant.Weapons, rules.WeaponsOf(occupant.Type), distance, aimed: true, layer, events) is { } weapon)
+                && Fire(world, rules, building.Id, target.Id, occupant.Weapons, rules.WeaponsOf(occupant.Type), distance, aimed: true, layer, events, target) is { } weapon)
             {
                 shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
             }
@@ -247,18 +254,20 @@ public static class WeaponSystem
     }
 
     /// <summary>
-    /// Fires the first weapon that fires at <paramref name="layer"/> — the ground, or the air at a flier (stage 2b) — and reaches
-    /// <paramref name="distance"/>, when it is aimed and ready; the volley of a weapon that cannot fire now is broken off. Gives the
-    /// place of the weapon that fired in the rules, or null.
+    /// Fires the first weapon that fires at <paramref name="layer"/> — the ground, or the air at a flier (stage 2b) — reaches
+    /// <paramref name="distance"/> and has a share against <paramref name="victim"/> (stage 3b: the commando's pistols leave a building
+    /// to her C4), when it is aimed and ready; the volley of a weapon that cannot fire now is broken off. Gives the place of the weapon
+    /// that fired in the rules, or null.
     /// </summary>
     private static int? Fire(
         GameWorld world, GameRules rules, EntityId shooter, EntityId? target, WeaponInstance[] weapons, ImmutableArray<int> slots, int distance, bool aimed,
-        WeaponTargets layer, List<SimEvent>? events)
+        WeaponTargets layer, List<SimEvent>? events, Entity? victim = null)
     {
         var chosen = -1;
         for (var slot = 0; slot < weapons.Length && chosen < 0; slot++)
         {
-            if (slots[slot] >= 0 && Reaches(rules.Database.Weapons[slots[slot]], distance, layer))
+            if (slots[slot] >= 0 && Reaches(rules.Database.Weapons[slots[slot]], distance, layer)
+                && (victim is null || TargetingSystem.BestShare(rules, ImmutableArray.Create(slots[slot]), victim) > 0))
             {
                 chosen = slot;
             }
@@ -300,11 +309,13 @@ public static class WeaponSystem
     }
 
     /// <summary>Whether one of the weapons fires at <paramref name="layer"/> and reaches <paramref name="distance"/> leptons.</summary>
-    internal static bool Reaches(GameRules rules, ImmutableArray<int> weapons, int distance, WeaponTargets layer)
+    internal static bool Reaches(GameRules rules, ImmutableArray<int> weapons, int distance, WeaponTargets layer, Entity? victim = null)
     {
         foreach (var weapon in weapons)
         {
-            if (weapon >= 0 && Reaches(rules.Database.Weapons[weapon], distance, layer))
+            // With a victim, only a weapon that can hurt it counts (stage 3b: the commando walks up to a building for her C4).
+            if (weapon >= 0 && Reaches(rules.Database.Weapons[weapon], distance, layer)
+                && (victim is null || TargetingSystem.BestShare(rules, ImmutableArray.Create(weapon), victim) > 0))
             {
                 return true;
             }

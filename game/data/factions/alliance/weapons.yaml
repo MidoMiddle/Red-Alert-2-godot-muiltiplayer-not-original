@@ -101,3 +101,21 @@ alliance_neutron_rifle:  # of the Time Trooper, RA2 NeutronRifle: the erasure a 
   range: 5
   projectile: chrono_beam
   warhead: chrono
+
+alliance_c4:  # the Elite Commando's C4, RA2 Sapper: on buildings only
+  kind: weapon
+  name: C4
+  damage: 1
+  reload: 6.67s
+  range: 1.5
+  projectile: pounce
+  warhead: c4_plant
+
+alliance_c4_charge:  # the C4 going off: the building comes down whatever its strength
+  kind: weapon
+  name: C4 Charge
+  damage: 100000
+  reload: 1s
+  range: 1
+  projectile: shell
+  warhead: demolition

@@ -41,14 +41,17 @@ public static class TargetingSystem
                 EndFallenOrder(world, ordered);
             }
 
-            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || entity.ErasedBy is not null)
+            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || entity.ErasedBy is not null
+                || entity is Unit { WarpTicks: > 0 })
             {
                 continue;
             }
 
             switch (entity)
             {
-                case Unit unit when unit.Weapons.Length > 0 && unit.TargetOrder == TargetOrder.None && !IsMoving(unit):
+                // A passive unit (stage 3b: the demolition trooper) fires only at what it is ordered to.
+                case Unit unit when unit.Weapons.Length > 0 && unit.TargetOrder == TargetOrder.None && !IsMoving(unit)
+                    && !unit.Archetype.Has(UnitTalents.Passive):
                     {
                         var weapons = rules.WeaponsOf(unit.Type);
                         var reach = Reach(rules, weapons);
@@ -154,6 +157,11 @@ public static class TargetingSystem
         return best;
     }
 
+    /// <summary>Whether <paramref name="me"/> takes the candidate, a disguised unit (stage 3b), for one of its own: all but the dogs do.</summary>
+    internal static bool Fooled(Entity me, Entity candidate) =>
+        candidate is Unit disguised && disguised.Archetype.Has(UnitTalents.Disguised)
+        && !(me is Unit watcher && watcher.Archetype.Has(UnitTalents.DetectsDisguise));
+
     /// <summary>A unit on a leg of a plain move: it does not look for enemies until it arrives.</summary>
     internal static bool IsMoving(Unit unit) => unit.Orders.Length > 0 && !unit.IsAttackMoving;
 
@@ -215,6 +223,10 @@ public static class TargetingSystem
             // One held by another's temporal beam (stage 3a) is out of time: only that shooter keeps it.
             if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || world.AreAllies(candidate.Owner, me.Owner) || candidate.Owner.IsNeutral
                 || (candidate.ErasedBy is { } holder && holder != me.Id)
+                // A disguised unit (stage 3b: the infiltrator) passes for one of ours, but not before a dog; one with a bomb on it is
+                // left by those that only plant bombs.
+                || Fooled(me, candidate)
+                || (candidate.BombTicks > 0 && BombSystem.PlantsOnly(rules, weapons))
                 || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate))
             {
                 continue;

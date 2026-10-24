@@ -92,3 +92,51 @@ chrono:  # RA2 ChronoBeam: hurts nothing, erases the target from time (temporal)
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
   temporal: true
   infantry_death: electro
+
+ivan_bomb_plant:  # RA2 IvanBomb: Ivan's bomb is put on the target, not into it (stage 3b); it goes off in 450 frames
+  kind: warhead
+  name: Ivan Bomb
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  bomb: ivan_bomb_blast
+  bomb_delay: 30s
+
+ivan_blast:  # RA2 IvanWH: the blast of Ivan's bomb
+  kind: warhead
+  name: Ivan Blast
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 250%, concrete: 20%, special_1: 100%, special_2: 100% }
+  spread: 1.5
+  infantry_death: explode
+
+terror_blast:  # RA2 TerrorBombWH: the demolition trooper going off
+  kind: warhead
+  name: Terror Blast
+  verses: { none: 150%, flak: 100%, plate: 100%, light: 90%, medium: 50%, heavy: 50%, wood: 100%, steel: 150%, concrete: 30%, special_1: 100%, special_2: 100% }
+  spread: 2
+  percent_at_max: 50%
+  infantry_death: explode
+
+c4_plant:  # RA2 Sapper: the commando's C4 on a building (stage 3b); RA2 C4Delay is .03 minutes
+  kind: warhead
+  name: C4
+  verses: { none: 0%, flak: 0%, plate: 0%, light: 0%, medium: 0%, heavy: 0%, wood: 100%, steel: 100%, concrete: 100%, special_1: 0%, special_2: 0% }
+  bomb: alliance_c4_charge
+  bomb_delay: 1.8s
+
+demolition:  # what the C4 does to the building it is on: brings it down whatever its strength
+  kind: warhead
+  name: Demolition
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  infantry_death: explode
+
+toxin_eruption:  # RA2 RadEruptionWarhead: the deployed toxin trooper poisons the ground round it; it hurts nothing itself (the area is ours)
+  kind: warhead
+  name: Toxin Eruption
+  verses: { none: 0%, flak: 0%, plate: 0%, light: 0%, medium: 0%, heavy: 0%, wood: 0%, steel: 0%, concrete: 0%, special_1: 0%, special_2: 0% }
+  spread: 2
+  radiation: 500
+
+toxin_site:  # RA2 RadSite: what the toxin on the ground does to what stands on it
+  kind: warhead
+  name: Toxin Ground
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 50%, medium: 10%, heavy: 10%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  infantry_death: electro

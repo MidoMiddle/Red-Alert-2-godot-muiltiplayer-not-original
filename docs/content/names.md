@@ -76,9 +76,9 @@
 |---|---|---|---|---|
 | attack_dog | War Hound | attack dog: bites infantry, M11 weapon | Attack Dog | работает: укус убивает любого пехотинца, технику не трогает (этап 3а) |
 | tesla_trooper | Shock Infantry | electric infantry | Shock Trooper | работает: электроразряд, дальность 3 (этап 3а) |
-| crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | строится, без оружия — этап 3 |
-| terrorist | Demolition Trooper | blows up with its target | Terrorist | строится, без оружия — этап 3 |
-| desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); заражение земли — 3б |
+| crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | работает: вешает бомбу, через 30 с взрыв 400 по площади; гибель носителя взрывает сразу (этап 3б) |
+| terrorist | Demolition Trooper | blows up with its target | Terrorist | работает: сам целей не ищет; по приказу подбегает и взрывается, взрывается и убитым (этап 3б) |
+| desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); развёрнутый (D) заражает землю ядом, яд ранит всех на земле, кроме него (этап 3б) |
 | rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | строится, без оружия — этап 3 |
 | apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | строится, без оружия — этап 3 |
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | строится, без оружия — этап 3 |
@@ -94,12 +94,12 @@
 
 | id | Имя | Роль | Аналог RA2 | Сейчас |
 |---|---|---|---|---|
-| alliance_engineer | Field Engineer | captures and repairs buildings | Engineer | строится, без оружия — этап 3 |
+| alliance_engineer | Field Engineer | captures and repairs buildings | Engineer | работает: захватывает здание врага (не оборону, верфи, супероружие), чинит своё целиком (этап 3б) |
 | alliance_attack_dog | Guard Dog | attack dog | Attack Dog | работает: укус убивает любого пехотинца, технику не трогает (этап 3а) |
 | alliance_rocketeer | Jetpack Trooper | flies over the field (M11b) | Rocketeer | работает: летает, бьёт по земле и воздуху; достать его может только ПВО (этап 3а) |
-| alliance_spy | Infiltrator | disguises and enters enemy buildings | Spy | строится, без оружия — этап 3 |
-| alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | работает: луч замораживает и стирает цель, прерванный — цель цела (этап 3а); телепорт — позже |
-| alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | работает: пистолеты убивают пехотинца с выстрела (этап 3а); подрыв зданий — 3б |
+| alliance_spy | Infiltrator | disguises and enters enemy buildings | Spy | работает: враг видит его своим пехотинцем, узнают только собаки; в электростанции — отключение энергии, в радаре — сброс карты, в ОПЗ — половина денег (этап 3б) |
+| alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | работает: луч замораживает и стирает цель, прерванный — цель цела (этап 3а); прыгает туда, куда послан, и проявляется (этап 3б) |
+| alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | работает: пистолеты убивают пехотинца с выстрела (этап 3а); C4 сносит здание целиком за 2 с (этап 3б) |
 | alliance_sniper | Marksman | long-range anti-infantry | Sniper | работает: винтовка на 14 клеток против пехоты (этап 3а) |
 | alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | строится, без оружия — этап 3 |
 | alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | строится, без оружия — этап 3 |

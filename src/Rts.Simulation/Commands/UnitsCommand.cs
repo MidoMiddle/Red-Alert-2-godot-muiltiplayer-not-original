@@ -87,13 +87,14 @@ public sealed record ForceAttackCommand(
 }
 
 /// <summary>
-/// The soldiers among the units go into <paramref name="Building"/>, the player's ready building that holds soldiers, while it has room
-/// (stage 2e): they walk to it and go in beside it. Other units ignore it.
+/// The soldiers among the units go into <paramref name="Building"/>: they walk to it and go in beside it (<see cref="Systems.EntrySystem"/>)
+/// — into the player's own building that holds soldiers (stage 2e), or, an engineer, to take a building of another player or mend its
+/// own, or, an infiltrator, into a building of another player (stage 3b). Units that can do none of it ignore it.
 /// </summary>
-public sealed record GarrisonCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, EntityId Building)
+public sealed record EnterCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, EntityId Building)
     : UnitsCommand(Player, ExecuteTick, Sequence, Units)
 {
-    public override CommandType Type => CommandType.Garrison;
+    public override CommandType Type => CommandType.Enter;
 }
 
 /// <summary>Sets the stance of the units (docs/implementation/M4_combat.md, 4.11); a guarding unit guards where it stands.</summary>

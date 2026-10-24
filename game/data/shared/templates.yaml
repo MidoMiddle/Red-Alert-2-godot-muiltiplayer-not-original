@@ -51,3 +51,4 @@ base_defense:
   category: defense
   extends_base: false
   powered: true
+  capturable: false  # RA2: no defense is taken by an engineer

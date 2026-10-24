@@ -170,3 +170,21 @@ public sealed record UnitLeftGarrison(int Tick, EntityId Unit, EntityId Building
 
 /// <summary><paramref name="Supporter"/>, an idle tower, sent its charge to <paramref name="Tower"/>'s shot (stage 2e: the lens towers).</summary>
 public sealed record TowerSupported(int Tick, EntityId Supporter, EntityId Tower) : SimEvent(Tick);
+
+/// <summary>An engineer took <paramref name="Building"/> from <paramref name="From"/> for <paramref name="To"/> (stage 3b).</summary>
+public sealed record BuildingCaptured(int Tick, EntityId Building, PlayerId From, PlayerId To) : SimEvent(Tick);
+
+/// <summary>An engineer of the owner mended <paramref name="Building"/> whole (stage 3b).</summary>
+public sealed record BuildingMended(int Tick, EntityId Building) : SimEvent(Tick);
+
+/// <summary>
+/// An infiltrator of <paramref name="Player"/> went into <paramref name="Building"/> and did <paramref name="Effect"/>; the credits it
+/// took for a theft (stage 3b).
+/// </summary>
+public sealed record BuildingInfiltrated(int Tick, EntityId Building, PlayerId Player, Rules.SpyEffect Effect, int Credits) : SimEvent(Tick);
+
+/// <summary>A bomb was planted on <paramref name="Target"/>; it goes off in <paramref name="Ticks"/> (stage 3b).</summary>
+public sealed record BombPlanted(int Tick, EntityId Target, EntityId Shooter, int Ticks) : SimEvent(Tick);
+
+/// <summary><paramref name="Unit"/> jumped from <paramref name="From"/> to <paramref name="To"/> and phases in for a while (stage 3b).</summary>
+public sealed record UnitTeleported(int Tick, EntityId Unit, WorldPos From, WorldPos To) : SimEvent(Tick);

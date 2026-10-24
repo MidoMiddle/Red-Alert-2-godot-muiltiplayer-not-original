@@ -178,6 +178,12 @@ public partial class CombatEffects : Node3D
                 AddBall(shooter.Gun, 0.15f, 0.3f, FlashLife, FlashColor);
                 break;
 
+            case UnitTeleported jump when Seen(world, jump.To) || Seen(world, jump.From):
+                // A time trooper's jump (stage 3b): a pale blue flash where it left and where it came.
+                AddBall(WorldCoords.ToGodotOnGround(jump.From, 0.5f), 0.3f, 0.9f, BlastLife, ChronoColor);
+                AddBall(WorldCoords.ToGodotOnGround(jump.To, 0.5f), 0.9f, 0.3f, BlastLife, ChronoColor);
+                break;
+
             case TowerSupported support when Know(support.Supporter) is { } supporter && Know(support.Tower) is { } tower && Seen(world, tower.Centre):
                 // A lens tower sends its charge to the one that fires (stage 2e).
                 _lineEffects.Add(new Line([supporter.Gun, tower.Gun], BoltColor, BoltLife));

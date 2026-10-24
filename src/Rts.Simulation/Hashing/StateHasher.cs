@@ -37,6 +37,17 @@ public static class StateHasher
         AddTaken(hash, world.Reservations.VehicleCells);
         AddTaken(hash, world.Reservations.InfantrySpots);
 
+        // Rules v50 (stage 3b): the toxin on the ground, cell by cell where there is some.
+        var radiation = world.Radiation;
+        for (var i = 0; i < radiation.Length; i++)
+        {
+            if (radiation[i] != 0)
+            {
+                hash.Add(i);
+                hash.Add((int)radiation[i]);
+            }
+        }
+
         // Rules v19 (M3 step 5): the credits of every player. Power and technologies follow from the buildings, not hashed.
         // Rules v21 (step 8): the production queues.
         foreach (var player in world.Players)
@@ -48,6 +59,8 @@ public static class StateHasher
             // Rules v38 (M5 step 10): the tick the player lost the match on.
             hash.Add(player.DefeatedTick.HasValue);
             hash.Add(player.DefeatedTick ?? 0);
+            // Rules v50 (stage 3b): the blackout an infiltrator brought.
+            hash.Add(player.BlackoutUntil);
             // Rules v39 (M8 step 2): the bonuses of the player and the hundredths of income it is owed.
             hash.Add(player.Modifiers.IncomeBonusPercent);
             hash.Add(player.Modifiers.BuildSpeedBonusPercent);
@@ -227,6 +240,10 @@ public static class StateHasher
                 hash.Add(unit.EnterTarget.HasValue);
                 hash.Add(unit.EnterTarget?.Value ?? 0);
 
+                // Rules v50 (stage 3b): deployed, phasing in after a jump.
+                hash.Add(unit.Deployed);
+                hash.Add(unit.WarpTicks);
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)
@@ -370,5 +387,11 @@ public static class StateHasher
         hash.Add(entity.ErasedBy?.Value ?? 0);
         hash.Add(entity.EraseWeapon);
         hash.Add(entity.ErasePoints);
+
+        // Rules v50 (stage 3b): the bomb planted on it.
+        hash.Add(entity.BombTicks);
+        hash.Add(entity.BombWeapon);
+        hash.Add(entity.BombShooter.Value);
+        hash.Add(entity.BombOwner.Value);
     }
 }

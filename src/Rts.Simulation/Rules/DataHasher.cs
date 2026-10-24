@@ -52,6 +52,7 @@ public static class DataHasher
             hash.Add(weapon.Burst);
             hash.Add(weapon.BurstDelay);
             hash.Add((byte)weapon.Targets);
+            hash.Add(weapon.Suicide);
         }
 
         hash.Add(rules.Units.Length);
@@ -83,6 +84,15 @@ public static class DataHasher
             hash.Add(unit.Crusher);
             hash.Add(unit.Crushable);
             hash.Add(unit.Jumpjet);
+            hash.Add(unit.Engineer);
+            hash.Add(unit.Infiltrator);
+            hash.Add(unit.Disguised);
+            hash.Add(unit.DetectsDisguise);
+            hash.Add(unit.Passive);
+            Add(hash, unit.DeathWeapon);
+            hash.Add(unit.Teleports);
+            Add(hash, unit.DeployWeapon);
+            hash.Add(unit.RadiationImmune);
             hash.Add(unit.AvailableLater);
         }
 
@@ -138,6 +148,8 @@ public static class DataHasher
             hash.Add(building.GarrisonCapacity);
             hash.Add(building.ChainBonusPercent);
             hash.Add(building.ChainMax);
+            hash.Add(building.Capturable);
+            hash.Add((byte)building.SpyEffect);
         }
 
         hash.Add(rules.Factions.Length);
@@ -267,6 +279,9 @@ public static class DataHasher
             hash.Add(warhead.WallDamage);
             hash.Add(warhead.AffectsAir);
             hash.Add(warhead.Temporal);
+            Add(hash, warhead.Bomb);
+            hash.Add(warhead.BombDelay);
+            hash.Add(warhead.Radiation);
         }
 
         hash.Add(rules.Projectiles.Length);

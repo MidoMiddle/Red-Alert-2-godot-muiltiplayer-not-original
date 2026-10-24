@@ -54,6 +54,12 @@ public partial class HealthBars : Control
                 continue;
             }
 
+            if (entity.BombTicks > 0)
+            {
+                // A bomb on it (stage 3b): a red square that blinks faster as the time runs out.
+                DrawBomb(camera, entity, world.CurrentTick);
+            }
+
             if (entity is Building { Def: { GarrisonCapacity: > 0 } bunker } garrisoned)
             {
                 var top = WorldCoords.ToGodotOnGround(Aim.CentreOf(garrisoned), BuildingShape.Of(bunker).Height + 0.6f);
@@ -80,6 +86,24 @@ public partial class HealthBars : Control
                     }
             }
         }
+    }
+
+    private void DrawBomb(Camera3D camera, Entity entity, int tick)
+    {
+        var at = entity switch
+        {
+            Building { Def: { } def } building => WorldCoords.ToGodotOnGround(Aim.CentreOf(building), BuildingShape.Of(def).Height + 1f),
+            Unit unit => WorldCoords.ToGodotOnGround(unit.Position, UnitHeight + Units.UnitAltitude.Of(unit.Archetype) + 0.4f),
+            _ => (Vector3?)null,
+        };
+        var period = entity.BombTicks > 60 ? 15 : 4;
+        if (at is not { } point || camera.IsPositionBehind(point) || tick / period % 2 == 1)
+        {
+            return;
+        }
+
+        var size = 7f;
+        DrawRect(new Rect2(camera.UnprojectPosition(point) - new Vector2(size / 2f, size), new Vector2(size, size)), new Color(1f, 0.15f, 0.1f));
     }
 
     // The room of a building that holds soldiers, just under where its health bar goes.

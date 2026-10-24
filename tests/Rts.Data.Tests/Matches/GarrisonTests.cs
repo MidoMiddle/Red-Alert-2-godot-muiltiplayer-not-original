@@ -84,7 +84,7 @@ public sealed class GarrisonTests
         var tank = world.SpawnUnit(Union, UnitType.HeavyTank, new CellPos(12, 26).Center);
         var at = tank.Position;
 
-        simulation.Enqueue(new GarrisonCommand(Union, simulation.CurrentTick, 0, Ids([.. soldiers, tank]), bunker.Id));
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 0, Ids([.. soldiers, tank]), bunker.Id));
         Fill(simulation, bunker, 5);
         Step(simulation, 60);
 
@@ -105,11 +105,11 @@ public sealed class GarrisonTests
         var soldier = Soldiers(world, 1, 10, 30)[0];
         var rifleman = world.SpawnUnit(Allied, UnitType.AllianceRifleman, new CellPos(26, 20).Center);
 
-        simulation.Enqueue(new GarrisonCommand(Union, simulation.CurrentTick, 0, [soldier.Id], bunker.Id));
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 0, [soldier.Id], bunker.Id));
         Step(simulation, 2);
         Assert.Equal(bunker.Id, soldier.EnterTarget);
         simulation.Enqueue(new StopCommand(Union, simulation.CurrentTick, 1, [soldier.Id]));
-        var enemy = new GarrisonCommand(Allied, simulation.CurrentTick, 0, [rifleman.Id], bunker.Id);
+        var enemy = new EnterCommand(Allied, simulation.CurrentTick, 0, [rifleman.Id], bunker.Id);
         simulation.Enqueue(enemy);
         Step(simulation, 200);
 
@@ -126,7 +126,7 @@ public sealed class GarrisonTests
         var simulation = Match();
         var world = simulation.World;
         var bunker = Build(world, Union, "battle_bunker", Bunker.X, Bunker.Y);
-        simulation.Enqueue(new GarrisonCommand(Union, simulation.CurrentTick, 0, Ids(Soldiers(world, 2, 16, 23)), bunker.Id));
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 0, Ids(Soldiers(world, 2, 16, 23)), bunker.Id));
         Fill(simulation, bunker, 2);
 
         var near = world.SpawnUnit(Allied, UnitType.AllianceEngineer, new CellPos(25, 20).Center);
@@ -146,7 +146,7 @@ public sealed class GarrisonTests
         var bunker = Build(world, Union, "battle_bunker", Bunker.X, Bunker.Y);
         var soldiers = Soldiers(world, 2, 16, 23);
         world.SetHp(soldiers[0], 60, null);
-        simulation.Enqueue(new GarrisonCommand(Union, simulation.CurrentTick, 0, Ids(soldiers), bunker.Id));
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 0, Ids(soldiers), bunker.Id));
         Fill(simulation, bunker, 2);
 
         simulation.Enqueue(new EvacuateCommand(Union, simulation.CurrentTick, 0, bunker.Id));
@@ -167,7 +167,7 @@ public sealed class GarrisonTests
         var simulation = Match();
         var world = simulation.World;
         var bunker = Build(world, Union, "battle_bunker", Bunker.X, Bunker.Y);
-        simulation.Enqueue(new GarrisonCommand(Union, simulation.CurrentTick, 0, Ids(Soldiers(world, 3, 16, 23)), bunker.Id));
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 0, Ids(Soldiers(world, 3, 16, 23)), bunker.Id));
         Fill(simulation, bunker, 3);
 
         if (sold)

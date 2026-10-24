@@ -2,7 +2,7 @@
 # drafts, prerequisites turned to the Alliance's buildings. Unarmed for now (ability_later); ships and boats come from the shipyard on the
 # water (category naval, stage 2a); aircraft fly and come from the air command (category aircraft, stage 2b). The commando of the sea is left out: RA2 never builds it in a skirmish.
 
-alliance_engineer:  # captures and repairs buildings
+alliance_engineer:  # takes a building of the enemy, mends its own (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Field Engineer
@@ -14,7 +14,7 @@ alliance_engineer:  # captures and repairs buildings
   speed: 24
   sight: 4
   prerequisites: [alliance_barracks]
-  ability_later: true
+  engineer: true
 
 alliance_attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   kind: unit
@@ -29,6 +29,7 @@ alliance_attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   sight: 9
   prerequisites: [alliance_barracks]
   primary: alliance_dog_bite
+  detects_disguise: true
 
 alliance_rocketeer:  # flies over the field with a jet pack, fires at the ground and the air (stage 3a)
   kind: unit
@@ -46,7 +47,7 @@ alliance_rocketeer:  # flies over the field with a jet pack, fires at the ground
   jumpjet: true
   crushable: false
 
-alliance_spy:  # disguises and enters enemy buildings
+alliance_spy:  # passes for the enemy's own soldier, goes into its buildings (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Infiltrator
@@ -59,9 +60,10 @@ alliance_spy:  # disguises and enters enemy buildings
   speed: 24
   sight: 9
   prerequisites: [alliance_barracks, alliance_battle_lab]
-  ability_later: true
+  infiltrator: true
+  disguised: true
 
-alliance_chrono_legionnaire:  # erases its target from time (stage 3a)
+alliance_chrono_legionnaire:  # erases its target from time (stage 3a); jumps where it is sent (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Time Trooper
@@ -74,8 +76,9 @@ alliance_chrono_legionnaire:  # erases its target from time (stage 3a)
   sight: 8
   prerequisites: [alliance_barracks, alliance_battle_lab]
   primary: alliance_neutron_rifle
+  teleports: true
 
-alliance_tanya:  # hero: one shot kills a soldier (stage 3a); bombing buildings comes with 3b
+alliance_tanya:  # hero: one shot kills a soldier (stage 3a), C4 brings a building down (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Elite Commando
@@ -89,6 +92,7 @@ alliance_tanya:  # hero: one shot kills a soldier (stage 3a); bombing buildings 
   sight: 8
   prerequisites: [alliance_barracks, alliance_battle_lab]
   primary: alliance_double_pistols
+  secondary: alliance_c4
 
 alliance_sniper:  # long-range anti-infantry (stage 3a)
   kind: unit

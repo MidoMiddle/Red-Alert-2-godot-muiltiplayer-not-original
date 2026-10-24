@@ -211,11 +211,12 @@ public sealed class GoldenValuesTests
         // Rules v48 (stage 2e, the garrison): the hash covers the building a soldier goes into and the soldiers inside every building
         // (none here); the states are the same.
         // Rules v49 (stage 3a): the hash covers the temporal beam that holds every entity (none here); the states are the same.
+        // Rules v50 (stage 3b): and the bombs, the toxin on the ground, deploying, jumps and blackouts (none); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x239ce854f17705d1UL),
-            new(500, 0x868bf683c8458c1aUL),
-            new(1000, 0x1369fd2cc74cc2e8UL),
+            new(100, 0x3a685902d62004f9UL),
+            new(500, 0x48d9dcc1609e1956UL),
+            new(1000, 0xfa9eccfd25140768UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -236,11 +237,13 @@ public sealed class GoldenValuesTests
         // Rules v48 (stage 2e): the soldiers inside buildings and the buildings soldiers go into in the hash (none); the battle is the
         // same — no bunker, no lens tower.
         // Rules v49 (stage 3a): the temporal beam of every entity in the hash (none); the battle is the same — no soldier of 3a fights.
+        // Rules v50 (stage 3b): the bombs, the toxin, deploying, jumps and blackouts in the hash (none); a weapon fires only at what it
+        // can hurt, and every weapon of the battle at the ground hurts every armor (the anti-air guns fire at the air only).
         StateChecksum[] expected =
         [
-            new(1000, 0x4ebd549670a2fbaeUL),
-            new(2000, 0xdd144c5225185a58UL),
-            new(3000, 0xe60004e8177ffa24UL),
+            new(1000, 0xb5068562da72df4aUL),
+            new(2000, 0xb295598f6ae5beeaUL),
+            new(3000, 0xfcd6044d416619deUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -319,6 +322,7 @@ public sealed class GoldenValuesTests
         // Replay format v22, rules v48 (stage 2e, the garrison and the lens chains): the versions and the checksums change — the soldiers
         // inside and the building a soldier goes into are hashed; the commands are the same.
         // Rules v49 (stage 3a): the version and the checksums change — the temporal beam of every entity is hashed.
-        Assert.Equal((22269, 11692325003957624356UL), (bytes.Length, hash.Value));
+        // Rules v50 (stage 3b): again, with the bombs, the toxin, deploying, jumps and blackouts.
+        Assert.Equal((22269, 3154842519856562700UL), (bytes.Length, hash.Value));
     }
 }

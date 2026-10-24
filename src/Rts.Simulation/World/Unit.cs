@@ -54,6 +54,12 @@ public sealed class Unit : Entity
     /// </summary>
     public EntityId? EnterTarget { get; internal set; }
 
+    /// <summary>Deployed in place (stage 3b: the toxin trooper fires its deploy weapon); any order of the player undeploys it. State: hashed.</summary>
+    public bool Deployed { get; internal set; }
+
+    /// <summary>The ticks the unit still phases in after a jump (stage 3b: the time trooper): it neither moves nor fires. State: hashed.</summary>
+    public int WarpTicks { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 

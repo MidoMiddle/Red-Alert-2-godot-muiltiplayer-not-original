@@ -46,14 +46,22 @@ public partial class UnitRenderer : Node3D
                 continue;
             }
 
-            if (!_views.TryGetValue(unit.Id, out var view))
+            // A disguised infiltrator (stage 3b) looks to another team like a soldier of its own, in its own colour.
+            var (shape, colour) = Disguise(world, unit);
+            if (_views.TryGetValue(unit.Id, out var view) && view.Type != shape.Type)
             {
-                view = TakeView(unit.Archetype);
+                ReturnView(view);
+                _views.Remove(unit.Id);
+            }
+
+            if (!_views.TryGetValue(unit.Id, out view))
+            {
+                view = TakeView(shape);
                 _views.Add(unit.Id, view);
             }
 
             var glow = _input.Selection.Contains(unit.Id) ? Glow.Selected : unit.Id == _input.Hovered ? Glow.Hovered : Glow.None;
-            view.SetMaterial(MaterialFor(unit.Owner.Value, glow));
+            view.SetMaterial(MaterialFor(colour.Value, glow));
             var current = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before : current;
             var alpha = _host.Alpha;
@@ -79,6 +87,19 @@ public partial class UnitRenderer : Node3D
             ReturnView(_views[id]);
             _views.Remove(id);
         }
+    }
+
+    /// <summary>How the unit looks to the local player: as itself, or a disguised infiltrator of another team as the player's soldier.</summary>
+    private static (UnitArchetype Shape, PlayerId Colour) Disguise(GameWorld world, Unit unit)
+    {
+        var viewer = SimulationHost.LocalPlayer;
+        if (!unit.Archetype.Has(UnitTalents.Disguised) || world.AreAllies(viewer, unit.Owner) || viewer.IsNeutral
+            || !UnitTypes.TryGetById(world.Player(viewer).Faction.StartingInfantry, out var soldier))
+        {
+            return (unit.Archetype, unit.Owner);
+        }
+
+        return (world.Rules.Unit(soldier), viewer);
     }
 
     private UnitView TakeView(UnitArchetype archetype)

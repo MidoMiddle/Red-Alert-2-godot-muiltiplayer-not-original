@@ -28,7 +28,10 @@ public enum CursorKind
     /// <summary>Over ore while harvesters are selected: they go to work there.</summary>
     Harvest,
 
-    /// <summary>Over an own building with room for soldiers while soldiers are selected: they go in (stage 2e).</summary>
+    /// <summary>
+    /// Over a building a selected unit can go into: an own bunker with room for soldiers (stage 2e), a building for an engineer to take
+    /// or mend, or for an infiltrator (stage 3b).
+    /// </summary>
     Enter,
 }
 
@@ -40,14 +43,14 @@ public enum CursorKind
 /// <param name="Ore">The cell holds ore or gems.</param>
 /// <param name="Harvesters">The selection holds a harvester.</param>
 /// <param name="DeployFits">The MCV under the pointer (<see cref="PointerContext.TargetDeploys"/>) can deploy where it stands.</param>
-/// <param name="Garrison">An own building with room for soldiers, while the selection holds one (stage 2e).</param>
+/// <param name="Enter">A building one of the selection can go into (stage 2e, 3b): an order there sends it in.</param>
 public readonly record struct PointerSpot(
     bool OwnBuilding = false,
     bool Damaged = false,
     bool Ore = false,
     bool Harvesters = false,
     bool DeployFits = false,
-    bool Garrison = false);
+    bool Enter = false);
 
 /// <summary>Which cursor to show for what is under the pointer. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CursorChoice
@@ -85,6 +88,11 @@ public static class CursorChoice
             return CursorKind.Select;
         }
 
+        if (context.HasSelection && spot.Enter && !groundOrder && !context.Ctrl && context.Target.Kind != PointerTargetKind.OtherUnit)
+        {
+            return CursorKind.Enter;
+        }
+
         if (context.HasSelection && !groundOrder && context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OtherBuilding)
         {
             return CursorKind.Attack;
@@ -93,11 +101,6 @@ public static class CursorChoice
         if (!context.HasSelection)
         {
             return CursorKind.Normal;
-        }
-
-        if (spot.Garrison && !groundOrder && !context.Ctrl)
-        {
-            return CursorKind.Enter;
         }
 
         if (context.Ground is null || !anyCanEnter)

@@ -16,6 +16,7 @@ attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   sight: 9
   prerequisites: [barracks]
   primary: war_hound_bite
+  detects_disguise: true
 
 tesla_trooper:  # electric infantry (stage 3a)
   kind: unit
@@ -32,7 +33,7 @@ tesla_trooper:  # electric infantry (stage 3a)
   prerequisites: [barracks]
   primary: shock_bolt
 
-crazy_ivan:  # plants bombs
+crazy_ivan:  # plants a bomb that goes off in 30 seconds (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Bomb Specialist
@@ -44,9 +45,9 @@ crazy_ivan:  # plants bombs
   speed: 24
   sight: 6
   prerequisites: [barracks, radar]
-  ability_later: true
+  primary: ivan_bomber
 
-terrorist:  # blows up with its target
+terrorist:  # runs into its target and blows up, and blows up when killed (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Demolition Trooper
@@ -59,9 +60,11 @@ terrorist:  # blows up with its target
   speed: 36
   sight: 9
   prerequisites: [barracks, radar]
-  ability_later: true
+  primary: terror_bomb
+  death_weapon: terror_bomb
+  passive: true
 
-desolator:  # melts soldiers with its beam (stage 3a); poisoning the ground comes with 3b
+desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the ground round it (stage 3b)
   kind: unit
   inherits: base_infantry
   name: Toxin Trooper
@@ -75,6 +78,8 @@ desolator:  # melts soldiers with its beam (stage 3a); poisoning the ground come
   sight: 6
   prerequisites: [barracks, tech_center]
   primary: toxin_beam_gun
+  deploy_weapon: toxin_eruption_gun
+  radiation_immune: true
 
 rocket_artillery:  # long-range rocket (the draft listed it as desolator)
   kind: unit

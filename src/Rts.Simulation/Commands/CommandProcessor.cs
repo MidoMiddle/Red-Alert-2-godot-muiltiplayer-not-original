@@ -54,11 +54,11 @@ public static class CommandProcessor
             AttackCommand attack => ApplyAttack(world, attack),
             ForceAttackCommand force => ApplyForceAttack(world, force),
             SetStanceCommand stance => ApplySetStance(world, stance),
-            GarrisonCommand garrison => GarrisonSystem.Order(world, OwnUnits(world, garrison), garrison.Building),
+            EnterCommand enter => EntrySystem.Order(world, OwnUnits(world, enter), enter.Building),
             EvacuateCommand evacuate => ApplyEvacuate(world, evacuate, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
-        if (applied && command is UnitsCommand { Type: not (CommandType.Harvest or CommandType.Attack or CommandType.ForceAttack or CommandType.SetStance or CommandType.Garrison) } order)
+        if (applied && command is UnitsCommand { Type: not (CommandType.Harvest or CommandType.Attack or CommandType.ForceAttack or CommandType.SetStance or CommandType.Enter) } order)
         {
             HarvestersFollow(world, order);
         }
@@ -512,6 +512,17 @@ public static class CommandProcessor
     /// </summary>
     private static bool ApplyDeploy(GameWorld world, DeployCommand command, List<SimEvent>? events)
     {
+        // A unit with a deploy weapon (stage 3b: the toxin trooper) deploys where it stands, or undeploys.
+        if (world.TryGet(command.Unit, out var deploying) && deploying is Unit { IsAlive: true, Archetype.DeployWeapon: >= 0 } trooper
+            && trooper.Owner == command.Player)
+        {
+            var deployed = !trooper.Deployed;
+            UnitOrders.Stop(world, trooper);
+            UnitOrders.ForgetTarget(trooper);
+            trooper.Deployed = deployed;
+            return true;
+        }
+
         var faction = world.Player(command.Player).Faction;
         if (!world.TryGet(command.Unit, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Owner != command.Player
             || unit.Archetype.Id != faction.Mcv || !world.Rules.Database.TryGetBuilding(faction.ConstructionYard, out var yard))

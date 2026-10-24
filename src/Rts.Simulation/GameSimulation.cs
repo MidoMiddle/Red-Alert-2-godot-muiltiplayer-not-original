@@ -137,6 +137,7 @@ public sealed class GameSimulation
         Probe?.Invoke("projectiles");
         DamageSystem.Update(World, _events);
         ErasureSystem.Update(World, _events);
+        RadiationSystem.Update(World, _events);
         Probe?.Invoke("damage");
 
         // 4. Movement.
@@ -144,7 +145,8 @@ public sealed class GameSimulation
         Probe?.Invoke("movement");
         World.Spatial.Sync(World);
         Probe?.Invoke("index");
-        GarrisonSystem.Update(World, _events);
+        EntrySystem.Update(World, _events);
+        BombSystem.Update(World, _events);
 
         // 5. Ore grows and spreads (by its interval), the sources erupt (M3 step 16), then technologies, when the buildings changed.
         OreGrowthSystem.Update(World);

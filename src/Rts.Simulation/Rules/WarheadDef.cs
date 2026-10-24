@@ -35,6 +35,18 @@ public sealed record WarheadDef : IDefinition
     /// </summary>
     public bool Temporal { get; init; }
 
+    /// <summary>
+    /// A bomb it plants on its target instead of hurting it (stage 3b: Ivan's bomb, the commando's C4): the weapon that goes off on the
+    /// target after <see cref="BombDelay"/> ticks, or at once when the target falls first; empty for none.
+    /// </summary>
+    public string Bomb { get; init; } = "";
+
+    /// <summary>The ticks the bomb waits.</summary>
+    public int BombDelay { get; init; }
+
+    /// <summary>The level of toxin it leaves on the ground of its area (stage 3b: the toxin trooper's eruption, RA2 <c>RadLevel</c>).</summary>
+    public int Radiation { get; init; }
+
     /// <summary>How infantry dies of it, for the client: an id such as <c>explode</c>; the simulation does not use it.</summary>
     public string InfantryDeath { get; init; } = "";
 
@@ -42,7 +54,8 @@ public sealed record WarheadDef : IDefinition
     public bool Equals(WarheadDef? other) =>
         other is not null && Id == other.Id && Name == other.Name && Verses.SequenceEqual(other.Verses) && Spread == other.Spread
         && PercentAtMax == other.PercentAtMax && WallDamage == other.WallDamage && AffectsAir == other.AffectsAir
-        && Temporal == other.Temporal && InfantryDeath == other.InfantryDeath;
+        && Temporal == other.Temporal && Bomb == other.Bomb && BombDelay == other.BombDelay && Radiation == other.Radiation
+        && InfantryDeath == other.InfantryDeath;
 
     public override int GetHashCode() => unchecked((Id.Length * 31) + Verses.Length);
 }

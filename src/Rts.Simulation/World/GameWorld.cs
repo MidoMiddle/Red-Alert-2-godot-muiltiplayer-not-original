@@ -58,6 +58,7 @@ public sealed class GameWorld
         Random = new DeterministicRandom(seed);
         PathRequests = new PathRequestQueue(map);
         Reservations = new Reservations(map.Width, map.Height);
+        Radiation = new ushort[map.Width * map.Height];
         Spatial = new SpatialIndex(map.Width, map.Height);
         foreach (var start in map.StartBuildings)
         {
@@ -123,6 +124,18 @@ public sealed class GameWorld
     /// <see cref="Systems.DamageSystem"/> applies and empties it in the same tick, so it is never state.
     /// </summary>
     internal List<Combat.Hit> Hits { get; } = [];
+
+    /// <summary>
+    /// The weapons that go off where something died this tick — a unit's death weapon (stage 3b) — launched by
+    /// <see cref="Systems.BombSystem"/> after the movement, as a death may come while the entities are walked. Empty between ticks.
+    /// </summary>
+    internal List<(PlayerId Owner, EntityId Shooter, int Weapon, WorldPos Point)> DeathBlasts { get; } = [];
+
+    /// <summary>The level of toxin on every cell, in row order (stage 3b, <see cref="Systems.RadiationSystem"/>). State: hashed.</summary>
+    internal ushort[] Radiation { get; }
+
+    /// <summary>The level of toxin on <paramref name="cell"/>, 0 off the map: the client shows it.</summary>
+    public int RadiationAt(CellPos cell) => Map.Contains(cell) ? Radiation[cell.Y * WidthCells + cell.X] : 0;
 
     /// <summary>
     /// The buildings that fell this tick (M4 step 9): their cells open at the end of the tick (<see cref="OpenWrecks"/>). Emptied in

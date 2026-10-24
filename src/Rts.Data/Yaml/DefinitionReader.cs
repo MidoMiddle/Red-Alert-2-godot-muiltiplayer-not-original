@@ -21,23 +21,24 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
+        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune",
     ];
 
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
-        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect",
     ];
 
     private static readonly string[] WeaponKeys =
     [
-        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report",
+        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report", "suicide",
     ];
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual"];
 
@@ -106,6 +107,15 @@ internal static class DefinitionReader
             Crusher = fields.Optional("crusher", Scalars.Flag, false),
             Crushable = fields.Optional("crushable", Scalars.Flag, false),
             Jumpjet = fields.Optional("jumpjet", Scalars.Flag, false),
+            Engineer = fields.Optional("engineer", Scalars.Flag, false),
+            Infiltrator = fields.Optional("infiltrator", Scalars.Flag, false),
+            Disguised = fields.Optional("disguised", Scalars.Flag, false),
+            DetectsDisguise = fields.Optional("detects_disguise", Scalars.Flag, false),
+            Passive = fields.Optional("passive", Scalars.Flag, false),
+            DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
+            Teleports = fields.Optional("teleports", Scalars.Flag, false),
+            DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
+            RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -157,6 +167,8 @@ internal static class DefinitionReader
             GarrisonCapacity = fields.Optional("garrison", Scalars.Int, 0),
             ChainBonusPercent = WholePercent(fields.Optional("chain_bonus", Scalars.Percent, Fixed.Zero)),
             ChainMax = fields.Optional("chain_max", Scalars.Int, 0),
+            Capturable = fields.Optional("capturable", Scalars.Flag, true),
+            SpyEffect = fields.Optional("spy_effect", SpyEffectOf, SpyEffect.None),
         };
     }
 
@@ -177,6 +189,7 @@ internal static class DefinitionReader
             BurstDelay = fields.Optional("burst_delay", Scalars.Ticks, 0),
             Targets = fields.Optional("targets", TargetsOf, WeaponTargets.Ground),
             Report = fields.Optional("report", Scalars.Id, ""),
+            Suicide = fields.Optional("suicide", Scalars.Flag, false),
         };
     }
 
@@ -199,6 +212,9 @@ internal static class DefinitionReader
             WallDamage = fields.Optional("wall_damage", Scalars.Flag, false),
             AffectsAir = fields.Optional("affects_air", Scalars.Flag, false),
             Temporal = fields.Optional("temporal", Scalars.Flag, false),
+            Bomb = fields.Optional("bomb", Scalars.Id, ""),
+            BombDelay = fields.Optional("bomb_delay", Scalars.Ticks, 0),
+            Radiation = fields.Optional("radiation", Scalars.Int, 0),
             InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
         };
     }
@@ -578,6 +594,15 @@ internal static class DefinitionReader
 
         return targets;
     }
+
+    private static SpyEffect SpyEffectOf(string fileName, YamlNode node) =>
+        Scalars.Choice(fileName, node, "none", "blackout", "reset_map", "steal_credits") switch
+        {
+            "blackout" => SpyEffect.Blackout,
+            "reset_map" => SpyEffect.ResetMap,
+            "steal_credits" => SpyEffect.StealCredits,
+            _ => SpyEffect.None,
+        };
 
     private static UnitPlacement PlacementOf(string fileName, YamlNode node) =>
         Scalars.Choice(fileName, node, "cell", "subcell") == "cell" ? UnitPlacement.Cell : UnitPlacement.Subcell;

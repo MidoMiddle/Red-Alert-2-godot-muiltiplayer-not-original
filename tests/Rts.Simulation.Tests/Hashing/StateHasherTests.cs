@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -76,6 +76,14 @@ public sealed class StateHasherTests
             case "explore all": world.VisionOf(new PlayerId(5)).ExploreAll(); break;
             case "enter target": moving.EnterTarget = idle.Id; break;
             case "erased by": moving.ErasedBy = idle.Id; break;
+            case "bomb ticks": moving.BombTicks = 9; break;
+            case "bomb weapon": moving.BombWeapon = 0; break;
+            case "bomb shooter": moving.BombShooter = idle.Id; break;
+            case "bomb owner": moving.BombOwner = new PlayerId(2); break;
+            case "deployed": moving.Deployed = true; break;
+            case "warp ticks": moving.WarpTicks = 3; break;
+            case "blackout": world.Player(Player1).BlackoutUntil = 50; break;
+            case "radiation": world.Radiation[7] = 100; break;
             case "erase weapon": moving.EraseWeapon = 0; break;
             case "erase points": moving.ErasePoints = 8; break;
             case "occupant":
@@ -238,6 +246,8 @@ public sealed class StateHasherTests
         "<SightCell>k__BackingField", "<SightRadius>k__BackingField",
         // The temporal beam that holds it (stage 3a).
         "<ErasedBy>k__BackingField", "<EraseWeapon>k__BackingField", "<ErasePoints>k__BackingField",
+        // The bomb planted on it (stage 3b).
+        "<BombTicks>k__BackingField", "<BombWeapon>k__BackingField", "<BombShooter>k__BackingField", "<BombOwner>k__BackingField",
     })]
     [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[] { "_counts", "_explored", "_veils", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(Unit), new[]
@@ -250,6 +260,7 @@ public sealed class StateHasherTests
         "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField", "<Hp>k__BackingField",
         "<Target>k__BackingField", "<Weapons>k__BackingField", "<Stance>k__BackingField", "<Anchor>k__BackingField",
         "<TargetOrder>k__BackingField", "<TargetPoint>k__BackingField", "<Engaged>k__BackingField", "<ChaseCell>k__BackingField", "<EnterTarget>k__BackingField",
+        "<Deployed>k__BackingField", "<WarpTicks>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {
@@ -265,6 +276,10 @@ public sealed class StateHasherTests
     {
         "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField", "_vision",
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
+        // The toxin on the ground (stage 3b).
+        "<Radiation>k__BackingField",
+        // The death weapons of a tick, launched in the same tick (stage 3b): never state.
+        "<DeathBlasts>k__BackingField",
         // Derived from unit positions and rebuilt from them; not hashed (docs/implementation/M2_unit_control.md, 4.9).
         "<Spatial>k__BackingField",
         // The hits of a tick, emptied in the same tick (M4 step 5): never state.
@@ -299,7 +314,7 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(PlayerState), new[]
     {
-        "<Credits>k__BackingField", "_queues", "<LastUnderAttack>k__BackingField", "<DefeatedTick>k__BackingField",
+        "<Credits>k__BackingField", "_queues", "<LastUnderAttack>k__BackingField", "<DefeatedTick>k__BackingField", "<BlackoutUntil>k__BackingField",
         "<Modifiers>k__BackingField", "<IncomeCarry>k__BackingField",
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField",

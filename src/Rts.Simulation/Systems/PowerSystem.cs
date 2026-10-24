@@ -15,6 +15,12 @@ public static class PowerSystem
 {
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
+        // A blackout (stage 3b) ends on its tick: the power comes back then.
+        foreach (var player in world.Players)
+        {
+            world.PowerDirty |= player.BlackoutUntil > 0 && player.BlackoutUntil == world.CurrentTick;
+        }
+
         if (!world.PowerDirty)
         {
             return;
@@ -37,6 +43,12 @@ public static class PowerSystem
                         drain += def.Power < 0 ? -def.Power : 0;
                     }
                 }
+            }
+
+            // An infiltrator in a power plant (stage 3b): no power at all until the blackout ends.
+            if (world.CurrentTick < player.BlackoutUntil)
+            {
+                output = 0;
             }
 
             player.PowerOutput = output;
