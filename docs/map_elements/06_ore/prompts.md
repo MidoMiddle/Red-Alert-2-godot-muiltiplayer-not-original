@@ -22,7 +22,7 @@
 Вставить промт в ChatGPT как есть. Результат сохранить в `assets_src/concepts/ore/`.
 
 ```text
-Concept art reference for a resource field in winter: a cluster of golden-yellow ore crystals growing out of snow, a few blue gemstone crystals nearby, and one steel drilling tower with a rotating drill head as a resource source, with a few golden nuggets thrown up around its base. Three-quarter view from 45 degrees, looking down at about 30 degrees. Realistic materials, square image, no people, no text.
+Concept art reference for a resource field in winter: a cluster of golden-yellow ore nuggets and pebbles lying on snow, a few blue gemstone crystals nearby, and one steel drilling tower with a rotating drill head as a resource source, with a few golden nuggets thrown up around its base. Three-quarter view from 45 degrees, looking down at about 30 degrees. Realistic materials, square image, no people, no text.
 ```
 
 ## 3. Модели (Meshy и Tripo)
@@ -32,7 +32,7 @@ Concept art reference for a resource field in winter: a cluster of golden-yellow
 ### 3.1. `ore_cluster`
 
 ```text
-A cluster of golden-yellow ore crystals growing out of a small patch of snowy ground, sharp faceted crystals of different sizes, semi-glossy amber surface, a little dark soil at the base. Realistic physically based materials, clean readable silhouette, game-ready asset, cold winter setting, single isolated object on a plain light grey background.
+A cluster of golden-yellow ore nuggets and pebbles lying on a small patch of snowy ground, rounded lumpy stones of different sizes, semi-glossy gold surface with thin gold veins, a little dark soil at the base. Realistic physically based materials, clean readable silhouette, game-ready asset, cold winter setting, single isolated object on a plain light grey background.
 ```
 
 Нормализация: `--kind prop --footprint 1x1`.

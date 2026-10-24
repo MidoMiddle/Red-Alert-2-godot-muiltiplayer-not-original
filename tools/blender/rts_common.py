@@ -78,11 +78,14 @@ def node_names(objs, names):
 
 
 def select_only(obj):
+    """Selects one object, or a list of objects, and makes the first one active."""
+    objs = list(obj) if isinstance(obj, (list, tuple)) else [obj]
     if bpy.context.object is not None and bpy.context.object.mode != 'OBJECT':
         bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
-    obj.select_set(True)
-    bpy.context.view_layer.objects.active = obj
+    for item in objs:
+        item.select_set(True)
+    bpy.context.view_layer.objects.active = objs[0]
 
 
 def uv_smart(obj):
@@ -244,10 +247,11 @@ def new_image(name, size, srgb):
 
 @contextlib.contextmanager
 def only_for_bake(obj):
-    """Hides the other meshes from rendering while obj bakes, so AO sees nothing else in the scene."""
+    """Hides the other meshes from rendering while obj (or a list) bakes, so AO sees nothing else."""
+    keep = list(obj) if isinstance(obj, (list, tuple)) else [obj]
     hidden = []
     for other in bpy.data.objects:
-        if other is not obj and other.type == 'MESH' and not other.hide_render:
+        if other not in keep and other.type == 'MESH' and not other.hide_render:
             other.hide_render = True
             hidden.append(other)
     try:
