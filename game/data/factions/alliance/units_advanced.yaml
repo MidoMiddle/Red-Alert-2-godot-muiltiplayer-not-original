@@ -1,0 +1,306 @@
+# The late units of the Alliance (docs/ra2_units/yaml_drafts/alliance, docs/content/names.md): working names of our own, numbers of the
+# drafts, prerequisites turned to the Alliance's buildings. Unarmed for now (ability_later); ships and aircraft cannot be built yet
+# (available_later), as the Union's. The commando of the sea is left out: RA2 never builds it in a skirmish.
+
+alliance_engineer:  # captures and repairs buildings
+  kind: unit
+  inherits: base_infantry
+  name: Field Engineer
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 75
+  threat: 5
+  speed: 24
+  sight: 4
+  prerequisites: [alliance_barracks]
+  ability_later: true
+
+alliance_attack_dog:  # attack dog
+  kind: unit
+  inherits: base_infantry
+  name: Guard Dog
+  faction: alliance
+  cost: 200
+  build_time: 8.4s
+  hp: 100
+  threat: 10
+  speed: 48
+  sight: 9
+  prerequisites: [alliance_barracks]
+  ability_later: true
+
+alliance_rocketeer:  # flies over the field (M11b)
+  kind: unit
+  inherits: base_infantry
+  name: Jetpack Trooper
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 125
+  threat: 15
+  speed: 54
+  sight: 8
+  prerequisites: [alliance_barracks, alliance_air_force_command]
+  ability_later: true
+
+alliance_spy:  # disguises and enters enemy buildings
+  kind: unit
+  inherits: base_infantry
+  name: Infiltrator
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 100
+  threat: 5
+  armor: flak
+  speed: 24
+  sight: 9
+  prerequisites: [alliance_barracks, alliance_battle_lab]
+  ability_later: true
+
+alliance_chrono_legionnaire:  # erases targets from time
+  kind: unit
+  inherits: base_infantry
+  name: Time Trooper
+  faction: alliance
+  cost: 1500
+  build_time: 63s
+  hp: 125
+  threat: 30
+  speed: 30
+  sight: 8
+  prerequisites: [alliance_barracks, alliance_battle_lab]
+  ability_later: true
+
+alliance_tanya:  # hero: kills infantry, bombs buildings
+  kind: unit
+  inherits: base_infantry
+  name: Elite Commando
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 125
+  threat: 30
+  armor: flak
+  speed: 30
+  sight: 8
+  prerequisites: [alliance_barracks, alliance_battle_lab]
+  ability_later: true
+
+alliance_sniper:  # long-range anti-infantry
+  kind: unit
+  inherits: base_infantry
+  name: Marksman
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 125
+  threat: 15
+  speed: 24
+  sight: 8
+  prerequisites: [alliance_barracks, alliance_air_force_command]
+  ability_later: true
+
+alliance_ifv:  # weapon by its passenger
+  kind: unit
+  inherits: base_vehicle
+  name: Infantry Fighting Vehicle
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 200
+  threat: 15
+  armor: light
+  speed: 60
+  sight: 8
+  prerequisites: [alliance_war_factory]
+  ability_later: true
+
+alliance_prism_tank:  # splitting beam
+  kind: unit
+  inherits: base_vehicle
+  name: Beam Tank
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 150
+  threat: 35
+  armor: light
+  speed: 24
+  sight: 8
+  prerequisites: [alliance_war_factory, alliance_battle_lab]
+  ability_later: true
+
+alliance_mirage_tank:  # disguised as a tree
+  kind: unit
+  inherits: base_vehicle
+  name: Holo Tank
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 200
+  threat: 30
+  armor: light
+  speed: 42
+  sight: 9
+  turret: false
+  prerequisites: [alliance_war_factory, alliance_battle_lab]
+  ability_later: true
+
+alliance_tank_destroyer:  # anti-tank gun
+  kind: unit
+  inherits: base_vehicle
+  name: Tank Hunter
+  faction: alliance
+  cost: 900
+  build_time: 37.8s
+  hp: 400
+  threat: 30
+  speed: 30
+  sight: 8
+  turret: false
+  prerequisites: [alliance_war_factory, alliance_air_force_command]
+  ability_later: true
+
+alliance_nighthawk:  # carries infantry
+  kind: unit
+  inherits: base_vehicle
+  name: Transport Helicopter
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 175
+  threat: 10
+  armor: light
+  speed: 84
+  sight: 7
+  turret: false
+  locomotor: hover
+  prerequisites: [alliance_air_force_command]
+  available_later: true
+  ability_later: true
+
+alliance_harrier:  # strikes and returns to rearm
+  kind: unit
+  inherits: base_vehicle
+  name: Strike Jet
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 150
+  threat: 25
+  armor: light
+  speed: 84
+  sight: 8
+  turret: false
+  locomotor: hover
+  prerequisites: [alliance_air_force_command]
+  available_later: true
+  ability_later: true
+
+alliance_black_eagle:  # heavier strike jet
+  kind: unit
+  inherits: base_vehicle
+  name: Heavy Strike Jet
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 200
+  threat: 30
+  armor: light
+  speed: 84
+  sight: 8
+  turret: false
+  locomotor: hover
+  prerequisites: [alliance_air_force_command]
+  available_later: true
+  ability_later: true
+
+alliance_amphibious_transport:  # carries units over water
+  kind: unit
+  inherits: base_vehicle
+  name: Landing Craft
+  faction: alliance
+  cost: 900
+  build_time: 37.8s
+  hp: 300
+  threat: 5
+  armor: light
+  speed: 36
+  sight: 6
+  turret: false
+  locomotor: amphibious
+  prerequisites: [alliance_naval_shipyard]
+  available_later: true
+  ability_later: true
+
+alliance_dolphin:  # sonic attack
+  kind: unit
+  inherits: base_vehicle
+  name: Sonar Dolphin
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 200
+  threat: 15
+  armor: light
+  speed: 48
+  sight: 4
+  turret: false
+  locomotor: naval
+  prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
+  available_later: true
+  ability_later: true
+
+alliance_destroyer:  # guns and anti-sub
+  kind: unit
+  inherits: base_vehicle
+  name: Destroyer
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  threat: 30
+  speed: 36
+  sight: 7
+  turret: false
+  locomotor: naval
+  prerequisites: [alliance_naval_shipyard]
+  available_later: true
+  ability_later: true
+
+alliance_aegis_cruiser:  # anti-air missiles
+  kind: unit
+  inherits: base_vehicle
+  name: Air Defense Cruiser
+  faction: alliance
+  cost: 1200
+  build_time: 50.4s
+  hp: 800
+  threat: 20
+  armor: light
+  speed: 24
+  sight: 8
+  turret: false
+  locomotor: naval
+  prerequisites: [alliance_naval_shipyard, alliance_air_force_command]
+  available_later: true
+  ability_later: true
+
+alliance_aircraft_carrier:  # launches its own jets
+  kind: unit
+  inherits: base_vehicle
+  name: Aircraft Carrier
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 800
+  threat: 45
+  speed: 24
+  sight: 7
+  turret: false
+  locomotor: naval
+  prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
+  available_later: true
+  ability_later: true

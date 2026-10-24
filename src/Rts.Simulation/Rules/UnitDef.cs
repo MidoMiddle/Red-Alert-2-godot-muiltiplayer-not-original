@@ -82,4 +82,13 @@ public sealed record UnitDef : IDefinition
 
     /// <summary>Id of the sidebar icon; the simulation does not use it.</summary>
     public string Icon { get; init; } = "";
+
+    /// <summary>
+    /// The unit cannot be built yet: it needs a mechanic that comes later — ships a shipyard on the water, aircraft flight (the second
+    /// stage of filling the game). It is in the data and the sidebar, never in the tech tree.
+    /// </summary>
+    public bool AvailableLater { get; init; }
+
+    /// <summary>Its weapon or ability comes later (the third stage): it is built and moves, the sidebar says the rest is to come.</summary>
+    public bool AbilityLater { get; init; }
 }

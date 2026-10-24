@@ -42,7 +42,8 @@ public static class TechTree
             var faction = player.Faction.Id;
             for (var i = 0; i < units.Length; i++)
             {
-                units[i] = rules.Units[i].Faction == faction && AllOwned(rules.Units[i].Prerequisites, owned);
+                // A unit available later (ships, aircraft) waits for its mechanic: never in the tree.
+                units[i] = rules.Units[i].Faction == faction && !rules.Units[i].AvailableLater && AllOwned(rules.Units[i].Prerequisites, owned);
             }
 
             for (var i = 0; i < buildings.Length; i++)

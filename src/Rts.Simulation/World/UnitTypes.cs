@@ -12,13 +12,28 @@ public static class UnitTypes
     // In UnitType order.
     private static readonly string[] Ids =
         ["conscript", "rocketeer", "engineer", "mcv", "harvester", "support_vehicle", "heavy_tank", "tesla_tank",
-         "alliance_mcv", "alliance_harvester", "alliance_rifleman", "alliance_light_tank"];
+         "alliance_mcv", "alliance_harvester", "alliance_rifleman", "alliance_light_tank",
+         "attack_dog", "tesla_trooper", "crazy_ivan", "terrorist", "desolator", "rocket_artillery", "apocalypse_tank",
+         "terror_drone", "demolition_truck", "kirov_airship", "hover_transport", "typhoon_sub", "sea_scorpion",
+         "giant_squid", "dreadnought", "alliance_engineer", "alliance_attack_dog", "alliance_rocketeer", "alliance_spy",
+         "alliance_chrono_legionnaire", "alliance_tanya", "alliance_sniper", "alliance_ifv", "alliance_prism_tank",
+         "alliance_mirage_tank", "alliance_tank_destroyer", "alliance_nighthawk", "alliance_harrier",
+         "alliance_black_eagle", "alliance_amphibious_transport", "alliance_dolphin", "alliance_destroyer",
+         "alliance_aegis_cruiser", "alliance_aircraft_carrier"];
 
     private static readonly UnitType[] Types =
     [
         UnitType.Conscript, UnitType.Rocketeer, UnitType.Engineer, UnitType.Mcv, UnitType.Harvester, UnitType.SupportVehicle,
         UnitType.HeavyTank, UnitType.TeslaTank, UnitType.AllianceMcv, UnitType.AllianceHarvester, UnitType.AllianceRifleman,
         UnitType.AllianceLightTank,
+        UnitType.AttackDog, UnitType.TeslaTrooper, UnitType.CrazyIvan, UnitType.Terrorist, UnitType.Desolator,
+        UnitType.RocketArtillery, UnitType.ApocalypseTank, UnitType.TerrorDrone, UnitType.DemolitionTruck, UnitType.KirovAirship,
+        UnitType.HoverTransport, UnitType.TyphoonSub, UnitType.SeaScorpion, UnitType.GiantSquid, UnitType.Dreadnought,
+        UnitType.AllianceEngineer, UnitType.AllianceAttackDog, UnitType.AllianceRocketeer, UnitType.AllianceSpy,
+        UnitType.AllianceChronoLegionnaire, UnitType.AllianceTanya, UnitType.AllianceSniper, UnitType.AllianceIfv,
+        UnitType.AlliancePrismTank, UnitType.AllianceMirageTank, UnitType.AllianceTankDestroyer, UnitType.AllianceNighthawk,
+        UnitType.AllianceHarrier, UnitType.AllianceBlackEagle, UnitType.AllianceAmphibiousTransport, UnitType.AllianceDolphin,
+        UnitType.AllianceDestroyer, UnitType.AllianceAegisCruiser, UnitType.AllianceAircraftCarrier,
     ];
 
     /// <summary>Every unit type, in <see cref="UnitType"/> order.</summary>

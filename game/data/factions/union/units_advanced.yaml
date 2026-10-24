@@ -1,0 +1,243 @@
+# The late units of the Union (docs/ra2_units/yaml_drafts/union, docs/content/names.md): working names of our own, numbers of the
+# drafts. Unarmed for now — their weapons and abilities come with the third stage of filling the game (ability_later). Ships and the
+# airship cannot be built yet (available_later): they wait for the shipyard on the water and for flight, the second stage; the airship
+# and the hovercraft stand on the hover locomotor until then. Units of a single country in RA2 are the whole faction's for now.
+
+attack_dog:  # attack dog: bites infantry, M11 weapon
+  kind: unit
+  inherits: base_infantry
+  name: War Hound
+  faction: union
+  cost: 200
+  build_time: 8.4s
+  hp: 100
+  threat: 10
+  speed: 48
+  sight: 9
+  prerequisites: [barracks]
+  ability_later: true
+
+tesla_trooper:  # electric infantry
+  kind: unit
+  inherits: base_infantry
+  name: Shock Infantry
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 130
+  threat: 20
+  armor: plate
+  speed: 24
+  sight: 6
+  prerequisites: [barracks]
+  ability_later: true
+
+crazy_ivan:  # plants bombs
+  kind: unit
+  inherits: base_infantry
+  name: Bomb Specialist
+  faction: union
+  cost: 600
+  build_time: 25.2s
+  hp: 125
+  threat: 15
+  speed: 24
+  sight: 6
+  prerequisites: [barracks, radar]
+  ability_later: true
+
+terrorist:  # blows up with its target
+  kind: unit
+  inherits: base_infantry
+  name: Demolition Trooper
+  faction: union
+  cost: 200
+  build_time: 8.4s
+  hp: 75
+  threat: 15
+  armor: flak
+  speed: 36
+  sight: 9
+  prerequisites: [barracks, radar]
+  ability_later: true
+
+desolator:  # poisons the ground
+  kind: unit
+  inherits: base_infantry
+  name: Toxin Trooper
+  faction: union
+  cost: 600
+  build_time: 25.2s
+  hp: 150
+  threat: 25
+  armor: plate
+  speed: 24
+  sight: 6
+  prerequisites: [barracks, tech_center]
+  ability_later: true
+
+rocket_artillery:  # long-range rocket (the draft listed it as desolator)
+  kind: unit
+  inherits: base_vehicle
+  name: Rocket Artillery
+  faction: union
+  cost: 800
+  build_time: 33.6s
+  hp: 150
+  threat: 25
+  armor: light
+  speed: 24
+  sight: 7
+  turret: false
+  prerequisites: [war_factory, radar]
+  ability_later: true
+
+apocalypse_tank:  # twin cannons and missiles
+  kind: unit
+  inherits: base_vehicle
+  name: Super Heavy Tank
+  faction: union
+  cost: 1750
+  build_time: 73.5s
+  hp: 800
+  threat: 50
+  speed: 24
+  sight: 6
+  prerequisites: [war_factory, tech_center]
+  ability_later: true
+
+terror_drone:  # climbs into vehicles
+  kind: unit
+  inherits: base_vehicle
+  name: Combat Drone
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 100
+  threat: 15
+  armor: light
+  speed: 60
+  sight: 4
+  turret: false
+  prerequisites: [war_factory]
+  ability_later: true
+
+demolition_truck:  # drives into the target and blows up
+  kind: unit
+  inherits: base_vehicle
+  name: Demolition Truck
+  faction: union
+  cost: 1500
+  build_time: 63s
+  hp: 150
+  threat: 20
+  armor: light
+  speed: 30
+  sight: 5
+  turret: false
+  prerequisites: [war_factory, radar]
+  ability_later: true
+
+kirov_airship:  # bomber airship
+  kind: unit
+  inherits: base_vehicle
+  name: Heavy Airship
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 2000
+  threat: 50
+  armor: light
+  speed: 30
+  sight: 8
+  turret: false
+  locomotor: hover
+  prerequisites: [war_factory, tech_center]
+  available_later: true
+  ability_later: true
+
+hover_transport:  # carries units over water
+  kind: unit
+  inherits: base_vehicle
+  name: Hovercraft
+  faction: union
+  cost: 900
+  build_time: 37.8s
+  hp: 300
+  threat: 5
+  speed: 36
+  sight: 6
+  turret: false
+  locomotor: hover
+  prerequisites: [naval_shipyard]
+  available_later: true
+  ability_later: true
+
+typhoon_sub:  # torpedoes ships
+  kind: unit
+  inherits: base_vehicle
+  name: Attack Submarine
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  threat: 30
+  speed: 24
+  sight: 4
+  turret: false
+  locomotor: naval
+  prerequisites: [naval_shipyard]
+  available_later: true
+  ability_later: true
+
+sea_scorpion:  # anti-air boat
+  kind: unit
+  inherits: base_vehicle
+  name: Anti-Air Hydrofoil
+  faction: union
+  cost: 600
+  build_time: 25.2s
+  hp: 400
+  threat: 15
+  speed: 48
+  sight: 8
+  turret: false
+  locomotor: naval
+  prerequisites: [naval_shipyard, radar]
+  available_later: true
+  ability_later: true
+
+giant_squid:  # grabs ships
+  kind: unit
+  inherits: base_vehicle
+  name: Trained Squid
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 200
+  threat: 20
+  armor: light
+  speed: 48
+  sight: 5
+  turret: false
+  locomotor: naval
+  prerequisites: [naval_shipyard, tech_center]
+  available_later: true
+  ability_later: true
+
+dreadnought:  # long-range missiles
+  kind: unit
+  inherits: base_vehicle
+  name: Missile Battleship
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 800
+  threat: 45
+  speed: 24
+  sight: 7
+  turret: false
+  locomotor: naval
+  prerequisites: [naval_shipyard, tech_center]
+  available_later: true
+  ability_later: true

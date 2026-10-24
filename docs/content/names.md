@@ -64,3 +64,52 @@
 | alliance_light_tank | Light Tank | основной танк | Grizzly Battle Tank |
 
 **Оружие Альянса:** Assault Rifle, 105mm Cannon, Heavy Machine Gun, Lens Beam, Siege Shell, Sky Guard Missile.
+
+
+## Поздние юниты (этап 1 наполнения, 2026-10-24)
+
+Все юниты черновиков `docs/ra2_units/yaml_drafts` — у всей фракции, включая юнитов отдельных стран RA2 (раздел по странам — M11). Оружие и способности — этап 3 (`ability_later`); корабли и авиация строятся с этапа 2, когда появятся верфь на воде и полёт (`available_later`). Navy SEAL не взят: в скирмише RA2 его не строят. Черновик `desolator` описывал ракетную установку — она внесена как `rocket_artillery`, а `desolator` — пехотинец.
+
+### Союз
+
+| id | Имя | Роль | Аналог RA2 | Сейчас |
+|---|---|---|---|---|
+| attack_dog | War Hound | attack dog: bites infantry, M11 weapon | Attack Dog | строится, без оружия — этап 3 |
+| tesla_trooper | Shock Infantry | electric infantry | Shock Trooper | строится, без оружия — этап 3 |
+| crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | строится, без оружия — этап 3 |
+| terrorist | Demolition Trooper | blows up with its target | Terrorist | строится, без оружия — этап 3 |
+| desolator | Toxin Trooper | poisons the ground | Desolator | строится, без оружия — этап 3 |
+| rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | строится, без оружия — этап 3 |
+| apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | строится, без оружия — этап 3 |
+| terror_drone | Combat Drone | climbs into vehicles | Terror Drone | строится, без оружия — этап 3 |
+| demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | строится, без оружия — этап 3 |
+| kirov_airship | Heavy Airship | bomber airship | Kirov Airship | в сайдбаре, строится с этапа 2 (полёт) |
+| hover_transport | Hovercraft | carries units over water | Hover Transport | в сайдбаре, строится с этапа 2 (флот) |
+| typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | в сайдбаре, строится с этапа 2 (флот) |
+| sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | в сайдбаре, строится с этапа 2 (флот) |
+| giant_squid | Trained Squid | grabs ships | Giant Squid | в сайдбаре, строится с этапа 2 (флот) |
+| dreadnought | Missile Battleship | long-range missiles | Dreadnought | в сайдбаре, строится с этапа 2 (флот) |
+
+### Альянс
+
+| id | Имя | Роль | Аналог RA2 | Сейчас |
+|---|---|---|---|---|
+| alliance_engineer | Field Engineer | captures and repairs buildings | Engineer | строится, без оружия — этап 3 |
+| alliance_attack_dog | Guard Dog | attack dog | Attack Dog | строится, без оружия — этап 3 |
+| alliance_rocketeer | Jetpack Trooper | flies over the field (M11b) | Rocketeer | строится, без оружия — этап 3 |
+| alliance_spy | Infiltrator | disguises and enters enemy buildings | Spy | строится, без оружия — этап 3 |
+| alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | строится, без оружия — этап 3 |
+| alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | строится, без оружия — этап 3 |
+| alliance_sniper | Marksman | long-range anti-infantry | Sniper | строится, без оружия — этап 3 |
+| alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | строится, без оружия — этап 3 |
+| alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | строится, без оружия — этап 3 |
+| alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | строится, без оружия — этап 3 |
+| alliance_tank_destroyer | Tank Hunter | anti-tank gun | Tank Destroyer | строится, без оружия — этап 3 |
+| alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | в сайдбаре, строится с этапа 2 (полёт) |
+| alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | в сайдбаре, строится с этапа 2 (полёт) |
+| alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | в сайдбаре, строится с этапа 2 (полёт) |
+| alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | в сайдбаре, строится с этапа 2 (флот) |
+| alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | в сайдбаре, строится с этапа 2 (флот) |
+| alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | в сайдбаре, строится с этапа 2 (флот) |
+| alliance_aegis_cruiser | Air Defense Cruiser | anti-air missiles | Aegis Cruiser | в сайдбаре, строится с этапа 2 (флот) |
+| alliance_aircraft_carrier | Aircraft Carrier | launches its own jets | Aircraft Carrier | в сайдбаре, строится с этапа 2 (флот) |

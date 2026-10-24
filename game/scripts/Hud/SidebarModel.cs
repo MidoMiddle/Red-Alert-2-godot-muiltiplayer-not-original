@@ -45,8 +45,11 @@ public sealed record Cameo(
     int Count,
     string Missing)
 {
-    /// <summary>A building whose own ability comes later (M11): the tooltip says so.</summary>
+    /// <summary>A building whose own ability, or a unit whose weapon, comes later: the tooltip says so.</summary>
     public bool AbilityLater { get; init; }
+
+    /// <summary>A unit that cannot be built until its mechanic comes (ships, aircraft): the tooltip says so instead of what is missing.</summary>
+    public bool AvailableLater { get; init; }
 }
 
 /// <summary>What a click on a square asks for.</summary>
@@ -171,8 +174,9 @@ public static class SidebarModel
             }
         }
 
-        var missing = available ? "" : Missing(rules, prerequisites, owned);
-        var later = kind == ProductionKind.Building && rules.Buildings[index].AbilityLater;
+        var availableLater = kind == ProductionKind.Unit && rules.Units[index].AvailableLater;
+        var missing = available || availableLater ? "" : Missing(rules, prerequisites, owned);
+        var later = kind == ProductionKind.Building ? rules.Buildings[index].AbilityLater : rules.Units[index].AbilityLater;
         if (first is not null)
         {
             var progress = Math.Clamp(first.Progress / (float)ProductionRules.TotalProgress(rules, kind, index), 0f, 1f);
@@ -180,12 +184,12 @@ public static class SidebarModel
                 : first.Paused ? CameoState.OnHold
                 : first.WaitingForFunds ? CameoState.WaitingForFunds
                 : CameoState.Building;
-            return new Cameo(kind, index, name, cost, state, first.Ready ? 1f : progress, count, missing) { AbilityLater = later };
+            return new Cameo(kind, index, name, cost, state, first.Ready ? 1f : progress, count, missing) { AbilityLater = later, AvailableLater = availableLater };
         }
 
         var full = kind == ProductionKind.Building ? queue.Count > 0 : queue.Count >= ProductionRules.MaxUnitQueue;
         var free = !available ? CameoState.Unavailable : full ? CameoState.Busy : CameoState.Available;
-        return new Cameo(kind, index, name, cost, free, 0f, 0, missing) { AbilityLater = later };
+        return new Cameo(kind, index, name, cost, free, 0f, 0, missing) { AbilityLater = later, AvailableLater = availableLater };
     }
 
     private static string Missing(RulesDatabase rules, ImmutableArray<string> prerequisites, HashSet<string> owned)

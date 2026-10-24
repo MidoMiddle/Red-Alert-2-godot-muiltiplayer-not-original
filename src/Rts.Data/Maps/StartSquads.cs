@@ -26,9 +26,11 @@ public static class StartSquads
             var types = new List<UnitType>();
             if (start.Slot == 1)
             {
-                // Every unit of the faction a player plays by default: the Union's eight of M2 (the Alliance's are its own).
+                // Every finished unit of the faction a player plays by default — the Union's eight of M2: not the Alliance's, nor those
+                // whose weapon or mechanic comes later.
                 var faction = rules.DefaultFaction.Id;
-                types.AddRange(UnitTypes.All.Where(type => rules.Database.TryGetUnit(UnitTypes.IdOf(type), out var unit) && unit.Faction == faction));
+                types.AddRange(UnitTypes.All.Where(type => rules.Database.TryGetUnit(UnitTypes.IdOf(type), out var unit)
+                    && unit.Faction == faction && !unit.AvailableLater && !unit.AbilityLater));
             }
             else
             {

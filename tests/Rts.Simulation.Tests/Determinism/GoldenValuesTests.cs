@@ -301,6 +301,7 @@ public sealed class GoldenValuesTests
         // checksums do not.
         // Rules v42 (the Alliance: its unit types, the starting infantry of a faction): only the version changes — the scenario keeps to
         // the eight unit types of M2.
-        Assert.Equal((22269, 16663876548549112683UL), (bytes.Length, hash.Value));
+        // Rules v43 (every unit of both factions; ships and aircraft available later): only the version changes.
+        Assert.Equal((22269, 12383688308310531928UL), (bytes.Length, hash.Value));
     }
 }

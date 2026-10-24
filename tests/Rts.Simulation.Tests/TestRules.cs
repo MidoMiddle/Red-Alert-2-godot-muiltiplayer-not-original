@@ -195,6 +195,18 @@ internal static class TestRules
             Faction = "alliance",
             Threat = 25,
         });
+
+        // The late units of both factions (their numbers are the game's): a plain unarmed tank each, as the engine needs every type.
+        foreach (var type in UnitTypes.All.Where(type => type > UnitType.AllianceLightTank))
+        {
+            var id = UnitTypes.IdOf(type);
+            builder.Add(VehicleDef(type, Locomotor.Track, speed: 24, turret: false, sight: 6) with
+            {
+                Faction = id.StartsWith("alliance_", System.StringComparison.Ordinal) ? "alliance" : "union",
+                Prerequisites = [],
+                AvailableLater = true,
+            });
+        }
         Combat(builder);
 
         // The buildings of docs/implementation/M3_base_economy.md, 4.6: id, footprint, power, prerequisites.

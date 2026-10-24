@@ -39,7 +39,8 @@ public sealed class M3GoldenValuesTests
         // grow back while the harvester works them: 650 more credits by minute 5.
         // The Alliance, rules v42: the same run and the same credits; the checksum changes, as the numbers of the buildings and units in
         // the data do — those of the Alliance sort before the Union's.
-        Assert.Equal((6972, 0x722fbfdee8420508UL), (fifth.Credits, fifth.Checksum));
+        // Every unit of both factions, rules v43: the same credits again; the numbers of the units in the data move once more.
+        Assert.Equal((6972, 0xa13321d36a50995cUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

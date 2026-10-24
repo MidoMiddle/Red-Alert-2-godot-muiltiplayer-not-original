@@ -82,6 +82,7 @@ public static class DataHasher
             hash.Add((byte)unit.Stance);
             hash.Add(unit.Crusher);
             hash.Add(unit.Crushable);
+            hash.Add(unit.AvailableLater);
         }
 
         hash.Add(rules.Buildings.Length);

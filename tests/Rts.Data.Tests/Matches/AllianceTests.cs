@@ -127,6 +127,41 @@ public sealed class AllianceTests
     }
 
     [Fact]
+    public void The_late_units_open_by_their_buildings_and_ships_and_aircraft_never_yet()
+    {
+        // The first stage of filling the game: every unit is in; ships and aircraft wait for their mechanic (available_later).
+        var world = Match().World;
+        Build(world, Union, "construction_yard", 48, 48);
+        Build(world, Union, "reactor", 52, 48);
+        Build(world, Union, "barracks", 56, 48);
+        Assert.True(CanBuild(world, Union, "attack_dog"));
+        Assert.False(CanBuild(world, Union, "apocalypse_tank"));
+
+        Build(world, Union, "refinery", 48, 52);
+        Build(world, Union, "war_factory", 52, 52);
+        Build(world, Union, "radar", 56, 52);
+        Build(world, Union, "tech_center", 44, 52);
+        Build(world, Union, "naval_shipyard", 40, 44);
+        Assert.True(CanBuild(world, Union, "apocalypse_tank"));
+        Assert.True(CanBuild(world, Union, "desolator"));
+        Assert.False(CanBuild(world, Union, "kirov_airship"));
+        Assert.False(CanBuild(world, Union, "dreadnought"));
+        Assert.False(CanBuild(world, Union, "alliance_sniper"));
+
+        Build(world, Allied, "alliance_construction_yard", 10, 10);
+        Build(world, Allied, "alliance_power_plant", 14, 10);
+        Build(world, Allied, "alliance_barracks", 17, 10);
+        Build(world, Allied, "alliance_ore_refinery", 10, 14);
+        Build(world, Allied, "alliance_air_force_command", 18, 14);
+        Assert.True(CanBuild(world, Allied, "alliance_sniper"));
+        Assert.False(CanBuild(world, Allied, "alliance_harrier"));
+
+        var units = world.Rules.Database.Units;
+        Assert.All(units.Where(unit => unit.AvailableLater), unit => Assert.True(unit.AbilityLater, unit.Id));
+        Assert.Equal(14, units.Count(unit => unit.AvailableLater));
+    }
+
+    [Fact]
     public void In_the_short_game_the_alliance_mcv_keeps_its_player_in()
     {
         var simulation = new GameSimulation(
