@@ -17,6 +17,12 @@
 - `water/water_height.png`: карта высот воды (рябь), серая.
 - `water/water_normal.png`: карта нормалей, посчитана из `water_height.png`, формат OpenGL (Y вверх).
 
+## Что в игре сейчас (2026-10-24)
+
+В `game/assets/textures/terrain/` земля зимы теперь из текстур Poly Haven (CC0): `snow_powder`, `asphalt_snow`, `dirt_snow`, `sparse_grass`, `coast_sand`, `rock_ground`. Какой материал климата чем рисуется — в `game/data/climates/winter/look.yaml`, источники и авторы — в [реестре ассетов](../../docs/assets_registry.md). Скачать и перевести их заново: `polyhaven/fetch.sh <папка загрузки> game/assets/textures/terrain`.
+
+Из заглушек в игре остались `frozen_water.png` (лёд и вода) и `water_normal.png`. Заглушки земли (`snow_clean`, `frozen_grass`, `beach_gravel`, `rock_field`, `mud`) лежат здесь как исходники и в игру не идут.
+
 ## Как заменить заглушку настоящей текстурой
 
 1. Сгенерировать текстуру по промту из соответствующего файла. Сохранить как PNG 1024×1024 с тем же именем.

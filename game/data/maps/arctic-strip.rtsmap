@@ -1,0 +1,425 @@
+format: rtsmap/1
+id: arctic-strip
+name: "Arctic Strip"
+author: "Map generator"
+description: "Generated from seed 1013: 4 players, Rotate90, Hilly, water Rivers, forest Low, resources Medium."
+size: [64, 64]
+climate: winter
+lighting: day
+players: 4
+starts:
+  - { slot: 1, cell: [13, 13] }
+  - { slot: 2, cell: [50, 13] }
+  - { slot: 3, cell: [50, 50] }
+  - { slot: 4, cell: [13, 50] }
+legend:
+  texture:
+    a: asphalt
+    b: shore
+    d: dirt
+    g: grass
+    i: ice
+    k: rock
+    s: snow
+    w: water
+layers:
+  height: |
+    11111122222222233333322222221110000111111112222222222222222233221
+    21111122222222233333222222221110000111111112222222222222222232211
+    22111122222222222222222222222110000122111122222222222222222222111
+    32211122222222222222222222222210000122222222222222222222222221111
+    33222222222222222222222222222210000122222222222222222222222221111
+    22222222222222222222222222222210000122222222222222222222222221111
+    22222222221111111122221111222210000122222222222111111112222222222
+    22222222211000000112211111222210000122222222221100000011222222222
+    22222222110000000011111111222210000122222222111000000001122222222
+    22222221100000000001111111222210000122222222110000000000112222222
+    22222211000000000000111122222210000122222221100000000000011222222
+    22222210000000000000012222222210000122222221000000000000001222222
+    22222210000000000000012222222210000122222221000000000000001222222
+    22222210000000000000012222222210000122222221000000000000001222222
+    22222210000000000000012222222210000122222221000000000000001222222
+    22222210000000000000012233322210000122222221000000000000001222233
+    22222210000000000000012233333210000122222221000000000000001222233
+    22222211000000000000112233332210000122222221100000000000011222233
+    22222221100000000001122233322210000122222222110000000000112222233
+    22222222110000000011222233222210000122222222211000000001122222233
+    22222222111000000112222233222210000122222222221100000011122222223
+    22222222221111111122222333322210000123222222222111111111112222222
+    11222222222222222222222233333210000123333222222222222211111222222
+    11122222222222222222222333333210000123333323222222222211111222222
+    11122222222222222222223333333210000123333333333333222221111222222
+    11122222222222222222223333333210000123333333333333222221111222222
+    11122222222222222222223333333210000123333333223333222222222222222
+    11222222222222222222233333333210000123333332222332222222222222222
+    11222222222222222222222222222210000123333332222232222222222222211
+    11111111111111111111111111111110000122222222222222222222222222111
+    00000000000000000000000000000000000111111111111111111111111111111
+    00000000000000000000000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000000000000000000000000
+    11111111111111111111111111111100000000000000000000000000000000000
+    11122222222222222222222222222100001111111111111111111111111111111
+    11222222222222223222223333332100001222222222222222222222222222211
+    22222222222222223322223333332100001233333333222222222222222222211
+    22222222222222233332233333332100001233333332222222222222222222111
+    22222211112222233333333333332100001233333332222222222222222222111
+    22222211112222233333333333332100001233333332222222222222222222111
+    22222211111222222222232333332100001233333322222222222222222222111
+    22222211111222222222222233332100001233333222222222222222222222211
+    22222221111111111122222222232100001222333322222111111112222222222
+    32222222111000000112222222222100001222233222221100000011122222222
+    33222222110000000011222222222100001222233222211000000001122222222
+    33222221100000000001122222222100001222333222110000000000112222222
+    33222211000000000000112222222100001223333221100000000000011222222
+    33222210000000000000012222222100001233333221000000000000001222222
+    33222210000000000000012222222100001222333221000000000000001222222
+    22222210000000000000012222222100001222222221000000000000001222222
+    22222210000000000000012222222100001222222221000000000000001222222
+    22222210000000000000012222222100001222222221000000000000001222222
+    22222210000000000000012222222100001222222221000000000000001222222
+    22222211000000000000112222222100001222222111100000000000011222222
+    22222221100000000001122222222100001222211111110000000000112222222
+    22222222110000000011122222222100001222211111111000000001122222222
+    22222222211000000112222222222100001222211111221100000011222222222
+    22222222221111111122222222222100001222211112222111111112222222222
+    11112222222222222222222222222100001222222222222222222222222222222
+    11112222222222222222222222222100001222222222222222222222222222233
+    11112222222222222222222222222100001222222222222222222222222111223
+    11122222222222222222222111122100001122222222222222222222222111122
+    11223222222222222222221111111100001112222222233333222222222111112
+    12233222222222222222221111111100001112222222333333222222222111111
+  land: |
+    ..............................b~~~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    ..............................b~W~b.............................
+    .............=................b~W~b....============.............
+    .............=................b~W~b...=.........................
+    .............=................b~W~b..=..........................
+    .............=................b~W~===...........................
+    .............=................b~W~b.............................
+    .............=................b~W~b.............................
+    .............=................b~W~b.............................
+    .............=................b~W~b.............................
+    .............=................b~W~b.............................
+    .............=................b~W~b.............................
+    .............=................b~W~b.............................
+    .............=................b~W~b.............................
+    ..............=...............b~W~b.............................
+    ...............=..............b~W~b.............................
+    ................=.............b~W~b.............................
+    ................=.............b~W~b.............................
+    bbbbbbbbbbbbbbbb=bbbbbbbbbbbbbb~W~b.............................
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WW~bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb~WW~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .............................b~W~bbbbbbbbbbbbbb=bbbbbbbbbbbbbbbb
+    .............................b~W~b.............=................
+    .............................b~W~b.............=................
+    .............................b~W~b..............=...............
+    .............................b~W~b...............=..............
+    .............................b~W~b................=.............
+    .............................b~W~b................=.............
+    .............................b~W~b................=.............
+    .............................b~W~b................=.............
+    .............................b~W~b................=.............
+    .............................b~W~b................=.............
+    .............................b~W~b................=.............
+    .............................b~W~b................=.............
+    ...........................===~W~b................=.............
+    ..........................=..b~W~b................=.............
+    .........................=...b~W~b................=.............
+    .............============....b~W~b................=.............
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~W~b..............................
+    .............................b~~~b..............................
+  texture: |
+    ggggssssssssssssssssssssssssssbwwwbsssssddddddsssssssssssssssssg
+    sgggssssssssssssssssssssssssssbwwwbsssssddddddssssssssssssssssgg
+    ssggssssssssssssssssssssssssssbwwwbsssssdddssssssssssssssssssggg
+    sssgssssssssssssssssssssssssssbwwwbsssssssssssssssssssssssssgggg
+    ssssgsssssssssssssssssssssssssbwwwbssssssssssssssssssssssssgssss
+    ssssssssssssssssssssssssssssssbwwwbssssssssssssssssdssdddsssssss
+    ssssssssssssssssssssssssssssssbwwwbssssssssssssddddddddddsssssss
+    sssssddsssssssssssssssssssssggbwwwbssssssssssdddddddddddssssssss
+    sssssdddsssssssssssssssssssgggbwwwbsssssssssdddddddddddsssssssss
+    sssssddddssssssssssssssssssgggbwwwbssssssssssdddddddddssssssssss
+    ssssssddddsssssssssssssssssgggbwwwbgsssssssssddddddddsssssssssss
+    ssssssdddddssssssssssssssssssgbwwwbgsssssssssdddddddssssssssssss
+    sssssdddddddsssssssssssssssssgbwwwbggsssssssgddddddsssssssssssss
+    ssssssdddddddaddddssssssssggggbwwwbgggsaaaaaaaaaaaasssssssssssss
+    ssssssdddddddadddddssssssgggggbwwwbgggassssggddddddsssssssssssss
+    ssssssdddddddadddddssssssgggggbwwwbggagsssgggddddddsssssssssssss
+    ssssssdddddddadddddsssssgdggggbwwwaaagggsggggddddddsssssssssssss
+    sssssssddddddaddddsssssssgggggbwwwbggggssgggggdddddsssssssssssss
+    ddsssssddddddadddgsssssssssgggbwwwbggggsssgggssdddssssssssssssss
+    ddssssssdsssgagggggsssssssssssbwwwbgggssssggssssssssssssssssssss
+    ddsssssssssssaggggggssssssssssbwwwbsssssssssssssssssssssssssssss
+    dddssssssssssasgggggssssssssssbwwwbsssssssssssssssssssssssssssss
+    dddssssssssssassggssssssssssssbwwwbsssssssssssssssssssssssssssss
+    dddssssssssssassssssssssssssssbwwwbsssggssssssssssssssssssssssss
+    sssssssssssssassgssssssgssssssbwwwbsssgssssssssgssssssssssssssss
+    ssssssssssssssaggggssssggsssssbwwwbsssssssssssgdggssssssssssssss
+    sssssssssssssggaggggssssssssssbwwwbsssssssssssgggggsssssssssssss
+    ssssssssssssggggagggssssssssssbwwwbssssssssssggggggssgggssssssss
+    ssssssssssggggggagggssssssssssbwwwbssssssssssggggggssggggsssssss
+    bbbbbbbbbbbbbbbbabbbbbbbbbbbbbbwwwbssssssssssggggggggggggsssssss
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    sssssssggggggggggggssssssssssbwwwbbbbbbbbbbbbbbabbbbbbbbbbbbbbbb
+    sssssssggggssggggggssssssssssbwwwbssssssssssgggaggggggssssssssss
+    ssssssssgggssggggggssssssssssbwwwbssssssssssgggaggggssssssssssss
+    sssssssssssssgggggsssssssssssbwwwbssssssssssggggaggsssssssssssss
+    ssssssssssssssggdgsssssssssssbwwwbsssssggssssggggassssssssssssss
+    ssssssssssssssssgssssssssgsssbwwwbssssssgssssssgssasssssssssssss
+    ssssssssssssssssssssssssggsssbwwwbssssssssssssssssassssssssssddd
+    sssssssssssssssssssssssssssssbwwwbssssssssssssggssassssssssssddd
+    sssssssssssssssssssssssssssssbwwwbssssssssssgggggsassssssssssddd
+    sssssssssssssssssssssssssssssbwwwbssssssssssggggggasssssssssssdd
+    ssssssssssssssssssssggssssgggbwwwbsssssssssssgggggagsssdssssssdd
+    ssssssssssssssdddssgggsssggggbwwwbgggsssssssssgdddaddddddsssssdd
+    sssssssssssssdddddgggggssggggbwwwbgggggsssssssddddaddddddsssssss
+    sssssssssssssddddddggggsgggaaawwwbggggdgsssssdddddadddddddssssss
+    sssssssssssssddddddgggsssgaggbwwwbgggggssssssdddddadddddddssssss
+    sssssssssssssddddddggssssagggbwwwbgggggssssssdddddadddddddssssss
+    sssssssssssssaaaaaaaaaaaasgggbwwwbggggssssssssddddadddddddssssss
+    sssssssssssssddddddgsssssssggbwwwbgsssssssssssssssssdddddddsssss
+    ssssssssssssdddddddsssssssssgbwwwbgssssssssssssssssssdddddssssss
+    sssssssssssddddddddsssssssssgbwwwbgggsssssssssssssssssddddssssss
+    ssssssssssdddddddddssssssssssbwwwbgggssssssssssssssssssddddsssss
+    sssssssssdddddddddddsssssssssbwwwbgggsssssssssssssssssssdddsssss
+    ssssssssdddddddddddssssssssssbwwwbggsssssssssssssssssssssddsssss
+    sssssssddddddddddssssssssssssbwwwbssssssssssssssssssssssssssssss
+    sssssssdddssdssssssssssssssssbwwwbssssssssssssssssssssssssssssss
+    ssssgssssssssssssssssssssssssbwwwbsssssssssssssssssssssssssgssss
+    ggggsssssssssssssssssssssssssbwwwbssssssssssssssssssssssssssgsss
+    gggssssssssssssssssssdddsssssbwwwbssssssssssssssssssssssssssggss
+    ggssssssssssssssssddddddsssssbwwwbssssssssssssssssssssssssssgggs
+    gsssssssssssssssssddddddsssssbwwwbssssssssssssssssssssssssssgggg
+  ore: |
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ..................5..........................5..................
+    ................55555......................55555................
+    ................55555......................55555................
+    ...............5555555....................5555555...............
+    ................55555......................55555................
+    ................55555.6..................6.55555................
+    ..................5..666................666..5..................
+    ....................66666..............66666....................
+    .....................666................666.....................
+    ......................6..................6......................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ......................6..................6......................
+    .....................666................666.....................
+    ....................66666..............66666....................
+    ..................5..666................666..5..................
+    ................55555.6..................6.55555................
+    ................55555......................55555................
+    ...............5555555....................5555555...............
+    ................55555......................55555................
+    ................55555......................55555................
+    ..................5..........................5..................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+    ................................................................
+objects:
+  - { type: pine_tree, cell: [14, 0], variant: 0 }
+  - { type: pine_tree, cell: [15, 0], variant: 0 }
+  - { type: pine_tree, cell: [16, 0], variant: 1 }
+  - { type: pine_tree, cell: [17, 0], variant: 1 }
+  - { type: pine_tree, cell: [18, 0], variant: 2 }
+  - { type: pine_tree, cell: [19, 0], variant: 0 }
+  - { type: pine_tree, cell: [20, 0], variant: 2 }
+  - { type: pine_tree, cell: [21, 0], variant: 0 }
+  - { type: pine_tree, cell: [14, 1], variant: 3 }
+  - { type: pine_tree, cell: [15, 1], variant: 2 }
+  - { type: pine_tree, cell: [16, 1], variant: 0 }
+  - { type: pine_tree, cell: [17, 1], variant: 2 }
+  - { type: pine_tree, cell: [18, 1], variant: 3 }
+  - { type: pine_tree, cell: [19, 1], variant: 3 }
+  - { type: pine_tree, cell: [20, 1], variant: 1 }
+  - { type: pine_tree, cell: [21, 1], variant: 3 }
+  - { type: pine_tree, cell: [13, 2], variant: 0 }
+  - { type: pine_tree, cell: [14, 2], variant: 0 }
+  - { type: pine_tree, cell: [15, 2], variant: 0 }
+  - { type: pine_tree, cell: [16, 2], variant: 2 }
+  - { type: pine_tree, cell: [17, 2], variant: 0 }
+  - { type: pine_tree, cell: [18, 2], variant: 2 }
+  - { type: pine_tree, cell: [19, 2], variant: 2 }
+  - { type: pine_tree, cell: [20, 2], variant: 1 }
+  - { type: pine_tree, cell: [21, 2], variant: 2 }
+  - { type: pine_tree, cell: [14, 3], variant: 2 }
+  - { type: pine_tree, cell: [15, 3], variant: 0 }
+  - { type: pine_tree, cell: [16, 3], variant: 1 }
+  - { type: pine_tree, cell: [17, 3], variant: 1 }
+  - { type: pine_tree, cell: [18, 3], variant: 0 }
+  - { type: pine_tree, cell: [19, 3], variant: 0 }
+  - { type: pine_tree, cell: [20, 3], variant: 0 }
+  - { type: pine_tree, cell: [61, 13], variant: 0 }
+  - { type: pine_tree, cell: [60, 14], variant: 2 }
+  - { type: pine_tree, cell: [61, 14], variant: 0 }
+  - { type: pine_tree, cell: [62, 14], variant: 3 }
+  - { type: pine_tree, cell: [63, 14], variant: 0 }
+  - { type: pine_tree, cell: [60, 15], variant: 0 }
+  - { type: pine_tree, cell: [61, 15], variant: 0 }
+  - { type: pine_tree, cell: [62, 15], variant: 2 }
+  - { type: pine_tree, cell: [63, 15], variant: 0 }
+  - { type: pine_tree, cell: [60, 16], variant: 1 }
+  - { type: pine_tree, cell: [61, 16], variant: 2 }
+  - { type: pine_tree, cell: [62, 16], variant: 0 }
+  - { type: pine_tree, cell: [63, 16], variant: 1 }
+  - { type: pine_tree, cell: [60, 17], variant: 1 }
+  - { type: pine_tree, cell: [61, 17], variant: 0 }
+  - { type: pine_tree, cell: [62, 17], variant: 2 }
+  - { type: pine_tree, cell: [63, 17], variant: 1 }
+  - { type: pine_tree, cell: [60, 18], variant: 0 }
+  - { type: pine_tree, cell: [61, 18], variant: 2 }
+  - { type: pine_tree, cell: [62, 18], variant: 3 }
+  - { type: pine_tree, cell: [63, 18], variant: 2 }
+  - { type: pine_tree, cell: [60, 19], variant: 0 }
+  - { type: pine_tree, cell: [61, 19], variant: 2 }
+  - { type: pine_tree, cell: [62, 19], variant: 3 }
+  - { type: pine_tree, cell: [63, 19], variant: 0 }
+  - { type: pine_tree, cell: [60, 20], variant: 0 }
+  - { type: pine_tree, cell: [61, 20], variant: 1 }
+  - { type: pine_tree, cell: [62, 20], variant: 1 }
+  - { type: pine_tree, cell: [63, 20], variant: 2 }
+  - { type: pine_tree, cell: [61, 21], variant: 2 }
+  - { type: pine_tree, cell: [62, 21], variant: 3 }
+  - { type: pine_tree, cell: [63, 21], variant: 0 }
+  - { type: pine_tree, cell: [0, 42], variant: 0 }
+  - { type: pine_tree, cell: [1, 42], variant: 3 }
+  - { type: pine_tree, cell: [2, 42], variant: 2 }
+  - { type: pine_tree, cell: [0, 43], variant: 2 }
+  - { type: pine_tree, cell: [1, 43], variant: 1 }
+  - { type: pine_tree, cell: [2, 43], variant: 1 }
+  - { type: pine_tree, cell: [3, 43], variant: 0 }
+  - { type: pine_tree, cell: [0, 44], variant: 0 }
+  - { type: pine_tree, cell: [1, 44], variant: 3 }
+  - { type: pine_tree, cell: [2, 44], variant: 2 }
+  - { type: pine_tree, cell: [3, 44], variant: 0 }
+  - { type: pine_tree, cell: [0, 45], variant: 2 }
+  - { type: pine_tree, cell: [1, 45], variant: 3 }
+  - { type: pine_tree, cell: [2, 45], variant: 2 }
+  - { type: pine_tree, cell: [3, 45], variant: 0 }
+  - { type: pine_tree, cell: [0, 46], variant: 1 }
+  - { type: pine_tree, cell: [1, 46], variant: 2 }
+  - { type: pine_tree, cell: [2, 46], variant: 0 }
+  - { type: pine_tree, cell: [3, 46], variant: 1 }
+  - { type: pine_tree, cell: [0, 47], variant: 1 }
+  - { type: pine_tree, cell: [1, 47], variant: 0 }
+  - { type: pine_tree, cell: [2, 47], variant: 2 }
+  - { type: pine_tree, cell: [3, 47], variant: 1 }
+  - { type: pine_tree, cell: [0, 48], variant: 0 }
+  - { type: pine_tree, cell: [1, 48], variant: 2 }
+  - { type: pine_tree, cell: [2, 48], variant: 0 }
+  - { type: pine_tree, cell: [3, 48], variant: 0 }
+  - { type: pine_tree, cell: [0, 49], variant: 0 }
+  - { type: pine_tree, cell: [1, 49], variant: 3 }
+  - { type: pine_tree, cell: [2, 49], variant: 0 }
+  - { type: pine_tree, cell: [3, 49], variant: 2 }
+  - { type: pine_tree, cell: [2, 50], variant: 0 }
+  - { type: pine_tree, cell: [43, 60], variant: 0 }
+  - { type: pine_tree, cell: [44, 60], variant: 0 }
+  - { type: pine_tree, cell: [45, 60], variant: 0 }
+  - { type: pine_tree, cell: [46, 60], variant: 1 }
+  - { type: pine_tree, cell: [47, 60], variant: 1 }
+  - { type: pine_tree, cell: [48, 60], variant: 0 }
+  - { type: pine_tree, cell: [49, 60], variant: 2 }
+  - { type: pine_tree, cell: [42, 61], variant: 2 }
+  - { type: pine_tree, cell: [43, 61], variant: 1 }
+  - { type: pine_tree, cell: [44, 61], variant: 2 }
+  - { type: pine_tree, cell: [45, 61], variant: 2 }
+  - { type: pine_tree, cell: [46, 61], variant: 0 }
+  - { type: pine_tree, cell: [47, 61], variant: 2 }
+  - { type: pine_tree, cell: [48, 61], variant: 0 }
+  - { type: pine_tree, cell: [49, 61], variant: 0 }
+  - { type: pine_tree, cell: [50, 61], variant: 0 }
+  - { type: pine_tree, cell: [42, 62], variant: 3 }
+  - { type: pine_tree, cell: [43, 62], variant: 1 }
+  - { type: pine_tree, cell: [44, 62], variant: 3 }
+  - { type: pine_tree, cell: [45, 62], variant: 3 }
+  - { type: pine_tree, cell: [46, 62], variant: 2 }
+  - { type: pine_tree, cell: [47, 62], variant: 0 }
+  - { type: pine_tree, cell: [48, 62], variant: 2 }
+  - { type: pine_tree, cell: [49, 62], variant: 3 }
+  - { type: pine_tree, cell: [42, 63], variant: 0 }
+  - { type: pine_tree, cell: [43, 63], variant: 2 }
+  - { type: pine_tree, cell: [44, 63], variant: 0 }
+  - { type: pine_tree, cell: [45, 63], variant: 2 }
+  - { type: pine_tree, cell: [46, 63], variant: 1 }
+  - { type: pine_tree, cell: [47, 63], variant: 1 }
+  - { type: pine_tree, cell: [48, 63], variant: 0 }
+  - { type: pine_tree, cell: [49, 63], variant: 0 }
+bridges:
+  - { type: bridge_wood_low, from: [31, 16], to: [33, 16] }
+  - { type: bridge_wood_low, from: [16, 30], to: [16, 32] }
+  - { type: bridge_wood_low, from: [47, 31], to: [47, 33] }
+  - { type: bridge_wood_low, from: [30, 47], to: [32, 47] }
+structures:
+  - { type: tech_oil_derrick, cell: [25, 22], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [40, 25], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [22, 37], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [37, 40], owner: neutral, facing: 0 }

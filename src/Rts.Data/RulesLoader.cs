@@ -105,13 +105,20 @@ public static class RulesLoader
     public static RulesDatabase LoadDirectory(string root) => Load(FilesBelow(root));
 
     /// <summary>
-    /// Every <c>.yaml</c> file below <paramref name="root"/> as (relative path with '/', text), in path order, except the sounds of
-    /// <c>audio/</c>: the audio code reads them, not the rules (by the owner's decision, docs/implementation/M6_menus_skirmish.md, 4.8).
+    /// The folders of the data that are not rules: the sounds of <c>audio/</c>, read by the audio code (by the owner's decision,
+    /// docs/implementation/M6_menus_skirmish.md, 4.8), and the looks of <c>climates/</c>, read by the view (M7 4.12). Neither is
+    /// in the data hash: they never change a match.
+    /// </summary>
+    public static readonly string[] NotRulesFolders = ["audio", "climates"];
+
+    /// <summary>
+    /// Every <c>.yaml</c> file below <paramref name="root"/> as (relative path with '/', text), in path order, except those of
+    /// <see cref="NotRulesFolders"/>.
     /// </summary>
     internal static List<(string FileName, string Text)> FilesBelow(string root) =>
         Directory.GetFiles(root, "*.yaml", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
-            .Where(name => !name.StartsWith("audio/", StringComparison.Ordinal))
+            .Where(name => !NotRulesFolders.Any(folder => name.StartsWith(folder + "/", StringComparison.Ordinal)))
             .OrderBy(name => name, StringComparer.Ordinal)
             .Select(name => (name, File.ReadAllText(Path.Combine(root, name))))
             .ToList();

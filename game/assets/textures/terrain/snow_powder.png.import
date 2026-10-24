@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c71r1eqbmutrb"
-path="res://.godot/imported/snow_clean.png-9dabe3fdbf92499ebf3d848b50841061.ctex"
+uid="uid://oeb7c8nsvhrv"
+path="res://.godot/imported/snow_powder.png-b73fecb805b3233653da914f3c169fdd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/terrain/snow_clean.png"
-dest_files=["res://.godot/imported/snow_clean.png-9dabe3fdbf92499ebf3d848b50841061.ctex"]
+source_file="res://assets/textures/terrain/snow_powder.png"
+dest_files=["res://.godot/imported/snow_powder.png-b73fecb805b3233653da914f3c169fdd.ctex"]
 
 [params]
 

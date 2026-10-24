@@ -119,6 +119,17 @@ public sealed class RtsMapErrorTests
     }
 
     [Fact]
+    public void An_unknown_time_of_day_points_at_its_value()
+    {
+        var (text, line) = WithLine(l => l.StartsWith("lighting:", StringComparison.Ordinal), _ => "lighting: noon");
+
+        var error = ReadFails(text);
+
+        Assert.Equal((line, 11), (error.Line, error.Column));
+        Assert.Contains("lighting 'noon' is none of dawn, day, dusk, night", error.Reason);
+    }
+
+    [Fact]
     public void A_misspelt_key_is_not_ignored()
     {
         var (text, line) = WithLine(l => l == "bridges:", _ => "bridgez:");

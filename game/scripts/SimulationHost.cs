@@ -122,6 +122,9 @@ public partial class SimulationHost : Node
 
     public GameSimulation Simulation { get; private set; } = null!;
 
+    /// <summary>The look of the map being played (climate, time of day, texture layer): the simulation map has none of it.</summary>
+    public Climates.MapLook Look { get; private set; } = null!;
+
     /// <summary>
     /// Every event of a tick, right after it, live and in playback (M3 step 13): the views of buildings, the effects and the
     /// notifications listen here instead of reading the events themselves.
@@ -216,6 +219,7 @@ public partial class SimulationHost : Node
     {
         QueueHistory.Clear();
         var (map, definition) = LoadMap(MapPath);
+        Look = definition is not null ? Climates.MapLook.FromDefinition(definition) : Climates.MapLook.FromLand(map.Grid);
         _match ??= RoutedMatch() ?? (!IsBattle && definition is not null && MatchSetups.IsPlayable(definition)
             ? MatchSetups.OneOnOne(definition, Data.Rules.DefaultFaction.Id, MatchSetups.NewSeed())
             : null);
@@ -274,6 +278,12 @@ public partial class SimulationHost : Node
 
         // Without bots: their commands are in the replay (M5, 4.4).
         Simulation = ReplayPlayer.CreateSimulation(replay, Data.Rules);
+        if (Look.Width != Simulation.World.Map.Width || Look.Height != Simulation.World.Map.Height)
+        {
+            // A replay of another map: its file is not at hand, so it gets the look of its land.
+            Look = Climates.MapLook.FromLand(Simulation.World.Map);
+        }
+
         Bots = [];
         PlayerColors.Match = replay.Settings.Match;
         _recorder = null;

@@ -1,4 +1,5 @@
 using Godot;
+using Rts.Client.Climates;
 
 namespace Rts.Client.Terrain;
 
@@ -6,8 +7,9 @@ namespace Rts.Client.Terrain;
 /// Builds the terrain from the heights of the rules (docs/implementation/M1_visual_spike.md, 4.4; M7_maps.md, 4.12): chunks of
 /// <see cref="TerrainMesh.ChunkCells"/> cells from <see cref="TerrainMesh"/>, UV0 = world XZ, UV1 = position on the whole map.
 /// Registers the heights in <see cref="WorldCoords.Terrain"/> so the camera, units and picking follow them. The ground is
-/// textured by the land types of the simulation map (<see cref="TerrainTextures"/>; flat colours without the textures), cliffs in
-/// rock (<see cref="LandLayer"/>), with map objects and buildings
+/// textured by the map's look (<see cref="MapLook"/>): the materials of its climate by its texture layer
+/// (<see cref="MaterialSlots"/>, <see cref="TerrainTextures"/>; flat colours of the land without the textures), cliffs in the
+/// climate's cliff material, and the scene is lit by its time of day (<see cref="SceneLighting"/>); with map objects and buildings
 /// on top (<see cref="MapObjects"/>, <see cref="Buildings"/>). What is drawn is the rules: since M7 step 9 every map, the ASCII
 /// ones too, has only the relief of its rules. When the map changes (a corner raised, a land type changed — the editor of
 /// steps 11–12), the land texture is painted again and only the chunks with a changed corner are rebuilt. The map comes from
@@ -22,7 +24,10 @@ public partial class TerrainBuilder : Node3D
     private Rts.Simulation.Map.MapGrid? _builtMap;
     private int _builtVersion;
     private ImageTexture _landTexture = null!;
-    private ImageTexture _typeTexture = null!;
+    private ImageTexture _materialTexture = null!;
+    private System.Func<MapLook> _lookSource = null!;
+    private MapLook? _builtLook;
+    private ClimateLook? _climate;
 
     public TerrainHeights Heights { get; private set; } = null!;
 
@@ -35,23 +40,23 @@ public partial class TerrainBuilder : Node3D
     public override void _Ready()
     {
         _source = MapSources.Find(this);
+        _lookSource = MapSources.FindLook(this);
         var map = _source();
+        var look = _lookSource();
         Heights = TerrainHeights.FromRules(map.Heights);
         WorldCoords.Terrain = Heights;
 
         _landTexture = LandLayer.CreateTexture(map);
         GroundMaterial = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShader) };
         GroundMaterial.SetShaderParameter("land_map", _landTexture);
-        _typeTexture = LandLayer.CreateTypeTexture(map);
-        GroundMaterial.SetShaderParameter("type_map", _typeTexture);
-        SetGroundTextures(TerrainTextures.Load());
         GroundMaterial.SetShaderParameter("level_height", TerrainHeights.LevelHeight);
+        SetLook(look, map, sameSize: false);
         foreach (var chunk in TerrainMesh.Chunks(map.Width, map.Height))
         {
             BuildChunk(chunk);
         }
 
-        (_builtMap, _builtVersion) = (map, map.Version);
+        (_builtMap, _builtVersion, _builtLook) = (map, map.Version, look);
         AddChild(new MapObjects { Name = "MapObjects" });
         AddChild(new Buildings { Name = "Buildings" });
         AddChild(new PlayerBuildings { Name = "PlayerBuildings" });
@@ -63,8 +68,16 @@ public partial class TerrainBuilder : Node3D
     {
         // Runs before the children: map objects and buildings rebuilt on the same change read the new heights.
         var map = _source();
+        var look = _lookSource();
         if (ReferenceEquals(map, _builtMap) && map.Version == _builtVersion)
         {
+            if (!ReferenceEquals(look, _builtLook))
+            {
+                // Only the look changed (a texture painted, another time of day): the mesh stays.
+                SetLook(look, map, sameSize: true);
+                _builtLook = look;
+            }
+
             return;
         }
 
@@ -75,7 +88,6 @@ public partial class TerrainBuilder : Node3D
         if (sameSize)
         {
             LandLayer.Update(_landTexture, map);
-            LandLayer.UpdateType(_typeTexture, map);
         }
         else
         {
@@ -87,9 +99,9 @@ public partial class TerrainBuilder : Node3D
             _chunks.Clear();
             _landTexture = LandLayer.CreateTexture(map);
             GroundMaterial.SetShaderParameter("land_map", _landTexture);
-            _typeTexture = LandLayer.CreateTypeTexture(map);
-            GroundMaterial.SetShaderParameter("type_map", _typeTexture);
         }
+
+        SetLook(look, map, sameSize);
 
         Heights = heights;
         WorldCoords.Terrain = heights;
@@ -98,7 +110,7 @@ public partial class TerrainBuilder : Node3D
             BuildChunk(chunk);
         }
 
-        (_builtMap, _builtVersion) = (map, map.Version);
+        (_builtMap, _builtVersion, _builtLook) = (map, map.Version, look);
     }
 
     public override void _ExitTree()
@@ -109,21 +121,75 @@ public partial class TerrainBuilder : Node3D
         }
     }
 
-    /// <summary>Gives the ground shader its textures; without them it draws the flat colours of the land types.</summary>
-    private void SetGroundTextures(GroundTextures? textures)
+    /// <summary>
+    /// Shows the look of the map: the materials of its cells, the textures of its climate when the climate is another, and the
+    /// light of its time of day on the sun, the environment and the water of the ground.
+    /// </summary>
+    private void SetLook(MapLook look, Rts.Simulation.Map.MapGrid map, bool sameSize)
     {
+        var climate = ClimateLooks.Get(look.Climate);
+        if (!ReferenceEquals(climate, _climate) || _builtLook is null)
+        {
+            _climate = climate;
+            SetGroundTextures(climate);
+        }
+
+        var cells = climate is null
+            ? new byte[map.Width * map.Height * MaterialSlots.BytesPerCell]
+            : MaterialSlots.Build(look, climate, map);
+        if (sameSize && _materialTexture is not null)
+        {
+            LandLayer.UpdateMaterials(_materialTexture, cells, map.Width, map.Height);
+        }
+        else
+        {
+            _materialTexture = LandLayer.CreateMaterialTexture(cells, map.Width, map.Height);
+            GroundMaterial.SetShaderParameter("material_map", _materialTexture);
+        }
+
+        if (climate is not null && (_builtLook?.Lighting != look.Lighting || _builtLook?.Climate != look.Climate))
+        {
+            var preset = climate.Light(look.Lighting);
+            SceneLighting.Apply(preset, GetNodeOrNull<DirectionalLight3D>("../Sun"), GetNodeOrNull<WorldEnvironment>("../WorldEnvironment"));
+            GroundMaterial.SetShaderParameter("sun_direction", SceneLighting.SunDirection(preset));
+        }
+    }
+
+    /// <summary>Gives the ground shader the materials of a climate; without its textures it draws the flat colours of the land types.</summary>
+    private void SetGroundTextures(ClimateLook? climate)
+    {
+        var textures = climate is null ? null : TerrainTextures.Load(climate);
         GroundMaterial.SetShaderParameter("use_textures", textures is not null);
-        if (textures is null)
+        if (climate is null || textures is null)
         {
             return;
         }
 
-        GroundMaterial.SetShaderParameter("tex_snow", textures.Snow);
-        GroundMaterial.SetShaderParameter("tex_grass", textures.Grass);
-        GroundMaterial.SetShaderParameter("tex_gravel", textures.Gravel);
-        GroundMaterial.SetShaderParameter("tex_rock", textures.Rock);
-        GroundMaterial.SetShaderParameter("tex_ice", textures.Ice);
+        var tiling = new float[ClimateLook.MaxMaterials];
+        var roughness = new float[ClimateLook.MaxMaterials];
+        var water = new float[ClimateLook.MaxMaterials];
+        var frost = new float[ClimateLook.MaxMaterials];
+        var tint = new Vector3[ClimateLook.MaxMaterials];
+        for (var i = 0; i < ClimateLook.MaxMaterials; i++)
+        {
+            var material = climate.Materials[System.Math.Min(i, climate.Materials.Length - 1)];
+            tiling[i] = material.Tiling;
+            roughness[i] = material.Roughness;
+            water[i] = material.Water ? 1f : 0f;
+            frost[i] = material.Frost;
+            // The shader takes the tint as linear light, like the albedo it multiplies.
+            var linear = SceneLighting.Color(material.Tint).SrgbToLinear();
+            tint[i] = new Vector3(linear.R, linear.G, linear.B);
+        }
+
+        GroundMaterial.SetShaderParameter("ground_albedo", textures.Albedo);
         GroundMaterial.SetShaderParameter("tex_water_normal", textures.WaterNormal);
+        GroundMaterial.SetShaderParameter("mat_tiling", tiling);
+        GroundMaterial.SetShaderParameter("mat_roughness", roughness);
+        GroundMaterial.SetShaderParameter("mat_water", water);
+        GroundMaterial.SetShaderParameter("mat_frost", frost);
+        GroundMaterial.SetShaderParameter("mat_tint", tint);
+        GroundMaterial.SetShaderParameter("deep_water_color", SceneLighting.Color(climate.DeepWater));
     }
 
     private void BuildChunk((int X, int Z) start)

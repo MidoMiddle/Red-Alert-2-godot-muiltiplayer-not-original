@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddqm2d3cwikmf"
-path="res://.godot/imported/rock_field.png-0693a717b0577f65439ed6b8ae77b85d.ctex"
+uid="uid://b0mrqlu8ep70p"
+path="res://.godot/imported/asphalt_snow.png-229f9dfc3b54fb0678846eed56cbd196.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/terrain/rock_field.png"
-dest_files=["res://.godot/imported/rock_field.png-0693a717b0577f65439ed6b8ae77b85d.ctex"]
+source_file="res://assets/textures/terrain/asphalt_snow.png"
+dest_files=["res://.godot/imported/asphalt_snow.png-229f9dfc3b54fb0678846eed56cbd196.ctex"]
 
 [params]
 

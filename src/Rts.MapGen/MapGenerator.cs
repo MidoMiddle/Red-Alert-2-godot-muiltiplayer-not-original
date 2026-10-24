@@ -102,6 +102,7 @@ public static class MapGenerator
         Features.Buildings(map, contested);
         Features.Rough(map);
         Features.Forest(map);
+        Features.Ground(map);
 
         var name = $"Random {settings.Size} ({seed})";
         var description = $"Generated from seed {seed}: {settings.Players} players, {settings.Symmetry}, {settings.Relief}, water {settings.Water}, " +

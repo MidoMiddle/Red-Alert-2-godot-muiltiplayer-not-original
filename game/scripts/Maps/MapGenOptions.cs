@@ -6,7 +6,8 @@ namespace Rts.Client.Maps;
 
 /// <summary>
 /// The settings of a random map as controls (docs/implementation/M7_maps.md, 4.14): seed, size, players and symmetry, relief,
-/// water, forest and ore. Shared by the map editor and the skirmish screen; <see cref="Settings"/> is what they show now.
+/// water, forest and ore; in the editor the time of day too (<see cref="ShowLighting"/>: a match never picks it, the map has it).
+/// Shared by the map editor and the skirmish screen; <see cref="Settings"/> is what they show now.
 /// </summary>
 public partial class MapGenOptions : VBoxContainer
 {
@@ -18,6 +19,8 @@ public partial class MapGenOptions : VBoxContainer
 
     /// <summary>Columns of the settings: two in the wide panel of the editor, one in the narrow column of the skirmish screen.</summary>
     public int Columns { get; init; } = 2;
+
+    public bool ShowLighting { get; init; }
 
     private MapGenSettings Chosen { get; set; } = new();
 
@@ -43,6 +46,12 @@ public partial class MapGenOptions : VBoxContainer
         grid.AddChild(Choice([Tr("UI_EDITOR_WATER_NONE"), Tr("UI_EDITOR_WATER_RIVERS"), Tr("UI_EDITOR_WATER_LAKES")], 1, i => Chosen = Chosen with { Water = (WaterKind)i }));
         grid.AddChild(Choice([Tr("UI_EDITOR_FOREST_LOW"), Tr("UI_EDITOR_FOREST_MEDIUM"), Tr("UI_EDITOR_FOREST_HIGH")], 1, i => Chosen = Chosen with { Forest = (Amount)i }));
         grid.AddChild(Choice([Tr("UI_EDITOR_ORE_LOW"), Tr("UI_EDITOR_ORE_MEDIUM"), Tr("UI_EDITOR_ORE_HIGH")], 1, i => Chosen = Chosen with { Resources = (Amount)i }));
+        if (ShowLighting)
+        {
+            var ids = Rts.Data.Maps.MapLighting.Ids;
+            grid.AddChild(Choice([.. System.Linq.Enumerable.Select(ids, id => Tr(Climates.SceneLighting.LabelKey(id)))], ids.IndexOf(Chosen.Lighting),
+                i => Chosen = Chosen with { Lighting = ids[i] }));
+        }
     }
 
     private static OptionButton Choice(string[] items, int selected, Action<int> chosen)

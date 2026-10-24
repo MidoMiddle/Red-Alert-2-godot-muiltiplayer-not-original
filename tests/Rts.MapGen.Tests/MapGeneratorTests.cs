@@ -51,7 +51,7 @@ public sealed class MapGeneratorTests
         // Golden value: 64 x 64, two players mirrored, hills, rivers, seed 1. Changes only with the generator's rules.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
 
-        Assert.Equal("7b1c56d0d4108f6182f7a3978ff35d72b18784390ec511e3016f086a8137657f", MapHasher.Hash(map));
+        Assert.Equal("ef702a7e37981baa7526928ab49b7e9b1e91eef6b3c5c15b8672ddbbfd675145", MapHasher.Hash(map));
     }
 
     [Theory]

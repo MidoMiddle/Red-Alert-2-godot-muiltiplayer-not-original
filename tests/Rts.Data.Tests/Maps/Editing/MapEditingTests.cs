@@ -165,6 +165,36 @@ public sealed class MapEditingTests
     }
 
     [Fact]
+    public void The_texture_brush_paints_only_the_look_and_is_undone()
+    {
+        var session = Session();
+        session.BeginStroke(EditTool.Texture, new Brush(BrushShape.Square, 2), new EditOptions { Material = "grass" });
+        session.Paint(6, 6, new CellPos(6, 6));
+        session.EndStroke();
+
+        var grass = Assert.Single(session.Map.Legend, e => e.Material == "grass");
+        Assert.Equal(grass.Code, session.Map.TextureAt(new CellPos(5, 7)));
+        Assert.Equal(LandType.Clear, session.Map.LandAt(new CellPos(5, 7)));
+        Assert.Equal('s', session.Map.TextureAt(new CellPos(8, 6)));
+        Assert.True(session.Undo());
+        Assert.Equal('s', session.Map.TextureAt(new CellPos(5, 7)));
+    }
+
+    [Fact]
+    public void The_time_of_day_goes_into_the_map_and_shows_a_new_version()
+    {
+        var session = Session();
+        var version = session.Version;
+
+        session.SetLighting("dusk");
+
+        Assert.True(session.Version > version);
+        Assert.Equal("dusk", session.Map.ToDefinition().Lighting);
+        Assert.Throws<ArgumentException>(() => session.SetLighting("noon"));
+        Assert.Equal("day", EditableMap.New(16, 16, 2).Lighting);
+    }
+
+    [Fact]
     public void Undo_takes_back_a_stroke_and_redo_does_it_again()
     {
         var session = Session();
@@ -265,8 +295,15 @@ public sealed class MapEditingTests
         var (maps, errors) = Rts.Client.Maps.MapCatalog.Load(files);
 
         Assert.Empty(errors);
-        Assert.Equal(new[] { "Four Corners", "Frozen Crossing", "My hill", "Relief test", "Sandbox", "Taiga Front", "Twin Rivers" }, maps.Select(m => m.Map.Name));
-        Assert.Equal("user://maps/my-hill.rtsmap", maps[2].File);
+        Assert.Equal(new[]
+        {
+            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "Crate Glacier", "Dense Taiga", "Four Corners",
+            "Frost Arena", "Frost Gate", "Frozen Crossing", "Frozen Outpost", "Frozen Plateau", "Glacier Duel",
+            "Ice City", "Ice Ridge", "My hill", "Pine Haven", "Polar Circle", "Relief test", "Sandbox",
+            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Taiga Front", "Tundra Lane", "Twin Rivers",
+            "Windswept Pass",
+        }, maps.Select(m => m.Map.Name));
+        Assert.Equal("user://maps/my-hill.rtsmap", maps.Single(m => m.Map.Name == "My hill").File);
         Assert.Equal(Rts.Client.Maps.MapCatalog.UserDirectory, UserMapPaths.UserDirectory);
     }
 }

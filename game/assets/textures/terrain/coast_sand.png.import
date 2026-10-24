@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://06g5t6nx76af"
-path="res://.godot/imported/frozen_grass.png-ac118da8d4d9e06f7178f05abe8f16b7.ctex"
+uid="uid://drs4qduab5vrh"
+path="res://.godot/imported/coast_sand.png-68301ed6105114b758d067039e256523.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/terrain/frozen_grass.png"
-dest_files=["res://.godot/imported/frozen_grass.png-ac118da8d4d9e06f7178f05abe8f16b7.ctex"]
+source_file="res://assets/textures/terrain/coast_sand.png"
+dest_files=["res://.godot/imported/coast_sand.png-68301ed6105114b758d067039e256523.ctex"]
 
 [params]
 

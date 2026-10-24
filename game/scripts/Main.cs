@@ -26,8 +26,9 @@ public partial class Main : Node3D
     private const int SmokeSpread = 2;
 
     /// <summary>
-    /// Direction the sunlight travels in: mostly along world +X, slightly towards +Z, about 50° downward. The map editor takes
-    /// it too.
+    /// Direction the sunlight of the winter day travels in: mostly along world +X, slightly towards +Z, about 50° downward, so
+    /// shadows fall right-down on screen as in RA2. The scene is lit by the map's time of day (game/data/climates/winter/look.yaml,
+    /// whose day matches this); the shader warm-up takes this one.
     /// </summary>
     public static readonly Vector3 SunDirection = new Vector3(1f, -1.25f, 0.25f).Normalized();
 
@@ -38,8 +39,6 @@ public partial class Main : Node3D
     public override void _Ready()
     {
         GD.Print($"Simulation v{SimulationVersion.Current}");
-        // RA2 lighting: shadows fall right-down on screen, i.e. towards world +X, from a sun about 50° high.
-        GetNode<DirectionalLight3D>("Sun").Basis = Basis.LookingAt(SunDirection, Vector3.Up);
         AddChild(new PathPreview { Name = "PathPreview" });
         AddChild(new CellOverlay { Name = "CellOverlay" });
         AddChild(new OrderMarkers { Name = "OrderMarkers" });

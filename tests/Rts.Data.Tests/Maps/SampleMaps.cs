@@ -39,7 +39,8 @@ internal static class SampleMaps
             [.. heights], [.. land], [.. texture], [.. ore],
             [new("pine_tree", new CellPos(2, 3), 2), new("fence_wood", new CellPos(1, 1), 0), new("pine_tree", new CellPos(1, 3), 255)],
             [new("bridge_wood_low", new CellPos(4, 1), new CellPos(4, 5)), new("bridge_wood_low", new CellPos(0, 6), new CellPos(3, 6))],
-            [new("neutral_house_a", new CellPos(6, 6), 0, 3), new("tech_oil_derrick", new CellPos(5, 2), 2, 0)]);
+            [new("neutral_house_a", new CellPos(6, 6), 0, 3), new("tech_oil_derrick", new CellPos(5, 2), 2, 0)],
+            lighting: "night");
     }
 
     private static string FindRoot()

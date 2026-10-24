@@ -1,4 +1,5 @@
 using System;
+using Rts.Data.Maps;
 
 namespace Rts.MapGen;
 
@@ -43,7 +44,7 @@ public enum Amount
 
 /// <summary>
 /// The settings of a random map (docs/implementation/M7_maps.md, 4.14): seed, size (64, 96, 128 or 160), players and symmetry
-/// (two players mirrored or turned by 180°, four turned by 90°), relief, water, forest, resources and climate.
+/// (two players mirrored or turned by 180°, four turned by 90°), relief, water, forest, resources, climate and time of day.
 /// </summary>
 public sealed record MapGenSettings
 {
@@ -67,6 +68,9 @@ public sealed record MapGenSettings
 
     public string Climate { get; init; } = "winter";
 
+    /// <summary>The time of day of the map, one of <see cref="MapLighting.Ids"/>: look only.</summary>
+    public string Lighting { get; init; } = MapLighting.Default;
+
     /// <summary>Throws when the settings do not go together: an unknown size, or players that do not match the symmetry.</summary>
     public void Check()
     {
@@ -84,6 +88,11 @@ public sealed record MapGenSettings
         if (Climate != "winter")
         {
             throw new ArgumentException($"Climate '{Climate}' comes in M11; only winter for now.");
+        }
+
+        if (!MapLighting.IsKnown(Lighting))
+        {
+            throw new ArgumentException($"Lighting '{Lighting}' is none of {string.Join(", ", MapLighting.Ids)}.");
         }
     }
 }

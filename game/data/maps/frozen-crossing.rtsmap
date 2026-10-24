@@ -5,6 +5,7 @@ author: "Ready maps (M7)"
 description: "A short duel across a frozen river: two bridges, and ice that anyone can cross."
 size: [64, 64]
 climate: winter
+lighting: day
 players: 2
 starts:
   - { slot: 1, cell: [11, 32] }
@@ -14,6 +15,7 @@ legend:
     a: asphalt
     b: shore
     d: dirt
+    g: grass
     i: ice
     k: rock
     s: snow

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Maps;
@@ -42,7 +43,7 @@ public partial class MapEditorScene : Node3D, IMapSource
     [
         (EditTool.Raise, "UI_EDITOR_RAISE"), (EditTool.Lower, "UI_EDITOR_LOWER"), (EditTool.Flatten, "UI_EDITOR_FLATTEN"),
         (EditTool.Smooth, "UI_EDITOR_SMOOTH"), (EditTool.Cliff, "UI_EDITOR_CLIFF"), (EditTool.Land, "UI_EDITOR_LAND"),
-        (EditTool.Water, "UI_EDITOR_WATER"), (EditTool.Road, "UI_EDITOR_ROAD"), (EditTool.Ore, "UI_EDITOR_ORE"),
+        (EditTool.Texture, "UI_EDITOR_TEXTURE"), (EditTool.Water, "UI_EDITOR_WATER"), (EditTool.Road, "UI_EDITOR_ROAD"), (EditTool.Ore, "UI_EDITOR_ORE"),
         (EditTool.Objects, "UI_EDITOR_OBJECTS"), (EditTool.Bridge, "UI_EDITOR_BRIDGE"), (EditTool.Building, "UI_EDITOR_BUILDING"),
         (EditTool.Start, "UI_EDITOR_START"), (EditTool.Eraser, "UI_EDITOR_ERASER"),
     ];
@@ -73,6 +74,9 @@ public partial class MapEditorScene : Node3D, IMapSource
     private Label _status = null!;
     private LineEdit _name = null!;
     private OptionButton _openList = null!;
+    private OptionButton _lighting = null!;
+    private Rts.Client.Climates.MapLook? _look;
+    private int _lookVersion = -1;
     private OptionButton _sizeList = null!;
     private SpinBox _players = null!;
     private HSlider _sizeSlider = null!;
@@ -94,6 +98,20 @@ public partial class MapEditorScene : Node3D, IMapSource
         }
     }
 
+    public Rts.Client.Climates.MapLook CurrentLook
+    {
+        get
+        {
+            if (_look is null || _lookVersion != _session.Version)
+            {
+                _look = Rts.Client.Climates.MapLook.FromEditable(_session.Map);
+                _lookVersion = _session.Version;
+            }
+
+            return _look;
+        }
+    }
+
     public override void _EnterTree()
     {
         // Before the terrain and the camera are ready: they ask for the map at once.
@@ -105,7 +123,6 @@ public partial class MapEditorScene : Node3D, IMapSource
         ScreenshotCapture.AttachIfRequested(this);
         _camera = GetNode<RtsCamera>("CameraRig");
         _camera.ReservedRight = PanelWidth;
-        GetNode<DirectionalLight3D>("Sun").Basis = Basis.LookingAt(Main.SunDirection, Vector3.Up);
         _marks = new EditorMarks { Name = "EditorMarks" };
         AddChild(_marks);
         AddChild(new MeshInstance3D
@@ -232,11 +249,13 @@ public partial class MapEditorScene : Node3D, IMapSource
         _session = session;
         Kept = session;
         _viewVersion = -1;
+        _lookVersion = -1;
         _checkedVersion = -1;
         _painting = false;
         if (_name is not null)
         {
             _name.Text = session.Map.Name;
+            _lighting.Selected = Math.Max(0, MapLighting.Ids.IndexOf(session.Map.Lighting));
             _camera.CenterOn(new Vector3(session.Map.Width / 2f, 0f, session.Map.Height / 2f));
         }
     }
@@ -432,6 +451,14 @@ public partial class MapEditorScene : Node3D, IMapSource
         stack.AddChild(_name);
         stack.AddChild(ActionButton("UI_EDITOR_SAVE", Save));
 
+        // The time of day: the light of the map's climate (look only).
+        stack.AddChild(Caption("UI_EDITOR_LIGHTING"));
+        _lighting = Choice(
+            [.. MapLighting.Ids.Select(id => Tr(Rts.Client.Climates.SceneLighting.LabelKey(id)))],
+            MapLighting.Ids.IndexOf(_session.Map.Lighting),
+            i => _session.SetLighting(MapLighting.Ids[i]));
+        stack.AddChild(_lighting);
+
         // Tools and the settings of the chosen one.
         stack.AddChild(Caption("UI_EDITOR_TOOLS"));
         var tools = new GridContainer { Columns = 2 };
@@ -477,7 +504,7 @@ public partial class MapEditorScene : Node3D, IMapSource
 
     private void BuildRandomMap(VBoxContainer stack)
     {
-        var options = new MapGenOptions { Name = "RandomMapOptions" };
+        var options = new MapGenOptions { Name = "RandomMapOptions", ShowLighting = true };
         stack.AddChild(options);
         stack.AddChild(ActionButton("UI_EDITOR_GENERATE", () =>
         {
@@ -512,6 +539,13 @@ public partial class MapEditorScene : Node3D, IMapSource
             case EditTool.Land:
                 var lands = Enum.GetValues<LandType>();
                 _toolOptions.AddChild(Choice(Array.ConvertAll(lands, l => l.ToString()), Array.IndexOf(lands, _options.Land), i => _options = _options with { Land = lands[i] }));
+                break;
+            case EditTool.Texture:
+                // The materials of the climate, but water: painted on dry land it would look like water one cannot sail.
+                var materials = Rts.Client.Climates.ClimateLooks.Get(_session.Map.Climate) is { } climate
+                    ? climate.Materials.Where(m => !m.Water).Select(m => m.Id).ToList()
+                    : ["snow"];
+                _toolOptions.AddChild(Choice([.. materials], Math.Max(0, materials.IndexOf(_options.Material)), i => _options = _options with { Material = materials[i] }));
                 break;
             case EditTool.Water:
                 _toolOptions.AddChild(Choice(

@@ -16,6 +16,7 @@ public enum EditTool
     Smooth,
     Cliff,
     Land,
+    Texture,
     Water,
     Road,
     Ore,
@@ -38,13 +39,16 @@ public enum EraseLayer
 }
 
 /// <summary>
-/// The settings of a stroke: the land of the land tool, the depth of the water tool (shallow or deep), the ore value (1–9
+/// The settings of a stroke: the land of the land tool, the material of the texture tool, the depth of the water tool (shallow or deep), the ore value (1–9
 /// ore, 10–12 gems), the map object and its density in percent, the bridge and building types, the building's facing, the
 /// layer of the eraser.
 /// </summary>
 public sealed record EditOptions
 {
     public LandType Land { get; init; } = LandType.Clear;
+
+    /// <summary>A material of the climate (<c>game/data/climates/&lt;id&gt;/look.yaml</c>): only the look changes.</summary>
+    public string Material { get; init; } = "grass";
 
     public LandType Water { get; init; } = LandType.Shallow;
 
@@ -196,6 +200,21 @@ public sealed class MapEditSession
         }
     }
 
+    /// <summary>Sets the time of day (<see cref="MapLighting.Ids"/>); not an undo step, like the name of the map.</summary>
+    public void SetLighting(string lighting)
+    {
+        if (!MapLighting.IsKnown(lighting))
+        {
+            throw new ArgumentException($"Unknown lighting '{lighting}'.", nameof(lighting));
+        }
+
+        if (Map.Lighting != lighting)
+        {
+            Map.Lighting = lighting;
+            Version++;
+        }
+    }
+
     public bool Undo()
     {
         EndStroke();
@@ -262,6 +281,15 @@ public sealed class MapEditSession
                 break;
             case EditTool.Land:
                 PaintLand(_brush.Cells(Map, cell), _options.Land);
+                break;
+            case EditTool.Texture:
+                // Only the look: the land of the rules stays (M7 4.13, «Текстура»).
+                var material = (byte)Map.CodeFor(_options.Material);
+                foreach (var under in _brush.Cells(Map, cell))
+                {
+                    Set(EditLayer.Texture, Map.CellIndex(under), material);
+                }
+
                 break;
             case EditTool.Road:
                 // A road is as wide as the brush, square whatever its shape; it stops at water (bridges cross it).

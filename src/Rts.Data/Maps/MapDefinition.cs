@@ -26,7 +26,8 @@ public sealed record StructurePlacement(string Type, CellPos Cell, int Owner, in
 /// <summary>
 /// A map as read from a <c>.rtsmap</c> file (docs/implementation/M7_maps.md, 4.9): immutable, checked when built. Heights are
 /// stored per cell corner, <c>(W+1) × (H+1)</c>, levels 0…14; land, texture and ore per cell, row by row from the north-west.
-/// The texture and the object variants are visual: the simulation never reads them, but the lobby hash covers them.
+/// The climate, the lighting, the texture and the object variants are visual: the simulation never reads them, but the lobby
+/// hash covers them.
 /// </summary>
 public sealed class MapDefinition
 {
@@ -55,12 +56,14 @@ public sealed class MapDefinition
         ImmutableArray<byte> ore,
         ImmutableArray<MapObjectPlacement> objects,
         ImmutableArray<BridgePlacement> bridges,
-        ImmutableArray<StructurePlacement> structures)
+        ImmutableArray<StructurePlacement> structures,
+        string lighting = MapLighting.Default)
     {
         Require(MapNames.IsId(id), $"id '{id}' must be lowercase letters, digits, '-' or '_'");
         Require(MapNames.IsText(name) && MapNames.IsText(author) && MapNames.IsText(description), "name, author and description are single lines");
         Require(width is >= MinSize and <= MaxSize && height is >= MinSize and <= MaxSize, $"size {width}x{height} is outside {MinSize}…{MaxSize}");
         Require(MapNames.IsId(climate), $"climate '{climate}' must be lowercase letters, digits, '-' or '_'");
+        Require(MapLighting.IsKnown(lighting), $"lighting '{lighting}' is none of {string.Join(", ", MapLighting.Ids)}");
         Require(players is >= 1 and <= PlayerId.MaxPlayers, $"players {players} is outside 1…{PlayerId.MaxPlayers}");
         Require(heights.Length == (width + 1) * (height + 1) && heights.All(h => h <= MaxHeight), "heights must be (W+1)×(H+1) levels 0…14");
         Require(land.Length == width * height && land.All(LandSpeeds.IsKnown), "land must be W×H known land types");
@@ -76,6 +79,7 @@ public sealed class MapDefinition
         Width = width;
         Height = height;
         Climate = climate;
+        Lighting = lighting;
         Players = players;
         Starts = starts.Sort((a, b) => a.Slot.CompareTo(b.Slot));
         TextureLegend = textureLegend.Sort((a, b) => a.Code.CompareTo(b.Code));
@@ -109,6 +113,9 @@ public sealed class MapDefinition
     public int Height { get; }
 
     public string Climate { get; }
+
+    /// <summary>The time of day, one of <see cref="MapLighting.Ids"/>: visual only.</summary>
+    public string Lighting { get; }
 
     public int Players { get; }
 
@@ -216,7 +223,7 @@ public sealed class MapDefinition
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>
     public bool ContentEquals(MapDefinition other) =>
         Id == other.Id && Name == other.Name && Author == other.Author && Description == other.Description
-        && Width == other.Width && Height == other.Height && Climate == other.Climate && Players == other.Players
+        && Width == other.Width && Height == other.Height && Climate == other.Climate && Lighting == other.Lighting && Players == other.Players
         && Starts.SequenceEqual(other.Starts) && TextureLegend.SequenceEqual(other.TextureLegend)
         && Heights.SequenceEqual(other.Heights) && Land.SequenceEqual(other.Land) && Texture.SequenceEqual(other.Texture)
         && Ore.SequenceEqual(other.Ore) && Objects.SequenceEqual(other.Objects) && Bridges.SequenceEqual(other.Bridges)

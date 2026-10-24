@@ -28,7 +28,7 @@ public sealed class RtsMapFormatException(int line, int column, string message) 
 public static class RtsMapReader
 {
     private static readonly string[] RootKeys =
-        ["format", "id", "name", "author", "description", "size", "climate", "players", "starts", "legend", "layers", "objects", "bridges", "structures"];
+        ["format", "id", "name", "author", "description", "size", "climate", "lighting", "players", "starts", "legend", "layers", "objects", "bridges", "structures"];
 
     public static MapDefinition Read(string text)
     {
@@ -76,6 +76,7 @@ public static class RtsMapReader
 
         var (width, height) = (size.X, size.Y);
         var climate = Optional(values, "climate") is { } climateNode ? Id(climateNode) : "winter";
+        var lighting = Optional(values, "lighting") is { } lightingNode ? Lighting(lightingNode) : MapLighting.Default;
         var players = Int(Required(values, "players", root), 1, Rts.Simulation.World.PlayerId.MaxPlayers, "players");
 
         var starts = Optional(values, "starts") is { } startsNode ? Starts(startsNode, players, width, height) : [];
@@ -102,7 +103,7 @@ public static class RtsMapReader
         try
         {
             return new MapDefinition(id, name, author, description, width, height, climate, players, starts, legend, heightCodes, land, texture, ore,
-                objects, bridges, structures);
+                objects, bridges, structures, lighting);
         }
         catch (ArgumentException e)
         {
@@ -320,6 +321,12 @@ public static class RtsMapReader
     {
         var text = Text(node);
         return MapNames.IsId(text) ? text : throw Error(node, $"'{text}' must be lowercase letters, digits, '-' or '_'");
+    }
+
+    private static string Lighting(YamlNode node)
+    {
+        var text = Text(node);
+        return MapLighting.IsKnown(text) ? text : throw Error(node, $"lighting '{text}' is none of {string.Join(", ", MapLighting.Ids)}");
     }
 
     private static string Line(YamlNode node)

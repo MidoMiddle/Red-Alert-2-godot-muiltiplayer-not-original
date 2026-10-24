@@ -5,6 +5,7 @@ author: "M7 step 2"
 description: "Plateau with ramps, cliff shelf, stepped hill, pit and a corner ramp."
 size: [24, 24]
 climate: winter
+lighting: day
 players: 2
 starts:
   - { slot: 1, cell: [13, 8] }

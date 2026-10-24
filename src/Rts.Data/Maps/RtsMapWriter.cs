@@ -21,6 +21,7 @@ public static class RtsMapWriter
         Line(text, $"description: {Quote(map.Description)}");
         Line(text, $"size: [{map.Width}, {map.Height}]");
         Line(text, $"climate: {map.Climate}");
+        Line(text, $"lighting: {map.Lighting}");
         Line(text, $"players: {map.Players}");
 
         List(text, "starts", map.Starts, s => $"{{ slot: {s.Slot}, cell: {Cell(s.Cell)} }}");

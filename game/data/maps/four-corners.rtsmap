@@ -5,6 +5,7 @@ author: "Ready maps (M7)"
 description: "Four bases in the corners; the plateau in the middle holds the gems."
 size: [128, 128]
 climate: winter
+lighting: day
 players: 4
 starts:
   - { slot: 1, cell: [20, 20] }
@@ -16,6 +17,7 @@ legend:
     a: asphalt
     b: shore
     d: dirt
+    g: grass
     i: ice
     k: rock
     s: snow

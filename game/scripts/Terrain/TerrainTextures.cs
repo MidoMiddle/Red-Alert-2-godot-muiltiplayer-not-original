@@ -1,56 +1,81 @@
+using System.Collections.Generic;
 using Godot;
-using Rts.Simulation.Map;
+using Rts.Client.Climates;
 
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// The ground textures (docs/map_elements/02_land_types/prompts.md, 03_water/prompts.md). For now these are the placeholders of
-/// assets_src/textures (see its README). Every cell has a texture index (<see cref="IndexOf"/>) in the type map, and the ground
-/// shader picks the texture by it. A cliff is rock whatever its land. Without all the textures the ground is drawn flat.
+/// The ground textures of a climate for the ground shader (docs/implementation/M7_maps.md, 4.12): the albedo of every material
+/// in one <see cref="Texture2DArray"/>, layer = slot (<see cref="ClimateLook.Materials"/>), with mipmaps, and the water's normal
+/// map. Built once per climate. Without one of the files the ground is drawn flat (the land colours).
 /// </summary>
 public static class TerrainTextures
 {
-    private const string Folder = "res://assets/textures/terrain/";
+    /// <summary>The size every layer is scaled to.</summary>
+    private const int LayerSize = 1024;
 
-    /// <summary>The index of the rock texture: cliff cells use it too.</summary>
-    public const int Rock = 6;
+    private static readonly Dictionary<string, GroundTextures?> Built = new();
 
-    /// <summary>
-    /// The texture index of a cell: 0 clear, 1 rough, 2 road, 3 beach, 4 shallow, 5 deep, 6 rock, 7 ice. The same order as the
-    /// branches of grid.gdshader.
-    /// </summary>
-    public static int IndexOf(LandType land, CellShape shape) =>
-        shape == CellShape.Cliff ? Rock : (land switch
-        {
-            LandType.Clear => 0,
-            LandType.Rough => 1,
-            LandType.Road => 2,
-            LandType.Beach => 3,
-            LandType.Shallow => 4,
-            LandType.Deep => 5,
-            LandType.Rock => Rock,
-            LandType.Ice => 7,
-            _ => throw new System.ArgumentOutOfRangeException(nameof(land), land, "Unknown land type."),
-        });
-
-    /// <summary>The textures for the ground shader, or null when one of the files is missing.</summary>
-    public static GroundTextures? Load()
+    public static GroundTextures? Load(ClimateLook climate)
     {
-        var snow = GD.Load<Texture2D>(Folder + "snow_clean.png");
-        var grass = GD.Load<Texture2D>(Folder + "frozen_grass.png");
-        var gravel = GD.Load<Texture2D>(Folder + "beach_gravel.png");
-        var rock = GD.Load<Texture2D>(Folder + "rock_field.png");
-        var ice = GD.Load<Texture2D>(Folder + "frozen_water.png");
-        var normal = GD.Load<Texture2D>(Folder + "water_normal.png");
-        if (snow is null || grass is null || gravel is null || rock is null || ice is null || normal is null)
+        if (Built.TryGetValue(climate.Id, out var cached))
         {
-            GD.PushWarning("Ground textures are missing in " + Folder + ": the ground is drawn flat.");
+            return cached;
+        }
+
+        Godot.Collections.Array<Image>? layers = new();
+        GroundTextures? textures = null;
+        foreach (var material in climate.Materials)
+        {
+            if (LoadImage(material.Albedo) is not { } image)
+            {
+                layers = null;
+                break;
+            }
+
+            layers.Add(image);
+        }
+
+        var normal = GD.Load<Texture2D>(ClimateLooks.TextureFolder + climate.WaterNormal);
+        if (layers is not null && normal is not null)
+        {
+            var albedo = new Texture2DArray();
+            albedo.CreateFromImages(layers);
+            textures = new GroundTextures(albedo, normal);
+        }
+        else
+        {
+            GD.PushWarning($"[climate] ground textures of '{climate.Id}' are missing in {ClimateLooks.TextureFolder}: the ground is drawn flat.");
+        }
+
+        Built[climate.Id] = textures;
+        return textures;
+    }
+
+    // Every layer of a Texture2DArray has one size and one format.
+    private static Image? LoadImage(string file)
+    {
+        if (GD.Load<Texture2D>(ClimateLooks.TextureFolder + file)?.GetImage() is not { } image)
+        {
             return null;
         }
 
-        return new GroundTextures(snow, grass, gravel, rock, ice, normal);
+        if (image.IsCompressed())
+        {
+            image.Decompress();
+        }
+
+        image.ClearMipmaps();
+        image.Convert(Image.Format.Rgb8);
+        if (image.GetWidth() != LayerSize || image.GetHeight() != LayerSize)
+        {
+            image.Resize(LayerSize, LayerSize, Image.Interpolation.Lanczos);
+        }
+
+        image.GenerateMipmaps();
+        return image;
     }
 }
 
 /// <summary>The textures the ground shader samples (see <see cref="TerrainTextures.Load"/>).</summary>
-public sealed record GroundTextures(Texture2D Snow, Texture2D Grass, Texture2D Gravel, Texture2D Rock, Texture2D Ice, Texture2D WaterNormal);
+public sealed record GroundTextures(Texture2DArray Albedo, Texture2D WaterNormal);

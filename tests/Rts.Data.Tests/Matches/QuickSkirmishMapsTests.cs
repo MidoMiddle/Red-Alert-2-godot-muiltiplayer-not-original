@@ -33,9 +33,15 @@ public sealed class QuickSkirmishMapsTests
         RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", id + ".rtsmap")));
 
     [Fact]
-    public void The_ready_maps_with_starts_are_the_four_of_m7_and_the_relief_test()
+    public void The_playable_built_in_maps_are_the_ones_listed()
     {
-        Assert.Equal(["four-corners", "frozen-crossing", "relief_test", "taiga-front", "twin-rivers"], Maps().Cast<object[]>().Select(row => (string)row[0]));
+        Assert.Equal(
+        [
+            "ambush-valley", "arctic-strip", "blizzard-basin", "crate-glacier", "dense-taiga", "four-corners",
+            "frost-arena", "frost-gate", "frozen-crossing", "frozen-outpost", "frozen-plateau", "glacier-duel",
+            "ice-city", "ice-ridge", "pine-haven", "polar-circle", "relief_test", "snowbound-hamlet",
+            "snowfall-forest", "steel-tundra", "taiga-front", "tundra-lane", "twin-rivers", "windswept-pass",
+        ], Maps().Cast<object[]>().Select(row => (string)row[0]));
     }
 
     [Theory]

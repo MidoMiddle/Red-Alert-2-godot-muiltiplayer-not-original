@@ -5,6 +5,7 @@ author: "Ready maps (M7)"
 description: "Two rivers and four bridges; the plateau between them watches every crossing."
 size: [96, 96]
 climate: winter
+lighting: day
 players: 2
 starts:
   - { slot: 1, cell: [11, 48] }
@@ -14,6 +15,7 @@ legend:
     a: asphalt
     b: shore
     d: dirt
+    g: grass
     i: ice
     k: rock
     s: snow

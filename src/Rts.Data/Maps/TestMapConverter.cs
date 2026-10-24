@@ -17,12 +17,16 @@ public static class TestMapConverter
 {
     public const string PineTree = "pine_tree";
 
-    /// <summary>Texture codes of the converted maps, by land: snow on clear land, dirt on rough, asphalt on roads, and so on.</summary>
+    /// <summary>
+    /// Texture codes of the converted and new maps: snow on clear land, dirt on rough, asphalt on roads, and so on; grass
+    /// under snow belongs to no land type and is only painted (the editor's texture brush, the generator's patches).
+    /// </summary>
     public static readonly ImmutableArray<TextureEntry> Legend =
     [
         new('a', "asphalt"),
         new('b', "shore"),
         new('d', "dirt"),
+        new('g', "grass"),
         new('i', "ice"),
         new('k', "rock"),
         new('s', "snow"),

@@ -1,0 +1,51 @@
+# The look of the winter climate (docs/implementation/M7_maps.md, 4.12; docs/map_elements/18_lighting).
+# Visual only: the rules loader skips this folder and the data hash leaves it out.
+#
+# materials: the ids of the maps' legend.texture, in the order of the ground shader's slots. Albedo files are in
+#   res://assets/textures/terrain/; tiling is how many cells one copy covers; tint multiplies the texture; frost (0…1) lays
+#   frost over it in patches.
+# lighting: the times of day of the map header's `lighting`. The sun's azimuth is the direction its light goes in,
+#   degrees from the map's east (+X) towards its south (+Y); elevation is degrees above the horizon.
+format: climate/1
+id: winter
+materials:
+  snow:    { albedo: snow_powder.png, tiling: 9, roughness: 0.95, tint: "#f4f7fc" }
+  grass:   { albedo: sparse_grass.png, tiling: 5, roughness: 0.95, tint: "#d8d4b8", frost: 0.55 }
+  dirt:    { albedo: dirt_snow.png, tiling: 5, roughness: 0.95 }
+  asphalt: { albedo: asphalt_snow.png, tiling: 4, roughness: 0.8, tint: "#d0d2d8" }
+  shore:   { albedo: coast_sand.png, tiling: 5, roughness: 0.9, tint: "#dcdcd8" }
+  rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9 }
+  ice:     { albedo: frozen_water.png, tiling: 12, roughness: 0.6 }
+  water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.25, water: true }
+cliff: rock
+water_normal: water_normal.png
+deep_water: "#1a3d8f"
+lighting:
+  dawn:
+    sun: { azimuth: 4, elevation: 40, color: "#ffcfa6", energy: 1.15 }
+    ambient: { color: "#c4bfd2", energy: 0.8 }
+    background: "#a58f9c"
+    fog: { color: "#e3c6bd", density: 0.4 }
+    exposure: 1.0
+    saturation: 1.0
+  day:
+    sun: { azimuth: 14.04, elevation: 50.49, color: "#fff7eb", energy: 1.3 }
+    ambient: { color: "#b3c7e6", energy: 0.7 }
+    background: "#8f9eb3"
+    fog: { color: "#ccd9eb", density: 0.35 }
+    exposure: 1.0
+    saturation: 0.95
+  dusk:
+    sun: { azimuth: 24, elevation: 40, color: "#ffa875", energy: 1.05 }
+    ambient: { color: "#a49cc4", energy: 0.8 }
+    background: "#6f5f80"
+    fog: { color: "#c79a96", density: 0.4 }
+    exposure: 0.95
+    saturation: 1.05
+  night:
+    sun: { azimuth: 14.04, elevation: 55, color: "#9fb4ff", energy: 0.45 }
+    ambient: { color: "#5b6fb0", energy: 0.75 }
+    background: "#1c2238"
+    fog: { color: "#3a4670", density: 0.4 }
+    exposure: 1.1
+    saturation: 0.8

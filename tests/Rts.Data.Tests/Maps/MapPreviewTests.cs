@@ -159,11 +159,17 @@ public sealed class MapPreviewTests
         var (maps, errors) = MapCatalog.Load(files);
 
         Assert.Empty(errors);
-        Assert.Equal(new[] { "Four Corners", "Frozen Crossing", "Relief test", "Sandbox", "Taiga Front", "Twin Rivers" }, maps.Select(m => m.Map.Name));
-        var relief = maps[2].Map;
+        Assert.Equal(new[]
+        {
+            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "Crate Glacier", "Dense Taiga", "Four Corners",
+            "Frost Arena", "Frost Gate", "Frozen Crossing", "Frozen Outpost", "Frozen Plateau", "Glacier Duel",
+            "Ice City", "Ice Ridge", "Pine Haven", "Polar Circle", "Relief test", "Sandbox", "Snowbound Hamlet",
+            "Snowfall Forest", "Steel Tundra", "Taiga Front", "Tundra Lane", "Twin Rivers", "Windswept Pass",
+        }, maps.Select(m => m.Map.Name));
+        var relief = maps.Single(m => m.Map.Name == "Relief test").Map;
         var pixels = MapPreview.Render(relief);
         Assert.All(relief.Starts, start => Assert.Equal(Bytes(MapPreview.SlotColor(start.Slot)), Pixel(pixels, relief, start.Cell.X, start.Cell.Y)));
-        Assert.Equal(128 * 128 * 3, MapPreview.Render(maps[3].Map).Length);
+        Assert.Equal(128 * 128 * 3, MapPreview.Render(maps.Single(m => m.Map.Name == "Sandbox").Map).Length);
         Assert.All(maps, m => Assert.Equal(m.Map.Width * m.Map.Height * 12, MapPreview.Render(m.Map).Length));
     }
 }

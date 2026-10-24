@@ -12,6 +12,9 @@ public interface IMapSource
 {
     /// <summary>The map to show now; a new object or a new <see cref="MapGrid.Version"/> means it changed.</summary>
     MapGrid CurrentMap { get; }
+
+    /// <summary>The look of the map (climate, time of day, texture layer); a new object means it changed.</summary>
+    Climates.MapLook CurrentLook { get; }
 }
 
 public static class MapSources
@@ -32,6 +35,25 @@ public static class MapSources
             if (parent is IMapSource source)
             {
                 return () => source.CurrentMap;
+            }
+        }
+
+        throw new InvalidOperationException($"{node.Name} has no map: no SimulationHost beside it and no map source above it.");
+    }
+
+    /// <summary>The look of the map of the scene <paramref name="node"/> belongs to, found as <see cref="Find"/> finds the map.</summary>
+    public static Func<Climates.MapLook> FindLook(Node node)
+    {
+        if (node.GetNodeOrNull<SimulationHost>("../SimulationHost") is { } host)
+        {
+            return () => host.Look;
+        }
+
+        for (var parent = node.GetParent(); parent is not null; parent = parent.GetParent())
+        {
+            if (parent is IMapSource source)
+            {
+                return () => source.CurrentLook;
             }
         }
 

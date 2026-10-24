@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bsmyqrpwmdi7j"
-path="res://.godot/imported/beach_gravel.png-fcda94cab87894fca6d79f86cd230038.ctex"
+uid="uid://dnhxcm7lsx8en"
+path="res://.godot/imported/rock_ground.png-d8ec3cc34fa849c2f9b33baafe9bdbf8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/terrain/beach_gravel.png"
-dest_files=["res://.godot/imported/beach_gravel.png-fcda94cab87894fca6d79f86cd230038.ctex"]
+source_file="res://assets/textures/terrain/rock_ground.png"
+dest_files=["res://.godot/imported/rock_ground.png-d8ec3cc34fa849c2f9b33baafe9bdbf8.ctex"]
 
 [params]
 

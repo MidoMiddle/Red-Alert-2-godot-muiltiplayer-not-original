@@ -5,6 +5,7 @@ author: "M2 test map"
 description: "Converted from the ASCII test map of M2."
 size: [64, 64]
 climate: winter
+lighting: day
 players: 2
 starts: []
 legend:
@@ -12,6 +13,7 @@ legend:
     a: asphalt
     b: shore
     d: dirt
+    g: grass
     i: ice
     k: rock
     s: snow

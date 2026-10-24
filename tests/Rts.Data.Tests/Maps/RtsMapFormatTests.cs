@@ -19,6 +19,8 @@ public sealed class RtsMapFormatTests
         Assert.Equal(14, read.CornerHeight(5, 1));
         Assert.Equal(LandType.Ice, read.Land[7]);
         Assert.Equal(0, read.Structures.Single(s => s.Type == "neutral_house_a").Owner);
+        Assert.Equal("night", read.Lighting);
+        Assert.Contains("\nclimate: winter\nlighting: night\n", text);
     }
 
     [Fact]
@@ -80,7 +82,7 @@ public sealed class RtsMapFormatTests
 
         var map = RtsMapReader.Read(text);
 
-        Assert.Equal(("tiny", "", "winter"), (map.Name, map.Author, map.Climate));
+        Assert.Equal(("tiny", "", "winter", "day"), (map.Name, map.Author, map.Climate, map.Lighting));
         Assert.Equal([new TextureEntry('a', "default")], map.TextureLegend.ToArray());
         Assert.All(map.Texture, c => Assert.Equal('a', c));
         Assert.All(map.Ore, o => Assert.Equal(0, o));

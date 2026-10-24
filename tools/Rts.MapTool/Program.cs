@@ -21,7 +21,7 @@ if (args.Length == 2 && args[0] == "check")
 {
     return Run(args[1], map =>
     {
-        Console.WriteLine($"{map.Id} \"{map.Name}\" {map.Width}x{map.Height}, climate {map.Climate}, {map.Players} players, {map.Starts.Length} starts");
+        Console.WriteLine($"{map.Id} \"{map.Name}\" {map.Width}x{map.Height}, climate {map.Climate}, lighting {map.Lighting}, {map.Players} players, {map.Starts.Length} starts");
         Console.WriteLine($"objects {map.Objects.Length} · bridges {map.Bridges.Length} · structures {map.Structures.Length} · " +
                           $"highest level {map.Heights.Max()} · ore cells {map.Ore.Count(o => o > 0)}");
         var grid = map.ToMapGrid();
@@ -194,6 +194,7 @@ if (args.Length >= 2 && args[0] == "generate")
         Water = Choice("water", Rts.MapGen.WaterKind.Rivers),
         Forest = Choice("forest", Rts.MapGen.Amount.Medium),
         Resources = Choice("resources", Rts.MapGen.Amount.Medium),
+        Lighting = Option("lighting", MapLighting.Default),
     };
     var (map, seed) = Rts.MapGen.MapGenerator.Generate(settings);
     File.WriteAllText(args[1], RtsMapWriter.Write(map));

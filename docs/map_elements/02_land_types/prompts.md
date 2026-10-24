@@ -78,7 +78,13 @@ Seamless tileable texture of dark grey broken rock slabs and boulder fragments, 
 | `mud.png` | заглушка (скрипт) | 2026-10-23 | не финальная, заменить генератором |
 | `beach_gravel.png` | заглушка (скрипт) | 2026-10-23 | не финальная, заменить генератором |
 | `rock_field.png` | заглушка (скрипт) | 2026-10-23 | не финальная, заменить генератором |
+| `snow_powder.png` | Poly Haven `snow_02`, CC0 | 2026-10-24 | в игре вместо `snow_clean` |
+| `sparse_grass.png` | Poly Haven `sparse_grass`, CC0 | 2026-10-24 | в игре вместо `frozen_grass`, иней — в шейдере |
+| `dirt_snow.png` | Poly Haven `snow_03`, CC0 | 2026-10-24 | в игре: грязь (`dirt`) вместо `mud` |
+| `coast_sand.png` | Poly Haven `coast_sand_03`, CC0 | 2026-10-24 | в игре вместо `beach_gravel` |
+| `rock_ground.png` | Poly Haven `rock_ground`, CC0 | 2026-10-24 | в игре вместо `rock_field` |
+| `asphalt_snow.png` | Poly Haven `asphalt_snow`, CC0 | 2026-10-24 | в игре: асфальт (`asphalt`), раньше не было |
 
 ## Открытые вопросы
 
-1. Нужна ли текстура грязи для зимнего климата, или хватит канала G в маске.
+1. ~~Нужна ли текстура грязи для зимнего климата, или хватит канала G в маске.~~ Нужна: материал `dirt` (`dirt_snow.png`), маски нет — смешение по слою `texture` ([M7](../../implementation/M7_maps.md), 4.12).

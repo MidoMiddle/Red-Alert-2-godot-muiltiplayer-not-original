@@ -11,4 +11,6 @@ internal static class Channels
     public const int Rough = 6;
     public const int Starts = 7;
     public const int Variant = 8;
+    public const int Grass = 9;
+    public const int Dirt = 10;
 }

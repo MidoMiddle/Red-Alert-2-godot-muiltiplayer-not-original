@@ -10,13 +10,18 @@ namespace Rts.MapGen.Stages;
 /// Stages 6, 8 and 9 (docs/implementation/M7_maps.md, 4.14): an oil derrick by the contested ore of every image, where the
 /// rules allow it; rough patches on flat clear land; and the forest — pines where the forest noise is above the setting's
 /// threshold, not within <see cref="ForestClearance"/> cells of a start or ore, not on water, beach, rock, cliffs or buildings,
-/// and not on or next to a road. Everything is sampled at the canonical cell or copied to the images, so it stays symmetric. Villages by the
-/// roads, which the plan allows, are left to the editor.
+/// and not on or next to a road. Then the look of the clear ground (<see cref="Ground"/>). Everything is sampled at the canonical
+/// cell or copied to the images, so it stays symmetric. Villages by the roads, which the plan allows, are left to the editor.
 /// </summary>
 internal static class Features
 {
     public const int ForestClearance = 6;
     private const int RoughPercent = 15;
+    private const int GrassPercent = 14;
+    private const int DirtPercent = 8;
+
+    // Trodden ground around a base: within this many cells of a start, dirt where the noise of the dirt is above its median.
+    private const int TroddenRadius = Starts.FlatRadius - 1;
 
     public static void Buildings(GenMap map, CellPos contested)
     {
@@ -73,6 +78,57 @@ internal static class Features
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// The look of the clear ground, which the rules never see: patches of dirt and of grass under the snow where their noises
+    /// are among the highest <see cref="DirtPercent"/> and <see cref="GrassPercent"/> of the clear cells, and trodden dirt
+    /// around the bases. Land, heights and everything else stay as they are.
+    /// </summary>
+    public static void Ground(GenMap map)
+    {
+        var clear = new List<(CellPos Cell, int Dirt, int Grass)>();
+        for (var y = 0; y < map.N; y++)
+        {
+            for (var x = 0; x < map.N; x++)
+            {
+                var cell = new CellPos(x, y);
+                if (map.LandAt(cell) == LandType.Clear && !map.IsCliff(cell))
+                {
+                    var canonical = map.Symmetry.CanonicalCell(cell);
+                    clear.Add((cell, IntNoise.At(canonical.X, canonical.Y, map.Seed, Channels.Dirt), IntNoise.At(canonical.X, canonical.Y, map.Seed, Channels.Grass)));
+                }
+            }
+        }
+
+        if (clear.Count == 0)
+        {
+            return;
+        }
+
+        // Thresholds by rank, not by value: the sum of the octaves gathers around the middle, so a fixed value would give few cells.
+        var dirtLine = Percentile(clear.ConvertAll(c => c.Dirt), 100 - DirtPercent);
+        var grassLine = Percentile(clear.ConvertAll(c => c.Grass), 100 - GrassPercent);
+        var troddenLine = Percentile(clear.ConvertAll(c => c.Dirt), 50);
+        foreach (var (cell, dirt, grass) in clear)
+        {
+            var trodden = map.StartDistanceSquared(cell) <= TroddenRadius * TroddenRadius && dirt > troddenLine;
+            if (trodden || dirt > dirtLine)
+            {
+                map.Paint[cell.Y * map.N + cell.X] = "dirt";
+            }
+            else if (grass > grassLine)
+            {
+                map.Paint[cell.Y * map.N + cell.X] = "grass";
+            }
+        }
+    }
+
+    // The value below which <paramref name="percent"/> of the values lie.
+    private static int Percentile(List<int> values, int percent)
+    {
+        values.Sort();
+        return values[IntMath.Min(values.Count - 1, values.Count * percent / 100)];
     }
 
     public static void Forest(GenMap map)

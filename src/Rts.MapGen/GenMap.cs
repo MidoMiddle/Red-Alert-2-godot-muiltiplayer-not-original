@@ -23,6 +23,7 @@ internal sealed class GenMap
         Land = new LandType[N * N];
         System.Array.Fill(Land, LandType.Clear);
         Ore = new byte[N * N];
+        Paint = new string?[N * N];
     }
 
     public MapGenSettings Settings { get; }
@@ -39,6 +40,9 @@ internal sealed class GenMap
     public LandType[] Land { get; }
 
     public byte[] Ore { get; }
+
+    /// <summary>A texture material painted over the one of the cell's land (look only, <see cref="Stages.Features.Ground"/>), or null.</summary>
+    public string?[] Paint { get; }
 
     public List<MapStart> Starts { get; } = new();
 
@@ -103,7 +107,7 @@ internal sealed class GenMap
         var texture = new char[N * N];
         for (var i = 0; i < texture.Length; i++)
         {
-            texture[i] = CodeOf(legend, TestMapConverter.MaterialOf(Land[i]));
+            texture[i] = CodeOf(legend, Paint[i] ?? TestMapConverter.MaterialOf(Land[i]));
         }
 
         var heights = new byte[Levels.Length];
@@ -115,7 +119,7 @@ internal sealed class GenMap
         return new MapDefinition(
             $"random-{Seed}", name, "Map generator", description, N, N, Settings.Climate, Settings.Players,
             [.. Starts], legend, ImmutableArray.Create(heights), [.. Land], [.. texture], ImmutableArray.Create(Ore),
-            [.. Objects], [.. Bridges], [.. Structures]);
+            [.. Objects], [.. Bridges], [.. Structures], Settings.Lighting);
     }
 
     /// <summary>The ground of the map for the rules: land, heights, objects, bridges and buildings as they are now.</summary>
