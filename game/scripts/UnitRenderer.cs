@@ -68,6 +68,8 @@ public partial class UnitRenderer : Node3D
             // Covered by the Bastion Field Projector (stage 2d): crimson.
             view.SetMaterial(MaterialFor(unit.IsInvulnerable(world.CurrentTick) ? Curtain : colour.Value, glow));
             view.Visible = !tree;
+            // A Rifleman dug in sits behind a ring of sandbags (RA2).
+            view.SetSandbags(unit.Deployed && unit.Archetype.DeployedWeapon >= 0);
             var current = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before : current;
             var alpha = _host.Alpha;

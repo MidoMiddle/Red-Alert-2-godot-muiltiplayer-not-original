@@ -67,7 +67,7 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <param name="Target">What is under the cursor.</param>
 /// <param name="Shift">Whether Shift is held: Shift and a left click add a unit to the selection or take it out, Shift and a box add.</param>
 /// <param name="HasSelection">Whether any unit is selected.</param>
-/// <param name="Alt">Whether Alt is held: Alt and a left click on the ground spawn a test unit (debug).</param>
+/// <param name="Alt">Whether Alt is held: an order is a forced move (RA2) — to the point under the cursor, even over an enemy, to crush it.</param>
 /// <param name="Ctrl">Whether Ctrl (or Command) is held: Ctrl + Shift and an order give an attack-move, Ctrl alone a forced attack.</param>
 /// <param name="DoubleClick">Whether this press is the second one of a double click.</param>
 /// <param name="WaypointMode">Whether the waypoints mode is on (the command bar's flag, or Z held): an order adds a waypoint instead.</param>
@@ -236,7 +236,7 @@ public sealed class InputInterpreter
 
     /// <summary>
     /// The start of a press: a building, a sale or a repair while that tool is armed (a right click leaves the tool), a spawn while the
-    /// debug spawn is armed or Alt is held, else the button's own gesture.
+    /// debug spawn is armed (B), else the button's own gesture.
     /// </summary>
     private IReadOnlyList<Intent> Start(PointerButton button, ScreenPoint at, PointerContext context)
     {
@@ -260,7 +260,7 @@ public sealed class InputInterpreter
             }
         }
 
-        if ((context.Alt || SpawnArmed) && button == PointerButton.Left)
+        if (SpawnArmed && button == PointerButton.Left)
         {
             return context.Ground is { } spawnAt && context.Target.Kind == PointerTargetKind.Ground
                 ? new Intent[] { new SpawnUnit(spawnAt) }
@@ -472,9 +472,9 @@ public sealed class InputInterpreter
     /// <summary>A left click released in place.</summary>
     private IReadOnlyList<Intent> ClickLeft(PointerContext context)
     {
-        if (_scheme == ControlScheme.Classic && IsGroundOrder(context))
+        if (_scheme == ControlScheme.Classic && (IsGroundOrder(context) || (context.Alt && context.HasSelection)))
         {
-            // Z or Ctrl + Shift give a point on the ground even over a unit.
+            // Z or Ctrl + Shift give a point on the ground even over a unit; so does Alt, a forced move (RA2).
             return Order(context);
         }
 
@@ -549,7 +549,8 @@ public sealed class InputInterpreter
     /// </summary>
     private static Intent? AttackOf(PointerContext context)
     {
-        if (!context.HasSelection || context.WaypointMode || (context.Ctrl && context.Shift))
+        // Alt: a forced move (RA2), never an attack.
+        if (!context.HasSelection || context.WaypointMode || (context.Ctrl && context.Shift) || (context.Alt && !context.Ctrl))
         {
             return null;
         }

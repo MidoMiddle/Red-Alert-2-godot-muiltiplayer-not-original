@@ -18,11 +18,11 @@ public sealed class KeyBindingsTests
     {
         var bindings = new KeyBindings();
 
-        var result = bindings.Rebind("pause", "O");
+        var result = bindings.Rebind("pause", "J");
 
         Assert.Equal(RebindStatus.Set, result.Status);
-        Assert.Equal("O", bindings.KeyOf("pause"));
-        Assert.Equal("N", bindings.KeyOf("step"));
+        Assert.Equal("J", bindings.KeyOf("pause"));
+        Assert.Equal("Period", bindings.KeyOf("step"));
     }
 
     [Fact]
@@ -30,11 +30,11 @@ public sealed class KeyBindingsTests
     {
         var bindings = new KeyBindings();
 
-        var result = bindings.Rebind("pause", "N");
+        var result = bindings.Rebind("pause", "Period");
 
-        Assert.Equal(new RebindResult(RebindStatus.Swapped, "step", "P"), result);
-        Assert.Equal("N", bindings.KeyOf("pause"));
-        Assert.Equal("P", bindings.KeyOf("step"));
+        Assert.Equal(new RebindResult(RebindStatus.Swapped, "step", "Pause"), result);
+        Assert.Equal("Period", bindings.KeyOf("pause"));
+        Assert.Equal("Pause", bindings.KeyOf("step"));
     }
 
     [Theory]
@@ -47,7 +47,7 @@ public sealed class KeyBindingsTests
         var bindings = new KeyBindings();
 
         Assert.Equal(RebindStatus.Refused, bindings.Rebind("pause", key).Status);
-        Assert.Equal("P", bindings.KeyOf("pause"));
+        Assert.Equal("Pause", bindings.KeyOf("pause"));
     }
 
     [Fact]
@@ -77,13 +77,13 @@ public sealed class KeyBindingsTests
     public void KeysSurviveASaveAndALoad()
     {
         var bindings = new KeyBindings();
-        bindings.Rebind("pause", "O");
-        bindings.Rebind("step", "P");
+        bindings.Rebind("pause", "J");
+        bindings.Rebind("step", "Y");
 
         var loaded = KeyBindings.Parse(bindings.ToRaw(), _ => true);
 
-        Assert.Equal("O", loaded.KeyOf("pause"));
-        Assert.Equal("P", loaded.KeyOf("step"));
+        Assert.Equal("J", loaded.KeyOf("pause"));
+        Assert.Equal("Y", loaded.KeyOf("step"));
     }
 
     [Fact]
@@ -97,8 +97,8 @@ public sealed class KeyBindingsTests
 
         var loaded = KeyBindings.Parse(raw, _ => true);
 
-        Assert.Equal("P", loaded.KeyOf("pause"));
-        Assert.Equal("N", loaded.KeyOf("step"));
+        Assert.Equal("Pause", loaded.KeyOf("pause"));
+        Assert.Equal("Period", loaded.KeyOf("step"));
     }
 
     [Fact]
@@ -108,18 +108,18 @@ public sealed class KeyBindingsTests
 
         var loaded = KeyBindings.Parse(raw, key => key != "Hyperkey");
 
-        Assert.Equal("P", loaded.KeyOf("pause"));
+        Assert.Equal("Pause", loaded.KeyOf("pause"));
     }
 
     [Fact]
     public void ADuplicateKeyInTheFileFallsBackToTheDefault()
     {
-        var raw = new Dictionary<string, string> { ["keys/pause"] = "P", ["keys/step"] = "P" };
+        var raw = new Dictionary<string, string> { ["keys/pause"] = "J", ["keys/step"] = "J" };
 
         var loaded = KeyBindings.Parse(raw, _ => true);
 
-        Assert.Equal("P", loaded.KeyOf("pause"));
-        Assert.Equal("N", loaded.KeyOf("step"));
+        Assert.Equal("J", loaded.KeyOf("pause"));
+        Assert.Equal("Period", loaded.KeyOf("step"));
     }
 
     [Fact]
@@ -131,6 +131,33 @@ public sealed class KeyBindingsTests
         Assert.Equal("S", bindings.KeyOf("stop"));
         Assert.Equal("X", bindings.KeyOf("scatter"));
         Assert.Equal("Z", bindings.KeyOf("waypoint_mode"));
+
+        // Layout 4: the tabs Q / W / E / R, P for the combat units, N / M for the idle ones, H for the base, K / L for repair and sell.
+        Assert.Equal(["Q", "W", "E", "R"], new[] { "tab_buildings", "tab_defense", "tab_infantry", "tab_vehicles" }.Select(bindings.KeyOf));
+        Assert.Equal(["P", "N", "M", "H", "K", "L"], new[] { "select_all", "next_unit", "previous_unit", "home", "repair_mode", "sell_mode" }.Select(bindings.KeyOf));
+    }
+
+    [Fact]
+    public void A_file_of_layout_3_gives_its_old_defaults_up_to_the_ra2_keys()
+    {
+        var raw = new Dictionary<string, string>
+        {
+            ["keys/layout"] = "3",
+            ["keys/select_all"] = "E",
+            ["keys/pause"] = "P",
+            ["keys/step"] = "N",
+            ["keys/new_session"] = "R",
+            ["keys/debug_damage"] = "K",
+            ["keys/debug_sell"] = "L",
+            ["keys/stop"] = "S",
+            ["keys/guard"] = "I",
+        };
+
+        var loaded = KeyBindings.Parse(raw, _ => true);
+
+        Assert.Equal(["P", "E", "R", "N", "K", "L"], new[] { "select_all", "tab_infantry", "tab_vehicles", "next_unit", "repair_mode", "sell_mode" }.Select(loaded.KeyOf));
+        Assert.Equal(["Pause", "Period", "Insert", "O", "I"], new[] { "pause", "step", "new_session", "debug_damage", "guard" }.Select(loaded.KeyOf));
+        Assert.Empty(loaded.Unbound());
     }
 
     [Theory]
@@ -151,7 +178,7 @@ public sealed class KeyBindingsTests
             ["keys/camera_down"] = "S",
             ["keys/camera_left"] = "A",
             ["keys/camera_right"] = "D",
-            ["keys/pause"] = "O",
+            ["keys/pause"] = "J",
         };
 
         var loaded = KeyBindings.Parse(raw, _ => true);
@@ -159,7 +186,7 @@ public sealed class KeyBindingsTests
         Assert.Equal("Up", loaded.KeyOf("camera_up"));
         Assert.Equal("Down", loaded.KeyOf("camera_down"));
         Assert.Equal("S", loaded.KeyOf("stop"));
-        Assert.Equal("O", loaded.KeyOf("pause"));
+        Assert.Equal("J", loaded.KeyOf("pause"));
         Assert.Empty(loaded.Unbound());
     }
 

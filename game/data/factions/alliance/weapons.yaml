@@ -1,13 +1,22 @@
 # The weapons of the Alliance (docs/content/names.md), as the Union's in game/data/factions/union/weapons.yaml: reload is RA2 ROF / 15
 # seconds, range in cells. The balance comes with M11c.
-alliance_rifle:  # of the Rifleman
+alliance_rifle:  # of the Rifleman, RA2 M60: 15, ROF 20, range 4
   kind: weapon
   name: Assault Rifle
   damage: 15
   reload: 1.33s
-  range: 5
+  range: 4
   projectile: bullet
   warhead: small_arms
+
+alliance_rifle_deployed:  # of the Rifleman behind its sandbags, RA2 Para: 15, ROF 15, range 5
+  kind: weapon
+  name: Machine Gun
+  damage: 15
+  reload: 1s
+  range: 5
+  projectile: bullet
+  warhead: small_arms_deployed
 
 alliance_light_cannon:  # of the Light Tank
   kind: weapon

@@ -58,7 +58,8 @@ public sealed record UnitArchetype(
     UnitType Spawn = 0,
     int SpawnCount = 0,
     int SpawnRegen = 0,
-    int Cost = 0)
+    int Cost = 0,
+    int DeployedWeapon = -1)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;

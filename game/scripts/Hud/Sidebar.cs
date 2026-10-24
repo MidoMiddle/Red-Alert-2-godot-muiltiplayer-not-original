@@ -121,6 +121,14 @@ public partial class Sidebar : Control
     /// <summary>Connects the sidebar to the match: it reads the local player's economy and sends its clicks.</summary>
     public void Bind(SimulationHost host, PlayerInput input)
     {
+        input.TabRequested += tab =>
+        {
+            // A tab without a factory stays shut.
+            if (tab >= 0 && tab < _tabs.Length && !_tabs[tab].Disabled)
+            {
+                _tabs[tab].ButtonPressed = true;
+            }
+        };
         _host = host;
         _input = input;
     }

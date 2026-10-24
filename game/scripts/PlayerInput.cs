@@ -49,6 +49,9 @@ public partial class PlayerInput : Node
     /// <summary>The number the double tap counts the type select key by.</summary>
     private const int TypeSelectKey = 1;
 
+    // The key of P for the double tap.
+    private const int CombatSelectKey = 2;
+
     /// <summary>The selection box on screen: a thin green frame, symbolic (docs/implementation/conventions.md, section 12).</summary>
     private readonly ReferenceRect _box = new()
     {
@@ -147,6 +150,7 @@ public partial class PlayerInput : Node
     public override void _Ready()
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
+        _host.EventRaised += Remember;
         _camera = GetNode<RtsCamera>("../CameraRig");
         _pauseMenu = GetNode<PauseMenu>("../PauseMenu");
         var settings = AppSettings.Instance?.Values ?? SettingsValues.Defaults;
@@ -232,7 +236,15 @@ public partial class PlayerInput : Node
 
     private void HandleKey(InputEventKey key)
     {
-        if (key is { Pressed: true, Echo: false } && key.Keycode is >= Key.F1 and <= Key.F4)
+        if (key is { Pressed: true, Echo: false, Keycode: Key.Space })
+        {
+            // Space (RA2): the camera goes to the last event of the radar.
+            if (_lastEvent is { } point)
+            {
+                _camera.CenterOn(WorldCoords.ToGodotOnGround(point));
+            }
+        }
+        else if (key is { Pressed: true, Echo: false } && key.Keycode is >= Key.F1 and <= Key.F4)
         {
             HandleBookmarkKey((int)(key.Keycode - Key.F1) + 1, key.CtrlPressed || key.MetaPressed);
         }
@@ -318,18 +330,39 @@ public partial class PlayerInput : Node
         }
         else if (key.IsActionPressed("deploy", false, true) && !Selection.IsEmpty && !_host.IsPlayback)
         {
-            // D: the selected MCVs turn into construction yards (M3 step 7).
+            // D: the selected MCVs turn into construction yards (M3 step 7), transports unload, soldiers dig in or get up.
             _host.IssueDeploy(Selection.Units);
         }
-        else if (key.IsActionPressed("debug_sell", false, true) && CellUnderPointer is { } sold && !_host.IsPlayback)
+        else if (key.IsActionPressed("deploy", false, true) && SelectedFactory is { } yard && IsYard(yard) && !_host.IsPlayback)
         {
-            // Debug (M3 step 11): sell the building under the cursor; the Sell button of the sidebar does it with the mouse.
-            _host.IssueSell(sold);
+            // D on the selected construction yard: it packs up into its MCV (RA2).
+            _host.IssueDeploy([yard]);
+            ChangeSelection(Selection.Clear);
         }
-        else if (key.IsActionPressed("debug_repair", false, true) && CellUnderPointer is { } repaired && !_host.IsPlayback)
+        else if (TabKey(key) is { } tab)
         {
-            // Debug (M3 step 11): turn the repair of the building under the cursor on or off.
-            _host.IssueToggleRepair(repaired);
+            // Q / W / E / R: the tabs of the sidebar (RA2).
+            TabRequested?.Invoke(tab);
+        }
+        else if (key.IsActionPressed("next_unit", false, true))
+        {
+            NextUnit(+1);
+        }
+        else if (key.IsActionPressed("previous_unit", false, true))
+        {
+            NextUnit(-1);
+        }
+        else if (key.IsActionPressed("home", false, true))
+        {
+            CenterOnBase();
+        }
+        else if (key.IsActionPressed("repair_mode", false, true))
+        {
+            ToggleRepair();
+        }
+        else if (key.IsActionPressed("sell_mode", false, true))
+        {
+            ToggleSell();
         }
         else if (key.IsActionPressed("debug_damage", false, true) && CellUnderPointer is { } damaged)
         {
@@ -338,10 +371,8 @@ public partial class PlayerInput : Node
         }
         else if (key.IsActionPressed("select_all", false, true))
         {
-            // Debug: every living unit of the player, to try group orders.
-            ChangeSelection(() => Selection.ReplaceAll(_host.Simulation.World.Entities
-                .Where(e => e is Unit { IsAlive: true } && e.Owner == SimulationHost.LocalPlayer)
-                .Select(e => e.Id)));
+            // P (RA2): the combat units on the field; a second P within 400 ms takes those of the whole map.
+            SelectCombatUnits(_typeTaps.Press(CombatSelectKey, Time.GetTicksMsec()));
         }
         else if (key.IsActionPressed("stop", false, true) && !Selection.IsEmpty)
         {
@@ -907,6 +938,106 @@ public partial class PlayerInput : Node
     // The building that produces selected instead of units: an order on the ground sets its rally point.
     private EntityId? _factory;
 
+    // Where the last event of the radar happened (Space), and the unit N / M picked last.
+    private WorldPos? _lastEvent;
+    private EntityId _cycled;
+
+    /// <summary>Q / W / E / R: the sidebar shows the tab of the number (the order of <c>BuildGroup</c>).</summary>
+    public event Action<int>? TabRequested;
+
+    /// <summary>The tab of a tab key, or null.</summary>
+    private static int? TabKey(InputEventKey key) =>
+        key.IsActionPressed("tab_buildings", false, true) ? 0
+        : key.IsActionPressed("tab_defense", false, true) ? 1
+        : key.IsActionPressed("tab_infantry", false, true) ? 2
+        : key.IsActionPressed("tab_vehicles", false, true) ? 3
+        : null;
+
+    /// <summary>Whether the building is the player's construction yard.</summary>
+    private bool IsYard(EntityId id) =>
+        _host.Simulation.World.TryGet(id, out var entity) && entity is Building { Def: { } def }
+        && def.Id == _host.Simulation.World.Player(SimulationHost.LocalPlayer).Faction.ConstructionYard;
+
+    /// <summary>
+    /// P (RA2): the player's combat units — armed, not a harvester nor an engineer, nor a plane that is not the player's to order — on
+    /// the field, or on the whole map (at most one command's worth).
+    /// </summary>
+    private void SelectCombatUnits(bool wholeMap)
+    {
+        var field = FieldScreenRect();
+        var world = _host.Simulation.World;
+        var picked = OwnUnitsOnScreen()
+            .Where(entry => wholeMap || field.Contains(entry.Point))
+            .Select(entry => entry.Unit)
+            .Where(id => world.TryGet(id, out var entity) && entity is Unit
+            {
+                Archetype.Armed: true, Harvester: null, Drop: null, Mother: null,
+            } unit && !unit.Archetype.Has(UnitTalents.Engineer))
+            .Take(Rts.Simulation.Commands.UnitsCommand.MaxUnits)
+            .ToList();
+        if (picked.Count > 0)
+        {
+            ChangeSelection(() => Selection.ReplaceAll(picked));
+        }
+    }
+
+    /// <summary>N / M (RA2): selects the next or the previous own unit without orders, by id, and the camera goes to it.</summary>
+    private void NextUnit(int step)
+    {
+        var units = _host.Simulation.World.Entities
+            .OfType<Unit>()
+            .Where(unit => unit.IsAlive && unit.Owner == SimulationHost.LocalPlayer && unit.Drop is null && unit.Mother is null
+                && unit.MoveTarget is null && !unit.PathPending && unit.Target is null && unit.Harvester is null)
+            .ToList();
+        if (units.Count == 0)
+        {
+            return;
+        }
+
+        var at = units.FindIndex(unit => unit.Id == _cycled);
+        var next = units[at < 0 ? (step > 0 ? 0 : units.Count - 1) : (at + step + units.Count) % units.Count];
+        _cycled = next.Id;
+        ChangeSelection(() => Selection.Replace(next.Id));
+        _camera.CenterOn(WorldCoords.ToGodotOnGround(next.Position));
+    }
+
+    /// <summary>H (RA2): the camera goes to the construction yard, or the first building, or the MCV.</summary>
+    private void CenterOnBase()
+    {
+        var world = _host.Simulation.World;
+        var player = SimulationHost.LocalPlayer;
+        var own = world.Entities.Where(entity => entity.IsAlive && entity.Owner == player).ToList();
+        var yard = own.OfType<Building>().FirstOrDefault(building => IsYard(building.Id));
+        var any = own.OfType<Building>().FirstOrDefault(building => building.Def is not null);
+        var mcv = own.OfType<Unit>().FirstOrDefault(unit => IsMcv(unit.Id, out _));
+        WorldPos? point = (yard ?? any) is { } building ? Rts.Simulation.Combat.Aim.CentreOf(building) : mcv?.Position;
+        if (point is { } centre)
+        {
+            _camera.CenterOn(WorldCoords.ToGodotOnGround(centre));
+        }
+    }
+
+    /// <summary>Remembers where an event of the radar for the local player happened, for Space.</summary>
+    private void Remember(Rts.Simulation.Events.SimEvent simEvent)
+    {
+        var world = _host.Simulation.World;
+        var player = SimulationHost.LocalPlayer;
+        WorldPos? point = simEvent switch
+        {
+            Rts.Simulation.Events.UnderAttack attack when attack.Player == player => attack.Point,
+            Rts.Simulation.Events.BuildingCaptured captured when (captured.To == player || captured.From == player)
+                && world.TryGet(captured.Building, out var taken) && taken is Building building => Rts.Simulation.Combat.Aim.CentreOf(building),
+            Rts.Simulation.Events.SuperweaponFired fired => fired.Target.Center,
+            Rts.Simulation.Events.UnitPromoted promoted when promoted.Owner == player && world.TryGet(promoted.Unit, out var veteran) && veteran is Unit unit
+                => unit.Position,
+            _ => null,
+        };
+        if (point is not null)
+        {
+            _lastEvent = point;
+        }
+    }
+
     /// <summary>The player's own building that produces, selected; null when none is, or it is gone or taken.</summary>
     public EntityId? SelectedFactory =>
         _factory is { } id && _host.Simulation.World.TryGet(id, out var entity)
@@ -914,7 +1045,7 @@ public partial class PlayerInput : Node
             ? id
             : null;
 
-    /// <summary>The player's own ready building that produces at <paramref name="point"/>, if any.</summary>
+    /// <summary>The player's own ready building that produces at <paramref name="point"/> — the construction yard among them — if any.</summary>
     private EntityId? FactoryAt(WorldPos point) =>
         _host.Simulation.World.BuildingAt(point.ToCell()) is { IsAlive: true, IsReady: true, Def.Produces.Length: > 0 } building
         && building.Owner == SimulationHost.LocalPlayer

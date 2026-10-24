@@ -443,9 +443,16 @@ public partial class SimulationHost : Node
     {
         foreach (var unit in units)
         {
-            // An MCV, or a unit with a deploy weapon (stage 3b: the toxin trooper).
-            if (Simulation.World.TryGet(unit, out var entity) && entity is Unit { IsAlive: true } mcv && mcv.Owner == LocalPlayer
-                && (mcv.Archetype.Id == Simulation.World.Player(LocalPlayer).Faction.Mcv || mcv.Archetype.DeployWeapon >= 0 || mcv.Passengers.Count > 0))
+            // An MCV, a unit with a deploy weapon (stage 3b: the toxin trooper), one that digs in (the Rifleman), a transport with
+            // passengers; or the construction yard, which packs up (RA2).
+            var faction = Simulation.World.Player(LocalPlayer).Faction;
+            if (Simulation.World.TryGet(unit, out var entity) && entity.IsAlive && entity.Owner == LocalPlayer
+                && entity switch
+                {
+                    Unit mcv => mcv.Archetype.Id == faction.Mcv || mcv.Archetype.DeployWeapon >= 0 || mcv.Archetype.DeployedWeapon >= 0 || mcv.Passengers.Count > 0,
+                    Building yard => yard.Def?.Id == faction.ConstructionYard,
+                    _ => false,
+                })
             {
                 Issue(new DeployCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, unit));
             }

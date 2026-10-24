@@ -12,6 +12,7 @@ alliance_rifleman:  # rifle infantry
   threat: 10
   armor: flak
   primary: alliance_rifle
+  deployed_weapon: alliance_rifle_deployed  # D: behind sandbags, RA2 Deployer; the sandbags give no armor (RA2)
   sight: 5
   prerequisites: [alliance_barracks]
   ifv_weapon: ifv_machine_gun

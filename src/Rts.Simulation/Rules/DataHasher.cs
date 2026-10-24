@@ -111,6 +111,7 @@ public static class DataHasher
             hash.Add(unit.Ammo);
             hash.Add(unit.SelfHeal);
             hash.Add(unit.Trainable);
+            Add(hash, unit.DeployedWeapon);
             Add(hash, unit.Spawns);
             hash.Add(unit.SpawnCount);
             hash.Add(unit.SpawnRegen);

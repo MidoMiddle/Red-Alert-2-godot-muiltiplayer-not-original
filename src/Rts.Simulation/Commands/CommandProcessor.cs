@@ -527,9 +527,10 @@ public static class CommandProcessor
             return TransportSystem.Unload(world, transport, events);
         }
 
-        // A unit with a deploy weapon (stage 3b: the toxin trooper) deploys where it stands, or undeploys.
-        if (world.TryGet(command.Unit, out var deploying) && deploying is Unit { IsAlive: true, Archetype.DeployWeapon: >= 0 } trooper
-            && trooper.Owner == command.Player)
+        // A unit with a deploy weapon (stage 3b: the toxin trooper) or a deployed one (the Rifleman's sandbags) deploys where it
+        // stands, or undeploys.
+        if (world.TryGet(command.Unit, out var deploying) && deploying is Unit { IsAlive: true } trooper
+            && (trooper.Archetype.DeployWeapon >= 0 || trooper.Archetype.DeployedWeapon >= 0) && trooper.Owner == command.Player)
         {
             var deployed = !trooper.Deployed;
             UnitOrders.Stop(world, trooper);
@@ -539,6 +540,12 @@ public static class CommandProcessor
         }
 
         var faction = world.Player(command.Player).Faction;
+        if (world.TryGet(command.Unit, out var packing) && packing is Building { IsAlive: true, IsReady: true, Def: { } packed } yardBuilding
+            && yardBuilding.Owner == command.Player && packed.Id == faction.ConstructionYard)
+        {
+            return Undeploy(world, yardBuilding, faction, events);
+        }
+
         if (!world.TryGet(command.Unit, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Owner != command.Player
             || unit.Archetype.Id != faction.Mcv || !world.Rules.Database.TryGetBuilding(faction.ConstructionYard, out var yard))
         {
@@ -559,6 +566,29 @@ public static class CommandProcessor
         var building = world.CreateBuilding(command.Player, yard, cell, ready: false, events);
         events?.Add(new BuildingPlaced(world.CurrentTick, building.Id, command.Player, building.DefIndex, cell));
         events?.Add(new Deployed(world.CurrentTick, unit.Id, building.Id));
+        return true;
+    }
+
+    /// <summary>
+    /// The construction yard packs up into its MCV (RA2 <c>UndeploysInto</c>): the MCV stands on the cell it would deploy from, with
+    /// the yard's share of its hit points; the yard leaves without a wreck, its cells open at the end of the tick. Its queues go as
+    /// with any lost factory.
+    /// </summary>
+    private static bool Undeploy(GameWorld world, Building yard, FactionDef faction, List<SimEvent>? events)
+    {
+        if (!UnitTypes.TryGetById(faction.Mcv, out var mcvType))
+        {
+            return false;
+        }
+
+        var centre = new CellPos(yard.Cell.X + (yard.Width - 1) / 2, yard.Cell.Y + (yard.Height - 1) / 2);
+        var share = (long)yard.Hp * 1000 / IntMath.Max(1, yard.MaxHp);
+        GarrisonSystem.Evacuate(world, yard, events);
+        world.DestroyBuilding(yard, null);
+        var mcv = world.SpawnUnit(yard.Owner, mcvType, centre.Center);
+        world.SetHp(mcv, IntMath.Max(1, (int)(mcv.MaxHp * share / 1000)), events);
+        events?.Add(new Undeployed(world.CurrentTick, yard.Id, mcv.Id));
+        events?.Add(new UnitSpawned(world.CurrentTick, mcv.Id, mcv.Owner, mcv.Type, mcv.Position));
         return true;
     }
 

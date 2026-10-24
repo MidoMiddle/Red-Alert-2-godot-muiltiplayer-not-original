@@ -22,7 +22,7 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
-        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -121,6 +121,7 @@ internal static class DefinitionReader
             DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
             Teleports = fields.Optional("teleports", Scalars.Flag, false),
             DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
+            DeployedWeapon = fields.Optional("deployed_weapon", Scalars.Id, ""),
             RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),
             DisguiseWhenStill = fields.Optional("disguise_when_still", Scalars.Flag, false),
             PassengerSlots = fields.Optional("passengers", Scalars.Int, 0),

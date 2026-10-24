@@ -28,18 +28,27 @@ public sealed class KeyBindings
 {
     private const string KeyPrefix = "keys/";
 
-    /// <summary>Marks a file written with the layout of this step. Files without it keep their keys, but not the old ones (see <see cref="OldCameraKeys"/>).</summary>
+    /// <summary>Marks a file written with the layout of this step. Files without it keep their keys, but not the old defaults (see <see cref="OldDefaults"/>).</summary>
     private const string LayoutKey = KeyPrefix + "layout";
 
-    private const string Layout = "3";
+    private const string Layout = "4";
 
-    /// <summary>The camera keys of the M6 layout. A file without the layout mark that still has them gets the arrows.</summary>
-    private static readonly Dictionary<string, string> OldCameraKeys = new(StringComparer.Ordinal)
+    /// <summary>
+    /// The keys of the layouts before that the RA2 keys took (layout 4): the W / S / A / D camera of M6, and E, P, N, R, K, which
+    /// are now the tabs, the selection of every unit, the next unit, the repair and the debug keys moved off them. A file of an
+    /// older layout that still has one of these gets the new default.
+    /// </summary>
+    private static readonly Dictionary<string, string> OldDefaults = new(StringComparer.Ordinal)
     {
         ["camera_up"] = "W",
         ["camera_down"] = "S",
         ["camera_left"] = "A",
         ["camera_right"] = "D",
+        ["select_all"] = "E",
+        ["pause"] = "P",
+        ["step"] = "N",
+        ["new_session"] = "R",
+        ["debug_damage"] = "K",
     };
 
     public static IReadOnlyList<KeyAction> Actions { get; } = new[]
@@ -48,13 +57,13 @@ public sealed class KeyBindings
         new KeyAction("camera_down", "UI_KEY_CAMERA_DOWN", "Down"),
         new KeyAction("camera_left", "UI_KEY_CAMERA_LEFT", "Left"),
         new KeyAction("camera_right", "UI_KEY_CAMERA_RIGHT", "Right"),
-        new KeyAction("pause", "UI_KEY_PAUSE", "P"),
-        new KeyAction("step", "UI_KEY_STEP", "N"),
+        new KeyAction("pause", "UI_KEY_PAUSE", "Pause"),
+        new KeyAction("step", "UI_KEY_STEP", "Period"),
         new KeyAction("speed_up", "UI_KEY_SPEED_UP", "Equal"),
         new KeyAction("speed_down", "UI_KEY_SPEED_DOWN", "Minus"),
         new KeyAction("save_replay", "UI_KEY_SAVE_REPLAY", "F5"),
         new KeyAction("load_replay", "UI_KEY_LOAD_REPLAY", "F9"),
-        new KeyAction("new_session", "UI_KEY_NEW_SESSION", "R"),
+        new KeyAction("new_session", "UI_KEY_NEW_SESSION", "Insert"),
         new KeyAction("type_select", "UI_KEY_TYPE_SELECT", "T"),
         new KeyAction("spawn", "UI_KEY_SPAWN", "B"),
         new KeyAction("guard", "UI_KEY_GUARD", "G"),
@@ -62,15 +71,23 @@ public sealed class KeyBindings
         new KeyAction("debug_path", "UI_KEY_DEBUG_PATH", "F6"),
         new KeyAction("debug_cells", "UI_KEY_DEBUG_CELLS", "F7"),
         new KeyAction("debug_queue", "UI_KEY_DEBUG_QUEUE", "F8"),
-        new KeyAction("select_all", "UI_KEY_SELECT_ALL", "E"),
+        new KeyAction("select_all", "UI_KEY_SELECT_ALL", "P"),
         new KeyAction("stop", "UI_KEY_STOP", "S"),
         new KeyAction("scatter", "UI_KEY_SCATTER", "X"),
         new KeyAction("waypoint_mode", "UI_KEY_WAYPOINT_MODE", "Z"),
-        new KeyAction("debug_damage", "UI_KEY_DEBUG_DAMAGE", "K"),
+        new KeyAction("debug_damage", "UI_KEY_DEBUG_DAMAGE", "O"),
         new KeyAction("debug_build", "UI_KEY_DEBUG_BUILD", "V"),
         new KeyAction("debug_produce", "UI_KEY_DEBUG_PRODUCE", "U"),
-        new KeyAction("debug_sell", "UI_KEY_DEBUG_SELL", "L"),
-        new KeyAction("debug_repair", "UI_KEY_DEBUG_REPAIR", "J"),
+        // The keys of RA2 (layout 4): the tabs of the sidebar, the next and previous unit, the base, repair and sell.
+        new KeyAction("tab_buildings", "UI_KEY_TAB_BUILDINGS", "Q"),
+        new KeyAction("tab_defense", "UI_KEY_TAB_DEFENSE", "W"),
+        new KeyAction("tab_infantry", "UI_KEY_TAB_INFANTRY", "E"),
+        new KeyAction("tab_vehicles", "UI_KEY_TAB_VEHICLES", "R"),
+        new KeyAction("next_unit", "UI_KEY_NEXT_UNIT", "N"),
+        new KeyAction("previous_unit", "UI_KEY_PREVIOUS_UNIT", "M"),
+        new KeyAction("home", "UI_KEY_HOME", "H"),
+        new KeyAction("repair_mode", "UI_KEY_REPAIR_MODE", "K"),
+        new KeyAction("sell_mode", "UI_KEY_SELL_MODE", "L"),
         new KeyAction("debug_reveal", "UI_KEY_DEBUG_REVEAL", "F10"),
         new KeyAction("debug_switch_player", "UI_KEY_DEBUG_SWITCH_PLAYER", "F11"),
         new KeyAction("debug_ai", "UI_KEY_DEBUG_AI", "F12"),
@@ -158,7 +175,7 @@ public sealed class KeyBindings
 
     /// <summary>
     /// Reads the keys from the file contents. A missing, unknown, refused or unknown-to-the-game key gets its default. A file
-    /// without the current layout mark keeps its own keys, except the old W / S / A / D camera keys, which give way to the arrows.
+    /// without the current layout mark keeps its own keys, except the old defaults (<see cref="OldDefaults"/>), which give way to the new.
     /// A key of an action that no longer exists (spawn_type, before the layout 3) is ignored, so T goes to type select. Keys
     /// from the file come first: a file key that an earlier action already has falls back to the default, and a default that
     /// is already taken leaves the action without a key (empty), so no two actions ever share one.
@@ -172,7 +189,7 @@ public sealed class KeyBindings
         foreach (var action in Actions)
         {
             if (raw.TryGetValue(KeyPrefix + action.Id, out var key) && !IsRefused(key) && isKnownKey(key)
-                && !(oldLayout && OldCameraKeys.TryGetValue(action.Id, out var oldKey) && SameKey(oldKey, key))
+                && !(oldLayout && OldDefaults.TryGetValue(action.Id, out var oldKey) && SameKey(oldKey, key))
                 && used.Add(key))
             {
                 bindings._keys[action.Id] = key;

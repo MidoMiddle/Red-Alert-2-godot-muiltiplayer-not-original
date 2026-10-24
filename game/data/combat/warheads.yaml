@@ -8,6 +8,12 @@ small_arms:  # RA2 SA: rifles and machine guns, strong against infantry
   verses: { none: 100%, flak: 80%, plate: 80%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
   infantry_death: normal
 
+small_arms_deployed:  # RA2 SSA: the machine gun of a Rifleman dug in, better at light and medium armor
+  kind: warhead
+  name: Heavy Small Arms
+  verses: { none: 100%, flak: 100%, plate: 70%, light: 60%, medium: 40%, heavy: 40%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  infantry_death: normal
+
 ap_shell:  # RA2 AP: tank shells, strong against vehicles
   kind: warhead
   name: Armor Piercing

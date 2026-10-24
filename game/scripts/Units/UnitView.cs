@@ -37,6 +37,39 @@ public partial class UnitView : Node3D
         }
     }
 
+    private static readonly StandardMaterial3D SandbagMaterial = new() { AlbedoColor = new Color(0.66f, 0.58f, 0.4f) };
+
+    private Node3D? _sandbags;
+
+    /// <summary>Shows or hides the ring of sandbags of a soldier dug in; made the first time it is shown.</summary>
+    public void SetSandbags(bool shown)
+    {
+        if (_sandbags is null)
+        {
+            if (!shown)
+            {
+                return;
+            }
+
+            _sandbags = new Node3D { Name = "Sandbags" };
+            AddChild(_sandbags);
+            const int Bags = 8;
+            for (var i = 0; i < Bags; i++)
+            {
+                var angle = i * Mathf.Tau / Bags;
+                _sandbags.AddChild(new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.14f, 0.09f, 0.07f) },
+                    Position = new Vector3(Mathf.Cos(angle) * 0.24f, 0.045f, Mathf.Sin(angle) * 0.24f),
+                    Rotation = new Vector3(0, -angle + (Mathf.Pi / 2), 0),
+                    MaterialOverride = SandbagMaterial,
+                });
+            }
+        }
+
+        _sandbags.Visible = shown;
+    }
+
     public void SetMaterial(Material teamMaterial)
     {
         _body.MaterialOverride = teamMaterial;

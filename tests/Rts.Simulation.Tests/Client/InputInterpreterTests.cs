@@ -158,15 +158,19 @@ public sealed class InputInterpreterTests
     }
 
     [Fact]
-    public void AltClickOnTheGroundSpawnsAUnitInBothSchemes()
+    public void AltAndAnOrderOnAnEnemyIsAForcedMoveInBothSchemes()
     {
-        foreach (var scheme in new[] { ControlScheme.Classic, ControlScheme.Modern })
-        {
-            var input = new InputInterpreter(scheme, cameraDrag: true);
+        // RA2: Alt moves to the point, over an enemy too (to crush it), and attacks nothing; the debug spawn is B's alone.
+        var classic = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        Assert.Equal(new Intent[] { new OrderMove(Spot) }, LeftClick(classic, Context(OtherUnit, hasSelection: true, alt: true)));
+        Assert.Empty(LeftClick(classic, Context(Ground, alt: true)));
 
-            Assert.Equal(new Intent[] { new SpawnUnit(Spot) }, input.Press(PointerButton.Left, Here, Context(Ground, alt: true)));
-            Assert.Empty(input.Release(PointerButton.Left));
-        }
+        var modern = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        Assert.Equal(new Intent[] { new OrderMove(Spot) }, modern.Press(PointerButton.Right, Here, Context(OtherUnit, hasSelection: true, alt: true)));
+        Assert.Empty(modern.Release(PointerButton.Right));
+
+        modern.ArmSpawn();
+        Assert.Equal(new Intent[] { new SpawnUnit(Spot) }, modern.Press(PointerButton.Left, Here, Context(Ground)));
     }
 
     [Fact]

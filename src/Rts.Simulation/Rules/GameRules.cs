@@ -189,7 +189,8 @@ public sealed class GameRules
                 UnitTypes.TryGetById(unit.Spawns, out var spawn) ? spawn : 0,
                 unit.SpawnCount,
                 unit.SpawnRegen,
-                unit.Cost);
+                unit.Cost,
+                database.IndexOfWeapon(unit.DeployedWeapon));
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -334,6 +335,12 @@ public sealed class GameRules
     /// </summary>
     public ImmutableArray<int> WeaponsOf(Unit unit)
     {
+        // Dug in (the Rifleman behind sandbags), it fires its deployed weapon only.
+        if (unit.Deployed && unit.Archetype.DeployedWeapon >= 0)
+        {
+            return _single[unit.Archetype.DeployedWeapon];
+        }
+
         if (unit.Archetype.Has(UnitTalents.PassengerWeapon) && unit.Passengers.Count > 0 && Unit(unit.Passengers[0].Type).IfvWeapon is >= 0 and var given)
         {
             return _single[given];

@@ -129,6 +129,9 @@ public sealed record CannotPlace(int Tick, PlayerId Player, int DefIndex, CellPo
 /// <summary>The MCV turned into <paramref name="Building"/>, its construction yard (4.9).</summary>
 public sealed record Deployed(int Tick, EntityId Unit, EntityId Building) : SimEvent(Tick);
 
+/// <summary>The construction yard <paramref name="Building"/> packed up into the MCV <paramref name="Unit"/> (RA2 <c>UndeploysInto</c>).</summary>
+public sealed record Undeployed(int Tick, EntityId Building, EntityId Unit) : SimEvent(Tick);
+
 /// <summary>The MCV could not turn into its construction yard where it stands, for <paramref name="Problem"/>.</summary>
 public sealed record CannotDeploy(int Tick, PlayerId Player, EntityId Unit, PlacementProblem Problem) : SimEvent(Tick);
 

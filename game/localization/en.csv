@@ -254,15 +254,13 @@ UI_KEY_DEPLOY,Deploy the selected MCV
 UI_KEY_DEBUG_PATH,Show paths of the selected units
 UI_KEY_DEBUG_CELLS,Cell overlay (passability / reservations / buckets)
 UI_KEY_DEBUG_QUEUE,Path queue graph
-UI_KEY_SELECT_ALL,Select all own units
+UI_KEY_SELECT_ALL,Select the combat units on screen (twice: on the map)
 UI_KEY_STOP,Stop
 UI_KEY_SCATTER,Scatter
 UI_KEY_WAYPOINT_MODE,Waypoints (hold)
 UI_KEY_DEBUG_DAMAGE,Damage the map object / bridge / building under the cursor (debug)
 UI_KEY_DEBUG_BUILD,Produce and place a building (press, then click when ready; again: next type) (debug)
 UI_KEY_DEBUG_PRODUCE,Produce units of the spawn type (Shift: five) (debug)
-UI_KEY_DEBUG_SELL,Sell the building under the cursor (debug)
-UI_KEY_DEBUG_REPAIR,Repair the building under the cursor on / off (debug)
 UI_KEY_DEBUG_REVEAL,Show the whole map through the fog of war (debug)
 UI_KEY_DEBUG_SWITCH_PLAYER,Play as the next player (debug builds)
 UI_KEY_DEBUG_AI,Show what the bot thinks (debug builds)
@@ -392,3 +390,12 @@ UI_SKIRMISH_COUNTRY,Country
 UI_SKIRMISH_COUNTRY_HINT,Each country has a unit or building of its own; the USA drops paratroopers from its air force command
 UI_SKIRMISH_COUNTRY_NONE,A bot plays the whole faction
 UI_SKIRMISH_COUNTRY_DASH,—
+UI_KEY_TAB_BUILDINGS,Buildings tab
+UI_KEY_TAB_DEFENSE,Defense tab
+UI_KEY_TAB_INFANTRY,Infantry tab
+UI_KEY_TAB_VEHICLES,Vehicles tab
+UI_KEY_NEXT_UNIT,Next idle unit
+UI_KEY_PREVIOUS_UNIT,Previous idle unit
+UI_KEY_HOME,Go to base
+UI_KEY_REPAIR_MODE,Repair mode
+UI_KEY_SELL_MODE,Sell mode

@@ -113,6 +113,12 @@ public sealed record UnitDef : IDefinition
     /// </summary>
     public string DeployWeapon { get; init; } = "";
 
+    /// <summary>
+    /// The weapon it fires instead of its own while deployed (the Rifleman behind sandbags, RA2 <c>Deployer</c> with <c>Para</c>);
+    /// empty for a unit that does not deploy so.
+    /// </summary>
+    public string DeployedWeapon { get; init; } = "";
+
     /// <summary>The toxin on the ground does not hurt it (RA2: the desolator).</summary>
     public bool RadiationImmune { get; init; }
 

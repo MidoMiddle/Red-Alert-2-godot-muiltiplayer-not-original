@@ -170,6 +170,7 @@ internal static class RulesValidator
             WeaponOf(unit.Id, "secondary", unit.Secondary);
             WeaponOf(unit.Id, "death_weapon", unit.DeathWeapon);
             WeaponOf(unit.Id, "deploy_weapon", unit.DeployWeapon);
+            WeaponOf(unit.Id, "deployed_weapon", unit.DeployedWeapon);
             WeaponOf(unit.Id, "ifv_weapon", unit.IfvWeapon);
             NotNegative(unit.Id, "passengers", unit.PassengerSlots);
             NotNegative(unit.Id, "size", unit.Size);
