@@ -175,4 +175,48 @@ public sealed class SkirmishConfigTests
         Assert.Equal("france", SkirmishConfig.Load(config.Save())!.Slots[0].Country);
         Assert.Equal(SkirmishConfig.RandomCountry, SkirmishConfig.Load("slot=human,1,random,0,0,-1,alliance\nslot=bot,1,random,1,0,-1\n")!.Slots[0].Country);
     }
+
+    [Fact]
+    public void A_side_of_ra2_is_a_country_a_random_country_of_a_faction_or_random()
+    {
+        var countries = GameDataFiles.Rules.Database.Countries;
+        var slot = SkirmishConfig.For(2).Slots[0];
+
+        var america = SkirmishConfig.WithSide(slot, "usa", countries);
+        Assert.Equal(("alliance", "usa"), (america.Faction, america.Country));
+        Assert.Equal("usa", SkirmishConfig.SideOf(america, "union"));
+
+        var soviet = SkirmishConfig.WithSide(slot, SkirmishConfig.RandomSidePrefix + "union", countries);
+        Assert.Equal(("union", SkirmishConfig.RandomCountry), (soviet.Faction, soviet.Country));
+        Assert.Equal("random:union", SkirmishConfig.SideOf(soviet, "union"));
+
+        var random = SkirmishConfig.WithSide(slot, SkirmishConfig.RandomSide, countries);
+        Assert.Equal(SkirmishConfig.RandomFaction, random.Faction);
+        Assert.Equal(SkirmishConfig.RandomSide, SkirmishConfig.SideOf(random, "union"));
+
+        // A row of before, with its faction and a random country, reads as the random country of the faction.
+        Assert.Equal("random:union", SkirmishConfig.SideOf(slot, "union"));
+    }
+
+    [Fact]
+    public void The_options_of_ra2_go_into_the_match_and_come_back_from_the_text()
+    {
+        var config = SkirmishConfig.For(4) with
+        {
+            McvRepacks = false,
+            Superweapons = false,
+            DestroyableBridges = false,
+            GameSpeed = 6,
+            MapId = "four-corners",
+        };
+
+        var options = config.ToSetup(FourCorners(), "union", 5).Options;
+        Assert.Equal((false, false, false, 6), (options.McvRepacks, options.Superweapons, options.DestroyableBridges, options.GameSpeed));
+        var loaded = SkirmishConfig.Load(config.Save())!;
+        Assert.Equal((false, false, false, 6, "four-corners"), (loaded.McvRepacks, loaded.Superweapons, loaded.DestroyableBridges, loaded.GameSpeed, loaded.MapId));
+
+        // A config of before has them on, at speed 4.
+        var old = SkirmishConfig.Load("slot=human,1,random,0,0,-1\nslot=bot,1,random,1,0,-1\n")!;
+        Assert.Equal((true, true, true, 4), (old.McvRepacks, old.Superweapons, old.DestroyableBridges, old.GameSpeed));
+    }
 }

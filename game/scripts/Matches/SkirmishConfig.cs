@@ -47,6 +47,60 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     /// <summary>The fog of war of the match: off by default — whatever the person has explored stays in sight (owner's decision).</summary>
     public bool FogOfWar { get; init; }
 
+    /// <summary>RA2 «MCV Repacks»: the construction yard packs up into its MCV. On by default.</summary>
+    public bool McvRepacks { get; init; } = true;
+
+    /// <summary>RA2 «Superweapons». On by default.</summary>
+    public bool Superweapons { get; init; } = true;
+
+    /// <summary>RA2 «Destroyable Bridges». On by default.</summary>
+    public bool DestroyableBridges { get; init; } = true;
+
+    /// <summary>The game speed 1–6 of RA2 the match starts at; 4 by default.</summary>
+    public int GameSpeed { get; init; } = 4;
+
+    /// <summary>The id of the map last chosen, for the next time; empty for the first of the list.</summary>
+    public string MapId { get; init; } = "";
+
+    /// <summary>The fastest game speed of the slider.</summary>
+    public const int MaxGameSpeed = 6;
+
+    /// <summary>A side of the screen that is a random country among all (RA2 «Random»).</summary>
+    public const string RandomSide = "random";
+
+    /// <summary>The prefix of a side that is a random country of one faction (RA2 «Random Allies»): <c>random:alliance</c>.</summary>
+    public const string RandomSidePrefix = "random:";
+
+    /// <summary>
+    /// The side of a row (RA2's Side column, the skirmish screen of RA2): <see cref="RandomSide"/>, a random country of a faction
+    /// (<see cref="RandomSidePrefix"/> + its id), a country, or a faction without countries (the Cult); the default faction when unset.
+    /// </summary>
+    public static string SideOf(SkirmishSlot slot, string defaultFaction)
+    {
+        var faction = slot.Faction.Length == 0 ? defaultFaction : slot.Faction;
+        return faction == RandomFaction ? RandomSide
+            : slot.Country.Length == 0 ? faction
+            : slot.Country == RandomCountry ? RandomSidePrefix + faction
+            : slot.Country;
+    }
+
+    /// <summary>The row with <paramref name="side"/>: its faction and country (<paramref name="countries"/> tells whose a country is).</summary>
+    public static SkirmishSlot WithSide(SkirmishSlot slot, string side, IReadOnlyList<Rts.Simulation.Rules.CountryDef> countries)
+    {
+        if (side == RandomSide)
+        {
+            return slot with { Faction = RandomFaction, Country = RandomCountry };
+        }
+
+        if (side.StartsWith(RandomSidePrefix, StringComparison.Ordinal))
+        {
+            return slot with { Faction = side[RandomSidePrefix.Length..], Country = RandomCountry };
+        }
+
+        var country = countries.FirstOrDefault(c => c.Id == side);
+        return country is null ? slot with { Faction = side, Country = "" } : slot with { Faction = country.Faction, Country = country.Id };
+    }
+
     public const int RandomStart = -1;
 
     /// <summary>A faction drawn from the seed of the match among the playable ones.</summary>
@@ -57,8 +111,8 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     public const int NoTeam = 0;
     public const int MaxTeam = 4;
 
-    /// <summary>The starting credits the screen offers.</summary>
-    public static readonly ImmutableArray<int> CreditChoices = [5_000, 10_000, 20_000];
+    /// <summary>The starting credits the slider of the screen offers (RA2: from 2 500 to 20 000).</summary>
+    public static readonly ImmutableArray<int> CreditChoices = [2_500, 5_000, 7_500, 10_000, 12_500, 15_000, 17_500, 20_000];
 
     /// <summary>The levels as the screen lists them, easiest first.</summary>
     public static readonly ImmutableArray<AiDifficulty> Levels = [AiDifficulty.Easy, AiDifficulty.Medium, AiDifficulty.Hard, AiDifficulty.Brutal];
@@ -231,7 +285,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         return new MatchSetup(
             map.Id,
             seed,
-            new MatchOptions(Credits, ShortGame, FogOfWar: FogOfWar),
+            new MatchOptions(Credits, ShortGame, GameSpeed, FogOfWar, McvRepacks, Superweapons, DestroyableBridges),
             players.MoveToImmutable(),
             [.. map.Starts.Select(start => start.Cell)]);
     }
@@ -243,6 +297,11 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         text.Append(CultureInfo.InvariantCulture, $"credits={Credits}\n");
         text.Append(CultureInfo.InvariantCulture, $"short={(ShortGame ? 1 : 0)}\n");
         text.Append(CultureInfo.InvariantCulture, $"fog={(FogOfWar ? 1 : 0)}\n");
+        text.Append(CultureInfo.InvariantCulture, $"repacks={(McvRepacks ? 1 : 0)}\n");
+        text.Append(CultureInfo.InvariantCulture, $"superweapons={(Superweapons ? 1 : 0)}\n");
+        text.Append(CultureInfo.InvariantCulture, $"bridges={(DestroyableBridges ? 1 : 0)}\n");
+        text.Append(CultureInfo.InvariantCulture, $"speed={GameSpeed}\n");
+        text.Append(CultureInfo.InvariantCulture, $"map={MapId}\n");
         foreach (var slot in Slots)
         {
             text.Append(CultureInfo.InvariantCulture,
@@ -258,6 +317,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         var credits = SimulationSettings.DefaultStartingCredits;
         var shortGame = false;
         var fog = false;
+        var (repacks, superweapons, bridges, speed, mapId) = (true, true, true, 4, "");
         var slots = new List<SkirmishSlot>();
         foreach (var line in text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -279,13 +339,36 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
                 case "fog":
                     fog = value == "1";
                     break;
+                case "repacks":
+                    repacks = value != "0";
+                    break;
+                case "superweapons":
+                    superweapons = value != "0";
+                    break;
+                case "bridges":
+                    bridges = value != "0";
+                    break;
+                case "speed" when int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number) && number is >= 1 and <= MaxGameSpeed:
+                    speed = number;
+                    break;
+                case "map":
+                    mapId = value;
+                    break;
                 case "slot" when ParseSlot(value) is { } slot:
                     slots.Add(slot);
                     break;
             }
         }
 
-        return slots.Count == 0 ? null : new SkirmishConfig([.. slots], credits, shortGame) { FogOfWar = fog };
+        return slots.Count == 0 ? null : new SkirmishConfig([.. slots], credits, shortGame)
+        {
+            FogOfWar = fog,
+            McvRepacks = repacks,
+            Superweapons = superweapons,
+            DestroyableBridges = bridges,
+            GameSpeed = speed,
+            MapId = mapId,
+        };
     }
 
     private static SkirmishSlot? ParseSlot(string value)
