@@ -7,4 +7,7 @@ public enum UnitCategory : byte
 
     /// <summary>A ship or a boat: built by the shipyard (stage 2a).</summary>
     Naval = 3,
+
+    /// <summary>A flier: over land and water alike, in no cell, hit only by weapons that fire at the air (stage 2b).</summary>
+    Aircraft = 4,
 }

@@ -73,7 +73,7 @@ alliance_war_factory:  # vehicle production
   exit_cell: [1, 4]
   prerequisites: [alliance_ore_refinery, alliance_barracks]
 
-alliance_air_force_command:  # radar; aircraft come with M11b
+alliance_air_force_command:  # radar; builds the aircraft (stage 2b)
   kind: building
   inherits: base_building
   name: Air Command
@@ -86,7 +86,7 @@ alliance_air_force_command:  # radar; aircraft come with M11b
   footprint: [3, 2]
   power: -50
   radar: true
-  ability_later: true
+  produces: [aircraft]
   prerequisites: [alliance_ore_refinery]
 
 alliance_naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)

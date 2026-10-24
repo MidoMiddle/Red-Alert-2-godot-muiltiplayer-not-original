@@ -16,7 +16,7 @@ public sealed class PlayerState
     private readonly bool[] _buildings;
 
     // One queue per ProductionCategory, in its order (infantry, vehicle, building, defense).
-    private readonly List<ProductionItem>[] _queues = [[], [], [], [], []];
+    private readonly List<ProductionItem>[] _queues = [[], [], [], [], [], []];
 
     internal PlayerState(PlayerId id, FactionDef faction, int credits, RulesDatabase rules)
     {

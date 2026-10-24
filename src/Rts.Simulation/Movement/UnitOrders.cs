@@ -122,12 +122,21 @@ internal static class UnitOrders
         unit.ChaseCell = null;
     }
 
-    /// <summary>Asks for a path to <paramref name="target"/>, keeping out of <paramref name="avoid"/>; the unit waits meanwhile.</summary>
+    /// <summary>
+    /// Asks for a path to <paramref name="target"/>, keeping out of <paramref name="avoid"/>; the unit waits meanwhile. A flier needs
+    /// none: it flies straight (stage 2b).
+    /// </summary>
     public static void RequestPath(GameWorld world, Unit unit, WorldPos target, ImmutableArray<CellPos> avoid)
     {
         unit.MoveTarget = target;
         unit.Path = null;
         unit.PathIndex = 0;
+        if (unit.Archetype.Flies)
+        {
+            unit.PathPending = false;
+            return;
+        }
+
         unit.PathPending = true;
         world.PathRequests.Request(unit, world.CurrentTick, target.ToCell(), avoid);
     }

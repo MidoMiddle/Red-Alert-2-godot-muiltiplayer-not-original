@@ -58,7 +58,8 @@ public partial class HealthBars : Control
                 case Unit unit when HealthPips.Shows(mode, selected, unit.Hp, unit.MaxHp):
                     {
                         var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before.Position : unit.Position;
-                        var at = WorldCoords.ToGodotOnGround(previous, UnitHeight).Lerp(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight), _host.Alpha);
+                        var height = UnitHeight + Units.UnitAltitude.Of(unit.Archetype);
+                        var at = WorldCoords.ToGodotOnGround(previous, height).Lerp(WorldCoords.ToGodotOnGround(unit.Position, height), _host.Alpha);
                         DrawBar(camera, at, HealthPips.CountOf(unit), unit.Hp, unit.MaxHp);
                         break;
                     }

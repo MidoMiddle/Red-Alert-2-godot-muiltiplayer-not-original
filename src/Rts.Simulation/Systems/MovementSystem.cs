@@ -88,6 +88,12 @@ public static class MovementSystem
 
     private static void Update(GameWorld world, Unit unit, WorldPos target, List<SimEvent> events)
     {
+        if (unit.Archetype.Flies)
+        {
+            Fly(world, unit, target, events);
+            return;
+        }
+
         if (unit.PathPending)
         {
             TurnToward(unit, target);
@@ -153,6 +159,34 @@ public static class MovementSystem
         {
             Replan(world, unit, TakenCellsAround(world, unit), events);
         }
+    }
+
+    /// <summary>
+    /// A flier (stage 2b) flies straight at its speed, over land, water and cliffs alike: no path, no cell taken, nothing crushed,
+    /// nothing in its way.
+    /// </summary>
+    private static void Fly(GameWorld world, Unit unit, WorldPos target, List<SimEvent> events)
+    {
+        if (unit.Position == target)
+        {
+            Arrive(world, unit, target, events);
+            return;
+        }
+
+        if (!TurnToward(unit, target))
+        {
+            return;
+        }
+
+        var delta = target - unit.Position;
+        if (delta.LengthSquared <= (long)unit.Speed * unit.Speed)
+        {
+            Arrive(world, unit, target, events);
+            return;
+        }
+
+        unit.Position += StepAlong(delta, unit.Speed);
+        unit.WaitTicks = 0;
     }
 
     /// <summary>Moves to <paramref name="next"/>, taking its cell if it is a new one; handles a taken cell.</summary>

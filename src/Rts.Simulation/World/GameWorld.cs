@@ -468,7 +468,8 @@ public sealed class GameWorld
         events?.Add(new Events.BridgeSegmentDestroyed(CurrentTick, segment.Bridge.Id, segment.Cell));
         foreach (var entity in _entities)
         {
-            if (entity is Unit { IsAlive: true } unit && unit.Position.ToCell() == segment.Cell && !Map.CanEnter(segment.Cell, unit.Archetype.Locomotor))
+            if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && unit.Position.ToCell() == segment.Cell
+                && !Map.CanEnter(segment.Cell, unit.Archetype.Locomotor))
             {
                 unit.MarkDead();
                 events?.Add(new Events.UnitKilled(CurrentTick, unit.Id, unit.Position));
@@ -544,8 +545,9 @@ public sealed class GameWorld
         var unit = new Unit(AllocateId(), owner, Rules.Unit(type), position);
         _entities.Add(unit);
         Spatial.Add(unit);
-        // Commands never spawn where there is no room; a test that places two units in one cell gets an unregistered second one.
-        if (Contains(position))
+        // Commands never spawn where there is no room; a test that places two units in one cell gets an unregistered second one. A
+        // flier takes no cell (stage 2b).
+        if (Contains(position) && !unit.Archetype.Flies)
         {
             var cell = position.ToCell();
             var subcell = Reservations.TryEnter(cell, unit, position);

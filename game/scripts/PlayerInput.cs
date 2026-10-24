@@ -38,7 +38,8 @@ public partial class PlayerInput : Node
     private OrderMarkers? _markers;
 
     /// <summary>How far from the ground point under the pointer a unit can be and still be picked: 2 cells covers a unit's height on screen.</summary>
-    private const int PickSearchLeptons = 2 * Rts.Simulation.Geometry.WorldPos.LeptonsPerCell;
+    // Four cells: a flier is drawn high, so on screen it stands a few cells north of its ground point (stage 2b).
+    private const int PickSearchLeptons = 4 * Rts.Simulation.Geometry.WorldPos.LeptonsPerCell;
 
     private readonly List<EntityId> _candidates = new();
 
@@ -658,7 +659,8 @@ public partial class PlayerInput : Node
         var cell = ground.ToCell();
         foreach (var id in Selection.Units)
         {
-            if (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit && world.Map.CanEnter(cell, unit.Archetype.Locomotor))
+            if (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit
+                && (unit.Archetype.Flies || world.Map.CanEnter(cell, unit.Archetype.Locomotor)))
             {
                 return true;
             }
@@ -777,7 +779,7 @@ public partial class PlayerInput : Node
         {
             if (entity is Unit { IsAlive: true } unit && unit.Owner == SimulationHost.LocalPlayer)
             {
-                var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight));
+                var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight + Units.UnitAltitude.Of(unit.Archetype)));
                 yield return (unit.Id, unit.Type, new ScreenPoint(screen.X, screen.Y));
             }
         }
@@ -870,7 +872,7 @@ public partial class PlayerInput : Node
                 continue;
             }
 
-            var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight));
+            var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight + Units.UnitAltitude.Of(unit.Archetype)));
             var distance = at.DistanceTo(new ScreenPoint(screen.X, screen.Y));
             if (distance <= nearestDistance)
             {

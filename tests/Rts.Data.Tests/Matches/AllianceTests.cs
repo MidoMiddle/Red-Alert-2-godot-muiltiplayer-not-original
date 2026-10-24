@@ -127,7 +127,7 @@ public sealed class AllianceTests
     }
 
     [Fact]
-    public void The_late_units_open_by_their_buildings_and_aircraft_never_yet()
+    public void The_late_units_open_by_their_buildings_ships_and_aircraft_too()
     {
         // The first stage of filling the game: every unit is in; ships and aircraft wait for their mechanic (available_later).
         var world = Match().World;
@@ -144,7 +144,7 @@ public sealed class AllianceTests
         Build(world, Union, "naval_shipyard", 40, 44);
         Assert.True(CanBuild(world, Union, "apocalypse_tank"));
         Assert.True(CanBuild(world, Union, "desolator"));
-        Assert.False(CanBuild(world, Union, "kirov_airship"));
+        Assert.True(CanBuild(world, Union, "kirov_airship"), "the airship comes from the war factory since stage 2b");
         Assert.True(CanBuild(world, Union, "dreadnought"), "ships come from the shipyard since stage 2a");
         Assert.False(CanBuild(world, Union, "alliance_sniper"));
 
@@ -154,12 +154,13 @@ public sealed class AllianceTests
         Build(world, Allied, "alliance_ore_refinery", 10, 14);
         Build(world, Allied, "alliance_air_force_command", 18, 14);
         Assert.True(CanBuild(world, Allied, "alliance_sniper"));
-        Assert.False(CanBuild(world, Allied, "alliance_harrier"));
+        Assert.True(CanBuild(world, Allied, "alliance_harrier"), "aircraft come from the air command since stage 2b");
 
         var units = world.Rules.Database.Units;
-        Assert.All(units.Where(unit => unit.AvailableLater), unit => Assert.True(unit.AbilityLater, unit.Id));
-        // The aircraft only: the airship and the three of the Alliance wait for flight (stage 2b).
-        Assert.Equal(4, units.Count(unit => unit.AvailableLater));
+        Assert.All(units.Where(unit => unit.Category is UnitCategory.Aircraft or UnitCategory.Naval), unit => Assert.True(unit.AbilityLater, unit.Id));
+        // Every unit can be built now: ships since stage 2a, aircraft since 2b; their weapons come with stage 3.
+        Assert.DoesNotContain(units, unit => unit.AvailableLater);
+        Assert.Equal(4, units.Count(unit => unit.Category == UnitCategory.Aircraft));
     }
 
     [Fact]

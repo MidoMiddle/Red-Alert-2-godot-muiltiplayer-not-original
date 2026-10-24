@@ -141,7 +141,8 @@ public static class WeaponSystem
         var distance = DamageCalculator.Distance(unit.Position, aimAt);
         var slots = rules.WeaponsOf(unit.Type);
         EntityId? targetId = hasTarget ? target.Id : null;
-        if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, events) is { } weapon)
+        var layer = hasTarget ? TargetingSystem.LayerOf(target) : WeaponTargets.Ground;
+        if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, layer, events) is { } weapon)
         {
             shots.Add(new Shot(unit.Owner, unit.Id, weapon, targetId, unit.Position, aimAt));
         }
@@ -162,24 +163,25 @@ public static class WeaponSystem
         var aimAt = Aim.NearestPoint(target, centre);
         var distance = DamageCalculator.Distance(centre, aimAt);
         var slots = rules.WeaponsOfBuilding(building.DefIndex);
-        if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, events) is { } weapon)
+        if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, TargetingSystem.LayerOf(target), events) is { } weapon)
         {
             shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
         }
     }
 
     /// <summary>
-    /// Fires the first weapon that hits ground and reaches <paramref name="distance"/>, when it is aimed and ready; the volley of a
-    /// weapon that cannot fire now is broken off. Gives the place of the weapon that fired in the rules, or null.
+    /// Fires the first weapon that fires at <paramref name="layer"/> — the ground, or the air at a flier (stage 2b) — and reaches
+    /// <paramref name="distance"/>, when it is aimed and ready; the volley of a weapon that cannot fire now is broken off. Gives the
+    /// place of the weapon that fired in the rules, or null.
     /// </summary>
     private static int? Fire(
         GameWorld world, GameRules rules, EntityId shooter, EntityId? target, WeaponInstance[] weapons, ImmutableArray<int> slots, int distance, bool aimed,
-        List<SimEvent>? events)
+        WeaponTargets layer, List<SimEvent>? events)
     {
         var chosen = -1;
         for (var slot = 0; slot < weapons.Length && chosen < 0; slot++)
         {
-            if (slots[slot] >= 0 && Reaches(rules.Database.Weapons[slots[slot]], distance))
+            if (slots[slot] >= 0 && Reaches(rules.Database.Weapons[slots[slot]], distance, layer))
             {
                 chosen = slot;
             }
@@ -220,12 +222,12 @@ public static class WeaponSystem
         return slots[chosen];
     }
 
-    /// <summary>Whether one of the weapons hits ground targets and reaches <paramref name="distance"/> leptons.</summary>
-    internal static bool Reaches(GameRules rules, ImmutableArray<int> weapons, int distance)
+    /// <summary>Whether one of the weapons fires at <paramref name="layer"/> and reaches <paramref name="distance"/> leptons.</summary>
+    internal static bool Reaches(GameRules rules, ImmutableArray<int> weapons, int distance, WeaponTargets layer)
     {
         foreach (var weapon in weapons)
         {
-            if (weapon >= 0 && Reaches(rules.Database.Weapons[weapon], distance))
+            if (weapon >= 0 && Reaches(rules.Database.Weapons[weapon], distance, layer))
             {
                 return true;
             }
@@ -234,9 +236,9 @@ public static class WeaponSystem
         return false;
     }
 
-    /// <summary>Whether the weapon hits ground targets and <paramref name="distance"/> leptons is within its range.</summary>
-    private static bool Reaches(WeaponDef weapon, int distance) =>
-        (weapon.Targets & WeaponTargets.Ground) != 0 && distance <= Aim.Leptons(weapon.Range) && distance >= Aim.Leptons(weapon.MinRange);
+    /// <summary>Whether the weapon fires at <paramref name="layer"/> and <paramref name="distance"/> leptons is within its range.</summary>
+    private static bool Reaches(WeaponDef weapon, int distance, WeaponTargets layer) =>
+        (weapon.Targets & layer) != 0 && distance <= Aim.Leptons(weapon.Range) && distance >= Aim.Leptons(weapon.MinRange);
 
     private static void CountDown(WeaponInstance[] weapons)
     {

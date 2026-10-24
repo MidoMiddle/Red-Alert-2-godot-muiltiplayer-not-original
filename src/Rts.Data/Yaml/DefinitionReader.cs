@@ -496,12 +496,13 @@ internal static class DefinitionReader
         var categories = ImmutableArray.CreateBuilder<ProductionCategory>(sequence.Children.Count);
         foreach (var child in sequence.Children)
         {
-            var category = Scalars.Choice(fileName, child, "building", "defense", "infantry", "vehicle", "naval") switch
+            var category = Scalars.Choice(fileName, child, "building", "defense", "infantry", "vehicle", "naval", "aircraft") switch
             {
                 "building" => ProductionCategory.Building,
                 "defense" => ProductionCategory.Defense,
                 "infantry" => ProductionCategory.Infantry,
                 "naval" => ProductionCategory.Naval,
+                "aircraft" => ProductionCategory.Aircraft,
                 _ => ProductionCategory.Vehicle,
             };
             if (categories.Contains(category))
@@ -516,10 +517,11 @@ internal static class DefinitionReader
     }
 
     private static UnitCategory UnitCategoryOf(string fileName, YamlNode node) =>
-        Scalars.Choice(fileName, node, "infantry", "vehicle", "naval") switch
+        Scalars.Choice(fileName, node, "infantry", "vehicle", "naval", "aircraft") switch
         {
             "infantry" => UnitCategory.Infantry,
             "naval" => UnitCategory.Naval,
+            "aircraft" => UnitCategory.Aircraft,
             _ => UnitCategory.Vehicle,
         };
 

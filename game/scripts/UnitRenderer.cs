@@ -57,8 +57,9 @@ public partial class UnitRenderer : Node3D
             var current = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before : current;
             var alpha = _host.Alpha;
+            var altitude = Units.UnitAltitude.Of(unit.Archetype);
             view.SetPose(
-                WorldCoords.ToGodotOnGround(previous.Position).Lerp(WorldCoords.ToGodotOnGround(current.Position), alpha),
+                WorldCoords.ToGodotOnGround(previous.Position, altitude).Lerp(WorldCoords.ToGodotOnGround(current.Position, altitude), alpha),
                 UnitFacing.InterpolatedYaw(previous.Facing, current.Facing, alpha),
                 UnitFacing.InterpolatedYaw(previous.TurretFacing, current.TurretFacing, alpha));
             _alive.Add(unit.Id);

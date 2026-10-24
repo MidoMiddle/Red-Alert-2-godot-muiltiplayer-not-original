@@ -68,7 +68,8 @@ war_factory:  # War Factory
   sight: 4
   footprint: [3, 4]
   power: -25
-  produces: [vehicle]
+  # The Union's airship comes from the war factory too, as in RA2 (stage 2b).
+  produces: [vehicle, aircraft]
   exit_cell: [1, 4]
   prerequisites: [refinery]
 

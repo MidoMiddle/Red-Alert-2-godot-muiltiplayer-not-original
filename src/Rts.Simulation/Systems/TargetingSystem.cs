@@ -84,12 +84,15 @@ public static class TargetingSystem
     public static bool IsLookTick(GameWorld world, EntityId id) => (world.CurrentTick + id.Value) % Period == 0;
 
 
-    /// <summary>Whether one of the weapons hits ground targets.</summary>
-    internal static bool HitsGround(GameRules rules, ImmutableArray<int> weapons)
+    /// <summary>The layer a weapon must fire at to hit <paramref name="target"/> (stage 2b): the air for a flier, else the ground.</summary>
+    public static WeaponTargets LayerOf(Entity? target) => target is Unit { Archetype.Flies: true } ? WeaponTargets.Air : WeaponTargets.Ground;
+
+    /// <summary>Whether one of the weapons fires at <paramref name="layer"/> (a forced attack: the ground, or a flier in the air).</summary>
+    internal static bool Hits(GameRules rules, ImmutableArray<int> weapons, WeaponTargets layer)
     {
         foreach (var weapon in weapons)
         {
-            if (weapon >= 0 && (rules.Database.Weapons[weapon].Targets & WeaponTargets.Ground) != 0)
+            if (weapon >= 0 && (rules.Database.Weapons[weapon].Targets & layer) != 0)
             {
                 return true;
             }
@@ -108,7 +111,8 @@ public static class TargetingSystem
     public static int ShareAgainst(GameRules rules, UnitType type, Entity target) => BestShare(rules, rules.WeaponsOf(type), target);
 
     /// <summary>
-    /// The best share in percent of the weapons that hit ground against the candidate's armor; 0 when none can hurt it.
+    /// The best share in percent of the weapons that fire at the candidate's layer — the air for a flier, the ground for the rest
+    /// (stage 2b) — against its armor; 0 when none can hurt it.
     /// </summary>
     internal static int BestShare(GameRules rules, ImmutableArray<int> weapons, Entity candidate)
     {
@@ -119,6 +123,7 @@ public static class TargetingSystem
             _ => 0,
         };
         var best = 0;
+        var layer = LayerOf(candidate);
         foreach (var index in weapons)
         {
             if (index < 0)
@@ -127,7 +132,7 @@ public static class TargetingSystem
             }
 
             var weapon = rules.Database.Weapons[index];
-            if ((weapon.Targets & WeaponTargets.Ground) == 0)
+            if ((weapon.Targets & layer) == 0)
             {
                 continue;
             }

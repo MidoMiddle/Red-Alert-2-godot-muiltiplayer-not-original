@@ -225,7 +225,7 @@ internal static class TestRules
         });
         builder.Add(Def("war_factory", 3, 4, power: -25, "refinery") with
         {
-            Produces = [ProductionCategory.Vehicle],
+            Produces = [ProductionCategory.Vehicle, ProductionCategory.Aircraft],
             ExitCell = new CellPos(1, 4),
         });
         builder.Add(Def("radar", 2, 2, power: -50, "refinery") with { Radar = true });

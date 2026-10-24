@@ -56,6 +56,7 @@ public static class ProductionRules
         {
             UnitCategory.Infantry => ProductionCategory.Infantry,
             UnitCategory.Naval => ProductionCategory.Naval,
+            UnitCategory.Aircraft => ProductionCategory.Aircraft,
             _ => ProductionCategory.Vehicle,
         }
         : rules.Buildings[defIndex].Category;

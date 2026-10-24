@@ -52,8 +52,8 @@ public sealed class GameDataTests
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources). The Alliance: the faction, its buildings, units, weapons and bots, the starting infantry and the default faction; the late buildings of the Union. Every unit of both factions, ships and aircraft available later. Stage 2a: the shipyards on the water build the ships.
-        Assert.Equal(0x506dbd82d9ecd6cbUL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources). The Alliance: the faction, its buildings, units, weapons and bots, the starting infantry and the default faction; the late buildings of the Union. Every unit of both factions, ships and aircraft available later. Stage 2a: the shipyards on the water build the ships. Stage 2b: the aircraft fly, from the air command and the Union's war factory.
+        Assert.Equal(0xada1c51f15e2368bUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public sealed class GameDataTests
     }
 
     [Theory]
-    [InlineData("produces: [infantry]", "produces: [aircraft]", "'aircraft' must be one of building, defense, infantry, vehicle")]
+    [InlineData("produces: [infantry]", "produces: [spacecraft]", "'spacecraft' must be one of building, defense, infantry, vehicle, naval, aircraft")]
     [InlineData("produces: [infantry]", "produces: [infantry, infantry]", "category 'infantry' repeats")]
     public void A_wrong_category_of_a_factory_is_reported(string text, string replacement, string reason)
     {

@@ -93,6 +93,12 @@ public static class DamageSystem
                 continue;
             }
 
+            // The splinters stay in their layer (stage 2b): a warhead at the air hurts only fliers, any other only what is on the ground.
+            if (entity is Unit { Archetype.Flies: true } != warhead.AffectsAir)
+            {
+                continue;
+            }
+
             var distance = DamageCalculator.Distance(hit.Point, Aim.NearestPoint(entity, hit.Point));
             var verses = rules.Verses(warheadIndex, ArmorOf(rules, entity));
             Damage(world, entity, DamageCalculator.InArea(weapon.Damage, verses, warhead.Spread, warhead.PercentAtMax, distance), hit, events);

@@ -86,11 +86,12 @@ public static class SidebarModel
 
     /// <summary>
     /// A tab is open while the player has a ready factory of its category, the way production needs one: the Vehicles tab with a war
-    /// factory or a shipyard, as the ships stand in it (RA2).
+    /// factory, a shipyard or an air command, as the ships and the aircraft stand in it (RA2).
     /// </summary>
     public static bool TabOpen(GameWorld world, PlayerId player, BuildGroup group) =>
         ProductionRules.HasFactory(world, player, CategoryOf(group))
-        || (group == BuildGroup.Vehicles && ProductionRules.HasFactory(world, player, ProductionCategory.Naval));
+        || (group == BuildGroup.Vehicles
+            && (ProductionRules.HasFactory(world, player, ProductionCategory.Naval) || ProductionRules.HasFactory(world, player, ProductionCategory.Aircraft)));
 
     /// <summary>
     /// The squares of a tab, in the order of the data: every item of the player's faction in the tab's category. Units are only those
@@ -117,13 +118,13 @@ public static class SidebarModel
         }
         else
         {
-            // The Vehicles tab shows the ships too, each with the queue of its own category (stage 2a).
+            // The Vehicles tab shows the ships and the aircraft too, each with the queue of its own category (stages 2a, 2b).
             for (var i = 0; i < rules.Units.Length; i++)
             {
                 var def = rules.Units[i];
                 var shown = category == ProductionCategory.Infantry
                     ? def.Category == UnitCategory.Infantry
-                    : def.Category is UnitCategory.Vehicle or UnitCategory.Naval;
+                    : def.Category is UnitCategory.Vehicle or UnitCategory.Naval or UnitCategory.Aircraft;
                 if (def.Faction == state.Faction.Id && shown && UnitTypes.TryGetById(def.Id, out _))
                 {
                     var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));

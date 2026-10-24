@@ -124,6 +124,17 @@ public static class ProductionSystem
         }
 
         var archetype = world.Rules.Unit(type);
+        if (archetype.Flies)
+        {
+            // A flier takes off from the middle of its factory, in no cell, and flies to the rally point or a little ahead (stage 2b).
+            var middle = new CellPos(factory.Cell.X + factory.Width / 2, factory.Cell.Y + factory.Height / 2);
+            var flier = world.SpawnUnit(player.Id, type, middle.Center);
+            events?.Add(new UnitProduced(world.CurrentTick, player.Id, flier.Id, factory.Id));
+            var rally = factory.RallyPoint ?? new CellPos(middle.X, factory.Cell.Y + factory.Height + 1).Center;
+            UnitOrders.MoveTo(world, flier, world.Contains(rally) ? rally : middle.Center);
+            return true;
+        }
+
         var exit = factory.Def!.ExitCell is { } offset
             ? new CellPos(factory.Cell.X + offset.X, factory.Cell.Y + offset.Y)
             : new CellPos(factory.Cell.X + factory.Width / 2, factory.Cell.Y + factory.Height);

@@ -53,7 +53,9 @@ public static class PursuitSystem
 
             var weapons = rules.WeaponsOf(unit.Type);
             var crushing = CrushesOnItsOwn(world, unit);
-            if (!crushing && WeaponSystem.Reaches(rules, weapons, DamageCalculator.Distance(unit.Position, goal)))
+            world.TryGet(unit.Target ?? EntityId.None, out var chased);
+            var layer = TargetingSystem.LayerOf(chased);
+            if (!crushing && WeaponSystem.Reaches(rules, weapons, DamageCalculator.Distance(unit.Position, goal), layer))
             {
                 if (unit.ChaseCell is not null || (unit.IsAttackMoving && !unit.Engaged && (unit.MoveTarget is not null || unit.PathPending)))
                 {

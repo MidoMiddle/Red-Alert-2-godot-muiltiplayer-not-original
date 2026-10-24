@@ -1,6 +1,6 @@
 # The late units of the Alliance (docs/ra2_units/yaml_drafts/alliance, docs/content/names.md): working names of our own, numbers of the
 # drafts, prerequisites turned to the Alliance's buildings. Unarmed for now (ability_later); ships and boats come from the shipyard on the
-# water (category naval, stage 2a); aircraft cannot be built yet (available_later). The commando of the sea is left out: RA2 never builds it in a skirmish.
+# water (category naval, stage 2a); aircraft fly and come from the air command (category aircraft, stage 2b). The commando of the sea is left out: RA2 never builds it in a skirmish.
 
 alliance_engineer:  # captures and repairs buildings
   kind: unit
@@ -166,6 +166,8 @@ alliance_tank_destroyer:  # anti-tank gun
 alliance_nighthawk:  # carries infantry
   kind: unit
   inherits: base_vehicle
+  category: aircraft
+  crusher: false
   name: Transport Helicopter
   faction: alliance
   cost: 1000
@@ -178,12 +180,13 @@ alliance_nighthawk:  # carries infantry
   turret: false
   locomotor: hover
   prerequisites: [alliance_air_force_command]
-  available_later: true
   ability_later: true
 
 alliance_harrier:  # strikes and returns to rearm
   kind: unit
   inherits: base_vehicle
+  category: aircraft
+  crusher: false
   name: Strike Jet
   faction: alliance
   cost: 1200
@@ -196,12 +199,13 @@ alliance_harrier:  # strikes and returns to rearm
   turret: false
   locomotor: hover
   prerequisites: [alliance_air_force_command]
-  available_later: true
   ability_later: true
 
 alliance_black_eagle:  # heavier strike jet
   kind: unit
   inherits: base_vehicle
+  category: aircraft
+  crusher: false
   name: Heavy Strike Jet
   faction: alliance
   cost: 1200
@@ -214,7 +218,6 @@ alliance_black_eagle:  # heavier strike jet
   turret: false
   locomotor: hover
   prerequisites: [alliance_air_force_command]
-  available_later: true
   ability_later: true
 
 alliance_amphibious_transport:  # carries units over water

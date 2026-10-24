@@ -1,7 +1,7 @@
 # The late units of the Union (docs/ra2_units/yaml_drafts/union, docs/content/names.md): working names of our own, numbers of the
 # drafts. Unarmed for now — their weapons and abilities come with the third stage of filling the game (ability_later). Ships and boats
-# are built by the shipyard on the water (category naval, stage 2a); the airship cannot be built yet (available_later): it waits for
-# flight, and stands on the hover locomotor until then. Units of a single country in RA2 are the whole faction's for now.
+# are built by the shipyard on the water (category naval, stage 2a); the airship flies (category aircraft, stage 2b) and comes from
+# the war factory, as in RA2 — its locomotor is not used in flight. Units of a single country in RA2 are the whole faction's for now.
 
 attack_dog:  # attack dog: bites infantry, M11 weapon
   kind: unit
@@ -141,6 +141,8 @@ demolition_truck:  # drives into the target and blows up
 kirov_airship:  # bomber airship
   kind: unit
   inherits: base_vehicle
+  category: aircraft
+  crusher: false
   name: Heavy Airship
   faction: union
   cost: 2000
@@ -153,7 +155,6 @@ kirov_airship:  # bomber airship
   turret: false
   locomotor: hover
   prerequisites: [war_factory, tech_center]
-  available_later: true
   ability_later: true
 
 hover_transport:  # carries units over water

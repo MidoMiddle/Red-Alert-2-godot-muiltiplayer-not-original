@@ -18,7 +18,7 @@
 | wall | Wall | стены | Wall | работает |
 | sentry_bunker | Sentry Bunker | пулемёт | Sentry Gun | работает |
 | tesla_coil | Tesla Coil | электрооборона | Tesla Coil | работает |
-| flak_cannon | Flak Cannon | ПВО | Flak Cannon | работает (по авиации — M11b) |
+| flak_cannon | Flak Cannon | ПВО | Flak Cannon | работает: бьёт по авиации (этап 2б) |
 | naval_shipyard | Dockyard | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | service_depot | Field Workshop | ремонт техники | Service Depot | позже |
 | nuclear_reactor | Atomic Plant | энергия +2000 | Nuclear Reactor | энергия работает; взрыв при гибели позже |
@@ -38,7 +38,7 @@
 | alliance_barracks | Training Camp | пехота | Barracks | работает |
 | alliance_ore_refinery | Ore Processor | ОПЗ, харвестер | Ore Refinery | работает |
 | alliance_war_factory | Vehicle Plant | техника | War Factory | работает |
-| alliance_air_force_command | Air Command | радар; авиация | Airforce Command HQ | радар работает; авиация позже (M11b) |
+| alliance_air_force_command | Air Command | радар; авиация | Airforce Command HQ | работает: радар и производство авиации (этап 2б) |
 | alliance_naval_shipyard | Harbor | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | alliance_service_depot | Repair Bay | ремонт техники | Service Depot | позже |
 | alliance_battle_lab | Research Lab | высокий тех | Battle Lab | работает |
@@ -49,7 +49,7 @@
 | alliance_weather_control_device | Storm Generator | шторм над областью | Weather Control Device | позже (M11c) |
 | alliance_gap_generator | Veil Generator | скрывает базу | Gap Generator | позже (M11c) |
 | alliance_pillbox | Gun Nest | пулемёт | Pillbox | работает |
-| alliance_patriot_missile_system | Sky Guard | ПВО | Patriot Missile System | работает (по авиации — M11b) |
+| alliance_patriot_missile_system | Sky Guard | ПВО | Patriot Missile System | работает: бьёт по авиации (этап 2б) |
 | alliance_prism_tower | Lens Tower | лучевая оборона | Prism Tower | работает; цепочки башен позже (M11c) |
 | alliance_grand_cannon | Siege Battery | дальняя артиллерия | Grand Cannon | работает |
 | alliance_wall | Barrier | стены | Fortress Wall | работает |
@@ -83,7 +83,7 @@
 | apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | строится, без оружия — этап 3 |
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | строится, без оружия — этап 3 |
 | demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | строится, без оружия — этап 3 |
-| kirov_airship | Heavy Airship | bomber airship | Kirov Airship | в сайдбаре, строится с этапа 2 (полёт) |
+| kirov_airship | Heavy Airship | bomber airship | Kirov Airship | летает, строится (этап 2б), без оружия — этап 3 |
 | hover_transport | Hovercraft | carries units over water | Hover Transport | строится верфью (этап 2а), без оружия — этап 3 |
 | typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | строится верфью (этап 2а), без оружия — этап 3 |
 | sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | строится верфью (этап 2а), без оружия — этап 3 |
@@ -105,9 +105,9 @@
 | alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | строится, без оружия — этап 3 |
 | alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | строится, без оружия — этап 3 |
 | alliance_tank_destroyer | Tank Hunter | anti-tank gun | Tank Destroyer | строится, без оружия — этап 3 |
-| alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | в сайдбаре, строится с этапа 2 (полёт) |
-| alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | в сайдбаре, строится с этапа 2 (полёт) |
-| alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | в сайдбаре, строится с этапа 2 (полёт) |
+| alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | летает, строится (этап 2б), без оружия — этап 3 |
+| alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | летает, строится (этап 2б), без оружия — этап 3 |
+| alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | летает, строится (этап 2б), без оружия — этап 3 |
 | alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | строится верфью (этап 2а), без оружия — этап 3 |
 | alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | строится верфью (этап 2а), без оружия — этап 3 |
 | alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | строится верфью (этап 2а), без оружия — этап 3 |

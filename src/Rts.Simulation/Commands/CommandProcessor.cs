@@ -212,7 +212,7 @@ public static class CommandProcessor
         var any = false;
         foreach (var unit in OwnUnits(world, command))
         {
-            if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.HitsGround(world.Rules, world.Rules.WeaponsOf(unit.Type)))
+            if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.Hits(world.Rules, world.Rules.WeaponsOf(unit.Type), TargetingSystem.LayerOf(target)))
             {
                 Order(world, unit, TargetOrder.Force, target?.Id, target is null ? command.Point : null);
                 any = true;
@@ -562,11 +562,22 @@ public static class CommandProcessor
             legs[unit.Id] = ImmutableArray.CreateBuilder<UnitOrder>(points.Length);
         }
 
+        // Fliers take no place on the ground (stage 2b): each flies to the point, a little apart from the others.
+        var ground = units.FindAll(unit => !unit.Archetype.Flies);
+        var fliers = units.FindAll(unit => unit.Archetype.Flies);
         foreach (var point in points)
         {
-            foreach (var (unit, destination) in GroupDestinations.Assign(world, units, point))
+            if (ground.Count > 0)
             {
-                legs[unit.Id].Add(new UnitOrder(destination, attackMove));
+                foreach (var (unit, destination) in GroupDestinations.Assign(world, ground, point))
+                {
+                    legs[unit.Id].Add(new UnitOrder(destination, attackMove));
+                }
+            }
+
+            for (var i = 0; i < fliers.Count; i++)
+            {
+                legs[fliers[i].Id].Add(new UnitOrder(FlightPlace(world, point, i), attackMove));
             }
         }
 
@@ -580,6 +591,21 @@ public static class CommandProcessor
         }
 
         return true;
+    }
+
+    // The place of the i-th flier of a group around a point: the point, then a ring of eight a cell apart, then the next ring.
+    private static WorldPos FlightPlace(GameWorld world, WorldPos point, int index)
+    {
+        if (index == 0)
+        {
+            return point;
+        }
+
+        (int X, int Y)[] around = [(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1)];
+        var (dx, dy) = around[(index - 1) % around.Length];
+        var ring = 1 + (index - 1) / around.Length;
+        var place = new WorldPos(point.X + dx * ring * WorldPos.LeptonsPerCell, point.Y + dy * ring * WorldPos.LeptonsPerCell);
+        return world.Contains(place) ? place : point;
     }
 
     private static bool ApplyStop(GameWorld world, StopCommand command)
