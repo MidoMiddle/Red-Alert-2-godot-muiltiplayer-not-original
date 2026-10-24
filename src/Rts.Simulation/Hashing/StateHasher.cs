@@ -50,6 +50,17 @@ public static class StateHasher
             hash.Add(storm.End);
         }
 
+        // Rules v65: the C4 on bridges.
+        hash.Add(world.BridgeBombs.Count);
+        foreach (var bomb in world.BridgeBombs)
+        {
+            hash.Add(bomb.Owner.Value);
+            hash.Add(bomb.Shooter.Value);
+            hash.Add(bomb.Bridge);
+            hash.Add(bomb.Segment);
+            hash.Add(bomb.GoesOff);
+        }
+
         // Rules v50 (stage 3b): the toxin on the ground, cell by cell where there is some.
         var radiation = world.Radiation;
         for (var i = 0; i < radiation.Length; i++)

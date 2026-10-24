@@ -21,6 +21,13 @@ public static class BombSystem
     /// <summary>A bomb shot lands on its target: the bomb is planted, unless one is there already.</summary>
     internal static void Plant(GameWorld world, Hit hit, WarheadDef warhead, List<SimEvent>? events)
     {
+        if (hit.Target is null)
+        {
+            // Without a target, on the ground: a C4 goes on the bridge there.
+            BridgeDemolition.Plant(world, hit, warhead);
+            return;
+        }
+
         if (hit.Target is not { } id || !world.TryGet(id, out var target) || target is not { IsAlive: true, BombTicks: 0 } and (Unit or Building)
             || target is Building { Def.Wall: true })
         {
@@ -41,6 +48,7 @@ public static class BombSystem
 
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
+        BridgeDemolition.Update(world, events);
         foreach (var (owner, shooter, weapon, point) in world.DeathBlasts)
         {
             GoOff(world, owner, shooter, weapon, point, null);

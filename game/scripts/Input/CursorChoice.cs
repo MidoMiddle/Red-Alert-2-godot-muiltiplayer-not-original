@@ -44,13 +44,15 @@ public enum CursorKind
 /// <param name="Harvesters">The selection holds a harvester.</param>
 /// <param name="DeployFits">The MCV under the pointer (<see cref="PointerContext.TargetDeploys"/>) can deploy where it stands.</param>
 /// <param name="Enter">A building one of the selection can go into (stage 2e, 3b): an order there sends it in.</param>
+/// <param name="Bridge">A standing bridge segment one of the selection can blow up (the commando's C4): an order there plants it.</param>
 public readonly record struct PointerSpot(
     bool OwnBuilding = false,
     bool Damaged = false,
     bool Ore = false,
     bool Harvesters = false,
     bool DeployFits = false,
-    bool Enter = false);
+    bool Enter = false,
+    bool Bridge = false);
 
 /// <summary>Which cursor to show for what is under the pointer. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CursorChoice
@@ -93,6 +95,11 @@ public static class CursorChoice
         if (context.Target.Kind == PointerTargetKind.OwnUnit && !groundOrder)
         {
             return CursorKind.Select;
+        }
+
+        if (context.HasSelection && spot.Bridge && !groundOrder && !context.Ctrl && context.Target.Kind == PointerTargetKind.Ground)
+        {
+            return CursorKind.Attack;
         }
 
         if (context.HasSelection && !groundOrder && context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OtherBuilding)

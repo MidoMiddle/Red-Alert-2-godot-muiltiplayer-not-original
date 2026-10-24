@@ -40,7 +40,7 @@ internal static class DefinitionReader
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "repairs", "frees_parasite", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "bridges", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "repairs", "frees_parasite", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual", "hp", "armor"];
 
@@ -253,6 +253,7 @@ internal static class DefinitionReader
             Temporal = fields.Optional("temporal", Scalars.Flag, false),
             Bomb = fields.Optional("bomb", Scalars.Id, ""),
             BombDelay = fields.Optional("bomb_delay", Scalars.Ticks, 0),
+            Bridges = fields.Optional("bridges", Scalars.Flag, false),
             Radiation = fields.Optional("radiation", Scalars.Int, 0),
             Parasite = fields.Optional("parasite", Scalars.Flag, false),
             ParasiteDamage = fields.Optional("parasite_damage", Scalars.Int, 0),

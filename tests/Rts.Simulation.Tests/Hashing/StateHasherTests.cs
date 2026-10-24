@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "veteran infantry", "veteran vehicles", "invulnerable", "storm", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "veteran infantry", "veteran vehicles", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -89,6 +89,7 @@ public sealed class StateHasherTests
             case "mother": moving.Mother = idle.Id; break;
             case "invulnerable": moving.InvulnerableUntil = 100; break;
             case "storm": world.Storms.Add(new Storm(Player1, idle.Id, 0, new CellPos(3, 3), 10, 20)); break;
+            case "bridge bomb": world.BridgeBombs.Add(new BridgeBomb(Player1, idle.Id, 1, 0, 20)); break;
             case "spawns docked": moving.SpawnsDocked = 2; break;
             case "spawn regen": moving.SpawnRegenTicks = 4; break;
             case "drop": moving.Drop = new Paradrop(UnitType.Conscript, 3, new WorldPos(5, 5), new WorldPos(9, 9)); break;
@@ -298,7 +299,7 @@ public sealed class StateHasherTests
         "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField", "_vision",
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
         // The toxin on the ground (stage 3b); the storms (stage 2d).
-        "<Radiation>k__BackingField", "<Storms>k__BackingField",
+        "<Radiation>k__BackingField", "<Storms>k__BackingField", "<BridgeBombs>k__BackingField",
         // The death weapons of a tick, launched in the same tick (stage 3b): never state.
         "<DeathBlasts>k__BackingField",
         // The sensors of the moment (stage 3e), rebuilt from the units with the sight: derived.

@@ -632,6 +632,18 @@ public partial class PlayerInput : Node
                     }
 
                     break;
+                case OrderMove order when !_host.IsPlayback && !order.Queue && BridgeSappers(order.Target) is { Count: > 0 } sappers:
+                    // The commando's C4 on the bridge; the rest of the selection goes there.
+                    Voice("attacking (forced)");
+                    _markers ??= GetNodeOrNull<OrderMarkers>("../OrderMarkers");
+                    _markers?.Add(order.Target, MarkerKind.Attack);
+                    _host.IssueForceAttack(sappers, null, order.Target.ToCell().Center);
+                    if (Selection.Units.Where(id => !sappers.Contains(id)).ToList() is { Count: > 0 } companions)
+                    {
+                        _host.IssueMove(companions, order.Target, false);
+                    }
+
+                    break;
                 case OrderMove order when CanOrder(order.Target):
                     Voice(order.Queue ? "moving (queued)" : "moving");
                     _markers?.Add(order.Target, MarkerKind.Move);
@@ -753,6 +765,24 @@ public partial class PlayerInput : Node
         }
 
         return null;
+    }
+
+    /// <summary>The selected units that can plant a bomb on the standing bridge at <paramref name="point"/> (the commando's C4).</summary>
+    private List<EntityId> BridgeSappers(WorldPos point)
+    {
+        var world = _host.Simulation.World;
+        var cell = point.ToCell();
+        var sappers = new List<EntityId>();
+        foreach (var id in Selection.Units)
+        {
+            if (world.TryGet(id, out var entity) && entity is Unit unit && unit.Owner == SimulationHost.LocalPlayer
+                && Rts.Simulation.Systems.BridgeDemolition.CanBlow(world, unit, cell))
+            {
+                sappers.Add(id);
+            }
+        }
+
+        return sappers;
     }
 
     /// <summary>The player's building under the pointer with soldiers inside (stage 2e), for D to let them out.</summary>
@@ -1101,7 +1131,8 @@ public partial class PlayerInput : Node
             context.Ground is { } at && !world.Map.OreAt(at.ToCell()).IsEmpty,
             Selection.Units.Any(id => world.TryGet(id, out var entity) && entity is Unit { Harvester: not null }),
             fits,
-            context.Ground is { } door && EnterAt(door) is not null);
+            context.Ground is { } door && EnterAt(door) is not null,
+            context.Ground is { } bridge && BridgeSappers(bridge).Count > 0);
     }
 
     /// <summary>Whether Z is held on its own: with Ctrl, Shift, Alt or Meta it is not the waypoint key.</summary>

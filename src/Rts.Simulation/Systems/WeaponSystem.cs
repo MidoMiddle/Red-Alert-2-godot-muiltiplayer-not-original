@@ -164,7 +164,7 @@ public static class WeaponSystem
         }
 
         var distance = DamageCalculator.Distance(unit.Position, aimAt);
-        var slots = rules.WeaponsOf(unit);
+        var slots = hasTarget ? rules.WeaponsOf(unit) : BridgeDemolition.WeaponsAt(world, rules.WeaponsOf(unit), aimAt);
 
         // Out of ammo (stage 3f: a strike jet), a unit fires out the volley under way and starts no other.
         if (archetype.Ammo > 0 && unit.Ammo == 0 && !InVolley(unit.Weapons))

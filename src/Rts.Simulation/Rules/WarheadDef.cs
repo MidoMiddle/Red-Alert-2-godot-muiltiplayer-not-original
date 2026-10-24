@@ -44,6 +44,12 @@ public sealed record WarheadDef : IDefinition
     /// <summary>The ticks the bomb waits.</summary>
     public int BombDelay { get; init; }
 
+    /// <summary>
+    /// Its bomb goes on a standing bridge segment too and brings it down (RA2: the commando's C4 on a bridge;
+    /// <see cref="Systems.BridgeDemolition"/>).
+    /// </summary>
+    public bool Bridges { get; init; }
+
     /// <summary>The level of toxin it leaves on the ground of its area (stage 3b: the toxin trooper's eruption, RA2 <c>RadLevel</c>).</summary>
     public int Radiation { get; init; }
 
@@ -78,7 +84,8 @@ public sealed record WarheadDef : IDefinition
     public bool Equals(WarheadDef? other) =>
         other is not null && Id == other.Id && Name == other.Name && Verses.SequenceEqual(other.Verses) && Spread == other.Spread
         && PercentAtMax == other.PercentAtMax && WallDamage == other.WallDamage && AffectsAir == other.AffectsAir
-        && Temporal == other.Temporal && Bomb == other.Bomb && BombDelay == other.BombDelay && Radiation == other.Radiation
+        && Temporal == other.Temporal && Bomb == other.Bomb && BombDelay == other.BombDelay && Bridges == other.Bridges
+        && Radiation == other.Radiation
         && Parasite == other.Parasite && ParasiteDamage == other.ParasiteDamage && ParasiteDelay == other.ParasiteDelay
         && ParasiteNaval == other.ParasiteNaval && Paralyzes == other.Paralyzes && Repairs == other.Repairs
         && FreesParasite == other.FreesParasite && InfantryDeath == other.InfantryDeath;

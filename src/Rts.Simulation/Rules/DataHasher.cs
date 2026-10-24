@@ -326,6 +326,7 @@ public static class DataHasher
             hash.Add(warhead.Temporal);
             Add(hash, warhead.Bomb);
             hash.Add(warhead.BombDelay);
+            hash.Add(warhead.Bridges);
             hash.Add(warhead.Radiation);
             hash.Add(warhead.Parasite);
             hash.Add(warhead.ParasiteDamage);

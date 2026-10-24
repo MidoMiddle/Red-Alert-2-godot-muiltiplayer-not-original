@@ -111,7 +111,7 @@ alliance_neutron_rifle:  # of the Time Trooper, RA2 NeutronRifle: the erasure a 
   projectile: chrono_beam
   warhead: chrono
 
-alliance_c4:  # the Elite Commando's C4, RA2 Sapper: on buildings only
+alliance_c4:  # the Elite Commando's C4, RA2 Sapper: on buildings and bridges
   kind: weapon
   name: C4
   damage: 1

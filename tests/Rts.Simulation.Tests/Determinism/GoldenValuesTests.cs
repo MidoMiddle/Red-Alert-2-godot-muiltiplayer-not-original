@@ -221,9 +221,9 @@ public sealed class GoldenValuesTests
         // Rules v60 (loose ends, stage 3): the experience of every unit and the veterans of a spy in the hash (none); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0xecab7be0ebc5a755UL),
-            new(500, 0xacab72921839087aUL),
-            new(1000, 0x64022020e4774171UL),
+            new(100, 0xf972d5216d8ab4d5UL),
+            new(500, 0x80f7cc1b0404861aUL),
+            new(1000, 0x3b2267761c666311UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -256,9 +256,9 @@ public sealed class GoldenValuesTests
         // Rules v60 (loose ends, stage 3): experience in the hash; the killers gain it, the veterans fight harder.
         StateChecksum[] expected =
         [
-            new(1000, 0xa19b79fef3babcfeUL),
-            new(2000, 0xfb9d6988f76793d9UL),
-            new(3000, 0x738f1fdb13feb8bdUL),
+            new(1000, 0xd1bccb27290223eeUL),
+            new(2000, 0x6f2f22b17ad18279UL),
+            new(3000, 0xd629a75f933a181dUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -347,7 +347,7 @@ public sealed class GoldenValuesTests
         // Rules v57 (loose ends, stage 1): the version and the checksums. Rules v58 (stage 2): the version. Rules v59 (wide bridges): the version.
         // Rules v60 (stage 3: veterancy): the version and the checksums. Rules v61 (stage 4: the Osprey): the version.
         // Replay format v24, rules v62 (stage 5: the countries): the versions. Rules v63 (the yard packs up, the Rifleman digs in): the version.
-        // Replay format v25, rules v64 (the options of the skirmish screen of RA2): the versions.
-        Assert.Equal((22269, 1997367380741224734UL), (bytes.Length, hash.Value));
+        // Replay format v25, rules v65 (the commando's C4 on bridges): the versions.
+        Assert.Equal((22269, 13846249035571932924UL), (bytes.Length, hash.Value));
     }
 }

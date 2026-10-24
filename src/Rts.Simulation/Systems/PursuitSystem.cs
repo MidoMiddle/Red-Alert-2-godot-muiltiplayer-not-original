@@ -54,6 +54,12 @@ public static class PursuitSystem
             var weapons = rules.WeaponsOf(unit);
             var crushing = CrushesOnItsOwn(world, unit);
             world.TryGet(unit.Target ?? EntityId.None, out var chased);
+            if (chased is not { IsAlive: true })
+            {
+                // At a point on a bridge, a commando walks up for her C4.
+                weapons = BridgeDemolition.WeaponsAt(world, weapons, goal);
+            }
+
             var layer = TargetingSystem.LayerOf(chased);
             if (!crushing && WeaponSystem.Reaches(rules, weapons, DamageCalculator.Distance(unit.Position, goal), layer, chased))
             {

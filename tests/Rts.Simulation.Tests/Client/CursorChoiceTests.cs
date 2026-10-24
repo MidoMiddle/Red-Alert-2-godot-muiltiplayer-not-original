@@ -117,5 +117,15 @@ public sealed class CursorChoiceTests
         Assert.Equal(CursorKind.Select, CursorChoice.For(Context(OwnUnit, selected: true), true));
     }
 
+    [Fact]
+    public void A_bridge_the_commando_can_blow_up_shows_the_attack_cursor()
+    {
+        Assert.Equal(CursorKind.Attack, CursorChoice.For(Context(Ground, selected: true), true, spot: new PointerSpot(Bridge: true)));
+        Assert.Equal(CursorKind.Move, CursorChoice.For(Context(Ground, selected: true), true));
+        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(Ground, selected: true) with { Ctrl = true }, true, spot: new PointerSpot(Bridge: true)));
+        Assert.Equal(CursorKind.Waypoint, CursorChoice.For(Context(Ground, selected: true) with { WaypointMode = true }, true, spot: new PointerSpot(Bridge: true)));
+        Assert.Equal(CursorKind.Select, CursorChoice.For(Context(OwnUnit, selected: true), true, spot: new PointerSpot(Bridge: true)));
+    }
+
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);
 }

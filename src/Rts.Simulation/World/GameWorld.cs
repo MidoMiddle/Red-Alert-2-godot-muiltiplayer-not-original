@@ -140,6 +140,9 @@ public sealed class GameWorld
     /// <summary>The lightning storms called down and not over yet (stage 2d: the Storm Generator). State: hashed.</summary>
     internal List<Storm> Storms { get; } = [];
 
+    /// <summary>The C4 on bridge segments, in the order planted (<see cref="Systems.BridgeDemolition"/>). State: hashed.</summary>
+    internal List<BridgeBomb> BridgeBombs { get; } = [];
+
     /// <summary>The level of toxin on every cell, in row order (stage 3b, <see cref="Systems.RadiationSystem"/>). State: hashed.</summary>
     internal ushort[] Radiation { get; }
 
@@ -496,7 +499,7 @@ public sealed class GameWorld
     /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. The dead keep
     /// their place in the cell until the end of the tick, like every unit that dies.
     /// </summary>
-    private void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events)
+    internal void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events)
     {
         ChangeMap([new DestroyBridgeSegmentEdit(segment.Bridge.Id, segment.Index)], events);
         events?.Add(new Events.BridgeSegmentDestroyed(CurrentTick, segment.Bridge.Id, segment.Cell));

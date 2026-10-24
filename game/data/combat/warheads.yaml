@@ -121,12 +121,13 @@ terror_blast:  # RA2 TerrorBombWH: the demolition trooper going off
   percent_at_max: 50%
   infantry_death: explode
 
-c4_plant:  # RA2 Sapper: the commando's C4 on a building (stage 3b); RA2 C4Delay is .03 minutes
+c4_plant:  # RA2 Sapper: the commando's C4 on a building (stage 3b) or a bridge segment; RA2 C4Delay is .03 minutes
   kind: warhead
   name: C4
   verses: { none: 0%, flak: 0%, plate: 0%, light: 0%, medium: 0%, heavy: 0%, wood: 100%, steel: 100%, concrete: 100%, special_1: 0%, special_2: 0% }
   bomb: alliance_c4_charge
   bomb_delay: 1.8s
+  bridges: true
 
 demolition:  # what the C4 does to the building it is on: brings it down whatever its strength
   kind: warhead
