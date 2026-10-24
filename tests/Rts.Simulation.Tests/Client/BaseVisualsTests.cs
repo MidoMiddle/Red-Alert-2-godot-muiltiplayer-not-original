@@ -17,12 +17,27 @@ public sealed class BaseVisualsTests
     private static readonly PlayerId Player2 = new(2);
 
     [Fact]
-    public void Walls_are_low_defenses_a_little_taller_and_other_buildings_grow_with_their_footprint()
+    public void A_building_stands_as_high_as_its_look_and_one_without_a_look_grows_with_its_footprint()
     {
-        Assert.Equal(BuildingShape.WallHeight, BuildingShape.Of(TestRules.BuildingDef("wall")).Height);
-        Assert.Equal(BuildingShape.DefenseHeight, BuildingShape.Of(TestRules.BuildingDef("tesla_coil")).Height);
+        // The looks (the owner's wish, 2026-10-24): a wall low, the Tesla coil a tall mast, the yard's crane over the reactor.
+        Assert.InRange(BuildingShape.Of(TestRules.BuildingDef("wall")).Height, BuildingShape.WallHeight, BuildingShape.DefenseHeight);
+        Assert.True(BuildingShape.Of(TestRules.BuildingDef("tesla_coil")).Height > 2f);
         Assert.True(BuildingShape.Of(TestRules.BuildingDef("construction_yard")).Height > BuildingShape.Of(TestRules.BuildingDef("reactor")).Height);
-        Assert.True(BuildingShape.Of(TestRules.BuildingDef("reactor")).Height > BuildingShape.DefenseHeight);
+        Assert.Equal(BuildingShape.WallHeight, BuildingShape.Of(TestRules.BuildingDef("wall") with { Id = "a_wall_of_a_mod" }).Height);
+        Assert.Equal(BuildingShape.DefenseHeight, BuildingShape.Of(TestRules.BuildingDef("tesla_coil") with { Id = "a_coil_of_a_mod" }).Height);
+    }
+
+    [Fact]
+    public void Every_building_of_the_test_rules_has_a_look_within_its_footprint()
+    {
+        foreach (var def in TestRules.Standard.Database.Buildings)
+        {
+            Assert.True(BuildingLooks.Known(def.Id), def.Id);
+            var (halfW, halfH) = (def.Footprint.Width / 2f, def.Footprint.Height / 2f);
+            Assert.All(BuildingLooks.Of(def), part => Assert.True(
+                MathF.Abs(part.X) + part.SizeX / 2f <= halfW + 0.05f && MathF.Abs(part.Z) + part.SizeZ / 2f <= halfH + 0.05f
+                || part.Tilt != 0f, $"{def.Id}: a part at {part.X}, {part.Z} sticks out of {def.Footprint.Width}x{def.Footprint.Height}"));
+        }
     }
 
     [Fact]

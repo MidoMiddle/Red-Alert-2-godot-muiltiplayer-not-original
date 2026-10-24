@@ -8,7 +8,8 @@ namespace Rts.Client.Terrain;
 
 /// <summary>
 /// The buildings players place (docs/implementation/M3_base_economy.md, 4.17): one view per building, made when it appears, so the
-/// others are not rebuilt. A view is a steel-grey block in the owner's band with the marks of its <see cref="BuildingShape"/>. It
+/// others are not rebuilt. A view is the look of the building (<see cref="BuildingLooks"/>) with the owner's band and the pads of its
+/// <see cref="BuildingShape"/>. It
 /// rises out of the ground smoothly while the building grows, with dust around it, and sinks back into the ground when the building
 /// is sold. A green cross turns over a building under repair. A destroyed building (M4 step 9) leaves a dark slab of rubble on its
 /// footprint, with a puff of dust, until another building stands on those cells. A yellow bolt blinks over a defense off for want of
@@ -24,7 +25,6 @@ public partial class PlayerBuildings : Node3D
 
     private const float Sink = 0.3f;
 
-    private static readonly Color Steel = new(0.55f, 0.57f, 0.62f);
     private static readonly Color Dark = new(0.25f, 0.26f, 0.29f);
     private static readonly Color Pad = new(0.95f, 0.8f, 0.15f);
     private static readonly Color RepairColor = new(0.3f, 0.95f, 0.35f);
@@ -199,22 +199,7 @@ public partial class PlayerBuildings : Node3D
         AddChild(root);
 
         var full = shape.Height + Sink;
-        var size = new Vector3(building.Width - 2 * shape.Inset, full, building.Height - 2 * shape.Inset);
-        Box(body, size, new Vector3(0, full / 2, 0), Steel);
-        Box(body, new Vector3(size.X + 0.02f, 0.08f, size.Z + 0.02f), new Vector3(0, full - 0.1f, 0), Buildings.OwnerColor(building.Owner));
-        if (shape.Stack)
-        {
-            Box(body, new Vector3(0.3f, 0.6f, 0.3f), new Vector3(building.Width / 2f - 0.45f, full + 0.3f, -building.Height / 2f + 0.45f), Dark);
-        }
-
-        if (shape.Dish)
-        {
-            body.AddChild(new MeshInstance3D
-            {
-                Mesh = new CylinderMesh { TopRadius = 0.5f, BottomRadius = 0.15f, Height = 0.2f, Material = Material(Colors.White) },
-                Position = new Vector3(0, full + 0.2f, 0),
-            });
-        }
+        BuildingLookView.AddTo(body, building.Def!, Buildings.OwnerColor(building.Owner), Sink);
 
         // The dock and the exit lie on the ground, outside the scaled body: the rules use them while the building grows too.
         var northWest = new Vector3(-building.Width / 2f, Sink + 0.02f, -building.Height / 2f);

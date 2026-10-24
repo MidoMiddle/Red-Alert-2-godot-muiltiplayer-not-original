@@ -10,7 +10,8 @@ namespace Rts.Client.UI;
 /// Every unit type in its placeholder shape, in rows, with its name under it (DisplayNames: RA2's for now) — to learn the shapes
 /// until the models come, and to check them (<c>-- --ui-units</c>, with <c>--screenshot</c>). The Union's on the left rows, the
 /// Alliance's after them, in the order of <see cref="UnitTypes.All"/>. With <c>--icons</c> the squares of the sidebar instead: every
-/// unit and building of the data with its role colour and code.
+/// unit and building of the data with its role colour and code. With <c>--buildings</c> every building of the players in its look
+/// (<see cref="Terrain.BuildingLooks"/>), the Allies' rows first, in the order of the sidebar.
 /// </summary>
 public partial class UnitGallery : Node3D
 {
@@ -27,6 +28,7 @@ public partial class UnitGallery : Node3D
             return;
         }
 
+        var buildings = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--buildings") >= 0;
         AddChild(new WorldEnvironment
         {
             Environment = new Environment
@@ -38,6 +40,13 @@ public partial class UnitGallery : Node3D
             },
         });
         AddChild(new DirectionalLight3D { RotationDegrees = new Vector3(-55f, -35f, 0f), ShadowEnabled = true });
+
+        if (buildings)
+        {
+            ShowBuildings();
+            ScreenshotCapture.AttachIfRequested(this);
+            return;
+        }
 
         var rules = DataFiles.Current.Rules;
         var colour = new StandardMaterial3D { AlbedoColor = Matches.PlayerColors.Of(new PlayerId(1)) };
@@ -75,6 +84,74 @@ public partial class UnitGallery : Node3D
             Current = true,
         });
         ScreenshotCapture.AttachIfRequested(this);
+    }
+
+    /// <summary>Every building of the players in its look, in rows of <see cref="BuildingColumns"/>, the Allies first.</summary>
+    private void ShowBuildings()
+    {
+        const int BuildingColumns = 7;
+        const float Step = 5f;
+        var database = DataFiles.Current.Rules.Database;
+        var ra2 = AppSettings.Instance?.Values.Ra2Names ?? true;
+        var defs = new System.Collections.Generic.List<Rts.Simulation.Rules.BuildingDef>();
+        foreach (var faction in new[] { "alliance", "union" })
+        {
+            var ofFaction = new System.Collections.Generic.List<Rts.Simulation.Rules.BuildingDef>();
+            foreach (var def in database.Buildings)
+            {
+                if (def.Faction == faction)
+                {
+                    ofFaction.Add(def);
+                }
+            }
+
+            ofFaction.Sort((a, b) => SidebarModel.Ra2Place(a.Id).CompareTo(SidebarModel.Ra2Place(b.Id)));
+            defs.AddRange(ofFaction);
+            // A faction starts a row of its own.
+            while (defs.Count % BuildingColumns != 0)
+            {
+                defs.Add(null!);
+            }
+        }
+
+        var rows = (defs.Count + BuildingColumns - 1) / BuildingColumns;
+        for (var i = 0; i < defs.Count; i++)
+        {
+            if (defs[i] is not { } def)
+            {
+                continue;
+            }
+
+            var at = new Vector3((i % BuildingColumns - (BuildingColumns - 1) / 2f) * Step, 0f, (i / BuildingColumns - (rows - 1) / 2f) * Step);
+            var body = new Node3D { Position = at };
+            AddChild(body);
+            Terrain.BuildingLookView.AddTo(body, def, Matches.PlayerColors.Of(new PlayerId(def.Faction == "union" ? 2 : 1)), 0f);
+            AddChild(new MeshInstance3D
+            {
+                Mesh = new PlaneMesh { Size = new Vector2(def.Footprint.Width, def.Footprint.Height) },
+                Position = at + new Vector3(0, 0.005f, 0),
+                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.3f, 0.32f, 0.3f) },
+            });
+            AddChild(new Label3D
+            {
+                Text = DisplayNames.Of(def.Id, def.Name, ra2, key => Tr(key)),
+                Position = at + new Vector3(0, 0.05f, def.Footprint.Height / 2f + 0.6f),
+                RotationDegrees = new Vector3(-60f, 0, 0),
+                FontSize = 64,
+                PixelSize = 0.01f,
+                OutlineSize = 10,
+                Modulate = new Color(0.95f, 0.93f, 0.85f),
+            });
+        }
+
+        AddChild(new Camera3D
+        {
+            Projection = Camera3D.ProjectionType.Orthogonal,
+            Size = rows * Step + 1f,
+            Position = new Vector3(0, 30f, 21f),
+            RotationDegrees = new Vector3(-55f, 0, 0),
+            Current = true,
+        });
     }
 
     /// <summary>The squares of the sidebar for every unit and building, as the player sees them, available.</summary>

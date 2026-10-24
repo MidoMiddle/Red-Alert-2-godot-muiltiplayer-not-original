@@ -80,6 +80,7 @@
     <Compile Include="../../game/scripts/Hud/HealthPips.cs" Link="Client/Hud/HealthPips.cs" />
     <Compile Include="../../game/scripts/Input/PlacementPreview.cs" Link="Client/Controls/PlacementPreview.cs" />
     <Compile Include="../../game/scripts/Terrain/BuildingShapes.cs" Link="Client/Terrain/BuildingShapes.cs" />
+    <Compile Include="../../game/scripts/Terrain/BuildingLooks.cs" Link="Client/Terrain/BuildingLooks.cs" />
     <Compile Include="../../game/scripts/Terrain/FogShades.cs" Link="Client/Terrain/FogShades.cs" />
     <Compile Include="../../game/scripts/Terrain/BuildingGhosts.cs" Link="Client/Terrain/BuildingGhosts.cs" />
     <Compile Include="../../game/scripts/Terrain/OreCrystals.cs" Link="Client/Terrain/OreCrystals.cs" />

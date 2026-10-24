@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="../../game/scripts/Hud/SidebarModel.cs" Link="Client/Hud/SidebarModel.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarLayout.cs" Link="Client/Hud/SidebarLayout.cs" />
+    <Compile Include="../../game/scripts/Terrain/BuildingLooks.cs" Link="Client/Terrain/BuildingLooks.cs" />
   </ItemGroup>
 
   <!-- The climate looks and the ground materials of the client (docs/implementation/M7_maps.md, 4.12): pure, without Godot. -->
