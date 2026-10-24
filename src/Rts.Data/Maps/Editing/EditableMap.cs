@@ -78,7 +78,7 @@ public sealed class EditableMap
 
     public int Height { get; }
 
-    public string Climate { get; }
+    public string Climate { get; private set; }
 
     /// <summary>The time of day, one of <see cref="MapLighting.Ids"/>; checked by <see cref="ToDefinition"/>.</summary>
     public string Lighting { get; set; }
@@ -162,6 +162,44 @@ public sealed class EditableMap
     public LandType LandAt(CellPos cell) => _land[CellIndex(cell)];
 
     public char TextureAt(CellPos cell) => _texture[CellIndex(cell)];
+
+    /// <summary>
+    /// Takes the map to another climate (<see cref="ClimateGrounds"/>): every cell gets the material of the same role there — the snow
+    /// the grass, the dirt the dry clay —, and the legend the codes of the new climate (those of the old one stay, for the undo).
+    /// </summary>
+    public void SetClimate(string climate)
+    {
+        if (!ClimateGrounds.IsKnown(climate) || climate == Climate)
+        {
+            return;
+        }
+
+        var ground = ClimateGrounds.Of(climate);
+        foreach (var entry in ground.Legend)
+        {
+            if (!_legend.Exists(known => known.Code == entry.Code))
+            {
+                _legend.Add(entry);
+            }
+        }
+
+        var codes = new Dictionary<char, char>();
+        foreach (var entry in _legend)
+        {
+            var material = ClimateGrounds.Translate(entry.Material, Climate, climate);
+            codes[entry.Code] = ground.Legend.First(target => target.Material == material).Code;
+        }
+
+        for (var i = 0; i < _texture.Length; i++)
+        {
+            if (codes.TryGetValue(_texture[i], out var code))
+            {
+                _texture[i] = code;
+            }
+        }
+
+        Climate = climate;
+    }
 
     /// <summary>Ore of a cell: 0 none, 1–9 ore density, 10–12 gems.</summary>
     public int OreAt(CellPos cell) => _ore[CellIndex(cell)];

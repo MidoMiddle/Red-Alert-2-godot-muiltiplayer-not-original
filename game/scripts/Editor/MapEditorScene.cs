@@ -114,8 +114,9 @@ public partial class MapEditorScene : Node3D, IMapSource
 
     public override void _EnterTree()
     {
-        // Before the terrain and the camera are ready: they ask for the map at once.
-        Load(Kept ?? new MapEditSession(EditableMap.NewWithArea(64, 2)));
+        // Before the terrain and the camera are ready: they ask for the map at once. «-- --ui-editor --open NAME» opens a map of
+        // res://data/maps (to look at it, a screenshot of every climate).
+        Load(Kept ?? OpenedFromArguments() ?? new MapEditSession(EditableMap.NewWithArea(64, 2)));
     }
 
     public override void _Ready()
@@ -452,6 +453,19 @@ public partial class MapEditorScene : Node3D, IMapSource
         stack.AddChild(_name);
         stack.AddChild(ActionButton("UI_EDITOR_SAVE", Save));
 
+        // The climate (RA2's theatres): the ground, the trees and the light; the texture follows role by role.
+        stack.AddChild(Caption("UI_EDITOR_CLIMATE"));
+        var climates = Rts.Data.Maps.ClimateGrounds.Ids;
+        stack.AddChild(Choice(
+            [.. climates.Select(id => Tr(Rts.Client.Maps.MapGenOptions.ClimateKey(id)))],
+            climates.IndexOf(_session.Map.Climate),
+            i =>
+            {
+                _session.SetClimate(climates[i]);
+                // The texture brush offers the materials of the new climate.
+                SelectTool(_tool);
+            }));
+
         // The time of day: the light of the map's climate (look only).
         stack.AddChild(Caption("UI_EDITOR_LIGHTING"));
         _lighting = Choice(
@@ -609,6 +623,16 @@ public partial class MapEditorScene : Node3D, IMapSource
         {
             _openList.AddItem(entry.Map.Name);
         }
+    }
+
+    private static MapEditSession? OpenedFromArguments()
+    {
+        var args = OS.GetCmdlineUserArgs();
+        var index = Array.IndexOf(args, "--open");
+        var path = index >= 0 && index + 1 < args.Length ? $"res://data/maps/{args[index + 1]}.rtsmap" : null;
+        return path is not null && Godot.FileAccess.FileExists(path)
+            ? new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(Godot.FileAccess.GetFileAsString(path))))
+            : null;
     }
 
     private void OpenSelected()

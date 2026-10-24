@@ -63,6 +63,100 @@ internal static class Features
         }
     }
 
+    /// <summary>
+    /// The houses of a town (the urban climate, as RA2's Urban maps): neutral houses, apartment blocks and sheds two cells off the roads,
+    /// away from the bases and the ore, with their images under the symmetry, as many as <see cref="TownHouses"/> per image; a house whose
+    /// images do not fit is left out. Soldiers can sit in the bigger ones once garrisons of the map come.
+    /// </summary>
+    public static void Town(GenMap map)
+    {
+        if (map.Settings.Climate != ClimateGrounds.Urban)
+        {
+            return;
+        }
+
+        var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
+        var kinds = new[] { "neutral_house_a", "neutral_apartment", "neutral_shed", "neutral_house_a", "neutral_boiler_house" };
+        var candidates = new List<(int Order, CellPos Cell)>();
+        for (var y = 2; y < map.N - 4; y++)
+        {
+            for (var x = 2; x < map.N - 4; x++)
+            {
+                var cell = new CellPos(x, y);
+                if (map.Symmetry.CanonicalCell(cell) == cell && NearRoad(map, cell, 2) && !NearRoad(map, cell, 1)
+                    && map.StartDistanceSquared(cell) > (Starts.FlatRadius + 4) * (Starts.FlatRadius + 4))
+                {
+                    candidates.Add(((int)(IntNoise.Hash(x, y, map.Seed, Channels.Town) % 100_000), cell));
+                }
+            }
+        }
+
+        candidates.Sort((a, b) => a.Order != b.Order ? a.Order.CompareTo(b.Order) : a.Cell.Y != b.Cell.Y ? a.Cell.Y.CompareTo(b.Cell.Y) : a.Cell.X.CompareTo(b.Cell.X));
+        var built = 0;
+        foreach (var (order, corner) in candidates)
+        {
+            if (built >= TownHouses)
+            {
+                break;
+            }
+
+            var kind = kinds[order % kinds.Length];
+            var images = new List<StructurePlacement>();
+            for (var k = 0; k < map.Symmetry.Order; k++)
+            {
+                // The north-west cell of the turned footprint is its smallest corner after the turn.
+                var (minX, minY) = (int.MaxValue, int.MaxValue);
+                foreach (var cell in MapChecks.Footprint(new StructurePlacement(kind, corner, 0, 0)))
+                {
+                    var image = map.Symmetry.Cell(k, cell);
+                    (minX, minY) = (IntMath.Min(minX, image.X), IntMath.Min(minY, image.Y));
+                }
+
+                var placement = new StructurePlacement(kind, new CellPos(minX, minY), 0, order % 8);
+                if (!images.Exists(other => other.Cell == placement.Cell))
+                {
+                    images.Add(placement);
+                }
+            }
+
+            var placed = new List<StructurePlacement>(map.Structures);
+            var fits = true;
+            foreach (var placement in images)
+            {
+                fits &= MapChecks.BuildingProblem(ground, placement, placed) is null && NoOre(map, placement)
+                    && MapChecks.Footprint(placement).TrueForAll(cell => !NearRoad(map, cell, 0) && map.LandAt(cell) == LandType.Clear);
+                placed.Add(placement);
+            }
+
+            if (fits)
+            {
+                map.Structures.AddRange(images);
+                built++;
+            }
+        }
+    }
+
+    /// <summary>How many houses a town has per image of the symmetry.</summary>
+    public const int TownHouses = 14;
+
+    // Whether a road lies within reach cells of the cell (0: the cell is a road).
+    private static bool NearRoad(GenMap map, CellPos cell, int reach)
+    {
+        for (var dy = -reach; dy <= reach; dy++)
+        {
+            for (var dx = -reach; dx <= reach; dx++)
+            {
+                var near = new CellPos(cell.X + dx, cell.Y + dy);
+                if (map.Contains(near) && map.LandAt(near) == LandType.Road)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static void Rough(GenMap map)
     {
         for (var y = 0; y < map.N; y++)
@@ -81,9 +175,10 @@ internal static class Features
     }
 
     /// <summary>
-    /// The look of the clear ground, which the rules never see: patches of dirt and of grass under the snow where their noises
-    /// are among the highest <see cref="DirtPercent"/> and <see cref="GrassPercent"/> of the clear cells, and trodden dirt
-    /// around the bases. Land, heights and everything else stay as they are.
+    /// The look of the clear ground, which the rules never see, by the climate (<see cref="ClimateGrounds"/>): patches of its first kind
+    /// (dirt in the snow, dry clay in the sand) and of its second (grass under the snow, a meadow, paving, gravel) where their noises are
+    /// among the highest <see cref="DirtPercent"/> and <see cref="GrassPercent"/> of the clear cells, and the first kind trodden around
+    /// the bases; in a town the pavement along the roads. Land, heights and everything else stay as they are.
     /// </summary>
     public static void Ground(GenMap map)
     {
@@ -107,19 +202,24 @@ internal static class Features
         }
 
         // Thresholds by rank, not by value: the sum of the octaves gathers around the middle, so a fixed value would give few cells.
+        var ground = ClimateGrounds.Of(map.Settings.Climate);
         var dirtLine = Percentile(clear.ConvertAll(c => c.Dirt), 100 - DirtPercent);
         var grassLine = Percentile(clear.ConvertAll(c => c.Grass), 100 - GrassPercent);
         var troddenLine = Percentile(clear.ConvertAll(c => c.Dirt), 50);
         foreach (var (cell, dirt, grass) in clear)
         {
             var trodden = map.StartDistanceSquared(cell) <= TroddenRadius * TroddenRadius && dirt > troddenLine;
-            if (trodden || dirt > dirtLine)
+            if (ground.Sidewalk != ground.Road && NextToRoad(map, cell))
             {
-                map.Paint[cell.Y * map.N + cell.X] = "dirt";
+                map.Paint[cell.Y * map.N + cell.X] = ground.Sidewalk;
+            }
+            else if (trodden || dirt > dirtLine)
+            {
+                map.Paint[cell.Y * map.N + cell.X] = ground.PatchA;
             }
             else if (grass > grassLine)
             {
-                map.Paint[cell.Y * map.N + cell.X] = "grass";
+                map.Paint[cell.Y * map.N + cell.X] = ground.PatchB;
             }
         }
     }
@@ -133,7 +233,9 @@ internal static class Features
 
     public static void Forest(GenMap map)
     {
-        var threshold = map.Settings.Forest switch { Amount.Low => 74, Amount.Medium => 66, _ => 58 };
+        // The desert and the town have fewer trees than the woods of winter and summer.
+        var threshold = (map.Settings.Forest switch { Amount.Low => 74, Amount.Medium => 66, _ => 58 })
+            + (map.Settings.Climate switch { ClimateGrounds.Desert => 12, ClimateGrounds.Urban => 6, _ => 0 });
         var ore = new List<CellPos>();
         for (var i = 0; i < map.Ore.Length; i++)
         {

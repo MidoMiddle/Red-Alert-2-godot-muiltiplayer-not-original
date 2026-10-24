@@ -43,7 +43,7 @@ public static class ClimateLookReader
             throw new ClimateFormatException(1, 1, "a climate is one YAML mapping");
         }
 
-        var values = Entries(root, ["format", "id", "materials", "cliff", "water_normal", "deep_water", "lighting"], "the climate");
+        var values = Entries(root, ["format", "id", "materials", "cliff", "water_normal", "deep_water", "lighting", "trees"], "the climate");
         var format = Text(Required(values, "format", root));
         if (format != ClimateLook.FormatVersion)
         {
@@ -91,8 +91,17 @@ public static class ClimateLookReader
             cliff,
             File(Required(values, "water_normal", root)),
             Color(Required(values, "deep_water", root)),
-            lighting.ToImmutable());
+            lighting.ToImmutable(),
+            values.TryGetValue("trees", out var trees) ? TreesOf(trees) : TreeKind.Pine);
     }
+
+    private static TreeKind TreesOf(YamlNode node) => Text(node) switch
+    {
+        "pine" => TreeKind.Pine,
+        "broadleaf" => TreeKind.Broadleaf,
+        "desert" => TreeKind.Desert,
+        var other => throw Error(node, $"trees '{other}' is not pine, broadleaf or desert"),
+    };
 
     private static ClimateMaterial Material(string id, YamlNode node)
     {

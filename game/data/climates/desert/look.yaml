@@ -1,0 +1,45 @@
+# The look of the desert climate (RA2: Desert), as winter/look.yaml explains: the materials of its ground by the ids the
+# maps' legend uses (src/Rts.Data/Maps/ClimateGrounds.cs), the first the plain ground; its trees; its light. Visual only.
+format: climate/1
+id: desert
+materials:
+  sand:    { albedo: sand_dunes.png, tiling: 7, roughness: 0.95, tint: "#f6e2c0" }
+  clay:    { albedo: clay_cracked.png, tiling: 5, roughness: 0.95 }
+  gravel:  { albedo: sand_gravel.png, tiling: 5, roughness: 0.95 }
+  asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8, tint: "#d8cfc0" }
+  shore:   { albedo: sand_beach.png, tiling: 5, roughness: 0.9 }
+  rock:    { albedo: rock_red.png, tiling: 4, roughness: 0.9 }
+  water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.2, tint: "#3f8c9c", water: true }
+cliff: rock
+trees: desert
+water_normal: water_normal.png
+deep_water: "#14485a"
+lighting:
+  dawn:
+    sun: { azimuth: 4, elevation: 40, color: "#ffc28a", energy: 1.15 }
+    ambient: { color: "#d0bca8", energy: 0.8 }
+    background: "#b8957a"
+    fog: { color: "#e8c49e", density: 0.35 }
+    exposure: 1.0
+    saturation: 1.0
+  day:
+    sun: { azimuth: 14.04, elevation: 50.49, color: "#fff1d6", energy: 1.5 }
+    ambient: { color: "#c8c4b8", energy: 0.7 }
+    background: "#c9b896"
+    fog: { color: "#e8dcc4", density: 0.2 }
+    exposure: 1.0
+    saturation: 1.1
+  dusk:
+    sun: { azimuth: 24, elevation: 40, color: "#ffa875", energy: 1.05 }
+    ambient: { color: "#a49cc4", energy: 0.8 }
+    background: "#6f5f80"
+    fog: { color: "#c79a96", density: 0.4 }
+    exposure: 0.95
+    saturation: 1.05
+  night:
+    sun: { azimuth: 14.04, elevation: 55, color: "#9fb4ff", energy: 0.45 }
+    ambient: { color: "#5b6fb0", energy: 0.75 }
+    background: "#1c2238"
+    fog: { color: "#3a4670", density: 0.4 }
+    exposure: 1.1
+    saturation: 0.8

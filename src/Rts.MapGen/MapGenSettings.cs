@@ -82,7 +82,8 @@ public sealed record MapGenSettings
     /// <summary>The drills of the fields (M8 step 10b): ore at home and gems in the contested field unless said otherwise.</summary>
     public DrillKind Drills { get; init; } = DrillKind.OreAndGems;
 
-    public string Climate { get; init; } = "winter";
+    /// <summary>The climate of the map, one of <see cref="ClimateGrounds.Ids"/>: the look of its ground and trees only.</summary>
+    public string Climate { get; init; } = ClimateGrounds.Winter;
 
     /// <summary>The time of day of the map, one of <see cref="MapLighting.Ids"/>: look only.</summary>
     public string Lighting { get; init; } = MapLighting.Default;
@@ -101,9 +102,9 @@ public sealed record MapGenSettings
             throw new ArgumentException($"{Symmetry} symmetry is for {players} players, not {Players}.");
         }
 
-        if (Climate != "winter")
+        if (!ClimateGrounds.IsKnown(Climate))
         {
-            throw new ArgumentException($"Climate '{Climate}' comes in M11; only winter for now.");
+            throw new ArgumentException($"Climate '{Climate}' is not one of {string.Join(", ", ClimateGrounds.Ids)}.");
         }
 
         if (!MapLighting.IsKnown(Lighting))

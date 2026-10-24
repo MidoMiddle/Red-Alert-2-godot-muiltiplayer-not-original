@@ -52,6 +52,10 @@ public partial class MapGenOptions : VBoxContainer
             i => Chosen = Chosen with { Drills = (DrillKind)i });
         drills.TooltipText = Tr("UI_EDITOR_DRILLS_HINT");
         grid.AddChild(drills);
+        // The climate (RA2's theatres): the ground, the trees and the light of the map.
+        var climates = Rts.Data.Maps.ClimateGrounds.Ids;
+        grid.AddChild(Choice([.. System.Linq.Enumerable.Select(climates, id => Tr(ClimateKey(id)))], climates.IndexOf(Chosen.Climate),
+            i => Chosen = Chosen with { Climate = climates[i] }));
         if (ShowLighting)
         {
             var ids = Rts.Data.Maps.MapLighting.Ids;
@@ -59,6 +63,15 @@ public partial class MapGenOptions : VBoxContainer
                 i => Chosen = Chosen with { Lighting = ids[i] }));
         }
     }
+
+    /// <summary>The key of the name of a climate on screen: UI_CLIMATE_WINTER and the like.</summary>
+    public static string ClimateKey(string climate) => climate switch
+    {
+        "temperate" => "UI_CLIMATE_TEMPERATE",
+        "urban" => "UI_CLIMATE_URBAN",
+        "desert" => "UI_CLIMATE_DESERT",
+        _ => "UI_CLIMATE_WINTER",
+    };
 
     private static OptionButton Choice(string[] items, int selected, Action<int> chosen)
     {

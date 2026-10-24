@@ -200,6 +200,22 @@ public sealed class MapEditSession
         }
     }
 
+    /// <summary>Takes the map to another climate (<see cref="EditableMap.SetClimate"/>); not an undo step, like the time of day.</summary>
+    public void SetClimate(string climate)
+    {
+        if (!ClimateGrounds.IsKnown(climate))
+        {
+            throw new ArgumentException($"Unknown climate '{climate}'.", nameof(climate));
+        }
+
+        if (Map.Climate != climate)
+        {
+            EndStroke();
+            Map.SetClimate(climate);
+            Version++;
+        }
+    }
+
     /// <summary>Sets the time of day (<see cref="MapLighting.Ids"/>); not an undo step, like the name of the map.</summary>
     public void SetLighting(string lighting)
     {

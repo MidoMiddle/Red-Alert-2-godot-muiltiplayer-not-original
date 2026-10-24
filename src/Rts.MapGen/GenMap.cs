@@ -107,11 +107,12 @@ internal sealed class GenMap
     /// <summary>The map so far as a definition (bridges and buildings included).</summary>
     public MapDefinition ToDefinition(string name, string description)
     {
-        var legend = TestMapConverter.Legend;
+        // The legend and the plain materials of the map's climate.
+        var legend = ClimateGrounds.Of(Settings.Climate).Legend;
         var texture = new char[N * N];
         for (var i = 0; i < texture.Length; i++)
         {
-            texture[i] = CodeOf(legend, Paint[i] ?? TestMapConverter.MaterialOf(Land[i]));
+            texture[i] = CodeOf(legend, Paint[i] ?? ClimateGrounds.MaterialOf(Settings.Climate, Land[i]));
         }
 
         var heights = new byte[Levels.Length];

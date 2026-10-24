@@ -49,6 +49,14 @@ public sealed record LightPreset(
     }
 }
 
+/// <summary>The trees of a climate: pines (winter), broadleaf trees (summer, the town), palms and cacti (the desert).</summary>
+public enum TreeKind
+{
+    Pine,
+    Broadleaf,
+    Desert,
+}
+
 /// <summary>
 /// The look of a climate (docs/implementation/M7_maps.md, 4.12; <c>game/data/climates/&lt;id&gt;/look.yaml</c>): the ground materials,
 /// the material of cliffs, the water's normal map and depth colour, and the light of every time of day of
@@ -67,7 +75,8 @@ public sealed class ClimateLook
         string cliff,
         string waterNormal,
         LookColor deepWater,
-        ImmutableArray<LightPreset> lighting)
+        ImmutableArray<LightPreset> lighting,
+        TreeKind trees = TreeKind.Pine)
     {
         Require(!materials.IsEmpty && materials.Length <= MaxMaterials, $"a climate has 1…{MaxMaterials} materials");
         Require(materials.Select(m => m.Id).Distinct(StringComparer.Ordinal).Count() == materials.Length, "every material once");
@@ -79,7 +88,11 @@ public sealed class ClimateLook
         WaterNormal = waterNormal;
         DeepWater = deepWater;
         Lighting = [.. MapLighting.Ids.Select(preset => lighting.First(l => l.Id == preset))];
+        Trees = trees;
     }
+
+    /// <summary>How the trees of the map and the holo tank's disguise look in the climate (the rules have one kind of tree).</summary>
+    public TreeKind Trees { get; }
 
     public string Id { get; }
 

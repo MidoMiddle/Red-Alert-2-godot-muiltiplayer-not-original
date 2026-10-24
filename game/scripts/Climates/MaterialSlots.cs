@@ -7,7 +7,7 @@ namespace Rts.Client.Climates;
 /// The ground material of every cell for the ground shader (docs/implementation/M7_maps.md, 4.12), Godot-free: two bytes per
 /// cell, the slot of its material in the climate (<see cref="ClimateLook.Materials"/>) and its water (0 none, 1 shallow, 2 deep,
 /// by the land of the rules). Cliffs take the climate's cliff material whatever the texture says; a material the climate lacks
-/// falls back to the one of the cell's land, then to the first slot.
+/// falls back to the one of the cell's land in that climate (<see cref="Rts.Data.Maps.ClimateGrounds"/>), then to the first slot.
 /// </summary>
 public static class MaterialSlots
 {
@@ -47,7 +47,7 @@ public static class MaterialSlots
         var slot = material is null ? -1 : climate.SlotOf(material);
         if (slot < 0)
         {
-            slot = climate.SlotOf(Rts.Data.Maps.TestMapConverter.MaterialOf(land));
+            slot = climate.SlotOf(Rts.Data.Maps.ClimateGrounds.MaterialOf(climate.Id, land));
         }
 
         return (byte)System.Math.Max(slot, 0);

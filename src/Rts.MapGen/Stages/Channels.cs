@@ -13,4 +13,7 @@ internal static class Channels
     public const int Variant = 8;
     public const int Grass = 9;
     public const int Dirt = 10;
+
+    // The houses of a town (the urban climate).
+    public const int Town = 11;
 }

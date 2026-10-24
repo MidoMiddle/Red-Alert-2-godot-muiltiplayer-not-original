@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
@@ -6,12 +7,13 @@ using Rts.Simulation.Map;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// Symbolic map objects on the ground (docs/implementation/conventions.md, section 12; M7_maps.md, 4.7): a dark green cone on
-/// a trunk for a tree and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a low steel
+/// Symbolic map objects on the ground (docs/implementation/conventions.md, section 12; M7_maps.md, 4.7): a tree in the shape of
+/// the climate's trees (<see cref="TreeShapes"/>: a pine, a broadleaf tree, a palm or a cactus) and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a low steel
 /// block for an anti-tank hedgehog, a thin dark pipe for a pipeline (ore and gem sources: <see cref="OreSources"/>), a tall
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
 /// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell. One MultiMesh
-/// per shape (and per direction for bridges). Rebuilt whenever the map changes (a tree felled, a bridge blown up), which is rare.
+/// per shape (and per direction for bridges). A snowdrift is a bush in summer and a dune in the desert. Rebuilt whenever the map changes
+/// (a tree felled, a bridge blown up) or its climate does (the editor), which is rare.
 /// </summary>
 public partial class MapObjects : Node3D
 {
@@ -22,14 +24,17 @@ public partial class MapObjects : Node3D
     private MapGrid _map = null!;
     private int _builtVersion = -1;
     private MapGrid? _builtMap;
+    private Climates.ClimateLook? _builtClimate;
 
     public override void _Process(double delta)
     {
         // A new match or a new map in the editor (another map object), or a change of this one.
         var map = GetParent<TerrainBuilder>().Map;
-        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion)
+        var climate = GetParent<TerrainBuilder>().Climate;
+        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion || !ReferenceEquals(climate, _builtClimate))
         {
             _map = map;
+            _builtClimate = climate;
             Rebuild();
         }
     }
@@ -43,7 +48,8 @@ public partial class MapObjects : Node3D
 
         _builtMap = _map;
         _builtVersion = _map.Version;
-        var trees = new List<Vector3>();
+        var kind = _builtClimate?.Trees ?? Climates.TreeKind.Pine;
+        var trees = new List<(Vector3 At, int Variant)>();
         var stumps = new List<Vector3>();
         var boulders = new List<Vector3>();
         var fences = new List<Vector3>();
@@ -69,7 +75,7 @@ public partial class MapObjects : Node3D
             var at = Ground(mapObject.Cell.X, mapObject.Cell.Y);
             var list = (mapObject.Kind, mapObject.Destroyed) switch
             {
-                (MapObjectKind.PineTree, false) => trees,
+                (MapObjectKind.PineTree, false) => null,
                 (MapObjectKind.PineTree, true) => stumps,
                 (MapObjectKind.Boulder, _) => boulders,
                 (MapObjectKind.FenceWood, false) => fences,
@@ -89,13 +95,19 @@ public partial class MapObjects : Node3D
                 _ => throw new System.ArgumentOutOfRangeException(nameof(mapObject), mapObject.Kind, "No symbolic look for this kind."),
             };
             list?.Add(at);
+            if (mapObject is { Kind: MapObjectKind.PineTree, Destroyed: false })
+            {
+                trees.Add((at, mapObject.Variant));
+            }
         }
 
         // The pines beyond the edge (MapSkirt): only a picture, the rules never see them.
         foreach (var (x, z) in GetParent<TerrainBuilder>().Skirt.Trees)
         {
-            trees.Add(new Vector3(x, WorldCoords.Terrain!.HeightAt(x, z), z));
+            trees.Add((new Vector3(x, WorldCoords.Terrain!.HeightAt(x, z), z), (int)(System.MathF.Abs(x * 7f + z * 13f) % 4)));
         }
+
+        AddTrees(kind, trees);
 
         foreach (var bridge in _map.Bridges)
         {
@@ -103,8 +115,6 @@ public partial class MapObjects : Node3D
         }
 
         AddInstances("Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
-        AddInstances("TreeTrunks", new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = TrunkHeight }, new Color(0.35f, 0.24f, 0.15f), trees, TrunkHeight / 2);
-        AddInstances("TreeCrowns", new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = CrownHeight }, new Color(0.12f, 0.32f, 0.16f), trees, TrunkHeight + CrownHeight / 2);
         AddInstances("Stumps", new CylinderMesh { TopRadius = 0.08f, BottomRadius = 0.09f, Height = 0.08f }, new Color(0.42f, 0.3f, 0.18f), stumps, 0.04f);
         AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f);
         AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f);
@@ -113,7 +123,14 @@ public partial class MapObjects : Node3D
         AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
         AddInstances("Hedgehogs", new BoxMesh { Size = new Vector3(0.9f, 0.3f, 0.9f) }, new Color(0.3f, 0.31f, 0.34f), hedgehogs, 0.15f);
         AddInstances("Pipes", new BoxMesh { Size = new Vector3(0.98f, 0.12f, 0.12f) }, new Color(0.22f, 0.25f, 0.28f), pipes, 0.06f);
-        AddInstances("Snowdrifts", new SphereMesh { Radius = 0.45f, Height = 0.22f }, new Color(0.9f, 0.93f, 0.97f), drifts, 0.11f);
+        // A snowdrift of the map is a bush in summer and in town, a dune in the desert.
+        var drift = kind switch
+        {
+            Climates.TreeKind.Broadleaf => new Color(0.24f, 0.4f, 0.2f),
+            Climates.TreeKind.Desert => new Color(0.85f, 0.74f, 0.52f),
+            _ => new Color(0.9f, 0.93f, 0.97f),
+        };
+        AddInstances("Snowdrifts", new SphereMesh { Radius = 0.45f, Height = 0.22f }, drift, drifts, 0.11f);
     }
 
     /// <summary>
@@ -161,6 +178,39 @@ public partial class MapObjects : Node3D
     }
 
     private static Vector3 Ground(int x, int y) => new(x + 0.5f, WorldCoords.Terrain!.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
+
+    /// <summary>The trees of the map and the skirt, every shape of <see cref="TreeShapes"/> one MultiMesh.</summary>
+    private void AddTrees(Climates.TreeKind kind, List<(Vector3 At, int Variant)> trees)
+    {
+        var parts = new Dictionary<string, (TreePart Part, List<Transform3D> Places)>();
+        foreach (var (at, variant) in trees)
+        {
+            foreach (var part in TreeShapes.Of(kind, variant))
+            {
+                var key = part.Key + "/" + part.Color.ToHtml();
+                if (!parts.TryGetValue(key, out var entry))
+                {
+                    entry = (part, []);
+                    parts[key] = entry;
+                }
+
+                entry.Places.Add(new Transform3D(Basis.FromEuler(new Vector3(0, Mathf.DegToRad(part.YawDegrees), 0)), at + part.Offset));
+            }
+        }
+
+        foreach (var (key, (part, places)) in parts)
+        {
+            var mesh = part.Mesh();
+            mesh.Material = new StandardMaterial3D { AlbedoColor = part.Color };
+            var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = places.Count };
+            for (var i = 0; i < places.Count; i++)
+            {
+                multiMesh.SetInstanceTransform(i, places[i]);
+            }
+
+            AddChild(new MultiMeshInstance3D { Name = "Trees" + part.Key + parts.Keys.ToList().IndexOf(key), Multimesh = multiMesh });
+        }
+    }
 
     private void AddInstances(string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift)
     {

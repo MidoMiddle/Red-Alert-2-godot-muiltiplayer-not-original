@@ -41,6 +41,9 @@ public partial class TerrainBuilder : Node3D
     /// <summary>The land beyond the edge of <see cref="Map"/>; its pines are drawn by <see cref="MapObjects"/>.</summary>
     public MapSkirt Skirt => _skirt!;
 
+    /// <summary>The look of the climate shown now, or null before the first map; its trees are drawn by <see cref="MapObjects"/>.</summary>
+    public ClimateLook? Climate => _climate;
+
     /// <summary>The ground material of every chunk; the debug cell overlay sets its overlay parameters.</summary>
     public ShaderMaterial GroundMaterial { get; private set; } = null!;
 

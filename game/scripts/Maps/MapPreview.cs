@@ -44,13 +44,22 @@ public static class MapPreview
 
     /// <summary>The picture of <paramref name="map"/>: (2W) × (2H) pixels, three bytes each; or that of its playable area.</summary>
     public static byte[] Render(MapDefinition map) =>
-        map.Playable is { } area ? RenderArea(map.ToMapGrid(), map.Starts, area) : Render(map.ToMapGrid(), map.Starts);
+        map.Playable is { } area ? RenderArea(map.ToMapGrid(), map.Starts, area, map.Climate) : Render(map.ToMapGrid(), map.Starts, map.Climate);
+
+    /// <summary>The colour of the plain ground in a climate: the grey green of winter, the green of summer, the sand of the desert.</summary>
+    public static (float R, float G, float B) PlainOf(string climate) => climate switch
+    {
+        "temperate" => (0.42f, 0.58f, 0.3f),
+        "urban" => (0.5f, 0.56f, 0.44f),
+        "desert" => (0.82f, 0.7f, 0.5f),
+        _ => LandColors.Of(LandType.Clear),
+    };
 
     /// <summary>
     /// The playable area as the screen shows it, <see cref="SizeOf"/> pixels: a pixel is a step of the screen's axes
     /// (<c>v = x − z</c> across in half steps, <c>u = x + z</c> down), coloured as the cell under it.
     /// </summary>
-    public static byte[] RenderArea(MapGrid grid, IReadOnlyList<MapStart> starts, MapArea area)
+    public static byte[] RenderArea(MapGrid grid, IReadOnlyList<MapStart> starts, MapArea area, string climate = "winter")
     {
         var (width, height) = (2 * (area.Right - area.Left), area.Bottom - area.Top);
         var pixels = new byte[width * height * 3];
@@ -61,7 +70,7 @@ public static class MapPreview
             {
                 var (u, v) = Axes(px, py);
                 var cell = new CellPos((int)MathF.Floor((u + v) / 2f), (int)MathF.Floor((u - v) / 2f));
-                var color = grid.Contains(cell) ? CellColor(grid, cell) : Tree;
+                var color = grid.Contains(cell) ? CellColor(grid, cell, climate) : Tree;
                 Put(pixels, (py * width + px) * 3, color);
             }
         }
@@ -86,7 +95,7 @@ public static class MapPreview
         return pixels;
     }
 
-    public static byte[] Render(MapGrid grid, IReadOnlyList<MapStart> starts)
+    public static byte[] Render(MapGrid grid, IReadOnlyList<MapStart> starts, string climate = "winter")
     {
         var width = grid.Width * PixelsPerCell;
         var pixels = new byte[width * grid.Height * PixelsPerCell * 3];
@@ -94,7 +103,7 @@ public static class MapPreview
         {
             for (var x = 0; x < grid.Width; x++)
             {
-                var color = CellColor(grid, new CellPos(x, y));
+                var color = CellColor(grid, new CellPos(x, y), climate);
                 for (var py = y * PixelsPerCell; py < (y + 1) * PixelsPerCell; py++)
                 {
                     for (var px = x * PixelsPerCell; px < (x + 1) * PixelsPerCell; px++)
@@ -127,7 +136,7 @@ public static class MapPreview
     }
 
     /// <summary>The colour of one cell of the preview, components 0…1.</summary>
-    public static (float R, float G, float B) CellColor(MapGrid grid, CellPos cell)
+    public static (float R, float G, float B) CellColor(MapGrid grid, CellPos cell, string climate = "winter")
     {
         if (grid.HasBuilding(cell))
         {
@@ -165,7 +174,7 @@ public static class MapPreview
         }
 
         var shape = grid.Heights.ShapeAt(cell);
-        var (r, g, b) = LandColors.Of(grid.LandAt(cell), shape);
+        var (r, g, b) = grid.LandAt(cell) == LandType.Clear && shape != CellShape.Cliff ? PlainOf(climate) : LandColors.Of(grid.LandAt(cell), shape);
         var shade = shape == CellShape.Cliff ? 1f : HeightShade(grid.Heights.CellLevel(cell));
         return (r * shade, g * shade, b * shade);
     }

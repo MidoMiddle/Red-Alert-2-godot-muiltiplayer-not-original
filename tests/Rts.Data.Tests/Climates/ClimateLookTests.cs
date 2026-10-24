@@ -53,6 +53,28 @@ public sealed class ClimateLookTests
     }
 
     [Fact]
+    public void Every_climate_of_ra2_has_its_look_its_textures_its_trees_and_its_ground_in_its_look()
+    {
+        var textures = Path.Combine(SampleMaps.RepoRoot, "game", "assets", "textures", "terrain");
+        var trees = new Dictionary<string, TreeKind>
+        {
+            ["winter"] = TreeKind.Pine, ["temperate"] = TreeKind.Broadleaf, ["urban"] = TreeKind.Broadleaf, ["desert"] = TreeKind.Desert,
+        };
+        foreach (var id in ClimateGrounds.Ids)
+        {
+            var climate = ClimateLookReader.Read(File.ReadAllText(Path.Combine(ClimateFolder, id, "look.yaml")));
+            Assert.Equal(id, climate.Id);
+            Assert.Equal(trees[id], climate.Trees);
+            Assert.All(climate.Materials, material => Assert.True(File.Exists(Path.Combine(textures, material.Albedo)), $"{id}: {material.Albedo}"));
+            // Every material the ground of the climate paints is in its look, the plain ground first.
+            var ground = ClimateGrounds.Of(id);
+            Assert.All(ground.Legend, entry => Assert.True(climate.SlotOf(entry.Material) >= 0, $"{id}: {entry.Material}"));
+            Assert.Equal(0, climate.SlotOf(ground.Plain));
+            Assert.Contains(climate.Materials, material => material.Water);
+        }
+    }
+
+    [Fact]
     public void The_rules_never_read_the_climates()
     {
         Assert.DoesNotContain(RulesLoader.FilesBelow(GameDataFiles.Folder), file => file.FileName.StartsWith("climates/", StringComparison.Ordinal));

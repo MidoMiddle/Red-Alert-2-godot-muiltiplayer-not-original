@@ -37,10 +37,12 @@ public sealed class QuickSkirmishMapsTests
     {
         Assert.Equal(
         [
-            "ambush-valley", "arctic-strip", "blizzard-basin", "crate-glacier", "dense-taiga", "four-corners",
-            "frost-arena", "frost-gate", "frozen-crossing", "frozen-outpost", "frozen-plateau", "glacier-duel",
-            "ice-city", "ice-ridge", "pine-haven", "polar-circle", "relief_test", "snowbound-hamlet",
-            "snowfall-forest", "steel-tundra", "taiga-front", "tundra-lane", "twin-rivers", "windswept-pass",
+            "ambush-valley", "arctic-strip", "blizzard-basin", "city-blocks", "crate-glacier", "dense-taiga",
+            "downtown-duel", "dune-sea", "four-corners", "four-farms", "frost-arena", "frost-gate",
+            "frozen-crossing", "frozen-outpost", "frozen-plateau", "glacier-duel", "green-valley", "harbor-district",
+            "ice-city", "ice-ridge", "mesa-pass", "oasis-crossing", "pine-haven", "polar-circle",
+            "relief_test", "river-meadows", "snowbound-hamlet", "snowfall-forest", "steel-tundra", "taiga-front",
+            "tundra-lane", "twin-rivers", "windswept-pass",
         ], Maps().Cast<object[]>().Select(row => (string)row[0]));
     }
 

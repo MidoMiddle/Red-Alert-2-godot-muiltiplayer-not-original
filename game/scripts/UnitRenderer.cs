@@ -122,19 +122,10 @@ public partial class UnitRenderer : Node3D
 
         if (!_trees.TryGetValue(unit.Id, out var tree))
         {
-            tree = new Node3D { Name = "Mirage" + unit.Id.Value };
-            tree.AddChild(new MeshInstance3D
-            {
-                Mesh = new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = 0.25f },
-                Position = new Vector3(0, 0.125f, 0),
-                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.35f, 0.24f, 0.15f) },
-            });
-            tree.AddChild(new MeshInstance3D
-            {
-                Mesh = new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = 0.8f },
-                Position = new Vector3(0, 0.25f + 0.4f, 0),
-                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.12f, 0.32f, 0.16f) },
-            });
+            // A tree of the map's climate, as the trees around it (TreeShapes).
+            var kind = GetNodeOrNull<Terrain.TerrainBuilder>("../Terrain")?.Climate?.Trees ?? Climates.TreeKind.Pine;
+            tree = Terrain.TreeShapes.Build(kind, unit.Id.Value);
+            tree.Name = "Mirage" + unit.Id.Value;
             AddChild(tree);
             _trees.Add(unit.Id, tree);
         }

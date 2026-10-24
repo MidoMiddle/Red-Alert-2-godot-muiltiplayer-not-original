@@ -1,0 +1,46 @@
+# The look of the urban climate (RA2: Urban), as winter/look.yaml explains: the materials of its ground by the ids the
+# maps' legend uses (src/Rts.Data/Maps/ClimateGrounds.cs), the first the plain ground; its trees; its light. Visual only.
+format: climate/1
+id: urban
+materials:
+  grass:   { albedo: grass_meadow.png, tiling: 6, roughness: 0.95, tint: "#c4dca8" }
+  pavers:  { albedo: concrete_pavers.png, tiling: 3, roughness: 0.85 }
+  slabs:   { albedo: concrete_slabs.png, tiling: 3, roughness: 0.85 }
+  dirt:    { albedo: dirt_brown.png, tiling: 5, roughness: 0.95 }
+  asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8, tint: "#c8c8cc" }
+  shore:   { albedo: coast_sand.png, tiling: 5, roughness: 0.9 }
+  rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9 }
+  water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.2, tint: "#4a7488", water: true }
+cliff: rock
+trees: broadleaf
+water_normal: water_normal.png
+deep_water: "#1a3a52"
+lighting:
+  dawn:
+    sun: { azimuth: 4, elevation: 40, color: "#ffcfa6", energy: 1.15 }
+    ambient: { color: "#c4bfd2", energy: 0.8 }
+    background: "#a58f9c"
+    fog: { color: "#e3c6bd", density: 0.35 }
+    exposure: 1.0
+    saturation: 1.0
+  day:
+    sun: { azimuth: 14.04, elevation: 50.49, color: "#fff7ee", energy: 1.25 }
+    ambient: { color: "#b8c2d0", energy: 0.7 }
+    background: "#a0a8b4"
+    fog: { color: "#cfd4dc", density: 0.3 }
+    exposure: 1.0
+    saturation: 0.95
+  dusk:
+    sun: { azimuth: 24, elevation: 40, color: "#ffa875", energy: 1.05 }
+    ambient: { color: "#a49cc4", energy: 0.8 }
+    background: "#6f5f80"
+    fog: { color: "#c79a96", density: 0.4 }
+    exposure: 0.95
+    saturation: 1.05
+  night:
+    sun: { azimuth: 14.04, elevation: 55, color: "#9fb4ff", energy: 0.45 }
+    ambient: { color: "#5b6fb0", energy: 0.75 }
+    background: "#1c2238"
+    fog: { color: "#3a4670", density: 0.4 }
+    exposure: 1.1
+    saturation: 0.8

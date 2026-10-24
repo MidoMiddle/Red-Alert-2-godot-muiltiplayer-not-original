@@ -1,0 +1,45 @@
+# The look of the temperate climate (RA2: Temperate), as winter/look.yaml explains: the materials of its ground by the ids the
+# maps' legend uses (src/Rts.Data/Maps/ClimateGrounds.cs), the first the plain ground; its trees; its light. Visual only.
+format: climate/1
+id: temperate
+materials:
+  grass:   { albedo: grass_meadow.png, tiling: 6, roughness: 0.95, tint: "#bfe0a0" }
+  field:   { albedo: grass_field.png, tiling: 6, roughness: 0.95, tint: "#d6e8b4" }
+  dirt:    { albedo: dirt_brown.png, tiling: 5, roughness: 0.95 }
+  asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8 }
+  shore:   { albedo: coast_sand.png, tiling: 5, roughness: 0.9, tint: "#efe2c2" }
+  rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9 }
+  water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.2, tint: "#4f86a8", water: true }
+cliff: rock
+trees: broadleaf
+water_normal: water_normal.png
+deep_water: "#173f66"
+lighting:
+  dawn:
+    sun: { azimuth: 4, elevation: 40, color: "#ffd2a0", energy: 1.15 }
+    ambient: { color: "#c9c2b8", energy: 0.8 }
+    background: "#a8958a"
+    fog: { color: "#e6cdb0", density: 0.35 }
+    exposure: 1.0
+    saturation: 1.0
+  day:
+    sun: { azimuth: 14.04, elevation: 50.49, color: "#fff4dc", energy: 1.35 }
+    ambient: { color: "#b9cbe0", energy: 0.7 }
+    background: "#9db4cc"
+    fog: { color: "#d2e0ec", density: 0.25 }
+    exposure: 1.0
+    saturation: 1.05
+  dusk:
+    sun: { azimuth: 24, elevation: 40, color: "#ffa875", energy: 1.05 }
+    ambient: { color: "#a49cc4", energy: 0.8 }
+    background: "#6f5f80"
+    fog: { color: "#c79a96", density: 0.4 }
+    exposure: 0.95
+    saturation: 1.05
+  night:
+    sun: { azimuth: 14.04, elevation: 55, color: "#9fb4ff", energy: 0.45 }
+    ambient: { color: "#5b6fb0", energy: 0.75 }
+    background: "#1c2238"
+    fog: { color: "#3a4670", density: 0.4 }
+    exposure: 1.1
+    saturation: 0.8

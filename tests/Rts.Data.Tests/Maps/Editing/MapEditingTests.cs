@@ -297,11 +297,11 @@ public sealed class MapEditingTests
         Assert.Empty(errors);
         Assert.Equal(new[]
         {
-            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "Crate Glacier", "Dense Taiga",
-            "Frost Arena", "Frost Gate", "Frozen Crossing", "Frozen Outpost", "Frozen Plateau", "Glacier Duel",
-            "Ice City", "Ice Ridge", "My hill", "Pine Haven", "Polar Circle",
-            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Tundra Lane",
-            "Windswept Pass",
+            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "City Blocks", "Crate Glacier", "Dense Taiga",
+            "Downtown Duel", "Dune Sea", "Four Farms", "Frost Arena", "Frost Gate", "Frozen Crossing",
+            "Frozen Outpost", "Frozen Plateau", "Glacier Duel", "Green Valley", "Harbor District", "Ice City",
+            "Ice Ridge", "Mesa Pass", "My hill", "Oasis Crossing", "Pine Haven", "Polar Circle",
+            "River Meadows", "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Tundra Lane", "Windswept Pass",
         }, maps.Select(m => m.Map.Name));
         Assert.Equal("user://maps/my-hill.rtsmap", maps.Single(m => m.Map.Name == "My hill").File);
         Assert.Equal(Rts.Client.Maps.MapCatalog.UserDirectory, UserMapPaths.UserDirectory);

@@ -4,6 +4,7 @@
 # materials: the ids of the maps' legend.texture, in the order of the ground shader's slots. Albedo files are in
 #   res://assets/textures/terrain/; tiling is how many cells one copy covers; tint multiplies the texture; frost (0…1) lays
 #   frost over it in patches.
+# trees: how the trees look (pine, broadleaf, desert: palms and cacti), the holo tank's disguise too.
 # lighting: the times of day of the map header's `lighting`. The sun's azimuth is the direction its light goes in,
 #   degrees from the map's east (+X) towards its south (+Y); elevation is degrees above the horizon.
 format: climate/1
@@ -18,6 +19,7 @@ materials:
   ice:     { albedo: frozen_water.png, tiling: 12, roughness: 0.6 }
   water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.25, water: true }
 cliff: rock
+trees: pine
 water_normal: water_normal.png
 deep_water: "#1a3d8f"
 lighting:

@@ -277,8 +277,18 @@ if (args.Length >= 2 && args[0] == "generate")
             var other => throw new ArgumentException($"--drills {other} is not one of none, ore, gems"),
         },
         Lighting = Option("lighting", MapLighting.Default),
+        Climate = Option("climate", ClimateGrounds.Winter),
     };
     var (map, seed) = Rts.MapGen.MapGenerator.Generate(settings);
+
+    // A ready map of the generator gets an id and a name of its own (--id, --name); the description keeps the settings.
+    if (Option("id", "") is { Length: > 0 } id)
+    {
+        map = new MapDefinition(
+            id, Option("name", id), map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts, map.TextureLegend,
+            map.Heights, map.Land, map.Texture, map.Ore, map.Objects, map.Bridges, map.Structures, map.Lighting, map.Playable);
+    }
+
     File.WriteAllText(args[1], RtsMapWriter.Write(map));
     var warnings = MapValidator.Check(map);
     Console.WriteLine($"wrote {args[1]} · seed {seed} · {map.Width}x{map.Height} · {map.Objects.Length} objects · {map.Bridges.Length} bridges · " +
