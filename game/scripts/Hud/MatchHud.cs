@@ -20,6 +20,18 @@ public partial class MatchHud : CanvasLayer
     // line) did not go through Boot, which loads them.
     public override void _EnterTree() => Localization.Load();
 
+    private System.Action _toggleStats = () => { };
+
+    /// <summary>Tab opens and closes the statistics (a key of the interface, not bindable).</summary>
+    public override void _UnhandledInput(InputEvent inputEvent)
+    {
+        if (inputEvent is InputEventKey { Pressed: true, Echo: false, Keycode: Key.Tab })
+        {
+            _toggleStats();
+            GetViewport().SetInputAsHandled();
+        }
+    }
+
     public override void _Ready()
     {
         var sidebar = GetNode<Sidebar>("Sidebar");
@@ -37,11 +49,16 @@ public partial class MatchHud : CanvasLayer
         GetNode<Rts.Client.UI.MatchResults>("../MatchResults").Bind(host);
         sidebar.MenuRequested += pause.Open;
         // Built: the buildings of the match statistics (M5 step 11), as the panel opens; captured comes with M11.
-        sidebar.StatsRequested += () =>
+        _toggleStats = () =>
         {
             stats.Setup(host.Simulation.World.Stats.Of(SimulationHost.LocalPlayer).BuildingsBuilt, 0);
             stats.Toggle();
         };
+        sidebar.StatsRequested += () => _toggleStats();
+
+        // The mouse stays in the window while the player plays; the menu, the statistics and the results let it go.
+        var results = GetNode<Rts.Client.UI.MatchResults>("../MatchResults");
+        AddChild(new Rts.Client.Controls.MouseConfinement { Name = "MouseConfinement", Released = () => pause.IsOpen || stats.Visible || results.IsOpen });
         // The faction the local player plays in the match: its colour is the accent (the Union outside a match).
         if (host.Simulation.World.Match?.PlayerOf(SimulationHost.LocalPlayer) is { } local)
         {

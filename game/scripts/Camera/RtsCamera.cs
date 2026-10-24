@@ -191,19 +191,21 @@ public partial class RtsCamera : Node3D
             return Vector2.Zero;
         }
 
+        // At the edges of the window, as in RA2: the right one over the sidebar and the bottom one over the command bar too; the mouse
+        // is held in the window while playing (MouseConfinement), so it never overshoots.
         var viewport = GetViewport();
-        var field = FieldRect();
+        var window = viewport.GetVisibleRect();
         var mouse = viewport.GetMousePosition();
-        if (!field.HasPoint(mouse))
+        if (!window.HasPoint(mouse))
         {
             return Vector2.Zero;
         }
 
         var velocity = Vector2.Zero;
-        velocity.X -= EdgeStrength(mouse.X - field.Position.X);
-        velocity.X += EdgeStrength(field.End.X - mouse.X);
-        velocity.Y -= EdgeStrength(mouse.Y - field.Position.Y);
-        velocity.Y += EdgeStrength(field.End.Y - mouse.Y);
+        velocity.X -= EdgeStrength(mouse.X - window.Position.X);
+        velocity.X += EdgeStrength(window.End.X - 1 - mouse.X);
+        velocity.Y -= EdgeStrength(mouse.Y - window.Position.Y);
+        velocity.Y += EdgeStrength(window.End.Y - 1 - mouse.Y);
         return velocity * ScrollSpeed;
     }
 

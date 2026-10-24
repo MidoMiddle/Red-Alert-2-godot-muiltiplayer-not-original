@@ -21,6 +21,9 @@ public partial class PauseMenu : CanvasLayer
     private SimulationHost? _host;
     private bool _open;
 
+    /// <summary>Whether the pause panel is up.</summary>
+    public bool IsOpen => _open;
+
     public override void _Ready()
     {
         // The menu has to keep working while the game tree is paused.
