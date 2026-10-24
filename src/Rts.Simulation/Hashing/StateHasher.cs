@@ -37,6 +37,19 @@ public static class StateHasher
         AddTaken(hash, world.Reservations.VehicleCells);
         AddTaken(hash, world.Reservations.InfantrySpots);
 
+        // Rules v56 (stage 2d): the storms of the Storm Generator.
+        hash.Add(world.Storms.Count);
+        foreach (var storm in world.Storms)
+        {
+            hash.Add(storm.Owner.Value);
+            hash.Add(storm.Source.Value);
+            hash.Add(storm.Weapon);
+            hash.Add(storm.Centre.X);
+            hash.Add(storm.Centre.Y);
+            hash.Add(storm.Start);
+            hash.Add(storm.End);
+        }
+
         // Rules v50 (stage 3b): the toxin on the ground, cell by cell where there is some.
         var radiation = world.Radiation;
         for (var i = 0; i < radiation.Length; i++)
@@ -307,6 +320,9 @@ public static class StateHasher
                 // Rules v27 (M4 step 3): the target and the weapon of a defense.
                 AddWeapons(hash, building.Target, building.Weapons);
 
+                // Rules v56 (stage 2d): the charge of a superweapon.
+                hash.Add(building.ChargeLeft);
+
                 // Rules v48 (stage 2e): the soldiers inside.
                 hash.Add(building.Occupants.Count);
                 foreach (var occupant in building.Occupants)
@@ -414,6 +430,9 @@ public static class StateHasher
         hash.Add(entity.ErasedBy?.Value ?? 0);
         hash.Add(entity.EraseWeapon);
         hash.Add(entity.ErasePoints);
+
+        // Rules v56 (stage 2d): the Bastion Field Projector's cover.
+        hash.Add(entity.InvulnerableUntil);
 
         // Rules v50 (stage 3b): the bomb planted on it.
         hash.Add(entity.BombTicks);

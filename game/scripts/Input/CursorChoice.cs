@@ -69,6 +69,8 @@ public static class CursorChoice
                 return spot.OwnBuilding && spot.Damaged ? CursorKind.Repair : CursorKind.Forbidden;
             case PointerTool.Build:
                 return CursorKind.Normal;
+            case PointerTool.Superweapon:
+                return context.Ground is null ? CursorKind.Forbidden : CursorKind.Attack;
         }
 
         var groundOrder = context.WaypointMode || (context.Ctrl && context.Shift);

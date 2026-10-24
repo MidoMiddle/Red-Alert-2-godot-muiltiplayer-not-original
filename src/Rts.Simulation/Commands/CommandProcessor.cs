@@ -56,6 +56,7 @@ public static class CommandProcessor
             SetStanceCommand stance => ApplySetStance(world, stance),
             EnterCommand enter => EntrySystem.Order(world, OwnUnits(world, enter), enter.Building),
             EvacuateCommand evacuate => ApplyEvacuate(world, evacuate, events),
+            SuperweaponCommand superweapon => SuperweaponSystem.Fire(world, superweapon, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
         if (applied && command is UnitsCommand { Type: not (CommandType.Harvest or CommandType.Attack or CommandType.ForceAttack or CommandType.SetStance or CommandType.Enter) } order)
@@ -419,7 +420,8 @@ public static class CommandProcessor
         }
 
         var available = command.Kind == ProductionKind.Unit ? player.CanBuildUnit(command.DefIndex) : player.CanBuildBuilding(command.DefIndex);
-        if (!available || !ProductionRules.HasFactory(world, command.Player, category))
+        if (!available || !ProductionRules.HasFactory(world, command.Player, category)
+            || (command.Kind == ProductionKind.Building && !SuperweaponSystem.UnderLimit(world, command.Player, command.DefIndex)))
         {
             return false;
         }

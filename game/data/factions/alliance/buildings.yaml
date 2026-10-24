@@ -187,7 +187,7 @@ alliance_robot_control_center:  # while ready and powered, the robot tanks work 
   controls_robots: true
   powered: true
 
-alliance_chronosphere:  # superweapon: moves a group across the map, M11c
+alliance_chronosphere:  # superweapon: moves the vehicles and ships of 3 x 3 cells elsewhere, soldiers die; charges 7 min (stage 2d)
   kind: building
   inherits: base_building
   name: Phase Gate
@@ -199,11 +199,15 @@ alliance_chronosphere:  # superweapon: moves a group across the map, M11c
   armor: concrete
   footprint: [4, 3]
   power: -200
-  ability_later: true
   prerequisites: [alliance_battle_lab]
   capturable: false
+  superweapon: gate
+  recharge: 420s
+  powered: true
+  build_limit: 1
+  spy_effect: reset_charge
 
-alliance_weather_control_device:  # superweapon: a storm over an area, M11c
+alliance_weather_control_device:  # superweapon: a storm of lightning over an area after a delay; charges 10 min (stage 2d)
   kind: building
   inherits: base_building
   name: Storm Generator
@@ -215,9 +219,14 @@ alliance_weather_control_device:  # superweapon: a storm over an area, M11c
   armor: concrete
   footprint: [3, 3]
   power: -200
-  ability_later: true
   prerequisites: [alliance_battle_lab]
   capturable: false
+  superweapon: storm
+  recharge: 600s
+  superweapon_weapon: lightning_bolt
+  powered: true
+  build_limit: 1
+  spy_effect: reset_charge
 
 alliance_gap_generator:  # veils 10 cells round it from the enemy while ready and online (stage 2d)
   kind: building

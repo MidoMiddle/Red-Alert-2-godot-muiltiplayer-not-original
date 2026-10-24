@@ -206,3 +206,12 @@ public sealed record ParasiteFreed(int Tick, EntityId Host) : SimEvent(Tick);
 
 /// <summary><paramref name="Mother"/>, a carrier, launched <paramref name="Unit"/> at its target.</summary>
 public sealed record SpawnLaunched(int Tick, EntityId Unit, EntityId Mother) : SimEvent(Tick);
+
+/// <summary>The superweapon <paramref name="Building"/> of <paramref name="Player"/> is charged (stage 2d): every player hears it.</summary>
+public sealed record SuperweaponReady(int Tick, EntityId Building, PlayerId Player, Rules.SuperweaponKind Kind) : SimEvent(Tick);
+
+/// <summary>The superweapon <paramref name="Building"/> of <paramref name="Player"/> fired at <paramref name="Target"/> (stage 2d).</summary>
+public sealed record SuperweaponFired(int Tick, EntityId Building, PlayerId Player, Rules.SuperweaponKind Kind, CellPos Target) : SimEvent(Tick);
+
+/// <summary>A lightning of a storm struck <paramref name="Point"/> (stage 2d).</summary>
+public sealed record LightningStrike(int Tick, WorldPos Point) : SimEvent(Tick);

@@ -151,6 +151,7 @@ public sealed class CommandSerializerTests
         new EnterCommand(new PlayerId(5), 8, 1, [new EntityId(21), new EntityId(22)], new EntityId(40)),
         new EnterCommand(new PlayerId(5), 8, 2, [], new EntityId(-1)),
         new EvacuateCommand(new PlayerId(6), 8, 3, new EntityId(40)),
+        new SuperweaponCommand(new PlayerId(7), 9, 1, new EntityId(41), new CellPos(10, 20), new CellPos(-3, int.MaxValue)),
     };
 
     [Theory]

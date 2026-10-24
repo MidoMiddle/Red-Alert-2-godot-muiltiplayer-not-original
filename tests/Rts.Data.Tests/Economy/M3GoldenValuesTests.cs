@@ -50,7 +50,8 @@ public sealed class M3GoldenValuesTests
         // Stage 3d, rules v52: the same run and credits; passengers and parasites are hashed.
         // Stage 3f, rules v54: the same run and credits; the ammo of every unit is hashed.
         // Rules v55: the same run and credits; a carrier's Hornets are hashed.
-        Assert.Equal((5972, 0xdfbb0d543f66645bUL), (fifth.Credits, fifth.Checksum));
+        // Stage 2d, rules v56: the same run and credits; the charges, the cover and the storms are hashed.
+        Assert.Equal((5972, 0x7357ec8738a2ab6bUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

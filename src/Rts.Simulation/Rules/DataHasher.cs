@@ -172,6 +172,10 @@ public static class DataHasher
             hash.Add(building.ControlsRobots);
             hash.Add(building.RearmsAircraft);
             hash.Add(building.AircraftDocks);
+            hash.Add((byte)building.Superweapon);
+            hash.Add(building.Recharge);
+            Add(hash, building.SuperweaponWeapon);
+            hash.Add(building.BuildLimit);
         }
 
         hash.Add(rules.Factions.Length);

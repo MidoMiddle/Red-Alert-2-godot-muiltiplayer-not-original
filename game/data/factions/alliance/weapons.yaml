@@ -316,3 +316,12 @@ alliance_nighthawk_gun:  # of the Transport Helicopter, RA2 BlackHawkCannon: at 
   range: 6
   projectile: bullet
   warhead: small_arms
+
+lightning_bolt:  # a lightning of the Storm Generator, RA2 LightningDamage
+  kind: weapon
+  name: Lightning
+  damage: 250
+  reload: 1s
+  range: 1
+  projectile: bullet
+  warhead: ion

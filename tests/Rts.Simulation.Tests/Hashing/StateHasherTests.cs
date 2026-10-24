@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "invulnerable", "storm", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -87,6 +87,8 @@ public sealed class StateHasherTests
             case "ammo": moving.Ammo = 2; break;
             case "rearm ticks": moving.RearmTicks = 5; break;
             case "mother": moving.Mother = idle.Id; break;
+            case "invulnerable": moving.InvulnerableUntil = 100; break;
+            case "storm": world.Storms.Add(new Storm(Player1, idle.Id, 0, new CellPos(3, 3), 10, 20)); break;
             case "spawns docked": moving.SpawnsDocked = 2; break;
             case "spawn regen": moving.SpawnRegenTicks = 4; break;
             case "warp ticks": moving.WarpTicks = 3; break;
@@ -257,6 +259,8 @@ public sealed class StateHasherTests
         "<ErasedBy>k__BackingField", "<EraseWeapon>k__BackingField", "<ErasePoints>k__BackingField",
         // The bomb planted on it (stage 3b).
         "<BombTicks>k__BackingField", "<BombWeapon>k__BackingField", "<BombShooter>k__BackingField", "<BombOwner>k__BackingField",
+        // The Bastion Field Projector's cover (stage 2d).
+        "<InvulnerableUntil>k__BackingField",
     })]
     [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[] { "_counts", "_explored", "_veils", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(Unit), new[]
@@ -288,8 +292,8 @@ public sealed class StateHasherTests
     {
         "_entities", "_nextEntityId", "<CurrentTick>k__BackingField", "<Random>k__BackingField", "<Map>k__BackingField", "_vision",
         "<PathRequests>k__BackingField", "<Reservations>k__BackingField",
-        // The toxin on the ground (stage 3b).
-        "<Radiation>k__BackingField",
+        // The toxin on the ground (stage 3b); the storms (stage 2d).
+        "<Radiation>k__BackingField", "<Storms>k__BackingField",
         // The death weapons of a tick, launched in the same tick (stage 3b): never state.
         "<DeathBlasts>k__BackingField",
         // The sensors of the moment (stage 3e), rebuilt from the units with the sight: derived.
@@ -371,7 +375,7 @@ public sealed class StateHasherTests
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
         "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField",
-        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField",
+        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
         // The veil it added (stage 2d): derived from the building and its owner's power; the grids it went into are hashed.

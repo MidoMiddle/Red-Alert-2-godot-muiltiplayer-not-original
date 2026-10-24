@@ -15,6 +15,16 @@ public sealed record SellCommand(PlayerId Player, int ExecuteTick, uint Sequence
     public override CommandType Type => CommandType.Sell;
 }
 
+/// <summary>
+/// The player's superweapon fires at <paramref name="Target"/> (stage 2d); the Phase Gate takes what stands at <paramref name="Target"/> to
+/// <paramref name="Second"/>, the others leave it.
+/// </summary>
+public sealed record SuperweaponCommand(PlayerId Player, int ExecuteTick, uint Sequence, EntityId Building, CellPos Target, CellPos Second)
+    : Command(Player, ExecuteTick, Sequence)
+{
+    public override CommandType Type => CommandType.Superweapon;
+}
+
 /// <summary>The soldiers inside the player's building come out around it (stage 2e).</summary>
 public sealed record EvacuateCommand(PlayerId Player, int ExecuteTick, uint Sequence, EntityId Building)
     : Command(Player, ExecuteTick, Sequence)

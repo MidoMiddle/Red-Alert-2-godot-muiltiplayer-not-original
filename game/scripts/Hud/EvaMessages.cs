@@ -34,6 +34,15 @@ public sealed class EvaMessages
         UnderAttack attack when attack.Player == player => "UI_EVA_UNDER_ATTACK",
         PlayerDefeated defeated => defeated.Player == player ? "UI_EVA_YOU_ARE_DEFEATED" : "UI_EVA_PLAYER_DEFEATED",
         MatchEnded ended => ended.Winners.Contains(player) ? "UI_EVA_VICTORY" : "UI_EVA_DEFEAT",
+        // Stage 2d: every player hears of a superweapon ready and fired.
+        SuperweaponReady ready => ready.Player == player ? "UI_EVA_SUPERWEAPON_READY" : "UI_EVA_ENEMY_SUPERWEAPON_READY",
+        SuperweaponFired fired => fired.Kind switch
+        {
+            Rts.Simulation.Rules.SuperweaponKind.Curtain => "UI_EVA_CURTAIN_ACTIVATED",
+            Rts.Simulation.Rules.SuperweaponKind.Missile => "UI_EVA_MISSILE_LAUNCHED",
+            Rts.Simulation.Rules.SuperweaponKind.Gate => "UI_EVA_GATE_ACTIVATED",
+            _ => "UI_EVA_STORM_CREATED",
+        },
         _ => null,
     };
 

@@ -210,3 +210,12 @@ kirov_crash:  # the airship falling where it was brought down; ours
   range: 1
   projectile: shell
   warhead: blimp_bomb
+
+nuclear_missile:  # of the Strategic Missile Silo, RA2 NukePayload
+  kind: weapon
+  name: Nuclear Missile
+  damage: 600
+  reload: 1s
+  range: 1
+  projectile: nuclear_missile_shot
+  warhead: nuke

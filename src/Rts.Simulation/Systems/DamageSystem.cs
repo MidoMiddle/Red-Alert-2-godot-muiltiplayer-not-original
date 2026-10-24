@@ -264,7 +264,8 @@ public static class DamageSystem
     private static void Damage(GameWorld world, Entity entity, int amount, Hit hit, List<SimEvent>? events)
     {
         // Held by a temporal beam (stage 3a), it is out of time: nothing else hurts it.
-        if (amount <= 0 || entity.ErasedBy is not null)
+        // Covered by the Bastion Field Projector (stage 2d), nothing hurts it either.
+        if (amount <= 0 || entity.ErasedBy is not null || entity.IsInvulnerable(world.CurrentTick))
         {
             return;
         }

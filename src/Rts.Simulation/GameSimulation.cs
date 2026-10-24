@@ -138,6 +138,7 @@ public sealed class GameSimulation
         DamageSystem.Update(World, _events);
         ErasureSystem.Update(World, _events);
         RadiationSystem.Update(World, _events);
+        SuperweaponSystem.Update(World, _events);
         ParasiteSystem.Update(World, _events);
         Probe?.Invoke("damage");
 

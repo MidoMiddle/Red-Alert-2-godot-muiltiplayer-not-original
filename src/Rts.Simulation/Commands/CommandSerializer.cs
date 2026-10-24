@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v11, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v12, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -34,16 +34,17 @@ namespace Rts.Simulation.Commands;
 /// Surrender:     nothing
 /// Enter:         units | i32 building
 /// Evacuate:      i32 building
+/// Superweapon:   i32 building | i32 x | i32 y | i32 x2 | i32 y2 (cells)
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
 /// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy; v6 (M3 step 8) added Produce, PauseProduction,
-/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender; v11 (stage 2e of filling the game) added Enter (then named Garrison) and Evacuate.
+/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender; v11 (stage 2e of filling the game) added Enter (then named Garrison) and Evacuate; v12 (stage 2d) added Superweapon.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 11;
+    public const int FormatVersion = 12;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -75,6 +76,7 @@ public static class CommandSerializer
         SurrenderCommand => HeaderSize,
         EnterCommand garrison => HeaderSize + UnitsSize(garrison) + 4,
         EvacuateCommand => HeaderSize + 4,
+        SuperweaponCommand => HeaderSize + 4 + PositionSize + PositionSize,
         _ => throw UnknownCommand(command),
     };
 
@@ -199,6 +201,13 @@ public static class CommandSerializer
                 break;
             case EvacuateCommand evacuate:
                 BinaryPrimitives.WriteInt32LittleEndian(payload, evacuate.Building.Value);
+                break;
+            case SuperweaponCommand superweapon:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, superweapon.Building.Value);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[4..], superweapon.Target.X);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[8..], superweapon.Target.Y);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[12..], superweapon.Second.X);
+                BinaryPrimitives.WriteInt32LittleEndian(payload[16..], superweapon.Second.Y);
                 break;
             case HarvestCommand harvest:
                 var unitsEnd = WriteUnits(payload, harvest);
@@ -399,6 +408,14 @@ public static class CommandSerializer
                 Require(payload, 4);
                 bytesRead = HeaderSize + 4;
                 return new EvacuateCommand(player, tick, sequence, new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload)));
+
+            case CommandType.Superweapon:
+                Require(payload, 20);
+                bytesRead = HeaderSize + 20;
+                return new SuperweaponCommand(
+                    player, tick, sequence, new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload)),
+                    new CellPos(BinaryPrimitives.ReadInt32LittleEndian(payload[4..]), BinaryPrimitives.ReadInt32LittleEndian(payload[8..])),
+                    new CellPos(BinaryPrimitives.ReadInt32LittleEndian(payload[12..]), BinaryPrimitives.ReadInt32LittleEndian(payload[16..])));
 
             case CommandType.Harvest:
             {

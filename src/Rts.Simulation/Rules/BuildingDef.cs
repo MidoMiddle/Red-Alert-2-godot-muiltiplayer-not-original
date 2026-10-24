@@ -149,4 +149,16 @@ public sealed record BuildingDef : IDefinition
     /// The pads it has for aircraft that rearm (RA2 <c>NumberOfDocks</c>): a player builds no more such aircraft than its pads.
     /// </summary>
     public int AircraftDocks { get; init; }
+
+    /// <summary>The superweapon it is (stage 2d); <see cref="SuperweaponKind.None"/> for any other building.</summary>
+    public SuperweaponKind Superweapon { get; init; }
+
+    /// <summary>The ticks the superweapon charges, while it stands ready and online (RA2 <c>RechargeTime</c>).</summary>
+    public int Recharge { get; init; }
+
+    /// <summary>The weapon of the superweapon: the missile, the lightning; empty for the others.</summary>
+    public string SuperweaponWeapon { get; init; } = "";
+
+    /// <summary>How many of it a player may have, built and in the queue (RA2 <c>BuildLimit</c>); 0 for no limit.</summary>
+    public int BuildLimit { get; init; }
 }

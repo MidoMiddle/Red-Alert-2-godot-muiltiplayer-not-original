@@ -46,6 +46,7 @@ internal static class Samples
             new SetStanceCommand(player, tick, sequence++, Units(17, 18), Stance.HoldPosition),
             new EnterCommand(player, tick, sequence++, Units(19, 20), new EntityId(21)),
             new EvacuateCommand(player, tick, sequence++, new EntityId(21)),
+            new SuperweaponCommand(player, tick, sequence++, new EntityId(22), cell, new CellPos(13, 34)),
             new SurrenderCommand(player, tick, sequence),
         ];
     }

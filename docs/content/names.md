@@ -22,8 +22,8 @@
 | naval_shipyard | Dockyard | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | service_depot | Field Workshop | ремонт техники | Service Depot | работает: чинит технику и корабли рядом, за деньги (этап 2в) |
 | nuclear_reactor | Atomic Plant | энергия +2000 | Nuclear Reactor | работает: энергия; взрывается, если его разрушили выстрелом (этап 2в) |
-| iron_curtain | Bastion Field Projector | неуязвимость группе | Iron Curtain | позже (M11a) |
-| nuclear_missile_silo | Strategic Missile Silo | ракетный удар | Nuclear Missile Silo | позже (M11a) |
+| iron_curtain | Bastion Field Projector | неуязвимость группе | Iron Curtain | работает: 3×3 клетки неуязвимы 50 с, пехота там гибнет; заряд 5 мин (этап 2д) |
+| nuclear_missile_silo | Strategic Missile Silo | ракетный удар | Nuclear Missile Silo | работает: ракета 600 на 10 клеток, бетон 8 %, после — яд; заряд 10 мин (этап 2д) |
 | industrial_plant | Heavy Industry Complex | скидка на технику | Industrial Plant | работает: техника, корабли и самолёты на 25 % дешевле (этап 2в) |
 | battle_bunker | Fortified Bunker | гарнизон | Battle Bunker | работает: до 5 пехотинцев внутри стреляют своим оружием, дальность от стены (этап 2е) |
 
@@ -45,8 +45,8 @@
 | alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | работает: руда приносит на 25 % больше (этап 2в) |
 | alliance_spy_satellite_uplink | Orbital Uplink | открывает карту | Spy Satellite Uplink | работает: радар; пока стоит с энергией, вся карта разведана (этап 2г) |
 | alliance_robot_control_center | Drone Control Hub | управление роботами | Robot Control Center | работает: пока стоит с энергией, Robot Tank работают (этап 3г) |
-| alliance_chronosphere | Phase Gate | переброска группы | Chronosphere | позже (M11c) |
-| alliance_weather_control_device | Storm Generator | шторм над областью | Weather Control Device | позже (M11c) |
+| alliance_chronosphere | Phase Gate | переброска группы | Chronosphere | работает: переносит технику и корабли 3×3 в другое место, пехота гибнет; заряд 7 мин (этап 2д) |
+| alliance_weather_control_device | Storm Generator | шторм над областью | Weather Control Device | работает: через ~17 с буря на 12 с, молнии по 250; заряд 10 мин (этап 2д) |
 | alliance_gap_generator | Veil Generator | скрывает базу | Gap Generator | работает: с энергией закрывает 10 клеток вокруг от врага (этап 2г) |
 | alliance_pillbox | Gun Nest | пулемёт | Pillbox | работает |
 | alliance_patriot_missile_system | Sky Guard | ПВО | Patriot Missile System | работает: бьёт по авиации (этап 2б) |

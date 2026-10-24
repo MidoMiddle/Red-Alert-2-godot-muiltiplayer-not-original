@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Controls;
@@ -26,6 +27,10 @@ public partial class Sidebar : Control
     private Button _repair = null!;
     private Button _sell = null!;
     private PowerBar _power = null!;
+
+    // The superweapons of the player (stage 2d): a button each, above repair and sell.
+    private readonly Dictionary<EntityId, Button> _superweapons = new();
+    private VBoxContainer _superweaponColumn = null!;
     private StyleBoxFlat _tabStyle = null!;
     private SimulationHost? _host;
     private PlayerInput? _input;
@@ -54,6 +59,10 @@ public partial class Sidebar : Control
         var menu = GetNode<Button>("Column/MenuRow/MenuButton");
         var stats = GetNode<Button>("Column/MenuRow/StatsButton");
         _repair = GetNode<Button>("Column/SellRepairRow/RepairButton");
+        _superweaponColumn = new VBoxContainer { Name = "Superweapons" };
+        var column = GetNode<Control>("Column");
+        column.AddChild(_superweaponColumn);
+        column.MoveChild(_superweaponColumn, GetNode("Column/SellRepairRow").GetIndex());
         _sell = GetNode<Button>("Column/SellRepairRow/SellButton");
 
         menu.Text = Tr("UI_BUTTON_MENU");
@@ -144,10 +153,50 @@ public partial class Sidebar : Control
             _icons[i].Cameo = i < cameos.Count && SidebarModel.TabOpen(world, player, _group) ? cameos[i] : null;
         }
 
+        UpdateSuperweapons(world, player);
         _sell.SetPressedNoSignal(_input.Tool == PointerTool.Sell);
         _repair.SetPressedNoSignal(_input.Tool == PointerTool.Repair);
         _sell.Disabled = _host.IsPlayback;
         _repair.Disabled = _host.IsPlayback;
+    }
+
+    /// <summary>
+    /// A button for every ready superweapon of the player (stage 2d): its name and the time it still charges, or Ready; pressed, it arms
+    /// the superweapon for a click on the map.
+    /// </summary>
+    private void UpdateSuperweapons(GameWorld world, PlayerId player)
+    {
+        var seen = new HashSet<EntityId>();
+        foreach (var entity in world.Entities)
+        {
+            if (entity is not Building { IsAlive: true, IsReady: true, Def: { Superweapon: not Rts.Simulation.Rules.SuperweaponKind.None } def } building
+                || building.Owner != player)
+            {
+                continue;
+            }
+
+            seen.Add(building.Id);
+            if (!_superweapons.TryGetValue(building.Id, out var button))
+            {
+                var id = building.Id;
+                button = new Button { ToggleMode = true, TooltipText = Tr("UI_SIDEBAR_SUPERWEAPON_HINT"), ClipText = true };
+                button.Pressed += () => _input?.ToggleSuperweapon(id);
+                _superweaponColumn.AddChild(button);
+                _superweapons.Add(id, button);
+            }
+
+            var ready = building.ChargeLeft == 0;
+            var seconds = (building.ChargeLeft + Rts.Simulation.SimulationSettings.DefaultTicksPerSecond - 1) / Rts.Simulation.SimulationSettings.DefaultTicksPerSecond;
+            button.Text = $"{def.Name}  {(ready ? Tr("UI_SIDEBAR_SUPERWEAPON_READY") : $"{seconds / 60}:{seconds % 60:00}")}";
+            button.Disabled = !ready || _host!.IsPlayback;
+            button.SetPressedNoSignal(_input!.Tool == PointerTool.Superweapon && _input.Superweapon.Building == building.Id);
+        }
+
+        foreach (var id in _superweapons.Keys.Where(id => !seen.Contains(id)).ToList())
+        {
+            _superweapons[id].QueueFree();
+            _superweapons.Remove(id);
+        }
     }
 
     /// <summary>

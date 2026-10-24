@@ -184,6 +184,13 @@ public partial class CombatEffects : Node3D
                 AddBall(shooter.Gun, 0.15f, 0.3f, FlashLife, FlashColor);
                 break;
 
+            case LightningStrike strike when Seen(world, strike.Point):
+                // A lightning of the storm (stage 2d): a white bolt from the sky and a flash.
+                var ground = WorldCoords.ToGodotOnGround(strike.Point, 0.2f);
+                _lineEffects.Add(new Line(Zigzag(ground + new Vector3(0, 6f, 0), ground), new Color(0.9f, 0.95f, 1f), BoltLife));
+                AddBall(ground, 0.3f, 1.4f, BlastLife, new Color(0.8f, 0.9f, 1f));
+                break;
+
             case UnitTeleported jump when Seen(world, jump.To) || Seen(world, jump.From):
                 // A time trooper's jump (stage 3b): a pale blue flash where it left and where it came.
                 AddBall(WorldCoords.ToGodotOnGround(jump.From, 0.5f), 0.3f, 0.9f, BlastLife, ChronoColor);

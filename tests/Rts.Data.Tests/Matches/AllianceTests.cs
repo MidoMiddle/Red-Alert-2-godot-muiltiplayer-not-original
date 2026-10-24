@@ -104,7 +104,7 @@ public sealed class AllianceTests
     }
 
     [Fact]
-    public void A_building_whose_ability_comes_later_is_built_draws_power_and_opens_the_tree()
+    public void A_superweapon_is_built_draws_power_and_opens_the_tree()
     {
         var world = Match().World;
         Build(world, Union, "construction_yard", 48, 48);
@@ -121,9 +121,10 @@ public sealed class AllianceTests
         var curtain = Build(world, Union, "iron_curtain", 44, 44);
         PowerSystem.Update(world, null);
 
-        Assert.True(curtain.Def!.AbilityLater);
+        Assert.Equal(Rts.Simulation.Rules.SuperweaponKind.Curtain, curtain.Def!.Superweapon);
         Assert.Equal(power + 200, world.Player(Union).PowerDrain);
-        Assert.False(world.Rules.Database.Buildings[world.Rules.Database.IndexOfBuilding("nuclear_reactor")].AbilityLater);
+        // Stage 2d is done: no building waits for its ability.
+        Assert.DoesNotContain(world.Rules.Database.Buildings, building => building.AbilityLater);
     }
 
     [Fact]

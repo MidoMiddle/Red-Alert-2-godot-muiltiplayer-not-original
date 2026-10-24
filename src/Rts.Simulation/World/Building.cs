@@ -42,6 +42,7 @@ public sealed class Building : Entity
         Height = def.Footprint.Height;
         Hp = def.Hp;
         BuildUpLeft = buildUp;
+        ChargeLeft = def.Recharge;
         Weapons = def.Primary.Length > 0 ? [new()] : [];
     }
 
@@ -56,6 +57,9 @@ public sealed class Building : Entity
     /// hashed.
     /// </summary>
     public System.Collections.Generic.List<Occupant> Occupants { get; } = [];
+
+    /// <summary>The ticks the superweapon still charges (stage 2d); 0 when it is ready to fire. State: hashed.</summary>
+    public int ChargeLeft { get; internal set; }
 
     /// <summary>The kind of a building of the map; 0 for a building of a player.</summary>
     public BuildingKind Kind { get; }

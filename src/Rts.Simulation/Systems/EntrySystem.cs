@@ -212,6 +212,9 @@ public static class EntrySystem
             case SpyEffect.ResetMap:
                 world.VisionOf(building.Owner).ForgetExplored();
                 break;
+            case SpyEffect.ResetCharge:
+                building.ChargeLeft = building.Def.Recharge;
+                break;
             case SpyEffect.StealCredits:
                 credits = owner.Credits * StealPercent / 100;
                 owner.Credits -= credits;

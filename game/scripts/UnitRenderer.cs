@@ -65,7 +65,8 @@ public partial class UnitRenderer : Node3D
             }
 
             var glow = _input.Selection.Contains(unit.Id) ? Glow.Selected : unit.Id == _input.Hovered ? Glow.Hovered : Glow.None;
-            view.SetMaterial(MaterialFor(colour.Value, glow));
+            // Covered by the Bastion Field Projector (stage 2d): crimson.
+            view.SetMaterial(MaterialFor(unit.IsInvulnerable(world.CurrentTick) ? Curtain : colour.Value, glow));
             view.Visible = !tree;
             var current = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before : current;
@@ -179,11 +180,14 @@ public partial class UnitRenderer : Node3D
         pool.Push(view);
     }
 
+    // The colour key of what the curtain covers.
+    private const int Curtain = -1;
+
     private StandardMaterial3D MaterialFor(int owner, Glow glow)
     {
         if (!_materials.TryGetValue((owner, glow), out var material))
         {
-            var color = Matches.PlayerColors.Of(new PlayerId(owner));
+            var color = owner == Curtain ? new Color(0.75f, 0.08f, 0.1f) : Matches.PlayerColors.Of(new PlayerId(owner));
             material = new StandardMaterial3D { AlbedoColor = color };
             if (glow != Glow.None)
             {

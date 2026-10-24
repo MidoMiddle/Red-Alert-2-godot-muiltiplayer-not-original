@@ -67,7 +67,8 @@ public static class ErasureSystem
     internal static void Hold(GameWorld world, Hit hit)
     {
         if (hit.Target is { } id && world.TryGet(id, out var target) && target is { IsAlive: true } and (Unit or Building)
-            && target is not Building { Def.Wall: true } && (target.ErasedBy is null || target.ErasedBy == hit.Shooter))
+            && target is not Building { Def.Wall: true } && (target.ErasedBy is null || target.ErasedBy == hit.Shooter)
+            && !target.IsInvulnerable(world.CurrentTick))
         {
             target.ErasedBy = hit.Shooter;
             target.EraseWeapon = hit.Weapon;

@@ -22,7 +22,7 @@ public static class ParasiteSystem
         // A vehicle for the drone; a ship on the water for the squid (stage 3e).
         var category = warhead.ParasiteNaval ? UnitCategory.Naval : UnitCategory.Vehicle;
         if (hit.Target is not { } id || !world.TryGet(id, out var target) || target is not Unit { IsAlive: true } host
-            || host.Archetype.Category != category || host.Archetype.Has(UnitTalents.Submerged))
+            || host.Archetype.Category != category || host.Archetype.Has(UnitTalents.Submerged) || host.IsInvulnerable(world.CurrentTick))
         {
             return false;
         }

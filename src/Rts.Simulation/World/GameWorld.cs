@@ -137,6 +137,9 @@ public sealed class GameWorld
     /// </summary>
     internal List<(PlayerId Owner, WorldPos Position, int Reach)> Sensors { get; } = [];
 
+    /// <summary>The lightning storms called down and not over yet (stage 2d: the Storm Generator). State: hashed.</summary>
+    internal List<Storm> Storms { get; } = [];
+
     /// <summary>The level of toxin on every cell, in row order (stage 3b, <see cref="Systems.RadiationSystem"/>). State: hashed.</summary>
     internal ushort[] Radiation { get; }
 

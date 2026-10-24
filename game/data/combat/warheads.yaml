@@ -261,3 +261,21 @@ repair:  # RA2 RepairWH of the IFV's repair arm: mends vehicles and ships of its
   name: Repair
   verses: { none: 0%, flak: 0%, plate: 0%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 0% }
   repairs: true
+
+nuke:  # RA2 NUKE: 600 at the centre, 10 cells, 2% at the edge; concrete holds (8%); toxin after it (RA2 nuclear radiation)
+  kind: warhead
+  name: Nuclear Blast
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 8%, special_1: 100%, special_2: 100% }
+  spread: 10
+  percent_at_max: 2%
+  wall_damage: true
+  radiation: 500
+  infantry_death: explode
+
+ion:  # RA2 IonWH: a lightning of the storm, 2 cells, half at the edge; concrete 2%
+  kind: warhead
+  name: Lightning
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 2%, special_1: 100%, special_2: 100% }
+  spread: 2
+  percent_at_max: 50%
+  infantry_death: electro

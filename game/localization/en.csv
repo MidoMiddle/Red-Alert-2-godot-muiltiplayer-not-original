@@ -374,3 +374,11 @@ UI_LOADING_START,Creating the starting state
 UI_LOADING_HINT_SHIFT,Shift+click on a cameo orders five units at once
 UI_LOADING_HINT_ESC,Esc with nothing selected opens the menu
 UI_LOADING_HINT_SCROLL,In the classic scheme, hold the right button to move the camera
+UI_EVA_SUPERWEAPON_READY,Our superweapon is ready
+UI_EVA_ENEMY_SUPERWEAPON_READY,Warning: an enemy superweapon is ready
+UI_EVA_CURTAIN_ACTIVATED,Bastion field activated
+UI_EVA_MISSILE_LAUNCHED,Warning: missile launched
+UI_EVA_GATE_ACTIVATED,Phase gate activated
+UI_EVA_STORM_CREATED,Warning: lightning storm created
+UI_SIDEBAR_SUPERWEAPON_READY,Ready
+UI_SIDEBAR_SUPERWEAPON_HINT,Click, then click the map to aim it; the Phase Gate takes two clicks: what to move, then where

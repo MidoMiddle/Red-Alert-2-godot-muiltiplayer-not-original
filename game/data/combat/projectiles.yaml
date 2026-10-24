@@ -91,3 +91,10 @@ sonic:  # the dolphin's wave
   name: Sonic Wave
   motion: instant
   visual: sonic
+
+nuclear_missile_shot:  # the silo's missile: it climbs high and falls; nothing brings it down (RA2); the speed is ours
+  kind: projectile
+  name: Nuclear Missile
+  motion: ballistic
+  speed: 25
+  arc: 6

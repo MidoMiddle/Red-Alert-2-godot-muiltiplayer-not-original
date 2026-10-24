@@ -52,7 +52,7 @@ nuclear_reactor:  # late power, +2000; blows up when a shot brings it down (stag
   prerequisites: [tech_center]
   spy_effect: blackout
 
-iron_curtain:  # superweapon: a group made invulnerable for a while, M11a
+iron_curtain:  # superweapon: 3 x 3 cells cannot be hurt for 50 s, soldiers there die; charges 5 min (stage 2d)
   kind: building
   inherits: base_building
   name: Bastion Field Projector
@@ -64,11 +64,15 @@ iron_curtain:  # superweapon: a group made invulnerable for a while, M11a
   armor: concrete
   footprint: [3, 3]
   power: -200
-  ability_later: true
   prerequisites: [tech_center]
   capturable: false
+  superweapon: curtain
+  recharge: 300s
+  powered: true
+  build_limit: 1
+  spy_effect: reset_charge
 
-nuclear_missile_silo:  # superweapon: a missile strike, M11a
+nuclear_missile_silo:  # superweapon: a missile of 600 over 10 cells, toxin after; charges 10 min (stage 2d)
   kind: building
   inherits: base_building
   name: Strategic Missile Silo
@@ -80,9 +84,14 @@ nuclear_missile_silo:  # superweapon: a missile strike, M11a
   armor: concrete
   footprint: [3, 3]
   power: -200
-  ability_later: true
   prerequisites: [tech_center]
   capturable: false
+  superweapon: missile
+  recharge: 600s
+  superweapon_weapon: nuclear_missile
+  powered: true
+  build_limit: 1
+  spy_effect: reset_charge
 
 industrial_plant:  # vehicles, ships and aircraft 25% cheaper (stage 2c)
   kind: building

@@ -251,6 +251,17 @@ internal static class RulesValidator
             ArmorOf(building.Id, building.Armor);
             WeaponOf(building.Id, "primary", building.Primary);
             WeaponOf(building.Id, "death_weapon", building.DeathWeapon);
+            WeaponOf(building.Id, "superweapon_weapon", building.SuperweaponWeapon);
+            NotNegative(building.Id, "build_limit", building.BuildLimit);
+            if (building.Superweapon != SuperweaponKind.None && building.Recharge <= 0)
+            {
+                Error(building.Id, "recharge", $"the superweapon '{building.Id}' needs a 'recharge' above zero");
+            }
+
+            if (building.Superweapon is SuperweaponKind.Missile or SuperweaponKind.Storm && building.SuperweaponWeapon.Length == 0)
+            {
+                Error(building.Id, "superweapon_weapon", $"the superweapon '{building.Id}' needs its 'superweapon_weapon'");
+            }
             if (building.VehicleDiscountPercent is < 0 or > 90)
             {
                 Error(building.Id, "vehicle_discount", $"'vehicle_discount' of '{building.Id}' must be 0% to 90%");

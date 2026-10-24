@@ -56,4 +56,10 @@ public abstract class Entity
 
     /// <summary>The player of whoever planted it.</summary>
     public PlayerId BombOwner { get; internal set; }
+
+    /// <summary>The tick until which nothing hurts it: the Bastion Field Projector covers it (stage 2d). State: hashed.</summary>
+    public int InvulnerableUntil { get; internal set; }
+
+    /// <summary>Whether nothing hurts it now.</summary>
+    public bool IsInvulnerable(int tick) => tick < InvulnerableUntil;
 }

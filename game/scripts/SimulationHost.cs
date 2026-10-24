@@ -403,6 +403,10 @@ public partial class SimulationHost : Node
         return units.Except(going).ToList();
     }
 
+    /// <summary>The player's superweapon fires at <paramref name="target"/>; the Phase Gate takes what is there to <paramref name="second"/>.</summary>
+    public void IssueSuperweapon(EntityId building, CellPos target, CellPos second) =>
+        Issue(new SuperweaponCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building, target, second));
+
     /// <summary>The soldiers inside the player's building come out (stage 2e).</summary>
     public void IssueEvacuate(EntityId building) =>
         Issue(new EvacuateCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building));

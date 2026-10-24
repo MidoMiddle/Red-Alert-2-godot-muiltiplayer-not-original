@@ -29,7 +29,7 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
-        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots", "rearms_aircraft", "aircraft_docks",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -188,6 +188,10 @@ internal static class DefinitionReader
             ControlsRobots = fields.Optional("controls_robots", Scalars.Flag, false),
             RearmsAircraft = fields.Optional("rearms_aircraft", Scalars.Flag, false),
             AircraftDocks = fields.Optional("aircraft_docks", Scalars.Int, 0),
+            Superweapon = fields.Optional("superweapon", SuperweaponOf, SuperweaponKind.None),
+            Recharge = fields.Optional("recharge", Scalars.Ticks, 0),
+            SuperweaponWeapon = fields.Optional("superweapon_weapon", Scalars.Id, ""),
+            BuildLimit = fields.Optional("build_limit", Scalars.Int, 0),
         };
     }
 
@@ -634,12 +638,22 @@ internal static class DefinitionReader
     }
 
     private static SpyEffect SpyEffectOf(string fileName, YamlNode node) =>
-        Scalars.Choice(fileName, node, "none", "blackout", "reset_map", "steal_credits") switch
+        Scalars.Choice(fileName, node, "none", "blackout", "reset_map", "steal_credits", "reset_charge") switch
         {
             "blackout" => SpyEffect.Blackout,
             "reset_map" => SpyEffect.ResetMap,
             "steal_credits" => SpyEffect.StealCredits,
+            "reset_charge" => SpyEffect.ResetCharge,
             _ => SpyEffect.None,
+        };
+
+    private static SuperweaponKind SuperweaponOf(string fileName, YamlNode node) =>
+        Scalars.Choice(fileName, node, "curtain", "missile", "gate", "storm") switch
+        {
+            "curtain" => SuperweaponKind.Curtain,
+            "missile" => SuperweaponKind.Missile,
+            "gate" => SuperweaponKind.Gate,
+            _ => SuperweaponKind.Storm,
         };
 
     private static UnitPlacement PlacementOf(string fileName, YamlNode node) =>

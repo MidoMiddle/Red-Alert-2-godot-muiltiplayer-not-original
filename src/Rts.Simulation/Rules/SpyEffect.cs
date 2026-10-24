@@ -14,4 +14,7 @@ public enum SpyEffect : byte
 
     /// <summary>A refinery: half of its owner's credits go to the infiltrator's player (RA2 <c>SpyMoneyStealPercent</c>).</summary>
     StealCredits = 3,
+
+    /// <summary>A superweapon: its charge starts over (RA2).</summary>
+    ResetCharge = 4,
 }

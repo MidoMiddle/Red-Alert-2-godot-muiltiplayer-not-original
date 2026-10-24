@@ -29,6 +29,9 @@ public enum PointerTool
 
     /// <summary>The Repair button of the sidebar.</summary>
     Repair,
+
+    /// <summary>A superweapon button of the sidebar (stage 2d): a left click on the map aims it.</summary>
+    Superweapon,
 }
 
 /// <summary>What is under the cursor when a button goes down.</summary>
@@ -142,6 +145,9 @@ public sealed record PlaceBuilding(WorldPos Position, bool Line = false) : Inten
 /// <summary>The sell mode (the Sell button, M3 step 12): sell the player's building at <paramref name="Position"/>.</summary>
 public sealed record SellBuilding(WorldPos Position) : Intent;
 
+/// <summary>A left click with a superweapon armed (stage 2d): its target, or the Phase Gate's first or second cell.</summary>
+public sealed record AimSuperweapon(WorldPos Position) : Intent;
+
 /// <summary>The repair mode (the Repair button, M3 step 12): turn the repair of the player's building at <paramref name="Position"/> on or off.</summary>
 public sealed record RepairBuilding(WorldPos Position) : Intent;
 
@@ -230,7 +236,7 @@ public sealed class InputInterpreter
     /// </summary>
     private IReadOnlyList<Intent> Start(PointerButton button, ScreenPoint at, PointerContext context)
     {
-        if (Tool is PointerTool.Build or PointerTool.Sell or PointerTool.Repair)
+        if (Tool is PointerTool.Build or PointerTool.Sell or PointerTool.Repair or PointerTool.Superweapon)
         {
             if (button == PointerButton.Right)
             {
@@ -244,6 +250,7 @@ public sealed class InputInterpreter
                 {
                     PointerTool.Build => new Intent[] { new PlaceBuilding(ground, context.Shift) },
                     PointerTool.Sell => new Intent[] { new SellBuilding(ground) },
+                    PointerTool.Superweapon => new Intent[] { new AimSuperweapon(ground) },
                     _ => new Intent[] { new RepairBuilding(ground) },
                 };
             }
@@ -401,6 +408,9 @@ public sealed class InputInterpreter
 
     /// <summary>Arms the repair mode (the Repair button): every left click turns a repair on or off, until a right click or Escape.</summary>
     public void ArmRepair() => Tool = PointerTool.Repair;
+
+    /// <summary>Arms a superweapon (stage 2d): a left click aims it, a right click or Escape lets it be.</summary>
+    public void ArmSuperweapon() => Tool = PointerTool.Superweapon;
 
     /// <summary>Back to selecting and ordering.</summary>
     public void Disarm() => Tool = PointerTool.None;

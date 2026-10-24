@@ -28,4 +28,5 @@ public enum CommandType : byte
     Surrender = 21,
     Enter = 22,
     Evacuate = 23,
+    Superweapon = 24,
 }

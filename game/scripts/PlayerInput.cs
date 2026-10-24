@@ -97,6 +97,27 @@ public partial class PlayerInput : Node
         _interpreter.ArmBuild();
     }
 
+    // The superweapon armed (stage 2d), and the Phase Gate's first cell once chosen.
+    private EntityId _superweapon;
+    private CellPos? _gateFrom;
+
+    /// <summary>The superweapon armed, and the Phase Gate's first cell when it waits for the second.</summary>
+    public (EntityId Building, CellPos? GateFrom) Superweapon => (_superweapon, _gateFrom);
+
+    /// <summary>A superweapon button: arms it, or lets it be when it is armed.</summary>
+    public void ToggleSuperweapon(EntityId building)
+    {
+        if (Tool == PointerTool.Superweapon && _superweapon == building)
+        {
+            _interpreter.Disarm();
+            return;
+        }
+
+        _superweapon = building;
+        _gateFrom = null;
+        _interpreter.ArmSuperweapon();
+    }
+
     /// <summary>The Sell button: turns the sell mode on, or off when it is on.</summary>
     public void ToggleSell()
     {
@@ -621,6 +642,19 @@ public partial class PlayerInput : Node
                     break;
                 case DeployUnit deploy when !_host.IsPlayback:
                     _host.IssueDeploy([deploy.Unit]);
+                    break;
+                case AimSuperweapon aim when !_host.IsPlayback:
+                    // The Phase Gate takes two clicks: what to move, then where.
+                    if (_host.Simulation.World.TryGet(_superweapon, out var armed) && armed is Building { Def.Superweapon: Rts.Simulation.Rules.SuperweaponKind.Gate }
+                        && _gateFrom is null)
+                    {
+                        _gateFrom = aim.Position.ToCell();
+                        break;
+                    }
+
+                    _host.IssueSuperweapon(_superweapon, _gateFrom ?? aim.Position.ToCell(), aim.Position.ToCell());
+                    _gateFrom = null;
+                    _interpreter.Disarm();
                     break;
                 case SellBuilding sell when !_host.IsPlayback:
                     _host.IssueSell(sell.Position.ToCell());
