@@ -52,7 +52,12 @@ public static class ProductionRules
     public const int MaxOrder = 5;
 
     public static ProductionCategory CategoryOf(RulesDatabase rules, ProductionKind kind, int defIndex) => kind == ProductionKind.Unit
-        ? rules.Units[defIndex].Category == UnitCategory.Infantry ? ProductionCategory.Infantry : ProductionCategory.Vehicle
+        ? rules.Units[defIndex].Category switch
+        {
+            UnitCategory.Infantry => ProductionCategory.Infantry,
+            UnitCategory.Naval => ProductionCategory.Naval,
+            _ => ProductionCategory.Vehicle,
+        }
         : rules.Buildings[defIndex].Category;
 
     /// <summary>The build time in ticks × 1000, the scale of <see cref="ProductionItem.Progress"/>.</summary>

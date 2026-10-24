@@ -127,7 +127,7 @@ public sealed class AllianceTests
     }
 
     [Fact]
-    public void The_late_units_open_by_their_buildings_and_ships_and_aircraft_never_yet()
+    public void The_late_units_open_by_their_buildings_and_aircraft_never_yet()
     {
         // The first stage of filling the game: every unit is in; ships and aircraft wait for their mechanic (available_later).
         var world = Match().World;
@@ -145,7 +145,7 @@ public sealed class AllianceTests
         Assert.True(CanBuild(world, Union, "apocalypse_tank"));
         Assert.True(CanBuild(world, Union, "desolator"));
         Assert.False(CanBuild(world, Union, "kirov_airship"));
-        Assert.False(CanBuild(world, Union, "dreadnought"));
+        Assert.True(CanBuild(world, Union, "dreadnought"), "ships come from the shipyard since stage 2a");
         Assert.False(CanBuild(world, Union, "alliance_sniper"));
 
         Build(world, Allied, "alliance_construction_yard", 10, 10);
@@ -158,7 +158,8 @@ public sealed class AllianceTests
 
         var units = world.Rules.Database.Units;
         Assert.All(units.Where(unit => unit.AvailableLater), unit => Assert.True(unit.AbilityLater, unit.Id));
-        Assert.Equal(14, units.Count(unit => unit.AvailableLater));
+        // The aircraft only: the airship and the three of the Alliance wait for flight (stage 2b).
+        Assert.Equal(4, units.Count(unit => unit.AvailableLater));
     }
 
     [Fact]

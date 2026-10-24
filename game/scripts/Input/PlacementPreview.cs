@@ -75,7 +75,7 @@ public static class PlacementPreview
                 {
                     PlacementProblem.None => false,
                     PlacementProblem.TooFar => true,
-                    _ => !map.Contains(cell) || !map.Contains(corner) || PlacementRules.CellProblem(world, cell, level) != PlacementProblem.None,
+                    _ => !map.Contains(cell) || !map.Contains(corner) || PlacementRules.CellProblem(world, cell, level, water: def.Water) != PlacementProblem.None,
                 };
                 cells.Add(new PreviewCell(cell, refused ? PreviewState.Refused : PreviewState.Ok));
             }

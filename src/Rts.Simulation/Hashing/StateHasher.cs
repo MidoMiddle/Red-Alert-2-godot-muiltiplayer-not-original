@@ -53,7 +53,7 @@ public static class StateHasher
             hash.Add(player.Modifiers.BuildSpeedBonusPercent);
             hash.Add(player.Modifiers.RevealMap);
             hash.Add(player.IncomeCarry);
-            for (var category = Rules.ProductionCategory.Infantry; category <= Rules.ProductionCategory.Defense; category++)
+            for (var category = Rules.ProductionCategory.Infantry; category <= Rules.ProductionCategories.Last; category++)
             {
                 var queue = player.Queue(category);
                 hash.Add(queue.Count);

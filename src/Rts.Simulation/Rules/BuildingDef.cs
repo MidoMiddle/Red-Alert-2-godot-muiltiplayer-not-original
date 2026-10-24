@@ -96,4 +96,7 @@ public sealed record BuildingDef : IDefinition
     /// opens the tech tree, and the sidebar says the rest is to come. The simulation does not use it.
     /// </summary>
     public bool AbilityLater { get; init; }
+
+    /// <summary>The building stands on deep water, not on land (the shipyards, stage 2a): every cell of its footprint is deep.</summary>
+    public bool Water { get; init; }
 }

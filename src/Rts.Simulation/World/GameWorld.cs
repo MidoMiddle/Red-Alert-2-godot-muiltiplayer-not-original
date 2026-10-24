@@ -143,10 +143,10 @@ public sealed class GameWorld
     internal List<Combat.Shot> Shots { get; } = [];
 
     /// <summary>The ready factories of every player by category and the main one of each (production, M4 step 15): reused every tick.</summary>
-    internal int[,] FactoryCounts { get; } = new int[PlayerId.MaxPlayers, 4];
+    internal int[,] FactoryCounts { get; } = new int[PlayerId.MaxPlayers, Rts.Simulation.Rules.ProductionCategories.Count];
 
     /// <inheritdoc cref="FactoryCounts"/>
-    internal Building?[,] MainFactories { get; } = new Building?[PlayerId.MaxPlayers, 4];
+    internal Building?[,] MainFactories { get; } = new Building?[PlayerId.MaxPlayers, Rts.Simulation.Rules.ProductionCategories.Count];
 
     public int WidthCells => Map.Width;
 

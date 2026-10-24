@@ -19,7 +19,7 @@ namespace Rts.Simulation.Systems;
 /// </summary>
 public static class ProductionSystem
 {
-    private const int Categories = 4;
+    private const int Categories = ProductionCategories.Count;
 
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
@@ -27,7 +27,7 @@ public static class ProductionSystem
         var rules = world.Rules.Database;
         foreach (var player in world.Players)
         {
-            for (var category = ProductionCategory.Infantry; category <= ProductionCategory.Defense; category++)
+            for (var category = ProductionCategory.Infantry; category <= ProductionCategories.Last; category++)
             {
                 var queue = player.QueueList(category);
                 var factories = counts[player.Id.Value - 1, (int)category - 1];
@@ -111,7 +111,9 @@ public static class ProductionSystem
 
     /// <summary>
     /// A finished unit comes out at the exit of <paramref name="factory"/> — its <c>exit_cell</c>, or the cell under the middle of its
-    /// footprint — when that cell takes it, and drives to the rally point, or one cell further on.
+    /// footprint — when that cell takes it, and drives to the rally point, or one cell further on. An exit the unit cannot enter at all
+    /// (a ship at a shipyard whose exit is ashore, stage 2a) gives way to the nearest cell around the footprint it can: the queue never
+    /// stands still for good.
     /// </summary>
     private static bool TryRelease(GameWorld world, PlayerState player, ProductionItem item, Building factory, List<SimEvent>? events)
     {
@@ -125,6 +127,11 @@ public static class ProductionSystem
         var exit = factory.Def!.ExitCell is { } offset
             ? new CellPos(factory.Cell.X + offset.X, factory.Cell.Y + offset.Y)
             : new CellPos(factory.Cell.X + factory.Width / 2, factory.Cell.Y + factory.Height);
+        if (!world.Map.CanEnter(exit, archetype.Locomotor) && ExitAround(world, factory, archetype) is { } around)
+        {
+            exit = around;
+        }
+
         if (!world.Map.CanEnter(exit, archetype.Locomotor) || !world.Reservations.HasRoomFor(exit, archetype.Placement, EntityId.None))
         {
             return false;
@@ -139,6 +146,33 @@ public static class ProductionSystem
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// The nearest free cell around the footprint of <paramref name="factory"/>, ring by ring up to 4 cells out and row by row inside a
+    /// ring, that the unit can enter; null when there is none.
+    /// </summary>
+    private static CellPos? ExitAround(GameWorld world, Building factory, UnitArchetype archetype)
+    {
+        for (var ring = 1; ring <= 4; ring++)
+        {
+            for (var y = factory.Cell.Y - ring; y <= factory.FarCell.Y + ring; y++)
+            {
+                for (var x = factory.Cell.X - ring; x <= factory.FarCell.X + ring; x++)
+                {
+                    var outside = IntMath.Max(
+                        IntMath.Max(factory.Cell.X - x, x - factory.FarCell.X), IntMath.Max(factory.Cell.Y - y, y - factory.FarCell.Y));
+                    var cell = new CellPos(x, y);
+                    if (outside == ring && world.Map.CanEnter(cell, archetype.Locomotor)
+                        && world.Reservations.HasRoomFor(cell, archetype.Placement, EntityId.None))
+                    {
+                        return cell;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

@@ -1,7 +1,8 @@
 # The late buildings of the Union (docs/ra2_buildings/yaml_drafts/union, docs/content/names.md): working names of our own. Built,
 # drawing power and opening the tech tree now; an ability that needs a mechanic of M11 is marked `ability_later` and does nothing
-# yet — the shipyard builds no ships, the projector and the silo fire nothing, the workshop repairs nothing.
-naval_shipyard:  # shipyard; ships and their repair come with M11b — stands on land until then
+# yet — the projector and the silo fire nothing, the workshop repairs nothing. The shipyard stands on deep water and builds the ships
+# (stage 2a).
+naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   kind: building
   inherits: base_building
   name: Dockyard
@@ -15,7 +16,9 @@ naval_shipyard:  # shipyard; ships and their repair come with M11b — stands on
   power: -20
   extends_base: false
   adjacent: 10
-  ability_later: true
+  water: true
+  produces: [naval]
+  exit_cell: [1, 4]
   prerequisites: [refinery]
 
 service_depot:  # vehicle repair, M11

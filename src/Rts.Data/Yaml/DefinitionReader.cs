@@ -26,7 +26,7 @@ internal static class DefinitionReader
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
-        "prerequisites", "model", "icon", "ability_later",
+        "prerequisites", "model", "icon", "ability_later", "water",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -145,6 +145,7 @@ internal static class DefinitionReader
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             AbilityLater = fields.Optional("ability_later", Scalars.Flag, false),
+            Water = fields.Optional("water", Scalars.Flag, false),
         };
     }
 
@@ -495,11 +496,12 @@ internal static class DefinitionReader
         var categories = ImmutableArray.CreateBuilder<ProductionCategory>(sequence.Children.Count);
         foreach (var child in sequence.Children)
         {
-            var category = Scalars.Choice(fileName, child, "building", "defense", "infantry", "vehicle") switch
+            var category = Scalars.Choice(fileName, child, "building", "defense", "infantry", "vehicle", "naval") switch
             {
                 "building" => ProductionCategory.Building,
                 "defense" => ProductionCategory.Defense,
                 "infantry" => ProductionCategory.Infantry,
+                "naval" => ProductionCategory.Naval,
                 _ => ProductionCategory.Vehicle,
             };
             if (categories.Contains(category))
@@ -514,7 +516,12 @@ internal static class DefinitionReader
     }
 
     private static UnitCategory UnitCategoryOf(string fileName, YamlNode node) =>
-        Scalars.Choice(fileName, node, "infantry", "vehicle") == "infantry" ? UnitCategory.Infantry : UnitCategory.Vehicle;
+        Scalars.Choice(fileName, node, "infantry", "vehicle", "naval") switch
+        {
+            "infantry" => UnitCategory.Infantry,
+            "naval" => UnitCategory.Naval,
+            _ => UnitCategory.Vehicle,
+        };
 
     private static ProductionCategory BuildingCategoryOf(string fileName, YamlNode node) =>
         Scalars.Choice(fileName, node, "building", "defense") == "building" ? ProductionCategory.Building : ProductionCategory.Defense;

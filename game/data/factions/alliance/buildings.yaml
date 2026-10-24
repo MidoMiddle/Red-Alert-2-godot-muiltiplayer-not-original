@@ -89,7 +89,7 @@ alliance_air_force_command:  # radar; aircraft come with M11b
   ability_later: true
   prerequisites: [alliance_ore_refinery]
 
-alliance_naval_shipyard:  # shipyard; ships come with M11b — stands on land until then
+alliance_naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   kind: building
   inherits: base_building
   name: Harbor
@@ -103,7 +103,9 @@ alliance_naval_shipyard:  # shipyard; ships come with M11b — stands on land un
   power: -25
   extends_base: false
   adjacent: 10
-  ability_later: true
+  water: true
+  produces: [naval]
+  exit_cell: [1, 4]
   prerequisites: [alliance_ore_refinery]
 
 alliance_service_depot:  # vehicle repair, M11

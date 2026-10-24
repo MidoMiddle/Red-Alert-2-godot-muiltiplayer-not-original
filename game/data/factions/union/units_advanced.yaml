@@ -1,7 +1,7 @@
 # The late units of the Union (docs/ra2_units/yaml_drafts/union, docs/content/names.md): working names of our own, numbers of the
-# drafts. Unarmed for now — their weapons and abilities come with the third stage of filling the game (ability_later). Ships and the
-# airship cannot be built yet (available_later): they wait for the shipyard on the water and for flight, the second stage; the airship
-# and the hovercraft stand on the hover locomotor until then. Units of a single country in RA2 are the whole faction's for now.
+# drafts. Unarmed for now — their weapons and abilities come with the third stage of filling the game (ability_later). Ships and boats
+# are built by the shipyard on the water (category naval, stage 2a); the airship cannot be built yet (available_later): it waits for
+# flight, and stands on the hover locomotor until then. Units of a single country in RA2 are the whole faction's for now.
 
 attack_dog:  # attack dog: bites infantry, M11 weapon
   kind: unit
@@ -159,6 +159,7 @@ kirov_airship:  # bomber airship
 hover_transport:  # carries units over water
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Hovercraft
   faction: union
   cost: 900
@@ -170,12 +171,12 @@ hover_transport:  # carries units over water
   turret: false
   locomotor: hover
   prerequisites: [naval_shipyard]
-  available_later: true
   ability_later: true
 
 typhoon_sub:  # torpedoes ships
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Attack Submarine
   faction: union
   cost: 1000
@@ -187,12 +188,12 @@ typhoon_sub:  # torpedoes ships
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard]
-  available_later: true
   ability_later: true
 
 sea_scorpion:  # anti-air boat
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Anti-Air Hydrofoil
   faction: union
   cost: 600
@@ -204,12 +205,12 @@ sea_scorpion:  # anti-air boat
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard, radar]
-  available_later: true
   ability_later: true
 
 giant_squid:  # grabs ships
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Trained Squid
   faction: union
   cost: 1000
@@ -222,12 +223,12 @@ giant_squid:  # grabs ships
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard, tech_center]
-  available_later: true
   ability_later: true
 
 dreadnought:  # long-range missiles
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Missile Battleship
   faction: union
   cost: 2000
@@ -239,5 +240,4 @@ dreadnought:  # long-range missiles
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard, tech_center]
-  available_later: true
   ability_later: true

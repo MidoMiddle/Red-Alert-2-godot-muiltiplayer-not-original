@@ -63,7 +63,7 @@ public static class PlacementRules
         {
             for (var x = cell.X; x <= far.X; x++)
             {
-                var problem = CellProblem(world, new CellPos(x, y), level, ignoreUnit);
+                var problem = CellProblem(world, new CellPos(x, y), level, ignoreUnit, def.Water);
                 if (problem != PlacementProblem.None)
                 {
                     return problem;
@@ -76,9 +76,10 @@ public static class PlacementRules
 
     /// <summary>
     /// The problem of one cell of a footprint whose north-west cell stands at <paramref name="level"/>: taken, land, level, ore, units.
-    /// The client colours each cell of the footprint by it.
+    /// A building of the water (<see cref="BuildingDef.Water"/>, the shipyards) stands on deep water only, any other on buildable
+    /// land. The client colours each cell of the footprint by it.
     /// </summary>
-    public static PlacementProblem CellProblem(GameWorld world, CellPos cell, int level, EntityId ignoreUnit = default)
+    public static PlacementProblem CellProblem(GameWorld world, CellPos cell, int level, EntityId ignoreUnit = default, bool water = false)
     {
         var map = world.Map;
         if (map.IsBlocked(cell) || map.HasBuilding(cell) || map.BridgeAt(cell) is not null || HasStandingObject(map, cell))
@@ -86,7 +87,8 @@ public static class PlacementRules
             return PlacementProblem.Taken;
         }
 
-        if (!world.Rules.IsBuildable(map.LandAt(cell)))
+        // The land itself, not the surface: a bridge over the deep is taken above.
+        if (water ? map.LandAt(cell) != LandType.Deep : !world.Rules.IsBuildable(map.LandAt(cell)))
         {
             return PlacementProblem.NotBuildable;
         }

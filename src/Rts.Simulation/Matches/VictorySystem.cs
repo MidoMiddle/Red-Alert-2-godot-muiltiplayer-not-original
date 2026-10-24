@@ -93,7 +93,7 @@ public static class VictorySystem
             }
         }
 
-        for (var category = ProductionCategory.Infantry; category <= ProductionCategory.Defense; category++)
+        for (var category = ProductionCategory.Infantry; category <= ProductionCategories.Last; category++)
         {
             state.QueueList(category).Clear();
         }

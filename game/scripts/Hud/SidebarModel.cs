@@ -84,9 +84,13 @@ public static class SidebarModel
         _ => ProductionCategory.Vehicle,
     };
 
-    /// <summary>A tab is open while the player has a ready factory of its category, the way production needs one.</summary>
+    /// <summary>
+    /// A tab is open while the player has a ready factory of its category, the way production needs one: the Vehicles tab with a war
+    /// factory or a shipyard, as the ships stand in it (RA2).
+    /// </summary>
     public static bool TabOpen(GameWorld world, PlayerId player, BuildGroup group) =>
-        ProductionRules.HasFactory(world, player, CategoryOf(group));
+        ProductionRules.HasFactory(world, player, CategoryOf(group))
+        || (group == BuildGroup.Vehicles && ProductionRules.HasFactory(world, player, ProductionCategory.Naval));
 
     /// <summary>
     /// The squares of a tab, in the order of the data: every item of the player's faction in the tab's category. Units are only those
@@ -113,13 +117,17 @@ public static class SidebarModel
         }
         else
         {
-            var unitCategory = category == ProductionCategory.Infantry ? UnitCategory.Infantry : UnitCategory.Vehicle;
+            // The Vehicles tab shows the ships too, each with the queue of its own category (stage 2a).
             for (var i = 0; i < rules.Units.Length; i++)
             {
                 var def = rules.Units[i];
-                if (def.Faction == state.Faction.Id && def.Category == unitCategory && UnitTypes.TryGetById(def.Id, out _))
+                var shown = category == ProductionCategory.Infantry
+                    ? def.Category == UnitCategory.Infantry
+                    : def.Category is UnitCategory.Vehicle or UnitCategory.Naval;
+                if (def.Faction == state.Faction.Id && shown && UnitTypes.TryGetById(def.Id, out _))
                 {
-                    cameos.Add(CameoOf(rules, queue, ProductionKind.Unit, i, def.Name, def.Cost, state.CanBuildUnit(i), def.Prerequisites, owned));
+                    var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));
+                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, def.Name, def.Cost, state.CanBuildUnit(i), def.Prerequisites, owned));
                 }
             }
         }

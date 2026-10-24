@@ -116,7 +116,7 @@ public partial class DebugOverlay : CanvasLayer
     {
         var rules = world.Rules.Database;
         var parts = new List<string>();
-        for (var category = ProductionCategory.Infantry; category <= ProductionCategory.Defense; category++)
+        for (var category = ProductionCategory.Infantry; category <= ProductionCategories.Last; category++)
         {
             var queue = player.Queue(category);
             if (queue.Count == 0)

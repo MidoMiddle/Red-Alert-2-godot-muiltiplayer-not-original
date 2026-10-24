@@ -206,11 +206,12 @@ public sealed class GoldenValuesTests
         // Rules v37 (M4 step 14): tanks drive over the enemy soldiers within four cells by themselves; the first difference after tick 100.
         // Rules v38 (M5 step 10): the hash covers the tick every player lost the match on (none here, no match); the states are the same.
         // Rules v39 (M8 step 2): the hash covers the bonuses of every player and the hundredths of income owed (none here); the states are the same.
+        // Rules v44 (stage 2a, the shipyard): the hash covers a fifth production queue, the naval one (empty here); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x59101f2bc15f20a5UL),
-            new(500, 0xb7df7cf6e34164e0UL),
-            new(1000, 0x6b00fbf6217e1500UL),
+            new(100, 0xbdb10260b9b8df65UL),
+            new(500, 0x3d070463a3e26d20UL),
+            new(1000, 0xee13f6498ca88d80UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -226,11 +227,12 @@ public sealed class GoldenValuesTests
         // crushing, defenses, power, the fog and the attack notices all in one fight.
         // Rules v38 (M5 step 10): the tick of defeat of every player in the hash (none, no match); the battle is the same.
         // Rules v39 (M8 step 2): the bonuses of every player and the hundredths of income owed in the hash (none); the battle is the same.
+        // Rules v44 (stage 2a): the naval production queue in the hash (empty); the battle is the same.
         StateChecksum[] expected =
         [
-            new(1000, 0x7bf76108784a4c20UL),
-            new(2000, 0xd5fc05de9bcf0fa6UL),
-            new(3000, 0x58f95d0b9f0b3aa2UL),
+            new(1000, 0x21a6e9324250cf20UL),
+            new(2000, 0x23611a5b2f8867e6UL),
+            new(3000, 0x4c0bc46acedcbe22UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -302,6 +304,7 @@ public sealed class GoldenValuesTests
         // Rules v42 (the Alliance: its unit types, the starting infantry of a faction): only the version changes — the scenario keeps to
         // the eight unit types of M2.
         // Rules v43 (every unit of both factions; ships and aircraft available later): only the version changes.
-        Assert.Equal((22269, 12383688308310531928UL), (bytes.Length, hash.Value));
+        // Rules v44 (stage 2a): the version and the checksums change — the naval queue is hashed; the commands are the same.
+        Assert.Equal((22269, 4932699664430527958UL), (bytes.Length, hash.Value));
     }
 }

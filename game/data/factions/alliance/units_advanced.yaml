@@ -1,6 +1,6 @@
 # The late units of the Alliance (docs/ra2_units/yaml_drafts/alliance, docs/content/names.md): working names of our own, numbers of the
-# drafts, prerequisites turned to the Alliance's buildings. Unarmed for now (ability_later); ships and aircraft cannot be built yet
-# (available_later), as the Union's. The commando of the sea is left out: RA2 never builds it in a skirmish.
+# drafts, prerequisites turned to the Alliance's buildings. Unarmed for now (ability_later); ships and boats come from the shipyard on the
+# water (category naval, stage 2a); aircraft cannot be built yet (available_later). The commando of the sea is left out: RA2 never builds it in a skirmish.
 
 alliance_engineer:  # captures and repairs buildings
   kind: unit
@@ -220,6 +220,7 @@ alliance_black_eagle:  # heavier strike jet
 alliance_amphibious_transport:  # carries units over water
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Landing Craft
   faction: alliance
   cost: 900
@@ -232,12 +233,12 @@ alliance_amphibious_transport:  # carries units over water
   turret: false
   locomotor: amphibious
   prerequisites: [alliance_naval_shipyard]
-  available_later: true
   ability_later: true
 
 alliance_dolphin:  # sonic attack
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Sonar Dolphin
   faction: alliance
   cost: 500
@@ -250,12 +251,12 @@ alliance_dolphin:  # sonic attack
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
-  available_later: true
   ability_later: true
 
 alliance_destroyer:  # guns and anti-sub
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Destroyer
   faction: alliance
   cost: 1000
@@ -267,12 +268,12 @@ alliance_destroyer:  # guns and anti-sub
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard]
-  available_later: true
   ability_later: true
 
 alliance_aegis_cruiser:  # anti-air missiles
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Air Defense Cruiser
   faction: alliance
   cost: 1200
@@ -285,12 +286,12 @@ alliance_aegis_cruiser:  # anti-air missiles
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard, alliance_air_force_command]
-  available_later: true
   ability_later: true
 
 alliance_aircraft_carrier:  # launches its own jets
   kind: unit
   inherits: base_vehicle
+  category: naval
   name: Aircraft Carrier
   faction: alliance
   cost: 2000
@@ -302,5 +303,4 @@ alliance_aircraft_carrier:  # launches its own jets
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
-  available_later: true
   ability_later: true

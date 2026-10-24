@@ -40,7 +40,8 @@ public sealed class M3GoldenValuesTests
         // The Alliance, rules v42: the same run and the same credits; the checksum changes, as the numbers of the buildings and units in
         // the data do — those of the Alliance sort before the Union's.
         // Every unit of both factions, rules v43: the same credits again; the numbers of the units in the data move once more.
-        Assert.Equal((6972, 0xa13321d36a50995cUL), (fifth.Credits, fifth.Checksum));
+        // Stage 2a, rules v44: the naval queue is hashed; the run and its credits are the same.
+        Assert.Equal((6972, 0x9540ac1c9a5bee1cUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

@@ -19,7 +19,7 @@
 | sentry_bunker | Sentry Bunker | пулемёт | Sentry Gun | работает |
 | tesla_coil | Tesla Coil | электрооборона | Tesla Coil | работает |
 | flak_cannon | Flak Cannon | ПВО | Flak Cannon | работает (по авиации — M11b) |
-| naval_shipyard | Dockyard | верфь | Naval Shipyard | позже (флот M11b; пока ставится на суше) |
+| naval_shipyard | Dockyard | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | service_depot | Field Workshop | ремонт техники | Service Depot | позже |
 | nuclear_reactor | Atomic Plant | энергия +2000 | Nuclear Reactor | энергия работает; взрыв при гибели позже |
 | iron_curtain | Bastion Field Projector | неуязвимость группе | Iron Curtain | позже (M11a) |
@@ -39,7 +39,7 @@
 | alliance_ore_refinery | Ore Processor | ОПЗ, харвестер | Ore Refinery | работает |
 | alliance_war_factory | Vehicle Plant | техника | War Factory | работает |
 | alliance_air_force_command | Air Command | радар; авиация | Airforce Command HQ | радар работает; авиация позже (M11b) |
-| alliance_naval_shipyard | Harbor | верфь | Naval Shipyard | позже (пока ставится на суше) |
+| alliance_naval_shipyard | Harbor | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | alliance_service_depot | Repair Bay | ремонт техники | Service Depot | позже |
 | alliance_battle_lab | Research Lab | высокий тех | Battle Lab | работает |
 | alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | позже |
@@ -84,11 +84,11 @@
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | строится, без оружия — этап 3 |
 | demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | строится, без оружия — этап 3 |
 | kirov_airship | Heavy Airship | bomber airship | Kirov Airship | в сайдбаре, строится с этапа 2 (полёт) |
-| hover_transport | Hovercraft | carries units over water | Hover Transport | в сайдбаре, строится с этапа 2 (флот) |
-| typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | в сайдбаре, строится с этапа 2 (флот) |
-| sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | в сайдбаре, строится с этапа 2 (флот) |
-| giant_squid | Trained Squid | grabs ships | Giant Squid | в сайдбаре, строится с этапа 2 (флот) |
-| dreadnought | Missile Battleship | long-range missiles | Dreadnought | в сайдбаре, строится с этапа 2 (флот) |
+| hover_transport | Hovercraft | carries units over water | Hover Transport | строится верфью (этап 2а), без оружия — этап 3 |
+| typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | строится верфью (этап 2а), без оружия — этап 3 |
+| sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | строится верфью (этап 2а), без оружия — этап 3 |
+| giant_squid | Trained Squid | grabs ships | Giant Squid | строится верфью (этап 2а), без оружия — этап 3 |
+| dreadnought | Missile Battleship | long-range missiles | Dreadnought | строится верфью (этап 2а), без оружия — этап 3 |
 
 ### Альянс
 
@@ -108,8 +108,8 @@
 | alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | в сайдбаре, строится с этапа 2 (полёт) |
 | alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | в сайдбаре, строится с этапа 2 (полёт) |
 | alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | в сайдбаре, строится с этапа 2 (полёт) |
-| alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | в сайдбаре, строится с этапа 2 (флот) |
-| alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | в сайдбаре, строится с этапа 2 (флот) |
-| alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | в сайдбаре, строится с этапа 2 (флот) |
-| alliance_aegis_cruiser | Air Defense Cruiser | anti-air missiles | Aegis Cruiser | в сайдбаре, строится с этапа 2 (флот) |
-| alliance_aircraft_carrier | Aircraft Carrier | launches its own jets | Aircraft Carrier | в сайдбаре, строится с этапа 2 (флот) |
+| alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | строится верфью (этап 2а), без оружия — этап 3 |
+| alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | строится верфью (этап 2а), без оружия — этап 3 |
+| alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | строится верфью (этап 2а), без оружия — этап 3 |
+| alliance_aegis_cruiser | Air Defense Cruiser | anti-air missiles | Aegis Cruiser | строится верфью (этап 2а), без оружия — этап 3 |
+| alliance_aircraft_carrier | Aircraft Carrier | launches its own jets | Aircraft Carrier | строится верфью (этап 2а), без оружия — этап 3 |

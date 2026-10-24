@@ -63,7 +63,7 @@ public static class TechTree
     /// </summary>
     private static void CancelWithoutFactory(GameWorld world, PlayerState player, List<Events.SimEvent>? events)
     {
-        for (var category = ProductionCategory.Infantry; category <= ProductionCategory.Defense; category++)
+        for (var category = ProductionCategory.Infantry; category <= ProductionCategories.Last; category++)
         {
             var queue = player.QueueList(category);
             if (queue.Count == 0 || HasFactory(world, player.Id, category))
