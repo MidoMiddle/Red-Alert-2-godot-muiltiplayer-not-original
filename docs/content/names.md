@@ -25,7 +25,7 @@
 | iron_curtain | Bastion Field Projector | неуязвимость группе | Iron Curtain | позже (M11a) |
 | nuclear_missile_silo | Strategic Missile Silo | ракетный удар | Nuclear Missile Silo | позже (M11a) |
 | industrial_plant | Heavy Industry Complex | скидка на технику | Industrial Plant | работает: техника, корабли и самолёты на 25 % дешевле (этап 2в) |
-| battle_bunker | Fortified Bunker | гарнизон | Battle Bunker | позже (M11a) |
+| battle_bunker | Fortified Bunker | гарнизон | Battle Bunker | работает: до 5 пехотинцев внутри стреляют своим оружием, дальность от стены (этап 2е) |
 
 Имена первых одиннадцати пришли из M3 и тоже рабочие: «Tesla Coil», «War Factory», «Flak Cannon» совпадают с RA2 и заменяются вместе с остальными.
 
@@ -50,7 +50,7 @@
 | alliance_gap_generator | Veil Generator | скрывает базу | Gap Generator | работает: с энергией закрывает 10 клеток вокруг от врага (этап 2г) |
 | alliance_pillbox | Gun Nest | пулемёт | Pillbox | работает |
 | alliance_patriot_missile_system | Sky Guard | ПВО | Patriot Missile System | работает: бьёт по авиации (этап 2б) |
-| alliance_prism_tower | Lens Tower | лучевая оборона | Prism Tower | работает; цепочки башен позже (M11c) |
+| alliance_prism_tower | Lens Tower | лучевая оборона | Prism Tower | работает; свободные башни рядом усиливают выстрел, +50 % каждая, до 8 (этап 2е) |
 | alliance_grand_cannon | Siege Battery | дальняя артиллерия | Grand Cannon | работает |
 | alliance_wall | Barrier | стены | Fortress Wall | работает |
 

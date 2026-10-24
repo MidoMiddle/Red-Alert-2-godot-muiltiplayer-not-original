@@ -28,6 +28,12 @@ internal static class RulesValidator
     /// <summary>The widest veil of a veil generator, in cells (RA2's gap generator: 10).</summary>
     public const int MaxVeilRadius = 20;
 
+    /// <summary>The most soldiers a building holds.</summary>
+    public const int MaxGarrison = 10;
+
+    /// <summary>The most towers that support one shot.</summary>
+    public const int MaxChain = 16;
+
     /// <param name="sources">The resolved entry of every definition in <paramref name="rules"/>, by id.</param>
     public static void Check(RulesDatabase rules, IReadOnlyDictionary<string, RawDefinition> sources, List<RulesError> errors)
     {
@@ -218,6 +224,26 @@ internal static class RulesValidator
             if (building.VeilRadius is < 0 or > MaxVeilRadius)
             {
                 Error(building.Id, "veil_radius", $"'veil_radius' of '{building.Id}' must be 0 to {MaxVeilRadius} cells");
+            }
+
+            if (building.GarrisonCapacity is < 0 or > MaxGarrison)
+            {
+                Error(building.Id, "garrison", $"'garrison' of '{building.Id}' must be 0 to {MaxGarrison} soldiers");
+            }
+
+            if (building.ChainBonusPercent is < 0 or > 200)
+            {
+                Error(building.Id, "chain_bonus", $"'chain_bonus' of '{building.Id}' must be 0% to 200%");
+            }
+
+            if (building.ChainMax is < 0 or > MaxChain)
+            {
+                Error(building.Id, "chain_max", $"'chain_max' of '{building.Id}' must be 0 to {MaxChain} towers");
+            }
+
+            if (building.ChainBonusPercent > 0 && building.Primary.Length == 0)
+            {
+                Error(building.Id, "chain_bonus", $"'{building.Id}' supports the shots of its kind but has no 'primary' weapon");
             }
         }
 

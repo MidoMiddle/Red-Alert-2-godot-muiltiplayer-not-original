@@ -54,9 +54,11 @@ public static class CommandProcessor
             AttackCommand attack => ApplyAttack(world, attack),
             ForceAttackCommand force => ApplyForceAttack(world, force),
             SetStanceCommand stance => ApplySetStance(world, stance),
+            GarrisonCommand garrison => GarrisonSystem.Order(world, OwnUnits(world, garrison), garrison.Building),
+            EvacuateCommand evacuate => ApplyEvacuate(world, evacuate, events),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
-        if (applied && command is UnitsCommand { Type: not (CommandType.Harvest or CommandType.Attack or CommandType.ForceAttack or CommandType.SetStance) } order)
+        if (applied && command is UnitsCommand { Type: not (CommandType.Harvest or CommandType.Attack or CommandType.ForceAttack or CommandType.SetStance or CommandType.Garrison) } order)
         {
             HarvestersFollow(world, order);
         }
@@ -81,6 +83,19 @@ public static class CommandProcessor
         var share = IntMath.DivRound(world.Rules.Economy.SellRefund.Raw * 1000, Fixed.OneRaw);
         var refund = (int)((long)building.Def!.Cost * share * building.Hp / (1000L * building.MaxHp));
         world.SellBuilding(building, refund, events);
+        GarrisonSystem.Evacuate(world, building, events);
+        return true;
+    }
+
+    /// <summary>The soldiers inside the player's building come out (stage 2e); refused when there is none.</summary>
+    private static bool ApplyEvacuate(GameWorld world, EvacuateCommand command, List<SimEvent>? events)
+    {
+        if (OwnReady(world, command.Player, command.Building) is not { Occupants.Count: > 0 } building)
+        {
+            return false;
+        }
+
+        GarrisonSystem.Evacuate(world, building, events);
         return true;
     }
 

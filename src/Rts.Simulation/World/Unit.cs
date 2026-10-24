@@ -48,6 +48,12 @@ public sealed class Unit : Entity
     /// <summary>What the unit shoots at (M4, 4.7): a unit or a building; null without a target. State: hashed.</summary>
     public EntityId? Target { get; internal set; }
 
+    /// <summary>
+    /// The building the soldier was ordered into (stage 2e): it goes in once it stands beside it; any other order forgets it. State:
+    /// hashed.
+    /// </summary>
+    public EntityId? EnterTarget { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 

@@ -62,10 +62,11 @@ public static class DamageSystem
         var weapon = rules.Database.Weapons[hit.Weapon];
         var warheadIndex = rules.Database.IndexOfWarhead(weapon.Warhead);
         var warhead = rules.Database.Warheads[warheadIndex];
+        var damage = hit.BonusPercent > 0 ? (int)((long)weapon.Damage * (100 + hit.BonusPercent) / 100) : weapon.Damage;
 
         if (hit.Target is { } targetId && world.TryGet(targetId, out var target) && target.IsAlive && Hurts(target, warhead))
         {
-            var amount = DamageCalculator.Direct(weapon.Damage, rules.Verses(warheadIndex, ArmorOf(rules, target)));
+            var amount = DamageCalculator.Direct(damage, rules.Verses(warheadIndex, ArmorOf(rules, target)));
             Damage(world, target, amount, hit, events);
         }
 
@@ -101,7 +102,7 @@ public static class DamageSystem
 
             var distance = DamageCalculator.Distance(hit.Point, Aim.NearestPoint(entity, hit.Point));
             var verses = rules.Verses(warheadIndex, ArmorOf(rules, entity));
-            Damage(world, entity, DamageCalculator.InArea(weapon.Damage, verses, warhead.Spread, warhead.PercentAtMax, distance), hit, events);
+            Damage(world, entity, DamageCalculator.InArea(damage, verses, warhead.Spread, warhead.PercentAtMax, distance), hit, events);
         }
     }
 

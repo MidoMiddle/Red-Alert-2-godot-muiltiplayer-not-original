@@ -26,4 +26,6 @@ public enum CommandType : byte
     ForceAttack = 19,
     SetStance = 20,
     Surrender = 21,
+    Garrison = 22,
+    Evacuate = 23,
 }

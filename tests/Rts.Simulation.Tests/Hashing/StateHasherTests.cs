@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp",
         "building hp", "building target", "building reload",
     };
 
@@ -74,6 +74,15 @@ public sealed class StateHasherTests
             case "explored": world.VisionOf(new PlayerId(3)).Reveal(new CellPos(2, 2), 0); world.VisionOf(new PlayerId(3)).Hide(new CellPos(2, 2), 0); break;
             case "veil": world.VisionOf(new PlayerId(4)).Veil(new CellPos(5, 5), 2, 1); break;
             case "explore all": world.VisionOf(new PlayerId(5)).ExploreAll(); break;
+            case "enter target": moving.EnterTarget = idle.Id; break;
+            case "occupant":
+            case "occupant hp":
+                var bunker = world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null);
+                bunker.Occupants.Add(new Occupant(world.Rules.Unit(UnitType.Conscript), 125));
+                var held = StateHasher.Compute(world);
+                bunker.Occupants[0] = new Occupant(world.Rules.Unit(mutation == "occupant" ? UnitType.Engineer : UnitType.Conscript), mutation == "occupant" ? 125 : 124);
+                Assert.NotEqual(held, StateHasher.Compute(world));
+                break;
             case "stance": moving.Stance = Stance.Guard; break;
             case "anchor": moving.Anchor += new WorldPos(1, 0); break;
             case "target order": moving.TargetOrder = TargetOrder.Attack; break;
@@ -235,7 +244,7 @@ public sealed class StateHasherTests
         "<Returning>k__BackingField", "<Subcell>k__BackingField",
         "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField", "<Hp>k__BackingField",
         "<Target>k__BackingField", "<Weapons>k__BackingField", "<Stance>k__BackingField", "<Anchor>k__BackingField",
-        "<TargetOrder>k__BackingField", "<TargetPoint>k__BackingField", "<Engaged>k__BackingField", "<ChaseCell>k__BackingField",
+        "<TargetOrder>k__BackingField", "<TargetPoint>k__BackingField", "<Engaged>k__BackingField", "<ChaseCell>k__BackingField", "<EnterTarget>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {
@@ -328,12 +337,13 @@ public sealed class StateHasherTests
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
         "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField",
-        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField",
+        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
         // The veil it added (stage 2d): derived from the building and its owner's power; the grids it went into are hashed.
         "<VeilRadius>k__BackingField",
     })]
+    [InlineData(typeof(Occupant), new[] { "<Type>k__BackingField", "<Hp>k__BackingField", "<Weapons>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {

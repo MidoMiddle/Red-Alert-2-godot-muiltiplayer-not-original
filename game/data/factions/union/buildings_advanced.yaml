@@ -94,7 +94,7 @@ industrial_plant:  # vehicles, ships and aircraft 25% cheaper (stage 2c)
   vehicle_discount: 25%
   prerequisites: [tech_center]
 
-battle_bunker:  # infantry garrison, M11a; stands without a weapon until then
+battle_bunker:  # holds 5 soldiers who fire from inside (stage 2e)
   kind: building
   inherits: base_building
   name: Fortified Bunker
@@ -106,5 +106,5 @@ battle_bunker:  # infantry garrison, M11a; stands without a weapon until then
   armor: steel
   footprint: [2, 2]
   extends_base: false
-  ability_later: true
+  garrison: 5
   prerequisites: [construction_yard]

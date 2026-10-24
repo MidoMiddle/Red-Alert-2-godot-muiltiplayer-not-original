@@ -165,7 +165,7 @@ public static class ProductionSystem
     /// The nearest free cell around the footprint of <paramref name="factory"/>, ring by ring up to 4 cells out and row by row inside a
     /// ring, that the unit can enter; null when there is none.
     /// </summary>
-    private static CellPos? ExitAround(GameWorld world, Building factory, UnitArchetype archetype)
+    internal static CellPos? ExitAround(GameWorld world, Building factory, UnitArchetype archetype)
     {
         for (var ring = 1; ring <= 4; ring++)
         {

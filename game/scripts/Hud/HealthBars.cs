@@ -11,7 +11,8 @@ namespace Rts.Client.Hud;
 /// The health bars of the field (docs/implementation/M4_combat.md, 4.20, step 13): every bar in one <c>_Draw</c> on the screen, a row of
 /// <see cref="HealthPips"/> over each unit and player building, for the selected and the damaged or for all (the setting
 /// <c>interface/health_bars</c>). Units are placed where they are drawn, between the ticks; what the fog hides and the ghosts of
-/// buildings have no bar.
+/// buildings have no bar. Under a building that holds soldiers (stage 2e) a row of boxes shows its room, the soldiers inside filled in,
+/// whatever the setting.
 /// </summary>
 public partial class HealthBars : Control
 {
@@ -22,6 +23,7 @@ public partial class HealthBars : Control
 
     private static readonly Color Frame = new(0.05f, 0.05f, 0.05f, 0.85f);
     private static readonly Color Empty = new(0.25f, 0.25f, 0.25f, 0.9f);
+    private static readonly Color Soldier = new(0.95f, 0.85f, 0.3f);
 
     private SimulationHost? _host;
     private PlayerInput? _input;
@@ -52,6 +54,12 @@ public partial class HealthBars : Control
                 continue;
             }
 
+            if (entity is Building { Def: { GarrisonCapacity: > 0 } bunker } garrisoned)
+            {
+                var top = WorldCoords.ToGodotOnGround(Aim.CentreOf(garrisoned), BuildingShape.Of(bunker).Height + 0.6f);
+                DrawGarrison(camera, top, garrisoned.Occupants.Count, bunker.GarrisonCapacity);
+            }
+
             var selected = _input?.Selection.Contains(entity.Id) == true;
             switch (entity)
             {
@@ -71,6 +79,24 @@ public partial class HealthBars : Control
                         break;
                     }
             }
+        }
+    }
+
+    // The room of a building that holds soldiers, just under where its health bar goes.
+    private void DrawGarrison(Camera3D camera, Vector3 at, int inside, int room)
+    {
+        if (camera.IsPositionBehind(at))
+        {
+            return;
+        }
+
+        var size = PipHeight + 1f;
+        var width = room * (size + Gap) + Gap;
+        var corner = camera.UnprojectPosition(at) + new Vector2(-width / 2f, 2 * Gap);
+        DrawRect(new Rect2(corner, new Vector2(width, size + 2 * Gap)), Frame);
+        for (var i = 0; i < room; i++)
+        {
+            DrawRect(new Rect2(corner + new Vector2(Gap + i * (size + Gap), Gap), new Vector2(size, size)), i < inside ? Soldier : Empty);
         }
     }
 

@@ -290,6 +290,11 @@ public partial class PlayerInput : Node
             // U (M3 step 8): one unit of the B type from the barracks or the factory; Shift + U, five.
             _host.IssueProduceUnits(key.ShiftPressed ? ProductionRules.MaxOrder : 1);
         }
+        else if (key.IsActionPressed("deploy", false, true) && !_host.IsPlayback && OccupiedUnderPointer() is { } occupied)
+        {
+            // D over an own building with soldiers inside: they come out (stage 2e).
+            _host.IssueEvacuate(occupied);
+        }
         else if (key.IsActionPressed("deploy", false, true) && !Selection.IsEmpty && !_host.IsPlayback)
         {
             // D: the selected MCVs turn into construction yards (M3 step 7).
@@ -549,6 +554,10 @@ public partial class PlayerInput : Node
                 case ClearSelection:
                     ChangeSelection(Selection.Clear);
                     break;
+                case OrderMove order when !_host.IsPlayback && GarrisonAt(order.Target) is { } bunker:
+                    Voice("entering");
+                    _host.IssueGarrison(Selection.Units, bunker);
+                    break;
                 case OrderMove order when CanOrder(order.Target):
                     Voice(order.Queue ? "moving (queued)" : "moving");
                     _markers?.Add(order.Target, MarkerKind.Move);
@@ -630,6 +639,38 @@ public partial class PlayerInput : Node
     /// Whether an order to <paramref name="target"/> goes out: not in playback, and at least one selected unit can enter that
     /// cell. Otherwise a red cross shows where the order was refused, as RA2 does under the "no" cursor.
     /// </summary>
+    /// <summary>
+    /// The player's building that holds soldiers at <paramref name="point"/>, with room, when the selection holds a soldier (stage 2e): an
+    /// order there sends them in.
+    /// </summary>
+    private EntityId? GarrisonAt(WorldPos point)
+    {
+        var world = _host.Simulation.World;
+        if (world.BuildingAt(point.ToCell()) is not { } building
+            || !Rts.Simulation.Systems.GarrisonSystem.Holds(building, SimulationHost.LocalPlayer)
+            || !Rts.Simulation.Systems.GarrisonSystem.HasRoom(building))
+        {
+            return null;
+        }
+
+        foreach (var id in Selection.Units)
+        {
+            if (world.TryGet(id, out var entity) && entity is Unit unit && Rts.Simulation.Systems.GarrisonSystem.CanEnter(unit))
+            {
+                return building.Id;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>The player's building under the pointer with soldiers inside (stage 2e), for D to let them out.</summary>
+    private EntityId? OccupiedUnderPointer() =>
+        CellUnderPointer is { } cell && _host.Simulation.World.BuildingAt(cell) is { IsAlive: true, Occupants.Count: > 0 } building
+            && building.Owner == SimulationHost.LocalPlayer
+            ? building.Id
+            : null;
+
     private bool CanOrder(WorldPos target)
     {
         if (_host.IsPlayback)
@@ -835,7 +876,8 @@ public partial class PlayerInput : Node
             own && building!.Hp < building.MaxHp,
             context.Ground is { } at && !world.Map.OreAt(at.ToCell()).IsEmpty,
             Selection.Units.Any(id => world.TryGet(id, out var entity) && entity is Unit { Harvester: not null }),
-            fits);
+            fits,
+            context.Ground is { } door && GarrisonAt(door) is not null);
     }
 
     /// <summary>Whether Z is held on its own: with Ctrl, Shift, Alt or Meta it is not the waypoint key.</summary>

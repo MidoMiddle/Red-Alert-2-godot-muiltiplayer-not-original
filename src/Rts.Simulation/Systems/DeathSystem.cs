@@ -30,12 +30,13 @@ public static class DeathSystem
     /// The building falls (<see cref="GameWorld.DestroyBuilding"/>) to a shot of <paramref name="killer"/>, a unit of
     /// <paramref name="killerOwner"/>. One with a <see cref="Rules.BuildingDef.DeathWeapon"/> (stage 2c: the atomic plant) goes off where
     /// it stood: a shot of that weapon lands on its centre the next tick and hurts all around, its owner's too. Sold or fallen with its
-    /// owner, it does not.
+    /// owner, it does not. The soldiers inside come out (stage 2e).
     /// </summary>
     public static void Destroy(GameWorld world, Building building, EntityId killer, PlayerId killerOwner, int weapon, List<SimEvent>? events)
     {
         world.DestroyBuilding(building, events);
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
+        GarrisonSystem.Evacuate(world, building, events);
         if (building.Def is { DeathWeapon.Length: > 0 } def && world.Rules.Database.IndexOfWeapon(def.DeathWeapon) is >= 0 and var blast)
         {
             var centre = Combat.Aim.CentreOf(building);

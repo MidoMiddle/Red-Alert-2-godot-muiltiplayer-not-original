@@ -385,6 +385,21 @@ public partial class SimulationHost : Node
     public void IssueForceAttack(IReadOnlyList<EntityId> units, EntityId? target, WorldPos point) =>
         IssueTo(units, ordered => new ForceAttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, point));
 
+    /// <summary>The soldiers among the units go into the player's building that holds soldiers (stage 2e).</summary>
+    public void IssueGarrison(IReadOnlyList<EntityId> units, EntityId building)
+    {
+        var world = Simulation.World;
+        var soldiers = units.Where(id => world.TryGet(id, out var entity) && entity is Unit unit && Rts.Simulation.Systems.GarrisonSystem.CanEnter(unit)).ToList();
+        if (soldiers.Count > 0)
+        {
+            IssueTo(soldiers, ordered => new GarrisonCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, building));
+        }
+    }
+
+    /// <summary>The soldiers inside the player's building come out (stage 2e).</summary>
+    public void IssueEvacuate(EntityId building) =>
+        Issue(new EvacuateCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building));
+
     /// <summary>The stance of the units (M4 step 7).</summary>
     public void IssueStance(IReadOnlyList<EntityId> units, Stance stance) =>
         IssueTo(units, ordered => new SetStanceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, stance));

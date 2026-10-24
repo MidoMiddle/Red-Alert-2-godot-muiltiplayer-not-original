@@ -76,6 +76,16 @@ public static class TargetingSystem
                         building.Target = Best(world, rules, building, new Area(centre, Reach(rules, weapons), centre, -1), weapons, building.Target, nearby);
                         break;
                     }
+
+                case Building { IsReady: true } building when GarrisonSystem.IsArmed(building):
+                    {
+                        // The soldiers inside (stage 2e): the weapons of all of them, their range from the wall.
+                        var weapons = GarrisonSystem.WeaponsOf(rules, building);
+                        var centre = Aim.CentreOf(building);
+                        var reach = Reach(rules, weapons) + GarrisonSystem.Wall(building);
+                        building.Target = Best(world, rules, building, new Area(centre, reach, centre, -1), weapons, building.Target, nearby);
+                        break;
+                    }
             }
         }
     }

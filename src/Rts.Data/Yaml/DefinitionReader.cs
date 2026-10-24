@@ -27,7 +27,7 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
-        "reveals_map", "veil_radius",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -153,6 +153,9 @@ internal static class DefinitionReader
             DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
             RevealsMap = fields.Optional("reveals_map", Scalars.Flag, false),
             VeilRadius = fields.Optional("veil_radius", Scalars.Int, 0),
+            GarrisonCapacity = fields.Optional("garrison", Scalars.Int, 0),
+            ChainBonusPercent = WholePercent(fields.Optional("chain_bonus", Scalars.Percent, Fixed.Zero)),
+            ChainMax = fields.Optional("chain_max", Scalars.Int, 0),
         };
     }
 

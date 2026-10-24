@@ -208,11 +208,13 @@ public sealed class GoldenValuesTests
         // Rules v39 (M8 step 2): the hash covers the bonuses of every player and the hundredths of income owed (none here); the states are the same.
         // Rules v44 (stage 2a, the shipyard): the hash covers a fifth production queue, the naval one (empty here); the states are the same.
         // Rules v45 (stage 2b, aircraft): and a sixth, the aircraft one (empty); the states are the same.
+        // Rules v48 (stage 2e, the garrison): the hash covers the building a soldier goes into and the soldiers inside every building
+        // (none here); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x2fc75e936de007a5UL),
-            new(500, 0x2861b670e2e78fe0UL),
-            new(1000, 0xfc06ab75d43c7c00UL),
+            new(100, 0x05a63801a1b4e699UL),
+            new(500, 0x2dd056918ac7f2f4UL),
+            new(1000, 0x165c40dc65e9b91cUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -230,11 +232,13 @@ public sealed class GoldenValuesTests
         // Rules v39 (M8 step 2): the bonuses of every player and the hundredths of income owed in the hash (none); the battle is the same.
         // Rules v44 (stage 2a): the naval production queue in the hash (empty); the battle is the same.
         // Rules v45 (stage 2b): the aircraft queue in the hash (empty); the battle is the same — no flier, no anti-air weapon fires.
+        // Rules v48 (stage 2e): the soldiers inside buildings and the buildings soldiers go into in the hash (none); the battle is the
+        // same — no bunker, no lens tower.
         StateChecksum[] expected =
         [
-            new(1000, 0x67039bd23a645820UL),
-            new(2000, 0x9afdf2bf6ea214a6UL),
-            new(3000, 0xf38dd529c84ea2a2UL),
+            new(1000, 0xe9b500c67bbdc3e8UL),
+            new(2000, 0x0ae21ddee470c654UL),
+            new(3000, 0x88a83bfa9f4b56e8UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -310,6 +314,8 @@ public sealed class GoldenValuesTests
         // Rules v45 (stage 2b): the same again with the aircraft queue.
         // Rules v46 (stage 2c, the workshops, the discount, the bonus of the ore, the blast): only the version changes.
         // Rules v47 (stage 2d, the uplink and the veil): only the version changes — no veil here, and the veils are hashed only when one is.
-        Assert.Equal((22269, 7652284386323155575UL), (bytes.Length, hash.Value));
+        // Replay format v22, rules v48 (stage 2e, the garrison and the lens chains): the versions and the checksums change — the soldiers
+        // inside and the building a soldier goes into are hashed; the commands are the same.
+        Assert.Equal((22269, 10598775278309322628UL), (bytes.Length, hash.Value));
     }
 }

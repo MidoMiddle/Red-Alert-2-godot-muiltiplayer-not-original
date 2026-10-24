@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v10, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v11, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -32,16 +32,18 @@ namespace Rts.Simulation.Commands;
 /// ForceAttack:   u8 hasTarget | units | i32 target | i32 x | i32 y
 /// SetStance:     u8 stance | units
 /// Surrender:     nothing
+/// Garrison:      units | i32 building
+/// Evacuate:      i32 building
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
 /// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy; v6 (M3 step 8) added Produce, PauseProduction,
-/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender.
+/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender; v11 (stage 2e of filling the game) added Garrison and Evacuate.
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 10;
+    public const int FormatVersion = 11;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -71,6 +73,8 @@ public static class CommandSerializer
         ForceAttackCommand force => HeaderSize + 1 + UnitsSize(force) + 4 + PositionSize,
         SetStanceCommand stance => HeaderSize + 1 + UnitsSize(stance),
         SurrenderCommand => HeaderSize,
+        GarrisonCommand garrison => HeaderSize + UnitsSize(garrison) + 4,
+        EvacuateCommand => HeaderSize + 4,
         _ => throw UnknownCommand(command),
     };
 
@@ -189,6 +193,12 @@ public static class CommandSerializer
                 WriteUnits(payload[1..], stance);
                 break;
             case SurrenderCommand:
+                break;
+            case GarrisonCommand garrison:
+                BinaryPrimitives.WriteInt32LittleEndian(payload[WriteUnits(payload, garrison)..], garrison.Building.Value);
+                break;
+            case EvacuateCommand evacuate:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, evacuate.Building.Value);
                 break;
             case HarvestCommand harvest:
                 var unitsEnd = WriteUnits(payload, harvest);
@@ -376,6 +386,19 @@ public static class CommandSerializer
             case CommandType.Surrender:
                 bytesRead = HeaderSize;
                 return new SurrenderCommand(player, tick, sequence);
+
+            case CommandType.Garrison:
+            {
+                var units = ReadUnits(payload, out var unitsSize);
+                Require(payload, unitsSize + 4);
+                bytesRead = HeaderSize + unitsSize + 4;
+                return new GarrisonCommand(player, tick, sequence, units, new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload[unitsSize..])));
+            }
+
+            case CommandType.Evacuate:
+                Require(payload, 4);
+                bytesRead = HeaderSize + 4;
+                return new EvacuateCommand(player, tick, sequence, new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload)));
 
             case CommandType.Harvest:
             {

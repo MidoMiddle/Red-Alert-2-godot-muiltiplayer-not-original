@@ -134,6 +134,9 @@ public static class DataHasher
             Add(hash, building.DeathWeapon);
             hash.Add(building.RevealsMap);
             hash.Add(building.VeilRadius);
+            hash.Add(building.GarrisonCapacity);
+            hash.Add(building.ChainBonusPercent);
+            hash.Add(building.ChainMax);
         }
 
         hash.Add(rules.Factions.Length);

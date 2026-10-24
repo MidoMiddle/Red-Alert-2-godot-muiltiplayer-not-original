@@ -92,6 +92,10 @@ public sealed class CommandSerializerTests
         Assert.Equal(
             "14" + Header + "02" + "0100" + "09000000",
             Convert.ToHexString(Serialize(new SetStanceCommand(new PlayerId(1), 5, 7, units, Stance.HoldPosition))));
+        Assert.Equal(
+            "16" + Header + "0100" + "09000000" + "2A000000",
+            Convert.ToHexString(Serialize(new GarrisonCommand(new PlayerId(1), 5, 7, units, new EntityId(42)))));
+        Assert.Equal("17" + Header + "2A000000", Convert.ToHexString(Serialize(new EvacuateCommand(new PlayerId(1), 5, 7, new EntityId(42)))));
     }
 
     [Fact]
@@ -144,6 +148,9 @@ public sealed class CommandSerializerTests
         // An unknown stance still round-trips: the processor rejects it.
         new SetStanceCommand(new PlayerId(4), 6, 6, [], (Stance)9),
         new SurrenderCommand(new PlayerId(2), 7, 1),
+        new GarrisonCommand(new PlayerId(5), 8, 1, [new EntityId(21), new EntityId(22)], new EntityId(40)),
+        new GarrisonCommand(new PlayerId(5), 8, 2, [], new EntityId(-1)),
+        new EvacuateCommand(new PlayerId(6), 8, 3, new EntityId(40)),
     };
 
     [Theory]

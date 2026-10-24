@@ -161,3 +161,12 @@ public sealed record RepairToggled(int Tick, EntityId Building, bool On) : SimEv
 
 /// <summary>A repaired building is whole again; its repair turned off.</summary>
 public sealed record RepairDone(int Tick, EntityId Building) : SimEvent(Tick);
+
+/// <summary>A soldier went into <paramref name="Building"/> and left the map (stage 2e).</summary>
+public sealed record UnitGarrisoned(int Tick, EntityId Unit, EntityId Building) : SimEvent(Tick);
+
+/// <summary>A soldier came out of <paramref name="Building"/> as <paramref name="Unit"/>, a new unit (stage 2e).</summary>
+public sealed record UnitLeftGarrison(int Tick, EntityId Unit, EntityId Building) : SimEvent(Tick);
+
+/// <summary><paramref name="Supporter"/>, an idle tower, sent its charge to <paramref name="Tower"/>'s shot (stage 2e: the lens towers).</summary>
+public sealed record TowerSupported(int Tick, EntityId Supporter, EntityId Tower) : SimEvent(Tick);

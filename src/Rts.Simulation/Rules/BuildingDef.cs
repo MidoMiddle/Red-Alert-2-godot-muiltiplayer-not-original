@@ -120,4 +120,16 @@ public sealed record BuildingDef : IDefinition
     /// (stage 2d: the veil generator, RA2 <c>GapRadius</c>); 0 for none.
     /// </summary>
     public int VeilRadius { get; init; }
+
+    /// <summary>How many soldiers of its owner it holds (stage 2e: the fortified bunker); they fire from inside with their weapons.</summary>
+    public int GarrisonCapacity { get; init; }
+
+    /// <summary>
+    /// The damage a supporting tower adds to the shot of another, in percent of its weapon (stage 2e: the lens tower chains); 0 for a
+    /// building that neither supports nor is supported.
+    /// </summary>
+    public int ChainBonusPercent { get; init; }
+
+    /// <summary>The most towers that support one shot.</summary>
+    public int ChainMax { get; init; }
 }

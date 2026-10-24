@@ -112,7 +112,10 @@ internal static class UnitOrders
         unit.Replans = 0;
     }
 
-    /// <summary>Forgets the unit's target, the order behind it and the pursuit (M4, 4.12): a new order of the player ends the fight.</summary>
+    /// <summary>
+    /// Forgets the unit's target, the order behind it and the pursuit (M4, 4.12): a new order of the player ends the fight; and the
+    /// building it was going into (stage 2e).
+    /// </summary>
     public static void ForgetTarget(Unit unit)
     {
         unit.Target = null;
@@ -120,6 +123,7 @@ internal static class UnitOrders
         unit.TargetPoint = null;
         unit.Engaged = false;
         unit.ChaseCell = null;
+        unit.EnterTarget = null;
     }
 
     /// <summary>

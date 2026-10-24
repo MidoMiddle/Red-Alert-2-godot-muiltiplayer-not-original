@@ -86,6 +86,16 @@ public sealed record ForceAttackCommand(
     public override CommandType Type => CommandType.ForceAttack;
 }
 
+/// <summary>
+/// The soldiers among the units go into <paramref name="Building"/>, the player's ready building that holds soldiers, while it has room
+/// (stage 2e): they walk to it and go in beside it. Other units ignore it.
+/// </summary>
+public sealed record GarrisonCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, EntityId Building)
+    : UnitsCommand(Player, ExecuteTick, Sequence, Units)
+{
+    public override CommandType Type => CommandType.Garrison;
+}
+
 /// <summary>Sets the stance of the units (docs/implementation/M4_combat.md, 4.11); a guarding unit guards where it stands.</summary>
 public sealed record SetStanceCommand(PlayerId Player, int ExecuteTick, uint Sequence, ImmutableArray<EntityId> Units, Stance Stance)
     : UnitsCommand(Player, ExecuteTick, Sequence, Units)

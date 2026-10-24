@@ -255,7 +255,7 @@ alliance_patriot_missile_system:  # anti-air defence: fires once there are aircr
   adjacent: 4
   prerequisites: [alliance_barracks]
 
-alliance_prism_tower:  # beam defence; the chains of towers come with M11c
+alliance_prism_tower:  # beam defence; idle towers nearby add to its shot (stage 2e)
   kind: building
   inherits: base_defense
   name: Lens Tower
@@ -266,6 +266,8 @@ alliance_prism_tower:  # beam defence; the chains of towers come with M11c
   sight: 8
   threat: 40
   primary: alliance_lens_beam
+  chain_bonus: 50%
+  chain_max: 8
   footprint: [1, 1]
   power: -75
   prerequisites: [alliance_air_force_command]

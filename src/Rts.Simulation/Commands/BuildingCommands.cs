@@ -15,6 +15,13 @@ public sealed record SellCommand(PlayerId Player, int ExecuteTick, uint Sequence
     public override CommandType Type => CommandType.Sell;
 }
 
+/// <summary>The soldiers inside the player's building come out around it (stage 2e).</summary>
+public sealed record EvacuateCommand(PlayerId Player, int ExecuteTick, uint Sequence, EntityId Building)
+    : Command(Player, ExecuteTick, Sequence)
+{
+    public override CommandType Type => CommandType.Evacuate;
+}
+
 /// <summary>Turns the repair of the player's ready building on or off.</summary>
 public sealed record ToggleRepairCommand(PlayerId Player, int ExecuteTick, uint Sequence, EntityId Building)
     : Command(Player, ExecuteTick, Sequence)

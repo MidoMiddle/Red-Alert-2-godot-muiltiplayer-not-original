@@ -36,11 +36,12 @@ namespace Rts.Simulation.Replays;
 /// those of the header. The commands of a bot are those of an Ai player numbered from <see cref="Ai.AiTurn.FirstSequence"/>; v18 (M5 step 3)
 /// adds every start of the map after the players: u8 count, then u16 x | u16 y each; v19 (M5 step 10) command format v10 (Surrender);
 /// v20 (M8 step 13) adds the personality of every player after its difficulty: u16 length + UTF-8 id, or <c>random</c>; v21 (the fog
-/// of war, an option of the skirmish screen) adds u8 fogOfWar after the game speed.
+/// of war, an option of the skirmish screen) adds u8 fogOfWar after the game speed; v22 (stage 2e) command format v11 (Garrison,
+/// Evacuate).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 21;
+    public const ushort FormatVersion = 22;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

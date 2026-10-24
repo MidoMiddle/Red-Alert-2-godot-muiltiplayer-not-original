@@ -19,6 +19,13 @@ namespace Rts.Simulation.Systems;
 /// homing one becomes a <see cref="Projectile"/> that <see cref="ProjectileSystem"/> flies. A unit forced to attack the ground (step 7)
 /// aims and fires at <see cref="World.Unit.TargetPoint"/> the same way; its shots land there with no target. A defense off for want of
 /// power (<see cref="Defenses.IsOnline"/>, step 10) does not fire; its reload counts down.
+/// <para>
+/// Stage 2e: the soldiers inside a building fire each with its weapons from the centre of the building at the building's target, their
+/// range counted from its wall (<see cref="GarrisonSystem"/>). When a tower whose kind supports (<see cref="BuildingDef.ChainBonusPercent"/>:
+/// the lens tower) fires, the idle towers of its kind and owner — ready, online, without a target, reloaded — that have it within their
+/// range send it their charge, up to <see cref="BuildingDef.ChainMax"/> in id order: each starts its reload and adds its bonus to the shot
+/// (<see cref="TowerSupported"/>).
+/// </para>
 /// </summary>
 public static class WeaponSystem
 {
@@ -39,6 +46,9 @@ public static class WeaponSystem
                     break;
                 case Building { IsAlive: true, IsReady: true } building when building.Weapons.Length > 0:
                     Defense(world, rules, building, shots, events);
+                    break;
+                case Building { IsAlive: true, IsReady: true } building when building.Occupants.Count > 0:
+                    Garrison(world, rules, building, shots, events);
                     break;
             }
         }
@@ -64,7 +74,7 @@ public static class WeaponSystem
         {
             case ProjectileMotion.Instant:
                 events?.Add(new ProjectileImpact(world.CurrentTick, null, shot.Shooter, shot.Weapon, shot.AimAt, shot.Target));
-                world.Hits.Add(new Hit(shot.Shooter, shot.Shooter, shot.Owner, shot.Weapon, shot.AimAt, shot.Target));
+                world.Hits.Add(new Hit(shot.Shooter, shot.Shooter, shot.Owner, shot.Weapon, shot.AimAt, shot.Target, shot.BonusPercent));
                 break;
             case ProjectileMotion.Ballistic:
                 {
@@ -165,7 +175,73 @@ public static class WeaponSystem
         var slots = rules.WeaponsOfBuilding(building.DefIndex);
         if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, TargetingSystem.LayerOf(target), events) is { } weapon)
         {
-            shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
+            var bonus = building.Def is { ChainBonusPercent: > 0 } def ? Support(world, building, def, events) * def.ChainBonusPercent : 0;
+            shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt, bonus));
+        }
+    }
+
+    /// <summary>The idle towers of the kind and owner of <paramref name="tower"/> that send it their charge; how many did.</summary>
+    private static int Support(GameWorld world, Building tower, BuildingDef def, List<SimEvent>? events)
+    {
+        var rules = world.Rules;
+        var centre = Aim.CentreOf(tower);
+        var supporters = 0;
+        foreach (var entity in world.Entities)
+        {
+            if (supporters >= def.ChainMax)
+            {
+                break;
+            }
+
+            if (entity is not Building { IsAlive: true, IsReady: true, Target: null } other || other == tower || other.Owner != tower.Owner
+                || other.DefIndex != tower.DefIndex || other.Weapons is not [{ ReloadLeft: 0, BurstLeft: 0 } state, ..]
+                || !Defenses.IsOnline(world, other) || rules.WeaponsOfBuilding(other.DefIndex)[0] is not (>= 0 and var slot))
+            {
+                continue;
+            }
+
+            var weapon = rules.Database.Weapons[slot];
+            if (DamageCalculator.Distance(Aim.CentreOf(other), centre) <= Aim.Leptons(weapon.Range))
+            {
+                state.ReloadLeft = weapon.Reload;
+                supporters++;
+                events?.Add(new TowerSupported(world.CurrentTick, other.Id, tower.Id));
+            }
+        }
+
+        return supporters;
+    }
+
+    private static void Garrison(GameWorld world, GameRules rules, Building building, List<Shot> shots, List<SimEvent>? events)
+    {
+        foreach (var occupant in building.Occupants)
+        {
+            CountDown(occupant.Weapons);
+        }
+
+        if (!TargetOf(world, building.Target, out var target))
+        {
+            building.Target = null;
+            foreach (var occupant in building.Occupants)
+            {
+                StopVolleys(occupant.Weapons);
+            }
+
+            return;
+        }
+
+        // The soldiers aim at once, from the centre; their range starts at the wall.
+        var centre = Aim.CentreOf(building);
+        var aimAt = Aim.NearestPoint(target, centre);
+        var distance = IntMath.Max(0, DamageCalculator.Distance(centre, aimAt) - GarrisonSystem.Wall(building));
+        var layer = TargetingSystem.LayerOf(target);
+        foreach (var occupant in building.Occupants)
+        {
+            if (occupant.Weapons.Length > 0
+                && Fire(world, rules, building.Id, target.Id, occupant.Weapons, rules.WeaponsOf(occupant.Type), distance, aimed: true, layer, events) is { } weapon)
+            {
+                shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
+            }
         }
     }
 

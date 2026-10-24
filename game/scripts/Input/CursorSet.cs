@@ -85,6 +85,7 @@ public static class CursorSet
             CursorKind.Repair => Wrench,
             CursorKind.Deploy => ArrowsOut,
             CursorKind.Harvest => Crystal,
+            CursorKind.Enter => ArrowsIn,
             _ => Flag,
         };
         for (var y = 0; y < Size; y++)

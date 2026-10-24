@@ -223,6 +223,10 @@ public static class StateHasher
                 hash.Add(unit.Engaged);
                 AddCell(hash, unit.ChaseCell);
 
+                // Rules v48 (stage 2e): the building the soldier goes into.
+                hash.Add(unit.EnterTarget.HasValue);
+                hash.Add(unit.EnterTarget?.Value ?? 0);
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)
@@ -260,6 +264,16 @@ public static class StateHasher
 
                 // Rules v27 (M4 step 3): the target and the weapon of a defense.
                 AddWeapons(hash, building.Target, building.Weapons);
+
+                // Rules v48 (stage 2e): the soldiers inside.
+                hash.Add(building.Occupants.Count);
+                foreach (var occupant in building.Occupants)
+                {
+                    hash.Add((byte)occupant.Type);
+                    hash.Add(occupant.Hp);
+                    AddWeapons(hash, null, occupant.Weapons);
+                }
+
                 break;
 
             case Projectile projectile:

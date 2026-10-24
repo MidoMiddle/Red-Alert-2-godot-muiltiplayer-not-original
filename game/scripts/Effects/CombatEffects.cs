@@ -174,6 +174,11 @@ public partial class CombatEffects : Node3D
                 AddBall(shooter.Gun, 0.15f, 0.3f, FlashLife, FlashColor);
                 break;
 
+            case TowerSupported support when Know(support.Supporter) is { } supporter && Know(support.Tower) is { } tower && Seen(world, tower.Centre):
+                // A lens tower sends its charge to the one that fires (stage 2e).
+                _lineEffects.Add(new Line([supporter.Gun, tower.Gun], BoltColor, BoltLife));
+                break;
+
             case ProjectileImpact impact when Seen(world, impact.Point):
                 var weapon = rules.Weapons[impact.Weapon];
                 rules.TryGetProjectile(weapon.Projectile, out var projectile);

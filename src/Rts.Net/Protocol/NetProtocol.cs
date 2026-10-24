@@ -8,9 +8,9 @@ public static class NetProtocol
 {
     /// <summary>
     /// Raised on any change of a message; peers of different versions refuse each other (4.8). 2: the fog of war in the options of a
-    /// match.
+    /// match; 3: the commands Garrison and Evacuate (stage 2e).
     /// </summary>
-    public const ushort Version = 2;
+    public const ushort Version = 3;
 
     /// <summary>The largest message, header included: the limit of the relay (4.14).</summary>
     public const int MaxMessageSize = 4096;

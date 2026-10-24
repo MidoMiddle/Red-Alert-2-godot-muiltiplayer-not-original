@@ -99,5 +99,16 @@ public sealed class CursorChoiceTests
         Assert.Equal(CursorKind.Normal, CursorChoice.For(Context(Ground, selected: false), true, spot: new PointerSpot(Ore: true, Harvesters: true)));
     }
 
+    [Fact]
+    public void An_own_building_with_room_shows_the_enter_cursor_to_selected_soldiers()
+    {
+        // Stage 2e: the building's cells are closed to the soldiers, yet an order there sends them in.
+        Assert.Equal(CursorKind.Enter, CursorChoice.For(Context(Ground, selected: true), anyCanEnter: false, spot: new PointerSpot(OwnBuilding: true, Garrison: true)));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: true), anyCanEnter: false, spot: new PointerSpot(OwnBuilding: true)));
+        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(Context(Ground, selected: true) with { Ctrl = true }, false, spot: new PointerSpot(Garrison: true)));
+        Assert.Equal(CursorKind.Waypoint, CursorChoice.For(Context(Ground, selected: true) with { WaypointMode = true }, true, spot: new PointerSpot(Garrison: true)));
+        Assert.Equal(CursorKind.Normal, CursorChoice.For(Context(Ground, selected: false), false, spot: new PointerSpot(Garrison: true)));
+    }
+
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);
 }
