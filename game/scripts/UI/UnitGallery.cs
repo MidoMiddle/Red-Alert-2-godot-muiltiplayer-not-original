@@ -33,6 +33,22 @@ public partial class UnitGallery : Node3D
         var buildings = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--buildings") >= 0;
         var models = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--models") >= 0;
         var props = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--props") >= 0;
+        if (System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--emblems") >= 0)
+        {
+            // The emblems of the match screen (PauseMenu), the Allies' and the Soviets', side by side.
+            var layer = new CanvasLayer();
+            AddChild(layer);
+            var row = new HBoxContainer { Size = new Vector2(1920, 1080) };
+            layer.AddChild(row);
+            foreach (var faction in new[] { Faction.Alliance, Faction.Union })
+            {
+                row.AddChild(new FactionEmblem { Faction = faction, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill });
+            }
+
+            ScreenshotCapture.AttachIfRequested(this);
+            return;
+        }
+
         AddChild(new WorldEnvironment
         {
             Environment = new Environment

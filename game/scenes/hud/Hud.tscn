@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/Hud/MatchHud.cs" id="1_hud"]
 [ext_resource type="PackedScene" path="res://scenes/hud/Sidebar.tscn" id="2_sidebar"]
-[ext_resource type="Script" path="res://scripts/Hud/StatsPanel.cs" id="3_stats"]
 [ext_resource type="PackedScene" path="res://scenes/hud/CommandBar.tscn" id="4_bar"]
 
 [node name="Hud" type="CanvasLayer"]
@@ -11,33 +10,3 @@ script = ExtResource("1_hud")
 [node name="Sidebar" parent="." instance=ExtResource("2_sidebar")]
 
 [node name="CommandBar" parent="." instance=ExtResource("4_bar")]
-
-[node name="StatsPanel" type="PanelContainer" parent="."]
-visible = false
-layout_mode = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -506.0
-offset_top = 60.0
-offset_right = -246.0
-offset_bottom = 260.0
-grow_horizontal = 0
-script = ExtResource("3_stats")
-
-[node name="Column" type="VBoxContainer" parent="StatsPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Title" type="Label" parent="StatsPanel/Column"]
-layout_mode = 2
-horizontal_alignment = 1
-
-[node name="BuiltLabel" type="Label" parent="StatsPanel/Column"]
-layout_mode = 2
-
-[node name="CapturedLabel" type="Label" parent="StatsPanel/Column"]
-layout_mode = 2
-
-[node name="CloseButton" type="Button" parent="StatsPanel/Column"]
-custom_minimum_size = Vector2(0, 36)
-layout_mode = 2
