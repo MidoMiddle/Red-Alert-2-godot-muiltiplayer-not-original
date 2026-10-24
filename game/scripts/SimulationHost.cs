@@ -542,7 +542,8 @@ public partial class SimulationHost : Node
     /// <summary>Debug (J, M3 step 11): turns the repair of the player's building on the cell on or off.</summary>
     public void IssueToggleRepair(CellPos cell)
     {
-        if (Simulation.World.BuildingAt(cell) is { Def: not null } building && building.Owner == LocalPlayer)
+        if (Simulation.World.BuildingAt(cell) is { } building && building.Owner == LocalPlayer
+            && (building.Def is not null || Rts.Simulation.Systems.RepairSystem.Repairable(building)))
         {
             Issue(new ToggleRepairCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building.Id));
         }

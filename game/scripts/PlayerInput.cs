@@ -1117,6 +1117,8 @@ public partial class PlayerInput : Node
         var player = SimulationHost.LocalPlayer;
         var building = context.Ground is { } ground ? world.BuildingAt(ground.ToCell()) : null;
         var own = building is { IsAlive: true, Def: not null } && building.Owner == player;
+        // A tech building he took: repaired, never sold.
+        var tech = building is { IsAlive: true } && building.Owner == player && Rts.Simulation.Systems.RepairSystem.Repairable(building);
         var fits = false;
         if (context.TargetDeploys && IsMcv(context.Target.Unit, out var mcv)
             && world.Rules.Database.TryGetBuilding(world.Player(player).Faction.ConstructionYard, out var yard))
@@ -1127,12 +1129,13 @@ public partial class PlayerInput : Node
 
         return new PointerSpot(
             own,
-            own && building!.Hp < building.MaxHp,
+            (own || tech) && building!.Hp < building.MaxHp,
             context.Ground is { } at && !world.Map.OreAt(at.ToCell()).IsEmpty,
             Selection.Units.Any(id => world.TryGet(id, out var entity) && entity is Unit { Harvester: not null }),
             fits,
             context.Ground is { } door && EnterAt(door) is not null,
-            context.Ground is { } bridge && BridgeSappers(bridge).Count > 0);
+            context.Ground is { } bridge && BridgeSappers(bridge).Count > 0,
+            tech);
     }
 
     /// <summary>Whether Z is held on its own: with Ctrl, Shift, Alt or Meta it is not the waypoint key.</summary>

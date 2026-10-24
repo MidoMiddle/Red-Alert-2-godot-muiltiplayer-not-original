@@ -127,5 +127,13 @@ public sealed class CursorChoiceTests
         Assert.Equal(CursorKind.Select, CursorChoice.For(Context(OwnUnit, selected: true), true, spot: new PointerSpot(Bridge: true)));
     }
 
+    [Fact]
+    public void A_taken_tech_building_shows_the_repair_cursor_but_not_the_sell_one()
+    {
+        Assert.Equal(CursorKind.Repair, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Repair, new PointerSpot(Damaged: true, Repairable: true)));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Repair, new PointerSpot(Repairable: true)));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(Context(Ground, selected: false), true, PointerTool.Sell, new PointerSpot(Damaged: true, Repairable: true)));
+    }
+
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);
 }

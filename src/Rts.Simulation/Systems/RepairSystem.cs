@@ -12,9 +12,15 @@ namespace Rts.Simulation.Systems;
 /// exactly its share of the cost. Without the credits for a tick it stands, still on, and goes on when they come; at full hit points it
 /// turns off. After the harvesters, before movement (4.15). A workshop (<see cref="Rules.BuildingDef.RepairsVehicles"/>, stage 2c)
 /// repairs the vehicles and ships of its owner that stand still beside it the same way, at the same rate and share of their cost.
+/// A tech building of the map its owner took (an oil derrick, a hospital, an airfield; not the bridge repair hut, which nothing hurts)
+/// is repaired the same way, as if it cost its hit points in credits (ours: the map's buildings have no price).
 /// </summary>
 public static class RepairSystem
 {
+    /// <summary>Whether a building of the map can be repaired by its owner: a tech building that can be taken and hurt.</summary>
+    public static bool Repairable(Building building) =>
+        building.Def is null && BuildingTypes.IsKnown(building.Kind) && building.Type.Capturable;
+
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
         RepairBuildings(world, events);
@@ -50,15 +56,16 @@ public static class RepairSystem
         var share = IntMath.DivRound(economy.RepairCost.Raw * 1000, Fixed.OneRaw);
         foreach (var entity in world.Entities)
         {
-            if (entity is not Building { IsAlive: true, Repairing: true, Def: { } def } building)
+            if (entity is not Building { IsAlive: true, Repairing: true } building || (building.Def is null && !Repairable(building)))
             {
                 continue;
             }
 
+            var cost = building.Def?.Cost ?? building.MaxHp;
             var gain = IntMath.Min(economy.RepairRate, building.MaxHp - building.Hp);
             if (gain > 0)
             {
-                var due = (long)def.Cost * share * gain + building.RepairCarry;
+                var due = (long)cost * share * gain + building.RepairCarry;
                 var scale = 1000L * building.MaxHp;
                 var price = (int)(due / scale);
                 var player = world.Player(building.Owner);

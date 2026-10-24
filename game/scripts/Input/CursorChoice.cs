@@ -45,6 +45,7 @@ public enum CursorKind
 /// <param name="DeployFits">The MCV under the pointer (<see cref="PointerContext.TargetDeploys"/>) can deploy where it stands.</param>
 /// <param name="Enter">A building one of the selection can go into (stage 2e, 3b): an order there sends it in.</param>
 /// <param name="Bridge">A standing bridge segment one of the selection can blow up (the commando's C4): an order there plants it.</param>
+/// <param name="Repairable">A tech building of the map the player took (an oil derrick…): the repair mode mends it, the sell mode not.</param>
 public readonly record struct PointerSpot(
     bool OwnBuilding = false,
     bool Damaged = false,
@@ -52,7 +53,8 @@ public readonly record struct PointerSpot(
     bool Harvesters = false,
     bool DeployFits = false,
     bool Enter = false,
-    bool Bridge = false);
+    bool Bridge = false,
+    bool Repairable = false);
 
 /// <summary>Which cursor to show for what is under the pointer. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CursorChoice
@@ -68,7 +70,7 @@ public static class CursorChoice
             case PointerTool.Sell:
                 return spot.OwnBuilding ? CursorKind.Sell : CursorKind.Forbidden;
             case PointerTool.Repair:
-                return spot.OwnBuilding && spot.Damaged ? CursorKind.Repair : CursorKind.Forbidden;
+                return (spot.OwnBuilding || spot.Repairable) && spot.Damaged ? CursorKind.Repair : CursorKind.Forbidden;
             case PointerTool.Build:
                 return CursorKind.Normal;
             case PointerTool.Superweapon:

@@ -50,7 +50,8 @@ public partial class Buildings : Node3D
         {
             if (entity is Building { IsAlive: true, Def: null } building)
             {
-                digest = (digest * 31) + (building.Id.Value * 17) + building.Owner.Value;
+                // Who owns it, and whether it is being repaired (its green cross).
+                digest = (digest * 31) + (building.Id.Value * 17) + building.Owner.Value + (building.Repairing ? 7 : 0);
             }
         }
 
@@ -80,12 +81,12 @@ public partial class Buildings : Node3D
         {
             if (entity is Building { IsAlive: true, Def: null } building)
             {
-                Add(building.Kind, building.Cell, building.Owner);
+                Add(building.Kind, building.Cell, building.Owner, building.Repairing);
             }
         }
     }
 
-    private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner)
+    private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner, bool repairing = false)
     {
         var type = BuildingTypes.Get(kind);
         var tech = type.Capturable;
@@ -107,6 +108,14 @@ public partial class Buildings : Node3D
             _ => 0.6f,
         };
         var centre = new Vector3(cell.X + type.Width / 2f, 0, cell.Y + type.Height / 2f);
+        if (repairing)
+        {
+            // Under repair (the repair mode of the sidebar): a green cross over it, as over the player's own buildings.
+            var over = centre + new Vector3(0, WorldCoords.Terrain!.HeightAt(centre.X, centre.Z) + 1.6f, 0);
+            Box(new Vector3(0.5f, 0.15f, 0.15f), over, new Color(0.3f, 0.95f, 0.35f));
+            Box(new Vector3(0.15f, 0.5f, 0.15f), over, new Color(0.3f, 0.95f, 0.35f));
+        }
+
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
         if (Models.ModelLibrary.Instantiate("building/" + type.Id, owner.IsNeutral ? null : OwnerColor(owner), cell: new Vector2I(cell.X, cell.Y)) is { } model)
         {

@@ -67,6 +67,13 @@ public static class CommandProcessor
         return applied;
     }
 
+    /// <summary>A tech building of the map the player took (an oil derrick, a hospital, an airfield), if the id names one: repaired as his own.</summary>
+    private static Building? OwnTech(GameWorld world, PlayerId player, EntityId id) =>
+        world.TryGet(id, out var entity) && entity is Building { IsAlive: true, Def: null } building && building.Owner == player
+        && RepairSystem.Repairable(building)
+            ? building
+            : null;
+
     /// <summary>The player's ready building from the data, if the id names one.</summary>
     private static Building? OwnReady(GameWorld world, PlayerId player, EntityId id) =>
         world.TryGet(id, out var entity) && entity is Building { IsAlive: true, IsReady: true, Def: not null } building && building.Owner == player
@@ -102,10 +109,10 @@ public static class CommandProcessor
         return true;
     }
 
-    /// <summary>Turns the repair of the player's ready building on or off (4.8).</summary>
+    /// <summary>Turns the repair of the player's ready building — or of a tech building of the map he took — on or off (4.8).</summary>
     private static bool ApplyToggleRepair(GameWorld world, ToggleRepairCommand command, List<SimEvent>? events)
     {
-        if (OwnReady(world, command.Player, command.Building) is not { } building)
+        if ((OwnReady(world, command.Player, command.Building) ?? OwnTech(world, command.Player, command.Building)) is not { } building)
         {
             return false;
         }

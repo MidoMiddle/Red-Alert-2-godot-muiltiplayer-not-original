@@ -93,6 +93,38 @@ public sealed class TechBuildingTests
     }
 
     [Fact]
+    public void A_taken_derrick_is_repaired_by_the_repair_mode_and_never_sold()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var derrick = At(world, Derrick);
+        world.SetHp(derrick, derrick.MaxHp / 2, null);
+
+        // Nobody's, it is not repaired.
+        simulation.Enqueue(new ToggleRepairCommand(Union, simulation.CurrentTick, 0, derrick.Id));
+        Run(simulation, 2);
+        Assert.False(derrick.Repairing);
+
+        Take(simulation, Union, UnitType.Engineer, Derrick, 1);
+        world.SetHp(derrick, derrick.MaxHp / 2, null);
+        var before = world.Player(Union).Credits;
+        simulation.Enqueue(new ToggleRepairCommand(Union, simulation.CurrentTick, 2, derrick.Id));
+        Run(simulation, 1000, () => !derrick.Repairing && derrick.Hp == derrick.MaxHp);
+
+        Assert.Equal(derrick.MaxHp, derrick.Hp);
+        Assert.False(derrick.Repairing);
+        // Half its hit points mended, paid as if it cost its hit points: half of the repair share of them (the derrick's income ran too).
+        var share = world.Rules.Economy.RepairCost.Raw * (long)derrick.MaxHp / 2 / Rts.Simulation.Math.Fixed.OneRaw;
+        var income = world.Player(Union).Credits - before;
+        Assert.InRange(income + share, 0, TechBuildingSystem.DerrickCash * 20);
+
+        // The sell mode leaves it.
+        simulation.Enqueue(new SellCommand(Union, simulation.CurrentTick, 3, derrick.Id));
+        Run(simulation, 2);
+        Assert.True(derrick.IsAlive);
+    }
+
+    [Fact]
     public void A_hurt_soldier_is_healed_whole_at_its_own_hospital()
     {
         var simulation = Match();
