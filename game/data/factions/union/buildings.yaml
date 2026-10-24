@@ -1,6 +1,6 @@
-# The buildings of the Union (docs/implementation/M3_base_economy.md, 4.6). RA2 counterpart in brackets; see templates.yaml.
+# The buildings of the Union (docs/implementation/M3_base_economy.md, 4.6); see templates.yaml.
 # The simulation builds them from M3 step 6 on.
-construction_yard:  # Construction Yard; comes from the MCV
+construction_yard:  # base; comes from the MCV
   kind: building
   inherits: base_building
   name: Construction Yard
@@ -13,7 +13,7 @@ construction_yard:  # Construction Yard; comes from the MCV
   footprint: [3, 3]
   produces: [building, defense]
 
-reactor:  # Tesla Reactor
+reactor:  # power plant, +150
   kind: building
   inherits: base_building
   name: Reactor
@@ -26,7 +26,7 @@ reactor:  # Tesla Reactor
   power: 150
   prerequisites: [construction_yard]
 
-refinery:  # Ore Refinery; gives a free harvester
+refinery:  # ore processing; gives a free harvester
   kind: building
   inherits: base_building
   name: Refinery
@@ -41,7 +41,7 @@ refinery:  # Ore Refinery; gives a free harvester
   dock_cell: [1, 3]
   prerequisites: [reactor]
 
-barracks:  # Barracks
+barracks:  # infantry production
   kind: building
   inherits: base_building
   name: Barracks
@@ -57,7 +57,7 @@ barracks:  # Barracks
   exit_cell: [1, 2]
   prerequisites: [reactor]
 
-war_factory:  # War Factory
+war_factory:  # vehicle production
   kind: building
   inherits: base_building
   name: War Factory
@@ -73,7 +73,7 @@ war_factory:  # War Factory
   exit_cell: [1, 4]
   prerequisites: [refinery]
 
-radar:  # Radar Tower
+radar:  # radar, minimap
   kind: building
   inherits: base_building
   name: Radar
@@ -87,7 +87,7 @@ radar:  # Radar Tower
   radar: true
   prerequisites: [refinery]
 
-tech_center:  # Battle Lab
+tech_center:  # high-tech building; prerequisite only in M3
   kind: building
   inherits: base_building
   name: Tech Center
@@ -115,7 +115,7 @@ wall:  # Wall; placed by dragging
   powered: false
   prerequisites: [construction_yard]
 
-sentry_bunker:  # Sentry Gun
+sentry_bunker:  # light defence, machine gun
   kind: building
   inherits: base_defense
   name: Sentry Bunker
@@ -130,7 +130,7 @@ sentry_bunker:  # Sentry Gun
   adjacent: 4
   prerequisites: [barracks]
 
-tesla_coil:  # Tesla Coil
+tesla_coil:  # electric defence
   kind: building
   inherits: base_defense
   name: Tesla Coil
@@ -145,7 +145,7 @@ tesla_coil:  # Tesla Coil
   power: -75
   prerequisites: [radar]
 
-flak_cannon:  # Flak Cannon
+flak_cannon:  # anti-air defence
   kind: building
   inherits: base_defense
   name: Flak Cannon
