@@ -9,13 +9,17 @@ namespace Rts.MapGen.Stages;
 /// two to four cells wide by the noise of the row; with turns, an arm that wanders along the diagonal from the north-west corner
 /// of the grid to the centre — from the top of the screen down — about three cells wide, and its images: one river down the
 /// middle of the screen for 180°, a cross for 90°. The ground under a river goes down to
-/// level 0. Lakes: flat lowland at level 0 where their noise is high. No water within <see cref="StartClearance"/> cells of a
+/// level 0. Lakes: flat lowland at level 0 where their noise is high, not within <see cref="FieldClearance"/> cells of a contested
+/// ore field (the bigger maps put one in a lake). No water within <see cref="StartClearance"/> cells of a
 /// start. Then the depth (deep where all four neighbours are water) and a beach round the water.
 /// </summary>
 internal static class Water
 {
-    public const int StartClearance = 9;
+    public const int StartClearance = Starts.FlatRadius + 2;
     private const int LakePercent = 22;
+
+    /// <summary>How far a lake keeps from the centre of a contested ore field.</summary>
+    public const int FieldClearance = Ore.ContestedRadius + 4;
 
     public static void Rivers(GenMap map, bool[] riverMask)
     {
@@ -63,6 +67,13 @@ internal static class Water
 
     public static void Lakes(GenMap map)
     {
+        var (_, contested) = Ore.Centres(map.Starts[0].Cell, map.N);
+        var fields = new CellPos[map.Symmetry.Order];
+        for (var k = 0; k < fields.Length; k++)
+        {
+            fields[k] = map.Symmetry.Cell(k, contested);
+        }
+
         for (var y = 0; y < map.N; y++)
         {
             for (var x = 0; x < map.N; x++)
@@ -70,7 +81,7 @@ internal static class Water
                 var cell = new CellPos(x, y);
                 var canonical = map.Symmetry.CanonicalCell(cell);
                 if (IntNoise.At(canonical.X, canonical.Y, map.Seed, Channels.Lakes) > IntNoise.Max * (100 - LakePercent) / 100
-                    && map.IsFlat(cell) && map.Corner(x, y) == 0 && FarFromStarts(map, cell))
+                    && map.IsFlat(cell) && map.Corner(x, y) == 0 && FarFromStarts(map, cell) && FarFrom(fields, cell, FieldClearance))
                 {
                     map.SetLand(cell, LandType.Shallow);
                 }
@@ -109,6 +120,20 @@ internal static class Water
                 }
             }
         }
+    }
+
+    private static bool FarFrom(CellPos[] centres, CellPos cell, int clearance)
+    {
+        foreach (var centre in centres)
+        {
+            var (dx, dy) = (cell.X - centre.X, cell.Y - centre.Y);
+            if (dx * dx + dy * dy < clearance * clearance)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static bool FarFromStarts(GenMap map, CellPos cell)

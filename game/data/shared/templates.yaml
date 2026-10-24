@@ -41,7 +41,7 @@ base_building:
   category: building
   build_up: 1.5s
   power: 0
-  adjacent: 2
+  adjacent: 3  # the owner's wish (2026-10-24): room for a lane between buildings
 
 base_defense:
   kind: building

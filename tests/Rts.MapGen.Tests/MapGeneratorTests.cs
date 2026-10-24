@@ -51,12 +51,13 @@ public sealed class MapGeneratorTests
         // Golden value: 64 x 64, two players mirrored, hills, rivers, seed 1. Changes only with the generator's rules. M8 step 10b:
         // the drills of the fields; without them the map is the one of before, byte for byte. 2026-10-24: the playable area of the
         // screen — a 90 x 90 grid with the inscribed square, the starts and rivers in the screen's axes. Loose ends, stage 2: a bridge
-        // repair hut by every bridge.
+        // repair hut by every bridge. Later on 2026-10-24: a base of radius 12, its home field by its edge, the contested field three
+        // fifths of the way to the centre.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("2b998fa0f22d273d52219977ce778507abcf1452b6b700560e9774876c0f1468", MapHasher.Hash(map));
-        Assert.Equal("95405731904c99ce3cdefe76cd4785f7435769cfffd0998bcf7d9d0e235d2b7b", MapHasher.Hash(none));
+        Assert.Equal("c3b45106ab6456c40b2ab41997f33e2dec0a0ed6c9badf3c7116282dbcad5630", MapHasher.Hash(map));
+        Assert.Equal("edaa6026f8e5d1097e1a2f8ead49c8cdf3f733a0036afcafc809ad4d7012ef4b", MapHasher.Hash(none));
     }
 
     [Theory]
@@ -272,8 +273,8 @@ public sealed class MapGeneratorTests
         Assert.All(ore.Concat(gem), drill => Assert.Equal(0, map.Ore[drill.Cell.Y * map.Width + drill.Cell.X]));
         foreach (var start in map.Starts)
         {
-            // The home field is five cells from the start diagonally (radius 3): its drill within 9 cells of the start.
-            Assert.Contains(ore, drill => Distance2(drill.Cell, start.Cell) <= 9 * 9);
+            // The home field is eight cells from the start diagonally (radius 3), by the edge of the base: its drill within 15 cells.
+            Assert.Contains(ore, drill => Distance2(drill.Cell, start.Cell) <= 15 * 15);
         }
     }
 

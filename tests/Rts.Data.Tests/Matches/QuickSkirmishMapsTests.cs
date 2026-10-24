@@ -88,7 +88,8 @@ public sealed class QuickSkirmishMapsTests
         }
 
         Assert.Equal((map.Starts.Length, map.Starts.Length), (ore.Count, gems.Count));
-        Assert.All(map.Starts, start => Assert.Contains(ore, drill => Distance2(drill.Cell, start.Cell) <= 12 * 12));
+        // By the edge of the flat ground of the base (radius 12), not in it.
+        Assert.All(map.Starts, start => Assert.Contains(ore, drill => Distance2(drill.Cell, start.Cell) <= 16 * 16));
         Assert.All(ore.Concat(gems), drill => Assert.Equal(0, map.Ore[drill.Cell.Y * map.Width + drill.Cell.X]));
         Assert.DoesNotContain(MapValidator.Check(map), problem => problem.Message.Contains("drill") || problem.Message.Contains("under the"));
     }

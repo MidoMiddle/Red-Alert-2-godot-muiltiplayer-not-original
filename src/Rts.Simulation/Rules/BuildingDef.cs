@@ -78,7 +78,7 @@ public sealed record BuildingDef : IDefinition
     public string Primary { get; init; } = "";
 
     /// <summary>The <see cref="Adjacent"/> of a building that does not set it.</summary>
-    public const int DefaultAdjacent = 2;
+    public const int DefaultAdjacent = 3;
 
     /// <summary>The largest <see cref="Adjacent"/> the data may set.</summary>
     public const int MaxAdjacent = 10;

@@ -41,12 +41,12 @@ public sealed class PlacementRulesTests
         PlacementRules.Check(world, Player1, TestRules.BuildingDef(id), new CellPos(x, y), needsBase, ignoreUnit);
 
     [Theory]
-    [InlineData(7, 2, PlacementProblem.None)]      // two cells between the yard (2…4) and the reactor
-    [InlineData(8, 2, PlacementProblem.TooFar)]    // three cells between
-    [InlineData(7, 7, PlacementProblem.None)]      // two cells across a diagonal count as two
-    [InlineData(8, 7, PlacementProblem.TooFar)]
+    [InlineData(8, 2, PlacementProblem.None)]      // three cells between the yard (2…4) and the reactor (the owner's wish, 2026-10-24)
+    [InlineData(9, 2, PlacementProblem.TooFar)]    // four cells between
+    [InlineData(8, 8, PlacementProblem.None)]      // three cells across a diagonal count as three
+    [InlineData(9, 8, PlacementProblem.TooFar)]
     [InlineData(5, 5, PlacementProblem.None)]      // touching at a corner
-    public void A_building_stands_within_two_cells_of_the_base(int x, int y, PlacementProblem expected)
+    public void A_building_stands_within_three_cells_of_the_base(int x, int y, PlacementProblem expected)
     {
         var world = Open();
         Yard(world, 2, 2);
@@ -94,8 +94,8 @@ public sealed class PlacementRulesTests
         Yard(world, 2, 2);
         world.CreateBuilding(Player1, TestRules.BuildingDef("wall"), new CellPos(6, 2), ready: true, null);
 
-        // One cell from the wall, three from the yard.
-        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 8, 2));
+        // Two cells from the wall, four from the yard.
+        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 9, 2));
     }
 
     [Fact]

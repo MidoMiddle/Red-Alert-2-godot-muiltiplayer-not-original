@@ -22,7 +22,8 @@ public partial class MapGenOptions : VBoxContainer
 
     public bool ShowLighting { get; init; }
 
-    private MapGenSettings Chosen { get; set; } = new();
+    // Size 96 by default: two bases far enough apart (the owner's wish, 2026-10-24).
+    private MapGenSettings Chosen { get; set; } = new() { Size = 96 };
 
     public override void _Ready()
     {
@@ -38,7 +39,7 @@ public partial class MapGenOptions : VBoxContainer
         grid.AddThemeConstantOverride("h_separation", 8);
         AddChild(grid);
         var sizes = MapGenSettings.Sizes;
-        grid.AddChild(Choice(Array.ConvertAll(sizes, size => string.Format(Tr("UI_EDITOR_SIZE_ITEM"), size)), 0, i => Chosen = Chosen with { Size = sizes[i] }));
+        grid.AddChild(Choice(Array.ConvertAll(sizes, size => string.Format(Tr("UI_EDITOR_SIZE_ITEM"), size)), Array.IndexOf(sizes, Chosen.Size), i => Chosen = Chosen with { Size = sizes[i] }));
         grid.AddChild(Choice(
             [Tr("UI_EDITOR_SYMMETRY_MIRROR"), Tr("UI_EDITOR_SYMMETRY_ROTATE180"), Tr("UI_EDITOR_SYMMETRY_ROTATE90")], 0,
             i => Chosen = Chosen with { Symmetry = (MapSymmetry)i, Players = i == 2 ? 4 : 2 }));
