@@ -48,6 +48,7 @@ public partial class HealthBars : Control
 
         var mode = AppSettings.Instance?.Values.HealthBars ?? HealthBarMode.Damaged;
         var world = _host.Simulation.World;
+        DrawRallyPoint(camera, world);
         foreach (var entity in world.Entities)
         {
             if (!entity.IsAlive || !FogOfWar.Shows(world, entity))
@@ -74,7 +75,7 @@ public partial class HealthBars : Control
                 DrawGarrison(camera, top, garrisoned.Occupants.Count, bunker.GarrisonCapacity);
             }
 
-            var selected = _input?.Selection.Contains(entity.Id) == true;
+            var selected = _input?.Selection.Contains(entity.Id) == true || _input?.SelectedFactory == entity.Id;
             switch (entity)
             {
                 case Unit unit when HealthPips.Shows(mode, selected, unit.Hp, unit.MaxHp) && !Units.Disguises.LooksLikeTree(world, unit):
@@ -136,6 +137,32 @@ public partial class HealthBars : Control
         {
             DrawRect(new Rect2(corner + new Vector2(Gap + i * (size + Gap), Gap), new Vector2(size, size)), i < inside ? Soldier : Empty);
         }
+    }
+
+    /// <summary>
+    /// The rally point of the selected building that produces: a line from its centre and a flag on the point; none while its units
+    /// stop just outside.
+    /// </summary>
+    private void DrawRallyPoint(Camera3D camera, GameWorld world)
+    {
+        if (_input?.SelectedFactory is not { } id || !world.TryGet(id, out var entity) || entity is not Building { RallyPoint: { } rally } factory)
+        {
+            return;
+        }
+
+        var from = WorldCoords.ToGodotOnGround(Aim.CentreOf(factory), 0.3f);
+        var to = WorldCoords.ToGodotOnGround(rally, 0.05f);
+        var top = WorldCoords.ToGodotOnGround(rally, 1.1f);
+        if (camera.IsPositionBehind(from) || camera.IsPositionBehind(to))
+        {
+            return;
+        }
+
+        var green = new Color(0.35f, 1f, 0.45f);
+        var (start, end, pole) = (camera.UnprojectPosition(from), camera.UnprojectPosition(to), camera.UnprojectPosition(top));
+        DrawDashedLine(start, end, green, 2f, 8f);
+        DrawLine(end, pole, green, 2f);
+        DrawColoredPolygon([pole, pole + new Vector2(14f, 5f), pole + new Vector2(0f, 10f)], green);
     }
 
     /// <summary>The rank of a unit left of its bar (loose ends, stage 3): one gold chevron for a veteran, two for an elite.</summary>

@@ -535,6 +535,19 @@ public partial class PlayerInput : Node
 
             switch (intent)
             {
+                // A building that produces selected: an order on the ground is its rally point; nothing else is ordered.
+                case SelectBuilding select:
+                    ChangeSelection(Selection.Clear);
+                    _factory = select.Building;
+                    break;
+                case OrderMove order when SelectedFactory is { } factory:
+                    SetRallyPoint(factory, order.Target);
+                    break;
+                case OrderAttackMove order when SelectedFactory is { } factory:
+                    SetRallyPoint(factory, order.Target);
+                    break;
+                case OrderAttack or OrderForceAttack or AddWaypoint or FinishWaypoints when SelectedFactory is not null:
+                    break;
                 case SelectUnit select:
                     ChangeSelection(() => Selection.Replace(select.Unit));
                     break;
@@ -760,6 +773,7 @@ public partial class PlayerInput : Node
     /// <summary>Changes the selection; laid-out waypoints belong to the old selection and are dropped.</summary>
     private void ChangeSelection(Action change)
     {
+        _factory = null;
         change();
         Waypoints.Clear();
     }
@@ -876,16 +890,48 @@ public partial class PlayerInput : Node
     private PointerContext Context(ScreenPoint at, bool shift, bool alt, bool ctrl)
     {
         var target = PickTarget(at);
+        var ground = GroundAt(at);
         return new(
-            GroundAt(at),
+            ground,
             target,
             shift,
-            !Selection.IsEmpty,
+            !Selection.IsEmpty || SelectedFactory is not null,
             alt,
             ctrl,
             WaypointMode: WaypointArmed || WaypointHeld(),
             HasWaypoints: !Waypoints.IsEmpty,
-            TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && IsMcv(target.Unit, out _));
+            TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && IsMcv(target.Unit, out _),
+            OwnFactory: ground is { } point ? FactoryAt(point) : null);
+    }
+
+    // The building that produces selected instead of units: an order on the ground sets its rally point.
+    private EntityId? _factory;
+
+    /// <summary>The player's own building that produces, selected; null when none is, or it is gone or taken.</summary>
+    public EntityId? SelectedFactory =>
+        _factory is { } id && _host.Simulation.World.TryGet(id, out var entity)
+        && entity is Building { IsAlive: true, Def.Produces.Length: > 0 } building && building.Owner == SimulationHost.LocalPlayer
+            ? id
+            : null;
+
+    /// <summary>The player's own ready building that produces at <paramref name="point"/>, if any.</summary>
+    private EntityId? FactoryAt(WorldPos point) =>
+        _host.Simulation.World.BuildingAt(point.ToCell()) is { IsAlive: true, IsReady: true, Def.Produces.Length: > 0 } building
+        && building.Owner == SimulationHost.LocalPlayer
+            ? building.Id
+            : null;
+
+    /// <summary>The rally point of the selected factory: its units go there once they are out.</summary>
+    private void SetRallyPoint(EntityId factory, WorldPos point)
+    {
+        if (_host.IsPlayback || !_host.Simulation.World.Contains(point))
+        {
+            return;
+        }
+
+        Voice("rally point");
+        _markers?.Add(point, MarkerKind.Move);
+        _host.IssueRallyPoint(factory, point);
     }
 
     /// <summary>Whether the unit is an MCV of the local player's faction.</summary>

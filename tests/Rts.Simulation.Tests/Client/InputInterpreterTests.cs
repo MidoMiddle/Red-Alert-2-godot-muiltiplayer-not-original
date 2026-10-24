@@ -91,6 +91,24 @@ public sealed class InputInterpreterTests
         Assert.Empty(input.Release(PointerButton.Right));
     }
 
+    [Theory]
+    [InlineData(ControlScheme.Classic)]
+    [InlineData(ControlScheme.Modern)]
+    public void A_left_click_on_an_own_building_that_produces_selects_it_and_an_order_on_the_ground_follows(ControlScheme scheme)
+    {
+        var input = new InputInterpreter(scheme, cameraDrag: true);
+        var barracks = new EntityId(30);
+
+        Assert.Equal(new Intent[] { new SelectBuilding(barracks) }, LeftClick(input, Context(Ground) with { OwnFactory = barracks }));
+        Assert.Equal(new Intent[] { new SelectBuilding(barracks) }, LeftClick(input, Context(Ground, hasSelection: true) with { OwnFactory = barracks }));
+
+        // The rally point: an order on the ground with the building selected, by the scheme's order button.
+        var order = scheme == ControlScheme.Modern
+            ? input.Press(PointerButton.Right, Here, Context(Ground, hasSelection: true))
+            : LeftClick(input, Context(Ground, hasSelection: true));
+        Assert.Equal(new Intent[] { new OrderMove(Spot) }, order);
+    }
+
     [Fact]
     public void ModernRightClickWithNothingSelectedDoesNothing()
     {

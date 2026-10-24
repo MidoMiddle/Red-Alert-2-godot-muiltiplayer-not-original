@@ -83,12 +83,16 @@ public readonly record struct PointerContext(
     bool DoubleClick = false,
     bool WaypointMode = false,
     bool HasWaypoints = false,
-    bool TargetDeploys = false);
+    bool TargetDeploys = false,
+    EntityId? OwnFactory = null);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
 
 public sealed record SelectUnit(EntityId Unit) : Intent;
+
+/// <summary>Select the player's own building that produces (a click on it): an order on the ground then sets its rally point.</summary>
+public sealed record SelectBuilding(EntityId Building) : Intent;
 
 /// <summary>Add the unit to the selection, or take it out if it is selected (Shift + click).</summary>
 public sealed record ToggleUnit(EntityId Unit) : Intent;
@@ -477,6 +481,12 @@ public sealed class InputInterpreter
         if (_scheme == ControlScheme.Classic && AttackOf(context) is { } attack)
         {
             return new Intent[] { attack };
+        }
+
+        if (context.Target.Kind == PointerTargetKind.Ground && context.OwnFactory is { } factory && !context.Shift)
+        {
+            // The barracks, the war factory, a shipyard, the air command: selected, for its rally point.
+            return new Intent[] { new SelectBuilding(factory) };
         }
 
         switch (context.Target.Kind)

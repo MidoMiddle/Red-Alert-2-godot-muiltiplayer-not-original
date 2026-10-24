@@ -407,6 +407,10 @@ public partial class SimulationHost : Node
     public void IssueSuperweapon(EntityId building, CellPos target, CellPos second) =>
         Issue(new SuperweaponCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building, target, second));
 
+    /// <summary>Where the units of the player's building that produces go once they are out (its rally point).</summary>
+    public void IssueRallyPoint(EntityId building, WorldPos point) =>
+        Issue(new SetRallyPointCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building, point));
+
     /// <summary>The soldiers inside the player's building come out (stage 2e).</summary>
     public void IssueEvacuate(EntityId building) =>
         Issue(new EvacuateCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building));
