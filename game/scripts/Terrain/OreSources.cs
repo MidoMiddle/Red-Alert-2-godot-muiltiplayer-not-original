@@ -6,10 +6,12 @@ using Rts.Simulation.Map;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// The ore and gem sources of the map (docs/implementation/M3_base_economy.md, 4.12, step 16): a drill tower on a dark pad, its head in
-/// the colour of what it throws — gold for ore, blue for gems. The head turns slowly all the time; on <see cref="OreSourceErupted"/> it
-/// spins fast for <see cref="SpinSeconds"/> and a burst of crystals flies in an arc to the cell that got the stage. In the editor there
-/// is no simulation, so the heads only turn. One view per source, made again only when the sources of the map change.
+/// The ore and gem sources of the map (docs/implementation/M3_base_economy.md, 4.12, step 16): the drill tower of
+/// <see cref="ModelPath"/> — its still <c>tower</c> and its turning <c>drill</c>, the screw and the head, tinted in the colour of what it
+/// throws: gold for ore, blue for gems. Without the model file, a tower of boxes on a dark pad with a head of that colour. The drill turns
+/// slowly all the time; on <see cref="OreSourceErupted"/> it spins fast for <see cref="SpinSeconds"/> and a burst of crystals flies in an
+/// arc from the head to the cell that got the stage. In the editor there is no simulation, so the drills only turn. One view per source,
+/// made again only when the sources of the map change.
 /// </summary>
 public partial class OreSources : Node3D
 {
@@ -19,12 +21,24 @@ public partial class OreSources : Node3D
     private const float IdleSpin = 1.2f;
     private const float EruptionSpin = 14f;
     private const float HeadHeight = 1.05f;
+
+    /// <summary>The drill tower (docs/assets_registry.md): 0.9 of a cell wide, the head 3 cells up, as modelled.</summary>
+    public const string ModelPath = "res://assets/models/map/ore_source/ore_source.glb";
+
+    // Where the crystals leave the model: by the head, under the top of the screw.
+    private const float ModelHeadHeight = 2.7f;
+
+    // How much of the colour of the resource the drill of the model takes over its own texture.
+    private const float ModelTint = 0.65f;
     private const float Gravity = 5f;
 
     private static readonly Color PadColor = new(0.22f, 0.23f, 0.25f);
     private static readonly Color TowerColor = new(0.5f, 0.52f, 0.56f);
 
     private readonly Dictionary<int, View> _views = new();
+    private readonly Dictionary<MapObjectKind, Material> _tints = new();
+    private PackedScene? _model;
+    private bool _modelLooked;
     private string _builtKey = "";
     private int _placedVersion = -1;
     private SimulationHost? _host;
@@ -99,6 +113,13 @@ public partial class OreSources : Node3D
         {
             var color = source.Kind == MapObjectKind.GemSource ? OreField.GemColor : OreField.OreColor;
             var root = new Node3D { Name = $"Source{source.Id}" };
+            if (Model() is { } model && ModelView(root, model, source.Kind, color) is { } view)
+            {
+                AddChild(root);
+                _views[source.Id] = view;
+                continue;
+            }
+
             Box(root, new Vector3(0.95f, 0.12f, 0.95f), new Vector3(0, 0.06f, 0), PadColor);
             foreach (var (x, z) in new[] { (-0.28f, -0.28f), (0.28f, -0.28f), (-0.28f, 0.28f), (0.28f, 0.28f) })
             {
@@ -118,7 +139,7 @@ public partial class OreSources : Node3D
             });
             root.AddChild(head);
             AddChild(root);
-            _views[source.Id] = new View(root, head, color);
+            _views[source.Id] = new View(root, head, color, HeadHeight);
         }
 
         Place(map);
@@ -149,7 +170,7 @@ public partial class OreSources : Node3D
         }
 
         view.SpinLeft = SpinSeconds;
-        var from = view.Root.Position + new Vector3(0, HeadHeight + 0.1f, 0);
+        var from = view.Root.Position + new Vector3(0, view.EmitHeight + 0.1f, 0);
         var to = new Vector3(erupted.Cell.X + 0.5f, terrain.HeightAt(erupted.Cell.X + 0.5f, erupted.Cell.Y + 0.5f), erupted.Cell.Y + 0.5f);
         var flat = new Vector3(to.X - from.X, 0, to.Z - from.Z);
         var distance = Mathf.Max(flat.Length(), 0.5f);
@@ -181,13 +202,70 @@ public partial class OreSources : Node3D
         GetTree().CreateTimer(burst.Lifetime + 0.5).Timeout += burst.QueueFree;
     }
 
+    /// <summary>The model, loaded once; null when the file is not there — the boxes stand in.</summary>
+    private PackedScene? Model()
+    {
+        if (!_modelLooked)
+        {
+            _modelLooked = true;
+            _model = ResourceLoader.Exists(ModelPath) ? GD.Load<PackedScene>(ModelPath) : null;
+            if (_model is null)
+            {
+                GD.PushWarning($"No drill model at {ModelPath}: the drills are drawn with boxes.");
+            }
+        }
+
+        return _model;
+    }
+
+    /// <summary>The model under <paramref name="root"/>, its drill tinted for <paramref name="kind"/>; null when it has no <c>drill</c> node.</summary>
+    private View? ModelView(Node3D root, PackedScene model, MapObjectKind kind, Color color)
+    {
+        var instance = model.Instantiate<Node3D>();
+        if (instance.FindChild("drill", true, false) is not Node3D drill)
+        {
+            instance.QueueFree();
+            return null;
+        }
+
+        root.AddChild(instance);
+        if (drill is MeshInstance3D mesh && Tint(mesh, kind, color) is { } tint)
+        {
+            mesh.MaterialOverride = tint;
+        }
+
+        return new View(root, drill, color, ModelHeadHeight);
+    }
+
+    // The drill's own material with the colour of the resource over its texture, one per kind for every drill of it.
+    private Material? Tint(MeshInstance3D mesh, MapObjectKind kind, Color color)
+    {
+        if (_tints.TryGetValue(kind, out var tint))
+        {
+            return tint;
+        }
+
+        if (mesh.Mesh?.SurfaceGetMaterial(0) is not BaseMaterial3D own)
+        {
+            return null;
+        }
+
+        var tinted = (BaseMaterial3D)own.Duplicate();
+        tinted.AlbedoColor = Colors.White.Lerp(color, ModelTint);
+        _tints[kind] = tinted;
+        return tinted;
+    }
+
     private static void Box(Node3D parent, Vector3 size, Vector3 position, Color color) =>
         parent.AddChild(new MeshInstance3D { Mesh = new BoxMesh { Size = size, Material = Material(color) }, Position = position });
 
     private static StandardMaterial3D Material(Color color) => new() { AlbedoColor = color };
 
-    private sealed class View(Node3D root, Node3D head, Color color)
+    private sealed class View(Node3D root, Node3D head, Color color, float emitHeight)
     {
+        /// <summary>The height the crystals leave from.</summary>
+        public float EmitHeight { get; } = emitHeight;
+
         public Node3D Root { get; } = root;
 
         public Node3D Head { get; } = head;
