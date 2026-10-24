@@ -132,6 +132,7 @@ public sealed class QuickSkirmishMapsTests
         var setup = MatchSetups.OneOnOne(map, "union", seed: 9);
 
         Assert.Equal("taiga-front", setup.MapId);
+        Assert.False(setup.Options.FogOfWar);
         Assert.Equal(9UL, setup.Seed);
         Assert.Collection(
             setup.Players,

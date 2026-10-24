@@ -30,7 +30,12 @@ public enum AiDifficulty : byte
 /// <param name="StartingCredits">The credits of every player at the start.</param>
 /// <param name="ShortGame">A player loses with the last building, not the last unit (step 10).</param>
 /// <param name="GameSpeed">1–6, as the skirmish screen of M6 offers; the client plays it, the simulation keeps it.</param>
-public sealed record MatchOptions(int StartingCredits = SimulationSettings.DefaultStartingCredits, bool ShortGame = false, int GameSpeed = 4);
+/// <param name="FogOfWar">
+/// The fog of war: on, only what is in sight now is seen; off, whatever the team has explored stays in sight (<see cref="Visibility.Vision"/>).
+/// On unless said otherwise — the matches of the Arena and of the tests; the skirmish screen offers it off by default.
+/// </param>
+public sealed record MatchOptions(
+    int StartingCredits = SimulationSettings.DefaultStartingCredits, bool ShortGame = false, int GameSpeed = 4, bool FogOfWar = true);
 
 /// <summary>
 /// One player of a match (docs/implementation/M5_first_bot.md, 4.11). <see cref="Slot"/> is its <see cref="PlayerId"/>. The start is

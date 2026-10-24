@@ -297,6 +297,8 @@ public sealed class GoldenValuesTests
         // Rules v40 (M8 step 11): only the version changes — the allies come from the teams of a match setup, and there is none here.
         // Replay format v20 (M8 step 13): the personality of every player in the match setup; there is none here, so only the version
         // changes.
-        Assert.Equal((22269, 14057511527662429606UL), (bytes.Length, hash.Value));
+        // Replay format v21, rules v41 (the fog of war, an option of the match): no match setup here, so only the versions change; the
+        // checksums do not.
+        Assert.Equal((22269, 16432081539738370926UL), (bytes.Length, hash.Value));
     }
 }

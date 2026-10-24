@@ -62,6 +62,7 @@ public partial class SkirmishSetup : Control
     private readonly List<PlayerRow> _rows = [];
     private OptionButton _credits = null!;
     private CheckBox _shortGame = null!;
+    private CheckBox _fog = null!;
     private Button _start = null!;
     private SkirmishConfig _config = SkirmishConfig.For(0);
 
@@ -341,7 +342,7 @@ public partial class SkirmishSetup : Control
     }
 
     /// <summary>
-    /// Game options as in the design mock: the starting credits and the short game work (M8 step 13); the speed, the starting units,
+    /// Game options as in the design mock: the starting credits, the short game (M8 step 13) and the fog of war work; the speed, the starting units,
     /// superweapons and crates are shown and locked until they have rules.
     /// </summary>
     private GridContainer BuildOptions()
@@ -373,6 +374,12 @@ public partial class SkirmishSetup : Control
         grid.AddChild(DisabledCheckBox(true));
         grid.AddChild(Caption(Tr("UI_OPTION_CRATES")));
         grid.AddChild(DisabledCheckBox(false));
+
+        // The fog of war, off by default: what the person explored stays in sight.
+        grid.AddChild(Caption(Tr("UI_OPTION_FOG_OF_WAR")));
+        _fog = new CheckBox { Name = "FogOfWar", SizeFlagsHorizontal = SizeFlags.ShrinkBegin, TooltipText = Tr("UI_OPTION_FOG_OF_WAR_HINT") };
+        _fog.Toggled += on => Apply(_config with { FogOfWar = on });
+        grid.AddChild(_fog);
 
         return grid;
     }
@@ -418,6 +425,7 @@ public partial class SkirmishSetup : Control
 
         _credits.Selected = Math.Max(0, SkirmishConfig.CreditChoices.IndexOf(_config.Credits));
         _shortGame.SetPressedNoSignal(_config.ShortGame);
+        _fog.SetPressedNoSignal(_config.FogOfWar);
         _start.Disabled = _shown is null || !_config.CanStart;
         _start.TooltipText = _shown is null ? Tr("UI_SKIRMISH_START_NEEDS_MAP") : _config.CanStart ? "" : Tr("UI_SKIRMISH_START_NEEDS_ENEMY");
     }

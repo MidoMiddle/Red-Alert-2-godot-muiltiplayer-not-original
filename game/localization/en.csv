@@ -175,6 +175,8 @@ UI_OPTION_UNITS,Starting units
 UI_OPTION_SHORT_GAME,Short game
 UI_OPTION_SUPERWEAPONS,Superweapons
 UI_OPTION_CRATES,Crates
+UI_OPTION_FOG_OF_WAR,Fog of war
+UI_OPTION_FOG_OF_WAR_HINT,On: you see only what your units see now · Off: everything you have explored stays in sight
 UI_CREDITS_5000,5000
 UI_CREDITS_10000,10000
 UI_CREDITS_20000,20000

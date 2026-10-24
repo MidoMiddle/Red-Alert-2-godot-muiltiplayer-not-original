@@ -11,15 +11,16 @@ namespace Rts.Net.Protocol.Messages;
 /// </summary>
 internal static class MatchFields
 {
-    /// <summary><c>i32 startingCredits | u8 shortGame | u8 gameSpeed</c>.</summary>
+    /// <summary><c>i32 startingCredits | u8 shortGame | u8 gameSpeed | u8 fogOfWar</c> (the fog since protocol 2).</summary>
     public static void WriteOptions(MessageWriter writer, MatchOptions options)
     {
         writer.WriteInt32(options.StartingCredits);
         writer.WriteBool(options.ShortGame);
         writer.WriteSmall(options.GameSpeed, nameof(options.GameSpeed));
+        writer.WriteBool(options.FogOfWar);
     }
 
-    public static MatchOptions ReadOptions(ref MessageReader reader) => new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte());
+    public static MatchOptions ReadOptions(ref MessageReader reader) => new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool());
 
     /// <summary>
     /// <c>string mapId | u64 seed | options | u8 playerCount | players | u8 startCount | (i32 x | i32 y) × startCount</c>, a player being

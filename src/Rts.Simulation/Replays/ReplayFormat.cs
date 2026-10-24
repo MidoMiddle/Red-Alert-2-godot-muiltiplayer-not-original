@@ -35,11 +35,12 @@ namespace Rts.Simulation.Replays;
 /// u8 difficulty | u16 length + UTF-8 faction | u8 colour | u8 team | u8 startIndex | u16 startX | u16 startY; its seed and credits are
 /// those of the header. The commands of a bot are those of an Ai player numbered from <see cref="Ai.AiTurn.FirstSequence"/>; v18 (M5 step 3)
 /// adds every start of the map after the players: u8 count, then u16 x | u16 y each; v19 (M5 step 10) command format v10 (Surrender);
-/// v20 (M8 step 13) adds the personality of every player after its difficulty: u16 length + UTF-8 id, or <c>random</c>.
+/// v20 (M8 step 13) adds the personality of every player after its difficulty: u16 length + UTF-8 id, or <c>random</c>; v21 (the fog
+/// of war, an option of the skirmish screen) adds u8 fogOfWar after the game speed.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 20;
+    public const ushort FormatVersion = 21;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -342,6 +343,7 @@ public static class ReplayFormat
         AddText(bytes, setup.MapId);
         bytes.Add(setup.Options.ShortGame ? (byte)1 : (byte)0);
         bytes.Add((byte)setup.Options.GameSpeed);
+        bytes.Add(setup.Options.FogOfWar ? (byte)1 : (byte)0);
         bytes.Add((byte)setup.Players.Length);
         foreach (var player in setup.Players)
         {
@@ -382,14 +384,20 @@ public static class ReplayFormat
         }
 
         var mapId = ReadText(source, ref offset);
-        Require(source[offset..], 3);
+        Require(source[offset..], 4);
         var shortGame = source[offset];
         var speed = source[offset + 1];
-        var count = source[offset + 2];
-        offset += 3;
+        var fog = source[offset + 2];
+        var count = source[offset + 3];
+        offset += 4;
         if (shortGame > 1)
         {
             throw new InvalidDataException($"Invalid short game flag {shortGame}.");
+        }
+
+        if (fog > 1)
+        {
+            throw new InvalidDataException($"Invalid fog of war flag {fog}.");
         }
 
         var players = System.Collections.Immutable.ImmutableArray.CreateBuilder<MatchPlayer>(count);
@@ -427,7 +435,7 @@ public static class ReplayFormat
             offset += 4;
         }
 
-        return new MatchSetup(mapId, seed, new MatchOptions(credits, shortGame == 1, speed), players.MoveToImmutable(), starts.MoveToImmutable());
+        return new MatchSetup(mapId, seed, new MatchOptions(credits, shortGame == 1, speed, fog == 1), players.MoveToImmutable(), starts.MoveToImmutable());
     }
 
     private static void AddText(List<byte> bytes, string text)

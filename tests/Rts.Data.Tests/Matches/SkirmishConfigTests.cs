@@ -69,7 +69,7 @@ public sealed class SkirmishConfigTests
 
         var grid = map.ToMapGrid();
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
-        Assert.Equal(new MatchOptions(20_000, ShortGame: true), setup.Options);
+        Assert.Equal(new MatchOptions(20_000, ShortGame: true, FogOfWar: false), setup.Options);
         Assert.Equal([1, 2, 3, 4], setup.Players.Select(player => player.Slot));
         Assert.Equal([PlayerKind.Human, PlayerKind.Ai, PlayerKind.Ai, PlayerKind.Ai], setup.Players.Select(player => player.Kind));
         Assert.Equal(
@@ -118,5 +118,14 @@ public sealed class SkirmishConfigTests
         Assert.Equal((5_000, true), (two.Credits, two.ShortGame));
 
         Assert.Null(SkirmishConfig.Load("nothing here"));
+
+        // The fog of war: off by default and in a config of before, kept when on, carried into the match.
+        Assert.False(config.FogOfWar);
+        Assert.False(SkirmishConfig.Load("credits=10000\nslot=human,1,random,0,0,-1\nslot=bot,1,random,1,0,-1\n")!.FogOfWar);
+        var fog = config with { FogOfWar = true };
+        Assert.True(SkirmishConfig.Load(fog.Save())!.FogOfWar);
+        Assert.True(SkirmishConfig.For(2, fog).FogOfWar);
+        Assert.True(fog.ToSetup(FourCorners(), "union", 5).Options.FogOfWar);
+        Assert.False(config.ToSetup(FourCorners(), "union", 5).Options.FogOfWar);
     }
 }

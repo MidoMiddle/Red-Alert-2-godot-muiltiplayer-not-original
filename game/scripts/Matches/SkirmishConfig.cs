@@ -32,6 +32,9 @@ public sealed record SkirmishSlot(SlotKind Kind, AiDifficulty Difficulty, string
 /// </summary>
 public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Credits, bool ShortGame)
 {
+    /// <summary>The fog of war of the match: off by default — whatever the person has explored stays in sight (owner's decision).</summary>
+    public bool FogOfWar { get; init; }
+
     public const int RandomStart = -1;
     public const int NoTeam = 0;
     public const int MaxTeam = 4;
@@ -66,7 +69,12 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
             return config;
         }
 
-        config = config with { Credits = CreditChoices.Contains(last.Credits) ? last.Credits : config.Credits, ShortGame = last.ShortGame };
+        config = config with
+        {
+            Credits = CreditChoices.Contains(last.Credits) ? last.Credits : config.Credits,
+            ShortGame = last.ShortGame,
+            FogOfWar = last.FogOfWar,
+        };
         for (var row = 0; row < Math.Min(count, last.Slots.Length); row++)
         {
             var old = last.Slots[row];
@@ -181,7 +189,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         return new MatchSetup(
             map.Id,
             seed,
-            new MatchOptions(Credits, ShortGame),
+            new MatchOptions(Credits, ShortGame, FogOfWar: FogOfWar),
             players.MoveToImmutable(),
             [.. map.Starts.Select(start => start.Cell)]);
     }
@@ -192,6 +200,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         var text = new StringBuilder();
         text.Append(CultureInfo.InvariantCulture, $"credits={Credits}\n");
         text.Append(CultureInfo.InvariantCulture, $"short={(ShortGame ? 1 : 0)}\n");
+        text.Append(CultureInfo.InvariantCulture, $"fog={(FogOfWar ? 1 : 0)}\n");
         foreach (var slot in Slots)
         {
             text.Append(CultureInfo.InvariantCulture,
@@ -206,6 +215,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     {
         var credits = SimulationSettings.DefaultStartingCredits;
         var shortGame = false;
+        var fog = false;
         var slots = new List<SkirmishSlot>();
         foreach (var line in text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -224,13 +234,16 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
                 case "short":
                     shortGame = value == "1";
                     break;
+                case "fog":
+                    fog = value == "1";
+                    break;
                 case "slot" when ParseSlot(value) is { } slot:
                     slots.Add(slot);
                     break;
             }
         }
 
-        return slots.Count == 0 ? null : new SkirmishConfig([.. slots], credits, shortGame);
+        return slots.Count == 0 ? null : new SkirmishConfig([.. slots], credits, shortGame) { FogOfWar = fog };
     }
 
     private static SkirmishSlot? ParseSlot(string value)

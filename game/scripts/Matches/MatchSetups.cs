@@ -10,6 +10,7 @@ namespace Rts.Client.Matches;
 /// The matches the client sets up until the skirmish screen of M6 does (docs/implementation/M5_first_bot.md, step 2): one against one —
 /// the person on the first start, a «Medium» bot on the second, the other starts of the map closed; or, on a map of four starts or more,
 /// two against two (M6, A6) — the person and a «Medium» bot ally on the first two starts against two «Medium» bots on the next two.
+/// Both without the fog of war, as the skirmish screen by default (owner's decision): what the person explored stays in sight.
 /// Pure, tested in Rts.Data.Tests.
 /// </summary>
 public static class MatchSetups
@@ -30,7 +31,7 @@ public static class MatchSetups
         return new MatchSetup(
             map.Id,
             seed,
-            new MatchOptions(),
+            new MatchOptions(FogOfWar: false),
             [
                 new MatchPlayer(1, PlayerKind.Human, AiDifficulty.Medium, faction, Color: 0, Team: 1, person.Slot, person.Cell),
                 new MatchPlayer(2, PlayerKind.Ai, AiDifficulty.Medium, faction, Color: 1, Team: 2, bot.Slot, bot.Cell),
@@ -55,7 +56,7 @@ public static class MatchSetups
         return new MatchSetup(
             map.Id,
             seed,
-            new MatchOptions(),
+            new MatchOptions(FogOfWar: false),
             [
                 .. map.Starts.Take(4).Select((start, i) => new MatchPlayer(
                     i + 1,

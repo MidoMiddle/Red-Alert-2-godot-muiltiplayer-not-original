@@ -92,9 +92,13 @@ public sealed class AiWorldView
     /// <summary>Whether the bot's player sees the whole map (M8 step 2).</summary>
     public bool RevealsMap => Player.Modifiers.RevealMap;
 
-    public CellVisibility StateOf(CellPos cell) => RevealsMap && Contains(cell) ? CellVisibility.Visible : _world.VisionOf(Me).StateAt(cell);
+    /// <summary>Whether the match is played without the fog of war: what the bot has explored stays in sight, as for a person.</summary>
+    public bool NoFog => Vision.NoFog(_world);
 
-    public bool IsVisible(CellPos cell) => (RevealsMap && Contains(cell)) || _world.VisionOf(Me).IsVisible(cell);
+    public CellVisibility StateOf(CellPos cell) =>
+        (RevealsMap && Contains(cell)) || (NoFog && _world.VisionOf(Me).IsExplored(cell)) ? CellVisibility.Visible : _world.VisionOf(Me).StateAt(cell);
+
+    public bool IsVisible(CellPos cell) => (RevealsMap && Contains(cell)) || _world.VisionOf(Me).IsVisible(cell) || (NoFog && _world.VisionOf(Me).IsExplored(cell));
 
     public bool IsExplored(CellPos cell) => (RevealsMap && Contains(cell)) || _world.VisionOf(Me).IsExplored(cell);
 
