@@ -8,9 +8,10 @@ using Rts.Simulation.Geometry;
 namespace Rts.Client.Editor;
 
 /// <summary>
-/// What the editor shows on its map (docs/implementation/M7_maps.md, 4.13, step 12): ore as yellow diamonds and gems as blue ones,
-/// larger the denser (the diamonds of a match, <see cref="OreField"/>, from the density of the file rather than the stage), and every
-/// start as a pillar in its slot's colour with its number. Rebuilt when the map changes.
+/// What the editor shows on its map (docs/implementation/M7_maps.md, 4.13, step 12): ore and gems as the cluster models of a match
+/// (<see cref="OreField"/>, the table's <c>ore/ore</c> and <c>ore/gems</c>), larger the denser — from the density of the file rather
+/// than the stage — or, without the models, yellow and blue diamonds; and every start as a pillar in its slot's colour with its
+/// number. Rebuilt when the map changes.
 /// </summary>
 public partial class EditorMarks : Node3D
 {
@@ -30,6 +31,9 @@ public partial class EditorMarks : Node3D
         }
 
         var map = session.Map;
+        var oreMesh = OreField.MeshOf(OreField.OreModel);
+        var gemMesh = OreField.MeshOf(OreField.GemModel);
+        var models = oreMesh is not null && gemMesh is not null;
         var ore = new List<Transform3D>();
         var gems = new List<Transform3D>();
         for (var y = 0; y < map.Height; y++)
@@ -43,13 +47,32 @@ public partial class EditorMarks : Node3D
                 }
 
                 var density = value > 9 ? value - 9 : value;
+                if (models)
+                {
+                    // As in a match (OreField): the densest of the file at full size, the thinnest at the smallest cluster.
+                    var share = value > 9 ? (density - 1) / 2f : (density - 1) / 8f;
+                    var scale = OreCrystals.SmallestCluster + (1f - OreCrystals.SmallestCluster) * share;
+                    var at = new Vector3(x + 0.5f, terrain.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
+                    var basis = new Basis(Vector3.Up, OreCrystals.ClusterTurn(x, y)).Scaled(new Vector3(scale, scale, scale));
+                    (value > 9 ? gems : ore).Add(new Transform3D(basis, at));
+                    continue;
+                }
+
                 var size = value > 9 ? 0.2f + density * 0.08f : 0.12f + density * 0.025f;
                 (value > 9 ? gems : ore).Add(OreField.Diamond(terrain, x, y, size));
             }
         }
 
-        OreField.AddDiamonds(this, "Ore", ore, OreField.OreColor);
-        OreField.AddDiamonds(this, "Gems", gems, OreField.GemColor);
+        if (models)
+        {
+            OreField.AddInstances(this, "Ore", ore, oreMesh!);
+            OreField.AddInstances(this, "Gems", gems, gemMesh!);
+        }
+        else
+        {
+            OreField.AddDiamonds(this, "Ore", ore, OreField.OreColor);
+            OreField.AddDiamonds(this, "Gems", gems, OreField.GemColor);
+        }
 
         foreach (var start in map.Starts)
         {

@@ -97,7 +97,7 @@ public partial class OreField : Node3D
     }
 
     /// <summary>The mesh of the <c>body</c> of a model, loaded once; null without the file — the diamonds stand in.</summary>
-    private static Mesh? MeshOf(string key)
+    internal static Mesh? MeshOf(string key)
     {
         if (!Meshes.TryGetValue(key, out var mesh))
         {
@@ -120,7 +120,7 @@ public partial class OreField : Node3D
         return mesh;
     }
 
-    private static void AddInstances(Node3D parent, string name, List<Transform3D> transforms, Mesh mesh)
+    internal static void AddInstances(Node3D parent, string name, List<Transform3D> transforms, Mesh mesh)
     {
         if (transforms.Count == 0)
         {
