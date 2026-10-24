@@ -39,6 +39,7 @@ public partial class UnitView : Node3D
 
     private MeshInstance3D _body = null!;
     private Node3D? _turret;
+    private static int _made;
     private List<MeshInstance3D>? _teamMeshes;
     private MeshInstance3D? _turretBody;
     private Node3D? _sandbags;
@@ -49,7 +50,8 @@ public partial class UnitView : Node3D
     public void Build(UnitArchetype archetype)
     {
         Type = archetype.Type;
-        if (Models.ModelLibrary.Instantiate("unit/" + archetype.Id) is { } model)
+        // Of several kinds of the unit's model, one by the order the views are made in: the look only.
+        if (Models.ModelLibrary.Instantiate("unit/" + archetype.Id, cell: new Vector2I(_made++, 0)) is { } model)
         {
             // The model of the table (docs/art/model_standards.md): its turret node turns, its team_mask takes the player's colour.
             AddChild(model);

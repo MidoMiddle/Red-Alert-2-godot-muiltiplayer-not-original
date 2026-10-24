@@ -14,10 +14,11 @@ public static class BuildingLookView
     /// <summary>
     /// Adds the parts of <paramref name="def"/> to <paramref name="body"/>, whose origin lies <paramref name="sink"/> cells under the
     /// ground at the footprint's centre: what stands on the ground reaches down to it, so the building can rise out of the ground.
+    /// Of several models the one of <paramref name="cell"/>, its north-west cell.
     /// </summary>
-    public static void AddTo(Node3D body, BuildingDef def, Color owner, float sink)
+    public static void AddTo(Node3D body, BuildingDef def, Color owner, float sink, Vector2I? cell = null)
     {
-        if (Models.ModelLibrary.Instantiate("building/" + def.Id, owner) is { } model)
+        if (Models.ModelLibrary.Instantiate("building/" + def.Id, owner, cell: cell) is { } model)
         {
             // Its pivot is the footprint's centre on the ground.
             model.Position += new Vector3(0f, sink, 0f);

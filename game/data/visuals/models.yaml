@@ -9,8 +9,10 @@
 #   tree/<shape>    a tree of a climate: pine (snow), broadleaf_small and broadleaf_big (temperate, urban), palm and cactus (desert);
 #                   the holo tank's disguise too
 #   ore/<kind>      the clusters of a field: ore and gems (the file only: the field scales and turns them)
-# Fields: file (required), scale (1), yaw in degrees (0), offset [x, y, z] in cells ([0, 0, 0]), height in cells for the bars over
-# a building (its look's when 0), climates — the climates it is drawn in (all when left out).
+# Fields: file — or files: [a list of kinds of it], each cell picks one — (one of the two is required), scale (1), yaw in degrees
+# (0), offset [x, y, z] in cells ([0, 0, 0]), jitter — the share the size of each varies either way, 0…0.5 (0), spin — each turned
+# any way (false), height in cells for the bars over a building (its look's when 0), climates — the climates it is drawn in (all
+# when left out). The pick goes by the cell: the same tree is the same cactus every time, neighbours differ.
 format: models/1
 models:
   # The industrial buildings of the map (docs/industrial_elements).
@@ -25,7 +27,8 @@ models:
   object/fence_wood:          { file: map/fence_wood_section/fence_wood_section.glb }
   object/pipeline:            { file: industrial/pipeline_straight/pipeline_straight.glb }
   object/anti_tank_hedgehog:  { file: obstacle/anti_tank_hedgehog/obstacle_anti_tank_hedgehog.glb }
-  object/snowdrift:           { file: map/snowdrift_01/snowdrift_01.glb, climates: [winter] }
+  object/snowdrift:           { files: [map/snowdrift_01/snowdrift_01.glb, map/snowdrift_02/snowdrift_02.glb], jitter: 0.2, spin: true,
+                                climates: [winter] }
 
   # The ore fields.
   ore/ore:   { file: map/ore_cluster/ore_cluster.glb }

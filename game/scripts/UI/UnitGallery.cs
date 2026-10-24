@@ -95,7 +95,10 @@ public partial class UnitGallery : Node3D
         ScreenshotCapture.AttachIfRequested(this);
     }
 
-    /// <summary>Every model of the table on a plate of its footprint, a cell grid on it, its key under it.</summary>
+    /// <summary>
+    /// Every model of the table on a plate of its footprint, a cell grid on it, its key under it; a model of a cell (an object, a tree,
+    /// ore) nine times on a plate of 3×3, each cell picking its kind, size and turn.
+    /// </summary>
     private void ShowModels()
     {
         const int ModelColumns = 6;
@@ -108,10 +111,11 @@ public partial class UnitGallery : Node3D
         {
             var key = keys[i];
             var id = key[(key.IndexOf('/') + 1)..];
+            var single = key.StartsWith("building/", System.StringComparison.Ordinal) || key.StartsWith("unit/", System.StringComparison.Ordinal);
             var (width, height) = key.StartsWith("building/", System.StringComparison.Ordinal)
                 ? database.TryGetBuilding(id, out var def) ? (def.Footprint.Width, def.Footprint.Height)
                 : Rts.Simulation.World.BuildingTypes.TryGetById(id, out var type) ? (type.Width, type.Height) : (1, 1)
-                : (1, 1);
+                : single ? (1, 1) : (3, 3);
             var at = new Vector3((i % ModelColumns - (ModelColumns - 1) / 2f) * Step, 0f, (i / ModelColumns - (rows - 1) / 2f) * Step);
             for (var y = 0; y < height; y++)
             {
@@ -126,10 +130,14 @@ public partial class UnitGallery : Node3D
                 }
             }
 
-            if (Models.ModelLibrary.Instantiate(key, Matches.PlayerColors.Of(new PlayerId(1))) is { } model)
+            for (var copy = 0; copy < (single ? 1 : 9); copy++)
             {
-                model.Position += at;
-                AddChild(model);
+                var cell = single ? (Vector2I?)null : new Vector2I(i * 3 + copy % 3, copy / 3);
+                if (Models.ModelLibrary.Instantiate(key, Matches.PlayerColors.Of(new PlayerId(1)), cell: cell) is { } model)
+                {
+                    model.Position += at + (single ? Vector3.Zero : new Vector3(copy % 3 - 1, 0, copy / 3 - 1));
+                    AddChild(model);
+                }
             }
 
             AddChild(new Label3D

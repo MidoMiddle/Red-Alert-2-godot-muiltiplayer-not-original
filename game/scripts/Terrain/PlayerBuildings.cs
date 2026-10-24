@@ -199,7 +199,7 @@ public partial class PlayerBuildings : Node3D
         AddChild(root);
 
         var full = shape.Height + Sink;
-        BuildingLookView.AddTo(body, building.Def!, Buildings.OwnerColor(building.Owner), Sink);
+        BuildingLookView.AddTo(body, building.Def!, Buildings.OwnerColor(building.Owner), Sink, new Vector2I(building.Cell.X, building.Cell.Y));
 
         // The dock and the exit lie on the ground, outside the scaled body: the rules use them while the building grows too.
         var northWest = new Vector3(-building.Width / 2f, Sink + 0.02f, -building.Height / 2f);

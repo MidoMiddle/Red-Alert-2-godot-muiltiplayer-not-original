@@ -77,7 +77,8 @@ public static class TreeShapes
     /// <summary>A tree as nodes, for one that moves: the holo tank's disguise. Its model from the table when there is one.</summary>
     public static Node3D Build(TreeKind kind, int variant)
     {
-        if (Models.ModelLibrary.Instantiate("tree/" + NameOf(kind, variant)) is { } model)
+        // Of several kinds of the shape, the one of the variant.
+        if (Models.ModelLibrary.Instantiate("tree/" + NameOf(kind, variant), cell: new Vector2I(variant, 0)) is { } model)
         {
             return model;
         }

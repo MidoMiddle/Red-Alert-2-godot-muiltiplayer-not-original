@@ -184,30 +184,26 @@ public partial class MapObjects : Node3D
     private static Vector3 Ground(int x, int y) => new(x + 0.5f, WorldCoords.Terrain!.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
 
     /// <summary>
-    /// The trees of the map and the skirt: the model of a shape from the table (<c>tree/&lt;shape&gt;</c>, <see cref="TreeShapes.NameOf"/>)
-    /// one MultiMesh for every mesh of it, or else every part of the shape of <see cref="TreeShapes"/> one MultiMesh.
+    /// The trees of the map and the skirt: the models of a shape from the table (<c>tree/&lt;shape&gt;</c>, <see cref="TreeShapes.NameOf"/>),
+    /// each tree the kind, size and turn of its cell, one MultiMesh for every mesh of every kind; or else every part of the shape of
+    /// <see cref="TreeShapes"/> one MultiMesh.
     /// </summary>
     private void AddTrees(Climates.TreeKind kind, List<(Vector3 At, int Variant)> trees)
     {
         var parts = new Dictionary<string, (TreePart Part, List<Transform3D> Places)>();
-        var modelled = new Dictionary<string, (Mesh Mesh, List<Transform3D> Places)>();
+        var modelled = new Dictionary<string, List<Vector3>>();
         foreach (var (at, variant) in trees)
         {
             var shape = TreeShapes.NameOf(kind, variant);
-            if (Models.ModelLibrary.Meshes("tree/" + shape) is { } meshes)
+            if (Models.ModelLibrary.Find("tree/" + shape) is not null)
             {
-                for (var m = 0; m < meshes.Count; m++)
+                if (!modelled.TryGetValue(shape, out var points))
                 {
-                    var key = shape + m;
-                    if (!modelled.TryGetValue(key, out var entry))
-                    {
-                        entry = (meshes[m].Mesh, []);
-                        modelled[key] = entry;
-                    }
-
-                    entry.Places.Add(new Transform3D(Basis.Identity, at) * meshes[m].Place);
+                    points = [];
+                    modelled[shape] = points;
                 }
 
+                points.Add(at);
                 continue;
             }
 
@@ -237,21 +233,32 @@ public partial class MapObjects : Node3D
             AddChild(new MultiMeshInstance3D { Name = "Trees" + part.Key + parts.Keys.ToList().IndexOf(key), Multimesh = multiMesh });
         }
 
-        foreach (var (key, (mesh, places)) in modelled)
+        foreach (var (shape, points) in modelled)
         {
+            AddModelInstances("TreeModel" + shape, Models.ModelLibrary.Instances("tree/" + shape, null, points)!);
+        }
+    }
+
+    /// <summary>A MultiMesh for every mesh of the copies of a model (<see cref="Models.ModelLibrary.Instances"/>).</summary>
+    private void AddModelInstances(string name, List<(Mesh Mesh, List<Transform3D> Places)> groups)
+    {
+        for (var g = 0; g < groups.Count; g++)
+        {
+            var (mesh, places) = groups[g];
             var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = places.Count };
             for (var i = 0; i < places.Count; i++)
             {
                 multiMesh.SetInstanceTransform(i, places[i]);
             }
 
-            AddChild(new MultiMeshInstance3D { Name = "TreeModel" + key, Multimesh = multiMesh });
+            AddChild(new MultiMeshInstance3D { Name = name + g, Multimesh = multiMesh });
         }
     }
 
     /// <summary>
     /// One MultiMesh of a kind of map object: its model of the table (<paramref name="key"/>, pivot on the ground) when there is one
-    /// for the climate — a MultiMesh for every mesh of it — or else the primitive raised by <paramref name="lift"/>. True for a model.
+    /// for the climate — a MultiMesh for every mesh of every kind of it, each copy the kind, size and turn of its cell — or else the
+    /// primitive raised by <paramref name="lift"/>. True for a model.
     /// </summary>
     private bool AddInstances(string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift, string? key = null)
     {
@@ -260,20 +267,9 @@ public partial class MapObjects : Node3D
             return false;
         }
 
-        if (key is not null && Models.ModelLibrary.Meshes(key, _builtClimate?.Id) is { } meshes)
+        if (key is not null && Models.ModelLibrary.Instances(key, _builtClimate?.Id, positions) is { } groups)
         {
-            for (var m = 0; m < meshes.Count; m++)
-            {
-                var (modelMesh, place) = meshes[m];
-                var instances = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = modelMesh, InstanceCount = positions.Count };
-                for (var i = 0; i < positions.Count; i++)
-                {
-                    instances.SetInstanceTransform(i, new Transform3D(Basis.Identity, positions[i]) * place);
-                }
-
-                AddChild(new MultiMeshInstance3D { Name = name + "Model" + m, Multimesh = instances });
-            }
-
+            AddModelInstances(name + "Model", groups);
             return true;
         }
 

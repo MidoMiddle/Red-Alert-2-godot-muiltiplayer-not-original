@@ -5,8 +5,9 @@ namespace Rts.Client.Models;
 
 /// <summary>
 /// The models of the game by the table <c>res://data/visuals/models.yaml</c> (<see cref="ModelTable"/>, docs/art/model_standards.md),
-/// read once. Every renderer asks here first and draws its placeholder when the answer is null: the object is not in the table, its
-/// file is not there (a warning, once), or the climate is not one of its own. A model's <c>team_mask</c> node takes the owner's colour.
+/// read once. Every renderer asks here first and draws its placeholder when the answer is null: the object is not in the table, none
+/// of its files is there (a warning for each missing one, once), or the climate is not one of its own. Of several files the cell
+/// picks one, and the size and the turn (<see cref="ModelEntry.Pick"/>). A model's <c>team_mask</c> node takes the owner's colour.
 /// </summary>
 public static class ModelLibrary
 {
@@ -15,7 +16,8 @@ public static class ModelLibrary
 
     private static IReadOnlyDictionary<string, ModelEntry>? _table;
     private static readonly Dictionary<string, PackedScene?> Scenes = new();
-    private static readonly Dictionary<string, List<(Mesh Mesh, Transform3D Place)>?> MeshSets = new();
+    private static readonly Dictionary<string, List<PackedScene>> Available = new();
+    private static readonly Dictionary<string, List<List<(Mesh Mesh, Transform3D Place)>>> MeshSets = new();
 
     /// <summary>The entries of the table; empty when it is missing or cannot be read (an error, once).</summary>
     public static IReadOnlyDictionary<string, ModelEntry> Table
@@ -42,32 +44,29 @@ public static class ModelLibrary
         }
     }
 
-    /// <summary>The entry of <paramref name="key"/> whose file is there, for a map of <paramref name="climate"/> (any when null).</summary>
+    /// <summary>The entry of <paramref name="key"/> with a file there, for a map of <paramref name="climate"/> (any when null).</summary>
     public static ModelEntry? Find(string key, string? climate = null) =>
-        Table.TryGetValue(key, out var entry) && (climate is null || entry.DrawnIn(climate)) && Scene(entry) is not null ? entry : null;
+        Table.TryGetValue(key, out var entry) && (climate is null || entry.DrawnIn(climate)) && ScenesOf(entry).Count > 0 ? entry : null;
 
-    /// <summary>The path of the model's file in the project, for the renderers that load meshes themselves; null without one.</summary>
-    public static string? PathOf(string key) => Find(key) is { } entry ? Root + entry.File : null;
+    /// <summary>The path of the model's first file there, for the renderers that load meshes themselves; null without one.</summary>
+    public static string? PathOf(string key) => Find(key) is { } entry ? ScenesOf(entry)[0].ResourcePath : null;
 
     /// <summary>
-    /// The model of <paramref name="key"/> placed as the table says, its pivot at the origin of the node it is added to; its
-    /// <c>team_mask</c> in <paramref name="team"/> when given. Null when there is none — the caller draws its placeholder.
+    /// The model of <paramref name="key"/> placed as the table says, its pivot at the origin of the node it is added to; of several
+    /// files the one of <paramref name="cell"/> (the first without one); its <c>team_mask</c> in <paramref name="team"/> when given.
+    /// Null when there is none — the caller draws its placeholder.
     /// </summary>
-    public static Node3D? Instantiate(string key, Color? team = null, string? climate = null)
+    public static Node3D? Instantiate(string key, Color? team = null, string? climate = null, Vector2I? cell = null)
     {
-        if (Find(key, climate) is not { } entry || Scene(entry) is not { } scene)
+        if (Find(key, climate) is not { } entry)
         {
             return null;
         }
 
-        var holder = new Node3D
-        {
-            Name = "Model",
-            Position = new Vector3(entry.Offset.X, entry.Offset.Y, entry.Offset.Z),
-            RotationDegrees = new Vector3(0f, entry.Yaw, 0f),
-            Scale = Vector3.One * entry.Scale,
-        };
-        var model = scene.Instantiate<Node3D>();
+        var scenes = ScenesOf(entry);
+        var pick = cell is { } at ? entry.Pick(at.X, at.Y, scenes.Count) : new ModelPick(0, entry.Scale, entry.Yaw);
+        var holder = new Node3D { Name = "Model", Transform = Placement(entry, pick) };
+        var model = scenes[pick.Index].Instantiate<Node3D>();
         holder.AddChild(model);
         if (team is { } colour)
         {
@@ -78,40 +77,91 @@ public static class ModelLibrary
     }
 
     /// <summary>
-    /// The meshes of the model with their places in the holder's frame, the table's placement in them: for the renderers that draw
-    /// many of one object at once (MultiMesh: trees, snowdrifts). Null when there is none.
+    /// Many of one model at once (MultiMesh: trees, snowdrifts, fences): at every point, the file, the size and the turn of its cell.
+    /// For every mesh of every file used, the places of its copies. Null when there is no model — the caller draws its placeholder.
     /// </summary>
-    public static IReadOnlyList<(Mesh Mesh, Transform3D Place)>? Meshes(string key, string? climate = null)
+    public static List<(Mesh Mesh, List<Transform3D> Places)>? Instances(string key, string? climate, IReadOnlyList<Vector3> points)
     {
         if (Find(key, climate) is not { } entry)
         {
             return null;
         }
 
-        if (!MeshSets.TryGetValue(key, out var set))
+        var sets = MeshSetsOf(entry);
+        var groups = new Dictionary<(int File, int Mesh), (Mesh Mesh, List<Transform3D> Places)>();
+        foreach (var point in points)
         {
-            set = [];
-            var model = Scene(entry)!.Instantiate<Node3D>();
-            var placement = new Transform3D(
-                new Basis(Vector3.Up, Mathf.DegToRad(entry.Yaw)).Scaled(Vector3.One * entry.Scale),
-                new Vector3(entry.Offset.X, entry.Offset.Y, entry.Offset.Z));
-            Collect(model, placement, set);
-            model.Free();
-            MeshSets[key] = set = set.Count > 0 ? set : null;
+            var pick = entry.Pick(Mathf.FloorToInt(point.X), Mathf.FloorToInt(point.Z), sets.Count);
+            var placed = new Transform3D(Basis.Identity, point) * Placement(entry, pick);
+            var set = sets[pick.Index];
+            for (var m = 0; m < set.Count; m++)
+            {
+                if (!groups.TryGetValue((pick.Index, m), out var group))
+                {
+                    group = (set[m].Mesh, []);
+                    groups[(pick.Index, m)] = group;
+                }
+
+                group.Places.Add(placed * set[m].Place);
+            }
         }
 
-        return set;
+        return [.. groups.Values];
     }
 
-    private static PackedScene? Scene(ModelEntry entry)
+    /// <summary>How a model of the entry sits in its holder: moved, turned and scaled as the pick says.</summary>
+    private static Transform3D Placement(ModelEntry entry, ModelPick pick) =>
+        new(new Basis(Vector3.Up, Mathf.DegToRad(pick.Yaw)).Scaled(Vector3.One * pick.Scale), new Vector3(entry.Offset.X, entry.Offset.Y, entry.Offset.Z));
+
+    // The scenes of the files of the entry that are there, in the order of the table.
+    private static List<PackedScene> ScenesOf(ModelEntry entry)
     {
-        var path = Root + entry.File;
+        if (!Available.TryGetValue(entry.Key, out var scenes))
+        {
+            scenes = [];
+            foreach (var file in entry.Files)
+            {
+                if (Scene(entry.Key, Root + file) is { } scene)
+                {
+                    scenes.Add(scene);
+                }
+            }
+
+            Available[entry.Key] = scenes;
+        }
+
+        return scenes;
+    }
+
+    // The meshes of every file of the entry with their places inside the model.
+    private static List<List<(Mesh Mesh, Transform3D Place)>> MeshSetsOf(ModelEntry entry)
+    {
+        if (!MeshSets.TryGetValue(entry.Key, out var sets))
+        {
+            sets = [];
+            foreach (var scene in ScenesOf(entry))
+            {
+                var set = new List<(Mesh, Transform3D)>();
+                var model = scene.Instantiate<Node3D>();
+                Collect(model, Transform3D.Identity, set);
+                model.Free();
+                sets.Add(set);
+            }
+
+            MeshSets[entry.Key] = sets;
+        }
+
+        return sets;
+    }
+
+    private static PackedScene? Scene(string key, string path)
+    {
         if (!Scenes.TryGetValue(path, out var scene))
         {
             scene = ResourceLoader.Exists(path) ? GD.Load<PackedScene>(path) : null;
             if (scene is null)
             {
-                GD.PushWarning($"[models] {entry.Key}: no file {path}; its placeholder is drawn");
+                GD.PushWarning($"[models] {key}: no file {path}; it is left out, and with no file left the placeholder is drawn");
             }
 
             Scenes[path] = scene;
@@ -120,7 +170,7 @@ public static class ModelLibrary
         return scene;
     }
 
-    // Every mesh below the node, with the transform from the holder down to it.
+    // Every mesh below the node, with the transform from the model's root down to it.
     private static void Collect(Node node, Transform3D parent, List<(Mesh, Transform3D)> set)
     {
         var place = node is Node3D spatial ? parent * spatial.Transform : parent;

@@ -12,17 +12,50 @@ namespace Rts.Client.Models;
 
 /// <summary>
 /// One model of the table (docs/art/model_standards.md): what it draws (<see cref="Key"/>: <c>building/&lt;id&gt;</c>,
-/// <c>unit/&lt;id&gt;</c>, <c>object/&lt;id&gt;</c>, <c>tree/&lt;shape&gt;</c>, <c>ore/&lt;kind&gt;</c>), its file under
-/// <c>res://assets/models/</c>, and how it sits: scaled by <see cref="Scale"/>, turned by <see cref="Yaw"/> degrees about the vertical,
-/// moved by <see cref="Offset"/> cells. <see cref="Height"/>, when above 0, is how high it stands for the bars over it;
-/// <see cref="Climates"/>, when not empty, the climates it is drawn in (a snowdrift only in the snow).
+/// <c>unit/&lt;id&gt;</c>, <c>object/&lt;id&gt;</c>, <c>tree/&lt;shape&gt;</c>, <c>ore/&lt;kind&gt;</c>), its files under
+/// <c>res://assets/models/</c> — one, or several kinds of it (five cacti) — and how it sits: scaled by <see cref="Scale"/>, turned by
+/// <see cref="Yaw"/> degrees about the vertical, moved by <see cref="Offset"/> cells. <see cref="Jitter"/> varies the size of each
+/// one by up to that share either way, <see cref="Spin"/> turns each one any way. <see cref="Height"/>, when above 0, is how high it
+/// stands for the bars over it; <see cref="Climates"/>, when not empty, the climates it is drawn in (a snowdrift only in the snow).
 /// </summary>
 public sealed record ModelEntry(
-    string Key, string File, float Scale, float Yaw, (float X, float Y, float Z) Offset, float Height, ImmutableArray<string> Climates)
+    string Key, ImmutableArray<string> Files, float Scale, float Yaw, (float X, float Y, float Z) Offset, float Height, ImmutableArray<string> Climates,
+    float Jitter = 0f, bool Spin = false)
 {
+    /// <summary>The first file: the one there is when there is one.</summary>
+    public string File => Files[0];
+
     /// <summary>Whether it is drawn on a map of <paramref name="climate"/>.</summary>
     public bool DrawnIn(string climate) => Climates.IsDefaultOrEmpty || Climates.Contains(climate);
+
+    /// <summary>
+    /// The one standing on cell (<paramref name="x"/>, <paramref name="y"/>) out of <paramref name="count"/> files there: which file,
+    /// how big, how turned. By the cell alone — the same tree is the same cactus in every session and replay, neighbours differ — and
+    /// for the look only: the rules never see it.
+    /// </summary>
+    public ModelPick Pick(int x, int y, int count)
+    {
+        var hash = Mix(unchecked(((uint)x * 73856093u) ^ ((uint)y * 19349663u) ^ 0x9e3779b9u));
+        var index = count <= 1 ? 0 : (int)(hash % (uint)count);
+        var size = Jitter <= 0f ? Scale : Scale * (1f + Jitter * ((Mix(hash ^ 0x85ebca6bu) % 2001u / 1000f) - 1f));
+        var yaw = Spin ? Yaw + (Mix(hash ^ 0xc2b2ae35u) % 360u) : Yaw;
+        return new ModelPick(index, size, yaw);
+    }
+
+    // The finaliser of MurmurHash3: every bit of the input moves every bit of the output.
+    private static uint Mix(uint h)
+    {
+        h ^= h >> 16;
+        h = unchecked(h * 0x85ebca6bu);
+        h ^= h >> 13;
+        h = unchecked(h * 0xc2b2ae35u);
+        h ^= h >> 16;
+        return h;
+    }
 }
+
+/// <summary>Which file of a <see cref="ModelEntry"/> stands on a cell, and its scale and its yaw in degrees.</summary>
+public readonly record struct ModelPick(int Index, float Scale, float Yaw);
 
 /// <summary>A table of models that cannot be read; <see cref="Line"/> and <see cref="Column"/> are 1-based.</summary>
 public sealed class ModelTableException(int line, int column, string message) : Exception($"{line}:{column}: {message}")
@@ -40,6 +73,9 @@ public sealed class ModelTableException(int line, int column, string message) : 
 public static class ModelTable
 {
     public const string FormatVersion = "models/1";
+
+    /// <summary>The most files — kinds of one model — an entry may list.</summary>
+    public const int MaxFiles = 64;
 
     /// <summary>The kinds of keys: what the first part of a key may be.</summary>
     public static readonly ImmutableArray<string> Kinds = ["building", "unit", "object", "tree", "ore"];
@@ -107,16 +143,33 @@ public static class ModelTable
             throw Error(node, $"the model of '{key}' must be a mapping with a file");
         }
 
-        var values = Entries(map, ["file", "scale", "yaw", "offset", "height", "climates"], $"the model of '{key}'");
-        if (!values.TryGetValue("file", out var fileNode))
+        var values = Entries(map, ["file", "files", "scale", "yaw", "offset", "height", "climates", "jitter", "spin"], $"the model of '{key}'");
+        var files = ImmutableArray.CreateBuilder<YamlNode>();
+        if (values.TryGetValue("file", out var fileNode) == values.TryGetValue("files", out var filesNode))
         {
-            throw Error(node, $"the model of '{key}' has no file");
+            throw Error(node, $"the model of '{key}' needs a file, or files: a list of its kinds — one of the two");
         }
 
-        var file = Text(fileNode);
-        if (!FilePattern.IsMatch(file))
+        if (fileNode is not null)
         {
-            throw Error(fileNode, $"'{file}' is not a .glb path under assets/models in lower case, such as map/ore_source/ore_source.glb");
+            files.Add(fileNode);
+        }
+        else if (filesNode is YamlSequenceNode { Children.Count: > 0 and <= MaxFiles } list)
+        {
+            files.AddRange(list.Children);
+        }
+        else
+        {
+            throw Error(filesNode!, $"files must be a list of 1…{MaxFiles} .glb paths");
+        }
+
+        foreach (var one in files)
+        {
+            var file = Text(one);
+            if (!FilePattern.IsMatch(file))
+            {
+                throw Error(one, $"'{file}' is not a .glb path under assets/models in lower case, such as map/ore_source/ore_source.glb");
+            }
         }
 
         var scale = values.TryGetValue("scale", out var scaleNode) ? Number(scaleNode) : 1f;
@@ -159,7 +212,20 @@ public static class ModelTable
             climates = [.. list.Children.Select(Text)];
         }
 
-        return new ModelEntry(key, file, scale, yaw, offset, height, climates);
+        var jitter = values.TryGetValue("jitter", out var jitterNode) ? Number(jitterNode) : 0f;
+        if (jitter is < 0f or > 0.5f)
+        {
+            throw Error(jitterNode!, "jitter must be 0…0.5: the share the size varies either way");
+        }
+
+        var spin = values.TryGetValue("spin", out var spinNode) && Text(spinNode) switch
+        {
+            "true" => true,
+            "false" => false,
+            var other => throw Error(spinNode, $"spin must be true or false, not '{other}'"),
+        };
+
+        return new ModelEntry(key, [.. files.Select(Text)], scale, yaw, offset, height, climates, jitter, spin);
     }
 
     private static Dictionary<string, YamlNode> Entries(YamlMappingNode map, string[] allowed, string what)

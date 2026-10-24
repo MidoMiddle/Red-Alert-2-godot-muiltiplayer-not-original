@@ -107,7 +107,7 @@ public partial class Buildings : Node3D
         };
         var centre = new Vector3(cell.X + type.Width / 2f, 0, cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
-        if (Models.ModelLibrary.Instantiate("building/" + type.Id, owner.IsNeutral ? null : OwnerColor(owner)) is { } model)
+        if (Models.ModelLibrary.Instantiate("building/" + type.Id, owner.IsNeutral ? null : OwnerColor(owner), cell: new Vector2I(cell.X, cell.Y)) is { } model)
         {
             // The model of the table (docs/art/model_standards.md); a taken tech building shows its owner in its team_mask.
             model.Position += centre + new Vector3(0, ground, 0);
