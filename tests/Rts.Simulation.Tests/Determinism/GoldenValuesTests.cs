@@ -212,11 +212,12 @@ public sealed class GoldenValuesTests
         // (none here); the states are the same.
         // Rules v49 (stage 3a): the hash covers the temporal beam that holds every entity (none here); the states are the same.
         // Rules v50 (stage 3b): and the bombs, the toxin on the ground, deploying, jumps and blackouts (none); the states are the same.
+        // Rules v51 (stage 3c): the version only; no shot flies here.
         StateChecksum[] expected =
         [
-            new(100, 0x3a685902d62004f9UL),
-            new(500, 0x48d9dcc1609e1956UL),
-            new(1000, 0xfa9eccfd25140768UL),
+            new(100, 0xe33c43e0df859879UL),
+            new(500, 0x69373e0d015451f6UL),
+            new(1000, 0x301a6a3ff167f3c8UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -239,9 +240,11 @@ public sealed class GoldenValuesTests
         // Rules v49 (stage 3a): the temporal beam of every entity in the hash (none); the battle is the same — no soldier of 3a fights.
         // Rules v50 (stage 3b): the bombs, the toxin, deploying, jumps and blackouts in the hash (none); a weapon fires only at what it
         // can hurt, and every weapon of the battle at the ground hurts every armor (the anti-air guns fire at the air only).
+        // Rules v51 (stage 3c): the hit points of every shot in flight in the hash (0 for all here): tick 1000 changes, with shots in the
+        // air; ticks 2000 and 3000, with none, are as they were.
         StateChecksum[] expected =
         [
-            new(1000, 0xb5068562da72df4aUL),
+            new(1000, 0x972914f488b4e9aaUL),
             new(2000, 0xb295598f6ae5beeaUL),
             new(3000, 0xfcd6044d416619deUL),
         ];
@@ -323,6 +326,7 @@ public sealed class GoldenValuesTests
         // inside and the building a soldier goes into are hashed; the commands are the same.
         // Rules v49 (stage 3a): the version and the checksums change — the temporal beam of every entity is hashed.
         // Rules v50 (stage 3b): again, with the bombs, the toxin, deploying, jumps and blackouts.
-        Assert.Equal((22269, 3154842519856562700UL), (bytes.Length, hash.Value));
+        // Rules v51 (stage 3c): the version and so the bytes.
+        Assert.Equal((22269, 6953611267948486757UL), (bytes.Length, hash.Value));
     }
 }

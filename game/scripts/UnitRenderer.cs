@@ -46,6 +46,10 @@ public partial class UnitRenderer : Node3D
                 continue;
             }
 
+            // An enemy holo tank standing still (stage 3c) is drawn as a tree; its own view waits hidden.
+            var tree = Disguises.LooksLikeTree(world, unit);
+            TreeFor(unit, tree);
+
             // A disguised infiltrator (stage 3b) looks to another team like a soldier of its own, in its own colour.
             var (shape, colour) = Disguise(world, unit);
             if (_views.TryGetValue(unit.Id, out var view) && view.Type != shape.Type)
@@ -62,6 +66,7 @@ public partial class UnitRenderer : Node3D
 
             var glow = _input.Selection.Contains(unit.Id) ? Glow.Selected : unit.Id == _input.Hovered ? Glow.Hovered : Glow.None;
             view.SetMaterial(MaterialFor(colour.Value, glow));
+            view.Visible = !tree;
             var current = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before : current;
             var alpha = _host.Alpha;
@@ -87,6 +92,52 @@ public partial class UnitRenderer : Node3D
             ReturnView(_views[id]);
             _views.Remove(id);
         }
+
+        foreach (var (id, tree) in _trees)
+        {
+            if (!_alive.Contains(id))
+            {
+                tree.Visible = false;
+            }
+        }
+    }
+
+    private readonly Dictionary<EntityId, Node3D> _trees = new();
+
+    // A pine like those of the map (MapObjects): a trunk and a cone of a crown.
+    private void TreeFor(Unit unit, bool shown)
+    {
+        if (!shown)
+        {
+            if (_trees.TryGetValue(unit.Id, out var hidden))
+            {
+                hidden.Visible = false;
+            }
+
+            return;
+        }
+
+        if (!_trees.TryGetValue(unit.Id, out var tree))
+        {
+            tree = new Node3D { Name = "Mirage" + unit.Id.Value };
+            tree.AddChild(new MeshInstance3D
+            {
+                Mesh = new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = 0.25f },
+                Position = new Vector3(0, 0.125f, 0),
+                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.35f, 0.24f, 0.15f) },
+            });
+            tree.AddChild(new MeshInstance3D
+            {
+                Mesh = new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = 0.8f },
+                Position = new Vector3(0, 0.25f + 0.4f, 0),
+                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.12f, 0.32f, 0.16f) },
+            });
+            AddChild(tree);
+            _trees.Add(unit.Id, tree);
+        }
+
+        tree.Visible = true;
+        tree.Position = WorldCoords.ToGodotOnGround(unit.Position, 0f);
     }
 
     /// <summary>How the unit looks to the local player: as itself, or a disguised infiltrator of another team as the player's soldier.</summary>

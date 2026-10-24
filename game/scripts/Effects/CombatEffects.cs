@@ -35,6 +35,9 @@ public partial class CombatEffects : Node3D
     // The beams of stage 3a: the Toxin Trooper's green, the Time Trooper's pale blue.
     private static readonly Color ToxinColor = new(0.45f, 1f, 0.3f);
     private static readonly Color ChronoColor = new(0.7f, 0.9f, 1f);
+
+    // The beam tank's beam and its splinters (stage 3c): near white.
+    private static readonly Color PrismColor = new(0.9f, 0.95f, 1f);
     private static readonly Color FireColor = new(1f, 0.5f, 0.1f);
     private static readonly Color ElectroColor = new(0.45f, 0.75f, 1f);
     private static readonly Color DustColor = new(0.7f, 0.66f, 0.58f);
@@ -202,6 +205,7 @@ public partial class CombatEffects : Node3D
                         "electric_bolt" => new Line(Zigzag(from.Gun, point), BoltColor, BoltLife),
                         "toxin_beam" => new Line([from.Gun, point], ToxinColor, BoltLife),
                         "chrono_beam" => new Line([from.Gun, point], ChronoColor, BoltLife),
+                        "prism_ray" => new Line([from.Gun, point], PrismColor, BoltLife),
                         _ => new Line([from.Gun, point], TracerColor, TracerLife),
                     });
                 }

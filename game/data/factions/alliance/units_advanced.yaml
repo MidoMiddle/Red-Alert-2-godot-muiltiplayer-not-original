@@ -123,7 +123,7 @@ alliance_ifv:  # weapon by its passenger
   prerequisites: [alliance_war_factory]
   ability_later: true
 
-alliance_prism_tank:  # splitting beam
+alliance_prism_tank:  # a beam that splits to the enemies round its target (stage 3c)
   kind: unit
   inherits: base_vehicle
   name: Beam Tank
@@ -136,9 +136,9 @@ alliance_prism_tank:  # splitting beam
   speed: 24
   sight: 8
   prerequisites: [alliance_war_factory, alliance_battle_lab]
-  ability_later: true
+  primary: alliance_prism_beam
 
-alliance_mirage_tank:  # disguised as a tree
+alliance_mirage_tank:  # standing still, it looks like a tree to the enemy; it does not chase (stage 3c)
   kind: unit
   inherits: base_vehicle
   name: Holo Tank
@@ -152,9 +152,11 @@ alliance_mirage_tank:  # disguised as a tree
   sight: 9
   turret: false
   prerequisites: [alliance_war_factory, alliance_battle_lab]
-  ability_later: true
+  primary: alliance_mirage_gun
+  disguise_when_still: true
+  stance: hold
 
-alliance_tank_destroyer:  # anti-tank gun
+alliance_tank_destroyer:  # anti-tank gun, aimed with the hull (stage 3c)
   kind: unit
   inherits: base_vehicle
   name: Tank Hunter
@@ -167,7 +169,7 @@ alliance_tank_destroyer:  # anti-tank gun
   sight: 8
   turret: false
   prerequisites: [alliance_war_factory, alliance_air_force_command]
-  ability_later: true
+  primary: alliance_sabot
 
 alliance_nighthawk:  # carries infantry
   kind: unit

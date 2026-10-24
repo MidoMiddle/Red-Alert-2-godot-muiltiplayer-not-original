@@ -82,7 +82,7 @@ public static class ProjectileSystem
     }
 
     private static Entity? LivingTarget(GameWorld world, Projectile projectile) =>
-        projectile.Target is { } id && world.TryGet(id, out var entity) && entity.IsAlive && entity is Unit or Building ? entity : null;
+        projectile.Target is { } id && world.TryGet(id, out var entity) && entity.IsAlive && entity is Unit or Building or Projectile { Hp: > 0 } ? entity : null;
 
     private static void Land(GameWorld world, Projectile projectile, WorldPos point, Entity? target, List<SimEvent>? events)
     {

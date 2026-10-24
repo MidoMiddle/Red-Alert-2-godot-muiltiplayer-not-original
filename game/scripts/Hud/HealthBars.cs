@@ -69,7 +69,7 @@ public partial class HealthBars : Control
             var selected = _input?.Selection.Contains(entity.Id) == true;
             switch (entity)
             {
-                case Unit unit when HealthPips.Shows(mode, selected, unit.Hp, unit.MaxHp):
+                case Unit unit when HealthPips.Shows(mode, selected, unit.Hp, unit.MaxHp) && !Units.Disguises.LooksLikeTree(world, unit):
                     {
                         var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before.Position : unit.Position;
                         var height = UnitHeight + Units.UnitAltitude.Of(unit.Archetype);

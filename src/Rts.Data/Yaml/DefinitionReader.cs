@@ -21,7 +21,7 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
-        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune",
+        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -33,14 +33,14 @@ internal static class DefinitionReader
 
     private static readonly string[] WeaponKeys =
     [
-        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report", "suicide",
+        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report", "suicide", "fragments", "fragment_weapon", "fragment_range",
     ];
 
     private static readonly string[] ArmorKeys = ["name"];
 
     private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "infantry_death"];
 
-    private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual"];
+    private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual", "hp", "armor"];
 
     private static readonly string[] LocomotorKeys = ["name", "slope"];
 
@@ -116,6 +116,7 @@ internal static class DefinitionReader
             Teleports = fields.Optional("teleports", Scalars.Flag, false),
             DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
             RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),
+            DisguiseWhenStill = fields.Optional("disguise_when_still", Scalars.Flag, false),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -190,6 +191,9 @@ internal static class DefinitionReader
             Targets = fields.Optional("targets", TargetsOf, WeaponTargets.Ground),
             Report = fields.Optional("report", Scalars.Id, ""),
             Suicide = fields.Optional("suicide", Scalars.Flag, false),
+            Fragments = fields.Optional("fragments", Scalars.Int, 0),
+            FragmentWeapon = fields.Optional("fragment_weapon", Scalars.Id, ""),
+            FragmentRange = fields.Optional("fragment_range", Scalars.FixedNumber, Fixed.Zero),
         };
     }
 
@@ -233,6 +237,8 @@ internal static class DefinitionReader
             TurnRate = fields.Optional("turn_rate", Scalars.Int, 0),
             Lifetime = fields.Optional("lifetime", Scalars.Ticks, 0),
             Visual = fields.Optional("visual", Scalars.Id, ""),
+            Hp = fields.Optional("hp", Scalars.Int, 0),
+            Armor = fields.Optional("armor", Scalars.Id, ""),
         };
     }
 

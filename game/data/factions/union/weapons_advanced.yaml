@@ -80,3 +80,36 @@ toxin_ground:  # the toxin on the ground; its damage is the level of the cell (R
   range: 1
   projectile: bullet
   warhead: toxin_site
+
+apocalypse_cannons:  # of the Super Heavy Tank, RA2 120mmx: two shells of 100, ROF 80
+  kind: weapon
+  name: Twin 120mm Cannons
+  damage: 100
+  reload: 5.33s
+  range: 5.75
+  projectile: shell
+  warhead: apoc_ap
+  burst: 2
+  burst_delay: 0.2s
+
+apocalypse_tusks:  # of the Super Heavy Tank, RA2 MammothTusk: two missiles of 50 at the air only
+  kind: weapon
+  name: Mammoth Tusk Missiles
+  damage: 50
+  reload: 5.33s
+  range: 8
+  projectile: rocket
+  warhead: flak_air
+  burst: 2
+  burst_delay: 0.2s
+  targets: [air]
+
+v3_rocket:  # of the Rocket Artillery, RA2 V3: 200 at 5 to 18 cells; the reload is ours
+  kind: weapon
+  name: V3 Rocket
+  damage: 200
+  reload: 10s
+  range: 18
+  min_range: 5
+  projectile: v3_shot
+  warhead: v3_blast

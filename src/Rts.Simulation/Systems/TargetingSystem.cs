@@ -98,7 +98,8 @@ public static class TargetingSystem
 
 
     /// <summary>The layer a weapon must fire at to hit <paramref name="target"/> (stage 2b): the air for a flier, else the ground.</summary>
-    public static WeaponTargets LayerOf(Entity? target) => target is Unit { Archetype.Flies: true } ? WeaponTargets.Air : WeaponTargets.Ground;
+    public static WeaponTargets LayerOf(Entity? target) =>
+        target is Unit { Archetype.Flies: true } or Projectile ? WeaponTargets.Air : WeaponTargets.Ground;
 
     /// <summary>Whether one of the weapons fires at <paramref name="layer"/> (a forced attack: the ground, or a flier in the air).</summary>
     internal static bool Hits(GameRules rules, ImmutableArray<int> weapons, WeaponTargets layer)
@@ -133,6 +134,7 @@ public static class TargetingSystem
         {
             Unit unit => unit.Archetype.Armor,
             Building { DefIndex: >= 0 } building => rules.ArmorOfBuilding(building.DefIndex),
+            Projectile shot => rules.ArmorOfShot(shot.Weapon),
             _ => 0,
         };
         var best = 0;
@@ -159,8 +161,12 @@ public static class TargetingSystem
 
     /// <summary>Whether <paramref name="me"/> takes the candidate, a disguised unit (stage 3b), for one of its own: all but the dogs do.</summary>
     internal static bool Fooled(Entity me, Entity candidate) =>
-        candidate is Unit disguised && disguised.Archetype.Has(UnitTalents.Disguised)
-        && !(me is Unit watcher && watcher.Archetype.Has(UnitTalents.DetectsDisguise));
+        candidate is Unit disguised
+        && ((disguised.Archetype.Has(UnitTalents.Disguised) && !(me is Unit watcher && watcher.Archetype.Has(UnitTalents.DetectsDisguise)))
+            || IsTree(disguised));
+
+    /// <summary>Whether the unit, standing still, passes for a tree now (stage 3c: the holo tank).</summary>
+    public static bool IsTree(Unit unit) => unit.Archetype.Has(UnitTalents.StillDisguise) && unit.MoveTarget is null && !unit.PathPending;
 
     /// <summary>A unit on a leg of a plain move: it does not look for enemies until it arrives.</summary>
     internal static bool IsMoving(Unit unit) => unit.Orders.Length > 0 && !unit.IsAttackMoving;
@@ -212,6 +218,12 @@ public static class TargetingSystem
                 && DamageCalculator.Distance(from, Aim.NearestPoint(building, from)) <= area.Reach)
             {
                 nearby.Add(building.Id);
+            }
+
+            // A shot anti-air can bring down (stage 3c: the rocket artillery's rocket) is a target in the air.
+            if (entity is Projectile { IsAlive: true, Hp: > 0 } shot && DamageCalculator.Distance(from, shot.Position) <= area.Reach)
+            {
+                nearby.Add(shot.Id);
             }
         }
 

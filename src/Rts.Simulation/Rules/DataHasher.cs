@@ -53,6 +53,9 @@ public static class DataHasher
             hash.Add(weapon.BurstDelay);
             hash.Add((byte)weapon.Targets);
             hash.Add(weapon.Suicide);
+            hash.Add(weapon.Fragments);
+            Add(hash, weapon.FragmentWeapon);
+            hash.Add(weapon.FragmentRange.Raw);
         }
 
         hash.Add(rules.Units.Length);
@@ -93,6 +96,7 @@ public static class DataHasher
             hash.Add(unit.Teleports);
             Add(hash, unit.DeployWeapon);
             hash.Add(unit.RadiationImmune);
+            hash.Add(unit.DisguiseWhenStill);
             hash.Add(unit.AvailableLater);
         }
 
@@ -294,6 +298,8 @@ public static class DataHasher
             hash.Add(projectile.Inaccuracy.Raw);
             hash.Add(projectile.TurnRate);
             hash.Add(projectile.Lifetime);
+            hash.Add(projectile.Hp);
+            Add(hash, projectile.Armor);
         }
 
         return hash.Value;

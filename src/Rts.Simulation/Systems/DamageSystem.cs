@@ -32,12 +32,66 @@ public static class DamageSystem
         world.Hits.Sort(Compare);
         var rules = world.Rules;
         var area = world.Area;
+        List<Hit>? splinters = null;
         foreach (var hit in world.Hits)
         {
             Apply(world, rules, hit, area, events);
+            if (rules.Database.Weapons[hit.Weapon].Fragments > 0)
+            {
+                Splinter(world, rules, hit, splinters ??= [], events);
+            }
+        }
+
+        // The splinters of a splitting beam (stage 3c) land after every hit of the tick, in the order they were sent.
+        foreach (var splinter in splinters ?? [])
+        {
+            Apply(world, rules, splinter, area, events);
         }
 
         world.Hits.Clear();
+    }
+
+    /// <summary>
+    /// A splitting beam (stage 3c, RA2 <c>ShrapnelCount</c>: the beam tank) sends <see cref="WeaponDef.Fragments"/> splinters of its
+    /// fragment weapon from where it hit to the nearest living enemies of its owner within <see cref="WeaponDef.FragmentRange"/> — not
+    /// its target, not a wall, only what the splinter fires at — the nearest first, then by id.
+    /// </summary>
+    private static void Splinter(GameWorld world, GameRules rules, Hit hit, List<Hit> splinters, List<SimEvent>? events)
+    {
+        var weapon = rules.Database.Weapons[hit.Weapon];
+        var fragment = rules.Database.IndexOfWeapon(weapon.FragmentWeapon);
+        if (fragment < 0 || hit.Owner.IsNeutral)
+        {
+            return;
+        }
+
+        var reach = Aim.Leptons(weapon.FragmentRange);
+        var layer = rules.Database.Weapons[fragment].Targets;
+        var found = new List<(int Distance, EntityId Id, WorldPos Point)>();
+        foreach (var entity in world.Entities)
+        {
+            if (!entity.IsAlive || entity.Id == hit.Target || entity is not (World.Unit or Building) || entity.Owner.IsNeutral
+                || world.AreAllies(entity.Owner, hit.Owner) || entity is Building { Def.Wall: true }
+                || (TargetingSystem.LayerOf(entity) & layer) == 0)
+            {
+                continue;
+            }
+
+            var point = Aim.NearestPoint(entity, hit.Point);
+            var distance = DamageCalculator.Distance(hit.Point, point);
+            if (distance <= reach)
+            {
+                found.Add((distance, entity.Id, point));
+            }
+        }
+
+        found.Sort((a, b) => a.Distance != b.Distance ? a.Distance.CompareTo(b.Distance) : a.Id.CompareTo(b.Id));
+        for (var i = 0; i < found.Count && i < weapon.Fragments; i++)
+        {
+            var (_, id, point) = found[i];
+            events?.Add(new ProjectileImpact(world.CurrentTick, null, hit.Shooter, fragment, point, id));
+            splinters.Add(new Hit(hit.Source, hit.Shooter, hit.Owner, fragment, point, id));
+        }
     }
 
     /// <summary>The order of the hits: by their source, then the target they were fired at, then the point.</summary>
@@ -159,6 +213,7 @@ public static class DamageSystem
     {
         World.Unit unit => unit.Archetype.Armor,
         Building { DefIndex: >= 0 } building => rules.ArmorOfBuilding(building.DefIndex),
+        Projectile shot => rules.ArmorOfShot(shot.Weapon),
         _ => 0,
     };
 
@@ -184,6 +239,19 @@ public static class DamageSystem
                     if (hp == 0)
                     {
                         DeathSystem.Kill(world, unit, attacker, hit.Owner, DeathCause.Weapon, weapon, events);
+                    }
+
+                    break;
+                }
+
+            case Projectile { Hp: > 0 } shot:
+                {
+                    // A shot brought down in flight (stage 3c) falls without going off.
+                    shot.Hp = IntMath.Max(0, shot.Hp - amount);
+                    if (shot.Hp == 0)
+                    {
+                        shot.MarkDead();
+                        events?.Add(new EntityDestroyed(world.CurrentTick, shot.Id, attacker, DeathCause.Weapon, weapon, hit.Owner));
                     }
 
                     break;

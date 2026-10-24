@@ -52,3 +52,18 @@ chrono_beam:  # the Time Trooper's beam
   name: Chrono Beam
   motion: instant
   visual: chrono_beam
+
+v3_shot:  # the rocket artillery's rocket, RA2 V3ROCKET: a slow flying thing anti-air can bring down (50 hp, special_2); speed and arc are ours, slower than a homing missile
+  kind: projectile
+  name: V3 Rocket
+  motion: ballistic
+  speed: 20
+  arc: 2
+  hp: 50
+  armor: special_2
+
+prism_ray:  # the beam tank's beam and its splinters
+  kind: projectile
+  name: Prism Ray
+  motion: instant
+  visual: prism_ray

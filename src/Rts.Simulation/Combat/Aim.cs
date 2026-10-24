@@ -12,7 +12,8 @@ public static class Aim
     {
         if (target is not Building building)
         {
-            return ((Unit)target).Position;
+            // A unit, or a shot in flight that can be brought down (stage 3c).
+            return target is Projectile shot ? shot.Position : ((Unit)target).Position;
         }
 
         var left = building.Cell.X * WorldPos.LeptonsPerCell;

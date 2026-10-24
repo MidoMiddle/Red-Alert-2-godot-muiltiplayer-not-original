@@ -52,4 +52,16 @@ public sealed record WeaponDef : IDefinition
 
     /// <summary>Firing it is its shooter's end (stage 3b, RA2 <c>Suicide</c>: the demolition trooper): the shooter dies at once.</summary>
     public bool Suicide { get; init; }
+
+    /// <summary>
+    /// How many splinters a hit of it sends to the nearest other enemies within <see cref="FragmentRange"/> of where it hit (stage 3c: the
+    /// beam tank's splitting beam, RA2 <c>ShrapnelCount</c>); 0 for none.
+    /// </summary>
+    public int Fragments { get; init; }
+
+    /// <summary>The weapon of every splinter.</summary>
+    public string FragmentWeapon { get; init; } = "";
+
+    /// <summary>How far the splinters reach, in cells.</summary>
+    public Fixed FragmentRange { get; init; }
 }

@@ -309,11 +309,15 @@ public sealed class GameRules
         return problems;
     }
 
+    /// <summary>The armor of a shot of <paramref name="weapon"/> that can be brought down (stage 3c); the first armor without one.</summary>
+    public int ArmorOfShot(int weapon) =>
+        Database.TryGetProjectile(Database.Weapons[weapon].Projectile, out var shot) ? IntMath.Max(0, Database.IndexOfArmor(shot.Armor)) : 0;
+
     private static UnitTalents TalentsOf(UnitDef unit) =>
         (unit.Engineer ? UnitTalents.Engineer : 0) | (unit.Infiltrator ? UnitTalents.Infiltrator : 0)
         | (unit.Disguised ? UnitTalents.Disguised : 0) | (unit.DetectsDisguise ? UnitTalents.DetectsDisguise : 0)
         | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0)
-        | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0);
+        | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0);
 
     private static Locomotor? LocomotorOf(string id)
     {

@@ -268,6 +268,13 @@ internal static class RulesValidator
         public void Weapon(WeaponDef weapon)
         {
             NotNegative(weapon.Id, "damage", weapon.Damage);
+            NotNegative(weapon.Id, "fragments", weapon.Fragments);
+            WeaponOf(weapon.Id, "fragment_weapon", weapon.FragmentWeapon);
+            if (weapon.Fragments > 0 && (weapon.FragmentWeapon.Length == 0 || weapon.FragmentRange <= Fixed.Zero))
+            {
+                Error(weapon.Id, "fragments", $"the splinters of '{weapon.Id}' need a 'fragment_weapon' and a 'fragment_range' above zero");
+            }
+
             Positive(weapon.Id, "reload", weapon.Reload);
             if (weapon.Range <= Fixed.Zero)
             {
@@ -339,6 +346,12 @@ internal static class RulesValidator
         public void Projectile(ProjectileDef projectile)
         {
             NotNegative(projectile.Id, "speed", projectile.Speed);
+            NotNegative(projectile.Id, "hp", projectile.Hp);
+            if (projectile.Hp > 0)
+            {
+                ArmorOf(projectile.Id, projectile.Armor);
+            }
+
             NotNegative(projectile.Id, "turn_rate", projectile.TurnRate);
             NotNegative(projectile.Id, "lifetime", projectile.Lifetime);
             foreach (var (key, value) in new[] { ("arc", projectile.Arc), ("inaccuracy", projectile.Inaccuracy) })

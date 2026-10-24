@@ -26,4 +26,7 @@ public enum UnitTalents
 
     /// <summary>The toxin on the ground does not hurt it (<see cref="Rules.UnitDef.RadiationImmune"/>).</summary>
     RadiationImmune = 64,
+
+    /// <summary>Standing still, it passes for a tree (<see cref="Rules.UnitDef.DisguiseWhenStill"/>).</summary>
+    StillDisguise = 128,
 }

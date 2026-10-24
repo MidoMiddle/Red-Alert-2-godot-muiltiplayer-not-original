@@ -110,6 +110,8 @@ public static class Vision
         {
             case Unit unit:
                 return Seen(unit.Position.ToCell());
+            case Projectile shot:
+                return Seen(shot.Position.ToCell());
             case Building building:
                 for (var y = building.Cell.Y; y <= building.FarCell.Y; y++)
                 {

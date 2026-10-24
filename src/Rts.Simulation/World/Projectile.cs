@@ -52,4 +52,10 @@ public sealed class Projectile : Entity
 
     /// <summary>The tick it was fired on; it starts to fly on the next one.</summary>
     public int LaunchTick { get; }
+
+    /// <summary>
+    /// The hit points of a shot that anti-air can bring down (stage 3c: the rocket artillery's rocket); 0 for one nothing can hit.
+    /// State: hashed.
+    /// </summary>
+    public int Hp { get; internal set; }
 }

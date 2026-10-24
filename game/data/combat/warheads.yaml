@@ -140,3 +140,36 @@ toxin_site:  # RA2 RadSite: what the toxin on the ground does to what stands on 
   name: Toxin Ground
   verses: { none: 100%, flak: 100%, plate: 100%, light: 50%, medium: 10%, heavy: 10%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
   infantry_death: electro
+
+apoc_ap:  # RA2 ApocAP: the Super Heavy Tank's cannons
+  kind: warhead
+  name: Apocalypse AP
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 70%, special_1: 100%, special_2: 100% }
+  spread: 0.3
+  infantry_death: explode
+
+ultra_ap:  # RA2 UltraAP: the Tank Hunter's sabot, full against light and heavy only
+  kind: warhead
+  name: Ultra AP
+  verses: { none: 2%, flak: 2%, plate: 2%, light: 100%, medium: 40%, heavy: 100%, wood: 2%, steel: 2%, concrete: 2%, special_1: 100%, special_2: 100% }
+  infantry_death: explode
+
+v3_blast:  # RA2 V3WH: the rocket going off, a cell round it; the verses are ours
+  kind: warhead
+  name: V3 Blast
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  spread: 1
+  percent_at_max: 50%
+  infantry_death: explode
+
+prism:  # the beam tank's beam: buildings take it double (RA2); the rest is ours
+  kind: warhead
+  name: Prism
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 200%, steel: 200%, concrete: 200%, special_1: 100%, special_2: 100% }
+  infantry_death: electro
+
+mirage:  # the holo tank's gun; the verses are ours
+  kind: warhead
+  name: Mirage
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 75%, heavy: 50%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  infantry_death: normal

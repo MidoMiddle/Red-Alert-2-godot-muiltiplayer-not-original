@@ -348,7 +348,7 @@ public static class WeaponSystem
     /// <summary>A target that still stands: a living unit or building.</summary>
     private static bool TargetOf(GameWorld world, EntityId? id, out Entity target)
     {
-        if (id is { } targetId && world.TryGet(targetId, out var entity) && entity is { IsAlive: true } and (World.Unit or Building))
+        if (id is { } targetId && world.TryGet(targetId, out var entity) && entity is { IsAlive: true } and (World.Unit or Building or Projectile { Hp: > 0 }))
         {
             target = entity;
             return true;

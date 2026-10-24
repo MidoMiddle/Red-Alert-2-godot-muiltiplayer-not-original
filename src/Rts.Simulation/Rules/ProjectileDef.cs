@@ -44,4 +44,13 @@ public sealed record ProjectileDef : IDefinition
 
     /// <summary>What the client draws, such as <c>electric_bolt</c>; the simulation does not use it.</summary>
     public string Visual { get; init; } = "";
+
+    /// <summary>
+    /// The hit points of a shot that anti-air can bring down in flight (stage 3c: the rocket artillery's rocket, RA2 <c>V3ROCKET</c>);
+    /// 0 for a shot nothing can hit.
+    /// </summary>
+    public int Hp { get; init; }
+
+    /// <summary>The armor of such a shot.</summary>
+    public string Armor { get; init; } = "";
 }

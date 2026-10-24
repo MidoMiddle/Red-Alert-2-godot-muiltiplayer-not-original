@@ -81,7 +81,7 @@ desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the 
   deploy_weapon: toxin_eruption_gun
   radiation_immune: true
 
-rocket_artillery:  # long-range rocket (the draft listed it as desolator)
+rocket_artillery:  # a rocket from afar, only when ordered; anti-air can bring it down (stage 3c)
   kind: unit
   inherits: base_vehicle
   name: Rocket Artillery
@@ -95,9 +95,10 @@ rocket_artillery:  # long-range rocket (the draft listed it as desolator)
   sight: 7
   turret: false
   prerequisites: [war_factory, radar]
-  ability_later: true
+  primary: v3_rocket
+  passive: true
 
-apocalypse_tank:  # twin cannons and missiles
+apocalypse_tank:  # twin cannons at the ground, missiles at the air (stage 3c)
   kind: unit
   inherits: base_vehicle
   name: Super Heavy Tank
@@ -109,7 +110,8 @@ apocalypse_tank:  # twin cannons and missiles
   speed: 24
   sight: 6
   prerequisites: [war_factory, tech_center]
-  ability_later: true
+  primary: apocalypse_cannons
+  secondary: apocalypse_tusks
 
 terror_drone:  # climbs into vehicles
   kind: unit

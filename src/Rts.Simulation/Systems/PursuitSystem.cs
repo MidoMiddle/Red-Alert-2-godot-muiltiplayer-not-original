@@ -98,7 +98,8 @@ public static class PursuitSystem
     /// <summary>Where the unit fires at: the nearest point of its living target, the point of a forced attack, or none.</summary>
     private static WorldPos? GoalOf(GameWorld world, Unit unit)
     {
-        if (unit.Target is { } id && world.TryGet(id, out var target) && target.IsAlive && target is Unit or Building)
+        // A shot anti-air can bring down (stage 3c) is chased as a flier is.
+        if (unit.Target is { } id && world.TryGet(id, out var target) && target.IsAlive && target is Unit or Building or Projectile { Hp: > 0 })
         {
             return Aim.NearestPoint(target, unit.Position);
         }

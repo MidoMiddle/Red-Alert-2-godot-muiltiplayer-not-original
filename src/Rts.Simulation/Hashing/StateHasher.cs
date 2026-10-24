@@ -299,6 +299,8 @@ public static class StateHasher
                 AddCommon(hash, projectile);
                 hash.Add(projectile.Shooter.Value);
                 hash.Add(projectile.Weapon);
+                // Rules v51 (stage 3c): the hit points of a shot anti-air can bring down.
+                hash.Add(projectile.Hp);
                 hash.Add(projectile.Target.HasValue);
                 hash.Add(projectile.Target?.Value ?? 0);
                 hash.Add(projectile.Origin.X);

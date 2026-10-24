@@ -919,8 +919,10 @@ public partial class PlayerInput : Node
         {
             // A unit hidden by the fog (M4 step 12) cannot be pointed at; an ally's is no target either (M6, A6): an order on it is a move
             // to the ground under it, as an attack on an ally is refused.
+            // An enemy holo tank standing still (stage 3c) is a tree to the player: nothing to point at.
             if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit || !Terrain.FogOfWar.Shows(world, unit)
-                || (unit.Owner != SimulationHost.LocalPlayer && world.AreAllies(SimulationHost.LocalPlayer, unit.Owner)))
+                || (unit.Owner != SimulationHost.LocalPlayer && world.AreAllies(SimulationHost.LocalPlayer, unit.Owner))
+                || Units.Disguises.LooksLikeTree(world, unit))
             {
                 continue;
             }

@@ -581,6 +581,11 @@ public sealed class GameWorld
     internal Projectile Launch(PlayerId owner, EntityId shooter, int weapon, EntityId? target, WorldPos origin, WorldPos aimPoint)
     {
         var projectile = new Projectile(AllocateId(), owner, shooter, weapon, target, origin, aimPoint, CurrentTick);
+        if (Rules.Database.TryGetProjectile(Rules.Database.Weapons[weapon].Projectile, out var shot))
+        {
+            projectile.Hp = shot.Hp;
+        }
+
         _entities.Add(projectile);
         return projectile;
     }

@@ -79,8 +79,8 @@
 | crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | работает: вешает бомбу, через 30 с взрыв 400 по площади; гибель носителя взрывает сразу (этап 3б) |
 | terrorist | Demolition Trooper | blows up with its target | Terrorist | работает: сам целей не ищет; по приказу подбегает и взрывается, взрывается и убитым (этап 3б) |
 | desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); развёрнутый (D) заражает землю ядом, яд ранит всех на земле, кроме него (этап 3б) |
-| rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | строится, без оружия — этап 3 |
-| apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | строится, без оружия — этап 3 |
+| rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | работает: ракета на 5–18 клеток, только по приказу; ПВО может её сбить (этап 3в) |
+| apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | работает: две пушки по земле, ракеты только по воздуху (этап 3в); самолечение — позже |
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | строится, без оружия — этап 3 |
 | demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | строится, без оружия — этап 3 |
 | kirov_airship | Heavy Airship | bomber airship | Kirov Airship | летает, строится (этап 2б), без оружия — этап 3 |
@@ -102,9 +102,9 @@
 | alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | работает: пистолеты убивают пехотинца с выстрела (этап 3а); C4 сносит здание целиком за 2 с (этап 3б) |
 | alliance_sniper | Marksman | long-range anti-infantry | Sniper | работает: винтовка на 14 клеток против пехоты (этап 3а) |
 | alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | строится, без оружия — этап 3 |
-| alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | строится, без оружия — этап 3 |
-| alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | строится, без оружия — этап 3 |
-| alliance_tank_destroyer | Tank Hunter | anti-tank gun | Tank Destroyer | строится, без оружия — этап 3 |
+| alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | работает: луч 100, до 5 осколков по 30 в радиусе 3 клеток, здания — вдвое (этап 3в) |
+| alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | работает: стоя на месте, для врага — дерево, его не выбирают целью; сам за целью не едет (этап 3в) |
+| alliance_tank_destroyer | Tank Hunter | anti-tank gun | Tank Destroyer | работает: подкалиберная пушка 150, полный урон по лёгкой и тяжёлой технике, по пехоте 2 % (этап 3в) |
 | alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | летает, строится (этап 2б), без оружия — этап 3 |
 | alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | летает, строится (этап 2б), без оружия — этап 3 |
 | alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | летает, строится (этап 2б), без оружия — этап 3 |

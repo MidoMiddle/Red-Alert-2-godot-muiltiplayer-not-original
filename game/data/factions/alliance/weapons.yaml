@@ -119,3 +119,42 @@ alliance_c4_charge:  # the C4 going off: the building comes down whatever its st
   range: 1
   projectile: shell
   warhead: demolition
+
+alliance_prism_beam:  # of the Beam Tank, RA2 Comet: 100 at the target, 5 splinters of 30 within 3 cells
+  kind: weapon
+  name: Prism Beam
+  damage: 100
+  reload: 6.67s
+  range: 10
+  projectile: prism_ray
+  warhead: prism
+  fragments: 5
+  fragment_weapon: alliance_prism_shard
+  fragment_range: 3
+
+alliance_prism_shard:  # a splinter of the beam, RA2 CometFragment
+  kind: weapon
+  name: Prism Shard
+  damage: 30
+  reload: 1s
+  range: 3
+  projectile: prism_ray
+  warhead: prism
+
+alliance_sabot:  # of the Tank Hunter, RA2 SABOT
+  kind: weapon
+  name: Sabot Cannon
+  damage: 150
+  reload: 4.67s
+  range: 5
+  projectile: shell
+  warhead: ultra_ap
+
+alliance_mirage_gun:  # of the Holo Tank, RA2 MirageGun
+  kind: weapon
+  name: Mirage Gun
+  damage: 100
+  reload: 4.67s
+  range: 7
+  projectile: bullet
+  warhead: mirage

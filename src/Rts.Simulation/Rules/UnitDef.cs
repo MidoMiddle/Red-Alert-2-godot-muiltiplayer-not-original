@@ -110,6 +110,12 @@ public sealed record UnitDef : IDefinition
     /// <summary>The toxin on the ground does not hurt it (RA2: the desolator).</summary>
     public bool RadiationImmune { get; init; }
 
+    /// <summary>
+    /// Standing still, it looks like a tree to other teams, and none of their units picks it as a target (stage 3c: the holo tank, RA2
+    /// <c>DisguiseWhenStill</c>).
+    /// </summary>
+    public bool DisguiseWhenStill { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 
