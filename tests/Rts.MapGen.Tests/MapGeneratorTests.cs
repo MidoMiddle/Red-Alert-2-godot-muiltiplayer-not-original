@@ -52,12 +52,12 @@ public sealed class MapGeneratorTests
         // the drills of the fields; without them the map is the one of before, byte for byte. 2026-10-24: the playable area of the
         // screen — a 90 x 90 grid with the inscribed square, the starts and rivers in the screen's axes. Loose ends, stage 2: a bridge
         // repair hut by every bridge. Later on 2026-10-24: a base of radius 12, its home field by its edge, the contested field three
-        // fifths of the way to the centre.
+        // fifths of the way to the centre. 2026-10-25: the dressing of the climate (a farm and barbed wire in the snow).
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("c3b45106ab6456c40b2ab41997f33e2dec0a0ed6c9badf3c7116282dbcad5630", MapHasher.Hash(map));
-        Assert.Equal("edaa6026f8e5d1097e1a2f8ead49c8cdf3f733a0036afcafc809ad4d7012ef4b", MapHasher.Hash(none));
+        Assert.Equal("fe87cd267f513d6e2edad5c7cd635c2b6c70d4fc4d7479dcecf785f0fee7450b", MapHasher.Hash(map));
+        Assert.Equal("447d36a4f964a2b02b385aa6420070ef0a34e2537c4ea8b40172a03a8dacd06b", MapHasher.Hash(none));
     }
 
     [Theory]

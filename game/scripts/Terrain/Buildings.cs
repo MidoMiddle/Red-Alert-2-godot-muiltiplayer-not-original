@@ -103,7 +103,8 @@ public partial class Buildings : Node3D
             BuildingKind.NeutralFactoryHall => 0.9f,
             BuildingKind.NeutralBoilerHouse => 0.6f,
             BuildingKind.TechBridgeRepairHut => 0.45f,
-            _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "No symbolic height for this kind."),
+            // A building of the element documents has its look (BuildingLooks); the height is for the others only.
+            _ => 0.6f,
         };
         var centre = new Vector3(cell.X + type.Width / 2f, 0, cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
@@ -112,6 +113,16 @@ public partial class Buildings : Node3D
             // The model of the table (docs/art/model_standards.md); a taken tech building shows its owner in its team_mask.
             model.Position += centre + new Vector3(0, ground, 0);
             AddChild(model);
+            return;
+        }
+
+        if (BuildingLooks.Known(type.Id))
+        {
+            // A building of the element documents: its look in the civilian colours, the owner's band when someone holds it.
+            var body = new Node3D { Position = centre + new Vector3(0, ground - Sink, 0) };
+            AddChild(body);
+            BuildingLookView.AddParts(body, BuildingLooks.Of(type.Id, type.Width, type.Height, false), LookFaction.Civilian,
+                owner.IsNeutral ? null : OwnerColor(owner), Sink, band: true);
             return;
         }
 

@@ -16,4 +16,7 @@ internal static class Channels
 
     // The houses of a town (the urban climate).
     public const int Town = 11;
+
+    /// <summary>The dressing of the climate (Dressing): its streams are Dressing × 16 + 1…9.</summary>
+    public const int Dressing = 12;
 }

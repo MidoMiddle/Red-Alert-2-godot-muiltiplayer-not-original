@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using Rts.Simulation.Rules;
 
@@ -26,8 +27,15 @@ public static class BuildingLookView
             return;
         }
 
-        var soviet = def.Faction == "union";
-        var parts = BuildingLooks.Of(def);
+        AddParts(body, BuildingLooks.Of(def), def.Faction == "union" ? LookFaction.Soviet : LookFaction.Allied, owner, sink, !def.Wall);
+    }
+
+    /// <summary>
+    /// Adds <paramref name="parts"/> in the colours of <paramref name="faction"/> to <paramref name="body"/>, as <see cref="AddTo"/>;
+    /// the owner's band round the base when <paramref name="band"/> and an owner is given (a building of the map nobody owns has none).
+    /// </summary>
+    public static void AddParts(Node3D body, IReadOnlyList<LookPart> parts, LookFaction faction, Color? owner, float sink, bool band)
+    {
         for (var i = 0; i < parts.Count; i++)
         {
             var part = parts[i];
@@ -38,18 +46,18 @@ public static class BuildingLookView
                 part = part with { SizeY = part.SizeY + sink, Y = part.Y - sink / 2f };
             }
 
-            body.AddChild(Mesh(part, part.Tint == LookTint.Owner ? owner : ColorOf(part.Tint, soviet), sink));
-            if (i == 0 && !def.Wall)
+            body.AddChild(Mesh(part, part.Tint == LookTint.Owner && owner is { } own ? own : ColorOf(part.Tint, faction), sink));
+            if (i == 0 && band && owner is { } colour)
             {
-                body.AddChild(Mesh(Band(parts[0]), owner, sink));
+                body.AddChild(Mesh(Band(parts[0]), colour, sink));
             }
         }
     }
 
     /// <summary>The colour of a tint for a faction.</summary>
-    public static Color ColorOf(LookTint tint, bool soviet)
+    public static Color ColorOf(LookTint tint, LookFaction faction)
     {
-        var (r, g, b) = BuildingLooks.Palette(tint, soviet);
+        var (r, g, b) = BuildingLooks.Palette(tint, faction);
         return new Color(r, g, b);
     }
 
@@ -66,7 +74,14 @@ public static class BuildingLookView
         };
     }
 
-    private static MeshInstance3D Mesh(LookPart part, Color color, float sink)
+    internal static MeshInstance3D Mesh(LookPart part, Color color, float sink)
+    {
+        var (mesh, place) = MeshOf(part, color);
+        return new MeshInstance3D { Mesh = mesh, Transform = new Transform3D(Basis.Identity, new Vector3(0, sink, 0)) * place };
+    }
+
+    /// <summary>The mesh of a part in its colour, and its place about the look's origin: for a MultiMesh of many (the props).</summary>
+    internal static (PrimitiveMesh Mesh, Transform3D Place) MeshOf(LookPart part, Color color)
     {
         var material = new StandardMaterial3D { AlbedoColor = color, Roughness = 0.8f };
         if (part.Tint == LookTint.Glow)
@@ -92,11 +107,8 @@ public static class BuildingLookView
         };
         mesh.Material = material;
         var yaw = part.Yaw + (part.Shape == LookShape.Pyramid ? 45f : 0f);
-        return new MeshInstance3D
-        {
-            Mesh = mesh,
-            Position = new Vector3(part.X, part.Y + sink, part.Z),
-            RotationDegrees = new Vector3(part.Tilt, yaw, 0f),
-        };
+        // Godot's order: the tilt about x first, then the yaw.
+        var basis = Basis.FromEuler(new Vector3(Mathf.DegToRad(part.Tilt), Mathf.DegToRad(yaw), 0f));
+        return (mesh, new Transform3D(basis, new Vector3(part.X, part.Y, part.Z)));
     }
 }

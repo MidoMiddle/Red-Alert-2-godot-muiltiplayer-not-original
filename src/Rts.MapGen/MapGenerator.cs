@@ -103,6 +103,7 @@ public static class MapGenerator
         Features.Buildings(map, contested);
         Bridges.Huts(map);
         Features.Town(map);
+        Dressing.Place(map);
         Features.Rough(map);
         Features.Forest(map);
         Features.Ground(map);

@@ -76,7 +76,12 @@ internal static class Features
         }
 
         var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
-        var kinds = new[] { "neutral_house_a", "neutral_apartment", "neutral_shed", "neutral_house_a", "neutral_boiler_house" };
+        var kinds = new[]
+        {
+            "neutral_house_a", "neutral_apartment", "neutral_shop", "neutral_office", "neutral_house_a", "neutral_school", "neutral_church",
+            "neutral_cafe", "neutral_bank", "neutral_hotel", "neutral_shed", "neutral_fire_station", "neutral_skyscraper", "neutral_kiosk",
+            "neutral_auto_repair", "neutral_fountain", "neutral_boiler_house",
+        };
         var candidates = new List<(int Order, CellPos Cell)>();
         for (var y = 2; y < map.N - 4; y++)
         {
@@ -137,7 +142,7 @@ internal static class Features
     }
 
     /// <summary>How many houses a town has per image of the symmetry.</summary>
-    public const int TownHouses = 14;
+    public const int TownHouses = 20;
 
     // Whether a road lies within reach cells of the cell (0: the cell is a road).
     private static bool NearRoad(GenMap map, CellPos cell, int reach)
@@ -249,6 +254,12 @@ internal static class Features
         foreach (var structure in map.Structures)
         {
             built.UnionWith(MapChecks.Footprint(structure));
+        }
+
+        // The dressing stands there already (Dressing): no tree on it.
+        foreach (var mapObject in map.Objects)
+        {
+            built.Add(mapObject.Cell);
         }
 
         for (var y = 0; y < map.N; y++)

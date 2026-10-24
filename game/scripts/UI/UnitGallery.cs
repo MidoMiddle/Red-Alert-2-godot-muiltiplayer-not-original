@@ -12,7 +12,8 @@ namespace Rts.Client.UI;
 /// Alliance's after them, in the order of <see cref="UnitTypes.All"/>. With <c>--icons</c> the squares of the sidebar instead: every
 /// unit and building of the data with its role colour and code. With <c>--buildings</c> every building of the players in its look
 /// (<see cref="Terrain.BuildingLooks"/>), the Allies' rows first, in the order of the sidebar. With <c>--models</c> every model of the
-/// table of models (docs/art/model_standards.md) on a plate of its footprint, to check its size against the cells.
+/// table of models (docs/art/model_standards.md) on a plate of its footprint, to check its size against the cells. With
+/// <c>--props</c> the buildings and props of the map from the element documents in their placeholder looks.
 /// </summary>
 public partial class UnitGallery : Node3D
 {
@@ -31,6 +32,7 @@ public partial class UnitGallery : Node3D
 
         var buildings = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--buildings") >= 0;
         var models = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--models") >= 0;
+        var props = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--props") >= 0;
         AddChild(new WorldEnvironment
         {
             Environment = new Environment
@@ -42,6 +44,13 @@ public partial class UnitGallery : Node3D
             },
         });
         AddChild(new DirectionalLight3D { RotationDegrees = new Vector3(-55f, -35f, 0f), ShadowEnabled = true });
+
+        if (props)
+        {
+            ShowProps();
+            ScreenshotCapture.AttachIfRequested(this);
+            return;
+        }
 
         if (models)
         {
@@ -93,6 +102,72 @@ public partial class UnitGallery : Node3D
             Current = true,
         });
         ScreenshotCapture.AttachIfRequested(this);
+    }
+
+    /// <summary>The buildings of the map with a look of the element documents, then the props, each on its plate with its id.</summary>
+    private void ShowProps()
+    {
+        const int PropColumns = 10;
+        const float Step = 3.6f;
+        var items = new System.Collections.Generic.List<(string Id, int W, int H, bool Building)>();
+        foreach (var type in Rts.Simulation.World.BuildingTypes.All)
+        {
+            if (Terrain.BuildingLooks.Known(type.Id))
+            {
+                items.Add((type.Id, type.Width, type.Height, true));
+            }
+        }
+
+        while (items.Count % PropColumns != 0)
+        {
+            items.Add(("", 0, 0, false));
+        }
+
+        foreach (var id in Terrain.PropLooks.Ids)
+        {
+            items.Add((id, 1, 1, false));
+        }
+
+        var rows = (items.Count + PropColumns - 1) / PropColumns;
+        for (var i = 0; i < items.Count; i++)
+        {
+            var (id, width, height, building) = items[i];
+            if (id.Length == 0)
+            {
+                continue;
+            }
+
+            var at = new Vector3((i % PropColumns - (PropColumns - 1) / 2f) * Step, 0f, (i / PropColumns - (rows - 1) / 2f) * Step);
+            AddChild(new MeshInstance3D
+            {
+                Mesh = new PlaneMesh { Size = new Vector2(width, height) },
+                Position = at + new Vector3(0, 0.005f, 0),
+                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.3f, 0.32f, 0.3f) },
+            });
+            var body = new Node3D { Position = at };
+            AddChild(body);
+            var parts = building ? Terrain.BuildingLooks.Of(id, width, height, false) : Terrain.PropLooks.Of(id);
+            Terrain.BuildingLookView.AddParts(body, parts, Terrain.LookFaction.Civilian, null, 0f, band: false);
+            AddChild(new Label3D
+            {
+                Text = id.Replace("neutral_", ""),
+                Position = at + new Vector3(0, 0.05f, height / 2f + 0.45f),
+                RotationDegrees = new Vector3(-60f, 0, 0),
+                FontSize = 36,
+                PixelSize = 0.01f,
+                OutlineSize = 8,
+                Modulate = new Color(0.95f, 0.93f, 0.85f),
+            });
+        }
+
+        AddChild(new Camera3D
+        {
+            Projection = Camera3D.ProjectionType.Orthogonal,
+            Size = Mathf.Max(rows * Step + 2f, (PropColumns * Step + 1f) * 9f / 16f),
+            Position = new Vector3(0, 30f, 21f),
+            RotationDegrees = new Vector3(-55f, 0, 0),
+            Current = true,
+        });
     }
 
     /// <summary>

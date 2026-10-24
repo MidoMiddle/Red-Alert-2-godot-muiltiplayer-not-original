@@ -62,7 +62,7 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 |---|---|---|
 | `building/<id>` | здание игроков или здание карты | `game/data/factions/*/buildings*.yaml`; нейтральные и тех-здания — `neutral_*`, `tech_*` (`BuildingTypes.cs`) |
 | `unit/<id>` | юнит | `game/data/factions/*/units*.yaml` |
-| `object/<id>` | объект карты | `MapObjectTypes.cs`: `boulder`, `fence_wood`, `wall_stone`, `lamp_post`, `anti_tank_hedgehog`, `pipeline`, `snowdrift`, `ore_source` |
+| `object/<id>` | объект карты | `MapObjectTypes.cs`: `boulder`, `fence_wood`, `wall_stone`, `lamp_post`, `anti_tank_hedgehog`, `pipeline`, `snowdrift`, `ore_source` и мелочь из документов элементов — `bench`, `phone_booth`, `beach_umbrella`, `hay_bale`, `well`, `barbed_wire` и другие (заглушки — [PropLooks.cs](../../game/scripts/Terrain/PropLooks.cs)) |
 | `tree/<форма>` | дерево по климату (и маскировка Mirage Tank) | `pine` (снег), `broadleaf_small` и `broadleaf_big` (умеренный, город), `palm` и `cactus` (пустыня) |
 | `ore/<вид>` | кластеры руды на поле | `ore`, `gems` |
 
@@ -137,5 +137,7 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 | `object/fence_wood`, `object/pipeline`, `object/anti_tank_hedgehog` | забор, труба, противотанковый ёж |
 | `object/snowdrift` | сугроб, две разновидности с поворотом и разбросом ±20 % (только в снегу) |
 | `ore/ore`, `ore/gems` | кластеры руды и самоцветов |
+
+Здания карты из документов элементов (школа, церковь, маяк, ферма, саманный дом и другие) рисуются заглушками в [BuildingLooks.cs](../../game/scripts/Terrain/BuildingLooks.cs) гражданскими цветами, мелочь — в [PropLooks.cs](../../game/scripts/Terrain/PropLooks.cs); все они видны в галерее `-- --ui-units --props`.
 
 Модели зданий и юнитов игроков пока нет: они рисуются заглушками ([BuildingLooks.cs](../../game/scripts/Terrain/BuildingLooks.cs), [UnitView.cs](../../game/scripts/Units/UnitView.cs)). Деревья тоже заглушки по климату ([TreeShapes.cs](../../game/scripts/Terrain/TreeShapes.cs)).

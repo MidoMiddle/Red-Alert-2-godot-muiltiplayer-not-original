@@ -758,10 +758,78 @@ layers:
     ......................................................................................................................................................................................
     ......................................................................................................................................................................................
 objects:
+  - { type: barbed_wire, cell: [99, 31], variant: 0 }
+  - { type: barbed_wire, cell: [100, 31], variant: 0 }
+  - { type: barbed_wire, cell: [101, 31], variant: 0 }
+  - { type: barbed_wire, cell: [132, 41], variant: 0 }
+  - { type: barbed_wire, cell: [132, 42], variant: 0 }
+  - { type: barbed_wire, cell: [132, 43], variant: 0 }
+  - { type: barbed_wire, cell: [41, 49], variant: 0 }
+  - { type: barbed_wire, cell: [42, 49], variant: 0 }
+  - { type: barbed_wire, cell: [43, 49], variant: 0 }
+  - { type: barbed_wire, cell: [81, 67], variant: 0 }
+  - { type: barbed_wire, cell: [81, 68], variant: 0 }
+  - { type: barbed_wire, cell: [81, 69], variant: 0 }
+  - { type: barbed_wire, cell: [31, 80], variant: 0 }
+  - { type: barbed_wire, cell: [31, 81], variant: 0 }
+  - { type: barbed_wire, cell: [112, 81], variant: 0 }
+  - { type: barbed_wire, cell: [113, 81], variant: 0 }
+  - { type: barbed_wire, cell: [114, 81], variant: 0 }
+  - { type: barbed_wire, cell: [31, 82], variant: 0 }
+  - { type: barbed_wire, cell: [150, 99], variant: 0 }
+  - { type: barbed_wire, cell: [67, 100], variant: 0 }
+  - { type: barbed_wire, cell: [68, 100], variant: 0 }
+  - { type: barbed_wire, cell: [69, 100], variant: 0 }
+  - { type: barbed_wire, cell: [150, 100], variant: 0 }
+  - { type: barbed_wire, cell: [150, 101], variant: 0 }
+  - { type: barbed_wire, cell: [100, 112], variant: 0 }
+  - { type: barbed_wire, cell: [100, 113], variant: 0 }
+  - { type: barbed_wire, cell: [100, 114], variant: 0 }
+  - { type: barbed_wire, cell: [138, 132], variant: 0 }
+  - { type: barbed_wire, cell: [139, 132], variant: 0 }
+  - { type: barbed_wire, cell: [140, 132], variant: 0 }
+  - { type: barbed_wire, cell: [49, 138], variant: 0 }
+  - { type: barbed_wire, cell: [49, 139], variant: 0 }
+  - { type: barbed_wire, cell: [49, 140], variant: 0 }
+  - { type: barbed_wire, cell: [80, 150], variant: 0 }
+  - { type: barbed_wire, cell: [81, 150], variant: 0 }
+  - { type: barbed_wire, cell: [82, 150], variant: 0 }
   - { type: gem_source, cell: [87, 72], variant: 0 }
   - { type: gem_source, cell: [109, 87], variant: 0 }
   - { type: gem_source, cell: [72, 94], variant: 0 }
   - { type: gem_source, cell: [94, 109], variant: 0 }
+  - { type: hay_bale, cell: [76, 64], variant: 0 }
+  - { type: hay_bale, cell: [77, 64], variant: 1 }
+  - { type: hay_bale, cell: [76, 65], variant: 2 }
+  - { type: hay_bale, cell: [116, 76], variant: 2 }
+  - { type: hay_bale, cell: [117, 76], variant: 0 }
+  - { type: hay_bale, cell: [117, 77], variant: 1 }
+  - { type: hay_bale, cell: [64, 104], variant: 1 }
+  - { type: hay_bale, cell: [64, 105], variant: 0 }
+  - { type: hay_bale, cell: [65, 105], variant: 2 }
+  - { type: hay_bale, cell: [105, 116], variant: 2 }
+  - { type: hay_bale, cell: [104, 117], variant: 1 }
+  - { type: hay_bale, cell: [105, 117], variant: 0 }
+  - { type: hedge, cell: [69, 59], variant: 0 }
+  - { type: hedge, cell: [70, 59], variant: 0 }
+  - { type: hedge, cell: [71, 59], variant: 0 }
+  - { type: hedge, cell: [72, 59], variant: 0 }
+  - { type: hedge, cell: [73, 59], variant: 0 }
+  - { type: hedge, cell: [122, 69], variant: 0 }
+  - { type: hedge, cell: [122, 70], variant: 0 }
+  - { type: hedge, cell: [122, 71], variant: 0 }
+  - { type: hedge, cell: [122, 72], variant: 0 }
+  - { type: hedge, cell: [122, 73], variant: 0 }
+  - { type: hedge, cell: [59, 108], variant: 0 }
+  - { type: hedge, cell: [59, 109], variant: 0 }
+  - { type: hedge, cell: [59, 110], variant: 0 }
+  - { type: hedge, cell: [59, 111], variant: 0 }
+  - { type: hedge, cell: [59, 112], variant: 0 }
+  - { type: hedge, cell: [108, 122], variant: 0 }
+  - { type: hedge, cell: [109, 122], variant: 0 }
+  - { type: hedge, cell: [110, 122], variant: 0 }
+  - { type: hedge, cell: [111, 122], variant: 0 }
+  - { type: hedge, cell: [112, 122], variant: 0 }
   - { type: ore_source, cell: [91, 52], variant: 0 }
   - { type: ore_source, cell: [52, 90], variant: 0 }
   - { type: ore_source, cell: [129, 91], variant: 0 }
@@ -2428,6 +2496,14 @@ bridges:
   - { type: bridge_wood_low, from: [68, 111], to: [68, 118] }
   - { type: bridge_wood_low, from: [111, 113], to: [118, 113] }
 structures:
+  - { type: neutral_farmhouse, cell: [71, 61], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [119, 71], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [61, 109], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [109, 119], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [68, 62], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [119, 68], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [62, 113], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [113, 119], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [110, 60], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [60, 71], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [121, 110], owner: neutral, facing: 0 }

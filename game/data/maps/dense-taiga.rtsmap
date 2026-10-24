@@ -758,10 +758,94 @@ layers:
     ......................................................................................................................................................................................
     ......................................................................................................................................................................................
 objects:
+  - { type: barbed_wire, cell: [71, 28], variant: 0 }
+  - { type: barbed_wire, cell: [72, 28], variant: 0 }
+  - { type: barbed_wire, cell: [73, 28], variant: 0 }
+  - { type: barbed_wire, cell: [122, 42], variant: 0 }
+  - { type: barbed_wire, cell: [122, 43], variant: 0 }
+  - { type: barbed_wire, cell: [122, 44], variant: 0 }
+  - { type: barbed_wire, cell: [111, 54], variant: 0 }
+  - { type: barbed_wire, cell: [112, 54], variant: 0 }
+  - { type: barbed_wire, cell: [113, 54], variant: 0 }
+  - { type: barbed_wire, cell: [42, 59], variant: 0 }
+  - { type: barbed_wire, cell: [43, 59], variant: 0 }
+  - { type: barbed_wire, cell: [44, 59], variant: 0 }
+  - { type: barbed_wire, cell: [54, 68], variant: 0 }
+  - { type: barbed_wire, cell: [54, 69], variant: 0 }
+  - { type: barbed_wire, cell: [54, 70], variant: 0 }
+  - { type: barbed_wire, cell: [153, 71], variant: 0 }
+  - { type: barbed_wire, cell: [153, 72], variant: 0 }
+  - { type: barbed_wire, cell: [153, 73], variant: 0 }
+  - { type: barbed_wire, cell: [28, 108], variant: 0 }
+  - { type: barbed_wire, cell: [28, 109], variant: 0 }
+  - { type: barbed_wire, cell: [28, 110], variant: 0 }
+  - { type: barbed_wire, cell: [127, 111], variant: 0 }
+  - { type: barbed_wire, cell: [127, 112], variant: 0 }
+  - { type: barbed_wire, cell: [127, 113], variant: 0 }
+  - { type: barbed_wire, cell: [137, 122], variant: 0 }
+  - { type: barbed_wire, cell: [138, 122], variant: 0 }
+  - { type: barbed_wire, cell: [139, 122], variant: 0 }
+  - { type: barbed_wire, cell: [68, 127], variant: 0 }
+  - { type: barbed_wire, cell: [69, 127], variant: 0 }
+  - { type: barbed_wire, cell: [70, 127], variant: 0 }
+  - { type: barbed_wire, cell: [59, 137], variant: 0 }
+  - { type: barbed_wire, cell: [59, 138], variant: 0 }
+  - { type: barbed_wire, cell: [59, 139], variant: 0 }
+  - { type: barbed_wire, cell: [108, 153], variant: 0 }
+  - { type: barbed_wire, cell: [109, 153], variant: 0 }
+  - { type: barbed_wire, cell: [110, 153], variant: 0 }
+  - { type: farm_tractor, cell: [88, 66], variant: 0 }
+  - { type: farm_tractor, cell: [115, 88], variant: 0 }
+  - { type: farm_tractor, cell: [66, 93], variant: 0 }
+  - { type: farm_tractor, cell: [93, 115], variant: 0 }
   - { type: gem_source, cell: [90, 71], variant: 0 }
   - { type: gem_source, cell: [110, 90], variant: 0 }
   - { type: gem_source, cell: [71, 91], variant: 0 }
   - { type: gem_source, cell: [91, 110], variant: 0 }
+  - { type: hay_bale, cell: [92, 66], variant: 0 }
+  - { type: hay_bale, cell: [93, 66], variant: 1 }
+  - { type: hay_bale, cell: [92, 67], variant: 2 }
+  - { type: hay_bale, cell: [66, 88], variant: 1 }
+  - { type: hay_bale, cell: [66, 89], variant: 0 }
+  - { type: hay_bale, cell: [67, 89], variant: 2 }
+  - { type: hay_bale, cell: [114, 92], variant: 2 }
+  - { type: hay_bale, cell: [115, 92], variant: 0 }
+  - { type: hay_bale, cell: [115, 93], variant: 1 }
+  - { type: hay_bale, cell: [89, 114], variant: 2 }
+  - { type: hay_bale, cell: [88, 115], variant: 1 }
+  - { type: hay_bale, cell: [89, 115], variant: 0 }
+  - { type: hedge, cell: [85, 61], variant: 0 }
+  - { type: hedge, cell: [86, 61], variant: 0 }
+  - { type: hedge, cell: [87, 61], variant: 0 }
+  - { type: hedge, cell: [88, 61], variant: 0 }
+  - { type: hedge, cell: [89, 61], variant: 0 }
+  - { type: hedge, cell: [90, 61], variant: 0 }
+  - { type: hedge, cell: [91, 61], variant: 0 }
+  - { type: hedge, cell: [92, 61], variant: 0 }
+  - { type: hedge, cell: [120, 85], variant: 0 }
+  - { type: hedge, cell: [120, 86], variant: 0 }
+  - { type: hedge, cell: [120, 87], variant: 0 }
+  - { type: hedge, cell: [120, 88], variant: 0 }
+  - { type: hedge, cell: [61, 89], variant: 0 }
+  - { type: hedge, cell: [120, 89], variant: 0 }
+  - { type: hedge, cell: [61, 90], variant: 0 }
+  - { type: hedge, cell: [120, 90], variant: 0 }
+  - { type: hedge, cell: [61, 91], variant: 0 }
+  - { type: hedge, cell: [120, 91], variant: 0 }
+  - { type: hedge, cell: [61, 92], variant: 0 }
+  - { type: hedge, cell: [120, 92], variant: 0 }
+  - { type: hedge, cell: [61, 93], variant: 0 }
+  - { type: hedge, cell: [61, 94], variant: 0 }
+  - { type: hedge, cell: [61, 95], variant: 0 }
+  - { type: hedge, cell: [61, 96], variant: 0 }
+  - { type: hedge, cell: [89, 120], variant: 0 }
+  - { type: hedge, cell: [90, 120], variant: 0 }
+  - { type: hedge, cell: [91, 120], variant: 0 }
+  - { type: hedge, cell: [92, 120], variant: 0 }
+  - { type: hedge, cell: [93, 120], variant: 0 }
+  - { type: hedge, cell: [94, 120], variant: 0 }
+  - { type: hedge, cell: [95, 120], variant: 0 }
+  - { type: hedge, cell: [96, 120], variant: 0 }
   - { type: ore_source, cell: [99, 49], variant: 0 }
   - { type: ore_source, cell: [49, 82], variant: 0 }
   - { type: ore_source, cell: [132, 99], variant: 0 }
@@ -3784,7 +3868,6 @@ objects:
   - { type: pine_tree, cell: [74, 43], variant: 1 }
   - { type: pine_tree, cell: [75, 43], variant: 3 }
   - { type: pine_tree, cell: [76, 43], variant: 3 }
-  - { type: pine_tree, cell: [122, 43], variant: 2 }
   - { type: pine_tree, cell: [123, 43], variant: 3 }
   - { type: pine_tree, cell: [124, 43], variant: 0 }
   - { type: pine_tree, cell: [125, 43], variant: 0 }
@@ -3848,7 +3931,6 @@ objects:
   - { type: pine_tree, cell: [74, 44], variant: 0 }
   - { type: pine_tree, cell: [75, 44], variant: 1 }
   - { type: pine_tree, cell: [76, 44], variant: 0 }
-  - { type: pine_tree, cell: [122, 44], variant: 1 }
   - { type: pine_tree, cell: [123, 44], variant: 1 }
   - { type: pine_tree, cell: [124, 44], variant: 2 }
   - { type: pine_tree, cell: [125, 44], variant: 3 }
@@ -5179,8 +5261,6 @@ objects:
   - { type: pine_tree, cell: [19, 59], variant: 2 }
   - { type: pine_tree, cell: [20, 59], variant: 0 }
   - { type: pine_tree, cell: [21, 59], variant: 3 }
-  - { type: pine_tree, cell: [43, 59], variant: 2 }
-  - { type: pine_tree, cell: [44, 59], variant: 1 }
   - { type: pine_tree, cell: [45, 59], variant: 2 }
   - { type: pine_tree, cell: [46, 59], variant: 1 }
   - { type: pine_tree, cell: [47, 59], variant: 3 }
@@ -5340,14 +5420,6 @@ objects:
   - { type: pine_tree, cell: [82, 61], variant: 2 }
   - { type: pine_tree, cell: [83, 61], variant: 0 }
   - { type: pine_tree, cell: [84, 61], variant: 3 }
-  - { type: pine_tree, cell: [85, 61], variant: 1 }
-  - { type: pine_tree, cell: [86, 61], variant: 2 }
-  - { type: pine_tree, cell: [87, 61], variant: 3 }
-  - { type: pine_tree, cell: [88, 61], variant: 1 }
-  - { type: pine_tree, cell: [89, 61], variant: 1 }
-  - { type: pine_tree, cell: [90, 61], variant: 3 }
-  - { type: pine_tree, cell: [91, 61], variant: 2 }
-  - { type: pine_tree, cell: [92, 61], variant: 3 }
   - { type: pine_tree, cell: [93, 61], variant: 1 }
   - { type: pine_tree, cell: [94, 61], variant: 3 }
   - { type: pine_tree, cell: [95, 61], variant: 0 }
@@ -5466,8 +5538,6 @@ objects:
   - { type: pine_tree, cell: [84, 63], variant: 0 }
   - { type: pine_tree, cell: [85, 63], variant: 3 }
   - { type: pine_tree, cell: [86, 63], variant: 0 }
-  - { type: pine_tree, cell: [87, 63], variant: 3 }
-  - { type: pine_tree, cell: [88, 63], variant: 3 }
   - { type: pine_tree, cell: [89, 63], variant: 3 }
   - { type: pine_tree, cell: [90, 63], variant: 0 }
   - { type: pine_tree, cell: [91, 63], variant: 2 }
@@ -5529,7 +5599,6 @@ objects:
   - { type: pine_tree, cell: [81, 64], variant: 2 }
   - { type: pine_tree, cell: [82, 64], variant: 0 }
   - { type: pine_tree, cell: [83, 64], variant: 3 }
-  - { type: pine_tree, cell: [84, 64], variant: 0 }
   - { type: pine_tree, cell: [85, 64], variant: 3 }
   - { type: pine_tree, cell: [86, 64], variant: 3 }
   - { type: pine_tree, cell: [94, 64], variant: 1 }
@@ -6539,7 +6608,6 @@ objects:
   - { type: pine_tree, cell: [92, 84], variant: 2 }
   - { type: pine_tree, cell: [115, 84], variant: 2 }
   - { type: pine_tree, cell: [116, 84], variant: 0 }
-  - { type: pine_tree, cell: [117, 84], variant: 0 }
   - { type: pine_tree, cell: [118, 84], variant: 0 }
   - { type: pine_tree, cell: [119, 84], variant: 1 }
   - { type: pine_tree, cell: [120, 84], variant: 3 }
@@ -6593,7 +6661,6 @@ objects:
   - { type: pine_tree, cell: [117, 85], variant: 3 }
   - { type: pine_tree, cell: [118, 85], variant: 3 }
   - { type: pine_tree, cell: [119, 85], variant: 1 }
-  - { type: pine_tree, cell: [120, 85], variant: 1 }
   - { type: pine_tree, cell: [121, 85], variant: 1 }
   - { type: pine_tree, cell: [122, 85], variant: 1 }
   - { type: pine_tree, cell: [123, 85], variant: 1 }
@@ -6640,7 +6707,6 @@ objects:
   - { type: pine_tree, cell: [117, 86], variant: 3 }
   - { type: pine_tree, cell: [118, 86], variant: 0 }
   - { type: pine_tree, cell: [119, 86], variant: 2 }
-  - { type: pine_tree, cell: [120, 86], variant: 2 }
   - { type: pine_tree, cell: [121, 86], variant: 1 }
   - { type: pine_tree, cell: [122, 86], variant: 3 }
   - { type: pine_tree, cell: [123, 86], variant: 3 }
@@ -6680,9 +6746,7 @@ objects:
   - { type: pine_tree, cell: [64, 87], variant: 1 }
   - { type: pine_tree, cell: [81, 87], variant: 0 }
   - { type: pine_tree, cell: [82, 87], variant: 1 }
-  - { type: pine_tree, cell: [118, 87], variant: 3 }
   - { type: pine_tree, cell: [119, 87], variant: 1 }
-  - { type: pine_tree, cell: [120, 87], variant: 3 }
   - { type: pine_tree, cell: [121, 87], variant: 1 }
   - { type: pine_tree, cell: [122, 87], variant: 3 }
   - { type: pine_tree, cell: [123, 87], variant: 0 }
@@ -6720,9 +6784,7 @@ objects:
   - { type: pine_tree, cell: [63, 88], variant: 1 }
   - { type: pine_tree, cell: [82, 88], variant: 1 }
   - { type: pine_tree, cell: [83, 88], variant: 2 }
-  - { type: pine_tree, cell: [118, 88], variant: 3 }
   - { type: pine_tree, cell: [119, 88], variant: 2 }
-  - { type: pine_tree, cell: [120, 88], variant: 1 }
   - { type: pine_tree, cell: [121, 88], variant: 2 }
   - { type: pine_tree, cell: [122, 88], variant: 1 }
   - { type: pine_tree, cell: [123, 88], variant: 3 }
@@ -6754,13 +6816,11 @@ objects:
   - { type: pine_tree, cell: [58, 89], variant: 0 }
   - { type: pine_tree, cell: [59, 89], variant: 3 }
   - { type: pine_tree, cell: [60, 89], variant: 0 }
-  - { type: pine_tree, cell: [61, 89], variant: 3 }
   - { type: pine_tree, cell: [62, 89], variant: 2 }
   - { type: pine_tree, cell: [63, 89], variant: 0 }
   - { type: pine_tree, cell: [84, 89], variant: 2 }
   - { type: pine_tree, cell: [118, 89], variant: 3 }
   - { type: pine_tree, cell: [119, 89], variant: 2 }
-  - { type: pine_tree, cell: [120, 89], variant: 1 }
   - { type: pine_tree, cell: [121, 89], variant: 2 }
   - { type: pine_tree, cell: [122, 89], variant: 0 }
   - { type: pine_tree, cell: [123, 89], variant: 3 }
@@ -6792,12 +6852,10 @@ objects:
   - { type: pine_tree, cell: [58, 90], variant: 1 }
   - { type: pine_tree, cell: [59, 90], variant: 2 }
   - { type: pine_tree, cell: [60, 90], variant: 3 }
-  - { type: pine_tree, cell: [61, 90], variant: 2 }
   - { type: pine_tree, cell: [62, 90], variant: 3 }
   - { type: pine_tree, cell: [63, 90], variant: 2 }
   - { type: pine_tree, cell: [118, 90], variant: 0 }
   - { type: pine_tree, cell: [119, 90], variant: 1 }
-  - { type: pine_tree, cell: [120, 90], variant: 3 }
   - { type: pine_tree, cell: [121, 90], variant: 0 }
   - { type: pine_tree, cell: [122, 90], variant: 2 }
   - { type: pine_tree, cell: [123, 90], variant: 1 }
@@ -6834,12 +6892,10 @@ objects:
   - { type: pine_tree, cell: [58, 91], variant: 1 }
   - { type: pine_tree, cell: [59, 91], variant: 2 }
   - { type: pine_tree, cell: [60, 91], variant: 0 }
-  - { type: pine_tree, cell: [61, 91], variant: 3 }
   - { type: pine_tree, cell: [62, 91], variant: 1 }
   - { type: pine_tree, cell: [63, 91], variant: 0 }
   - { type: pine_tree, cell: [118, 91], variant: 2 }
   - { type: pine_tree, cell: [119, 91], variant: 3 }
-  - { type: pine_tree, cell: [120, 91], variant: 2 }
   - { type: pine_tree, cell: [121, 91], variant: 3 }
   - { type: pine_tree, cell: [122, 91], variant: 2 }
   - { type: pine_tree, cell: [123, 91], variant: 1 }
@@ -6871,13 +6927,11 @@ objects:
   - { type: pine_tree, cell: [58, 92], variant: 3 }
   - { type: pine_tree, cell: [59, 92], variant: 0 }
   - { type: pine_tree, cell: [60, 92], variant: 2 }
-  - { type: pine_tree, cell: [61, 92], variant: 1 }
   - { type: pine_tree, cell: [62, 92], variant: 2 }
   - { type: pine_tree, cell: [63, 92], variant: 3 }
   - { type: pine_tree, cell: [97, 92], variant: 2 }
   - { type: pine_tree, cell: [118, 92], variant: 0 }
   - { type: pine_tree, cell: [119, 92], variant: 2 }
-  - { type: pine_tree, cell: [120, 92], variant: 3 }
   - { type: pine_tree, cell: [121, 92], variant: 0 }
   - { type: pine_tree, cell: [122, 92], variant: 3 }
   - { type: pine_tree, cell: [123, 92], variant: 0 }
@@ -6909,9 +6963,7 @@ objects:
   - { type: pine_tree, cell: [58, 93], variant: 3 }
   - { type: pine_tree, cell: [59, 93], variant: 1 }
   - { type: pine_tree, cell: [60, 93], variant: 2 }
-  - { type: pine_tree, cell: [61, 93], variant: 1 }
   - { type: pine_tree, cell: [62, 93], variant: 2 }
-  - { type: pine_tree, cell: [63, 93], variant: 3 }
   - { type: pine_tree, cell: [98, 93], variant: 2 }
   - { type: pine_tree, cell: [99, 93], variant: 1 }
   - { type: pine_tree, cell: [118, 93], variant: 1 }
@@ -6949,9 +7001,7 @@ objects:
   - { type: pine_tree, cell: [58, 94], variant: 0 }
   - { type: pine_tree, cell: [59, 94], variant: 3 }
   - { type: pine_tree, cell: [60, 94], variant: 1 }
-  - { type: pine_tree, cell: [61, 94], variant: 3 }
   - { type: pine_tree, cell: [62, 94], variant: 1 }
-  - { type: pine_tree, cell: [63, 94], variant: 3 }
   - { type: pine_tree, cell: [99, 94], variant: 1 }
   - { type: pine_tree, cell: [100, 94], variant: 0 }
   - { type: pine_tree, cell: [117, 94], variant: 1 }
@@ -6991,7 +7041,6 @@ objects:
   - { type: pine_tree, cell: [58, 95], variant: 3 }
   - { type: pine_tree, cell: [59, 95], variant: 3 }
   - { type: pine_tree, cell: [60, 95], variant: 1 }
-  - { type: pine_tree, cell: [61, 95], variant: 2 }
   - { type: pine_tree, cell: [62, 95], variant: 2 }
   - { type: pine_tree, cell: [63, 95], variant: 0 }
   - { type: pine_tree, cell: [64, 95], variant: 3 }
@@ -7038,7 +7087,6 @@ objects:
   - { type: pine_tree, cell: [58, 96], variant: 1 }
   - { type: pine_tree, cell: [59, 96], variant: 1 }
   - { type: pine_tree, cell: [60, 96], variant: 1 }
-  - { type: pine_tree, cell: [61, 96], variant: 1 }
   - { type: pine_tree, cell: [62, 96], variant: 1 }
   - { type: pine_tree, cell: [63, 96], variant: 3 }
   - { type: pine_tree, cell: [64, 96], variant: 3 }
@@ -7092,7 +7140,6 @@ objects:
   - { type: pine_tree, cell: [61, 97], variant: 3 }
   - { type: pine_tree, cell: [62, 97], variant: 1 }
   - { type: pine_tree, cell: [63, 97], variant: 0 }
-  - { type: pine_tree, cell: [64, 97], variant: 0 }
   - { type: pine_tree, cell: [65, 97], variant: 0 }
   - { type: pine_tree, cell: [66, 97], variant: 2 }
   - { type: pine_tree, cell: [89, 97], variant: 2 }
@@ -8102,7 +8149,6 @@ objects:
   - { type: pine_tree, cell: [87, 117], variant: 1 }
   - { type: pine_tree, cell: [95, 117], variant: 3 }
   - { type: pine_tree, cell: [96, 117], variant: 3 }
-  - { type: pine_tree, cell: [97, 117], variant: 0 }
   - { type: pine_tree, cell: [98, 117], variant: 3 }
   - { type: pine_tree, cell: [99, 117], variant: 0 }
   - { type: pine_tree, cell: [100, 117], variant: 2 }
@@ -8164,8 +8210,6 @@ objects:
   - { type: pine_tree, cell: [90, 118], variant: 2 }
   - { type: pine_tree, cell: [91, 118], variant: 0 }
   - { type: pine_tree, cell: [92, 118], variant: 3 }
-  - { type: pine_tree, cell: [93, 118], variant: 3 }
-  - { type: pine_tree, cell: [94, 118], variant: 3 }
   - { type: pine_tree, cell: [95, 118], variant: 0 }
   - { type: pine_tree, cell: [96, 118], variant: 3 }
   - { type: pine_tree, cell: [97, 118], variant: 0 }
@@ -8284,14 +8328,6 @@ objects:
   - { type: pine_tree, cell: [86, 120], variant: 0 }
   - { type: pine_tree, cell: [87, 120], variant: 3 }
   - { type: pine_tree, cell: [88, 120], variant: 1 }
-  - { type: pine_tree, cell: [89, 120], variant: 3 }
-  - { type: pine_tree, cell: [90, 120], variant: 2 }
-  - { type: pine_tree, cell: [91, 120], variant: 3 }
-  - { type: pine_tree, cell: [92, 120], variant: 1 }
-  - { type: pine_tree, cell: [93, 120], variant: 1 }
-  - { type: pine_tree, cell: [94, 120], variant: 3 }
-  - { type: pine_tree, cell: [95, 120], variant: 2 }
-  - { type: pine_tree, cell: [96, 120], variant: 1 }
   - { type: pine_tree, cell: [97, 120], variant: 3 }
   - { type: pine_tree, cell: [98, 120], variant: 0 }
   - { type: pine_tree, cell: [99, 120], variant: 2 }
@@ -8451,8 +8487,6 @@ objects:
   - { type: pine_tree, cell: [134, 122], variant: 3 }
   - { type: pine_tree, cell: [135, 122], variant: 1 }
   - { type: pine_tree, cell: [136, 122], variant: 2 }
-  - { type: pine_tree, cell: [137, 122], variant: 1 }
-  - { type: pine_tree, cell: [138, 122], variant: 2 }
   - { type: pine_tree, cell: [160, 122], variant: 3 }
   - { type: pine_tree, cell: [161, 122], variant: 0 }
   - { type: pine_tree, cell: [162, 122], variant: 2 }
@@ -9783,7 +9817,6 @@ objects:
   - { type: pine_tree, cell: [56, 137], variant: 3 }
   - { type: pine_tree, cell: [57, 137], variant: 2 }
   - { type: pine_tree, cell: [58, 137], variant: 1 }
-  - { type: pine_tree, cell: [59, 137], variant: 1 }
   - { type: pine_tree, cell: [105, 137], variant: 0 }
   - { type: pine_tree, cell: [106, 137], variant: 1 }
   - { type: pine_tree, cell: [107, 137], variant: 0 }
@@ -9847,7 +9880,6 @@ objects:
   - { type: pine_tree, cell: [56, 138], variant: 0 }
   - { type: pine_tree, cell: [57, 138], variant: 0 }
   - { type: pine_tree, cell: [58, 138], variant: 3 }
-  - { type: pine_tree, cell: [59, 138], variant: 2 }
   - { type: pine_tree, cell: [105, 138], variant: 3 }
   - { type: pine_tree, cell: [106, 138], variant: 3 }
   - { type: pine_tree, cell: [107, 138], variant: 1 }
@@ -12866,12 +12898,24 @@ objects:
   - { type: pine_tree, cell: [168, 181], variant: 0 }
   - { type: pine_tree, cell: [169, 181], variant: 1 }
   - { type: pine_tree, cell: [170, 181], variant: 3 }
+  - { type: well, cell: [87, 66], variant: 0 }
+  - { type: well, cell: [115, 87], variant: 0 }
+  - { type: well, cell: [66, 94], variant: 0 }
+  - { type: well, cell: [94, 115], variant: 0 }
 bridges:
   - { type: bridge_wood_low, from: [113, 66], to: [113, 70] }
   - { type: bridge_wood_low, from: [66, 68], to: [70, 68] }
   - { type: bridge_wood_low, from: [68, 111], to: [68, 115] }
   - { type: bridge_wood_low, from: [111, 113], to: [115, 113] }
 structures:
+  - { type: neutral_farmhouse, cell: [87, 63], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [117, 87], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [63, 93], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [93, 117], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [84, 64], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [117, 84], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [64, 97], owner: neutral, facing: 0 }
+  - { type: neutral_water_tower, cell: [97, 117], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [70, 65], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [116, 70], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [65, 111], owner: neutral, facing: 0 }

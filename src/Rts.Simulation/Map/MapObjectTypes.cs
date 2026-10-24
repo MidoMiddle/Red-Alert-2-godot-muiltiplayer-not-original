@@ -15,6 +15,31 @@ public enum MapObjectKind : byte
     Snowdrift = 8,
     OreSource = 9,
     GemSource = 10,
+
+    // The props of the element documents (docs/*_elements), 2026-10-25: street, beach, desert, farm, obstacles.
+    Bench = 11,
+    TrashBin = 12,
+    Mailbox = 13,
+    PhoneBooth = 14,
+    BusStop = 15,
+    Billboard = 16,
+    RoadSign = 17,
+    TrafficLight = 18,
+    Flowerbed = 19,
+    StreetStall = 20,
+    BeachUmbrella = 21,
+    SunLounger = 22,
+    BeachShower = 23,
+    VolleyballNet = 24,
+    FishingNets = 25,
+    Driftwood = 26,
+    BeachedBoat = 27,
+    DryShrub = 28,
+    Hedge = 29,
+    HayBale = 30,
+    Well = 31,
+    BarbedWire = 32,
+    FarmTractor = 33,
 }
 
 /// <summary>
@@ -42,8 +67,8 @@ public sealed record MapObjectType(
 }
 
 /// <summary>
-/// The map objects of the rules so far (winter and industrial sets, the ore and gem sources), kept in code until the data files of M3
-/// (map_objects.yaml) like the land table. Hit points are a rough guide until the balance of M4: the RA2 numbers for map
+/// The map objects of the rules so far (winter and industrial sets, the ore and gem sources, the props of the element documents), kept
+/// in code until the data files of M3 (map_objects.yaml) like the land table. Hit points are a rough guide until the balance of M4: the RA2 numbers for map
 /// objects are not confirmed in our documents.
 /// </summary>
 public static class MapObjectTypes
@@ -76,6 +101,33 @@ public static class MapObjectTypes
         // The drill towers of ore and gem fields (M3 step 16): in everyone's way, never destroyed; OreSourceSystem makes them erupt.
         new(MapObjectKind.OreSource, "ore_source", AllMovers, MaxHp: 0, CrushMask: 0, LeavesStump: false),
         new(MapObjectKind.GemSource, "gem_source", AllMovers, MaxHp: 0, CrushMask: 0, LeavesStump: false),
+
+        // The element documents (2026-10-25): what blocks and what a vehicle drives over by section 3 of each; small things of the
+        // street, the beach and the farm a vehicle crushes, a hedge, a well or a billboard stops everyone, barbed wire stops all but
+        // tracks, which flatten it (RA2).
+        new(MapObjectKind.Bench, "bench", 0, MaxHp: 50, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.TrashBin, "trash_bin", 0, MaxHp: 40, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.Mailbox, "mailbox", 0, MaxHp: 40, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.PhoneBooth, "phone_booth", AllMovers, MaxHp: 100, CrushMask: Bit(Locomotor.Track), LeavesStump: false),
+        new(MapObjectKind.BusStop, "bus_stop", 0, MaxHp: 100, CrushMask: Bit(Locomotor.Track), LeavesStump: false),
+        new(MapObjectKind.Billboard, "billboard", AllMovers, MaxHp: 150, CrushMask: 0, LeavesStump: false),
+        new(MapObjectKind.RoadSign, "road_sign", 0, MaxHp: 30, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.TrafficLight, "traffic_light", AllMovers, MaxHp: 200, CrushMask: Bit(Locomotor.Track), LeavesStump: false),
+        new(MapObjectKind.Flowerbed, "flowerbed", 0, MaxHp: 50, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.StreetStall, "street_stall", TrackAndWheel, MaxHp: 80, CrushMask: Bit(Locomotor.Track), LeavesStump: false),
+        new(MapObjectKind.BeachUmbrella, "beach_umbrella", 0, MaxHp: 30, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.SunLounger, "sun_lounger", 0, MaxHp: 30, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.BeachShower, "beach_shower", 0, MaxHp: 50, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.VolleyballNet, "volleyball_net", 0, MaxHp: 40, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.FishingNets, "fishing_nets", 0, MaxHp: 20, CrushMask: TrackAndWheel, LeavesStump: false),
+        new(MapObjectKind.Driftwood, "driftwood", 0, MaxHp: 50, CrushMask: Bit(Locomotor.Track), LeavesStump: false),
+        new(MapObjectKind.BeachedBoat, "beached_boat", AllMovers, MaxHp: 300, CrushMask: 0, LeavesStump: false),
+        new(MapObjectKind.DryShrub, "dry_shrub", 0, MaxHp: 30, CrushMask: AllMovers, LeavesStump: false),
+        new(MapObjectKind.Hedge, "hedge", AllMovers, MaxHp: 300, CrushMask: 0, LeavesStump: false),
+        new(MapObjectKind.HayBale, "hay_bale", AllMovers, MaxHp: 100, CrushMask: Bit(Locomotor.Track), LeavesStump: false),
+        new(MapObjectKind.Well, "well", AllMovers, MaxHp: 1500, CrushMask: 0, LeavesStump: false),
+        new(MapObjectKind.BarbedWire, "barbed_wire", (byte)(AllMovers & ~Bit(Locomotor.Track)), MaxHp: 100, CrushMask: Bit(Locomotor.Track), LeavesStump: false),
+        new(MapObjectKind.FarmTractor, "farm_tractor", AllMovers, MaxHp: 400, CrushMask: 0, LeavesStump: false),
     ];
 
     public static IReadOnlyList<MapObjectType> All => Types;

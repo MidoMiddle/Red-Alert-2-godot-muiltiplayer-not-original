@@ -165,6 +165,9 @@ public static class MapPreview
                     return OreSource;
                 case MapObjectKind.GemSource:
                     return GemSource;
+                case var _ when mapObject.Type.BlockMask != 0:
+                    // A prop of the element documents that stops movers: a hedge, a well, a phone booth.
+                    return Fence;
             }
         }
 

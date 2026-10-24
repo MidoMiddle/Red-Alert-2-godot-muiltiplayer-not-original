@@ -59,6 +59,7 @@ public partial class MapObjects : Node3D
         var hedgehogs = new List<Vector3>();
         var pipes = new List<Vector3>();
         var drifts = new List<Vector3>();
+        var props = new SortedDictionary<string, List<Vector3>>(System.StringComparer.Ordinal);
         for (var y = 0; y < _map.Height; y++)
         {
             for (var x = 0; x < _map.Width; x++)
@@ -92,6 +93,9 @@ public partial class MapObjects : Node3D
                 (MapObjectKind.Snowdrift, true) => null,
                 // Drawn and animated by OreSources.
                 (MapObjectKind.OreSource or MapObjectKind.GemSource, _) => null,
+                // The props of the element documents (PropLooks): gone when destroyed.
+                (_, false) when PropLooks.Known(mapObject.Type.Id) => PropsOf(props, mapObject.Type.Id),
+                (_, true) when PropLooks.Known(mapObject.Type.Id) => null,
                 _ => throw new System.ArgumentOutOfRangeException(nameof(mapObject), mapObject.Kind, "No symbolic look for this kind."),
             };
             list?.Add(at);
@@ -135,6 +139,10 @@ public partial class MapObjects : Node3D
             _ => new Color(0.9f, 0.93f, 0.97f),
         };
         AddInstances("Snowdrifts", new SphereMesh { Radius = 0.45f, Height = 0.22f }, drift, drifts, 0.11f, "object/snowdrift");
+        foreach (var (id, points) in props)
+        {
+            AddProps(id, points);
+        }
     }
 
     /// <summary>
@@ -236,6 +244,43 @@ public partial class MapObjects : Node3D
         foreach (var (shape, points) in modelled)
         {
             AddModelInstances("TreeModel" + shape, Models.ModelLibrary.Instances("tree/" + shape, null, points)!);
+        }
+    }
+
+    private static List<Vector3> PropsOf(SortedDictionary<string, List<Vector3>> props, string id)
+    {
+        if (!props.TryGetValue(id, out var points))
+        {
+            points = [];
+            props[id] = points;
+        }
+
+        return points;
+    }
+
+    /// <summary>
+    /// The props of one kind: its model of the table (<c>object/&lt;id&gt;</c>) when there is one for the climate, or else a MultiMesh
+    /// for every part of its look (<see cref="PropLooks"/>) in the civilian colours.
+    /// </summary>
+    private void AddProps(string id, List<Vector3> points)
+    {
+        if (Models.ModelLibrary.Instances("object/" + id, _builtClimate?.Id, points) is { } groups)
+        {
+            AddModelInstances("Prop" + id, groups);
+            return;
+        }
+
+        var parts = PropLooks.Of(id);
+        for (var p = 0; p < parts.Count; p++)
+        {
+            var (mesh, place) = BuildingLookView.MeshOf(parts[p], BuildingLookView.ColorOf(parts[p].Tint, LookFaction.Civilian));
+            var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = points.Count };
+            for (var i = 0; i < points.Count; i++)
+            {
+                multiMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity, points[i]) * place);
+            }
+
+            AddChild(new MultiMeshInstance3D { Name = "Prop" + id + p, Multimesh = multiMesh });
         }
     }
 

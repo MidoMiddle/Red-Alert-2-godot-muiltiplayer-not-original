@@ -757,6 +757,242 @@ layers:
     ......................................................................................................................................................................................
     ......................................................................................................................................................................................
 objects:
+  - { type: barbed_wire, cell: [79, 42], variant: 0 }
+  - { type: barbed_wire, cell: [79, 43], variant: 0 }
+  - { type: barbed_wire, cell: [79, 44], variant: 0 }
+  - { type: barbed_wire, cell: [70, 48], variant: 0 }
+  - { type: barbed_wire, cell: [70, 49], variant: 0 }
+  - { type: barbed_wire, cell: [70, 50], variant: 0 }
+  - { type: barbed_wire, cell: [131, 70], variant: 0 }
+  - { type: barbed_wire, cell: [132, 70], variant: 0 }
+  - { type: barbed_wire, cell: [133, 70], variant: 0 }
+  - { type: barbed_wire, cell: [103, 77], variant: 0 }
+  - { type: barbed_wire, cell: [77, 78], variant: 0 }
+  - { type: barbed_wire, cell: [78, 78], variant: 0 }
+  - { type: barbed_wire, cell: [79, 78], variant: 0 }
+  - { type: barbed_wire, cell: [103, 78], variant: 0 }
+  - { type: barbed_wire, cell: [103, 79], variant: 0 }
+  - { type: barbed_wire, cell: [137, 79], variant: 0 }
+  - { type: barbed_wire, cell: [138, 79], variant: 0 }
+  - { type: barbed_wire, cell: [139, 79], variant: 0 }
+  - { type: barbed_wire, cell: [42, 102], variant: 0 }
+  - { type: barbed_wire, cell: [43, 102], variant: 0 }
+  - { type: barbed_wire, cell: [44, 102], variant: 0 }
+  - { type: barbed_wire, cell: [78, 102], variant: 0 }
+  - { type: barbed_wire, cell: [78, 103], variant: 0 }
+  - { type: barbed_wire, cell: [102, 103], variant: 0 }
+  - { type: barbed_wire, cell: [103, 103], variant: 0 }
+  - { type: barbed_wire, cell: [104, 103], variant: 0 }
+  - { type: barbed_wire, cell: [78, 104], variant: 0 }
+  - { type: barbed_wire, cell: [48, 111], variant: 0 }
+  - { type: barbed_wire, cell: [49, 111], variant: 0 }
+  - { type: barbed_wire, cell: [50, 111], variant: 0 }
+  - { type: barbed_wire, cell: [111, 131], variant: 0 }
+  - { type: barbed_wire, cell: [111, 132], variant: 0 }
+  - { type: barbed_wire, cell: [111, 133], variant: 0 }
+  - { type: barbed_wire, cell: [102, 137], variant: 0 }
+  - { type: barbed_wire, cell: [102, 138], variant: 0 }
+  - { type: barbed_wire, cell: [102, 139], variant: 0 }
+  - { type: dry_shrub, cell: [88, 2], variant: 2 }
+  - { type: dry_shrub, cell: [92, 8], variant: 2 }
+  - { type: dry_shrub, cell: [96, 14], variant: 2 }
+  - { type: dry_shrub, cell: [101, 14], variant: 3 }
+  - { type: dry_shrub, cell: [79, 15], variant: 1 }
+  - { type: dry_shrub, cell: [77, 19], variant: 1 }
+  - { type: dry_shrub, cell: [96, 23], variant: 2 }
+  - { type: dry_shrub, cell: [77, 24], variant: 3 }
+  - { type: dry_shrub, cell: [68, 25], variant: 1 }
+  - { type: dry_shrub, cell: [80, 26], variant: 1 }
+  - { type: dry_shrub, cell: [82, 31], variant: 0 }
+  - { type: dry_shrub, cell: [75, 32], variant: 2 }
+  - { type: dry_shrub, cell: [76, 34], variant: 1 }
+  - { type: dry_shrub, cell: [71, 35], variant: 3 }
+  - { type: dry_shrub, cell: [52, 38], variant: 0 }
+  - { type: dry_shrub, cell: [63, 38], variant: 0 }
+  - { type: dry_shrub, cell: [87, 40], variant: 3 }
+  - { type: dry_shrub, cell: [119, 40], variant: 2 }
+  - { type: dry_shrub, cell: [123, 40], variant: 1 }
+  - { type: dry_shrub, cell: [48, 42], variant: 3 }
+  - { type: dry_shrub, cell: [68, 42], variant: 3 }
+  - { type: dry_shrub, cell: [114, 43], variant: 0 }
+  - { type: dry_shrub, cell: [65, 44], variant: 3 }
+  - { type: dry_shrub, cell: [66, 44], variant: 3 }
+  - { type: dry_shrub, cell: [118, 46], variant: 1 }
+  - { type: dry_shrub, cell: [117, 48], variant: 2 }
+  - { type: dry_shrub, cell: [139, 48], variant: 3 }
+  - { type: dry_shrub, cell: [114, 51], variant: 0 }
+  - { type: dry_shrub, cell: [75, 52], variant: 1 }
+  - { type: dry_shrub, cell: [143, 52], variant: 0 }
+  - { type: dry_shrub, cell: [90, 53], variant: 2 }
+  - { type: dry_shrub, cell: [126, 53], variant: 2 }
+  - { type: dry_shrub, cell: [54, 54], variant: 1 }
+  - { type: dry_shrub, cell: [127, 54], variant: 1 }
+  - { type: dry_shrub, cell: [53, 55], variant: 2 }
+  - { type: dry_shrub, cell: [89, 55], variant: 3 }
+  - { type: dry_shrub, cell: [102, 55], variant: 2 }
+  - { type: dry_shrub, cell: [120, 55], variant: 1 }
+  - { type: dry_shrub, cell: [107, 56], variant: 2 }
+  - { type: dry_shrub, cell: [66, 57], variant: 1 }
+  - { type: dry_shrub, cell: [40, 58], variant: 1 }
+  - { type: dry_shrub, cell: [55, 61], variant: 1 }
+  - { type: dry_shrub, cell: [40, 62], variant: 2 }
+  - { type: dry_shrub, cell: [76, 62], variant: 0 }
+  - { type: dry_shrub, cell: [98, 62], variant: 1 }
+  - { type: dry_shrub, cell: [46, 63], variant: 1 }
+  - { type: dry_shrub, cell: [69, 63], variant: 3 }
+  - { type: dry_shrub, cell: [143, 63], variant: 0 }
+  - { type: dry_shrub, cell: [48, 64], variant: 2 }
+  - { type: dry_shrub, cell: [75, 64], variant: 3 }
+  - { type: dry_shrub, cell: [90, 64], variant: 2 }
+  - { type: dry_shrub, cell: [66, 65], variant: 0 }
+  - { type: dry_shrub, cell: [86, 65], variant: 1 }
+  - { type: dry_shrub, cell: [137, 65], variant: 3 }
+  - { type: dry_shrub, cell: [116, 66], variant: 0 }
+  - { type: dry_shrub, cell: [124, 66], variant: 1 }
+  - { type: dry_shrub, cell: [137, 66], variant: 3 }
+  - { type: dry_shrub, cell: [43, 67], variant: 0 }
+  - { type: dry_shrub, cell: [51, 67], variant: 0 }
+  - { type: dry_shrub, cell: [139, 68], variant: 3 }
+  - { type: dry_shrub, cell: [156, 68], variant: 1 }
+  - { type: dry_shrub, cell: [99, 69], variant: 1 }
+  - { type: dry_shrub, cell: [103, 69], variant: 2 }
+  - { type: dry_shrub, cell: [109, 69], variant: 2 }
+  - { type: dry_shrub, cell: [118, 69], variant: 3 }
+  - { type: dry_shrub, cell: [74, 70], variant: 0 }
+  - { type: dry_shrub, cell: [146, 71], variant: 3 }
+  - { type: dry_shrub, cell: [69, 72], variant: 2 }
+  - { type: dry_shrub, cell: [56, 74], variant: 2 }
+  - { type: dry_shrub, cell: [111, 74], variant: 0 }
+  - { type: dry_shrub, cell: [117, 75], variant: 3 }
+  - { type: dry_shrub, cell: [129, 75], variant: 1 }
+  - { type: dry_shrub, cell: [149, 75], variant: 2 }
+  - { type: dry_shrub, cell: [87, 76], variant: 0 }
+  - { type: dry_shrub, cell: [95, 76], variant: 0 }
+  - { type: dry_shrub, cell: [119, 76], variant: 0 }
+  - { type: dry_shrub, cell: [147, 76], variant: 1 }
+  - { type: dry_shrub, cell: [157, 77], variant: 3 }
+  - { type: dry_shrub, cell: [162, 77], variant: 1 }
+  - { type: dry_shrub, cell: [69, 78], variant: 2 }
+  - { type: dry_shrub, cell: [55, 79], variant: 2 }
+  - { type: dry_shrub, cell: [80, 79], variant: 1 }
+  - { type: dry_shrub, cell: [166, 79], variant: 1 }
+  - { type: dry_shrub, cell: [14, 80], variant: 3 }
+  - { type: dry_shrub, cell: [102, 80], variant: 1 }
+  - { type: dry_shrub, cell: [155, 80], variant: 1 }
+  - { type: dry_shrub, cell: [69, 82], variant: 1 }
+  - { type: dry_shrub, cell: [150, 82], variant: 0 }
+  - { type: dry_shrub, cell: [62, 83], variant: 1 }
+  - { type: dry_shrub, cell: [14, 85], variant: 2 }
+  - { type: dry_shrub, cell: [23, 85], variant: 2 }
+  - { type: dry_shrub, cell: [76, 86], variant: 0 }
+  - { type: dry_shrub, cell: [116, 86], variant: 1 }
+  - { type: dry_shrub, cell: [105, 87], variant: 0 }
+  - { type: dry_shrub, cell: [141, 87], variant: 3 }
+  - { type: dry_shrub, cell: [179, 88], variant: 2 }
+  - { type: dry_shrub, cell: [8, 89], variant: 2 }
+  - { type: dry_shrub, cell: [126, 89], variant: 3 }
+  - { type: dry_shrub, cell: [117, 90], variant: 2 }
+  - { type: dry_shrub, cell: [128, 90], variant: 2 }
+  - { type: dry_shrub, cell: [53, 91], variant: 2 }
+  - { type: dry_shrub, cell: [64, 91], variant: 2 }
+  - { type: dry_shrub, cell: [55, 92], variant: 3 }
+  - { type: dry_shrub, cell: [173, 92], variant: 2 }
+  - { type: dry_shrub, cell: [2, 93], variant: 2 }
+  - { type: dry_shrub, cell: [40, 94], variant: 3 }
+  - { type: dry_shrub, cell: [76, 94], variant: 0 }
+  - { type: dry_shrub, cell: [65, 95], variant: 1 }
+  - { type: dry_shrub, cell: [105, 95], variant: 0 }
+  - { type: dry_shrub, cell: [158, 96], variant: 2 }
+  - { type: dry_shrub, cell: [167, 96], variant: 2 }
+  - { type: dry_shrub, cell: [119, 98], variant: 1 }
+  - { type: dry_shrub, cell: [31, 99], variant: 0 }
+  - { type: dry_shrub, cell: [112, 99], variant: 1 }
+  - { type: dry_shrub, cell: [26, 101], variant: 1 }
+  - { type: dry_shrub, cell: [79, 101], variant: 1 }
+  - { type: dry_shrub, cell: [167, 101], variant: 3 }
+  - { type: dry_shrub, cell: [15, 102], variant: 1 }
+  - { type: dry_shrub, cell: [101, 102], variant: 1 }
+  - { type: dry_shrub, cell: [126, 102], variant: 2 }
+  - { type: dry_shrub, cell: [112, 103], variant: 2 }
+  - { type: dry_shrub, cell: [19, 104], variant: 1 }
+  - { type: dry_shrub, cell: [24, 104], variant: 3 }
+  - { type: dry_shrub, cell: [34, 105], variant: 1 }
+  - { type: dry_shrub, cell: [62, 105], variant: 0 }
+  - { type: dry_shrub, cell: [86, 105], variant: 0 }
+  - { type: dry_shrub, cell: [94, 105], variant: 0 }
+  - { type: dry_shrub, cell: [32, 106], variant: 2 }
+  - { type: dry_shrub, cell: [52, 106], variant: 1 }
+  - { type: dry_shrub, cell: [64, 106], variant: 3 }
+  - { type: dry_shrub, cell: [70, 107], variant: 0 }
+  - { type: dry_shrub, cell: [125, 107], variant: 2 }
+  - { type: dry_shrub, cell: [112, 109], variant: 2 }
+  - { type: dry_shrub, cell: [35, 110], variant: 3 }
+  - { type: dry_shrub, cell: [107, 111], variant: 0 }
+  - { type: dry_shrub, cell: [63, 112], variant: 3 }
+  - { type: dry_shrub, cell: [72, 112], variant: 2 }
+  - { type: dry_shrub, cell: [78, 112], variant: 2 }
+  - { type: dry_shrub, cell: [82, 112], variant: 1 }
+  - { type: dry_shrub, cell: [25, 113], variant: 1 }
+  - { type: dry_shrub, cell: [42, 113], variant: 3 }
+  - { type: dry_shrub, cell: [130, 114], variant: 0 }
+  - { type: dry_shrub, cell: [138, 114], variant: 0 }
+  - { type: dry_shrub, cell: [44, 115], variant: 3 }
+  - { type: dry_shrub, cell: [57, 115], variant: 1 }
+  - { type: dry_shrub, cell: [65, 115], variant: 0 }
+  - { type: dry_shrub, cell: [44, 116], variant: 3 }
+  - { type: dry_shrub, cell: [95, 116], variant: 1 }
+  - { type: dry_shrub, cell: [115, 116], variant: 0 }
+  - { type: dry_shrub, cell: [91, 117], variant: 2 }
+  - { type: dry_shrub, cell: [106, 117], variant: 3 }
+  - { type: dry_shrub, cell: [133, 117], variant: 2 }
+  - { type: dry_shrub, cell: [38, 118], variant: 0 }
+  - { type: dry_shrub, cell: [112, 118], variant: 3 }
+  - { type: dry_shrub, cell: [135, 118], variant: 1 }
+  - { type: dry_shrub, cell: [83, 119], variant: 1 }
+  - { type: dry_shrub, cell: [105, 119], variant: 0 }
+  - { type: dry_shrub, cell: [141, 119], variant: 2 }
+  - { type: dry_shrub, cell: [126, 120], variant: 1 }
+  - { type: dry_shrub, cell: [141, 123], variant: 1 }
+  - { type: dry_shrub, cell: [115, 124], variant: 1 }
+  - { type: dry_shrub, cell: [74, 125], variant: 2 }
+  - { type: dry_shrub, cell: [61, 126], variant: 1 }
+  - { type: dry_shrub, cell: [79, 126], variant: 2 }
+  - { type: dry_shrub, cell: [92, 126], variant: 3 }
+  - { type: dry_shrub, cell: [128, 126], variant: 2 }
+  - { type: dry_shrub, cell: [54, 127], variant: 1 }
+  - { type: dry_shrub, cell: [127, 127], variant: 1 }
+  - { type: dry_shrub, cell: [55, 128], variant: 2 }
+  - { type: dry_shrub, cell: [91, 128], variant: 2 }
+  - { type: dry_shrub, cell: [38, 129], variant: 0 }
+  - { type: dry_shrub, cell: [106, 129], variant: 1 }
+  - { type: dry_shrub, cell: [67, 130], variant: 0 }
+  - { type: dry_shrub, cell: [42, 133], variant: 3 }
+  - { type: dry_shrub, cell: [64, 133], variant: 2 }
+  - { type: dry_shrub, cell: [63, 135], variant: 1 }
+  - { type: dry_shrub, cell: [115, 137], variant: 3 }
+  - { type: dry_shrub, cell: [116, 137], variant: 3 }
+  - { type: dry_shrub, cell: [67, 138], variant: 0 }
+  - { type: dry_shrub, cell: [113, 139], variant: 3 }
+  - { type: dry_shrub, cell: [133, 139], variant: 3 }
+  - { type: dry_shrub, cell: [58, 141], variant: 1 }
+  - { type: dry_shrub, cell: [62, 141], variant: 2 }
+  - { type: dry_shrub, cell: [94, 141], variant: 3 }
+  - { type: dry_shrub, cell: [118, 143], variant: 0 }
+  - { type: dry_shrub, cell: [129, 143], variant: 0 }
+  - { type: dry_shrub, cell: [110, 146], variant: 3 }
+  - { type: dry_shrub, cell: [105, 147], variant: 1 }
+  - { type: dry_shrub, cell: [106, 149], variant: 2 }
+  - { type: dry_shrub, cell: [99, 150], variant: 0 }
+  - { type: dry_shrub, cell: [101, 155], variant: 1 }
+  - { type: dry_shrub, cell: [113, 156], variant: 1 }
+  - { type: dry_shrub, cell: [104, 157], variant: 3 }
+  - { type: dry_shrub, cell: [85, 158], variant: 2 }
+  - { type: dry_shrub, cell: [104, 162], variant: 1 }
+  - { type: dry_shrub, cell: [102, 166], variant: 1 }
+  - { type: dry_shrub, cell: [80, 167], variant: 3 }
+  - { type: dry_shrub, cell: [85, 167], variant: 2 }
+  - { type: dry_shrub, cell: [89, 173], variant: 2 }
+  - { type: dry_shrub, cell: [93, 179], variant: 2 }
   - { type: gem_source, cell: [95, 69], variant: 0 }
   - { type: gem_source, cell: [69, 86], variant: 0 }
   - { type: gem_source, cell: [112, 95], variant: 0 }
@@ -885,8 +1121,68 @@ objects:
   - { type: pine_tree, cell: [69, 174], variant: 2 }
   - { type: pine_tree, cell: [165, 174], variant: 3 }
   - { type: pine_tree, cell: [166, 174], variant: 1 }
+  - { type: well, cell: [105, 56], variant: 0 }
+  - { type: well, cell: [101, 65], variant: 0 }
+  - { type: well, cell: [102, 74], variant: 0 }
+  - { type: well, cell: [56, 76], variant: 0 }
+  - { type: well, cell: [74, 79], variant: 0 }
+  - { type: well, cell: [65, 80], variant: 0 }
+  - { type: well, cell: [116, 101], variant: 0 }
+  - { type: well, cell: [107, 102], variant: 0 }
+  - { type: well, cell: [125, 105], variant: 0 }
+  - { type: well, cell: [79, 107], variant: 0 }
+  - { type: well, cell: [80, 116], variant: 0 }
+  - { type: well, cell: [76, 125], variant: 0 }
 bridges: []
 structures:
+  - { type: neutral_adobe_house, cell: [107, 53], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [102, 58], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [103, 62], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [103, 67], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [104, 71], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [53, 73], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [71, 76], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [99, 76], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [62, 77], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [67, 77], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [58, 78], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [76, 81], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [104, 99], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [122, 102], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [113, 103], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [118, 103], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [81, 104], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [109, 104], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [127, 107], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [76, 109], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [77, 113], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [77, 118], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [78, 122], owner: neutral, facing: 0 }
+  - { type: neutral_adobe_house, cell: [73, 127], owner: neutral, facing: 0 }
+  - { type: neutral_ancient_ruins, cell: [112, 51], owner: neutral, facing: 1 }
+  - { type: neutral_ancient_ruins, cell: [63, 55], owner: neutral, facing: 1 }
+  - { type: neutral_ancient_ruins, cell: [125, 63], owner: neutral, facing: 1 }
+  - { type: neutral_ancient_ruins, cell: [51, 68], owner: neutral, facing: 1 }
+  - { type: neutral_ancient_ruins, cell: [129, 112], owner: neutral, facing: 1 }
+  - { type: neutral_ancient_ruins, cell: [55, 117], owner: neutral, facing: 1 }
+  - { type: neutral_ancient_ruins, cell: [117, 125], owner: neutral, facing: 1 }
+  - { type: neutral_ancient_ruins, cell: [68, 129], owner: neutral, facing: 1 }
+  - { type: neutral_rock_arch, cell: [129, 47], owner: neutral, facing: 2 }
+  - { type: neutral_rock_arch, cell: [47, 51], owner: neutral, facing: 2 }
+  - { type: neutral_rock_arch, cell: [134, 129], owner: neutral, facing: 2 }
+  - { type: neutral_rock_arch, cell: [51, 134], owner: neutral, facing: 2 }
+  - { type: neutral_rock_mesa, cell: [82, 37], owner: neutral, facing: 6 }
+  - { type: neutral_rock_mesa, cell: [57, 43], owner: neutral, facing: 2 }
+  - { type: neutral_rock_mesa, cell: [137, 57], owner: neutral, facing: 2 }
+  - { type: neutral_rock_mesa, cell: [73, 58], owner: neutral, facing: 1 }
+  - { type: neutral_rock_mesa, cell: [122, 73], owner: neutral, facing: 1 }
+  - { type: neutral_rock_mesa, cell: [143, 82], owner: neutral, facing: 6 }
+  - { type: neutral_rock_mesa, cell: [37, 98], owner: neutral, facing: 6 }
+  - { type: neutral_rock_mesa, cell: [58, 107], owner: neutral, facing: 1 }
+  - { type: neutral_rock_mesa, cell: [107, 122], owner: neutral, facing: 1 }
+  - { type: neutral_rock_mesa, cell: [43, 123], owner: neutral, facing: 2 }
+  - { type: neutral_rock_mesa, cell: [123, 137], owner: neutral, facing: 2 }
+  - { type: neutral_rock_mesa, cell: [98, 143], owner: neutral, facing: 6 }
   - { type: tech_oil_derrick, cell: [94, 72], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [72, 86], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [108, 94], owner: neutral, facing: 0 }
