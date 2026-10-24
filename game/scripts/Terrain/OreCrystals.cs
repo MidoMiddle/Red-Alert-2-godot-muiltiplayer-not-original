@@ -21,6 +21,23 @@ public static class OreCrystals
     /// <summary>How many crystals a stage shows: one at the start, four from the top third on.</summary>
     public static int CountOf(int stage) => 1 + stage * MaxCrystals / (OreCell.MaxStage + 1);
 
+    /// <summary>
+    /// The size of the cluster model of a cell (one cluster a cell): from <see cref="SmallestCluster"/> at stage 0 to full size at
+    /// <see cref="OreCell.MaxStage"/>, so a field visibly grows and thins as it is harvested.
+    /// </summary>
+    public static float ClusterScale(OreCell cell) =>
+        cell.IsEmpty ? 0f : SmallestCluster + (1f - SmallestCluster) * cell.Stage / OreCell.MaxStage;
+
+    /// <summary>How far the cluster of a cell is turned, in quarter turns and eighths of one (0 to 2π), from the cell alone.</summary>
+    public static float ClusterTurn(int x, int y)
+    {
+        var hash = (uint)(x * 73856093) ^ (uint)(y * 19349663);
+        return (hash % 32) * (System.MathF.PI / 16f);
+    }
+
+    /// <summary>The cluster of stage 0 against the full one.</summary>
+    public const float SmallestCluster = 0.45f;
+
     public static IReadOnlyList<Crystal> Of(int x, int y, OreCell cell)
     {
         if (cell.IsEmpty)

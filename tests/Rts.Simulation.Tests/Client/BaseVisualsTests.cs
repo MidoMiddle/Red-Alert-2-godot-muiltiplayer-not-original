@@ -53,6 +53,14 @@ public sealed class BaseVisualsTests
     public void Ore_shows_one_to_four_crystals_more_and_larger_with_the_stage()
     {
         Assert.Empty(OreCrystals.Of(3, 4, OreCell.Empty));
+
+        // One cluster model a cell: from 0.45 of its size at stage 0 to full at the last, turned the same each time by the cell.
+        Assert.Equal(0f, OreCrystals.ClusterScale(OreCell.Empty));
+        Assert.Equal(OreCrystals.SmallestCluster, OreCrystals.ClusterScale(new OreCell(OreKind.Ore, 0)));
+        Assert.Equal(1f, OreCrystals.ClusterScale(new OreCell(OreKind.Gems, OreCell.MaxStage)));
+        Assert.True(OreCrystals.ClusterScale(new OreCell(OreKind.Ore, 5)) < OreCrystals.ClusterScale(new OreCell(OreKind.Ore, 6)));
+        Assert.Equal(OreCrystals.ClusterTurn(3, 4), OreCrystals.ClusterTurn(3, 4));
+        Assert.InRange(OreCrystals.ClusterTurn(7, 9), 0f, 2f * MathF.PI);
         Assert.Equal(1, OreCrystals.CountOf(0));
         Assert.Equal(OreCrystals.MaxCrystals, OreCrystals.CountOf(OreCell.MaxStage));
 
