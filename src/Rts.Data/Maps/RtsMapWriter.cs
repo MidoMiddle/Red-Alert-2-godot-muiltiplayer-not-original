@@ -20,6 +20,11 @@ public static class RtsMapWriter
         Line(text, $"author: {Quote(map.Author)}");
         Line(text, $"description: {Quote(map.Description)}");
         Line(text, $"size: [{map.Width}, {map.Height}]");
+        if (map.Playable is { } area)
+        {
+            Line(text, $"playable: {{ left: {Number(area.Left)}, top: {Number(area.Top)}, right: {Number(area.Right)}, bottom: {Number(area.Bottom)} }}");
+        }
+
         Line(text, $"climate: {map.Climate}");
         Line(text, $"lighting: {map.Lighting}");
         Line(text, $"players: {map.Players}");

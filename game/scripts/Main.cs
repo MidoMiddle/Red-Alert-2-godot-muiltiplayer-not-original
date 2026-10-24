@@ -206,7 +206,8 @@ public partial class Main : Node3D
 
     /// <summary>
     /// Projects the corners of one ground cell to the screen: the diamond must be twice as wide as it is tall
-    /// (±1 %), world X must run right-down and world Y (Godot Z) left-down, as in RA2.
+    /// (±1 %), world X must run right-down and world Y (Godot Z) left-down, as in RA2. Then the view stops at the frame of
+    /// the map (<see cref="CheckCameraFrame"/>).
     /// </summary>
     private bool CheckCamera()
     {
@@ -227,6 +228,74 @@ public partial class Main : Node3D
         var ok = ratioOk && directionsOk;
         GD.Print($"[camera] {(ok ? "OK" : "FAILED")}: diamond {width:0.0}x{height:0.0} px, ratio {ratio:0.000}, " +
                  $"world X on screen {alongX}, world Y on screen {alongZ}");
+        return CheckCameraFrame() && ok;
+    }
+
+    /// <summary>
+    /// As in RA2 the view stops at the edge of the map: driven as far as it goes to the top, bottom, left and right, the corner
+    /// of its frame (the playable area, or the whole map) that reaches furthest that way stands on that edge of the field (±2 px),
+    /// so nothing beyond the frame shows and a unit in that corner is at the edge of the screen. There, at the default zoom and zoomed out fully, the
+    /// corners of the field look at the land beyond the edge (the skirt, <see cref="Terrain.MapSkirt"/>), never past it. The
+    /// camera goes back where it was.
+    /// </summary>
+    private bool CheckCameraFrame()
+    {
+        var rig = GetNode<RtsCamera>("CameraRig");
+        var map = GetNode<SimulationHost>("SimulationHost").Simulation.World.Map;
+        var (w, h, far) = (map.Width, map.Height, 10_000f);
+        var corners = rig.FrameCorners();
+        var start = rig.Position;
+        var startSize = rig.Camera.Size;
+        var skirt = GetNode<Terrain.TerrainBuilder>("Terrain").Heights.Skirt;
+        var worst = 0f;
+        var beyond = float.MinValue;
+        foreach (var (name, target) in new[]
+                 {
+                     ("top", new Vector3(-far, 0f, -far)), ("bottom", new Vector3(far, 0f, far)),
+                     ("left", new Vector3(-far, 0f, far)), ("right", new Vector3(far, 0f, -far)),
+                 })
+        {
+            rig.CenterOn(target);
+            rig._Process(0);
+            var field = rig.FieldRect();
+            var screen = System.Array.ConvertAll(corners, rig.UnprojectPosition);
+            var gap = name switch
+            {
+                "top" => screen.Min(p => p.Y) - field.Position.Y,
+                "bottom" => field.End.Y - screen.Max(p => p.Y),
+                "left" => screen.Min(p => p.X) - field.Position.X,
+                _ => field.End.X - screen.Max(p => p.X),
+            };
+            // A map smaller than the field that way sits in its middle: there is no edge to stop at.
+            var smaller = name is "top" or "bottom"
+                ? screen.Max(p => p.Y) - screen.Min(p => p.Y) < field.Size.Y
+                : screen.Max(p => p.X) - screen.Min(p => p.X) < field.Size.X;
+            worst = smaller ? worst : Math.Max(worst, Math.Abs(gap));
+
+            foreach (var size in new[] { RtsCamera.DefaultSize, RtsCamera.DefaultSize * RtsCamera.MaxZoom })
+            {
+                rig.Camera.Size = size;
+                rig.CenterOn(target);
+                rig._Process(0);
+                var view = rig.FieldRect();
+                foreach (var corner in new[] { view.Position, new Vector2(view.End.X, view.Position.Y), new Vector2(view.Position.X, view.End.Y), view.End })
+                {
+                    // Where the corner's ray meets the ground plane: how far beyond the skirt that is (0 inside it).
+                    var origin = rig.Camera.ProjectRayOrigin(corner);
+                    var direction = rig.Camera.ProjectRayNormal(corner);
+                    var ground = origin + direction * (-origin.Y / direction.Y);
+                    beyond = Math.Max(beyond, Math.Max(Math.Max(-skirt - ground.X, ground.X - w - skirt), Math.Max(-skirt - ground.Z, ground.Z - h - skirt)));
+                }
+            }
+
+            rig.Camera.Size = startSize;
+        }
+
+        rig.CenterOn(start);
+        rig._Process(0);
+        var ok = worst <= 2f && beyond <= 0f;
+        GD.Print($"[camera] frame {(ok ? "OK" : "FAILED")}: at the far top, bottom, left and right the map's corner is {worst:0.0} px from the field's edge; " +
+                 $"the field's corners stop {-beyond:0.0} cells short of the end of the skirt of {skirt}");
         return ok;
     }
 

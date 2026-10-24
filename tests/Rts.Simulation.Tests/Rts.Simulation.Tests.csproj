@@ -84,6 +84,7 @@
     <Compile Include="../../game/scripts/Terrain/OreCrystals.cs" Link="Client/Terrain/OreCrystals.cs" />
     <Compile Include="../../game/scripts/Terrain/TerrainHeights.cs" Link="Client/Terrain/TerrainHeights.cs" />
     <Compile Include="../../game/scripts/Terrain/TerrainMesh.cs" Link="Client/Terrain/TerrainMesh.cs" />
+    <Compile Include="../../game/scripts/Terrain/MapSkirt.cs" Link="Client/Terrain/MapSkirt.cs" />
     <Compile Include="../../game/scripts/Terrain/LandColors.cs" Link="Client/Terrain/LandColors.cs" />
     <Compile Include="../../game/scripts/Debug/PathText.cs" Link="Client/Debug/PathText.cs" />
     <Compile Include="../../game/scripts/Debug/UnitStateText.cs" Link="Client/Debug/UnitStateText.cs" />

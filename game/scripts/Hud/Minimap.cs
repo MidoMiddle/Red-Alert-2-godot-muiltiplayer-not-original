@@ -9,7 +9,8 @@ namespace Rts.Client.Hud;
 /// owner's colour, and the frame of the field the camera shows. A click or a drag moves the camera. Since M2 step 14 the ground
 /// shows the land of every cell and the trees (<see cref="MinimapImage"/>), and selected units have a white ring. Since M3 step 12
 /// it is offline without a radar or power when the radar rule is on (<see cref="MinimapRule"/>): dark, and clicks do not move the
-/// camera. Fog comes later (M4).
+/// camera. Fog comes later (M4). A map with a playable area shows that rectangle, as the screen does (<see cref="MinimapMath.For"/>):
+/// the textures of the cells are drawn turned and clipped to it.
 /// </summary>
 public partial class Minimap : Control
 {
@@ -30,8 +31,9 @@ public partial class Minimap : Control
         _host = host;
         _camera = camera;
         _input = host.GetNodeOrNull<PlayerInput>("../PlayerInput");
-        // One texel per cell, with sharp cell edges.
+        // One texel per cell, with sharp cell edges; the turned map of a playable area is cut at the minimap's edge.
         TextureFilter = TextureFilterEnum.Nearest;
+        ClipContents = true;
     }
 
     /// <summary>Whether the minimap shows the map; the sidebar sets it every frame from <see cref="MinimapRule"/>.</summary>
@@ -61,12 +63,24 @@ public partial class Minimap : Control
         }
 
         var world = _host.Simulation.World;
-        DrawTextureRect(GroundOf(world.Map), new Rect2(Vector2.Zero, new Vector2(side, side)), false);
+        // The textures are one texel a cell: drawn over the map's own rectangle through the transform of the minimap.
+        var view = Transform();
+        DrawSetTransformMatrix(new Transform2D(new Vector2(view.Xx, view.Xy), new Vector2(view.Zx, view.Zy), new Vector2(view.Ox, view.Oy)));
+        var cells = new Rect2(Vector2.Zero, new Vector2(world.WidthCells, world.HeightCells));
+        DrawTextureRect(GroundOf(world.Map), cells, false);
         if (Terrain.FogOfWar.Current?.MinimapMask is { } fog)
         {
             // The fog of war (M4 step 12): black on the shroud, dim on the fog.
-            DrawTextureRect(fog, new Rect2(Vector2.Zero, new Vector2(side, side)), false);
+            DrawTextureRect(fog, cells, false);
         }
+
+        DrawSetTransformMatrix(Transform2D.Identity);
+        // Round the rectangle of a playable area the scenery is not shown.
+        var frame = view.Frame;
+        DrawRect(new Rect2(0f, 0f, side, frame.Y), GroundColor);
+        DrawRect(new Rect2(0f, frame.Y + frame.Height, side, side - frame.Y - frame.Height), GroundColor);
+        DrawRect(new Rect2(0f, 0f, frame.X, side), GroundColor);
+        DrawRect(new Rect2(frame.X + frame.Width, 0f, side - frame.X - frame.Width, side), GroundColor);
 
         foreach (var entity in world.Entities)
         {
@@ -145,8 +159,7 @@ public partial class Minimap : Control
             return;
         }
 
-        var world = _host.Simulation.World;
-        var (x, y) = MinimapMath.FromMinimap(local.X, local.Y, world.WidthCells, world.HeightCells, SidebarLayout.MinimapSize);
+        var (x, y) = Transform().FromMinimap(local.X, local.Y);
         _camera.CenterOn(new Vector3(x, 0f, y));
     }
 
@@ -166,9 +179,16 @@ public partial class Minimap : Control
     /// <summary>A map point in cells, as a point on the minimap.</summary>
     private Vector2 ToMinimap(float cellX, float cellY)
     {
-        var world = _host!.Simulation.World;
-        var (x, y) = MinimapMath.ToMinimap(cellX, cellY, world.WidthCells, world.HeightCells, SidebarLayout.MinimapSize);
+        var (x, y) = Transform().ToMinimap(cellX, cellY);
         return new Vector2(x, y);
+    }
+
+    /// <summary>The minimap of the map being played: its square, or the rectangle of its playable area.</summary>
+    private MinimapTransform Transform()
+    {
+        var world = _host!.Simulation.World;
+        var area = _host.Look?.Playable is { } a ? (a.Left, a.Top, a.Right, a.Bottom) : ((int, int, int, int)?)null;
+        return MinimapMath.For(world.WidthCells, world.HeightCells, area, SidebarLayout.MinimapSize);
     }
 
     /// <summary>The colours of the units by owner, the same as in <c>UnitRenderer</c>.</summary>

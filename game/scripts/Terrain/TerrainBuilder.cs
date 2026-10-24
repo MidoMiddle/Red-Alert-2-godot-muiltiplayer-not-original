@@ -12,8 +12,9 @@ namespace Rts.Client.Terrain;
 /// climate's cliff material, and the scene is lit by its time of day (<see cref="SceneLighting"/>); with map objects and buildings
 /// on top (<see cref="MapObjects"/>, <see cref="Buildings"/>). What is drawn is the rules: since M7 step 9 every map, the ASCII
 /// ones too, has only the relief of its rules. When the map changes (a corner raised, a land type changed — the editor of
-/// steps 11–12), the land texture is painted again and only the chunks with a changed corner are rebuilt. The map comes from
-/// the match, or from the editor (<see cref="IMapSource"/>).
+/// steps 11–12), the land texture is painted again and only the chunks with a changed corner are rebuilt. Round the map lies
+/// its skirt (<see cref="MapSkirt"/>): land that goes on beyond the edge, as in RA2, made again only when the edge changes. The
+/// map comes from the match, or from the editor (<see cref="IMapSource"/>).
 /// </summary>
 public partial class TerrainBuilder : Node3D
 {
@@ -28,11 +29,17 @@ public partial class TerrainBuilder : Node3D
     private System.Func<MapLook> _lookSource = null!;
     private MapLook? _builtLook;
     private ClimateLook? _climate;
+    private MapSkirt? _skirt;
+    private uint _skirtSignature;
+    private ClimateLook? _skirtClimate;
 
     public TerrainHeights Heights { get; private set; } = null!;
 
     /// <summary>The map the terrain shows now; map objects drawn on it read it from here.</summary>
     public Rts.Simulation.Map.MapGrid Map => _builtMap!;
+
+    /// <summary>The land beyond the edge of <see cref="Map"/>; its pines are drawn by <see cref="MapObjects"/>.</summary>
+    public MapSkirt Skirt => _skirt!;
 
     /// <summary>The ground material of every chunk; the debug cell overlay sets its overlay parameters.</summary>
     public ShaderMaterial GroundMaterial { get; private set; } = null!;
@@ -43,15 +50,14 @@ public partial class TerrainBuilder : Node3D
         _lookSource = MapSources.FindLook(this);
         var map = _source();
         var look = _lookSource();
-        Heights = TerrainHeights.FromRules(map.Heights);
-        WorldCoords.Terrain = Heights;
-
         _landTexture = LandLayer.CreateTexture(map);
         GroundMaterial = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShader) };
         GroundMaterial.SetShaderParameter("land_map", _landTexture);
         GroundMaterial.SetShaderParameter("level_height", TerrainHeights.LevelHeight);
         SetLook(look, map, sameSize: false);
-        foreach (var chunk in TerrainMesh.Chunks(map.Width, map.Height))
+        Heights = TerrainHeights.FromRules(map.Heights, _skirt!);
+        WorldCoords.Terrain = Heights;
+        foreach (var chunk in TerrainMesh.Chunks(Heights))
         {
             BuildChunk(chunk);
         }
@@ -82,9 +88,10 @@ public partial class TerrainBuilder : Node3D
         }
 
         // The same map changed, or a new match (R) started on a map of the same size: rebuild what differs. Another size: all.
-        var heights = TerrainHeights.FromRules(map.Heights);
-        var sameSize = heights.WidthCells == Heights.WidthCells && heights.HeightCells == Heights.HeightCells;
-        var changed = sameSize ? TerrainMesh.ChangedChunks(Heights, heights) : [.. TerrainMesh.Chunks(map.Width, map.Height)];
+        var sameSize = map.Width == Heights.WidthCells && map.Height == Heights.HeightCells;
+        SetLook(look, map, sameSize);
+        var heights = TerrainHeights.FromRules(map.Heights, _skirt!);
+        var changed = sameSize ? TerrainMesh.ChangedChunks(Heights, heights) : [.. TerrainMesh.Chunks(heights)];
         if (sameSize)
         {
             LandLayer.Update(_landTexture, map);
@@ -100,8 +107,6 @@ public partial class TerrainBuilder : Node3D
             _landTexture = LandLayer.CreateTexture(map);
             GroundMaterial.SetShaderParameter("land_map", _landTexture);
         }
-
-        SetLook(look, map, sameSize);
 
         Heights = heights;
         WorldCoords.Terrain = heights;
@@ -123,7 +128,8 @@ public partial class TerrainBuilder : Node3D
 
     /// <summary>
     /// Shows the look of the map: the materials of its cells, the textures of its climate when the climate is another, and the
-    /// light of its time of day on the sun, the environment and the water of the ground.
+    /// light of its time of day on the sun, the environment and the water of the ground. The skirt is made again when the edge
+    /// of the map changed (<see cref="MapSkirt.EdgeSignature"/>); the materials of the map's own cells always come fresh.
     /// </summary>
     private void SetLook(MapLook look, Rts.Simulation.Map.MapGrid map, bool sameSize)
     {
@@ -137,14 +143,23 @@ public partial class TerrainBuilder : Node3D
         var cells = climate is null
             ? new byte[map.Width * map.Height * MaterialSlots.BytesPerCell]
             : MaterialSlots.Build(look, climate, map);
+        var signature = MapSkirt.EdgeSignature(map, cells);
+        if (_skirt is null || !sameSize || signature != _skirtSignature || !ReferenceEquals(climate, _skirtClimate))
+        {
+            _skirt = MapSkirt.Build(map, cells, SkirtSlotsOf(climate));
+            (_skirtSignature, _skirtClimate) = (signature, climate);
+        }
+
+        var all = _skirt.WithMapCells(cells);
         if (sameSize && _materialTexture is not null)
         {
-            LandLayer.UpdateMaterials(_materialTexture, cells, map.Width, map.Height);
+            LandLayer.UpdateMaterials(_materialTexture, all, _skirt.CellsX, _skirt.CellsZ);
         }
         else
         {
-            _materialTexture = LandLayer.CreateMaterialTexture(cells, map.Width, map.Height);
+            _materialTexture = LandLayer.CreateMaterialTexture(all, _skirt.CellsX, _skirt.CellsZ);
             GroundMaterial.SetShaderParameter("material_map", _materialTexture);
+            GroundMaterial.SetShaderParameter("map_origin", new Vector2(-_skirt.Skirt, -_skirt.Skirt));
         }
 
         if (climate is not null && (_builtLook?.Lighting != look.Lighting || _builtLook?.Climate != look.Climate))
@@ -154,6 +169,11 @@ public partial class TerrainBuilder : Node3D
             GroundMaterial.SetShaderParameter("sun_direction", SceneLighting.SunDirection(preset));
         }
     }
+
+    /// <summary>The materials the skirt paints far from the edge: the first of the climate as plain ground, its grass and dirt.</summary>
+    private static SkirtSlots SkirtSlotsOf(ClimateLook? climate) => climate is null
+        ? new SkirtSlots(0, -1, -1, -1, -1)
+        : new SkirtSlots(0, climate.SlotOf("grass"), climate.SlotOf("dirt"), climate.SlotOf("asphalt"), climate.SlotOf("water"));
 
     /// <summary>Gives the ground shader the materials of a climate; without its textures it draws the flat colours of the land types.</summary>
     private void SetGroundTextures(ClimateLook? climate)

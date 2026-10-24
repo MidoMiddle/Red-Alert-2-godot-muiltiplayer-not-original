@@ -28,7 +28,7 @@ public sealed class RtsMapFormatException(int line, int column, string message) 
 public static class RtsMapReader
 {
     private static readonly string[] RootKeys =
-        ["format", "id", "name", "author", "description", "size", "climate", "lighting", "players", "starts", "legend", "layers", "objects", "bridges", "structures"];
+        ["format", "id", "name", "author", "description", "size", "playable", "climate", "lighting", "players", "starts", "legend", "layers", "objects", "bridges", "structures"];
 
     public static MapDefinition Read(string text)
     {
@@ -75,6 +75,7 @@ public static class RtsMapReader
         }
 
         var (width, height) = (size.X, size.Y);
+        var playable = Optional(values, "playable") is { } playableNode ? Playable(playableNode, width, height) : null;
         var climate = Optional(values, "climate") is { } climateNode ? Id(climateNode) : "winter";
         var lighting = Optional(values, "lighting") is { } lightingNode ? Lighting(lightingNode) : MapLighting.Default;
         var players = Int(Required(values, "players", root), 1, Rts.Simulation.World.PlayerId.MaxPlayers, "players");
@@ -103,7 +104,7 @@ public static class RtsMapReader
         try
         {
             return new MapDefinition(id, name, author, description, width, height, climate, players, starts, legend, heightCodes, land, texture, ore,
-                objects, bridges, structures, lighting);
+                objects, bridges, structures, lighting, playable);
         }
         catch (ArgumentException e)
         {
@@ -321,6 +322,17 @@ public static class RtsMapReader
     {
         var text = Text(node);
         return MapNames.IsId(text) ? text : throw Error(node, $"'{text}' must be lowercase letters, digits, '-' or '_'");
+    }
+
+    /// <summary>The playable area in the screen's axes of the cells (<see cref="MapArea"/>), within the map's own.</summary>
+    private static MapArea Playable(YamlNode node, int width, int height)
+    {
+        var fields = Entries(node, ["left", "top", "right", "bottom"], "playable");
+        var left = Int(Required(fields, "left", node), -(height - 1), width - 1, "left");
+        var right = Int(Required(fields, "right", node), left, width - 1, "right");
+        var top = Int(Required(fields, "top", node), 1, width + height - 1, "top");
+        var bottom = Int(Required(fields, "bottom", node), top, width + height - 1, "bottom");
+        return new MapArea(left, top, right, bottom);
     }
 
     private static string Lighting(YamlNode node)

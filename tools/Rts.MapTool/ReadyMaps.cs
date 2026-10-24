@@ -30,37 +30,49 @@ public static class ReadyMaps
     };
 
     /// <summary>
-    /// 1 vs 1, 64 x 64, mirrored. A river down the middle, frozen in its middle third (ice: passable, a little slow), open water
-    /// north and south with a bridge over each. A small hill by each base, woods in the corners, roads to the bridges and the
-    /// ice, gems at the ice crossing, two houses by the ice.
+    /// 1 vs 1, turned by 180° (the left of the screen is the right). The playable area is a rectangle on the screen, as in RA2 (<see cref="MapArea"/>):
+    /// the square inscribed in a 90 × 90 grid, about 4000 cells, the size the 64 × 64 map had. Laid out in the screen's own
+    /// square of <see cref="Design"/> units a side (<see cref="MapScript.Screen"/>; a unit is about a cell): a river from the top
+    /// of the screen to the bottom, frozen in its middle third (ice: passable, a little slow), open water above and below with a
+    /// bridge over each. A small hill by each base, woods in the corners, roads to the bridges and the ice, gems at the ice
+    /// crossing, two houses by the ice. The river goes on beyond the area, so it leaves the screen instead of ending there.
     /// </summary>
     public static MapDefinition FrozenCrossing()
     {
-        int Height(int x, int y) => Math.Max(Cone(x, y, 16, 50, 3), Cone(x, y, 20, 12, 2));
+        const int grid = 90;
+        CellPos P(int a, int b) => MapScript.Screen(a, b, Design, grid);
+        int Height(int x, int y)
+        {
+            var (a, b) = MapScript.Design(x, y, Design, grid);
+            return (int)Math.Max(Cone(a, b, 16, 50, 3), Cone(a, b, 20, 12, 2));
+        }
 
         var map = new MapScript("frozen-crossing", "Frozen Crossing", "A short duel across a frozen river: two bridges, and ice that anyone can cross.",
-            64, 64, 2, rotate: false, Height);
-        map.Water(new CellPos(31, 0), new CellPos(31, 63), 3, LandType.Deep);
-        map.Land(new CellPos(31, 25), new CellPos(31, 38), 3, LandType.Ice);
-        map.Bridge(new CellPos(28, 10), new CellPos(35, 10));
-        map.Bridge(new CellPos(28, 53), new CellPos(35, 53));
-        map.Start(new CellPos(11, 32));
-        map.Road(new CellPos(13, 31), new CellPos(20, 24), new CellPos(24, 12), new CellPos(27, 10));
-        map.Road(new CellPos(13, 33), new CellPos(20, 40), new CellPos(24, 51), new CellPos(27, 53));
-        map.Road(new CellPos(13, 32), new CellPos(27, 32));
-        map.Ore(new CellPos(15, 26), 3, 7);
-        map.Ore(new CellPos(24, 36), 2, 11);
-        map.Building("neutral_house_a", new CellPos(23, 27), 2);
-        map.Building("neutral_shed", new CellPos(26, 36), 0);
-        map.Land(new CellPos(7, 40), new CellPos(9, 44), 2, LandType.Rough);
-        map.Trees(new CellPos(6, 6), 6, 55);
-        map.Trees(new CellPos(6, 57), 6, 55);
-        map.Trees(new CellPos(20, 18), 3, 40);
-        map.Trees(new CellPos(9, 48), 3, 40);
-        map.Drill(new CellPos(15, 26), "ore_source");
-        map.Drill(new CellPos(24, 36), "gem_source");
+            grid, grid, 2, rotate: false, Height, MapArea.Inscribed(grid));
+        // Brushes of 2 along the diagonal of the cells, with the turned image beside them: a river about 3 cells wide.
+        map.Water(P(31, -8), P(31, 71), 2, LandType.Deep);
+        map.Land(P(31, 25), P(31, 38), 2, LandType.Ice);
+        map.BridgeAcross(P(31, 10)); // its image is the bridge at the bottom
+        map.Start(P(11, 32));
+        map.Road(P(13, 31), P(20, 24), P(24, 12), P(28, 10));
+        map.Road(P(13, 33), P(20, 40), P(24, 51), P(28, 53));
+        map.Road(P(13, 32), P(28, 32));
+        map.Ore(P(15, 26), 3, 7);
+        map.Ore(P(24, 36), 2, 11);
+        map.Building("neutral_house_a", P(23, 27), 2);
+        map.Building("neutral_shed", P(26, 36), 0);
+        map.Land(P(7, 40), P(9, 44), 2, LandType.Rough);
+        map.Trees(P(6, 6), 6, 55);
+        map.Trees(P(6, 57), 6, 55);
+        map.Trees(P(20, 18), 3, 40);
+        map.Trees(P(9, 48), 3, 40);
+        map.Drill(P(15, 26), "ore_source");
+        map.Drill(P(24, 36), "gem_source");
         return map.Finish();
     }
+
+    /// <summary>Units a side of the screen square the maps with a playable area are laid out in.</summary>
+    public const int Design = 64;
 
     /// <summary>
     /// 1 vs 1, 96 x 96, mirrored. A river on each half with two bridges each; between the rivers a level-4 plateau with ramps
@@ -193,6 +205,9 @@ public static class ReadyMaps
 
     /// <summary>A cone of slopes: <paramref name="peak"/> at corner (<paramref name="cx"/>, <paramref name="cy"/>), one level down every two corners out (no cliffs).</summary>
     private static int Cone(int x, int y, int cx, int cy, int peak) => Math.Max(0, peak - Math.Max(Math.Abs(x - cx), Math.Abs(y - cy)) / 2);
+
+    private static double Cone(double a, double b, int cx, int cy, int peak) =>
+        Math.Max(0, peak - Math.Floor(Math.Max(Math.Abs(a - cx), Math.Abs(b - cy))) / 2);
 }
 
 /// <summary>A rectangle of cells from (<paramref name="X"/>, <paramref name="Y"/>), <paramref name="Width"/> × <paramref name="Height"/>.</summary>
@@ -204,7 +219,9 @@ public readonly record struct Rect(int X, int Y, int Width, int Height)
 /// <summary>
 /// Builds a map with the tools of the editor, every stroke repeated on the images of the symmetry: west/east mirror, or quarter
 /// turns of a square map. Heights come from a formula read at the canonical corner of every orbit. Lines of strokes are laid
-/// out cell by cell before they are mirrored, so the images match exactly.
+/// out cell by cell before they are mirrored, so the images match exactly. A map with a playable area (<see cref="MapArea"/>) is
+/// turned by 180° instead: the left of the screen becomes its right, the top its bottom. (A mirror left to right on the screen
+/// would swap x and y, and no bridge, which runs along X or Y, is its own image across a river down the screen.)
 /// </summary>
 public sealed class MapScript
 {
@@ -212,10 +229,12 @@ public sealed class MapScript
     private readonly int _width;
     private readonly int _height;
     private readonly bool _rotate;
+    private readonly bool _halfTurn;
 
-    public MapScript(string id, string name, string description, int width, int height, int players, bool rotate, Func<int, int, int> heightAt)
+    public MapScript(string id, string name, string description, int width, int height, int players, bool rotate, Func<int, int, int> heightAt,
+        MapArea? playable = null)
     {
-        (_width, _height, _rotate) = (width, height, rotate);
+        (_width, _height, _rotate, _halfTurn) = (width, height, rotate, playable is not null && !rotate);
         var levels = new byte[(width + 1) * (height + 1)];
         for (var y = 0; y <= height; y++)
         {
@@ -230,9 +249,49 @@ public sealed class MapScript
         var definition = new MapDefinition(
             id, name, "Ready maps (M7)", description, width, height, "winter", players, [], TestMapConverter.Legend,
             ImmutableArray.Create(levels), [.. Enumerable.Repeat(LandType.Clear, cells)], [.. Enumerable.Repeat('s', cells)],
-            ImmutableArray.Create(new byte[cells]), [], [], []);
+            ImmutableArray.Create(new byte[cells]), [], [], [], playable: playable);
         _session = new MapEditSession(EditableMap.FromDefinition(definition));
     }
+
+    /// <summary>
+    /// The cell at (<paramref name="a"/>, <paramref name="b"/>) of a square of <paramref name="design"/> units laid over the playable
+    /// area of a <paramref name="grid"/> × <paramref name="grid"/> map (<see cref="MapArea.Inscribed"/>): a to the right of the
+    /// screen, b down. Points outside the square land on the scenery round the area.
+    /// </summary>
+    public static CellPos Screen(int a, int b, int design, int grid)
+    {
+        var v = (int)Math.Floor((a + 0.5) * grid / design) - grid / 2;
+        var u = (int)Math.Floor((b + 0.5) * grid / design) + grid / 2;
+        if ((u + v) % 2 == 0)
+        {
+            u++; // the centres of cells have u + v odd
+        }
+
+        return new CellPos((u - 1 + v) / 2, (u - 1 - v) / 2);
+    }
+
+    /// <summary>The point of the design square (<see cref="Screen"/>) at the corner (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    public static (double A, double B) Design(int x, int y, int design, int grid) =>
+        ((x - y + grid / 2.0) * design / grid - 0.5, (x + y - grid / 2.0) * design / grid - 0.5);
+
+    /// <summary>A bridge along X over the water at <paramref name="water"/>, from the shore on one side to the shore on the other.</summary>
+    public void BridgeAcross(CellPos water)
+    {
+        var (left, right) = (water.X, water.X);
+        while (left > 0 && IsWater(new CellPos(left, water.Y)))
+        {
+            left--;
+        }
+
+        while (right < _width - 1 && IsWater(new CellPos(right, water.Y)))
+        {
+            right++;
+        }
+
+        Bridge(new CellPos(left, water.Y), new CellPos(right, water.Y));
+    }
+
+    private bool IsWater(CellPos cell) => _session.Map.LandAt(cell) is LandType.Shallow or LandType.Deep;
 
     private int Order => _rotate ? 4 : 2;
 
@@ -453,10 +512,11 @@ public sealed class MapScript
         return best;
     }
 
-    // Mirror: west to east. Quarter turns (square maps): (x, y) → (max − y, x) and on.
+    // Mirror: west to east, or a half turn for a map with a playable area. Quarter turns (square maps): (x, y) → (max − y, x) and on.
     private (int X, int Y) Image(int k, int x, int y, int maxX, int maxY) => (_rotate, k) switch
     {
         (_, 0) => (x, y),
+        (false, _) when _halfTurn => (maxX - x, maxY - y),
         (false, _) => (maxX - x, y),
         (true, 1) => (maxX - y, x),
         (true, 2) => (maxX - x, maxY - y),

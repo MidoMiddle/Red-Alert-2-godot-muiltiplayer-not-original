@@ -16,10 +16,11 @@ public sealed class EndToEndScenarioTests
     private const int Minute = EconomyRun.TicksPerMinute;
 
     // Twin Rivers has a small field by the base that runs out in the fifth minute: the harvester then drives to far fields and brings
-    // in less. That is the map, not the data (step 14 does not change maps).
+    // in less. That is the map, not the data (step 14 does not change maps). Frozen Crossing redrawn on a 90x90 grid with a playable
+    // area (M7) brings in 845 a minute, a hair under the old 850.
     public static readonly TheoryData<string, int, int> Maps = new()
     {
-        { "frozen-crossing", 850, 1150 },
+        { "frozen-crossing", 840, 1150 },
         { "twin-rivers", 500, 1150 },
     };
 

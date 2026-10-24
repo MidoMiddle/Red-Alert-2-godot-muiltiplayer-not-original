@@ -297,10 +297,10 @@ public sealed class MapEditingTests
         Assert.Empty(errors);
         Assert.Equal(new[]
         {
-            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "Crate Glacier", "Dense Taiga", "Four Corners",
+            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "Crate Glacier", "Dense Taiga",
             "Frost Arena", "Frost Gate", "Frozen Crossing", "Frozen Outpost", "Frozen Plateau", "Glacier Duel",
-            "Ice City", "Ice Ridge", "My hill", "Pine Haven", "Polar Circle", "Relief test", "Sandbox",
-            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Taiga Front", "Tundra Lane", "Twin Rivers",
+            "Ice City", "Ice Ridge", "My hill", "Pine Haven", "Polar Circle",
+            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Tundra Lane",
             "Windswept Pass",
         }, maps.Select(m => m.Map.Name));
         Assert.Equal("user://maps/my-hill.rtsmap", maps.Single(m => m.Map.Name == "My hill").File);

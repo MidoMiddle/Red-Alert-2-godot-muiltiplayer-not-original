@@ -49,12 +49,13 @@ public sealed class MapGeneratorTests
     public void The_reference_map_has_the_same_hash_on_every_system()
     {
         // Golden value: 64 x 64, two players mirrored, hills, rivers, seed 1. Changes only with the generator's rules. M8 step 10b:
-        // the drills of the fields; without them the map is the one of before, byte for byte.
+        // the drills of the fields; without them the map is the one of before, byte for byte. 2026-10-24: the playable area of the
+        // screen — a 90 x 90 grid with the inscribed square, the starts and rivers in the screen's axes.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("48be7fdeb573438e197f7aeb7666ad0428a268380ea70eb6080fe8299ab8b451", MapHasher.Hash(map));
-        Assert.Equal("ef702a7e37981baa7526928ab49b7e9b1e91eef6b3c5c15b8672ddbbfd675145", MapHasher.Hash(none));
+        Assert.Equal("cf8419ef2686cd05bbf215bb8c0d9efd908ccc80d74947a61660030b07a2b4db", MapHasher.Hash(map));
+        Assert.Equal("e93b609632627e8118d95bff21d314a9362c396d7b47d87eacad903c63ed7cad", MapHasher.Hash(none));
     }
 
     [Theory]
@@ -165,7 +166,7 @@ public sealed class MapGeneratorTests
         {
             var (map, used) = MapGenerator.Generate(settings with { Seed = seed });
             AssertGoodMap(map, settings, $"seed {seed} (used {used})");
-            Assert.Equal(settings.Size, map.Width);
+            Assert.Equal(MapGenSettings.GridSize(settings.Size), map.Width);
         }
     }
 
@@ -236,6 +237,7 @@ public sealed class MapGeneratorTests
         {
             var c = start.Cell;
             Assert.True(c.X >= 8 && c.Y >= 8 && c.X < map.Width - 8 && c.Y < map.Height - 8, $"{what}: start {start.Slot} at {c} near the edge");
+            Assert.True(map.Playable!.Margin(c) >= 12, $"{what}: start {start.Slot} at {c} near the edge of the playable area");
             for (var y = c.Y - 8; y <= c.Y + 8; y++)
             {
                 for (var x = c.X - 8; x <= c.X + 8; x++)

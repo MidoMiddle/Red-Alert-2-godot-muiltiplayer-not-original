@@ -1,12 +1,14 @@
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Math;
 
 namespace Rts.MapGen.Stages;
 
 /// <summary>
 /// Stage 3, water (docs/implementation/M7_maps.md, 4.14). Rivers: with a mirror, straight down the axis between the players,
-/// two to four cells wide by the noise of the row; with turns, an arm that wanders from the north edge to the centre, three
-/// cells wide, and its images — one river through the centre for 180°, a cross for 90°. The ground under a river goes down to
+/// two to four cells wide by the noise of the row; with turns, an arm that wanders along the diagonal from the north-west corner
+/// of the grid to the centre — from the top of the screen down — about three cells wide, and its images: one river down the
+/// middle of the screen for 180°, a cross for 90°. The ground under a river goes down to
 /// level 0. Lakes: flat lowland at level 0 where their noise is high. No water within <see cref="StartClearance"/> cells of a
 /// start. Then the depth (deep where all four neighbours are water) and a beach round the water.
 /// </summary>
@@ -32,17 +34,28 @@ internal static class Water
             return;
         }
 
+        // Along the diagonal s = x + z, across it d = x − z: the arm is the band |d − wander(s)| ≤ 2 for s up to the centre.
         var amplitude = n / 10;
-        for (var y = 0; y < n / 2; y++)
+        for (var y = 0; y <= n / 2; y++)
         {
-            // The arm wanders less and less towards the centre, where it meets its images.
-            var wander = (IntNoise.At(0, y, map.Seed, Channels.River) - IntNoise.Max / 2) * amplitude / (IntNoise.Max / 2);
-            var centre = n / 2 + wander * (n / 2 - 1 - y) / (n / 2);
-            for (var x = centre - 1; x <= centre + 1; x++)
+            for (var x = 0; x <= n / 2; x++)
             {
-                for (var k = 0; k < map.Symmetry.Order; k++)
+                // Up to the centre and one row past it, so the arm and its images meet without a dry cell between them.
+                var s = x + y;
+                if (s > n - 1)
                 {
-                    MakeRiver(map, map.Symmetry.Cell(k, new CellPos(x, y)), riverMask);
+                    continue;
+                }
+
+                // The arm wanders less and less towards the centre, where it meets its images.
+                var wander = (IntNoise.At(0, s, map.Seed, Channels.River) - IntNoise.Max / 2) * amplitude / (IntNoise.Max / 2);
+                var across = wander * (n - 1 - s) / (n - 1);
+                if (IntMath.Abs(x - y - across) <= 2)
+                {
+                    for (var k = 0; k < map.Symmetry.Order; k++)
+                    {
+                        MakeRiver(map, map.Symmetry.Cell(k, new CellPos(x, y)), riverMask);
+                    }
                 }
             }
         }

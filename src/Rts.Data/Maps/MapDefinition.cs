@@ -57,7 +57,8 @@ public sealed class MapDefinition
         ImmutableArray<MapObjectPlacement> objects,
         ImmutableArray<BridgePlacement> bridges,
         ImmutableArray<StructurePlacement> structures,
-        string lighting = MapLighting.Default)
+        string lighting = MapLighting.Default,
+        MapArea? playable = null)
     {
         Require(MapNames.IsId(id), $"id '{id}' must be lowercase letters, digits, '-' or '_'");
         Require(MapNames.IsText(name) && MapNames.IsText(author) && MapNames.IsText(description), "name, author and description are single lines");
@@ -80,6 +81,7 @@ public sealed class MapDefinition
         Height = height;
         Climate = climate;
         Lighting = lighting;
+        Playable = playable;
         Players = players;
         Starts = starts.Sort((a, b) => a.Slot.CompareTo(b.Slot));
         TextureLegend = textureLegend.Sort((a, b) => a.Code.CompareTo(b.Code));
@@ -91,6 +93,8 @@ public sealed class MapDefinition
         Bridges = bridges.Sort(CompareBridges);
         Structures = structures.Sort(CompareStructures);
 
+        Require(playable is null || (playable.Left <= playable.Right && playable.Top <= playable.Bottom && AreaCells() > 0),
+            "the playable area needs at least one cell of the map");
         Require(Starts.Select(s => s.Slot).Distinct().Count() == Starts.Length && Starts.All(s => s.Slot >= 1 && s.Slot <= players && Contains(s.Cell)),
             "starts need slots 1…players, each once, on the map");
         Require(Objects.All(o => MapNames.IsId(o.Type) && Contains(o.Cell) && o.Variant is >= 0 and <= 255), "objects need an id type, a cell on the map, variant 0…255");
@@ -116,6 +120,9 @@ public sealed class MapDefinition
 
     /// <summary>The time of day, one of <see cref="MapLighting.Ids"/>: visual only.</summary>
     public string Lighting { get; }
+
+    /// <summary>The playable area, or null when every cell plays (<see cref="MapArea"/>).</summary>
+    public MapArea? Playable { get; }
 
     public int Players { get; }
 
@@ -148,6 +155,24 @@ public sealed class MapDefinition
     public int CornerHeight(int x, int y) => Heights[y * (Width + 1) + x];
 
     public LandType LandAt(CellPos cell) => Land[cell.Y * Width + cell.X];
+
+    /// <summary>True for a cell of the map that plays: inside <see cref="Playable"/>, or anywhere without it.</summary>
+    public bool Plays(CellPos cell) => Contains(cell) && (Playable is null || Playable.Contains(cell));
+
+    /// <summary>The obstacle layer of the rules: 1 on every cell outside <see cref="Playable"/>, so nothing goes or builds there.</summary>
+    public byte[] BlockedLayer()
+    {
+        var blocked = new byte[Width * Height];
+        if (Playable is { } area)
+        {
+            for (var i = 0; i < blocked.Length; i++)
+            {
+                blocked[i] = area.Contains(new CellPos(i % Width, i / Width)) ? (byte)0 : (byte)1;
+            }
+        }
+
+        return blocked;
+    }
 
     /// <summary>
     /// The map as the simulation plays it: corner heights and land as they are, the map objects by the table of
@@ -206,7 +231,7 @@ public sealed class MapDefinition
             ore[i] = OreOf(Ore[i]).Packed;
         }
 
-        return MapGrid.FromLayers(Width, Height, land, new byte[Width * Height], Heights.AsSpan(), objects, bridges, buildings, ore);
+        return MapGrid.FromLayers(Width, Height, land, BlockedLayer(), Heights.AsSpan(), objects, bridges, buildings, ore);
     }
 
     /// <summary>
@@ -223,11 +248,22 @@ public sealed class MapDefinition
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>
     public bool ContentEquals(MapDefinition other) =>
         Id == other.Id && Name == other.Name && Author == other.Author && Description == other.Description
-        && Width == other.Width && Height == other.Height && Climate == other.Climate && Lighting == other.Lighting && Players == other.Players
+        && Width == other.Width && Height == other.Height && Climate == other.Climate && Lighting == other.Lighting && Playable == other.Playable && Players == other.Players
         && Starts.SequenceEqual(other.Starts) && TextureLegend.SequenceEqual(other.TextureLegend)
         && Heights.SequenceEqual(other.Heights) && Land.SequenceEqual(other.Land) && Texture.SequenceEqual(other.Texture)
         && Ore.SequenceEqual(other.Ore) && Objects.SequenceEqual(other.Objects) && Bridges.SequenceEqual(other.Bridges)
         && Structures.SequenceEqual(other.Structures);
+
+    private int AreaCells()
+    {
+        var count = 0;
+        for (var i = 0; i < Width * Height; i++)
+        {
+            count += Playable!.Contains(new CellPos(i % Width, i / Width)) ? 1 : 0;
+        }
+
+        return count;
+    }
 
     private static int ComparePlacements(MapObjectPlacement a, MapObjectPlacement b) =>
         Compare(string.CompareOrdinal(a.Type, b.Type), a.Cell.Y.CompareTo(b.Cell.Y), a.Cell.X.CompareTo(b.Cell.X), a.Variant.CompareTo(b.Variant));

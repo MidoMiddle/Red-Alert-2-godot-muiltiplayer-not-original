@@ -20,12 +20,24 @@ public static class MapCatalog
     /// <summary>The player's own maps, where the map editor saves (<c>UserMapPaths.UserDirectory</c>).</summary>
     public const string UserDirectory = "user://maps";
 
+    /// <summary>
+    /// The maps of the game the menus leave out for now (decision of 2026-10-24): they are still square, from before the
+    /// playable area of the screen (<see cref="MapArea"/>), and wait to be made again. The files stay: the tests, <c>--map</c>
+    /// and <c>--smoke</c> open them.
+    /// </summary>
+    public static readonly string[] Hidden = ["twin-rivers", "taiga-front", "four-corners", "sandbox", "relief_test"];
+
     public static (List<MapEntry> Maps, List<string> Errors) Load(IEnumerable<(string File, string Text)> files)
     {
         var maps = new List<MapEntry>();
         var errors = new List<string>();
         foreach (var (file, text) in files)
         {
+            if (IsHidden(file))
+            {
+                continue;
+            }
+
             try
             {
                 var map = RtsMapReader.Read(text);
@@ -47,4 +59,8 @@ public static class MapCatalog
             : string.Compare(a.File, b.File, StringComparison.Ordinal));
         return (maps, errors);
     }
+
+    /// <summary>True for a file of <see cref="Hidden"/> in the game's own folder (a player's copy is shown).</summary>
+    public static bool IsHidden(string file) =>
+        file.StartsWith(Directory + "/", StringComparison.Ordinal) && Array.IndexOf(Hidden, System.IO.Path.GetFileNameWithoutExtension(file)) >= 0;
 }

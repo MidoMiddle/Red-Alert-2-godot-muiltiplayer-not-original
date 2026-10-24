@@ -30,7 +30,7 @@ public static class MapPreviews
     {
         var pixels = await Task.Run(() => MapPreview.Render(entry.Map));
         var image = Image.CreateFromData(
-            entry.Map.Width * MapPreview.PixelsPerCell, entry.Map.Height * MapPreview.PixelsPerCell, false, Image.Format.Rgb8, pixels);
+            MapPreview.SizeOf(entry.Map).Width, MapPreview.SizeOf(entry.Map).Height, false, Image.Format.Rgb8, pixels);
         DirAccess.MakeDirRecursiveAbsolute(MapPreview.CacheDirectory);
         var saved = image.SavePng(MapPreview.CachePath(entry.Hash));
         if (saved != Error.Ok)

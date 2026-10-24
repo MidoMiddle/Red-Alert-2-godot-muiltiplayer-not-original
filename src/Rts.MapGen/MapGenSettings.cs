@@ -50,6 +50,19 @@ public sealed record MapGenSettings
 {
     public static readonly int[] Sizes = [64, 96, 128, 160];
 
+    /// <summary>
+    /// Cells a side of the grid for a size: about size·√2, even, so the playable square in the screen's axes inscribed in it
+    /// (<see cref="MapArea.Inscribed"/>) has about size² cells, as many as the square maps of that size had.
+    /// </summary>
+    public static int GridSize(int size) => size switch
+    {
+        64 => 90,
+        96 => 136,
+        128 => 182,
+        160 => 226,
+        _ => throw new ArgumentException($"Size {size} is not one of 64, 96, 128, 160."),
+    };
+
     public uint Seed { get; init; }
 
     public int Size { get; init; } = 64;

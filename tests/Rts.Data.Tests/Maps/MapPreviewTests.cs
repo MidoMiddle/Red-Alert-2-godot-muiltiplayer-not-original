@@ -159,17 +159,21 @@ public sealed class MapPreviewTests
         var (maps, errors) = MapCatalog.Load(files);
 
         Assert.Empty(errors);
+        // The square maps of before the playable area are left out for now (MapCatalog.Hidden).
         Assert.Equal(new[]
         {
-            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "Crate Glacier", "Dense Taiga", "Four Corners",
+            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "Crate Glacier", "Dense Taiga",
             "Frost Arena", "Frost Gate", "Frozen Crossing", "Frozen Outpost", "Frozen Plateau", "Glacier Duel",
-            "Ice City", "Ice Ridge", "Pine Haven", "Polar Circle", "Relief test", "Sandbox", "Snowbound Hamlet",
-            "Snowfall Forest", "Steel Tundra", "Taiga Front", "Tundra Lane", "Twin Rivers", "Windswept Pass",
+            "Ice City", "Ice Ridge", "Pine Haven", "Polar Circle", "Snowbound Hamlet",
+            "Snowfall Forest", "Steel Tundra", "Tundra Lane", "Windswept Pass",
         }, maps.Select(m => m.Map.Name));
-        var relief = maps.Single(m => m.Map.Name == "Relief test").Map;
+        var relief = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap")));
         var pixels = MapPreview.Render(relief);
         Assert.All(relief.Starts, start => Assert.Equal(Bytes(MapPreview.SlotColor(start.Slot)), Pixel(pixels, relief, start.Cell.X, start.Cell.Y)));
-        Assert.Equal(128 * 128 * 3, MapPreview.Render(maps.Single(m => m.Map.Name == "Sandbox").Map).Length);
-        Assert.All(maps, m => Assert.Equal(m.Map.Width * m.Map.Height * 12, MapPreview.Render(m.Map).Length));
+        Assert.Equal(128 * 128 * 3, MapPreview.Render(RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath))).Length);
+        // The maps with a playable area are drawn as the screen shows it: twice as wide as tall.
+        Assert.All(maps, m => Assert.Equal(MapPreview.SizeOf(m.Map).Width * MapPreview.SizeOf(m.Map).Height * 3, MapPreview.Render(m.Map).Length));
+        var frozen = maps.Single(m => m.Map.Name == "Frozen Crossing").Map;
+        Assert.Equal((180, 90), MapPreview.SizeOf(frozen));
     }
 }

@@ -80,11 +80,47 @@ public static class MapValidator
 
         var grid = MapGrid.FromLayers(
             ground.Width, ground.Height, ground.LandBytes(), ground.BlockedBytes(), ground.Heights.LevelBytes(), ground.ObjectStates(), bridgeStates, buildings);
+        CheckArea(map, problems);
         CheckStarts(map, grid, problems);
         CheckOre(map, problems);
         CheckDrills(map, problems);
         CheckDistances(map, problems);
         return problems;
+    }
+
+    /// <summary>Buildings, bridges and ore outside the playable area: nobody could reach them (map objects there are scenery).</summary>
+    private static void CheckArea(MapDefinition map, List<MapProblem> problems)
+    {
+        if (map.Playable is null)
+        {
+            return;
+        }
+
+        foreach (var structure in map.Structures)
+        {
+            if (!MapChecks.Footprint(structure).All(map.Plays))
+            {
+                problems.Add(new MapProblem(ProblemLevel.Error, $"Building {structure.Type} at {Text(structure.Cell)} is outside the playable area", structure.Cell));
+            }
+        }
+
+        foreach (var bridge in map.Bridges)
+        {
+            if (!map.Plays(bridge.From) || !map.Plays(bridge.To))
+            {
+                problems.Add(new MapProblem(ProblemLevel.Error, $"Bridge at {Text(bridge.From)} is outside the playable area", bridge.From));
+            }
+        }
+
+        for (var i = 0; i < map.Ore.Length; i++)
+        {
+            var cell = new CellPos(i % map.Width, i / map.Width);
+            if (map.Ore[i] != 0 && !map.Plays(cell))
+            {
+                problems.Add(new MapProblem(ProblemLevel.Error, $"Ore at {Text(cell)} is outside the playable area", cell));
+                break;
+            }
+        }
     }
 
     public static bool HasErrors(IReadOnlyList<MapProblem> problems)
@@ -114,7 +150,8 @@ public static class MapValidator
             {
                 problems.Add(new MapProblem(ProblemLevel.Error, $"Start {start.Slot} at {Text(cell)} is on ground tracks cannot stand on", cell));
             }
-            else if (cell.X < EdgeMargin || cell.Y < EdgeMargin || cell.X >= map.Width - EdgeMargin || cell.Y >= map.Height - EdgeMargin)
+            else if (cell.X < EdgeMargin || cell.Y < EdgeMargin || cell.X >= map.Width - EdgeMargin || cell.Y >= map.Height - EdgeMargin
+                     || map.Playable?.Margin(cell) < EdgeMargin)
             {
                 problems.Add(new MapProblem(ProblemLevel.Error, $"Start {start.Slot} at {Text(cell)} is closer than {EdgeMargin} cells to the edge", cell));
             }

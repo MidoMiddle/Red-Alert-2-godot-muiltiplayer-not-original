@@ -264,7 +264,7 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
             for (var x = size / 2; x < view.Width; x += size)
             {
                 var middle = new CellPos(x, y);
-                if (view.StateOf(middle) == CellVisibility.Shroud)
+                if (view.StateOf(middle) == CellVisibility.Shroud && !view.IsScenery(middle, size))
                 {
                     _blocks.Add((middle, Distance(middle, home)));
                 }

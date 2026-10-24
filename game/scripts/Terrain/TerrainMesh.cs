@@ -21,8 +21,8 @@ public static class TerrainMesh
     /// <summary>The chunk whose north-west cell is (<paramref name="startX"/>, <paramref name="startZ"/>).</summary>
     public static TerrainChunkMesh BuildChunk(TerrainHeights heights, int startX, int startZ)
     {
-        var cellsX = Math.Min(ChunkCells, heights.WidthCells - startX);
-        var cellsZ = Math.Min(ChunkCells, heights.HeightCells - startZ);
+        var cellsX = Math.Min(ChunkCells, heights.WidthCells + heights.Skirt - startX);
+        var cellsZ = Math.Min(ChunkCells, heights.HeightCells + heights.Skirt - startZ);
         var rowLength = cellsX + 1;
         var corners = rowLength * (cellsZ + 1);
         var count = corners + cellsX * cellsZ;
@@ -83,11 +83,16 @@ public static class TerrainMesh
     }
 
     /// <summary>The north-west cells of every chunk of a map, row by row.</summary>
-    public static IEnumerable<(int X, int Z)> Chunks(int widthCells, int heightCells)
+    public static IEnumerable<(int X, int Z)> Chunks(int widthCells, int heightCells) => Chunks(widthCells, heightCells, 0);
+
+    /// <summary>The north-west cells of every chunk of a map and its skirt, row by row from the north-west corner of the skirt.</summary>
+    public static IEnumerable<(int X, int Z)> Chunks(TerrainHeights heights) => Chunks(heights.WidthCells, heights.HeightCells, heights.Skirt);
+
+    private static IEnumerable<(int X, int Z)> Chunks(int widthCells, int heightCells, int skirt)
     {
-        for (var z = 0; z < heightCells; z += ChunkCells)
+        for (var z = -skirt; z < heightCells + skirt; z += ChunkCells)
         {
-            for (var x = 0; x < widthCells; x += ChunkCells)
+            for (var x = -skirt; x < widthCells + skirt; x += ChunkCells)
             {
                 yield return (x, z);
             }
@@ -96,15 +101,15 @@ public static class TerrainMesh
 
     /// <summary>
     /// The chunks a change of heights touches: those with at least one corner, their border corners included, at another
-    /// height. A corner on a border belongs to every chunk around it. Both heights must be of the same map size.
+    /// height. A corner on a border belongs to every chunk around it. Both heights must be of the same map and skirt size.
     /// </summary>
     public static List<(int X, int Z)> ChangedChunks(TerrainHeights before, TerrainHeights after)
     {
         var changed = new List<(int X, int Z)>();
-        foreach (var (startX, startZ) in Chunks(after.WidthCells, after.HeightCells))
+        foreach (var (startX, startZ) in Chunks(after))
         {
-            var endX = Math.Min(startX + ChunkCells, after.WidthCells);
-            var endZ = Math.Min(startZ + ChunkCells, after.HeightCells);
+            var endX = Math.Min(startX + ChunkCells, after.WidthCells + after.Skirt);
+            var endZ = Math.Min(startZ + ChunkCells, after.HeightCells + after.Skirt);
             if (Differs(before, after, startX, startZ, endX, endZ))
             {
                 changed.Add((startX, startZ));

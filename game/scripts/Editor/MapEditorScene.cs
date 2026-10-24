@@ -115,7 +115,7 @@ public partial class MapEditorScene : Node3D, IMapSource
     public override void _EnterTree()
     {
         // Before the terrain and the camera are ready: they ask for the map at once.
-        Load(Kept ?? new MapEditSession(EditableMap.New(64, 64, 2)));
+        Load(Kept ?? new MapEditSession(EditableMap.NewWithArea(64, 2)));
     }
 
     public override void _Ready()
@@ -430,7 +430,8 @@ public partial class MapEditorScene : Node3D, IMapSource
         newRow.AddChild(_players);
         stack.AddChild(ActionButton("UI_EDITOR_NEW", () =>
         {
-            Load(new MapEditSession(EditableMap.New(Sizes[_sizeList.Selected], Sizes[_sizeList.Selected], (int)_players.Value)));
+            // As in RA2 the playable area is a rectangle on the screen, about size² cells (MapArea).
+            Load(new MapEditSession(EditableMap.NewWithArea(Sizes[_sizeList.Selected], (int)_players.Value)));
             _message = "";
         }));
 

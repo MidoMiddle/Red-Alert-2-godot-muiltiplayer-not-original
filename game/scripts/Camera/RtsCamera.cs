@@ -11,6 +11,10 @@ namespace Rts.Client;
 /// Moves with the camera key actions, with the mouse at the edge of the field (setting <c>EdgeScroll</c>) and with a drag
 /// of the camera button that <see cref="PlayerInput"/> passes in (setting <c>CameraDrag</c>, docs/implementation/M6_menus_skirmish.md).
 /// Zooms with the mouse wheel. The sidebar covers <see cref="ReservedRight"/> on the right, so the rig point sits in the middle of the field.
+/// As in RA2 the view stops at the edge of the map: the field never goes past the frame of the map on screen. On a map with a
+/// playable area (<see cref="Rts.Data.Maps.MapArea"/>) the frame is that rectangle, so the corners of the field are corners of
+/// the battlefield; on a square map it is the bounding box of its diamond, and the triangles between the diamond and the frame
+/// show the land beyond the edge (<see cref="Rts.Client.Terrain.MapSkirt"/>).
 /// </summary>
 public partial class RtsCamera : Node3D
 {
@@ -21,7 +25,7 @@ public partial class RtsCamera : Node3D
     public const float DefaultSize = 25.5f;
 
     private const float MinZoom = 0.7f;
-    private const float MaxZoom = 1.6f;
+    public const float MaxZoom = 1.6f;
     private const float ZoomStep = 1.12f;
     private const float ZoomSmoothing = 12f;
     private const float CameraDistance = 50f; // close enough that the ground stays well inside the sun shadow distance
@@ -34,6 +38,7 @@ public partial class RtsCamera : Node3D
 
     private Camera3D _camera = null!;
     private System.Func<Rts.Simulation.Map.MapGrid> _map = null!;
+    private System.Func<Rts.Client.Climates.MapLook> _look = null!;
     private float _targetSize = DefaultSize;
     private float _keyHoldTime;
 
@@ -51,6 +56,7 @@ public partial class RtsCamera : Node3D
     public override void _Ready()
     {
         _map = Rts.Client.Terrain.MapSources.Find(this);
+        _look = Rts.Client.Terrain.MapSources.FindLook(this);
         var pivot = GetNode<Node3D>("Pivot");
         pivot.RotationDegrees = new Vector3(-PitchDegrees, YawDegrees, 0f);
 
@@ -76,6 +82,8 @@ public partial class RtsCamera : Node3D
         }
 
         _camera.Size = Mathf.Lerp(_camera.Size, _targetSize, 1f - Mathf.Exp(-ZoomSmoothing * dt));
+        // A zoom out or a smaller window shows more: the view stays inside the frame of the map.
+        Position = ClampToFrame(Position);
         // The rig point sits in the middle of the field: the view without the strips that the sidebar and the command bar cover.
         var (shiftX, shiftY) = CommandBarLayout.CentreOffset(ReservedRight, ReservedBottom, _camera.Size, GetViewport().GetVisibleRect().Size.Y);
         _camera.Position = new Vector3(shiftX, shiftY, CameraDistance);
@@ -210,14 +218,50 @@ public partial class RtsCamera : Node3D
 
     private static Vector3 Flatten(Vector3 vector) => new Vector3(vector.X, 0f, vector.Z).Normalized();
 
-    /// <summary>Moves the rig over the ground and keeps its centre on the map.</summary>
-    private void MoveOverGround(Vector3 offset)
+    /// <summary>Moves the rig over the ground and keeps the field inside the frame of the map.</summary>
+    private void MoveOverGround(Vector3 offset) => Position = ClampToFrame(Position + offset);
+
+    /// <summary>
+    /// The rig point nearest to <paramref name="target"/> whose field stays inside the frame of the map on screen: along the
+    /// screen's right and up the ground spans of the field (its pixels at the current size, the up span stretched by the pitch)
+    /// must lie between the frame's corners that reach furthest that way. Where the field is wider than the frame, it is centred.
+    /// </summary>
+    private Vector3 ClampToFrame(Vector3 target)
     {
-        var map = _map();
-        var target = Position + offset;
-        Position = new Vector3(
-            Mathf.Clamp(target.X, 0f, map.Width),
-            0f,
-            Mathf.Clamp(target.Z, 0f, map.Height));
+        var corners = FrameCorners();
+        var (right, up) = (GroundRight(), GroundUp());
+        var field = FieldRect().Size;
+        var perPixel = _camera.Size / GetViewport().GetVisibleRect().Size.Y;
+        var halfRight = field.X / 2f * perPixel;
+        var halfUp = field.Y / 2f * perPixel / Mathf.Sin(Mathf.DegToRad(PitchDegrees));
+        var (minRight, maxRight, minUp, maxUp) = (float.MaxValue, float.MinValue, float.MaxValue, float.MinValue);
+        foreach (var corner in corners)
+        {
+            (minRight, maxRight) = (Mathf.Min(minRight, corner.Dot(right)), Mathf.Max(maxRight, corner.Dot(right)));
+            (minUp, maxUp) = (Mathf.Min(minUp, corner.Dot(up)), Mathf.Max(maxUp, corner.Dot(up)));
+        }
+
+        var alongRight = Within(target.Dot(right), minRight + halfRight, maxRight - halfRight);
+        var alongUp = Within(target.Dot(up), minUp + halfUp, maxUp - halfUp);
+        return right * alongRight + up * alongUp;
     }
+
+    /// <summary>
+    /// The corners of the frame on the ground: those of the playable area — in the screen's axes <c>x = (u + v) / 2</c>,
+    /// <c>z = (u − v) / 2</c>, its sides through the centres of its edge cells — or of the whole map.
+    /// </summary>
+    public Vector3[] FrameCorners()
+    {
+        if (_look() is { Playable: { } area })
+        {
+            Vector3 At(float u, float v) => new((u + v) / 2f, 0f, (u - v) / 2f);
+            return [At(area.Top, area.Left), At(area.Top, area.Right), At(area.Bottom, area.Left), At(area.Bottom, area.Right)];
+        }
+
+        var map = _map();
+        return [Vector3.Zero, new Vector3(map.Width, 0f, 0f), new Vector3(0f, 0f, map.Height), new Vector3(map.Width, 0f, map.Height)];
+    }
+
+    // Clamp, or the middle when the range is empty (the field is wider than the frame).
+    private static float Within(float value, float min, float max) => min <= max ? Mathf.Clamp(value, min, max) : (min + max) / 2f;
 }

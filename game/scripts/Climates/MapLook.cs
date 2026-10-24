@@ -14,8 +14,10 @@ namespace Rts.Client.Climates;
 /// </summary>
 public sealed class MapLook
 {
-    private MapLook(string climate, string lighting, int width, int height, ImmutableArray<TextureEntry> legend, ImmutableArray<char> texture)
+    private MapLook(string climate, string lighting, int width, int height, ImmutableArray<TextureEntry> legend, ImmutableArray<char> texture,
+        MapArea? playable = null)
     {
+        Playable = playable;
         Climate = climate;
         Lighting = lighting;
         Width = width;
@@ -25,6 +27,9 @@ public sealed class MapLook
     }
 
     public string Climate { get; }
+
+    /// <summary>The playable area, a rectangle on the screen the camera stops at (<see cref="MapArea"/>); null when the whole map plays.</summary>
+    public MapArea? Playable { get; }
 
     /// <summary>One of <see cref="MapLighting.Ids"/>.</summary>
     public string Lighting { get; }
@@ -39,7 +44,7 @@ public sealed class MapLook
     public ImmutableArray<char> Texture { get; }
 
     public static MapLook FromDefinition(MapDefinition map) =>
-        new(map.Climate, map.Lighting, map.Width, map.Height, map.TextureLegend, map.Texture);
+        new(map.Climate, map.Lighting, map.Width, map.Height, map.TextureLegend, map.Texture, map.Playable);
 
     /// <summary>The map open in the editor as it is now.</summary>
     public static MapLook FromEditable(EditableMap map)
@@ -53,7 +58,7 @@ public sealed class MapLook
             }
         }
 
-        return new MapLook(map.Climate, map.Lighting, map.Width, map.Height, [.. map.Legend], texture.MoveToImmutable());
+        return new MapLook(map.Climate, map.Lighting, map.Width, map.Height, [.. map.Legend], texture.MoveToImmutable(), map.Playable);
     }
 
     /// <summary>

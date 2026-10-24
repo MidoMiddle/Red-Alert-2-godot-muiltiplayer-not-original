@@ -3,15 +3,16 @@ id: crate-glacier
 name: "Crate Glacier"
 author: "Map generator"
 description: "Generated from seed 1018: 4 players, Rotate90, Hilly, water Rivers, forest Medium, resources Medium, drills OreAndGems."
-size: [64, 64]
+size: [90, 90]
+playable: { left: -45, top: 45, right: 45, bottom: 135 }
 climate: winter
 lighting: dawn
 players: 4
 starts:
-  - { slot: 1, cell: [12, 14] }
-  - { slot: 2, cell: [49, 12] }
-  - { slot: 3, cell: [51, 49] }
-  - { slot: 4, cell: [14, 51] }
+  - { slot: 1, cell: [20, 49] }
+  - { slot: 2, cell: [40, 20] }
+  - { slot: 3, cell: [69, 40] }
+  - { slot: 4, cell: [49, 69] }
 legend:
   texture:
     a: asphalt
@@ -24,275 +25,379 @@ legend:
     w: water
 layers:
   height: |
-    33443333332222222222233333333210000123444443333333333333333322223
-    23333333332222222222233333333210000123444443333333333333333222233
-    22333333332222222222233333333210000123344433333333333333333222334
-    22233333332222222222223333333210000123333333333333333333333223334
-    22222222322222233322222222222210000123333333322222222223333223333
-    32222222222222233322222222222210000123333333221111111122333223333
-    33333322222222222222222222222210000123333332211000000112232223333
-    33333332211111111222222222222210000123333322110000000011222223333
-    33333322110000001122222211112210000122333221100000000001122233333
-    33333221100000000112222111111210000122333211000000000000112223333
-    33332211000000000011222111111110000122233210000000000000012222222
-    33332110000000000001121111111110000122222210000000000000012222222
-    33332100000000000000111111111110000122222210000000000000012222222
-    33332100000000000000111111111110000122222210000000000000012222222
-    33332100000000000000111111111110000112222210000000000000012222222
-    33332100000000000000111111111110000111112210000000000000012332222
-    33332100000000000000111111111110000111112211000000000000112332222
-    33332100000000000000111111111110000111112221100000000001122332222
-    33332110000000000001111111111110000111122222110000000011222222222
-    33332211000000000011221111111110000111122222211000000112222222222
-    33333221100000000112221111111210000111222222221111111122222222222
-    33333322110000001122221111112210000111222222221111111222222222333
-    44333332211111111222222111112210000122222221111111111122222223333
-    44433333222222222222222111112210000122211111111111111111222223333
-    44433333333222222222222111112210000122211111111111111111122223333
-    44433333333222211122222111222210000122211111111111111111122223333
-    44333333332222211111222222222210000122221111111111111111122223333
-    33333333222222211111112222222210000122221111111111111111122223333
-    22222222222222111111112222222210000122222222111111111111222223333
-    11111111111111111111111111111110000122222222211111111112222222222
-    00000000000000000000000000000000000111111111111111111111111111111
-    00000000000000000000000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000000000000000000000
-    11111111111111111111111111111100000000000000000000000000000000000
-    22222222221111111111222222222100001111111111111111111111111111111
-    33332222211111111111122222222100001222222221111111122222222222222
-    33332222111111111111111112222100001222222221111111222222233333333
-    33332222111111111111111112222100001222222222211111222223333333344
-    33332222111111111111111111222100001222211122222111222233333333444
-    33332222111111111111111111222100001221111122222222222233333333444
-    33332222211111111111111111222100001221111122222222222222233333444
-    33332222222111111111112222222100001221111122222211111111223333344
-    33322222222211111112222222211100001221111112222110000001122333333
-    22222222222111111112222222211100001211111112221100000000112233333
-    22222222221100000011222222111100001111111112211000000000011223333
-    22222222211000000001122222111100001111111111110000000000001123333
-    22223322110000000000112221111100001111111111100000000000000123333
-    22223321100000000000011221111100001111111111100000000000000123333
-    22223321000000000000001221111100001111111111100000000000000123333
-    22222221000000000000001222221100001111111111100000000000000123333
-    22222221000000000000001222222100001111111111100000000000000123333
-    22222221000000000000001222222100001111111111100000000000000123333
-    22222221000000000000001222222100001111111112110000000000001123333
-    22222221000000000000001233222100001111111122211000000000011223333
-    33332221100000000000011233322100001211111122221100000000112233333
-    33333222110000000000112233322100001221111222222110000001122333333
-    33332222211000000001122333332100001222222222222211111111223333333
-    33332223221100000011223333332100001222222222222222222222222333333
-    33332233322111111112233333332100001222222222222333222222222222223
-    33332233332222222222333333332100001222222222222333222222322222222
-    43332233333333333333333333332100001233333332222222222223333333222
-    43322233333333333333333444332100001233333333222222222223333333322
-    33222233333333333333334444432100001233333333222222222223333333332
-    32222333333333333333334444432100001233333333222222222223333334433
+    0000112233222222222223333333333333333344444333333333333333332222222222222333333333322110000
+    0000011223222222222223333333333333333344444333333333333333322222222222222333333333221100000
+    0000001122222222222223333333333333333334443333333333333333322222222222222333333332211000000
+    0000000111222222222222333333333333333333333333333333333333322222222222222322333332110000000
+    1000000001122223332222222222223333333333333333333333333333322222222222222322333322100000001
+    1100000000112223332222222222222333333333333333333333333333322222222222223322333221100000011
+    2110000000011223332222222222222222223333333333333333333333322222222222222233332211000000112
+    2211000000001123332222222222222222222333333333333333333333332222222222222233222110000001122
+    3221110000000122222222221111222222222233333333333333333333332222222222222232211100000001223
+    3322211000000112222222211111122222222233333333333333333333333222222222222222110000000011233
+    3333221100000011222222211111112222222223333333333333333333333222222222222111100000000112222
+    3333322110000001222222111111111112222222233333332333333333333333333222221100000000001122222
+    3333332210000001222211111111111111222222222222322233333333333333333333221000000000011222222
+    3333333211000001122111111111111111122111111112222233333333333333333332211000000001112222222
+    3333333221100000111111111111111111111100000011223333333333333333333332110000000011222222222
+    3332223322100000001111111111111111111000000001122333333333333333333322100000011112233332222
+    3332223332100000000111111111111111110000000000112232223333333333333221100000112222233332222
+    3333332222110000000001111111111111100000000000011233233333333333333211000000122222233332222
+    2222232222211100000000011111111111000000000000001233333333333333332210000001122222222222222
+    2222222222222110000000001111111111000000000000001233333322222333322110000011112222222222222
+    2222222222222211100000000111122221000000000000001233333222222223221100000011111222222222222
+    2222222222223222110000000011222221000000000000001223333222222222211000000111111222222222333
+    2222222222223332211100000001122221000000000000001222333222222222110000000111111122222223333
+    2222222222223333222110000000112221000000000000001222223322222221100000001111111111222223333
+    2222222222233333332211000000012221100000000000011222222222222211000000011111111111122223333
+    2222222222233333333221100000011222110000000000112222222222221110000000111111111111122223333
+    2222222222233333333322110000001122211000000001122222222222211000000001111111111111122223333
+    2222222222233333333332211000000112221100000011222222222222110000000011111111111111122223333
+    2222222222233333333322221100000011222111111112222222222221100000000112111111111111222223333
+    2222222222233333333322222100000001122222222222222222222211000000011122211111111112222223333
+    2222222223333333333222222110000000112222222222222222222110000000112222211111111122222233333
+    3222222333333333333222222211000000011222222222222222221100000001122222211111111122222333333
+    3333333333333333333222222221100000001122322222222222211000000011222222211111111122222333333
+    3333333333333333333222222222110000000112222222222222110000000112221111111111111222222333333
+    3333333333333333333222222222211000000011222222222221100000001122211000000111112222222333333
+    3333333333333333333322232222221100000001122222222211000000011222110000000011122222222333333
+    3333333333333333333333332222222110000000112222222110000000112221100000000001122222223333333
+    3333333333333333233333322222222211000000011222221100000001122211000000000000112222233333333
+    3333333333333333223333322222222221100000001122211000000011222210000000000000012223333333344
+    3333333333333333233333222222222222110000000112110000000112222210000000000000012233333333444
+    3333333333333333333332222222222222211000000011100000001122322210000000000000012233333333444
+    3333333333332233222222222222222222221100000001000000011222222210000000000000012333333333444
+    3333333333322232211111111222222222222110000000000000112222222210000000000000012333333333344
+    3333333333332222110000001122222222222211000000000001122222222210000000000000012333333333333
+    3333333333333221100000000112222222222221100000000011222222222211000000000000112333333333333
+    3333333333332211000000000011222222222222110000000112222222222221100000000001122333333333333
+    3333333333332110000000000001122222222221100000000011222222222222110000000011223333333333333
+    3333333333332100000000000000122222222211000000000001122222222222211000000112222333333333333
+    4433333333332100000000000000122222222110000000000000112222222222221111111122322233333333333
+    4443333333332100000000000000122222221100000001000000011222222222222222222223322333333333333
+    4443333333322100000000000000122232211000000011100000001122222222222222333333333333333333333
+    4443333333322100000000000000122222110000000112110000000112222222222223333323333333333333333
+    4433333333222100000000000000122221100000001122211000000011222222222233333223333333333333333
+    3333333322222110000000000001122211000000011222221100000001122222222233333323333333333333333
+    3333333222222211000000000011222110000000112222222110000000112222222333333333333333333333333
+    3333332222222211100000000112221100000001122222222211000000011222222322233333333333333333333
+    3333332222222111110000001122211000000011222222222221100000001122222222223333333333333333333
+    3333332222221111111111111222110000000112222222222222110000000112222222223333333333333333333
+    3333332222211111111122222221100000001122222222222232211000000011222222223333333333333333333
+    3333332222211111111122222211000000011222222222222222221100000001122222223333333333332222223
+    3333322222211111111122222110000000112222222222222222222110000000112222223333333333222222222
+    3333222222111111111122211100000001122222222222222222222211000000012222233333333322222222222
+    3333222221111111111112110000000011222222222222111111112221100000011222233333333322222222222
+    3333222211111111111111100000000112222222222221100000011222110000001122333333333322222222222
+    3333222211111111111111000000001122222222222211000000001122211000000112233333333322222222222
+    3333222211111111111110000000111222222222222110000000000112221100000011223333333322222222222
+    3333222211111111111100000001122222222222221100000000000011222100000001122333333322222222222
+    3333222221111111111000000011222222233222221000000000000001222110000000112223333222222222222
+    3333222222211111110000000112222222223332221000000000000001222211000000011122333222222222222
+    3332222222221111110000001122222222223333221000000000000001222221100000000112223222222222222
+    2222222222221111100000011223222222223333321000000000000001222211110000000011122222222222222
+    2222222222222111100000112233332222233333321000000000000001111111111000000000112222222222222
+    2222222222222211000000122333333333333333321000000000000001111111111100000000011122222322222
+    2222333322222210000001123333333333333323321100000000000011111111111111000000000112222333333
+    2222333322222110000011223333333333333222322110000000000111111111111111110000000012333222333
+    2222333322111100000012233333333333333333332211000000001111111111111111111000000012233222333
+    2222222221100000000112333333333333333333333221100000011111111111111111111110000011223333333
+    2222222111000000001122333333333333333333322222111111112211111111111111112211000001123333333
+    2222221100000000001223333333333333333333322232222222222221111111111111122221000000122333333
+    2222211000000000011222223333333333333333332333333322222222111111111112222221000000112233333
+    2222110000000011112222222222223333333333333333333333222222222111111122222221100000011223333
+    3321100000000112222222222222223333333333333333333333322222222211111122222222110000001122233
+    3221000000011122322222222222222333333333333333333333322222222221111222222222210000000111223
+    2211000000112223322222222222222333333333333333333333332222222222222222222333211000000001122
+    2110000001122333322222222222222233333333333333333333333222222222222222222333221100000000112
+    1100000011223332233222222222222233333333333333333333333333332222222222222333222110000000011
+    1000000012233332232222222222222233333333333333333333333333333222222222222333222211000000001
+    0000000112333332232222222222222233333333333333333333333333333333333332222222222221110000000
+    0000001122333333332222222222222233333333333333333444333333333333333333222222222222211000000
+    0000011223333333332222222222222233333333333333334444433333333333333333222222222223221100000
+    0000112233333333332222222222222333333333333333334444433333333333333333222222222223322110000
   land: |
-    ..............................b~~~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.............................
-    ..............................b~W~b.........======..............
-    ..............................b~W~b......===....................
-    ............=.................b~W~b....==.......................
-    ............=.................b~W~b.===.........................
-    ............=.................b~W~==............................
-    ............=.................b~W~b.............................
-    ............=.................b~W~b.............................
-    ............=.................b~W~b.............................
-    .............=................b~W~b.............................
-    .............=................b~W~b.............................
-    .............=................b~W~b.............................
-    ..............=...............b~W~b.............................
-    ..............=...............b~W~b.............................
-    ...............=..............b~W~b.............................
-    ...............=..............b~W~b.............................
-    ...............=..............b~W~b.............................
-    ................=.............b~W~b.............................
-    bbbbbbbbbbbbbbbb=bbbbbbbbbbbbbb~W~b.............................
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WW~bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb~WW~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    .............................b~W~bbbbbbbbbbbbbb=bbbbbbbbbbbbbbbb
-    .............................b~W~b.............=................
-    .............................b~W~b..............=...............
-    .............................b~W~b..............=...............
-    .............................b~W~b..............=...............
-    .............................b~W~b...............=..............
-    .............................b~W~b...............=..............
-    .............................b~W~b................=.............
-    .............................b~W~b................=.............
-    .............................b~W~b................=.............
-    .............................b~W~b.................=............
-    .............................b~W~b.................=............
-    .............................b~W~b.................=............
-    ............................==~W~b.................=............
-    .........................===.b~W~b.................=............
-    .......................==....b~W~b.................=............
-    ....................===......b~W~b..............................
-    ..............======.........b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~W~b..............................
-    .............................b~~~b..............................
+    ~~~bb................................................................................bb~~~
+    ~WW~bb..............................................................................bb~WW~
+    ~WWW~bb............................................................................bb~WWW~
+    b~WWW~bbb.........................................................................bb~WWW~b
+    bb~WWW~~bb........................................................................b~WWW~bb
+    .bb~WWWW~bb......................................................................bb~WW~bb.
+    ..bb~~WWW~bb....................................................................bb~WW~bb..
+    ...bbb~WWW~bb..................................................................bb~WWW~b...
+    .....bb~WWW~b................................................................bbb~WWW~bb...
+    ......bb~WW~bb..............................................................bb~~WWW~bb....
+    .......bb~WW~bb..........................................................bbbb~WWWW~bb.....
+    ........b~WWW~b.........................................................bb~~~WWW~~bb......
+    ........bb~WW~b.........................................................b~WWWWW~bbb.......
+    .........bb~W~bb.......................................................bb~WW~~~bb.........
+    ..........b~WW~bbb....................................................bb~WW~bbbb..........
+    ..........b~WWW~~bb...................................................b~WW~bb.............
+    ..........bb~~WWW~bbb................................................bb~WW~b..............
+    ...........bbb~WWW~~bbb.............................................bb~WW~bb..............
+    .............bb~~WWW~~bb............................................b~WW~bb...............
+    ..............bbb~WWWW~bb..........................................bb~WW~b................
+    ................bb~~WWW~bb..............=.........................bb~WW~bb................
+    .................bbb~WWW~bb.............=........................bb~WWW~b.................
+    ...................bb~WWW~bb............=.......................bb~WWW~bb.................
+    ....................bb~WWW~bb...........=......................bb~WWW~bb..................
+    .....................bb~WWW~b...........=.....................bb~WWW~bb...................
+    ......................bb~WW~bb..........=...................bbb~WWW~bb....................
+    .......................bb~WW~bb.........=..................bb~~WWW~bb.....................
+    ........................bb~WW~bb........=.................bb~WWW~~bb......................
+    .........................b~WWW~bb.......=................bb~WWW~bbb.......................
+    .........................bb~WWW~bb......=...............bb~WWW~bb.........................
+    ..........................bb~WWW~bb....=...............bb~WWW~bb..........................
+    ...........................bb~WWW~bb..=...............bb~WWW~bb...........................
+    ............................bb~WWW~bb=...............bb~WWW~bb............................
+    .............................bb~WWW~=b..............bb~WWW~bb.............................
+    ..............................bb~WWW~bb............bb~WWW~bb..............................
+    ...............................bb~WWW~bb..........bb~WWW~bb...............................
+    ................................bb~WWW~bb........bb~WWW~=b................................
+    .................................bb~WWW~bb......bb~WWW~bb=................................
+    ..................................bb~WWW~bb....bb~WWW~bb..=...............................
+    ...................................bb~WWW~bb..bb~WWW~bb....=..............................
+    ....................................bb~WWW~bbbb~WWW~bb......==========....................
+    .....................................bb~WWW~bb~WWW~bb.....................................
+    ......................................bb~WWW~~WWW~bb......................................
+    .......................................bb~WWWWWW~bb.......................................
+    ........................................bb~WWWW~bb........................................
+    ........................................bb~WWWW~bb........................................
+    .......................................bb~WWWWWW~bb.......................................
+    ......................................bb~WWW~~WWW~bb......................................
+    .....................................bb~WWW~bb~WWW~bb.....................................
+    ....................==========......bb~WWW~bbbb~WWW~bb....................................
+    ..............................=....bb~WWW~bb..bb~WWW~bb...................................
+    ...............................=..bb~WWW~bb....bb~WWW~bb..................................
+    ................................=bb~WWW~bb......bb~WWW~bb.................................
+    ................................b=~WWW~bb........bb~WWW~bb................................
+    ...............................bb~WWW~bb..........bb~WWW~bb...............................
+    ..............................bb~WWW~bb............bb~WWW~bb..............................
+    .............................bb~WWW~bb..............b=~WWW~bb.............................
+    ............................bb~WWW~bb...............=bb~WWW~bb............................
+    ...........................bb~WWW~bb...............=..bb~WWW~bb...........................
+    ..........................bb~WWW~bb...............=....bb~WWW~bb..........................
+    .........................bb~WWW~bb...............=......bb~WWW~bb.........................
+    .......................bbb~WWW~bb................=.......bb~WWW~b.........................
+    ......................bb~~WWW~bb.................=........bb~WW~bb........................
+    .....................bb~WWW~~bb..................=.........bb~WW~bb.......................
+    ....................bb~WWW~bbb...................=..........bb~WW~bb......................
+    ...................bb~WWW~bb.....................=...........b~WWW~bb.....................
+    ..................bb~WWW~bb......................=...........bb~WWW~bb....................
+    .................bb~WWW~bb.......................=............bb~WWW~bb...................
+    .................b~WWW~bb........................=.............bb~WWW~bbb.................
+    ................bb~WW~bb.........................=..............bb~WWW~~bb................
+    ................b~WW~bb..........................................bb~WWWW~bbb..............
+    ...............bb~WW~b............................................bb~~WWW~~bb.............
+    ..............bb~WW~bb.............................................bbb~~WWW~bbb...........
+    ..............b~WW~bb................................................bbb~WWW~~bb..........
+    .............bb~WW~b...................................................bb~~WWW~b..........
+    ..........bbbb~WW~bb....................................................bbb~WW~b..........
+    .........bb~~~WW~bb.......................................................bb~W~bb.........
+    .......bbb~WWWWW~b.........................................................b~WW~bb........
+    ......bb~~WWW~~~bb.........................................................b~WWW~b........
+    .....bb~WWWW~bbbb..........................................................bb~WW~bb.......
+    ....bb~WWW~~bb..............................................................bb~WW~bb......
+    ...bb~WWW~bbb................................................................b~WWW~bb.....
+    ...b~WWW~bb..................................................................bb~WWW~bbb...
+    ..bb~WW~bb....................................................................bb~WWW~~bb..
+    .bb~WW~bb......................................................................bb~WWWW~bb.
+    bb~WWW~b........................................................................bb~~WWW~bb
+    b~WWW~bb.........................................................................bbb~WWW~b
+    ~WWW~bb............................................................................bb~WWW~
+    ~WW~bb..............................................................................bb~WW~
+    ~~~bb................................................................................bb~~~
   texture: |
-    ssssssssssssssssssddddddssddddbwwwbdddddddddddssssssssssssssssss
-    ssssssssssssssssssdddddsssddddbwwwbdddddddddddssssssssssssssssss
-    ssssssssssssssssdddddddssssdddbwwwbddddsssssssssssssssssssssssss
-    sssssssssssssssdddssssssssssssbwwwbssssssssssssssssssssddsssssss
-    sssssssssssssssdddssssssssssssbwwwbsssssssssssssssssssssdsssssss
-    sssssssssssssssdddssssssssssssbwwwbsssssssssssssssssssssssssssss
-    ssssssssssssssssdsssssssssssssbwwwbssssssssssssssdssssssssssssss
-    sssddsssssssssssssssssssssssssbwwwbssssssssssssddddddsssssssssss
-    sssdssssssssdsssssssssssssssssbwwwbsssssssssssssddddddssssssssss
-    sssssssssssssdddssssssssssssssbwwwbssssssssssssssdddddssssssssss
-    ssssssssddsssssddsssssssssssssbwwwbsssssssssssssdddddsssssssssss
-    sssssssddddsssssssssssssssssssbwwwbsssssssssssggddddssssssssssss
-    sssssssdddddssssssssssssssssssbwwwbsssssssssaaaaaagssssdssssssss
-    sssssssdddddgsssssssssssssssssbwwwbssssssaaaggggggssssdsssssssss
-    ssssssddddddagssssssssssssssssbwwwbssssaaggggggggsssssdsssssssss
-    sssssssddsddaggggggsssggggssssbwwwbsaaasgggggggggssssddsssdddsss
-    sssssssdsssgagggggggsgggggssssbwwwaassssgggggggggssssdsssdddddss
-    sssssssssssgagggggggssggggssssbwwwbsssssgggggggggsssssssssddddss
-    ddssssssssssagggggggssgggsssssbwwwbssssssggggggggssssssssssssddd
-    ddssssssssssagggggggssssssssssbwwwbssssssssgggggsssssssssssssddd
-    ddsssssssssssaggggggssssssssssbwwwbssssssssssssssssssssssssssddd
-    ddsssssssssssagggggssggggsgggsbwwwbsssssssgssssgsssssssssssssddd
-    ddsssssssssssagggggsssggggggggbwwwbssssssggssggggssssssssssssddd
-    ddssssssssssssagggsssssgggggggbwwwbsssssgggssggggssssssssssssssd
-    ddssssssssssssasssssssssggggggbwwwbssssggggssggggsssssssssssssss
-    dddssssssssssssasssssssssgggggbwwwbsssggggssssgggsssssssssssssss
-    dddssssssssssssassssssssssggggbwwwbssggggggsssssssssssssssssssdd
-    dddssssssssssssasssssssssssgggbwwwbsgggggggssssssssssssssssssddd
-    dddsssssssssssssasssssssssssggbwwwbggggggggssssssssssssssssssddd
-    bbbbbbbbbbbbbbbbabbbbbbbbbbbbbbwwwbgggggggsssssssssssssssssssddd
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    dddsssssssssssssssssssgggggggbwwwbbbbbbbbbbbbbbabbbbbbbbbbbbbbbb
-    dddssssssssssssssssssggggggggbwwwbggsssssssssssasssssssssssssddd
-    dddssssssssssssssssssgggggggsbwwwbgggsssssssssssassssssssssssddd
-    ddsssssssssssssssssssggggggssbwwwbggggssssssssssassssssssssssddd
-    sssssssssssssssgggssssggggsssbwwwbgggggsssssssssassssssssssssddd
-    sssssssssssssssggggssggggssssbwwwbggggggsssssssssassssssssssssdd
-    dssssssssssssssggggssgggsssssbwwwbgggggggsssssgggassssssssssssdd
-    dddssssssssssssggggssggssssssbwwwbggggggggsssgggggasssssssssssdd
-    dddsssssssssssssgssssgsssssssbwwwbsgggsggggssgggggasssssssssssdd
-    dddssssssssssssssssssssssssssbwwwbssssssssssggggggasssssssssssdd
-    dddsssssssssssssgggggssssssssbwwwbssssssssssgggggggassssssssssdd
-    dddssssssssssssggggggggssssssbwwwbsssssgggssgggggggassssssssssdd
-    ssddddsssssssssgggggggggsssssbwwwbssssggggssgggggggagsssssssssss
-    ssdddddsssdssssgggggggggssssaawwwbssssgggggsgggggggagsssdsssssss
-    sssdddsssddssssgggggggggsaaasbwwwbssssggggsssggggggaddsddsssssss
-    sssssssssdsssssggggggggaassssbwwwbssssssssssssssssgaddddddssssss
-    sssssssssdssssggggggaaassssssbwwwbsssssssssssssssssgdddddsssssss
-    ssssssssdssssgaaaaaasssssssssbwwwbssssssssssssssssssdddddsssssss
-    ssssssssssssddddggsssssssssssbwwwbsssssssssssssssssssddddsssssss
-    sssssssssssdddddsssssssssssssbwwwbsssssssssssssddsssssddssssssss
-    ssssssssssdddddssssssssssssssbwwwbssssssssssssssdddsssssssssssss
-    ssssssssssddddddsssssssssssssbwwwbsssssssssssssssssdssssssssdsss
-    sssssssssssddddddssssssssssssbwwwbsssssssssssssssssssssssssddsss
-    ssssssssssssssdssssssssssssssbwwwbsssssssssssssdssssssssssssssss
-    sssssssssssssssssssssssssssssbwwwbssssssssssssdddsssssssssssssss
-    sssssssdsssssssssssssssssssssbwwwbssssssssssssdddsssssssssssssss
-    sssssssddssssssssssssssssssssbwwwbssssssssssssdddsssssssssssssss
-    sssssssssssssssssssssssssddddbwwwbdddssssdddddddssssssssssssssss
-    ssssssssssssssssssdddddddddddbwwwbddddsssdddddssssssssssssssssss
-    ssssssssssssssssssdddddddddddbwwwbddddssddddddssssssssssssssssss
+    wwwbbsssdddsssssssdddddddddddddddddddddddddddddsssssdddssssssssssssssssssssssssssssssbbwww
+    wwwwbbsssdsssssssdddddddddddddddddddddddddddddssssssddddssssssssssssssssssssssssssssbbwwww
+    wwwwwbbssssssssddddddddddddddddddddddddddddddsssssssssdddssssssssssssssssssssssssssbbwwwww
+    bwwwwwbbbssssssddddssssssssdddssssssdddssssssssssssssssddsssssssssssssssssssssssssbbwwwwwb
+    bbwwwwwwbbsssssddddssssssssssssssssssssssssssssssssssssddsssssssssssssssssssssssssbwwwwwbb
+    sbbwwwwwwbbssssdddsssssssssssssssssssssssssssssssssssssddssssssssssssssssssssssssbbwwwwbbs
+    ssbbwwwwwwbbsssdddssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssbbwwwwbbss
+    sssbbbwwwwwbbsssdssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssbbwwwwwbsss
+    sssssbbwwwwwbssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssbbbwwwwwbbssd
+    ssssssbbwwwwbbsssssssssssssssssssssssssssssssssssssssssssgggssssssssssssssssbbwwwwwwbbssdd
+    sssssssbbwwwwbbssssssssssssssssssssssssssssssssssssssssggggggssssssssssssbbbbwwwwwwbbssssd
+    ssssssssbwwwwwbsssssssssssssssssssssssssssssssssssssssggggggggggggssssssbbwwwwwwwwbbssssss
+    ssssssssbbwwwwbssssssssssssssssssssssssssssssssgggsssggggggggggggggsssssbwwwwwwwbbbsssssss
+    sssssssssbbwwwbbssssssssssssssssssssssssssssssgggggggggggggggggggggggssbbwwwwwwbbsssssssss
+    ssssssssssbwwwwbbbssssssssssssssssssssssssssggggggggggggggggggggggggggbbwwwwbbbbssssssssss
+    ssssssssssbwwwwwwbbssssssssssssssssssssssssgggggggggggggggggggggggggggbwwwwbbssssssdddddss
+    ssssssssssbbwwwwwwbbbsssssssssssssssssssssgggggggggggggggggggggggggggbbwwwwbssssssddddddss
+    sssssssssssbbbwwwwwwbbbssssssssssssssssssssgggggggggggggggggggggggggbbwwwwbbsssssssdddddds
+    sssssssssssssbbwwwwwwwbbssssssssssssssssssssggggggggggggggggggggggggbwwwwbbssssssssssddddd
+    ssssssssssssssbbbwwwwwwbbsssssssssssssssssssssssssssgggggggggggggggbbwwwwbsssssssssssssddd
+    ssssssssssssssggbbwwwwwwbbssssssssssssssassssssssssssssgggggggggggbbwwwwbbsssssssssssssddd
+    sssssssssssssggggbbbwwwwwbbsssssssssssssassssssssssssssssssggggggbbwwwwwbssssssssssssssddd
+    sssssssssssssggggggbbwwwwwbbssssssssssssassdddsssssssssssssssgggbbwwwwwbbssssssssssssssddd
+    ssssssssssssggggggggbbwwwwwbbsssssssssssadddddsssssssssssssssssbbwwwwwbbsssssssssssssssddd
+    sssssssssssggggggggggbbwwwwwbgssssssssssaddddsssssssssssssssssbbwwwwwbbssssssssssssssssddd
+    sssssssssssgggggggggggbbwwwwbbgsssssssssadddssssssssssssssssbbbwwwwwbbsssssssssssssssssddd
+    sssssssssssggggggggggggbbwwwwbbsssssssssassssssssssssssssssbbwwwwwwbbssssssssssssssssssddd
+    sssssssssssggggggggggggsbbwwwwbbssssssssasssssssssssssssssbbwwwwwwbbssssssssssssssssssdddd
+    sssssssssssggggggggggggssbwwwwwbbsssssssassssssssssssssssbbwwwwwbbbsssssssssssssssssssdddd
+    ssssssssssggggggggggggsssbbwwwwwbbssssssasssssssssssssssbbwwwwwbbgssssssssssssssssssssdddd
+    sssssssssgggggggggggggssssbbwwwwwbbssssasssssssssssssssbbwwwwwbbgssssssssssssssssssssssddd
+    sssssssssggggggggggggssssssbbwwwwwbbssasssssssssssssssbbwwwwwbbssssssssssssssssssssssssddd
+    sssssssssggggggggggggsssssssbbwwwwwbbasssdsssssssssssbbwwwwwbbsssssssssssssssssssssssssddd
+    ssddddssssgggggggggggssssssssbbwwwwwabssssssssssssssbbwwwwwbbssssssssssssssssssssssssssddd
+    sdddddssssgggggggggggsssssssssbbwwwwwbbssssssssssssbbwwwwwbbsssssssssssssssssssssssssssddd
+    dddssssssssgggggggggsssssssssssbbwwwwwbbssssssssssbbwwwwwbbssssssssssssssssssssssssssssddd
+    ddssssssssssggggggggssssssssssssbbwwwwwbbssssssssbbwwwwwabssssssssssssssssssssssssssssdddd
+    ddsssssssssssgggggggsssssssssssssbbwwwwwbbssssssbbwwwwwbbassssssssssssssssssssssssssssdddd
+    sssssssssssssggggggsssssssssssssssbbwwwwwbbssssbbwwwwwbbssasssssssssssssssssssssssssssdddd
+    sssssssssssssggggggssssssssssssssssbbwwwwwbbssbbwwwwwbbssssasssssssssssssssssssssssssssddd
+    ssssssssssssgggggggsssssssssssssssssbbwwwwwbbbbwwwwwbbssssssaaaaaaaaaasssssssssssssssssddd
+    ssssssssssssgggggggssssssssssssssssssbbwwwwwbbwwwwwbbssssdssssssdddssssssssssssssssssssddd
+    ssssssssssssgggggggsssssssssssssssssssbbwwwwwwwwwwbbssssssssssssdddssssssgsssssssssssssddd
+    dssssssssssssggggggssssssssssssssssssssbbwwwwwwwwbbsssssssssssssddddssssgggssssssssssssddd
+    ddssssssssssssgggggsssddssssssssssssssssbbwwwwwwbbsssssssssssssssdddsssgggggsssssssssssddd
+    dddsssssssssssgggggsssdddsssssssssssssssbbwwwwwwbbssssssssssssssssddsssgggggssssssssssssdd
+    dddssssssssssssgggssssddddsssssssssssssbbwwwwwwwwbbssssssssssssssssssssggggggssssssssssssd
+    dddsssssssssssssgssssssdddssssssssssssbbwwwwwwwwwwbbsssssssssssssssssssgggggggssssssssssss
+    dddssssssssssssssssssssdddssssssdssssbbwwwwwbbwwwwwbbssssssssssssssssssgggggggssssssssssss
+    dddsssssssssssssssssaaaaaaaaaassssssbbwwwwwbbbbwwwwwbbsssssssssssssssssgggggggssssssssssss
+    dddsssssssssssssssssssssssssssassssbbwwwwwbbssbbwwwwwbbssssssssssssssssggggggsssssssssssss
+    ddddsssssssssssssssssssssssssssassbbwwwwwbbssssbbwwwwwbbsssssssssssssssggggggsssssssssssss
+    ddddssssssssssssssssssssssssssssabbwwwwwbbssssssbbwwwwwbbsssssssssssssgggggggsssssssssssdd
+    ddddssssssssssssssssssssssssssssbawwwwwbbssssssssbbwwwwwbbssssssssssssggggggggssssssssssdd
+    dddssssssssssssssssssssssssssssbbwwwwwbbssssssssssbbwwwwwbbsssssssssssgggggggggssssssssddd
+    dddsssssssssssssssssssssssssssbbwwwwwbbssssssssssssbbwwwwwbbsssssssssgggggggggggssssddddds
+    dddssssssssssssssssssssssssssbbwwwwwbbssssssssssssssbawwwwwbbssssssssgggggggggggssssddddss
+    dddsssssssssssssssssssssssssbbwwwwwbbsssssssssssdsssabbwwwwwbbsssssssggggggggggggsssssssss
+    dddssssssssssssssssssssssssbbwwwwwbbsssssssssssssssassbbwwwwwbbssssssggggggggggggsssssssss
+    dddssssssssssssssssssssssgbbwwwwwbbsssssssssssssssassssbbwwwwwbbssssgggggggggggggsssssssss
+    ddddssssssssssssssssssssgbbwwwwwbbsssssssssssssssassssssbbwwwwwbbsssggggggggggggssssssssss
+    ddddsssssssssssssssssssbbbwwwwwbbssssssssssssssssasssssssbbwwwwwbssggggggggggggsssssssssss
+    ddddssssssssssssssssssbbwwwwwwbbsssssssssssssssssassssssssbbwwwwbbsggggggggggggsssssssssss
+    dddssssssssssssssssssbbwwwwwwbbssssssssssssssssssasssssssssbbwwwwbbggggggggggggsssssssssss
+    dddsssssssssssssssssbbwwwwwbbbssssssssssssssssdddasssssssssgbbwwwwbbgggggggggggsssssssssss
+    dddssssssssssssssssbbwwwwwbbsssssssssssssssssddddassssssssssgbwwwwwbbggggggggggsssssssssss
+    dddsssssssssssssssbbwwwwwbbsssssssssssssssssdddddasssssssssssbbwwwwwbbggggggggssssssssssss
+    dddssssssssssssssbbwwwwwbbgggsssssssssssssssdddssassssssssssssbbwwwwwbbggggggsssssssssssss
+    dddssssssssssssssbwwwwwbbggggggssssssssssssssssssasssssssssssssbbwwwwwbbbggggsssssssssssss
+    dddsssssssssssssbbwwwwbbgggggggggggssssssssssssssassssssssssssssbbwwwwwwbbggssssssssssssss
+    dddsssssssssssssbwwwwbbgggggggggggggggsssssssssssssssssssssssssssbbwwwwwwbbbssssssssssssss
+    dddddssssssssssbbwwwwbggggggggggggggggggggggggssssssssssssssssssssbbwwwwwwwbbsssssssssssss
+    sddddddsssssssbbwwwwbbgggggggggggggggggggggggggssssssssssssssssssssbbbwwwwwwbbbsssssssssss
+    ssddddddssssssbwwwwbbgggggggggggggggggggggggggggsssssssssssssssssssssbbbwwwwwwbbssssssssss
+    ssdddddssssssbbwwwwbgggggggggggggggggggggggggggssssssssssssssssssssssssbbwwwwwwbssssssssss
+    ssssssssssbbbbwwwwbbggggggggggggggggggggggggggssssssssssssssssssssssssssbbbwwwwbssssssssss
+    sssssssssbbwwwwwwbbssgggggggggggggggggggggggssssssssssssssssssssssssssssssbbwwwbbsssssssss
+    sssssssbbbwwwwwwwbsssssggggggggggggggsssgggssssssssssssssssssssssssssssssssbwwwwbbssssssss
+    ssssssbbwwwwwwwwbbssssssggggggggggggsssssssssssssssssssssssssssssssssssssssbwwwwwbssssssss
+    dssssbbwwwwwwbbbbssssssssssssggggggssssssssssssssssssssssssssssssssssssssssbbwwwwbbsssssss
+    ddssbbwwwwwwbbssssssssssssssssgggsssssssssssssssssssssssssssssssssssssssssssbbwwwwbbssssss
+    dssbbwwwwwbbbssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssbwwwwwbbsssss
+    sssbwwwwwbbssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssdsssbbwwwwwbbbsss
+    ssbbwwwwbbssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssdddsssbbwwwwwwbbss
+    sbbwwwwbbssssssssssssssssssssssssddsssssssssssssssssssssssssssssssssssssdddssssbbwwwwwwbbs
+    bbwwwwwbsssssssssssssssssssssssssddssssssssssssssssssssssssssssssssssssddddsssssbbwwwwwwbb
+    bwwwwwbbsssssssssssssssssssssssssddssssssssssssssssdddssssssdddssssssssddddssssssbbbwwwwwb
+    wwwwwbbssssssssssssssssssssssssssdddsssssssssddddddddddddddddddddddddddddddssssssssbbwwwww
+    wwwwbbssssssssssssssssssssssssssssddddssssssdddddddddddddddddddddddddddddsssssssdsssbbwwww
+    wwwbbssssssssssssssssssssssssssssssdddsssssdddddddddddddddddddddddddddddsssssssdddsssbbwww
   ore: |
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ............................................5...................
-    ..........................................55555.................
-    .................5........................55555.................
-    ...............55555.....................555.555................
-    ...............55555......................55555.................
-    ..............555.555.....................55555.................
-    ...............55555....................6...5...................
-    ...............55555..6................666......................
-    .................5...666..............66.66.....................
-    ....................66.66..............666......................
-    .....................666................6.......................
-    ......................6.........................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    .........................................6......................
-    .......................6................666.....................
-    ......................666..............66.66....................
-    .....................66.66..............666...5.................
-    ......................666................6..55555...............
-    ...................5...6....................55555...............
-    .................55555.....................555.555..............
-    .................55555......................55555...............
-    ................555.555.....................55555...............
-    .................55555........................5.................
-    .................55555..........................................
-    ...................5............................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
-    ................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    .............................................5............................................
+    ...........................................55555..........................................
+    ...........................................55555..........................................
+    ..........................................555.555.........................................
+    ...........................................55555..........................................
+    ...........................................55555..........................................
+    .............................................5............................................
+    ..........................................................................................
+    ..........................................6...............................................
+    .........................................666..............................................
+    ........................................66.66.............................................
+    .........................................666..............................................
+    ..........................................6...............................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    .........................................................6................................
+    .........................5..............................666...............................
+    .......................55555...........................66.66....5.........................
+    .......................55555............................666...55555.......................
+    ......................555.555............................6....55555.......................
+    .......................55555....6............................555.555......................
+    .......................55555...666............................55555.......................
+    .........................5....66.66...........................55555.......................
+    ...............................666..............................5.........................
+    ................................6.........................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ...............................................6..........................................
+    ..............................................666.........................................
+    .............................................66.66........................................
+    ..............................................666.........................................
+    ...............................................6..........................................
+    ..........................................................................................
+    ............................................5.............................................
+    ..........................................55555...........................................
+    ..........................................55555...........................................
+    .........................................555.555..........................................
+    ..........................................55555...........................................
+    ..........................................55555...........................................
+    ............................................5.............................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
+    ..........................................................................................
 objects:
-  - { type: gem_source, cell: [40, 22], variant: 0 }
-  - { type: gem_source, cell: [22, 23], variant: 0 }
-  - { type: gem_source, cell: [41, 40], variant: 0 }
-  - { type: gem_source, cell: [23, 41], variant: 0 }
-  - { type: ore_source, cell: [44, 17], variant: 0 }
-  - { type: ore_source, cell: [17, 19], variant: 0 }
-  - { type: ore_source, cell: [46, 44], variant: 0 }
-  - { type: ore_source, cell: [19, 46], variant: 0 }
+  - { type: gem_source, cell: [42, 32], variant: 0 }
+  - { type: gem_source, cell: [57, 42], variant: 0 }
+  - { type: gem_source, cell: [32, 47], variant: 0 }
+  - { type: gem_source, cell: [47, 57], variant: 0 }
+  - { type: ore_source, cell: [45, 25], variant: 0 }
+  - { type: ore_source, cell: [25, 44], variant: 0 }
+  - { type: ore_source, cell: [64, 45], variant: 0 }
+  - { type: ore_source, cell: [44, 64], variant: 0 }
   - { type: pine_tree, cell: [10, 0], variant: 2 }
   - { type: pine_tree, cell: [11, 0], variant: 3 }
   - { type: pine_tree, cell: [12, 0], variant: 1 }
@@ -307,6 +412,11 @@ objects:
   - { type: pine_tree, cell: [21, 0], variant: 0 }
   - { type: pine_tree, cell: [22, 0], variant: 0 }
   - { type: pine_tree, cell: [23, 0], variant: 2 }
+  - { type: pine_tree, cell: [30, 0], variant: 3 }
+  - { type: pine_tree, cell: [31, 0], variant: 0 }
+  - { type: pine_tree, cell: [32, 0], variant: 3 }
+  - { type: pine_tree, cell: [33, 0], variant: 0 }
+  - { type: pine_tree, cell: [34, 0], variant: 2 }
   - { type: pine_tree, cell: [35, 0], variant: 0 }
   - { type: pine_tree, cell: [36, 0], variant: 0 }
   - { type: pine_tree, cell: [37, 0], variant: 3 }
@@ -338,6 +448,11 @@ objects:
   - { type: pine_tree, cell: [21, 1], variant: 2 }
   - { type: pine_tree, cell: [22, 1], variant: 2 }
   - { type: pine_tree, cell: [23, 1], variant: 1 }
+  - { type: pine_tree, cell: [30, 1], variant: 2 }
+  - { type: pine_tree, cell: [31, 1], variant: 0 }
+  - { type: pine_tree, cell: [32, 1], variant: 1 }
+  - { type: pine_tree, cell: [33, 1], variant: 1 }
+  - { type: pine_tree, cell: [34, 1], variant: 0 }
   - { type: pine_tree, cell: [35, 1], variant: 0 }
   - { type: pine_tree, cell: [36, 1], variant: 0 }
   - { type: pine_tree, cell: [37, 1], variant: 1 }
@@ -370,6 +485,9 @@ objects:
   - { type: pine_tree, cell: [27, 2], variant: 0 }
   - { type: pine_tree, cell: [28, 2], variant: 3 }
   - { type: pine_tree, cell: [29, 2], variant: 0 }
+  - { type: pine_tree, cell: [30, 2], variant: 0 }
+  - { type: pine_tree, cell: [33, 2], variant: 0 }
+  - { type: pine_tree, cell: [34, 2], variant: 2 }
   - { type: pine_tree, cell: [35, 2], variant: 3 }
   - { type: pine_tree, cell: [36, 2], variant: 3 }
   - { type: pine_tree, cell: [37, 2], variant: 2 }
@@ -401,6 +519,7 @@ objects:
   - { type: pine_tree, cell: [27, 3], variant: 0 }
   - { type: pine_tree, cell: [28, 3], variant: 2 }
   - { type: pine_tree, cell: [29, 3], variant: 0 }
+  - { type: pine_tree, cell: [34, 3], variant: 0 }
   - { type: pine_tree, cell: [35, 3], variant: 0 }
   - { type: pine_tree, cell: [36, 3], variant: 3 }
   - { type: pine_tree, cell: [37, 3], variant: 0 }
@@ -440,502 +559,720 @@ objects:
   - { type: pine_tree, cell: [42, 4], variant: 2 }
   - { type: pine_tree, cell: [43, 4], variant: 3 }
   - { type: pine_tree, cell: [44, 4], variant: 3 }
+  - { type: pine_tree, cell: [45, 4], variant: 2 }
+  - { type: pine_tree, cell: [46, 4], variant: 2 }
+  - { type: pine_tree, cell: [47, 4], variant: 2 }
+  - { type: pine_tree, cell: [48, 4], variant: 0 }
+  - { type: pine_tree, cell: [49, 4], variant: 2 }
+  - { type: pine_tree, cell: [50, 4], variant: 2 }
+  - { type: pine_tree, cell: [51, 4], variant: 3 }
+  - { type: pine_tree, cell: [52, 4], variant: 0 }
+  - { type: pine_tree, cell: [53, 4], variant: 3 }
   - { type: pine_tree, cell: [54, 4], variant: 0 }
   - { type: pine_tree, cell: [55, 4], variant: 1 }
   - { type: pine_tree, cell: [56, 4], variant: 0 }
-  - { type: pine_tree, cell: [10, 5], variant: 2 }
   - { type: pine_tree, cell: [11, 5], variant: 3 }
   - { type: pine_tree, cell: [12, 5], variant: 2 }
   - { type: pine_tree, cell: [13, 5], variant: 3 }
   - { type: pine_tree, cell: [14, 5], variant: 0 }
   - { type: pine_tree, cell: [42, 5], variant: 3 }
   - { type: pine_tree, cell: [43, 5], variant: 3 }
+  - { type: pine_tree, cell: [44, 5], variant: 0 }
+  - { type: pine_tree, cell: [45, 5], variant: 3 }
+  - { type: pine_tree, cell: [46, 5], variant: 1 }
+  - { type: pine_tree, cell: [47, 5], variant: 3 }
+  - { type: pine_tree, cell: [48, 5], variant: 1 }
+  - { type: pine_tree, cell: [49, 5], variant: 2 }
+  - { type: pine_tree, cell: [50, 5], variant: 1 }
+  - { type: pine_tree, cell: [51, 5], variant: 1 }
+  - { type: pine_tree, cell: [52, 5], variant: 0 }
+  - { type: pine_tree, cell: [53, 5], variant: 3 }
+  - { type: pine_tree, cell: [54, 5], variant: 2 }
   - { type: pine_tree, cell: [55, 5], variant: 3 }
   - { type: pine_tree, cell: [56, 5], variant: 0 }
-  - { type: pine_tree, cell: [4, 7], variant: 0 }
-  - { type: pine_tree, cell: [5, 7], variant: 0 }
-  - { type: pine_tree, cell: [3, 8], variant: 0 }
-  - { type: pine_tree, cell: [4, 8], variant: 1 }
-  - { type: pine_tree, cell: [5, 8], variant: 3 }
-  - { type: pine_tree, cell: [3, 9], variant: 1 }
-  - { type: pine_tree, cell: [4, 9], variant: 0 }
-  - { type: pine_tree, cell: [2, 10], variant: 3 }
-  - { type: pine_tree, cell: [3, 10], variant: 3 }
-  - { type: pine_tree, cell: [58, 10], variant: 2 }
-  - { type: pine_tree, cell: [62, 10], variant: 3 }
-  - { type: pine_tree, cell: [63, 10], variant: 2 }
-  - { type: pine_tree, cell: [2, 11], variant: 2 }
-  - { type: pine_tree, cell: [3, 11], variant: 0 }
-  - { type: pine_tree, cell: [58, 11], variant: 3 }
-  - { type: pine_tree, cell: [61, 11], variant: 3 }
-  - { type: pine_tree, cell: [62, 11], variant: 2 }
-  - { type: pine_tree, cell: [63, 11], variant: 3 }
-  - { type: pine_tree, cell: [0, 12], variant: 3 }
-  - { type: pine_tree, cell: [1, 12], variant: 3 }
-  - { type: pine_tree, cell: [2, 12], variant: 1 }
-  - { type: pine_tree, cell: [3, 12], variant: 0 }
-  - { type: pine_tree, cell: [58, 12], variant: 2 }
-  - { type: pine_tree, cell: [59, 12], variant: 0 }
-  - { type: pine_tree, cell: [60, 12], variant: 2 }
-  - { type: pine_tree, cell: [61, 12], variant: 3 }
-  - { type: pine_tree, cell: [62, 12], variant: 2 }
-  - { type: pine_tree, cell: [63, 12], variant: 1 }
-  - { type: pine_tree, cell: [0, 13], variant: 0 }
-  - { type: pine_tree, cell: [1, 13], variant: 0 }
-  - { type: pine_tree, cell: [2, 13], variant: 3 }
-  - { type: pine_tree, cell: [3, 13], variant: 1 }
-  - { type: pine_tree, cell: [58, 13], variant: 3 }
-  - { type: pine_tree, cell: [59, 13], variant: 1 }
-  - { type: pine_tree, cell: [60, 13], variant: 2 }
-  - { type: pine_tree, cell: [61, 13], variant: 1 }
-  - { type: pine_tree, cell: [62, 13], variant: 0 }
-  - { type: pine_tree, cell: [63, 13], variant: 1 }
-  - { type: pine_tree, cell: [0, 14], variant: 3 }
-  - { type: pine_tree, cell: [1, 14], variant: 0 }
-  - { type: pine_tree, cell: [2, 14], variant: 1 }
-  - { type: pine_tree, cell: [3, 14], variant: 0 }
-  - { type: pine_tree, cell: [58, 14], variant: 0 }
-  - { type: pine_tree, cell: [59, 14], variant: 2 }
-  - { type: pine_tree, cell: [60, 14], variant: 0 }
-  - { type: pine_tree, cell: [61, 14], variant: 0 }
-  - { type: pine_tree, cell: [62, 14], variant: 1 }
-  - { type: pine_tree, cell: [63, 14], variant: 0 }
-  - { type: pine_tree, cell: [0, 15], variant: 1 }
-  - { type: pine_tree, cell: [1, 15], variant: 0 }
-  - { type: pine_tree, cell: [2, 15], variant: 0 }
-  - { type: pine_tree, cell: [3, 15], variant: 0 }
-  - { type: pine_tree, cell: [59, 15], variant: 2 }
-  - { type: pine_tree, cell: [60, 15], variant: 2 }
-  - { type: pine_tree, cell: [61, 15], variant: 2 }
-  - { type: pine_tree, cell: [62, 15], variant: 3 }
-  - { type: pine_tree, cell: [63, 15], variant: 0 }
-  - { type: pine_tree, cell: [0, 16], variant: 3 }
-  - { type: pine_tree, cell: [1, 16], variant: 0 }
-  - { type: pine_tree, cell: [2, 16], variant: 3 }
-  - { type: pine_tree, cell: [3, 16], variant: 0 }
-  - { type: pine_tree, cell: [59, 16], variant: 3 }
-  - { type: pine_tree, cell: [60, 16], variant: 1 }
-  - { type: pine_tree, cell: [61, 16], variant: 2 }
-  - { type: pine_tree, cell: [62, 16], variant: 1 }
-  - { type: pine_tree, cell: [63, 16], variant: 2 }
-  - { type: pine_tree, cell: [0, 17], variant: 0 }
-  - { type: pine_tree, cell: [1, 17], variant: 2 }
-  - { type: pine_tree, cell: [2, 17], variant: 1 }
-  - { type: pine_tree, cell: [3, 17], variant: 2 }
-  - { type: pine_tree, cell: [59, 17], variant: 3 }
-  - { type: pine_tree, cell: [60, 17], variant: 0 }
-  - { type: pine_tree, cell: [61, 17], variant: 2 }
-  - { type: pine_tree, cell: [62, 17], variant: 2 }
-  - { type: pine_tree, cell: [63, 17], variant: 3 }
-  - { type: pine_tree, cell: [0, 18], variant: 2 }
-  - { type: pine_tree, cell: [1, 18], variant: 1 }
-  - { type: pine_tree, cell: [2, 18], variant: 3 }
-  - { type: pine_tree, cell: [3, 18], variant: 1 }
-  - { type: pine_tree, cell: [59, 18], variant: 3 }
-  - { type: pine_tree, cell: [60, 18], variant: 2 }
-  - { type: pine_tree, cell: [61, 18], variant: 0 }
-  - { type: pine_tree, cell: [62, 18], variant: 0 }
-  - { type: pine_tree, cell: [63, 18], variant: 2 }
-  - { type: pine_tree, cell: [0, 19], variant: 3 }
-  - { type: pine_tree, cell: [1, 19], variant: 2 }
-  - { type: pine_tree, cell: [2, 19], variant: 3 }
-  - { type: pine_tree, cell: [3, 19], variant: 1 }
-  - { type: pine_tree, cell: [4, 19], variant: 3 }
-  - { type: pine_tree, cell: [60, 19], variant: 2 }
-  - { type: pine_tree, cell: [61, 19], variant: 2 }
-  - { type: pine_tree, cell: [62, 19], variant: 2 }
-  - { type: pine_tree, cell: [63, 19], variant: 3 }
-  - { type: pine_tree, cell: [0, 20], variant: 1 }
-  - { type: pine_tree, cell: [1, 20], variant: 1 }
-  - { type: pine_tree, cell: [2, 20], variant: 1 }
-  - { type: pine_tree, cell: [3, 20], variant: 2 }
-  - { type: pine_tree, cell: [4, 20], variant: 3 }
-  - { type: pine_tree, cell: [5, 20], variant: 3 }
-  - { type: pine_tree, cell: [60, 20], variant: 1 }
-  - { type: pine_tree, cell: [61, 20], variant: 2 }
-  - { type: pine_tree, cell: [62, 20], variant: 3 }
-  - { type: pine_tree, cell: [63, 20], variant: 1 }
-  - { type: pine_tree, cell: [0, 21], variant: 2 }
-  - { type: pine_tree, cell: [1, 21], variant: 1 }
-  - { type: pine_tree, cell: [2, 21], variant: 3 }
-  - { type: pine_tree, cell: [3, 21], variant: 2 }
-  - { type: pine_tree, cell: [4, 21], variant: 2 }
-  - { type: pine_tree, cell: [5, 21], variant: 3 }
-  - { type: pine_tree, cell: [61, 21], variant: 2 }
-  - { type: pine_tree, cell: [62, 21], variant: 2 }
-  - { type: pine_tree, cell: [63, 21], variant: 0 }
-  - { type: pine_tree, cell: [0, 22], variant: 0 }
-  - { type: pine_tree, cell: [1, 22], variant: 2 }
-  - { type: pine_tree, cell: [2, 22], variant: 1 }
-  - { type: pine_tree, cell: [3, 22], variant: 0 }
-  - { type: pine_tree, cell: [4, 22], variant: 1 }
-  - { type: pine_tree, cell: [61, 22], variant: 0 }
-  - { type: pine_tree, cell: [62, 22], variant: 2 }
-  - { type: pine_tree, cell: [63, 22], variant: 0 }
-  - { type: pine_tree, cell: [0, 23], variant: 0 }
-  - { type: pine_tree, cell: [1, 23], variant: 2 }
-  - { type: pine_tree, cell: [2, 23], variant: 2 }
-  - { type: pine_tree, cell: [3, 23], variant: 1 }
-  - { type: pine_tree, cell: [4, 23], variant: 1 }
-  - { type: pine_tree, cell: [62, 23], variant: 1 }
-  - { type: pine_tree, cell: [63, 23], variant: 2 }
-  - { type: pine_tree, cell: [0, 24], variant: 3 }
-  - { type: pine_tree, cell: [1, 24], variant: 3 }
-  - { type: pine_tree, cell: [2, 24], variant: 2 }
-  - { type: pine_tree, cell: [3, 24], variant: 1 }
-  - { type: pine_tree, cell: [4, 24], variant: 2 }
-  - { type: pine_tree, cell: [0, 25], variant: 1 }
-  - { type: pine_tree, cell: [1, 25], variant: 2 }
-  - { type: pine_tree, cell: [2, 25], variant: 1 }
-  - { type: pine_tree, cell: [3, 25], variant: 3 }
-  - { type: pine_tree, cell: [4, 25], variant: 3 }
-  - { type: pine_tree, cell: [0, 26], variant: 3 }
-  - { type: pine_tree, cell: [1, 26], variant: 1 }
-  - { type: pine_tree, cell: [2, 26], variant: 2 }
-  - { type: pine_tree, cell: [3, 26], variant: 0 }
-  - { type: pine_tree, cell: [4, 26], variant: 3 }
-  - { type: pine_tree, cell: [0, 27], variant: 0 }
-  - { type: pine_tree, cell: [1, 27], variant: 0 }
-  - { type: pine_tree, cell: [2, 27], variant: 3 }
-  - { type: pine_tree, cell: [3, 27], variant: 3 }
-  - { type: pine_tree, cell: [4, 27], variant: 1 }
-  - { type: pine_tree, cell: [60, 27], variant: 0 }
-  - { type: pine_tree, cell: [61, 27], variant: 0 }
-  - { type: pine_tree, cell: [0, 28], variant: 0 }
-  - { type: pine_tree, cell: [1, 28], variant: 0 }
-  - { type: pine_tree, cell: [2, 28], variant: 3 }
-  - { type: pine_tree, cell: [3, 28], variant: 0 }
-  - { type: pine_tree, cell: [4, 28], variant: 1 }
-  - { type: pine_tree, cell: [59, 28], variant: 1 }
-  - { type: pine_tree, cell: [60, 28], variant: 2 }
-  - { type: pine_tree, cell: [61, 28], variant: 3 }
-  - { type: pine_tree, cell: [60, 29], variant: 0 }
-  - { type: pine_tree, cell: [61, 29], variant: 0 }
-  - { type: pine_tree, cell: [2, 34], variant: 0 }
+  - { type: pine_tree, cell: [12, 6], variant: 1 }
+  - { type: pine_tree, cell: [13, 6], variant: 1 }
+  - { type: pine_tree, cell: [43, 6], variant: 0 }
+  - { type: pine_tree, cell: [44, 6], variant: 3 }
+  - { type: pine_tree, cell: [45, 6], variant: 2 }
+  - { type: pine_tree, cell: [46, 6], variant: 3 }
+  - { type: pine_tree, cell: [47, 6], variant: 3 }
+  - { type: pine_tree, cell: [48, 6], variant: 3 }
+  - { type: pine_tree, cell: [49, 6], variant: 2 }
+  - { type: pine_tree, cell: [50, 6], variant: 3 }
+  - { type: pine_tree, cell: [51, 6], variant: 2 }
+  - { type: pine_tree, cell: [52, 6], variant: 0 }
+  - { type: pine_tree, cell: [53, 6], variant: 2 }
+  - { type: pine_tree, cell: [54, 6], variant: 0 }
+  - { type: pine_tree, cell: [13, 7], variant: 1 }
+  - { type: pine_tree, cell: [44, 7], variant: 3 }
+  - { type: pine_tree, cell: [45, 7], variant: 2 }
+  - { type: pine_tree, cell: [46, 7], variant: 0 }
+  - { type: pine_tree, cell: [47, 7], variant: 0 }
+  - { type: pine_tree, cell: [49, 7], variant: 0 }
+  - { type: pine_tree, cell: [50, 7], variant: 2 }
+  - { type: pine_tree, cell: [51, 7], variant: 2 }
+  - { type: pine_tree, cell: [52, 7], variant: 3 }
+  - { type: pine_tree, cell: [53, 7], variant: 3 }
+  - { type: pine_tree, cell: [88, 10], variant: 3 }
+  - { type: pine_tree, cell: [89, 10], variant: 2 }
+  - { type: pine_tree, cell: [84, 11], variant: 3 }
+  - { type: pine_tree, cell: [87, 11], variant: 3 }
+  - { type: pine_tree, cell: [88, 11], variant: 2 }
+  - { type: pine_tree, cell: [89, 11], variant: 3 }
+  - { type: pine_tree, cell: [83, 12], variant: 1 }
+  - { type: pine_tree, cell: [84, 12], variant: 2 }
+  - { type: pine_tree, cell: [85, 12], variant: 0 }
+  - { type: pine_tree, cell: [86, 12], variant: 2 }
+  - { type: pine_tree, cell: [87, 12], variant: 3 }
+  - { type: pine_tree, cell: [88, 12], variant: 2 }
+  - { type: pine_tree, cell: [89, 12], variant: 1 }
+  - { type: pine_tree, cell: [82, 13], variant: 1 }
+  - { type: pine_tree, cell: [83, 13], variant: 1 }
+  - { type: pine_tree, cell: [84, 13], variant: 3 }
+  - { type: pine_tree, cell: [85, 13], variant: 1 }
+  - { type: pine_tree, cell: [86, 13], variant: 2 }
+  - { type: pine_tree, cell: [87, 13], variant: 1 }
+  - { type: pine_tree, cell: [88, 13], variant: 0 }
+  - { type: pine_tree, cell: [89, 13], variant: 1 }
+  - { type: pine_tree, cell: [84, 14], variant: 0 }
+  - { type: pine_tree, cell: [85, 14], variant: 2 }
+  - { type: pine_tree, cell: [86, 14], variant: 0 }
+  - { type: pine_tree, cell: [87, 14], variant: 0 }
+  - { type: pine_tree, cell: [88, 14], variant: 1 }
+  - { type: pine_tree, cell: [89, 14], variant: 0 }
+  - { type: pine_tree, cell: [85, 15], variant: 2 }
+  - { type: pine_tree, cell: [86, 15], variant: 2 }
+  - { type: pine_tree, cell: [87, 15], variant: 2 }
+  - { type: pine_tree, cell: [88, 15], variant: 3 }
+  - { type: pine_tree, cell: [89, 15], variant: 0 }
+  - { type: pine_tree, cell: [85, 16], variant: 3 }
+  - { type: pine_tree, cell: [86, 16], variant: 1 }
+  - { type: pine_tree, cell: [87, 16], variant: 2 }
+  - { type: pine_tree, cell: [88, 16], variant: 1 }
+  - { type: pine_tree, cell: [89, 16], variant: 2 }
+  - { type: pine_tree, cell: [85, 17], variant: 3 }
+  - { type: pine_tree, cell: [86, 17], variant: 0 }
+  - { type: pine_tree, cell: [87, 17], variant: 2 }
+  - { type: pine_tree, cell: [88, 17], variant: 2 }
+  - { type: pine_tree, cell: [89, 17], variant: 3 }
+  - { type: pine_tree, cell: [85, 18], variant: 3 }
+  - { type: pine_tree, cell: [86, 18], variant: 2 }
+  - { type: pine_tree, cell: [87, 18], variant: 0 }
+  - { type: pine_tree, cell: [88, 18], variant: 0 }
+  - { type: pine_tree, cell: [89, 18], variant: 2 }
+  - { type: pine_tree, cell: [86, 19], variant: 2 }
+  - { type: pine_tree, cell: [87, 19], variant: 2 }
+  - { type: pine_tree, cell: [88, 19], variant: 2 }
+  - { type: pine_tree, cell: [89, 19], variant: 3 }
+  - { type: pine_tree, cell: [86, 20], variant: 1 }
+  - { type: pine_tree, cell: [87, 20], variant: 2 }
+  - { type: pine_tree, cell: [88, 20], variant: 3 }
+  - { type: pine_tree, cell: [89, 20], variant: 1 }
+  - { type: pine_tree, cell: [87, 21], variant: 2 }
+  - { type: pine_tree, cell: [88, 21], variant: 2 }
+  - { type: pine_tree, cell: [89, 21], variant: 0 }
+  - { type: pine_tree, cell: [87, 22], variant: 0 }
+  - { type: pine_tree, cell: [88, 22], variant: 2 }
+  - { type: pine_tree, cell: [89, 22], variant: 0 }
+  - { type: pine_tree, cell: [88, 23], variant: 1 }
+  - { type: pine_tree, cell: [89, 23], variant: 2 }
+  - { type: pine_tree, cell: [86, 27], variant: 0 }
+  - { type: pine_tree, cell: [87, 27], variant: 0 }
+  - { type: pine_tree, cell: [85, 28], variant: 1 }
+  - { type: pine_tree, cell: [86, 28], variant: 2 }
+  - { type: pine_tree, cell: [87, 28], variant: 3 }
+  - { type: pine_tree, cell: [53, 29], variant: 2 }
+  - { type: pine_tree, cell: [86, 29], variant: 0 }
+  - { type: pine_tree, cell: [87, 29], variant: 0 }
+  - { type: pine_tree, cell: [87, 30], variant: 0 }
+  - { type: pine_tree, cell: [88, 30], variant: 2 }
+  - { type: pine_tree, cell: [89, 30], variant: 3 }
+  - { type: pine_tree, cell: [88, 31], variant: 0 }
+  - { type: pine_tree, cell: [89, 31], variant: 0 }
+  - { type: pine_tree, cell: [88, 32], variant: 1 }
+  - { type: pine_tree, cell: [89, 32], variant: 3 }
+  - { type: pine_tree, cell: [4, 33], variant: 0 }
+  - { type: pine_tree, cell: [5, 33], variant: 0 }
+  - { type: pine_tree, cell: [87, 33], variant: 0 }
+  - { type: pine_tree, cell: [88, 33], variant: 1 }
+  - { type: pine_tree, cell: [89, 33], variant: 0 }
   - { type: pine_tree, cell: [3, 34], variant: 0 }
-  - { type: pine_tree, cell: [2, 35], variant: 3 }
-  - { type: pine_tree, cell: [3, 35], variant: 2 }
-  - { type: pine_tree, cell: [4, 35], variant: 1 }
-  - { type: pine_tree, cell: [59, 35], variant: 1 }
-  - { type: pine_tree, cell: [60, 35], variant: 0 }
-  - { type: pine_tree, cell: [61, 35], variant: 3 }
-  - { type: pine_tree, cell: [62, 35], variant: 0 }
-  - { type: pine_tree, cell: [63, 35], variant: 0 }
-  - { type: pine_tree, cell: [2, 36], variant: 0 }
-  - { type: pine_tree, cell: [3, 36], variant: 0 }
-  - { type: pine_tree, cell: [59, 36], variant: 1 }
-  - { type: pine_tree, cell: [60, 36], variant: 3 }
-  - { type: pine_tree, cell: [61, 36], variant: 3 }
-  - { type: pine_tree, cell: [62, 36], variant: 0 }
-  - { type: pine_tree, cell: [63, 36], variant: 0 }
-  - { type: pine_tree, cell: [59, 37], variant: 3 }
-  - { type: pine_tree, cell: [60, 37], variant: 0 }
-  - { type: pine_tree, cell: [61, 37], variant: 2 }
-  - { type: pine_tree, cell: [62, 37], variant: 1 }
-  - { type: pine_tree, cell: [63, 37], variant: 3 }
-  - { type: pine_tree, cell: [59, 38], variant: 3 }
-  - { type: pine_tree, cell: [60, 38], variant: 3 }
-  - { type: pine_tree, cell: [61, 38], variant: 1 }
-  - { type: pine_tree, cell: [62, 38], variant: 2 }
-  - { type: pine_tree, cell: [63, 38], variant: 1 }
-  - { type: pine_tree, cell: [59, 39], variant: 2 }
-  - { type: pine_tree, cell: [60, 39], variant: 1 }
-  - { type: pine_tree, cell: [61, 39], variant: 2 }
-  - { type: pine_tree, cell: [62, 39], variant: 3 }
-  - { type: pine_tree, cell: [63, 39], variant: 3 }
-  - { type: pine_tree, cell: [0, 40], variant: 2 }
-  - { type: pine_tree, cell: [1, 40], variant: 1 }
-  - { type: pine_tree, cell: [59, 40], variant: 1 }
-  - { type: pine_tree, cell: [60, 40], variant: 1 }
-  - { type: pine_tree, cell: [61, 40], variant: 2 }
-  - { type: pine_tree, cell: [62, 40], variant: 2 }
-  - { type: pine_tree, cell: [63, 40], variant: 0 }
-  - { type: pine_tree, cell: [0, 41], variant: 0 }
-  - { type: pine_tree, cell: [1, 41], variant: 2 }
+  - { type: pine_tree, cell: [4, 34], variant: 1 }
+  - { type: pine_tree, cell: [5, 34], variant: 3 }
+  - { type: pine_tree, cell: [86, 34], variant: 0 }
+  - { type: pine_tree, cell: [87, 34], variant: 2 }
+  - { type: pine_tree, cell: [88, 34], variant: 0 }
+  - { type: pine_tree, cell: [89, 34], variant: 2 }
+  - { type: pine_tree, cell: [3, 35], variant: 1 }
+  - { type: pine_tree, cell: [4, 35], variant: 0 }
+  - { type: pine_tree, cell: [5, 35], variant: 2 }
+  - { type: pine_tree, cell: [6, 35], variant: 0 }
+  - { type: pine_tree, cell: [85, 35], variant: 1 }
+  - { type: pine_tree, cell: [86, 35], variant: 0 }
+  - { type: pine_tree, cell: [87, 35], variant: 3 }
+  - { type: pine_tree, cell: [88, 35], variant: 0 }
+  - { type: pine_tree, cell: [89, 35], variant: 0 }
+  - { type: pine_tree, cell: [2, 36], variant: 3 }
+  - { type: pine_tree, cell: [3, 36], variant: 3 }
+  - { type: pine_tree, cell: [4, 36], variant: 3 }
+  - { type: pine_tree, cell: [5, 36], variant: 3 }
+  - { type: pine_tree, cell: [6, 36], variant: 2 }
+  - { type: pine_tree, cell: [7, 36], variant: 3 }
+  - { type: pine_tree, cell: [29, 36], variant: 2 }
+  - { type: pine_tree, cell: [85, 36], variant: 1 }
+  - { type: pine_tree, cell: [86, 36], variant: 3 }
+  - { type: pine_tree, cell: [87, 36], variant: 3 }
+  - { type: pine_tree, cell: [88, 36], variant: 0 }
+  - { type: pine_tree, cell: [89, 36], variant: 0 }
+  - { type: pine_tree, cell: [2, 37], variant: 2 }
+  - { type: pine_tree, cell: [3, 37], variant: 0 }
+  - { type: pine_tree, cell: [4, 37], variant: 0 }
+  - { type: pine_tree, cell: [5, 37], variant: 0 }
+  - { type: pine_tree, cell: [6, 37], variant: 0 }
+  - { type: pine_tree, cell: [7, 37], variant: 3 }
+  - { type: pine_tree, cell: [85, 37], variant: 3 }
+  - { type: pine_tree, cell: [86, 37], variant: 0 }
+  - { type: pine_tree, cell: [87, 37], variant: 2 }
+  - { type: pine_tree, cell: [88, 37], variant: 1 }
+  - { type: pine_tree, cell: [89, 37], variant: 3 }
+  - { type: pine_tree, cell: [0, 38], variant: 3 }
+  - { type: pine_tree, cell: [1, 38], variant: 3 }
+  - { type: pine_tree, cell: [2, 38], variant: 1 }
+  - { type: pine_tree, cell: [3, 38], variant: 0 }
+  - { type: pine_tree, cell: [4, 38], variant: 3 }
+  - { type: pine_tree, cell: [5, 38], variant: 1 }
+  - { type: pine_tree, cell: [6, 38], variant: 2 }
+  - { type: pine_tree, cell: [7, 38], variant: 2 }
+  - { type: pine_tree, cell: [85, 38], variant: 3 }
+  - { type: pine_tree, cell: [86, 38], variant: 3 }
+  - { type: pine_tree, cell: [87, 38], variant: 1 }
+  - { type: pine_tree, cell: [88, 38], variant: 2 }
+  - { type: pine_tree, cell: [89, 38], variant: 1 }
+  - { type: pine_tree, cell: [0, 39], variant: 0 }
+  - { type: pine_tree, cell: [1, 39], variant: 0 }
+  - { type: pine_tree, cell: [2, 39], variant: 3 }
+  - { type: pine_tree, cell: [3, 39], variant: 1 }
+  - { type: pine_tree, cell: [4, 39], variant: 2 }
+  - { type: pine_tree, cell: [5, 39], variant: 1 }
+  - { type: pine_tree, cell: [6, 39], variant: 3 }
+  - { type: pine_tree, cell: [7, 39], variant: 2 }
+  - { type: pine_tree, cell: [85, 39], variant: 2 }
+  - { type: pine_tree, cell: [86, 39], variant: 1 }
+  - { type: pine_tree, cell: [87, 39], variant: 2 }
+  - { type: pine_tree, cell: [88, 39], variant: 3 }
+  - { type: pine_tree, cell: [89, 39], variant: 3 }
+  - { type: pine_tree, cell: [0, 40], variant: 3 }
+  - { type: pine_tree, cell: [1, 40], variant: 0 }
+  - { type: pine_tree, cell: [2, 40], variant: 1 }
+  - { type: pine_tree, cell: [3, 40], variant: 0 }
+  - { type: pine_tree, cell: [4, 40], variant: 2 }
+  - { type: pine_tree, cell: [5, 40], variant: 2 }
+  - { type: pine_tree, cell: [6, 40], variant: 2 }
+  - { type: pine_tree, cell: [7, 40], variant: 0 }
+  - { type: pine_tree, cell: [85, 40], variant: 1 }
+  - { type: pine_tree, cell: [86, 40], variant: 1 }
+  - { type: pine_tree, cell: [87, 40], variant: 2 }
+  - { type: pine_tree, cell: [88, 40], variant: 2 }
+  - { type: pine_tree, cell: [89, 40], variant: 0 }
+  - { type: pine_tree, cell: [0, 41], variant: 1 }
+  - { type: pine_tree, cell: [1, 41], variant: 0 }
   - { type: pine_tree, cell: [2, 41], variant: 0 }
-  - { type: pine_tree, cell: [59, 41], variant: 1 }
-  - { type: pine_tree, cell: [60, 41], variant: 0 }
-  - { type: pine_tree, cell: [61, 41], variant: 1 }
-  - { type: pine_tree, cell: [62, 41], variant: 2 }
-  - { type: pine_tree, cell: [63, 41], variant: 0 }
-  - { type: pine_tree, cell: [0, 42], variant: 0 }
-  - { type: pine_tree, cell: [1, 42], variant: 2 }
-  - { type: pine_tree, cell: [2, 42], variant: 2 }
-  - { type: pine_tree, cell: [58, 42], variant: 3 }
-  - { type: pine_tree, cell: [59, 42], variant: 2 }
-  - { type: pine_tree, cell: [60, 42], variant: 2 }
-  - { type: pine_tree, cell: [61, 42], variant: 3 }
-  - { type: pine_tree, cell: [62, 42], variant: 1 }
-  - { type: pine_tree, cell: [63, 42], variant: 2 }
-  - { type: pine_tree, cell: [0, 43], variant: 1 }
-  - { type: pine_tree, cell: [1, 43], variant: 3 }
-  - { type: pine_tree, cell: [2, 43], variant: 2 }
-  - { type: pine_tree, cell: [3, 43], variant: 1 }
-  - { type: pine_tree, cell: [58, 43], variant: 3 }
-  - { type: pine_tree, cell: [59, 43], variant: 3 }
-  - { type: pine_tree, cell: [60, 43], variant: 2 }
-  - { type: pine_tree, cell: [61, 43], variant: 1 }
-  - { type: pine_tree, cell: [62, 43], variant: 1 }
-  - { type: pine_tree, cell: [63, 43], variant: 1 }
-  - { type: pine_tree, cell: [0, 44], variant: 3 }
-  - { type: pine_tree, cell: [1, 44], variant: 2 }
-  - { type: pine_tree, cell: [2, 44], variant: 2 }
-  - { type: pine_tree, cell: [3, 44], variant: 2 }
-  - { type: pine_tree, cell: [59, 44], variant: 3 }
-  - { type: pine_tree, cell: [60, 44], variant: 1 }
-  - { type: pine_tree, cell: [61, 44], variant: 3 }
-  - { type: pine_tree, cell: [62, 44], variant: 2 }
-  - { type: pine_tree, cell: [63, 44], variant: 3 }
-  - { type: pine_tree, cell: [0, 45], variant: 2 }
-  - { type: pine_tree, cell: [1, 45], variant: 0 }
-  - { type: pine_tree, cell: [2, 45], variant: 0 }
-  - { type: pine_tree, cell: [3, 45], variant: 2 }
+  - { type: pine_tree, cell: [3, 41], variant: 0 }
+  - { type: pine_tree, cell: [4, 41], variant: 0 }
+  - { type: pine_tree, cell: [5, 41], variant: 1 }
+  - { type: pine_tree, cell: [6, 41], variant: 3 }
+  - { type: pine_tree, cell: [85, 41], variant: 1 }
+  - { type: pine_tree, cell: [86, 41], variant: 0 }
+  - { type: pine_tree, cell: [87, 41], variant: 1 }
+  - { type: pine_tree, cell: [88, 41], variant: 2 }
+  - { type: pine_tree, cell: [89, 41], variant: 0 }
+  - { type: pine_tree, cell: [0, 42], variant: 3 }
+  - { type: pine_tree, cell: [1, 42], variant: 0 }
+  - { type: pine_tree, cell: [2, 42], variant: 3 }
+  - { type: pine_tree, cell: [3, 42], variant: 0 }
+  - { type: pine_tree, cell: [4, 42], variant: 2 }
+  - { type: pine_tree, cell: [5, 42], variant: 3 }
+  - { type: pine_tree, cell: [6, 42], variant: 3 }
+  - { type: pine_tree, cell: [7, 42], variant: 0 }
+  - { type: pine_tree, cell: [84, 42], variant: 3 }
+  - { type: pine_tree, cell: [85, 42], variant: 2 }
+  - { type: pine_tree, cell: [86, 42], variant: 2 }
+  - { type: pine_tree, cell: [87, 42], variant: 3 }
+  - { type: pine_tree, cell: [88, 42], variant: 1 }
+  - { type: pine_tree, cell: [89, 42], variant: 2 }
+  - { type: pine_tree, cell: [0, 43], variant: 0 }
+  - { type: pine_tree, cell: [1, 43], variant: 2 }
+  - { type: pine_tree, cell: [2, 43], variant: 1 }
+  - { type: pine_tree, cell: [3, 43], variant: 2 }
+  - { type: pine_tree, cell: [4, 43], variant: 2 }
+  - { type: pine_tree, cell: [5, 43], variant: 1 }
+  - { type: pine_tree, cell: [6, 43], variant: 3 }
+  - { type: pine_tree, cell: [7, 43], variant: 0 }
+  - { type: pine_tree, cell: [83, 43], variant: 0 }
+  - { type: pine_tree, cell: [84, 43], variant: 3 }
+  - { type: pine_tree, cell: [85, 43], variant: 3 }
+  - { type: pine_tree, cell: [86, 43], variant: 2 }
+  - { type: pine_tree, cell: [87, 43], variant: 1 }
+  - { type: pine_tree, cell: [88, 43], variant: 1 }
+  - { type: pine_tree, cell: [89, 43], variant: 1 }
+  - { type: pine_tree, cell: [0, 44], variant: 2 }
+  - { type: pine_tree, cell: [1, 44], variant: 1 }
+  - { type: pine_tree, cell: [2, 44], variant: 3 }
+  - { type: pine_tree, cell: [3, 44], variant: 1 }
+  - { type: pine_tree, cell: [4, 44], variant: 2 }
+  - { type: pine_tree, cell: [5, 44], variant: 3 }
+  - { type: pine_tree, cell: [6, 44], variant: 2 }
+  - { type: pine_tree, cell: [7, 44], variant: 2 }
+  - { type: pine_tree, cell: [82, 44], variant: 3 }
+  - { type: pine_tree, cell: [83, 44], variant: 3 }
+  - { type: pine_tree, cell: [84, 44], variant: 0 }
+  - { type: pine_tree, cell: [85, 44], variant: 3 }
+  - { type: pine_tree, cell: [86, 44], variant: 1 }
+  - { type: pine_tree, cell: [87, 44], variant: 3 }
+  - { type: pine_tree, cell: [88, 44], variant: 2 }
+  - { type: pine_tree, cell: [89, 44], variant: 3 }
+  - { type: pine_tree, cell: [0, 45], variant: 3 }
+  - { type: pine_tree, cell: [1, 45], variant: 2 }
+  - { type: pine_tree, cell: [2, 45], variant: 3 }
+  - { type: pine_tree, cell: [3, 45], variant: 1 }
   - { type: pine_tree, cell: [4, 45], variant: 3 }
-  - { type: pine_tree, cell: [60, 45], variant: 1 }
-  - { type: pine_tree, cell: [61, 45], variant: 3 }
-  - { type: pine_tree, cell: [62, 45], variant: 1 }
-  - { type: pine_tree, cell: [63, 45], variant: 2 }
-  - { type: pine_tree, cell: [0, 46], variant: 3 }
-  - { type: pine_tree, cell: [1, 46], variant: 2 }
-  - { type: pine_tree, cell: [2, 46], variant: 2 }
-  - { type: pine_tree, cell: [3, 46], variant: 0 }
+  - { type: pine_tree, cell: [5, 45], variant: 0 }
+  - { type: pine_tree, cell: [6, 45], variant: 3 }
+  - { type: pine_tree, cell: [7, 45], variant: 3 }
+  - { type: pine_tree, cell: [82, 45], variant: 2 }
+  - { type: pine_tree, cell: [83, 45], variant: 2 }
+  - { type: pine_tree, cell: [84, 45], variant: 3 }
+  - { type: pine_tree, cell: [85, 45], variant: 2 }
+  - { type: pine_tree, cell: [86, 45], variant: 1 }
+  - { type: pine_tree, cell: [87, 45], variant: 3 }
+  - { type: pine_tree, cell: [88, 45], variant: 1 }
+  - { type: pine_tree, cell: [89, 45], variant: 2 }
+  - { type: pine_tree, cell: [0, 46], variant: 1 }
+  - { type: pine_tree, cell: [1, 46], variant: 1 }
+  - { type: pine_tree, cell: [2, 46], variant: 1 }
+  - { type: pine_tree, cell: [3, 46], variant: 2 }
   - { type: pine_tree, cell: [4, 46], variant: 3 }
-  - { type: pine_tree, cell: [60, 46], variant: 2 }
-  - { type: pine_tree, cell: [61, 46], variant: 1 }
-  - { type: pine_tree, cell: [62, 46], variant: 2 }
-  - { type: pine_tree, cell: [63, 46], variant: 0 }
+  - { type: pine_tree, cell: [5, 46], variant: 3 }
+  - { type: pine_tree, cell: [6, 46], variant: 0 }
+  - { type: pine_tree, cell: [82, 46], variant: 0 }
+  - { type: pine_tree, cell: [83, 46], variant: 3 }
+  - { type: pine_tree, cell: [84, 46], variant: 1 }
+  - { type: pine_tree, cell: [85, 46], variant: 2 }
+  - { type: pine_tree, cell: [86, 46], variant: 2 }
+  - { type: pine_tree, cell: [87, 46], variant: 1 }
+  - { type: pine_tree, cell: [88, 46], variant: 2 }
+  - { type: pine_tree, cell: [89, 46], variant: 0 }
   - { type: pine_tree, cell: [0, 47], variant: 2 }
   - { type: pine_tree, cell: [1, 47], variant: 1 }
-  - { type: pine_tree, cell: [2, 47], variant: 2 }
-  - { type: pine_tree, cell: [3, 47], variant: 1 }
-  - { type: pine_tree, cell: [4, 47], variant: 3 }
-  - { type: pine_tree, cell: [60, 47], variant: 0 }
-  - { type: pine_tree, cell: [61, 47], variant: 3 }
-  - { type: pine_tree, cell: [62, 47], variant: 0 }
-  - { type: pine_tree, cell: [63, 47], variant: 3 }
+  - { type: pine_tree, cell: [2, 47], variant: 3 }
+  - { type: pine_tree, cell: [3, 47], variant: 2 }
+  - { type: pine_tree, cell: [4, 47], variant: 2 }
+  - { type: pine_tree, cell: [5, 47], variant: 3 }
+  - { type: pine_tree, cell: [82, 47], variant: 0 }
+  - { type: pine_tree, cell: [83, 47], variant: 3 }
+  - { type: pine_tree, cell: [84, 47], variant: 3 }
+  - { type: pine_tree, cell: [85, 47], variant: 2 }
+  - { type: pine_tree, cell: [86, 47], variant: 0 }
+  - { type: pine_tree, cell: [87, 47], variant: 3 }
+  - { type: pine_tree, cell: [88, 47], variant: 0 }
+  - { type: pine_tree, cell: [89, 47], variant: 3 }
   - { type: pine_tree, cell: [0, 48], variant: 0 }
-  - { type: pine_tree, cell: [1, 48], variant: 3 }
-  - { type: pine_tree, cell: [2, 48], variant: 2 }
-  - { type: pine_tree, cell: [3, 48], variant: 2 }
-  - { type: pine_tree, cell: [4, 48], variant: 2 }
-  - { type: pine_tree, cell: [60, 48], variant: 0 }
-  - { type: pine_tree, cell: [61, 48], variant: 0 }
-  - { type: pine_tree, cell: [62, 48], variant: 0 }
-  - { type: pine_tree, cell: [63, 48], variant: 1 }
+  - { type: pine_tree, cell: [1, 48], variant: 2 }
+  - { type: pine_tree, cell: [2, 48], variant: 1 }
+  - { type: pine_tree, cell: [3, 48], variant: 0 }
+  - { type: pine_tree, cell: [4, 48], variant: 1 }
+  - { type: pine_tree, cell: [83, 48], variant: 3 }
+  - { type: pine_tree, cell: [84, 48], variant: 1 }
+  - { type: pine_tree, cell: [85, 48], variant: 0 }
+  - { type: pine_tree, cell: [86, 48], variant: 0 }
+  - { type: pine_tree, cell: [87, 48], variant: 0 }
+  - { type: pine_tree, cell: [88, 48], variant: 0 }
+  - { type: pine_tree, cell: [89, 48], variant: 1 }
   - { type: pine_tree, cell: [0, 49], variant: 0 }
-  - { type: pine_tree, cell: [1, 49], variant: 1 }
-  - { type: pine_tree, cell: [2, 49], variant: 0 }
-  - { type: pine_tree, cell: [3, 49], variant: 0 }
-  - { type: pine_tree, cell: [4, 49], variant: 2 }
-  - { type: pine_tree, cell: [5, 49], variant: 0 }
-  - { type: pine_tree, cell: [60, 49], variant: 0 }
-  - { type: pine_tree, cell: [61, 49], variant: 1 }
-  - { type: pine_tree, cell: [62, 49], variant: 0 }
-  - { type: pine_tree, cell: [63, 49], variant: 3 }
-  - { type: pine_tree, cell: [0, 50], variant: 1 }
-  - { type: pine_tree, cell: [1, 50], variant: 0 }
-  - { type: pine_tree, cell: [2, 50], variant: 1 }
-  - { type: pine_tree, cell: [3, 50], variant: 2 }
-  - { type: pine_tree, cell: [4, 50], variant: 1 }
-  - { type: pine_tree, cell: [5, 50], variant: 3 }
-  - { type: pine_tree, cell: [60, 50], variant: 1 }
-  - { type: pine_tree, cell: [61, 50], variant: 3 }
-  - { type: pine_tree, cell: [62, 50], variant: 0 }
-  - { type: pine_tree, cell: [63, 50], variant: 0 }
+  - { type: pine_tree, cell: [1, 49], variant: 2 }
+  - { type: pine_tree, cell: [2, 49], variant: 2 }
+  - { type: pine_tree, cell: [3, 49], variant: 1 }
+  - { type: pine_tree, cell: [4, 49], variant: 1 }
+  - { type: pine_tree, cell: [82, 49], variant: 0 }
+  - { type: pine_tree, cell: [83, 49], variant: 2 }
+  - { type: pine_tree, cell: [84, 49], variant: 2 }
+  - { type: pine_tree, cell: [85, 49], variant: 2 }
+  - { type: pine_tree, cell: [86, 49], variant: 0 }
+  - { type: pine_tree, cell: [87, 49], variant: 1 }
+  - { type: pine_tree, cell: [88, 49], variant: 0 }
+  - { type: pine_tree, cell: [89, 49], variant: 3 }
+  - { type: pine_tree, cell: [0, 50], variant: 3 }
+  - { type: pine_tree, cell: [1, 50], variant: 3 }
+  - { type: pine_tree, cell: [2, 50], variant: 2 }
+  - { type: pine_tree, cell: [3, 50], variant: 1 }
+  - { type: pine_tree, cell: [4, 50], variant: 2 }
+  - { type: pine_tree, cell: [82, 50], variant: 2 }
+  - { type: pine_tree, cell: [83, 50], variant: 3 }
+  - { type: pine_tree, cell: [84, 50], variant: 1 }
+  - { type: pine_tree, cell: [85, 50], variant: 2 }
+  - { type: pine_tree, cell: [86, 50], variant: 1 }
+  - { type: pine_tree, cell: [87, 50], variant: 3 }
+  - { type: pine_tree, cell: [88, 50], variant: 0 }
+  - { type: pine_tree, cell: [89, 50], variant: 0 }
   - { type: pine_tree, cell: [0, 51], variant: 1 }
   - { type: pine_tree, cell: [1, 51], variant: 2 }
-  - { type: pine_tree, cell: [2, 51], variant: 3 }
-  - { type: pine_tree, cell: [3, 51], variant: 2 }
-  - { type: pine_tree, cell: [4, 51], variant: 0 }
-  - { type: pine_tree, cell: [5, 51], variant: 2 }
-  - { type: pine_tree, cell: [60, 51], variant: 0 }
-  - { type: pine_tree, cell: [61, 51], variant: 1 }
-  - { type: pine_tree, cell: [62, 51], variant: 3 }
-  - { type: pine_tree, cell: [63, 51], variant: 3 }
+  - { type: pine_tree, cell: [2, 51], variant: 1 }
+  - { type: pine_tree, cell: [3, 51], variant: 3 }
+  - { type: pine_tree, cell: [4, 51], variant: 3 }
+  - { type: pine_tree, cell: [82, 51], variant: 2 }
+  - { type: pine_tree, cell: [83, 51], variant: 2 }
+  - { type: pine_tree, cell: [84, 51], variant: 1 }
+  - { type: pine_tree, cell: [85, 51], variant: 3 }
+  - { type: pine_tree, cell: [86, 51], variant: 0 }
+  - { type: pine_tree, cell: [87, 51], variant: 1 }
+  - { type: pine_tree, cell: [88, 51], variant: 3 }
+  - { type: pine_tree, cell: [89, 51], variant: 3 }
   - { type: pine_tree, cell: [0, 52], variant: 3 }
-  - { type: pine_tree, cell: [1, 52], variant: 2 }
-  - { type: pine_tree, cell: [2, 52], variant: 3 }
-  - { type: pine_tree, cell: [5, 52], variant: 3 }
-  - { type: pine_tree, cell: [60, 52], variant: 0 }
-  - { type: pine_tree, cell: [61, 52], variant: 2 }
-  - { type: pine_tree, cell: [0, 53], variant: 2 }
-  - { type: pine_tree, cell: [1, 53], variant: 3 }
-  - { type: pine_tree, cell: [5, 53], variant: 2 }
-  - { type: pine_tree, cell: [60, 53], variant: 3 }
-  - { type: pine_tree, cell: [61, 53], variant: 3 }
-  - { type: pine_tree, cell: [59, 54], variant: 0 }
-  - { type: pine_tree, cell: [60, 54], variant: 1 }
-  - { type: pine_tree, cell: [58, 55], variant: 3 }
-  - { type: pine_tree, cell: [59, 55], variant: 1 }
-  - { type: pine_tree, cell: [60, 55], variant: 0 }
-  - { type: pine_tree, cell: [58, 56], variant: 0 }
-  - { type: pine_tree, cell: [59, 56], variant: 0 }
-  - { type: pine_tree, cell: [7, 58], variant: 0 }
-  - { type: pine_tree, cell: [8, 58], variant: 3 }
-  - { type: pine_tree, cell: [20, 58], variant: 3 }
-  - { type: pine_tree, cell: [21, 58], variant: 3 }
-  - { type: pine_tree, cell: [49, 58], variant: 0 }
-  - { type: pine_tree, cell: [50, 58], variant: 3 }
-  - { type: pine_tree, cell: [51, 58], variant: 2 }
-  - { type: pine_tree, cell: [52, 58], variant: 3 }
-  - { type: pine_tree, cell: [53, 58], variant: 2 }
-  - { type: pine_tree, cell: [7, 59], variant: 0 }
-  - { type: pine_tree, cell: [8, 59], variant: 1 }
-  - { type: pine_tree, cell: [9, 59], variant: 0 }
-  - { type: pine_tree, cell: [19, 59], variant: 3 }
-  - { type: pine_tree, cell: [20, 59], variant: 3 }
-  - { type: pine_tree, cell: [21, 59], variant: 2 }
-  - { type: pine_tree, cell: [22, 59], variant: 1 }
-  - { type: pine_tree, cell: [23, 59], variant: 1 }
-  - { type: pine_tree, cell: [24, 59], variant: 2 }
-  - { type: pine_tree, cell: [25, 59], variant: 3 }
-  - { type: pine_tree, cell: [26, 59], variant: 3 }
-  - { type: pine_tree, cell: [27, 59], variant: 1 }
-  - { type: pine_tree, cell: [28, 59], variant: 1 }
-  - { type: pine_tree, cell: [35, 59], variant: 1 }
-  - { type: pine_tree, cell: [45, 59], variant: 3 }
-  - { type: pine_tree, cell: [46, 59], variant: 3 }
-  - { type: pine_tree, cell: [47, 59], variant: 3 }
-  - { type: pine_tree, cell: [48, 59], variant: 2 }
-  - { type: pine_tree, cell: [49, 59], variant: 2 }
-  - { type: pine_tree, cell: [50, 59], variant: 1 }
-  - { type: pine_tree, cell: [51, 59], variant: 0 }
-  - { type: pine_tree, cell: [8, 60], variant: 0 }
-  - { type: pine_tree, cell: [9, 60], variant: 1 }
-  - { type: pine_tree, cell: [10, 60], variant: 3 }
-  - { type: pine_tree, cell: [11, 60], variant: 0 }
-  - { type: pine_tree, cell: [12, 60], variant: 0 }
-  - { type: pine_tree, cell: [13, 60], variant: 1 }
-  - { type: pine_tree, cell: [14, 60], variant: 0 }
-  - { type: pine_tree, cell: [15, 60], variant: 0 }
-  - { type: pine_tree, cell: [16, 60], variant: 0 }
-  - { type: pine_tree, cell: [17, 60], variant: 2 }
-  - { type: pine_tree, cell: [18, 60], variant: 1 }
-  - { type: pine_tree, cell: [19, 60], variant: 1 }
-  - { type: pine_tree, cell: [20, 60], variant: 2 }
-  - { type: pine_tree, cell: [21, 60], variant: 2 }
-  - { type: pine_tree, cell: [22, 60], variant: 0 }
-  - { type: pine_tree, cell: [23, 60], variant: 1 }
-  - { type: pine_tree, cell: [24, 60], variant: 1 }
-  - { type: pine_tree, cell: [25, 60], variant: 3 }
-  - { type: pine_tree, cell: [26, 60], variant: 0 }
-  - { type: pine_tree, cell: [27, 60], variant: 3 }
-  - { type: pine_tree, cell: [28, 60], variant: 0 }
-  - { type: pine_tree, cell: [34, 60], variant: 0 }
-  - { type: pine_tree, cell: [35, 60], variant: 2 }
-  - { type: pine_tree, cell: [36, 60], variant: 0 }
-  - { type: pine_tree, cell: [43, 60], variant: 1 }
-  - { type: pine_tree, cell: [44, 60], variant: 2 }
-  - { type: pine_tree, cell: [45, 60], variant: 2 }
-  - { type: pine_tree, cell: [46, 60], variant: 0 }
-  - { type: pine_tree, cell: [47, 60], variant: 1 }
-  - { type: pine_tree, cell: [48, 60], variant: 2 }
-  - { type: pine_tree, cell: [49, 60], variant: 0 }
-  - { type: pine_tree, cell: [50, 60], variant: 2 }
-  - { type: pine_tree, cell: [51, 60], variant: 2 }
-  - { type: pine_tree, cell: [10, 61], variant: 3 }
-  - { type: pine_tree, cell: [11, 61], variant: 2 }
-  - { type: pine_tree, cell: [12, 61], variant: 1 }
-  - { type: pine_tree, cell: [13, 61], variant: 3 }
-  - { type: pine_tree, cell: [14, 61], variant: 1 }
-  - { type: pine_tree, cell: [15, 61], variant: 0 }
-  - { type: pine_tree, cell: [16, 61], variant: 3 }
-  - { type: pine_tree, cell: [17, 61], variant: 1 }
-  - { type: pine_tree, cell: [18, 61], variant: 3 }
-  - { type: pine_tree, cell: [19, 61], variant: 3 }
-  - { type: pine_tree, cell: [20, 61], variant: 1 }
-  - { type: pine_tree, cell: [21, 61], variant: 3 }
-  - { type: pine_tree, cell: [22, 61], variant: 1 }
-  - { type: pine_tree, cell: [23, 61], variant: 2 }
-  - { type: pine_tree, cell: [24, 61], variant: 2 }
-  - { type: pine_tree, cell: [25, 61], variant: 1 }
-  - { type: pine_tree, cell: [26, 61], variant: 2 }
-  - { type: pine_tree, cell: [27, 61], variant: 3 }
-  - { type: pine_tree, cell: [28, 61], variant: 3 }
-  - { type: pine_tree, cell: [34, 61], variant: 0 }
-  - { type: pine_tree, cell: [35, 61], variant: 3 }
-  - { type: pine_tree, cell: [36, 61], variant: 0 }
-  - { type: pine_tree, cell: [41, 61], variant: 0 }
-  - { type: pine_tree, cell: [42, 61], variant: 2 }
-  - { type: pine_tree, cell: [43, 61], variant: 2 }
-  - { type: pine_tree, cell: [44, 61], variant: 2 }
-  - { type: pine_tree, cell: [45, 61], variant: 0 }
-  - { type: pine_tree, cell: [46, 61], variant: 2 }
-  - { type: pine_tree, cell: [47, 61], variant: 2 }
-  - { type: pine_tree, cell: [48, 61], variant: 2 }
-  - { type: pine_tree, cell: [49, 61], variant: 0 }
-  - { type: pine_tree, cell: [50, 61], variant: 1 }
-  - { type: pine_tree, cell: [51, 61], variant: 3 }
-  - { type: pine_tree, cell: [52, 61], variant: 3 }
-  - { type: pine_tree, cell: [12, 62], variant: 3 }
-  - { type: pine_tree, cell: [13, 62], variant: 0 }
-  - { type: pine_tree, cell: [14, 62], variant: 0 }
-  - { type: pine_tree, cell: [15, 62], variant: 0 }
-  - { type: pine_tree, cell: [16, 62], variant: 0 }
-  - { type: pine_tree, cell: [17, 62], variant: 2 }
-  - { type: pine_tree, cell: [18, 62], variant: 1 }
-  - { type: pine_tree, cell: [19, 62], variant: 2 }
-  - { type: pine_tree, cell: [20, 62], variant: 1 }
-  - { type: pine_tree, cell: [21, 62], variant: 1 }
-  - { type: pine_tree, cell: [22, 62], variant: 2 }
-  - { type: pine_tree, cell: [23, 62], variant: 2 }
-  - { type: pine_tree, cell: [24, 62], variant: 3 }
-  - { type: pine_tree, cell: [25, 62], variant: 2 }
-  - { type: pine_tree, cell: [26, 62], variant: 1 }
-  - { type: pine_tree, cell: [27, 62], variant: 0 }
-  - { type: pine_tree, cell: [28, 62], variant: 0 }
-  - { type: pine_tree, cell: [40, 62], variant: 1 }
-  - { type: pine_tree, cell: [41, 62], variant: 2 }
-  - { type: pine_tree, cell: [42, 62], variant: 2 }
-  - { type: pine_tree, cell: [43, 62], variant: 3 }
-  - { type: pine_tree, cell: [44, 62], variant: 2 }
-  - { type: pine_tree, cell: [45, 62], variant: 0 }
-  - { type: pine_tree, cell: [46, 62], variant: 2 }
-  - { type: pine_tree, cell: [47, 62], variant: 1 }
-  - { type: pine_tree, cell: [48, 62], variant: 3 }
-  - { type: pine_tree, cell: [49, 62], variant: 1 }
-  - { type: pine_tree, cell: [50, 62], variant: 0 }
-  - { type: pine_tree, cell: [51, 62], variant: 2 }
-  - { type: pine_tree, cell: [52, 62], variant: 2 }
-  - { type: pine_tree, cell: [53, 62], variant: 3 }
-  - { type: pine_tree, cell: [12, 63], variant: 3 }
-  - { type: pine_tree, cell: [13, 63], variant: 0 }
-  - { type: pine_tree, cell: [14, 63], variant: 3 }
-  - { type: pine_tree, cell: [15, 63], variant: 1 }
-  - { type: pine_tree, cell: [16, 63], variant: 3 }
-  - { type: pine_tree, cell: [17, 63], variant: 0 }
-  - { type: pine_tree, cell: [18, 63], variant: 2 }
-  - { type: pine_tree, cell: [19, 63], variant: 3 }
-  - { type: pine_tree, cell: [20, 63], variant: 1 }
-  - { type: pine_tree, cell: [21, 63], variant: 2 }
-  - { type: pine_tree, cell: [22, 63], variant: 0 }
-  - { type: pine_tree, cell: [23, 63], variant: 0 }
-  - { type: pine_tree, cell: [24, 63], variant: 3 }
-  - { type: pine_tree, cell: [25, 63], variant: 1 }
-  - { type: pine_tree, cell: [26, 63], variant: 3 }
-  - { type: pine_tree, cell: [27, 63], variant: 0 }
-  - { type: pine_tree, cell: [28, 63], variant: 0 }
-  - { type: pine_tree, cell: [40, 63], variant: 2 }
-  - { type: pine_tree, cell: [41, 63], variant: 0 }
-  - { type: pine_tree, cell: [42, 63], variant: 0 }
-  - { type: pine_tree, cell: [43, 63], variant: 1 }
-  - { type: pine_tree, cell: [44, 63], variant: 3 }
-  - { type: pine_tree, cell: [45, 63], variant: 2 }
-  - { type: pine_tree, cell: [46, 63], variant: 3 }
-  - { type: pine_tree, cell: [47, 63], variant: 2 }
-  - { type: pine_tree, cell: [48, 63], variant: 0 }
-  - { type: pine_tree, cell: [49, 63], variant: 0 }
-  - { type: pine_tree, cell: [50, 63], variant: 1 }
-  - { type: pine_tree, cell: [51, 63], variant: 1 }
-  - { type: pine_tree, cell: [52, 63], variant: 3 }
-  - { type: pine_tree, cell: [53, 63], variant: 2 }
+  - { type: pine_tree, cell: [1, 52], variant: 1 }
+  - { type: pine_tree, cell: [2, 52], variant: 2 }
+  - { type: pine_tree, cell: [3, 52], variant: 0 }
+  - { type: pine_tree, cell: [4, 52], variant: 3 }
+  - { type: pine_tree, cell: [82, 52], variant: 3 }
+  - { type: pine_tree, cell: [83, 52], variant: 0 }
+  - { type: pine_tree, cell: [84, 52], variant: 0 }
+  - { type: pine_tree, cell: [85, 52], variant: 0 }
+  - { type: pine_tree, cell: [86, 52], variant: 0 }
+  - { type: pine_tree, cell: [87, 52], variant: 2 }
+  - { type: pine_tree, cell: [0, 53], variant: 0 }
+  - { type: pine_tree, cell: [1, 53], variant: 0 }
+  - { type: pine_tree, cell: [2, 53], variant: 3 }
+  - { type: pine_tree, cell: [3, 53], variant: 3 }
+  - { type: pine_tree, cell: [4, 53], variant: 1 }
+  - { type: pine_tree, cell: [60, 53], variant: 2 }
+  - { type: pine_tree, cell: [82, 53], variant: 3 }
+  - { type: pine_tree, cell: [83, 53], variant: 2 }
+  - { type: pine_tree, cell: [84, 53], variant: 3 }
+  - { type: pine_tree, cell: [85, 53], variant: 3 }
+  - { type: pine_tree, cell: [86, 53], variant: 3 }
+  - { type: pine_tree, cell: [87, 53], variant: 3 }
+  - { type: pine_tree, cell: [0, 54], variant: 0 }
+  - { type: pine_tree, cell: [1, 54], variant: 0 }
+  - { type: pine_tree, cell: [2, 54], variant: 3 }
+  - { type: pine_tree, cell: [3, 54], variant: 0 }
+  - { type: pine_tree, cell: [4, 54], variant: 1 }
+  - { type: pine_tree, cell: [83, 54], variant: 0 }
+  - { type: pine_tree, cell: [84, 54], variant: 2 }
+  - { type: pine_tree, cell: [85, 54], variant: 0 }
+  - { type: pine_tree, cell: [86, 54], variant: 1 }
+  - { type: pine_tree, cell: [0, 55], variant: 2 }
+  - { type: pine_tree, cell: [1, 55], variant: 0 }
+  - { type: pine_tree, cell: [2, 55], variant: 2 }
+  - { type: pine_tree, cell: [3, 55], variant: 0 }
+  - { type: pine_tree, cell: [84, 55], variant: 3 }
+  - { type: pine_tree, cell: [85, 55], variant: 1 }
+  - { type: pine_tree, cell: [86, 55], variant: 0 }
+  - { type: pine_tree, cell: [0, 56], variant: 0 }
+  - { type: pine_tree, cell: [1, 56], variant: 1 }
+  - { type: pine_tree, cell: [2, 56], variant: 0 }
+  - { type: pine_tree, cell: [84, 56], variant: 0 }
+  - { type: pine_tree, cell: [85, 56], variant: 0 }
+  - { type: pine_tree, cell: [0, 57], variant: 3 }
+  - { type: pine_tree, cell: [1, 57], variant: 1 }
+  - { type: pine_tree, cell: [0, 58], variant: 0 }
+  - { type: pine_tree, cell: [1, 58], variant: 0 }
+  - { type: pine_tree, cell: [0, 59], variant: 3 }
+  - { type: pine_tree, cell: [1, 59], variant: 2 }
+  - { type: pine_tree, cell: [2, 59], variant: 0 }
+  - { type: pine_tree, cell: [2, 60], variant: 0 }
+  - { type: pine_tree, cell: [3, 60], variant: 0 }
+  - { type: pine_tree, cell: [36, 60], variant: 2 }
+  - { type: pine_tree, cell: [2, 61], variant: 3 }
+  - { type: pine_tree, cell: [3, 61], variant: 2 }
+  - { type: pine_tree, cell: [4, 61], variant: 1 }
+  - { type: pine_tree, cell: [2, 62], variant: 0 }
+  - { type: pine_tree, cell: [3, 62], variant: 0 }
+  - { type: pine_tree, cell: [0, 66], variant: 2 }
+  - { type: pine_tree, cell: [1, 66], variant: 1 }
+  - { type: pine_tree, cell: [0, 67], variant: 0 }
+  - { type: pine_tree, cell: [1, 67], variant: 2 }
+  - { type: pine_tree, cell: [2, 67], variant: 0 }
+  - { type: pine_tree, cell: [0, 68], variant: 0 }
+  - { type: pine_tree, cell: [1, 68], variant: 2 }
+  - { type: pine_tree, cell: [2, 68], variant: 2 }
+  - { type: pine_tree, cell: [0, 69], variant: 1 }
+  - { type: pine_tree, cell: [1, 69], variant: 3 }
+  - { type: pine_tree, cell: [2, 69], variant: 2 }
+  - { type: pine_tree, cell: [3, 69], variant: 1 }
+  - { type: pine_tree, cell: [0, 70], variant: 3 }
+  - { type: pine_tree, cell: [1, 70], variant: 2 }
+  - { type: pine_tree, cell: [2, 70], variant: 2 }
+  - { type: pine_tree, cell: [3, 70], variant: 2 }
+  - { type: pine_tree, cell: [0, 71], variant: 2 }
+  - { type: pine_tree, cell: [1, 71], variant: 0 }
+  - { type: pine_tree, cell: [2, 71], variant: 0 }
+  - { type: pine_tree, cell: [3, 71], variant: 2 }
+  - { type: pine_tree, cell: [4, 71], variant: 3 }
+  - { type: pine_tree, cell: [0, 72], variant: 3 }
+  - { type: pine_tree, cell: [1, 72], variant: 2 }
+  - { type: pine_tree, cell: [2, 72], variant: 2 }
+  - { type: pine_tree, cell: [3, 72], variant: 0 }
+  - { type: pine_tree, cell: [4, 72], variant: 3 }
+  - { type: pine_tree, cell: [0, 73], variant: 2 }
+  - { type: pine_tree, cell: [1, 73], variant: 1 }
+  - { type: pine_tree, cell: [2, 73], variant: 2 }
+  - { type: pine_tree, cell: [3, 73], variant: 1 }
+  - { type: pine_tree, cell: [4, 73], variant: 3 }
+  - { type: pine_tree, cell: [0, 74], variant: 0 }
+  - { type: pine_tree, cell: [1, 74], variant: 3 }
+  - { type: pine_tree, cell: [2, 74], variant: 2 }
+  - { type: pine_tree, cell: [3, 74], variant: 2 }
+  - { type: pine_tree, cell: [4, 74], variant: 2 }
+  - { type: pine_tree, cell: [0, 75], variant: 0 }
+  - { type: pine_tree, cell: [1, 75], variant: 1 }
+  - { type: pine_tree, cell: [2, 75], variant: 0 }
+  - { type: pine_tree, cell: [3, 75], variant: 0 }
+  - { type: pine_tree, cell: [4, 75], variant: 2 }
+  - { type: pine_tree, cell: [5, 75], variant: 0 }
+  - { type: pine_tree, cell: [0, 76], variant: 1 }
+  - { type: pine_tree, cell: [1, 76], variant: 0 }
+  - { type: pine_tree, cell: [2, 76], variant: 1 }
+  - { type: pine_tree, cell: [3, 76], variant: 2 }
+  - { type: pine_tree, cell: [4, 76], variant: 1 }
+  - { type: pine_tree, cell: [5, 76], variant: 3 }
+  - { type: pine_tree, cell: [6, 76], variant: 1 }
+  - { type: pine_tree, cell: [7, 76], variant: 1 }
+  - { type: pine_tree, cell: [0, 77], variant: 1 }
+  - { type: pine_tree, cell: [1, 77], variant: 2 }
+  - { type: pine_tree, cell: [2, 77], variant: 3 }
+  - { type: pine_tree, cell: [3, 77], variant: 2 }
+  - { type: pine_tree, cell: [4, 77], variant: 0 }
+  - { type: pine_tree, cell: [5, 77], variant: 2 }
+  - { type: pine_tree, cell: [6, 77], variant: 1 }
+  - { type: pine_tree, cell: [0, 78], variant: 3 }
+  - { type: pine_tree, cell: [1, 78], variant: 2 }
+  - { type: pine_tree, cell: [2, 78], variant: 3 }
+  - { type: pine_tree, cell: [5, 78], variant: 3 }
+  - { type: pine_tree, cell: [0, 79], variant: 2 }
+  - { type: pine_tree, cell: [1, 79], variant: 3 }
+  - { type: pine_tree, cell: [36, 82], variant: 3 }
+  - { type: pine_tree, cell: [37, 82], variant: 3 }
+  - { type: pine_tree, cell: [38, 82], variant: 2 }
+  - { type: pine_tree, cell: [39, 82], variant: 2 }
+  - { type: pine_tree, cell: [40, 82], variant: 0 }
+  - { type: pine_tree, cell: [42, 82], variant: 0 }
+  - { type: pine_tree, cell: [43, 82], variant: 0 }
+  - { type: pine_tree, cell: [44, 82], variant: 2 }
+  - { type: pine_tree, cell: [45, 82], variant: 3 }
+  - { type: pine_tree, cell: [76, 82], variant: 1 }
+  - { type: pine_tree, cell: [35, 83], variant: 0 }
+  - { type: pine_tree, cell: [36, 83], variant: 2 }
+  - { type: pine_tree, cell: [37, 83], variant: 0 }
+  - { type: pine_tree, cell: [38, 83], variant: 2 }
+  - { type: pine_tree, cell: [39, 83], variant: 3 }
+  - { type: pine_tree, cell: [40, 83], variant: 2 }
+  - { type: pine_tree, cell: [41, 83], variant: 3 }
+  - { type: pine_tree, cell: [42, 83], variant: 3 }
+  - { type: pine_tree, cell: [43, 83], variant: 3 }
+  - { type: pine_tree, cell: [44, 83], variant: 2 }
+  - { type: pine_tree, cell: [45, 83], variant: 3 }
+  - { type: pine_tree, cell: [46, 83], variant: 0 }
+  - { type: pine_tree, cell: [76, 83], variant: 1 }
+  - { type: pine_tree, cell: [77, 83], variant: 1 }
+  - { type: pine_tree, cell: [33, 84], variant: 0 }
+  - { type: pine_tree, cell: [34, 84], variant: 3 }
+  - { type: pine_tree, cell: [35, 84], variant: 2 }
+  - { type: pine_tree, cell: [36, 84], variant: 3 }
+  - { type: pine_tree, cell: [37, 84], variant: 0 }
+  - { type: pine_tree, cell: [38, 84], variant: 1 }
+  - { type: pine_tree, cell: [39, 84], variant: 1 }
+  - { type: pine_tree, cell: [40, 84], variant: 2 }
+  - { type: pine_tree, cell: [41, 84], variant: 1 }
+  - { type: pine_tree, cell: [42, 84], variant: 3 }
+  - { type: pine_tree, cell: [43, 84], variant: 1 }
+  - { type: pine_tree, cell: [44, 84], variant: 3 }
+  - { type: pine_tree, cell: [45, 84], variant: 0 }
+  - { type: pine_tree, cell: [46, 84], variant: 3 }
+  - { type: pine_tree, cell: [47, 84], variant: 3 }
+  - { type: pine_tree, cell: [75, 84], variant: 0 }
+  - { type: pine_tree, cell: [76, 84], variant: 3 }
+  - { type: pine_tree, cell: [77, 84], variant: 2 }
+  - { type: pine_tree, cell: [78, 84], variant: 3 }
+  - { type: pine_tree, cell: [33, 85], variant: 0 }
+  - { type: pine_tree, cell: [34, 85], variant: 1 }
+  - { type: pine_tree, cell: [35, 85], variant: 0 }
+  - { type: pine_tree, cell: [36, 85], variant: 3 }
+  - { type: pine_tree, cell: [37, 85], variant: 0 }
+  - { type: pine_tree, cell: [38, 85], variant: 3 }
+  - { type: pine_tree, cell: [39, 85], variant: 2 }
+  - { type: pine_tree, cell: [40, 85], variant: 2 }
+  - { type: pine_tree, cell: [41, 85], variant: 0 }
+  - { type: pine_tree, cell: [42, 85], variant: 2 }
+  - { type: pine_tree, cell: [43, 85], variant: 2 }
+  - { type: pine_tree, cell: [44, 85], variant: 2 }
+  - { type: pine_tree, cell: [45, 85], variant: 3 }
+  - { type: pine_tree, cell: [46, 85], variant: 3 }
+  - { type: pine_tree, cell: [47, 85], variant: 2 }
+  - { type: pine_tree, cell: [48, 85], variant: 1 }
+  - { type: pine_tree, cell: [49, 85], variant: 1 }
+  - { type: pine_tree, cell: [50, 85], variant: 2 }
+  - { type: pine_tree, cell: [51, 85], variant: 3 }
+  - { type: pine_tree, cell: [52, 85], variant: 3 }
+  - { type: pine_tree, cell: [53, 85], variant: 1 }
+  - { type: pine_tree, cell: [54, 85], variant: 1 }
+  - { type: pine_tree, cell: [61, 85], variant: 1 }
+  - { type: pine_tree, cell: [71, 85], variant: 3 }
+  - { type: pine_tree, cell: [72, 85], variant: 3 }
+  - { type: pine_tree, cell: [73, 85], variant: 3 }
+  - { type: pine_tree, cell: [74, 85], variant: 2 }
+  - { type: pine_tree, cell: [75, 85], variant: 2 }
+  - { type: pine_tree, cell: [76, 85], variant: 1 }
+  - { type: pine_tree, cell: [77, 85], variant: 0 }
+  - { type: pine_tree, cell: [34, 86], variant: 0 }
+  - { type: pine_tree, cell: [35, 86], variant: 1 }
+  - { type: pine_tree, cell: [36, 86], variant: 3 }
+  - { type: pine_tree, cell: [37, 86], variant: 0 }
+  - { type: pine_tree, cell: [38, 86], variant: 0 }
+  - { type: pine_tree, cell: [39, 86], variant: 1 }
+  - { type: pine_tree, cell: [40, 86], variant: 0 }
+  - { type: pine_tree, cell: [41, 86], variant: 0 }
+  - { type: pine_tree, cell: [42, 86], variant: 0 }
+  - { type: pine_tree, cell: [43, 86], variant: 2 }
+  - { type: pine_tree, cell: [44, 86], variant: 1 }
+  - { type: pine_tree, cell: [45, 86], variant: 1 }
+  - { type: pine_tree, cell: [46, 86], variant: 2 }
+  - { type: pine_tree, cell: [47, 86], variant: 2 }
+  - { type: pine_tree, cell: [48, 86], variant: 0 }
+  - { type: pine_tree, cell: [49, 86], variant: 1 }
+  - { type: pine_tree, cell: [50, 86], variant: 1 }
+  - { type: pine_tree, cell: [51, 86], variant: 3 }
+  - { type: pine_tree, cell: [52, 86], variant: 0 }
+  - { type: pine_tree, cell: [53, 86], variant: 3 }
+  - { type: pine_tree, cell: [54, 86], variant: 0 }
+  - { type: pine_tree, cell: [55, 86], variant: 0 }
+  - { type: pine_tree, cell: [60, 86], variant: 0 }
+  - { type: pine_tree, cell: [61, 86], variant: 2 }
+  - { type: pine_tree, cell: [62, 86], variant: 0 }
+  - { type: pine_tree, cell: [69, 86], variant: 1 }
+  - { type: pine_tree, cell: [70, 86], variant: 2 }
+  - { type: pine_tree, cell: [71, 86], variant: 2 }
+  - { type: pine_tree, cell: [72, 86], variant: 0 }
+  - { type: pine_tree, cell: [73, 86], variant: 1 }
+  - { type: pine_tree, cell: [74, 86], variant: 2 }
+  - { type: pine_tree, cell: [75, 86], variant: 0 }
+  - { type: pine_tree, cell: [76, 86], variant: 2 }
+  - { type: pine_tree, cell: [77, 86], variant: 2 }
+  - { type: pine_tree, cell: [36, 87], variant: 3 }
+  - { type: pine_tree, cell: [37, 87], variant: 2 }
+  - { type: pine_tree, cell: [38, 87], variant: 1 }
+  - { type: pine_tree, cell: [39, 87], variant: 3 }
+  - { type: pine_tree, cell: [40, 87], variant: 1 }
+  - { type: pine_tree, cell: [41, 87], variant: 0 }
+  - { type: pine_tree, cell: [42, 87], variant: 3 }
+  - { type: pine_tree, cell: [43, 87], variant: 1 }
+  - { type: pine_tree, cell: [44, 87], variant: 3 }
+  - { type: pine_tree, cell: [45, 87], variant: 3 }
+  - { type: pine_tree, cell: [46, 87], variant: 1 }
+  - { type: pine_tree, cell: [47, 87], variant: 3 }
+  - { type: pine_tree, cell: [48, 87], variant: 1 }
+  - { type: pine_tree, cell: [49, 87], variant: 2 }
+  - { type: pine_tree, cell: [50, 87], variant: 2 }
+  - { type: pine_tree, cell: [51, 87], variant: 1 }
+  - { type: pine_tree, cell: [52, 87], variant: 2 }
+  - { type: pine_tree, cell: [53, 87], variant: 3 }
+  - { type: pine_tree, cell: [54, 87], variant: 3 }
+  - { type: pine_tree, cell: [55, 87], variant: 2 }
+  - { type: pine_tree, cell: [56, 87], variant: 0 }
+  - { type: pine_tree, cell: [59, 87], variant: 0 }
+  - { type: pine_tree, cell: [60, 87], variant: 0 }
+  - { type: pine_tree, cell: [61, 87], variant: 3 }
+  - { type: pine_tree, cell: [62, 87], variant: 0 }
+  - { type: pine_tree, cell: [67, 87], variant: 0 }
+  - { type: pine_tree, cell: [68, 87], variant: 2 }
+  - { type: pine_tree, cell: [69, 87], variant: 2 }
+  - { type: pine_tree, cell: [70, 87], variant: 2 }
+  - { type: pine_tree, cell: [71, 87], variant: 0 }
+  - { type: pine_tree, cell: [72, 87], variant: 2 }
+  - { type: pine_tree, cell: [73, 87], variant: 2 }
+  - { type: pine_tree, cell: [74, 87], variant: 2 }
+  - { type: pine_tree, cell: [75, 87], variant: 0 }
+  - { type: pine_tree, cell: [76, 87], variant: 1 }
+  - { type: pine_tree, cell: [77, 87], variant: 3 }
+  - { type: pine_tree, cell: [78, 87], variant: 3 }
+  - { type: pine_tree, cell: [38, 88], variant: 3 }
+  - { type: pine_tree, cell: [39, 88], variant: 0 }
+  - { type: pine_tree, cell: [40, 88], variant: 0 }
+  - { type: pine_tree, cell: [41, 88], variant: 0 }
+  - { type: pine_tree, cell: [42, 88], variant: 0 }
+  - { type: pine_tree, cell: [43, 88], variant: 2 }
+  - { type: pine_tree, cell: [44, 88], variant: 1 }
+  - { type: pine_tree, cell: [45, 88], variant: 2 }
+  - { type: pine_tree, cell: [46, 88], variant: 1 }
+  - { type: pine_tree, cell: [47, 88], variant: 1 }
+  - { type: pine_tree, cell: [48, 88], variant: 2 }
+  - { type: pine_tree, cell: [49, 88], variant: 2 }
+  - { type: pine_tree, cell: [50, 88], variant: 3 }
+  - { type: pine_tree, cell: [51, 88], variant: 2 }
+  - { type: pine_tree, cell: [52, 88], variant: 1 }
+  - { type: pine_tree, cell: [53, 88], variant: 0 }
+  - { type: pine_tree, cell: [54, 88], variant: 0 }
+  - { type: pine_tree, cell: [55, 88], variant: 0 }
+  - { type: pine_tree, cell: [56, 88], variant: 1 }
+  - { type: pine_tree, cell: [57, 88], variant: 1 }
+  - { type: pine_tree, cell: [58, 88], variant: 0 }
+  - { type: pine_tree, cell: [59, 88], variant: 2 }
+  - { type: pine_tree, cell: [66, 88], variant: 1 }
+  - { type: pine_tree, cell: [67, 88], variant: 2 }
+  - { type: pine_tree, cell: [68, 88], variant: 2 }
+  - { type: pine_tree, cell: [69, 88], variant: 3 }
+  - { type: pine_tree, cell: [70, 88], variant: 2 }
+  - { type: pine_tree, cell: [71, 88], variant: 0 }
+  - { type: pine_tree, cell: [72, 88], variant: 2 }
+  - { type: pine_tree, cell: [73, 88], variant: 1 }
+  - { type: pine_tree, cell: [74, 88], variant: 3 }
+  - { type: pine_tree, cell: [75, 88], variant: 1 }
+  - { type: pine_tree, cell: [76, 88], variant: 0 }
+  - { type: pine_tree, cell: [77, 88], variant: 2 }
+  - { type: pine_tree, cell: [78, 88], variant: 2 }
+  - { type: pine_tree, cell: [79, 88], variant: 3 }
+  - { type: pine_tree, cell: [38, 89], variant: 3 }
+  - { type: pine_tree, cell: [39, 89], variant: 0 }
+  - { type: pine_tree, cell: [40, 89], variant: 3 }
+  - { type: pine_tree, cell: [41, 89], variant: 1 }
+  - { type: pine_tree, cell: [42, 89], variant: 3 }
+  - { type: pine_tree, cell: [43, 89], variant: 0 }
+  - { type: pine_tree, cell: [44, 89], variant: 2 }
+  - { type: pine_tree, cell: [45, 89], variant: 3 }
+  - { type: pine_tree, cell: [46, 89], variant: 1 }
+  - { type: pine_tree, cell: [47, 89], variant: 2 }
+  - { type: pine_tree, cell: [48, 89], variant: 0 }
+  - { type: pine_tree, cell: [49, 89], variant: 0 }
+  - { type: pine_tree, cell: [50, 89], variant: 3 }
+  - { type: pine_tree, cell: [51, 89], variant: 1 }
+  - { type: pine_tree, cell: [52, 89], variant: 3 }
+  - { type: pine_tree, cell: [53, 89], variant: 0 }
+  - { type: pine_tree, cell: [54, 89], variant: 0 }
+  - { type: pine_tree, cell: [55, 89], variant: 2 }
+  - { type: pine_tree, cell: [56, 89], variant: 0 }
+  - { type: pine_tree, cell: [57, 89], variant: 3 }
+  - { type: pine_tree, cell: [58, 89], variant: 0 }
+  - { type: pine_tree, cell: [59, 89], variant: 3 }
+  - { type: pine_tree, cell: [66, 89], variant: 2 }
+  - { type: pine_tree, cell: [67, 89], variant: 0 }
+  - { type: pine_tree, cell: [68, 89], variant: 0 }
+  - { type: pine_tree, cell: [69, 89], variant: 1 }
+  - { type: pine_tree, cell: [70, 89], variant: 3 }
+  - { type: pine_tree, cell: [71, 89], variant: 2 }
+  - { type: pine_tree, cell: [72, 89], variant: 3 }
+  - { type: pine_tree, cell: [73, 89], variant: 2 }
+  - { type: pine_tree, cell: [74, 89], variant: 0 }
+  - { type: pine_tree, cell: [75, 89], variant: 0 }
+  - { type: pine_tree, cell: [76, 89], variant: 1 }
+  - { type: pine_tree, cell: [77, 89], variant: 1 }
+  - { type: pine_tree, cell: [78, 89], variant: 3 }
+  - { type: pine_tree, cell: [79, 89], variant: 2 }
 bridges:
-  - { type: bridge_wood_low, from: [31, 16], to: [33, 16] }
-  - { type: bridge_wood_low, from: [16, 30], to: [16, 32] }
-  - { type: bridge_wood_low, from: [47, 31], to: [47, 33] }
-  - { type: bridge_wood_low, from: [30, 47], to: [32, 47] }
+  - { type: bridge_wood_low, from: [56, 31], to: [56, 35] }
+  - { type: bridge_wood_low, from: [31, 33], to: [35, 33] }
+  - { type: bridge_wood_low, from: [33, 54], to: [33, 58] }
+  - { type: bridge_wood_low, from: [54, 56], to: [58, 56] }
 structures:
-  - { type: tech_oil_derrick, cell: [36, 22], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [22, 26], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [40, 36], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [26, 40], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [45, 32], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [32, 43], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [56, 45], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [43, 56], owner: neutral, facing: 0 }

@@ -32,7 +32,7 @@ public static class MapChecks
             }
         }
 
-        return MapGrid.FromLayers(map.Width, map.Height, land, new byte[land.Length], map.Heights.AsSpan(), objects);
+        return MapGrid.FromLayers(map.Width, map.Height, land, map.BlockedLayer(), map.Heights.AsSpan(), objects);
     }
 
     /// <summary>The cells of a bridge, from <see cref="BridgePlacement.From"/> to <see cref="BridgePlacement.To"/>; none when it is not straight.</summary>

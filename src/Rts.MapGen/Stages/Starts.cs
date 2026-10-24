@@ -4,8 +4,10 @@ using Rts.Simulation.Geometry;
 namespace Rts.MapGen.Stages;
 
 /// <summary>
-/// Stage 2, starts (docs/implementation/M7_maps.md, 4.14): the first player's start a fifth of the map in from its side (left
-/// half for a mirror, the north-west for turns), moved a little by the seed; the others are its images. The ground within
+/// Stage 2, starts (docs/implementation/M7_maps.md, 4.14), inside the playable area (a square in the screen's axes whose
+/// corners are the middles of the grid's sides): the first player's start a fifth of the grid in from its west side, near the
+/// top-left corner of the screen, for a mirror and for four players; at the left of the screen for 180°. Moved a little by the
+/// seed; the others are its images. The ground within
 /// <see cref="FlatRadius"/> cells of every start goes down to level 0, so every base stands on flat open ground.
 /// </summary>
 internal static class Starts
@@ -17,9 +19,9 @@ internal static class Starts
         var n = map.N;
         var jitter = (int)(IntNoise.Hash(0, 0, map.Seed, Channels.Starts) % (uint)(n / 16));
         var drift = (int)(IntNoise.Hash(1, 0, map.Seed, Channels.Starts) % (uint)(n / 8)) - n / 16;
-        var first = map.Settings.Symmetry == MapSymmetry.Mirror
-            ? new CellPos(n / 5 + jitter, n / 2 - 1 + drift)
-            : new CellPos(n / 5 + jitter, n / 5 + (jitter + drift + n) % (n / 16));
+        var first = map.Settings.Symmetry == MapSymmetry.Rotate180
+            ? new CellPos(n * 7 / 20 + jitter, n * 13 / 20 + drift)
+            : new CellPos(n / 5 + jitter, n / 2 - 1 + drift);
         for (var k = 0; k < map.Symmetry.Order; k++)
         {
             map.Starts.Add(new MapStart(k + 1, map.Symmetry.Cell(k, first)));

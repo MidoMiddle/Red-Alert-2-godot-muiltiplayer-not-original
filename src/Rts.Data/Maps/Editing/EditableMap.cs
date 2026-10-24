@@ -37,6 +37,12 @@ public sealed class EditableMap
     private readonly List<StructurePlacement> _structures;
     private readonly List<MapStart> _starts;
 
+    private EditableMap(MapDefinition map, MapArea? playable)
+        : this(map)
+    {
+        Playable = playable;
+    }
+
     private EditableMap(MapDefinition map)
     {
         Id = map.Id;
@@ -47,6 +53,7 @@ public sealed class EditableMap
         Height = map.Height;
         Climate = map.Climate;
         Lighting = map.Lighting;
+        Playable = map.Playable;
         Players = map.Players;
         _starts = [.. map.Starts];
         _objects = [.. map.Objects];
@@ -76,6 +83,9 @@ public sealed class EditableMap
     /// <summary>The time of day, one of <see cref="MapLighting.Ids"/>; checked by <see cref="ToDefinition"/>.</summary>
     public string Lighting { get; set; }
 
+    /// <summary>The playable area (<see cref="MapArea"/>), or null when the whole map plays.</summary>
+    public MapArea? Playable { get; }
+
     public int Players { get; }
 
     public IReadOnlyList<MapStart> Starts => _starts;
@@ -98,6 +108,17 @@ public sealed class EditableMap
 
     public static EditableMap FromDefinition(MapDefinition map) => new(map);
 
+    /// <summary>
+    /// A new map whose playable area is a rectangle on the screen, as in RA2 (<see cref="MapArea"/>): about
+    /// <paramref name="size"/>² playable cells, the square inscribed in a grid of about size·√2 cells a side (even).
+    /// </summary>
+    public static EditableMap NewWithArea(int size, int players)
+    {
+        var n = 2 * ((size * 7071 + 5000) / 10000);
+        var map = New(n, n, players);
+        return new EditableMap(map.ToDefinition(), MapArea.Inscribed(n));
+    }
+
     /// <summary>A new map: flat at level 0, clear land under snow, the texture legend of the converted maps, no starts yet.</summary>
     public static EditableMap New(int width, int height, int players)
     {
@@ -115,7 +136,7 @@ public sealed class EditableMap
     /// <summary>The map as a checked definition; throws <see cref="ArgumentException"/> when a field does not fit the format.</summary>
     public MapDefinition ToDefinition() => new(
         Id, Name, Author, Description, Width, Height, Climate, Players, [.. _starts], [.. _legend],
-        [.. _heights], [.. _land], [.. _texture], [.. _ore], [.. _objects], [.. _bridges], [.. _structures], Lighting);
+        [.. _heights], [.. _land], [.. _texture], [.. _ore], [.. _objects], [.. _bridges], [.. _structures], Lighting, Playable);
 
     /// <summary>The lists as they are now.</summary>
     public MapLists Lists() => new([.. _objects], [.. _bridges], [.. _structures], [.. _starts]);

@@ -1104,7 +1104,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             for (var x = size / 2; x < view.Width; x += size)
             {
                 var middle = new CellPos(x, y);
-                if (!view.IsVisible(middle) && !squad.Swept.Contains(middle)
+                if (!view.IsVisible(middle) && !squad.Swept.Contains(middle) && !view.IsScenery(middle, size)
                     && (best is null || Distance(middle, centre) < Distance(best.Value, centre)))
                 {
                     best = middle;

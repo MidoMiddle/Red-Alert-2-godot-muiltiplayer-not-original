@@ -13,7 +13,8 @@ namespace Rts.Client.Maps;
 /// of the game (<see cref="LandColors"/>), lighter the higher, cliffs in dark rock; standing trees, rocks, walls and fences;
 /// standing bridge segments as road; buildings; and a disc in the slot's colour on every start (the screen lays the numbers on
 /// top). Ore has no rules before M3 and is not drawn. Drawn from the map of the rules (<see cref="MapDefinition.ToMapGrid"/>).
-/// Pure, tested in Rts.Data.Tests.
+/// A map with a playable area is drawn as the screen shows it (<see cref="RenderArea"/>): that rectangle, twice as wide as it is
+/// tall in the screen's axes. Pure, tested in Rts.Data.Tests.
 /// </summary>
 public static class MapPreview
 {
@@ -36,8 +37,54 @@ public static class MapPreview
     /// <summary>The cached picture of the map with this <see cref="MapHasher.Hash"/>.</summary>
     public static string CachePath(string hash) => $"{CacheDirectory}/{hash}.png";
 
-    /// <summary>The picture of <paramref name="map"/>: (2W) × (2H) pixels, three bytes each.</summary>
-    public static byte[] Render(MapDefinition map) => Render(map.ToMapGrid(), map.Starts);
+    /// <summary>The size of the picture of <paramref name="map"/> in pixels (<see cref="Render(MapDefinition)"/>).</summary>
+    public static (int Width, int Height) SizeOf(MapDefinition map) => map.Playable is { } area
+        ? (2 * (area.Right - area.Left), area.Bottom - area.Top)
+        : (map.Width * PixelsPerCell, map.Height * PixelsPerCell);
+
+    /// <summary>The picture of <paramref name="map"/>: (2W) × (2H) pixels, three bytes each; or that of its playable area.</summary>
+    public static byte[] Render(MapDefinition map) =>
+        map.Playable is { } area ? RenderArea(map.ToMapGrid(), map.Starts, area) : Render(map.ToMapGrid(), map.Starts);
+
+    /// <summary>
+    /// The playable area as the screen shows it, <see cref="SizeOf"/> pixels: a pixel is a step of the screen's axes
+    /// (<c>v = x − z</c> across in half steps, <c>u = x + z</c> down), coloured as the cell under it.
+    /// </summary>
+    public static byte[] RenderArea(MapGrid grid, IReadOnlyList<MapStart> starts, MapArea area)
+    {
+        var (width, height) = (2 * (area.Right - area.Left), area.Bottom - area.Top);
+        var pixels = new byte[width * height * 3];
+        (float U, float V) Axes(int px, int py) => (area.Top + py + 0.5f, area.Left + (px + 0.5f) * (area.Right - area.Left) / width);
+        for (var py = 0; py < height; py++)
+        {
+            for (var px = 0; px < width; px++)
+            {
+                var (u, v) = Axes(px, py);
+                var cell = new CellPos((int)MathF.Floor((u + v) / 2f), (int)MathF.Floor((u - v) / 2f));
+                var color = grid.Contains(cell) ? CellColor(grid, cell) : Tree;
+                Put(pixels, (py * width + px) * 3, color);
+            }
+        }
+
+        foreach (var start in starts)
+        {
+            var (u, v) = (start.Cell.X + start.Cell.Y + 1f, (float)(start.Cell.X - start.Cell.Y));
+            var (centreX, centreY) = ((v - area.Left) * width / (area.Right - area.Left), u - area.Top);
+            for (var py = (int)centreY - StartRadius; py <= (int)centreY + StartRadius; py++)
+            {
+                for (var px = (int)centreX - StartRadius; px <= (int)centreX + StartRadius; px++)
+                {
+                    var (dx, dy) = (px + 0.5f - centreX, py + 0.5f - centreY);
+                    if (px >= 0 && py >= 0 && px < width && py < height && dx * dx + dy * dy <= StartRadius * StartRadius)
+                    {
+                        Put(pixels, (py * width + px) * 3, SlotColor(start.Slot));
+                    }
+                }
+            }
+        }
+
+        return pixels;
+    }
 
     public static byte[] Render(MapGrid grid, IReadOnlyList<MapStart> starts)
     {

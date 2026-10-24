@@ -44,7 +44,9 @@ public sealed class ReadyMapsTests
     public void Each_map_has_what_its_description_promises()
     {
         var frozen = Committed("frozen-crossing");
-        Assert.Equal((64, 64, 2, 2), (frozen.Width, frozen.Height, frozen.Players, frozen.Bridges.Length));
+        // A rectangle on the screen as in RA2: the area inscribed in a 90 x 90 grid, about the 4096 cells of the old 64 x 64.
+        Assert.Equal((90, 90, 2, 2), (frozen.Width, frozen.Height, frozen.Players, frozen.Bridges.Length));
+        Assert.Equal(MapArea.Inscribed(90), frozen.Playable);
         Assert.Contains(LandType.Ice, frozen.Land);
 
         var twin = Committed("twin-rivers");
@@ -67,17 +69,18 @@ public sealed class ReadyMapsTests
     }
 
     [Theory]
-    [InlineData("frozen-crossing", false)]
-    [InlineData("twin-rivers", false)]
-    [InlineData("taiga-front", false)]
-    [InlineData("four-corners", true)]
-    public void The_maps_are_symmetric(string file, bool turned)
+    [InlineData("frozen-crossing", false, true)]
+    [InlineData("twin-rivers", false, false)]
+    [InlineData("taiga-front", false, false)]
+    [InlineData("four-corners", true, false)]
+    public void The_maps_are_symmetric(string file, bool turned, bool halfTurn)
     {
         var map = Committed(file);
         var (w, h) = (map.Width, map.Height);
         var trees = map.Objects.Select(o => o.Cell).ToHashSet();
-        CellPos Image(CellPos c) => turned ? new CellPos(w - 1 - c.Y, c.X) : new CellPos(w - 1 - c.X, c.Y);
-        (int, int) CornerImage(int x, int y) => turned ? (w - y, x) : (w - x, y);
+        // Mirrored west to east, turned by quarters, or — a map with a playable area — turned by half (the screen's left is its right).
+        CellPos Image(CellPos c) => turned ? new CellPos(w - 1 - c.Y, c.X) : halfTurn ? new CellPos(w - 1 - c.X, h - 1 - c.Y) : new CellPos(w - 1 - c.X, c.Y);
+        (int, int) CornerImage(int x, int y) => turned ? (w - y, x) : halfTurn ? (w - x, h - y) : (w - x, y);
 
         for (var y = 0; y <= h; y++)
         {

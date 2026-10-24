@@ -91,6 +91,12 @@ public partial class MapObjects : Node3D
             list?.Add(at);
         }
 
+        // The pines beyond the edge (MapSkirt): only a picture, the rules never see them.
+        foreach (var (x, z) in GetParent<TerrainBuilder>().Skirt.Trees)
+        {
+            trees.Add(new Vector3(x, WorldCoords.Terrain!.HeightAt(x, z), z));
+        }
+
         foreach (var bridge in _map.Bridges)
         {
             AddBridge(bridge);

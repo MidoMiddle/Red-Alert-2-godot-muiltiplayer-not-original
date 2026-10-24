@@ -89,6 +89,22 @@ public sealed class AiWorldView
 
     public bool Contains(CellPos cell) => _world.Map.Contains(cell);
 
+    /// <summary>True for a cell nothing enters: an obstacle of the map, or the scenery round a playable area. Known to every player.</summary>
+    public bool IsBlocked(CellPos cell) => _world.Map.Contains(cell) && _world.Map.IsBlocked(cell);
+
+    /// <summary>
+    /// True for a block of <paramref name="size"/> cells round <paramref name="middle"/> outside the playable area of the map: its
+    /// middle and the middles of its four sides are all blocked. Nothing to see there and no way in; a fence, a wall or a wood
+    /// hardly ever blocks five cells so far apart. Scouts and sweeping squads leave such blocks out.
+    /// </summary>
+    public bool IsScenery(CellPos middle, int size)
+    {
+        var half = size / 2;
+        return IsBlocked(middle)
+            && IsBlocked(new CellPos(middle.X - half, middle.Y)) && IsBlocked(new CellPos(middle.X + half, middle.Y))
+            && IsBlocked(new CellPos(middle.X, middle.Y - half)) && IsBlocked(new CellPos(middle.X, middle.Y + half));
+    }
+
     /// <summary>Whether the bot's player sees the whole map (M8 step 2).</summary>
     public bool RevealsMap => Player.Modifiers.RevealMap;
 

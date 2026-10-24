@@ -17,7 +17,8 @@ internal sealed class GenMap
     {
         Settings = settings;
         Seed = seed;
-        N = settings.Size;
+        N = MapGenSettings.GridSize(settings.Size);
+        Area = MapArea.Inscribed(N);
         Symmetry = new Symmetry(settings.Symmetry, N);
         Levels = new int[(N + 1) * (N + 1)];
         Land = new LandType[N * N];
@@ -30,8 +31,11 @@ internal sealed class GenMap
 
     public uint Seed { get; }
 
-    /// <summary>Cells a side.</summary>
+    /// <summary>Cells a side of the grid; the playable area is the square <see cref="Area"/> inside it.</summary>
     public int N { get; }
+
+    /// <summary>The playable area: a rectangle on the screen, the same under the symmetry; outside it is scenery.</summary>
+    public MapArea Area { get; }
 
     public Symmetry Symmetry { get; }
 
@@ -119,7 +123,7 @@ internal sealed class GenMap
         return new MapDefinition(
             $"random-{Seed}", name, "Map generator", description, N, N, Settings.Climate, Settings.Players,
             [.. Starts], legend, ImmutableArray.Create(heights), [.. Land], [.. texture], ImmutableArray.Create(Ore),
-            [.. Objects], [.. Bridges], [.. Structures], Settings.Lighting);
+            [.. Objects], [.. Bridges], [.. Structures], Settings.Lighting, Area);
     }
 
     /// <summary>The ground of the map for the rules: land, heights, objects, bridges and buildings as they are now.</summary>

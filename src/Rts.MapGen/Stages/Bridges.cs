@@ -8,7 +8,7 @@ namespace Rts.MapGen.Stages;
 /// <summary>
 /// Stage 4, bridges (docs/implementation/M7_maps.md, 4.14): straight across the river from shore to shore, at least two
 /// crossings, symmetric. With a mirror the river runs down the axis: two rows, a third and two thirds down, each bridge its
-/// own mirror image. With turns: one row of the first arm a quarter down, and its images. A row that does not take a bridge
+/// own mirror image. With turns: one row of the first arm three eighths down, inside the playable area, and its images. A row that does not take a bridge
 /// (checked with the load rules, <see cref="MapChecks.BridgeProblem"/>) gives way to the next one.
 /// </summary>
 internal static class Bridges
@@ -29,7 +29,7 @@ internal static class Bridges
             return;
         }
 
-        TryRows(map, ground, n / 4, from: -1, mirrored: false);
+        TryRows(map, ground, 3 * n / 8, from: -1, mirrored: false);
     }
 
     private static void TryRows(GenMap map, MapGrid ground, int row, int from, bool mirrored)

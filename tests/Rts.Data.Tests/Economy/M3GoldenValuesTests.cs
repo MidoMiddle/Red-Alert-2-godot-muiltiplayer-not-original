@@ -42,7 +42,9 @@ public sealed class M3GoldenValuesTests
         // Every unit of both factions, rules v43: the same credits again; the numbers of the units in the data move once more.
         // Stage 2a, rules v44: the naval queue is hashed; the run and its credits are the same.
         // Stage 2b, rules v45: the aircraft queue is hashed too; the run and its credits are the same.
-        Assert.Equal((6972, 0xd47171f41d195cUL), (fifth.Credits, fifth.Checksum));
+        // Frozen Crossing redrawn on a 90x90 grid with a playable area (M7): another field, another road home; 1000 credits fewer by
+        // minute 5.
+        Assert.Equal((5972, 0x2793a3bb4a75cf4bUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

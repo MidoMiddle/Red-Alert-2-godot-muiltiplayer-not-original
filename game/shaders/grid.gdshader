@@ -2,7 +2,8 @@
 // of the map's texture layer (MaterialSlots.cs: the slot of its material and its water, two bytes a cell): the albedo comes from
 // one layer of ground_albedo, tiled, tinted and rough by the material's entry of the arrays below. Neighbouring materials blend
 // over a border that noise bends and the brighter texture wins (a height blend), so the cells never show as squares; water gets a
-// ripple lit by the sun and fades to the deep colour on deep water. While the textures are off, every cell takes the flat colour
+// ripple lit by the sun and fades to the deep colour on deep water. The material map covers the skirt too (MapSkirt.cs: the land
+// beyond the edge), from map_origin; the lines and the debug overlay stay on the map. While the textures are off, every cell takes the flat colour
 // of its land type from the simulation map (one texel per cell, cliffs in rock), with a faint line every cell, a stronger line
 // every 8 cells and a line at each height level: the symbolic look of docs/implementation/conventions.md, section 12. M7 step 9:
 // the normal is the face's own, so every plane of the relief reads apart and a cliff is a wall. The debug cell overlay (F7, M2
@@ -14,6 +15,8 @@ const int MAX_MATERIALS = 16;
 uniform sampler2D land_map : source_color, filter_nearest;
 uniform vec3 fallback_color : source_color = vec3(0.34, 0.36, 0.32);
 uniform sampler2D material_map : filter_nearest;
+// The world cell of the material map's first texel: the north-west corner of the skirt.
+uniform vec2 map_origin = vec2(0.0);
 uniform sampler2D overlay_map : source_color, filter_nearest;
 uniform bool overlay_enabled = false;
 uniform bool bucket_lines = false;
@@ -55,7 +58,7 @@ float noise(vec2 p) {
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
-// The slot (x) and the water (y: 0 none, 1 shallow, 2 deep) of a cell.
+// The slot (x) and the water (y: 0 none, 1 shallow, 2 deep) of a cell of the material map.
 ivec2 material_of(ivec2 cell, ivec2 size) {
 	vec2 texel = texelFetch(material_map, clamp(cell, ivec2(0), size - 1), 0).rg;
 	return ivec2(floor(texel * 255.0 + 0.5));
@@ -69,6 +72,7 @@ vec3 albedo_of(int slot, vec2 position, float frost_patches) {
 void fragment() {
 	ivec2 size = textureSize(land_map, 0);
 	ivec2 cell = clamp(ivec2(floor(world_position.xz)), ivec2(0), size - 1);
+	bool on_map = all(greaterThanEqual(world_position.xz, vec2(0.0))) && all(lessThan(world_position.xz, vec2(size)));
 	vec3 color = fallback_color;
 	float roughness = 0.95;
 	if (use_textures) {
@@ -76,12 +80,13 @@ void fragment() {
 		// The four cells around the point, by their centres; noise bends the borders between them.
 		vec2 warp = vec2(noise(p * 1.7), noise(p * 1.7 + vec2(17.3, 9.1))) - 0.5;
 		vec2 q = p - 0.5 + warp * 0.5;
-		ivec2 base = ivec2(floor(q));
+		ivec2 base = ivec2(floor(q - map_origin));
 		vec2 g = smoothstep(0.2, 0.8, fract(q));
-		ivec2 m00 = material_of(base, size);
-		ivec2 m10 = material_of(base + ivec2(1, 0), size);
-		ivec2 m01 = material_of(base + ivec2(0, 1), size);
-		ivec2 m11 = material_of(base + ivec2(1, 1), size);
+		ivec2 materials = textureSize(material_map, 0);
+		ivec2 m00 = material_of(base, materials);
+		ivec2 m10 = material_of(base + ivec2(1, 0), materials);
+		ivec2 m01 = material_of(base + ivec2(0, 1), materials);
+		ivec2 m11 = material_of(base + ivec2(1, 1), materials);
 		vec4 w = vec4((1.0 - g.x) * (1.0 - g.y), g.x * (1.0 - g.y), (1.0 - g.x) * g.y, g.x * g.y);
 		// Frost lies thicker in some places than in others.
 		float frost_patches = mix(0.55, 1.0, noise(p * 0.9));
@@ -113,19 +118,19 @@ void fragment() {
 	} else if (size.x > 1) {
 		color = texelFetch(land_map, cell, 0).rgb;
 	}
-	if (overlay_enabled) {
+	if (overlay_enabled && on_map) {
 		ivec2 overlay_size = textureSize(overlay_map, 0);
 		ivec2 overlay_cell = clamp(ivec2(floor(world_position.xz)), ivec2(0), overlay_size - 1);
 		vec4 overlay = texelFetch(overlay_map, overlay_cell, 0);
 		color = mix(color, overlay.rgb, overlay.a);
 	}
-	if (!use_textures) {
+	if (!use_textures && on_map) {
 		color *= mix(0.85, 1.0, grid(world_position.xz, 1.0));
 	}
-	if (bucket_lines) {
+	if (bucket_lines && on_map) {
 		color *= mix(0.35, 1.0, grid(world_position.xz, 4.0));
 	}
-	if (!use_textures) {
+	if (!use_textures && on_map) {
 		color *= mix(0.7, 1.0, grid(world_position.xz, 8.0));
 		float level = world_position.y / level_height;
 		float level_change = fwidth(level);
