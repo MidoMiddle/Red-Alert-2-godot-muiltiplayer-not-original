@@ -110,6 +110,7 @@ industrial_plant:  # vehicles, ships and aircraft 25% cheaper (stage 2c)
 battle_bunker:  # holds 5 soldiers who fire from inside (stage 2e)
   kind: building
   inherits: base_building
+  category: defense  # RA2: on the Defenses tab, built by its queue
   name: Fortified Bunker
   faction: union
   cost: 500

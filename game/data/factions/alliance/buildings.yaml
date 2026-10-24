@@ -238,6 +238,7 @@ alliance_weather_control_device:  # superweapon: a storm of lightning over an ar
 alliance_gap_generator:  # veils 10 cells round it from the enemy while ready and online (stage 2d)
   kind: building
   inherits: base_building
+  category: defense  # RA2: on the Defenses tab, built by its queue
   name: Veil Generator
   faction: alliance
   cost: 1000
