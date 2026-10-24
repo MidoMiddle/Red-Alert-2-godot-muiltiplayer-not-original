@@ -326,10 +326,15 @@ public static class TargetingSystem
         return best;
     }
 
+    /// <summary>The threat of a civilian building with soldiers inside: as much as a defense.</summary>
+    public const int GarrisonThreat = 20;
+
     private static int ThreatOf(Entity entity) => entity switch
     {
         Unit unit => unit.Archetype.Threat,
         Building { Def: { } def } => def.Threat,
+        // A civilian building with soldiers firing from it is a strongpoint (RA2: units go for a garrisoned building).
+        Building { Occupants.Count: > 0 } => GarrisonThreat,
         _ => 0,
     };
 

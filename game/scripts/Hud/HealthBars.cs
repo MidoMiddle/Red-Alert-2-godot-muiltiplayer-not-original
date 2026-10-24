@@ -81,6 +81,15 @@ public partial class HealthBars : Control
                 DrawGarrison(camera, top, garrisoned.Occupants.Count, bunker.GarrisonCapacity);
             }
 
+            // A civilian building of the map with soldiers inside: how full it is, for everyone (RA2).
+            if (entity is Building { Def: null, Occupants.Count: > 0 } civilian && Rts.Simulation.Systems.GarrisonSystem.Civilian(civilian))
+            {
+                var type = civilian.Type;
+                var height = BuildingLooks.Known(type.Id) ? BuildingLooks.Top(BuildingLooks.Of(type.Id, type.Width, type.Height, false)) : 1f;
+                var top = WorldCoords.ToGodotOnGround(Aim.CentreOf(civilian), height + 0.6f);
+                DrawGarrison(camera, top, civilian.Occupants.Count, Rts.Simulation.Systems.GarrisonSystem.Capacity(civilian));
+            }
+
             var selected = _input?.Selection.Contains(entity.Id) == true || _input?.SelectedFactory == entity.Id;
             switch (entity)
             {

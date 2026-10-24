@@ -347,7 +347,7 @@ public sealed class GoldenValuesTests
         // Rules v57 (loose ends, stage 1): the version and the checksums. Rules v58 (stage 2): the version. Rules v59 (wide bridges): the version.
         // Rules v60 (stage 3: veterancy): the version and the checksums. Rules v61 (stage 4: the Osprey): the version.
         // Replay format v24, rules v62 (stage 5: the countries): the versions. Rules v63 (the yard packs up, the Rifleman digs in): the version.
-        // Replay format v25, rules v68 (the buildings and props of the element documents): the versions.
-        Assert.Equal((22269, 9125690135984098655UL), (bytes.Length, hash.Value));
+        // Replay format v25, rules v69 (soldiers in the civilian buildings): the versions.
+        Assert.Equal((22269, 1178653841633220552UL), (bytes.Length, hash.Value));
     }
 }

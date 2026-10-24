@@ -14,7 +14,7 @@ public enum EntryAction
 {
     None,
 
-    /// <summary>Sits in its own building that holds soldiers (<see cref="GarrisonSystem"/>).</summary>
+    /// <summary>Sits in its own building that holds soldiers, or in a civilian building of the map (<see cref="GarrisonSystem"/>).</summary>
     Garrison,
 
     /// <summary>An engineer takes a building of another player.</summary>
@@ -86,6 +86,9 @@ public static class EntrySystem
                     : EntryAction.None
                 : own && building.Kind == BuildingKind.TechHospital && unit.Hp < unit.MaxHp && !unit.Archetype.Has(UnitTalents.Infiltrator)
                     ? EntryAction.Heal
+                // A civilian building takes soldiers: when it is nobody's or theirs, while there is room.
+                : GarrisonSystem.CanEnter(unit) && GarrisonSystem.Holds(building, unit.Owner) && GarrisonSystem.HasRoom(building)
+                    ? EntryAction.Garrison
                     : EntryAction.None;
         }
 

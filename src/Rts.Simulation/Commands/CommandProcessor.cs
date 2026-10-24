@@ -91,7 +91,9 @@ public static class CommandProcessor
     /// <summary>The soldiers inside the player's building come out (stage 2e); refused when there is none.</summary>
     private static bool ApplyEvacuate(GameWorld world, EvacuateCommand command, List<SimEvent>? events)
     {
-        if (OwnReady(world, command.Player, command.Building) is not { Occupants.Count: > 0 } building)
+        // The player's building with soldiers inside: one of his own, or a civilian building of the map he holds.
+        if (!world.TryGet(command.Building, out var entity)
+            || entity is not Building { IsAlive: true, IsReady: true, Occupants.Count: > 0 } building || building.Owner != command.Player)
         {
             return false;
         }

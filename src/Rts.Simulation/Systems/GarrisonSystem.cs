@@ -21,6 +21,12 @@ namespace Rts.Simulation.Systems;
 /// the building chooses for them (<see cref="TargetingSystem"/>). They come out around the footprint, ring by ring, on an
 /// <see cref="EvacuateCommand"/>, when the building is sold and when a shot brings it down; one that finds no room stays inside, or
 /// falls with the building.
+/// <para>
+/// The civilian buildings of the map (RA2 garrisons): a house, an apartment block, a school… that holds soldiers
+/// (<see cref="BuildingType.Garrison"/>) takes the soldiers of any player while it stands empty and neutral — the first one in makes it
+/// his — and more of his while there is room; an enemy's is closed until it is empty again. Empty — its soldiers out on an order, or
+/// their owner beaten — it is the neutral side's again. The tech buildings are taken by engineers, not soldiers.
+/// </para>
 /// </summary>
 public static class GarrisonSystem
 {
@@ -30,14 +36,29 @@ public static class GarrisonSystem
     /// </summary>
     public static bool CanEnter(Unit unit) =>
         unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies
-        && !unit.Archetype.Has(UnitTalents.Engineer) && !unit.Archetype.Has(UnitTalents.Infiltrator);
+        && !unit.Archetype.Has(UnitTalents.Engineer) && !unit.Archetype.Has(UnitTalents.Infiltrator)
+        // A dog is no occupier (RA2 Occupier=no).
+        && unit.Archetype.Type is not (UnitType.AttackDog or UnitType.AllianceAttackDog);
 
-    /// <summary>Whether <paramref name="building"/> is a ready building of <paramref name="player"/> that holds soldiers.</summary>
+    /// <summary>
+    /// Whether <paramref name="building"/> is a ready building that takes the soldiers of <paramref name="player"/>: one of his that holds
+    /// soldiers, or a civilian building of the map that is his or nobody's.
+    /// </summary>
     public static bool Holds(Building building, PlayerId player) =>
-        building is { IsAlive: true, IsReady: true, Def.GarrisonCapacity: > 0 } && building.Owner == player;
+        building is { IsAlive: true, IsReady: true } && Capacity(building) > 0
+        && (building.Owner == player || (Civilian(building) && building.Owner.IsNeutral));
 
     /// <summary>Whether the building has room for one more soldier.</summary>
-    public static bool HasRoom(Building building) => building.Occupants.Count < (building.Def?.GarrisonCapacity ?? 0);
+    public static bool HasRoom(Building building) => building.Occupants.Count < Capacity(building);
+
+    /// <summary>How many soldiers the building holds: its data's, or a civilian building's of the map; a tech building none.</summary>
+    public static int Capacity(Building building) =>
+        building.Def is { } def ? def.GarrisonCapacity
+        : BuildingTypes.IsKnown(building.Kind) && !building.Type.Capturable ? building.Type.Garrison
+        : 0;
+
+    /// <summary>A civilian building of the map that holds soldiers: it changes hands with them.</summary>
+    public static bool Civilian(Building building) => building.Def is null && Capacity(building) > 0;
 
     /// <summary>Whether one of the soldiers inside carries a weapon: then the building chooses targets and fires.</summary>
     public static bool IsArmed(Building building)
@@ -95,12 +116,49 @@ public static class GarrisonSystem
         if (building.Occupants.Count == 0)
         {
             building.Target = null;
+            if (building.IsAlive && Civilian(building) && !building.Owner.IsNeutral)
+            {
+                // Empty, a civilian building is nobody's again.
+                SetOwner(world, building, PlayerId.Neutral);
+            }
         }
+    }
+
+    /// <summary>
+    /// The player is beaten: his soldiers in a civilian building die with him, and the building is the neutral side's again (it does not
+    /// fall as his own buildings do).
+    /// </summary>
+    internal static void Abandon(GameWorld world, Building building)
+    {
+        building.Occupants.Clear();
+        building.Target = null;
+        SetOwner(world, building, PlayerId.Neutral);
+    }
+
+    // The building changes hands: the old owner's sight of it goes (the new owner's comes with VisibilitySystem); its target goes.
+    private static void SetOwner(GameWorld world, Building building, PlayerId to)
+    {
+        if (building.SightCell is { } cell)
+        {
+            world.VisionOf(building.Owner).Hide(cell, building.SightRadius);
+            building.SightCell = null;
+            building.SightRadius = 0;
+        }
+
+        building.Owner = to;
+        building.Target = null;
+        world.BuildingsChanged();
     }
 
     /// <summary>The soldier goes in: it leaves the map without a death and becomes an occupant with its hit points.</summary>
     internal static void Enter(GameWorld world, Unit unit, Building building, List<SimEvent>? events)
     {
+        if (Civilian(building) && building.Owner.IsNeutral)
+        {
+            // The first one in makes a civilian building his.
+            SetOwner(world, building, unit.Owner);
+        }
+
         building.Occupants.Add(new Occupant(unit.Archetype, unit.Hp));
         unit.EnterTarget = null;
         unit.MarkDead();

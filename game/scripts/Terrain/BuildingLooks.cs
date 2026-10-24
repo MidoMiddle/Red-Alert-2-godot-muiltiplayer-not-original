@@ -159,6 +159,18 @@ public static class BuildingLooks
         return top;
     }
 
+    /// <summary>How high the parts reach, in cells.</summary>
+    public static float Top(IReadOnlyList<LookPart> parts)
+    {
+        var top = 0f;
+        foreach (var part in parts)
+        {
+            top = MathF.Max(top, part.Top);
+        }
+
+        return top;
+    }
+
     public static IReadOnlyList<LookPart> Of(string id, int width, int height, bool wall) =>
         Looks.TryGetValue(id, out var parts) ? parts : Block(width, height, wall);
 

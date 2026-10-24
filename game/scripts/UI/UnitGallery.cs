@@ -150,7 +150,8 @@ public partial class UnitGallery : Node3D
             Terrain.BuildingLookView.AddParts(body, parts, Terrain.LookFaction.Civilian, null, 0f, band: false);
             AddChild(new Label3D
             {
-                Text = id.Replace("neutral_", ""),
+                // A building by its name on screen; a prop by its id (the props have no names yet).
+                Text = building ? DisplayNames.Of(id, id, true, key => Tr(key)) : id,
                 Position = at + new Vector3(0, 0.05f, height / 2f + 0.45f),
                 RotationDegrees = new Vector3(-60f, 0, 0),
                 FontSize = 36,

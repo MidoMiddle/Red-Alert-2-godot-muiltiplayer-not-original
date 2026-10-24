@@ -87,6 +87,9 @@ public static class VictorySystem
                 case Unit unit:
                     DeathSystem.Kill(world, unit, EntityId.None, PlayerId.Neutral, DeathCause.Defeat, -1, events);
                     break;
+                case Building building when GarrisonSystem.Civilian(building):
+                    GarrisonSystem.Abandon(world, building);
+                    break;
                 case Building building:
                     DeathSystem.Fall(world, building, DeathCause.Defeat, events);
                     break;
