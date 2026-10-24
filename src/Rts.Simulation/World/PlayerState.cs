@@ -35,6 +35,9 @@ public sealed class PlayerState
     /// </summary>
     public FactionDef Faction { get; internal set; }
 
+    /// <summary>The country of the player (loose ends, stage 5); empty for the whole faction. Set once; not hashed, like the faction.</summary>
+    public string Country { get; internal set; } = "";
+
     public int Credits { get; internal set; }
 
     /// <summary>The tick of the player's last <see cref="Events.UnderAttack"/>, or null before the first (M4 step 13). State: hashed.</summary>

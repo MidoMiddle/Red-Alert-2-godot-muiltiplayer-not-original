@@ -29,14 +29,14 @@ window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[gui]
-
-theme/custom="res://theme/ra2_theme.tres"
-
 [dotnet]
 
 project/assembly_name="Rts.Client"
 project/solution_directory="../"
+
+[gui]
+
+theme/custom="res://theme/ra2_theme.tres"
 
 [rendering]
 

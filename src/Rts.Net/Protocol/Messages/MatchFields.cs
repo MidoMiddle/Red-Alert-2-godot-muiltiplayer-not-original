@@ -24,7 +24,7 @@ internal static class MatchFields
 
     /// <summary>
     /// <c>string mapId | u64 seed | options | u8 playerCount | players | u8 startCount | (i32 x | i32 y) × startCount</c>, a player being
-    /// <c>u8 slot | u8 kind | u8 difficulty | string faction | u8 colour | u8 team | u8 startIndex | i32 x | i32 y</c>.
+    /// <c>u8 slot | u8 kind | u8 difficulty | string faction | string country | u8 colour | u8 team | u8 startIndex | i32 x | i32 y</c>.
     /// </summary>
     public static void WriteSetup(MessageWriter writer, MatchSetup setup)
     {
@@ -38,6 +38,7 @@ internal static class MatchFields
             writer.WriteByte((byte)player.Kind);
             writer.WriteByte((byte)player.Difficulty);
             writer.WriteString(player.Faction);
+            writer.WriteString(player.Country);
             writer.WriteSmall(player.Color, nameof(player.Color));
             writer.WriteSmall(player.Team, nameof(player.Team));
             writer.WriteSmall(player.StartIndex, nameof(player.StartIndex));
@@ -64,10 +65,11 @@ internal static class MatchFields
             var kind = ReadKind(ref reader);
             var difficulty = ReadDifficulty(ref reader);
             var faction = reader.ReadString();
+            var country = reader.ReadString();
             int color = reader.ReadByte();
             int team = reader.ReadByte();
             int startIndex = reader.ReadByte();
-            players.Add(new MatchPlayer(slot, kind, difficulty, faction, color, team, startIndex, ReadCell(ref reader)));
+            players.Add(new MatchPlayer(slot, kind, difficulty, faction, color, team, startIndex, ReadCell(ref reader)) { Country = country });
         }
 
         int startCount = reader.ReadByte();

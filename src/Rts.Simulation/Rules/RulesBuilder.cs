@@ -21,6 +21,7 @@ public sealed class RulesBuilder
     private readonly List<ArmyDef> _armies = [];
     private readonly List<DifficultyDef> _difficulties = [];
     private readonly List<PersonalityDef> _personalities = [];
+    private readonly List<CountryDef> _countries = [];
     private readonly List<EconomyDef> _economies = [];
     private readonly List<ArmorDef> _armors = [];
     private readonly List<WarheadDef> _warheads = [];
@@ -77,6 +78,12 @@ public sealed class RulesBuilder
     public RulesBuilder Add(PersonalityDef definition)
     {
         _personalities.Add(definition);
+        return this;
+    }
+
+    public RulesBuilder Add(CountryDef definition)
+    {
+        _countries.Add(definition);
         return this;
     }
 
@@ -137,7 +144,8 @@ public sealed class RulesBuilder
             Sorted(_buildOrders),
             Sorted(_armies),
             Sorted(_difficulties),
-            Sorted(_personalities));
+            Sorted(_personalities),
+            Sorted(_countries));
     }
 
     private IEnumerable<string> AllIds()
@@ -188,6 +196,11 @@ public sealed class RulesBuilder
         }
 
         foreach (var definition in _factions)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _countries)
         {
             yield return definition.Id;
         }

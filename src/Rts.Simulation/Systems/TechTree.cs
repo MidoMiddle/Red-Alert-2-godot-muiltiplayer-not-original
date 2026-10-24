@@ -51,19 +51,28 @@ public static class TechTree
             for (var i = 0; i < units.Length; i++)
             {
                 // A unit available later (ships, aircraft) waits for its mechanic: never in the tree.
-                units[i] = rules.Units[i].Faction == faction && !rules.Units[i].AvailableLater && !rules.Units[i].Spawned && AllOwned(rules.Units[i].Prerequisites, owned);
+                units[i] = rules.Units[i].Faction == faction && !rules.Units[i].AvailableLater && !rules.Units[i].Spawned && AllOwned(rules.Units[i].Prerequisites, owned)
+                    && Allowed(player.Country, rules.Units[i].Countries, rules.Units[i].ForbiddenCountries);
             }
 
             for (var i = 0; i < buildings.Length; i++)
             {
                 buildings[i] = rules.Buildings[i].Faction == faction && rules.Buildings[i].Id != player.Faction.ConstructionYard
-                    && AllOwned(rules.Buildings[i].Prerequisites, owned);
+                    && AllOwned(rules.Buildings[i].Prerequisites, owned)
+                    && Allowed(player.Country, rules.Buildings[i].Countries, rules.Buildings[i].ForbiddenCountries);
             }
 
             player.SetAvailable(units, buildings);
             CancelWithoutFactory(world, player, events);
         }
     }
+
+    /// <summary>
+    /// Whether a player of <paramref name="country"/> may have what only <paramref name="countries"/> have and
+    /// <paramref name="forbidden"/> may not (loose ends, stage 5); a player of no country — a bot — has the whole faction.
+    /// </summary>
+    public static bool Allowed(string country, System.Collections.Immutable.ImmutableArray<string> countries, System.Collections.Immutable.ImmutableArray<string> forbidden) =>
+        country.Length == 0 || ((countries.IsDefaultOrEmpty || countries.Contains(country)) && (forbidden.IsDefaultOrEmpty || !forbidden.Contains(country)));
 
     /// <summary>
     /// The queue of a category for which the player has no factory left — none standing, ready or growing — is cancelled, a ready

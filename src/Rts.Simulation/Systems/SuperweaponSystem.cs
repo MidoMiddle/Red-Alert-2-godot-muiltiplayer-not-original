@@ -58,10 +58,10 @@ public static class SuperweaponSystem
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is Building { IsAlive: true, IsReady: true, ChargeLeft: > 0 } building && KindOf(building) != SuperweaponKind.None
+            if (entity is Building { IsAlive: true, IsReady: true, ChargeLeft: > 0 } building && KindOf(world, building) != SuperweaponKind.None
                 && Defenses.IsOnline(world, building) && --building.ChargeLeft == 0)
             {
-                events?.Add(new SuperweaponReady(world.CurrentTick, building.Id, building.Owner, KindOf(building)));
+                events?.Add(new SuperweaponReady(world.CurrentTick, building.Id, building.Owner, KindOf(world, building)));
             }
         }
 
@@ -103,13 +103,13 @@ public static class SuperweaponSystem
     internal static bool Fire(GameWorld world, SuperweaponCommand command, List<SimEvent>? events)
     {
         if (!world.TryGet(command.Building, out var entity) || entity is not Building { IsAlive: true, IsReady: true, ChargeLeft: 0 } building
-            || building.Owner != command.Player || KindOf(building) == SuperweaponKind.None || !Defenses.IsOnline(world, building)
+            || building.Owner != command.Player || KindOf(world, building) == SuperweaponKind.None || !Defenses.IsOnline(world, building)
             || !world.Map.Contains(command.Target) || !world.Map.Contains(command.Second))
         {
             return false;
         }
 
-        var kind = KindOf(building);
+        var kind = KindOf(world, building);
         var weapon = building.Def is { } def ? world.Rules.Database.IndexOfWeapon(def.SuperweaponWeapon) : -1;
         switch (kind)
         {
@@ -140,16 +140,27 @@ public static class SuperweaponSystem
         return true;
     }
 
-    /// <summary>The superweapon of a building: its definition's, a taken building of the map's by its type; none for the neutral side.</summary>
-    public static SuperweaponKind KindOf(Building building) =>
-        building.Def is { } def ? def.Superweapon : building.Owner.IsNeutral ? SuperweaponKind.None : building.Type.Superweapon;
+    /// <summary>
+    /// The superweapon of a building: its definition's — if its owner's country may have it (the USA's paradrop) — a taken building of
+    /// the map's by its type; none for the neutral side.
+    /// </summary>
+    public static SuperweaponKind KindOf(GameWorld world, Building building) =>
+        building.Owner.IsNeutral ? SuperweaponKind.None
+        : building.Def is not { } def ? building.Type.Superweapon
+        : def.SuperweaponCountries.IsDefaultOrEmpty || def.SuperweaponCountries.Contains(world.Player(building.Owner).Country) ? def.Superweapon
+        : SuperweaponKind.None;
 
     /// <summary>The ticks the superweapon of a building charges.</summary>
     public static int RechargeOf(Building building) => building.Def is { } def ? def.Recharge : building.Type.Recharge;
 
-    // What a paradrop drops: the soldiers of the owner's faction; null when the faction has none.
+    // What a paradrop drops: the building's own soldiers (the USA's air command), or those of the owner's faction; null without.
     private static (UnitType Type, int Count)? Cargo(GameWorld world, Building building)
     {
+        if (building.Def is { Paradrop.Length: > 0 } def)
+        {
+            return UnitTypes.TryGetById(def.Paradrop, out var own) ? (own, def.ParadropCount) : null;
+        }
+
         var faction = world.Player(building.Owner).Faction;
         return faction.Paradrop.Length > 0 && UnitTypes.TryGetById(faction.Paradrop, out var type) ? (type, faction.ParadropCount) : null;
     }

@@ -151,4 +151,28 @@ public sealed class SkirmishConfigTests
         Assert.True(fog.ToSetup(FourCorners(), "union", 5).Options.FogOfWar);
         Assert.False(config.ToSetup(FourCorners(), "union", 5).Options.FogOfWar);
     }
+
+    [Fact]
+    public void The_person_plays_its_country_or_one_drawn_from_its_faction_and_a_bot_none()
+    {
+        var map = FourCorners();
+        var countries = GameDataFiles.Rules.Database.Countries;
+        var config = SkirmishConfig.For(4);
+        config = config.With(0, config.Slots[0] with { Faction = "alliance", Country = "france" });
+        var setup = config.ToSetup(map, "union", seed: 3, ["union", "alliance"], countries);
+        var grid = map.ToMapGrid();
+
+        Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
+        Assert.Equal("france", setup.Players[0].Country);
+        Assert.Equal("", setup.Players[1].Country);
+
+        // Random, or a country of another faction: one of the faction played, from the seed.
+        var random = config.With(0, config.Slots[0] with { Faction = "union", Country = "france" });
+        var drawn = Enumerable.Range(1, 40).Select(seed => random.ToSetup(map, "union", (ulong)seed, null, countries).Players[0].Country).Distinct().Order();
+        Assert.Equal(["cuba", "iraq", "libya", "russia"], drawn);
+
+        // Kept with the config; a config of before plays a random one.
+        Assert.Equal("france", SkirmishConfig.Load(config.Save())!.Slots[0].Country);
+        Assert.Equal(SkirmishConfig.RandomCountry, SkirmishConfig.Load("slot=human,1,random,0,0,-1,alliance\nslot=bot,1,random,1,0,-1\n")!.Slots[0].Country);
+    }
 }

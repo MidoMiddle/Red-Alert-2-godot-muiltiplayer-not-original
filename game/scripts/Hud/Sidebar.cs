@@ -170,7 +170,7 @@ public partial class Sidebar : Control
         foreach (var entity in world.Entities)
         {
             if (entity is not Building { IsAlive: true, IsReady: true } building || building.Owner != player
-                || Rts.Simulation.Systems.SuperweaponSystem.KindOf(building) == Rts.Simulation.Rules.SuperweaponKind.None)
+                || Rts.Simulation.Systems.SuperweaponSystem.KindOf(world, building) == Rts.Simulation.Rules.SuperweaponKind.None)
             {
                 continue;
             }

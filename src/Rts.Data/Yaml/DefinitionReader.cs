@@ -15,14 +15,14 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty", "personality"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty", "personality", "country"];
 
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
-        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -30,6 +30,7 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
         "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
+        "countries", "forbidden_countries", "superweapon_countries", "paradrop", "paradrop_count",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -46,6 +47,8 @@ internal static class DefinitionReader
     private static readonly string[] LocomotorKeys = ["name", "slope"];
 
     private static readonly string[] TerrainKeys = ["name", "code", "buildable", "speed"];
+
+    private static readonly string[] CountryKeys = ["name", "faction"];
 
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester", "starting_infantry", "paradrop", "paradrop_count", "default"];
 
@@ -101,6 +104,8 @@ internal static class DefinitionReader
             Placement = fields.Required("placement", PlacementOf, UnitPlacement.Cell),
             Turret = fields.Optional("turret", Scalars.Flag, false),
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
+            Countries = fields.Optional("countries", Scalars.IdList, ImmutableArray<string>.Empty),
+            ForbiddenCountries = fields.Optional("forbidden_countries", Scalars.IdList, ImmutableArray<string>.Empty),
             Primary = fields.Optional("primary", Scalars.Id, ""),
             Secondary = fields.Optional("secondary", Scalars.Id, ""),
             Threat = fields.Optional("threat", Scalars.Int, 0),
@@ -171,6 +176,8 @@ internal static class DefinitionReader
             Threat = fields.Optional("threat", Scalars.Int, 0),
             Produces = fields.Optional("produces", CategoriesOf, ImmutableArray<ProductionCategory>.Empty),
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
+            Countries = fields.Optional("countries", Scalars.IdList, ImmutableArray<string>.Empty),
+            ForbiddenCountries = fields.Optional("forbidden_countries", Scalars.IdList, ImmutableArray<string>.Empty),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             AbilityLater = fields.Optional("ability_later", Scalars.Flag, false),
@@ -192,6 +199,9 @@ internal static class DefinitionReader
             Superweapon = fields.Optional("superweapon", SuperweaponOf, SuperweaponKind.None),
             Recharge = fields.Optional("recharge", Scalars.Ticks, 0),
             SuperweaponWeapon = fields.Optional("superweapon_weapon", Scalars.Id, ""),
+            SuperweaponCountries = fields.Optional("superweapon_countries", Scalars.IdList, ImmutableArray<string>.Empty),
+            Paradrop = fields.Optional("paradrop", Scalars.Id, ""),
+            ParadropCount = fields.Optional("paradrop_count", Scalars.Int, 0),
             BuildLimit = fields.Optional("build_limit", Scalars.Int, 0),
         };
     }
@@ -294,6 +304,17 @@ internal static class DefinitionReader
             Code = fields.Required("code", Scalars.Code, ' '),
             Buildable = fields.Optional("buildable", Scalars.Flag, false),
             Speed = fields.Required("speed", Scalars.Speeds, ImmutableArray<LocomotorSpeed>.Empty),
+        };
+    }
+
+    public static CountryDef Country(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, CountryKeys);
+        return new CountryDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            Faction = fields.Required("faction", Scalars.Id, ""),
         };
     }
 
@@ -653,8 +674,9 @@ internal static class DefinitionReader
         };
 
     private static SuperweaponKind SuperweaponOf(string fileName, YamlNode node) =>
-        Scalars.Choice(fileName, node, "curtain", "missile", "gate", "storm") switch
+        Scalars.Choice(fileName, node, "curtain", "missile", "gate", "storm", "paradrop") switch
         {
+            "paradrop" => SuperweaponKind.Paradrop,
             "curtain" => SuperweaponKind.Curtain,
             "missile" => SuperweaponKind.Missile,
             "gate" => SuperweaponKind.Gate,

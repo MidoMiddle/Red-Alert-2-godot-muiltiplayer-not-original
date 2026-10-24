@@ -24,12 +24,12 @@ public partial class SkirmishSetup : Control
 {
     private const float ActionWidth = 360f;
     private const float ActionHeight = 56f;
-    private const float FieldWidth = 156f;
+    private const float FieldWidth = 128f;
     private const float OptionWidth = 240f;
     private const float FieldHeight = 48f;
-    private const int PlayerColumns = 7;
+    private const int PlayerColumns = 8;
     private const int OptionColumns = 4;
-    private const int PlayerSeparation = 16;
+    private const int PlayerSeparation = 10;
     private const int OptionSeparation = 24;
     private const int RowSeparation = 12;
     private const int SwatchSize = 16;
@@ -253,7 +253,7 @@ public partial class SkirmishSetup : Control
 
         foreach (var key in new[]
         {
-            "UI_SKIRMISH_WHO", "UI_SKIRMISH_DIFFICULTY", "UI_SKIRMISH_PERSONALITY", "UI_SKIRMISH_FACTION",
+            "UI_SKIRMISH_WHO", "UI_SKIRMISH_DIFFICULTY", "UI_SKIRMISH_PERSONALITY", "UI_SKIRMISH_FACTION", "UI_SKIRMISH_COUNTRY",
             "UI_SKIRMISH_COLOR", "UI_SKIRMISH_TEAM", "UI_SKIRMISH_START_POSITION",
         })
         {
@@ -329,19 +329,24 @@ public partial class SkirmishSetup : Control
             start.ItemSelected += item => Apply(_config.WithStart(row, item == 0 ? SkirmishConfig.RandomStart : (int)item - 1));
 
             var faction = FactionOption(row);
-            faction.ItemSelected += item => Change(row, slot => slot with { Faction = FactionIds[(int)item] });
+            faction.ItemSelected += item => Change(row, slot => slot with { Faction = FactionIds[(int)item], Country = SkirmishConfig.RandomCountry });
+
+            // The country (loose ends, stage 5): its items follow the faction of the row (Refresh).
+            var country = Option($"Country{row}");
+            var countryRow = row;
+            country.ItemSelected += item => Change(countryRow, slot => slot with { Country = CountryChoices(slot)[(int)item] });
 
             var placeholder = row == 0;
             var controls = new Control[]
             {
-                who, placeholder ? new Control() : level, placeholder ? new Control() : personality, faction, color, team, start,
+                who, placeholder ? new Control() : level, placeholder ? new Control() : personality, faction, country, color, team, start,
             };
             foreach (var control in controls)
             {
                 _players.AddChild(control);
             }
 
-            _rows.Add(new PlayerRow(controls, who as OptionButton, level, personality, faction, color, team, start));
+            _rows.Add(new PlayerRow(controls, who as OptionButton, level, personality, faction, country, color, team, start));
         }
 
         Refresh();
@@ -423,6 +428,7 @@ public partial class SkirmishSetup : Control
             row.Color.Selected = slot.Color;
             row.Team.Selected = slot.Team;
             row.Faction.Selected = Math.Max(0, Array.IndexOf(FactionIds, slot.Faction.Length == 0 ? DataFiles.Current.Rules.DefaultFaction.Id : slot.Faction));
+            RefreshCountry(row.Country, slot);
             row.Start.Selected = slot.Start == SkirmishConfig.RandomStart ? 0 : slot.Start + 1;
             foreach (var control in new Control[] { row.Color, row.Team, row.Start })
             {
@@ -488,7 +494,7 @@ public partial class SkirmishSetup : Control
         }
 
         SaveConfig();
-        var setup = _config.ToSetup(entry.Map, DataFiles.Current.Rules.DefaultFaction.Id, MatchSetups.NewSeed(), Playable());
+        var setup = _config.ToSetup(entry.Map, DataFiles.Current.Rules.DefaultFaction.Id, MatchSetups.NewSeed(), Playable(), DataFiles.Current.Rules.Database.Countries);
         SceneRouter.Instance?.GoTo(MatchScene, new Dictionary<string, object>
         {
             [SimulationHost.MapArgument] = file,
@@ -544,6 +550,41 @@ public partial class SkirmishSetup : Control
         }
 
         return option;
+    }
+
+    /// <summary>
+    /// The countries a row may pick (loose ends, stage 5): Random and those of its faction for the person; none for a bot, which plays
+    /// the whole faction, or for a random faction.
+    /// </summary>
+    private static List<string> CountryChoices(SkirmishSlot slot)
+    {
+        var faction = slot.Faction.Length == 0 ? DataFiles.Current.Rules.DefaultFaction.Id : slot.Faction;
+        var countries = DataFiles.Current.Rules.Database.Countries.Where(country => country.Faction == faction).Select(country => country.Id).ToList();
+        return slot.Kind != SlotKind.Human || countries.Count == 0 ? [] : [SkirmishConfig.RandomCountry, .. countries];
+    }
+
+    /// <summary>The items of the country of a row and the one it has; a row without a choice shows a dash.</summary>
+    private void RefreshCountry(OptionButton option, SkirmishSlot slot)
+    {
+        var choices = CountryChoices(slot);
+        option.Clear();
+        if (choices.Count == 0)
+        {
+            option.AddItem(Tr("UI_SKIRMISH_COUNTRY_DASH"));
+            option.Disabled = true;
+            option.TooltipText = Tr("UI_SKIRMISH_COUNTRY_NONE");
+            return;
+        }
+
+        foreach (var id in choices)
+        {
+            option.AddItem(id == SkirmishConfig.RandomCountry ? Tr("UI_RANDOM")
+                : DataFiles.Current.Rules.Database.TryGetCountry(id, out var country) ? country.Name : id);
+        }
+
+        option.Disabled = false;
+        option.TooltipText = Tr("UI_SKIRMISH_COUNTRY_HINT");
+        option.Selected = Math.Max(0, choices.IndexOf(slot.Country));
     }
 
     /// <summary>The factions the screen offers that the data has: Random draws among them.</summary>
@@ -616,6 +657,6 @@ public partial class SkirmishSetup : Control
 
     /// <summary>The controls of a row of the players table, in the order of the columns, and those that show its slot.</summary>
     private sealed record PlayerRow(
-        Control[] Controls, OptionButton? Who, OptionButton Level, OptionButton Personality, OptionButton Faction, OptionButton Color,
-        OptionButton Team, OptionButton Start);
+        Control[] Controls, OptionButton? Who, OptionButton Level, OptionButton Personality, OptionButton Faction, OptionButton Country,
+        OptionButton Color, OptionButton Team, OptionButton Start);
 }

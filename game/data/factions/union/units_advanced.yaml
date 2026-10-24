@@ -65,6 +65,7 @@ terrorist:  # runs into its target and blows up, and blows up when killed (stage
   primary: terror_bomb
   death_weapon: terror_bomb
   passive: true
+  countries: [cuba]  # RA2 RequiredHouses (loose ends, stage 5)
 
 desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the ground round it (stage 3b)
   kind: unit
@@ -83,6 +84,7 @@ desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the 
   deploy_weapon: toxin_eruption_gun
   radiation_immune: true
   ifv_weapon: ifv_toxin_beam
+  countries: [iraq]  # RA2 RequiredHouses (loose ends, stage 5)
 
 rocket_artillery:  # a rocket from afar, only when ordered; anti-air can bring it down (stage 3c)
   kind: unit
@@ -153,6 +155,7 @@ demolition_truck:  # drives into its target and blows up, only when ordered; blo
   primary: demolition_truck_bomb
   death_weapon: demolition_truck_bomb
   passive: true
+  countries: [libya]  # RA2 RequiredHouses (loose ends, stage 5)
 
 kirov_airship:  # a slow bomber: bombs straight down, and falls on what is under it when brought down (stage 3f)
   kind: unit

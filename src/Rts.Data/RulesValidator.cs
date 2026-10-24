@@ -64,6 +64,11 @@ internal static class RulesValidator
             checker.Faction(faction);
         }
 
+        foreach (var country in rules.Countries)
+        {
+            checker.Country(country);
+        }
+
         foreach (var economy in rules.Economies)
         {
             checker.Economy(economy);
@@ -153,6 +158,8 @@ internal static class RulesValidator
                 Positive(unit.Id, "unload_rate", unit.UnloadRate);
             }
             FactionOf(unit.Id, unit.Faction);
+            CountriesOf(unit.Id, "countries", unit.Countries);
+            CountriesOf(unit.Id, "forbidden_countries", unit.ForbiddenCountries);
             if (!rules.TryGetLocomotor(unit.Locomotor, out _))
             {
                 Error(unit.Id, "locomotor", Missing(unit.Id, "locomotor", unit.Locomotor));
@@ -247,6 +254,13 @@ internal static class RulesValidator
             }
 
             FactionOf(building.Id, building.Faction);
+            CountriesOf(building.Id, "countries", building.Countries);
+            CountriesOf(building.Id, "forbidden_countries", building.ForbiddenCountries);
+            CountriesOf(building.Id, "superweapon_countries", building.SuperweaponCountries);
+            if (building.Paradrop.Length > 0 && !rules.TryGetUnit(building.Paradrop, out _))
+            {
+                Error(building.Id, "paradrop", Missing(building.Id, "unit", building.Paradrop));
+            }
             Prerequisites(building.Id, building.Prerequisites);
             ArmorOf(building.Id, building.Armor);
             WeaponOf(building.Id, "primary", building.Primary);
@@ -501,6 +515,21 @@ internal static class RulesValidator
                 if (!codes.TryAdd(terrain.Code, terrain.Id))
                 {
                     Error(terrain.Id, "code", $"code '{terrain.Code}' of '{terrain.Id}' is already used by '{codes[terrain.Code]}'");
+                }
+            }
+        }
+
+        /// <summary>A country belongs to a faction of the data (loose ends, stage 5).</summary>
+        public void Country(CountryDef country) => FactionOf(country.Id, country.Faction);
+
+        /// <summary>The countries a unit or building names are countries of the data.</summary>
+        private void CountriesOf(string id, string key, ImmutableArray<string> countries)
+        {
+            foreach (var country in countries)
+            {
+                if (!rules.TryGetCountry(country, out _))
+                {
+                    Error(id, key, Missing(id, key, country));
                 }
             }
         }

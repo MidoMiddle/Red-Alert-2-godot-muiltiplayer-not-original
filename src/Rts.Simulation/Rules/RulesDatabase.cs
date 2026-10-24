@@ -23,7 +23,8 @@ public sealed class RulesDatabase
         ImmutableArray<BuildOrderDef> buildOrders,
         ImmutableArray<ArmyDef> armies,
         ImmutableArray<DifficultyDef> difficulties,
-        ImmutableArray<PersonalityDef> personalities)
+        ImmutableArray<PersonalityDef> personalities,
+        ImmutableArray<CountryDef> countries = default)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -39,6 +40,7 @@ public sealed class RulesDatabase
         Armies = armies;
         Difficulties = difficulties;
         Personalities = personalities;
+        Countries = countries.IsDefault ? ImmutableArray<CountryDef>.Empty : countries;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -75,6 +77,9 @@ public sealed class RulesDatabase
     /// <summary>The personalities of the bots (M8 step 1).</summary>
     public ImmutableArray<PersonalityDef> Personalities { get; }
 
+    /// <summary>The countries of the factions (loose ends, stage 5).</summary>
+    public ImmutableArray<CountryDef> Countries { get; }
+
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
 
     public bool TryGetBuildOrder(string id, out BuildOrderDef definition) => TryFind(BuildOrders, id, out definition);
@@ -94,6 +99,8 @@ public sealed class RulesDatabase
     public bool TryGetBuilding(string id, out BuildingDef definition) => TryFind(Buildings, id, out definition);
 
     public bool TryGetFaction(string id, out FactionDef definition) => TryFind(Factions, id, out definition);
+
+    public bool TryGetCountry(string id, out CountryDef definition) => TryFind(Countries, id, out definition);
 
     public bool TryGetEconomy(string id, out EconomyDef definition) => TryFind(Economies, id, out definition);
 

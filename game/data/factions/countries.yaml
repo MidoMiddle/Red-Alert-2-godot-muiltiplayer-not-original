@@ -1,0 +1,47 @@
+# The countries of RA2 (loose ends, stage 5): a person picks one on the skirmish screen; what only it has, or may not have, is said on
+# the units and buildings (countries, forbidden_countries). A bot plays the whole faction. The passive bonuses of RA2 were cut out of
+# its rules and are not done.
+usa:
+  kind: country
+  name: USA
+  faction: alliance
+
+korea:
+  kind: country
+  name: Korea
+  faction: alliance
+
+france:
+  kind: country
+  name: France
+  faction: alliance
+
+germany:
+  kind: country
+  name: Germany
+  faction: alliance
+
+britain:
+  kind: country
+  name: Great Britain
+  faction: alliance
+
+russia:
+  kind: country
+  name: Russia
+  faction: union
+
+libya:
+  kind: country
+  name: Libya
+  faction: union
+
+iraq:
+  kind: country
+  name: Iraq
+  faction: union
+
+cuba:
+  kind: country
+  name: Cuba
+  faction: union

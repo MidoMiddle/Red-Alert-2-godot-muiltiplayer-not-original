@@ -341,7 +341,7 @@ public sealed class StateHasherTests
         "<VeteranInfantry>k__BackingField", "<VeteranVehicles>k__BackingField",
         "<Modifiers>k__BackingField", "<IncomeCarry>k__BackingField",
         // Fixed by the order of the players and the rules of the match.
-        "<Id>k__BackingField", "<Faction>k__BackingField",
+        "<Id>k__BackingField", "<Faction>k__BackingField", "<Country>k__BackingField",
         // Derived from the buildings by PowerSystem and TechTree (M3 step 5).
         "<BuildingList>k__BackingField", "<PowerOutput>k__BackingField", "<PowerDrain>k__BackingField", "<LowPower>k__BackingField", "<RobotsOnline>k__BackingField",
         "_units", "_buildings",

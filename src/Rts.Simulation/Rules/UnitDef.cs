@@ -50,6 +50,12 @@ public sealed record UnitDef : IDefinition
 
     public ImmutableArray<string> Prerequisites { get; init; } = ImmutableArray<string>.Empty;
 
+    /// <summary>The countries that alone have it (RA2 <c>RequiredHouses</c>; loose ends, stage 5); empty for every country.</summary>
+    public ImmutableArray<string> Countries { get; init; } = ImmutableArray<string>.Empty;
+
+    /// <summary>The countries that may not have it (RA2 <c>ForbiddenHouses</c>).</summary>
+    public ImmutableArray<string> ForbiddenCountries { get; init; } = ImmutableArray<string>.Empty;
+
     /// <summary>Credits of ore the unit carries when full (M3 step 10); 0 for a unit that does not harvest.</summary>
     public int HarvestCapacity { get; init; }
 

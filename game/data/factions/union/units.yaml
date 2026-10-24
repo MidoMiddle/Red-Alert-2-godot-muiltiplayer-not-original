@@ -113,3 +113,4 @@ tesla_tank:  # Tesla Tank
   speed: 36
   sight: 8
   prerequisites: [war_factory, tech_center]
+  countries: [russia]  # RA2 RequiredHouses (loose ends, stage 5)

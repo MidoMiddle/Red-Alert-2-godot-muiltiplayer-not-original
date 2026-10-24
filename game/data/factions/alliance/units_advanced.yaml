@@ -115,6 +115,7 @@ alliance_sniper:  # long-range anti-infantry (stage 3a)
   prerequisites: [alliance_barracks, alliance_air_force_command]
   primary: alliance_sniper_rifle
   ifv_weapon: ifv_sniper
+  countries: [britain]  # RA2 RequiredHouses (loose ends, stage 5)
 
 alliance_ifv:  # carries one soldier and fires its weapon, its own missiles when empty (stage 3d)
   kind: unit
@@ -181,6 +182,7 @@ alliance_tank_destroyer:  # anti-tank gun, aimed with the hull (stage 3c)
   turret: false
   prerequisites: [alliance_war_factory, alliance_air_force_command]
   primary: alliance_sabot
+  countries: [germany]  # RA2 RequiredHouses (loose ends, stage 5)
 
 alliance_nighthawk:  # carries five soldiers, a machine gun at the ground when ordered (stage 3f)
   kind: unit
@@ -224,6 +226,7 @@ alliance_harrier:  # one volley, only when ordered, then back to the air force c
   primary: alliance_harrier_missiles
   ammo: 1
   passive: true
+  forbidden_countries: [korea]  # RA2 ForbiddenHouses: Korea flies the Black Eagle instead
 
 alliance_black_eagle:  # the Strike Jet's heavier sister: one volley, then back to rearm (stage 3f)
   kind: unit
@@ -245,6 +248,7 @@ alliance_black_eagle:  # the Strike Jet's heavier sister: one volley, then back 
   primary: alliance_black_eagle_missiles
   ammo: 1
   passive: true
+  countries: [korea]  # RA2 RequiredHouses (loose ends, stage 5)
 
 alliance_amphibious_transport:  # carries 12 slots of units over water and land (stage 3d)
   kind: unit

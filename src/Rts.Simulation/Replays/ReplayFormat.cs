@@ -37,11 +37,12 @@ namespace Rts.Simulation.Replays;
 /// adds every start of the map after the players: u8 count, then u16 x | u16 y each; v19 (M5 step 10) command format v10 (Surrender);
 /// v20 (M8 step 13) adds the personality of every player after its difficulty: u16 length + UTF-8 id, or <c>random</c>; v21 (the fog
 /// of war, an option of the skirmish screen) adds u8 fogOfWar after the game speed; v22 (stage 2e) command format v11 (Garrison,
-/// Evacuate); v23 (stage 2d) command format v12 (Superweapon).
+/// Evacuate); v23 (stage 2d) command format v12 (Superweapon); v24 (loose ends, stage 5) adds the country of every player after its
+/// faction: u16 length + UTF-8 id, empty for the whole faction.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 23;
+    public const ushort FormatVersion = 24;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -353,6 +354,7 @@ public static class ReplayFormat
             bytes.Add((byte)player.Difficulty);
             AddText(bytes, player.Personality);
             AddText(bytes, player.Faction);
+            AddText(bytes, player.Country);
             bytes.Add((byte)player.Color);
             bytes.Add((byte)player.Team);
             bytes.Add((byte)player.StartIndex);
@@ -416,12 +418,14 @@ public static class ReplayFormat
 
             var personality = ReadText(source, ref offset);
             var faction = ReadText(source, ref offset);
+            var country = ReadText(source, ref offset);
             Require(source[offset..], 7);
             players.Add(new MatchPlayer(
                 slot, (PlayerKind)kind, (AiDifficulty)difficulty, faction, source[offset], source[offset + 1], source[offset + 2],
                 new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 3)..]), BinaryPrimitives.ReadUInt16LittleEndian(source[(offset + 5)..])))
             {
                 Personality = personality,
+                Country = country,
             });
             offset += 7;
         }

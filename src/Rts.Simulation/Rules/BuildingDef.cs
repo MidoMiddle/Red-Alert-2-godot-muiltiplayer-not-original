@@ -85,6 +85,21 @@ public sealed record BuildingDef : IDefinition
 
     public ImmutableArray<string> Prerequisites { get; init; } = ImmutableArray<string>.Empty;
 
+    /// <summary>The countries that alone have it (RA2 <c>RequiredHouses</c>; loose ends, stage 5); empty for every country.</summary>
+    public ImmutableArray<string> Countries { get; init; } = ImmutableArray<string>.Empty;
+
+    /// <summary>The countries that may not have it (RA2 <c>ForbiddenHouses</c>).</summary>
+    public ImmutableArray<string> ForbiddenCountries { get; init; } = ImmutableArray<string>.Empty;
+
+    /// <summary>The countries whose players its superweapon works for (the USA's paradrop of the air command); empty for every one.</summary>
+    public ImmutableArray<string> SuperweaponCountries { get; init; } = ImmutableArray<string>.Empty;
+
+    /// <summary>The soldier its paradrop drops (<see cref="SuperweaponKind.Paradrop"/>); empty: the owner's faction's.</summary>
+    public string Paradrop { get; init; } = "";
+
+    /// <summary>How many of <see cref="Paradrop"/> it drops.</summary>
+    public int ParadropCount { get; init; }
+
     /// <summary>Path of the model, relative to the assets folder; the simulation does not use it.</summary>
     public string Model { get; init; } = "";
 

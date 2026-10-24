@@ -21,6 +21,7 @@ internal static class MatchStart
             world.Rules.Database.TryGetFaction(player.Faction, out var faction);
             var state = world.Player(player.Id);
             state.Faction = faction;
+            state.Country = player.Country;
             if (player.Kind == PlayerKind.Ai && player.Difficulty is >= AiDifficulty.Medium and <= AiDifficulty.Brutal
                 && world.Rules.Database.TryGetDifficulty(Rules.DifficultyDef.IdOf(player.Difficulty), out var level))
             {

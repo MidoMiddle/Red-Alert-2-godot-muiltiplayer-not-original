@@ -388,3 +388,7 @@ UI_EVA_BUILDING_LOST,Our building has been captured
 UI_SIDEBAR_PARADROP,Paradrop
 UI_EVA_BRIDGE_REPAIRED,Bridge repaired
 UI_EVA_UNIT_PROMOTED,Unit promoted
+UI_SKIRMISH_COUNTRY,Country
+UI_SKIRMISH_COUNTRY_HINT,Each country has a unit or building of its own; the USA drops paratroopers from its air force command
+UI_SKIRMISH_COUNTRY_NONE,A bot plays the whole faction
+UI_SKIRMISH_COUNTRY_DASH,—

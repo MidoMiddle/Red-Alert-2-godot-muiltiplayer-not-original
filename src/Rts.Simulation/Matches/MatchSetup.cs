@@ -57,6 +57,12 @@ public sealed record MatchPlayer(
     /// a random one is drawn again the same way. A person's is not used.
     /// </summary>
     public string Personality { get; init; } = DefaultPersonality;
+
+    /// <summary>
+    /// The country the player plays (loose ends, stage 5): one of its faction in the data, or empty for the whole faction — every bot, as
+    /// its build orders want.
+    /// </summary>
+    public string Country { get; init; } = "";
 }
 
 /// <summary>
@@ -137,6 +143,11 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
             if (!rules.TryGetFaction(player.Faction, out _))
             {
                 return $"{player.Id} plays the faction '{player.Faction}', which is not in the data";
+            }
+
+            if (player.Country.Length > 0 && (!rules.TryGetCountry(player.Country, out var country) || country.Faction != player.Faction))
+            {
+                return $"{player.Id} plays the country '{player.Country}', which is not one of the faction '{player.Faction}'";
             }
 
             // M8 step 13: a personality of the data, or random; data without personalities plays every bot «Balanced» of the code.

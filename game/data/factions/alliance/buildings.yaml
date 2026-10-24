@@ -95,6 +95,11 @@ alliance_air_force_command:  # radar; builds the aircraft (stage 2b)
   spy_effect: reset_map
   rearms_aircraft: true
   aircraft_docks: 4
+  superweapon: paradrop  # the USA's paradrop (RA2 AmerParaDrop): 8 riflemen every 4 minutes, for the USA alone
+  recharge: 240s
+  paradrop: alliance_rifleman
+  paradrop_count: 8
+  superweapon_countries: [usa]
 
 alliance_naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   kind: building
@@ -308,6 +313,7 @@ alliance_grand_cannon:  # long-range artillery defence
   footprint: [2, 2]
   power: -100
   prerequisites: [alliance_air_force_command]
+  countries: [france]  # RA2 RequiredHouses (loose ends, stage 5)
 
 alliance_wall:  # wall; placed by dragging
   kind: building

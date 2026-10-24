@@ -79,6 +79,8 @@ public static class DataHasher
             hash.Add(unit.HarvestTime);
             hash.Add(unit.UnloadRate);
             Add(hash, unit.Prerequisites);
+            Add(hash, unit.Countries);
+            Add(hash, unit.ForbiddenCountries);
             Add(hash, unit.Primary);
             Add(hash, unit.Secondary);
             hash.Add(unit.TurretTurnRate.HasValue);
@@ -154,6 +156,11 @@ public static class DataHasher
             }
 
             Add(hash, building.Prerequisites);
+            Add(hash, building.Countries);
+            Add(hash, building.ForbiddenCountries);
+            Add(hash, building.SuperweaponCountries);
+            Add(hash, building.Paradrop);
+            hash.Add(building.ParadropCount);
             Add(hash, building.Armor);
             Add(hash, building.Primary);
             hash.Add(building.Threat);
@@ -229,6 +236,14 @@ public static class DataHasher
             {
                 hash.Add(difficulty.Values.TryGetValue(key, out var value) ? value : int.MinValue);
             }
+        }
+
+        // The countries (loose ends, stage 5).
+        hash.Add(rules.Countries.Length);
+        foreach (var country in rules.Countries)
+        {
+            Add(hash, country.Id);
+            Add(hash, country.Faction);
         }
 
         // The personalities of the bots (M8 step 1); the name is the screen's.

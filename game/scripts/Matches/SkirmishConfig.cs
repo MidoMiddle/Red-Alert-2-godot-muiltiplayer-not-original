@@ -29,6 +29,12 @@ public sealed record SkirmishSlot(SlotKind Kind, AiDifficulty Difficulty, string
     /// The faction of the row: an id of the data, <see cref="SkirmishConfig.RandomFaction"/>, or empty — the faction played by default.
     /// </summary>
     public string Faction { get; init; } = "";
+
+    /// <summary>
+    /// The country of the person's row (loose ends, stage 5): an id of the data or <see cref="SkirmishConfig.RandomCountry"/>, drawn among
+    /// the countries of the faction played; a bot plays none — the whole faction.
+    /// </summary>
+    public string Country { get; init; } = SkirmishConfig.RandomCountry;
 }
 
 /// <summary>
@@ -45,6 +51,9 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
 
     /// <summary>A faction drawn from the seed of the match among the playable ones.</summary>
     public const string RandomFaction = "random";
+
+    /// <summary>A country drawn from the seed of the match among those of the faction played.</summary>
+    public const string RandomCountry = "random";
     public const int NoTeam = 0;
     public const int MaxTeam = 4;
 
@@ -62,6 +71,9 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
 
     // And one for the random factions.
     private const ulong RandomFactionStream = 0x4641_4354_0000;
+
+    // And one for the random countries.
+    private const ulong RandomCountryStream = 0x434F_554E_5400;
 
     /// <summary>
     /// The rows for a map of <paramref name="starts"/> starts: the person, then a «Medium» bot of a random personality, the others closed;
@@ -154,9 +166,11 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     /// <summary>
     /// The match of these rows on <paramref name="map"/>: the players in the order of the rows, slots 1, 2, …; a row plays its faction,
     /// <paramref name="faction"/> when it has none, and a random one of <paramref name="playable"/> drawn from <paramref name="seed"/>; the
-    /// random starts are drawn from the seed too, among those no row has taken.
+    /// random starts are drawn from the seed too, among those no row has taken. The person plays its country of
+    /// <paramref name="countries"/> if it is one of the faction played, else one drawn among them (loose ends, stage 5); a bot plays none.
     /// </summary>
-    public MatchSetup ToSetup(MapDefinition map, string faction, ulong seed, IReadOnlyList<string>? playable = null)
+    public MatchSetup ToSetup(
+        MapDefinition map, string faction, ulong seed, IReadOnlyList<string>? playable = null, IReadOnlyList<Rts.Simulation.Rules.CountryDef>? countries = null)
     {
         if (!CanStart)
         {
@@ -174,6 +188,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
             .ToList();
         var random = new DeterministicRandom(seed, RandomStartStream);
         var randomFaction = new DeterministicRandom(seed, RandomFactionStream);
+        var randomCountry = new DeterministicRandom(seed, RandomCountryStream);
         var choices = playable is { Count: > 0 } ? playable : [faction];
         var players = ImmutableArray.CreateBuilder<MatchPlayer>(playing.Count);
         foreach (var (slot, row) in playing)
@@ -194,6 +209,10 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
                 RandomFaction => choices[randomFaction.NextInt(choices.Count)],
                 var chosen => chosen,
             };
+            var own = countries?.Where(country => country.Faction == plays).Select(country => country.Id).ToList() ?? [];
+            var country = slot.Kind != SlotKind.Human || own.Count == 0 ? ""
+                : own.Contains(slot.Country) ? slot.Country
+                : own[randomCountry.NextInt(own.Count)];
             players.Add(new MatchPlayer(
                 id,
                 slot.Kind == SlotKind.Human ? PlayerKind.Human : PlayerKind.Ai,
@@ -205,6 +224,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
                 start.Cell)
             {
                 Personality = slot.Kind == SlotKind.Bot ? slot.Personality : MatchPlayer.DefaultPersonality,
+                Country = country,
             });
         }
 
@@ -226,7 +246,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         foreach (var slot in Slots)
         {
             text.Append(CultureInfo.InvariantCulture,
-                $"slot={slot.Kind.ToString().ToLowerInvariant()},{(int)slot.Difficulty},{slot.Personality},{slot.Color},{slot.Team},{slot.Start},{slot.Faction}\n");
+                $"slot={slot.Kind.ToString().ToLowerInvariant()},{(int)slot.Difficulty},{slot.Personality},{slot.Color},{slot.Team},{slot.Start},{slot.Faction},{slot.Country}\n");
         }
 
         return text.ToString();
@@ -271,8 +291,8 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     private static SkirmishSlot? ParseSlot(string value)
     {
         var parts = value.Split(',');
-        // The faction came later: a config of before has six parts.
-        if (parts.Length is not (6 or 7)
+        // The faction came later, then the country: a config of before has six or seven parts.
+        if (parts.Length is not (6 or 7 or 8)
             || !Enum.TryParse<SlotKind>(parts[0], ignoreCase: true, out var kind)
             || !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var level)
             || !Levels.Contains((AiDifficulty)level)
@@ -284,7 +304,11 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
             return null;
         }
 
-        return new SkirmishSlot(kind, (AiDifficulty)level, parts[2], color, team, start) { Faction = parts.Length == 7 ? parts[6] : "" };
+        return new SkirmishSlot(kind, (AiDifficulty)level, parts[2], color, team, start)
+        {
+            Faction = parts.Length >= 7 ? parts[6] : "",
+            Country = parts.Length == 8 && parts[7].Length > 0 ? parts[7] : RandomCountry,
+        };
     }
 
     private static int TeamOf(SkirmishSlot slot, int row) => slot.Team == NoTeam ? OwnTeamBase + 1 + row : slot.Team;
