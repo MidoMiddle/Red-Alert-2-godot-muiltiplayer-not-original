@@ -109,4 +109,13 @@ public sealed class TerrainHeightsTests
 
         Assert.False(terrain.TryIntersectRay(new Vector3(10f, 5f, 10f), new Vector3(0f, 1f, 0f), out _));
     }
+
+    [Fact]
+    public void A_ray_that_starts_under_the_ground_does_not_hit_its_origin()
+    {
+        var terrain = TerrainHeights.FromRules(Relief());
+
+        // The ground here is at level 0, so this origin is one unit below it; the ray only goes further down.
+        Assert.False(terrain.TryIntersectRay(new Vector3(20f, -1f, 10f), CameraDirection, out _));
+    }
 }

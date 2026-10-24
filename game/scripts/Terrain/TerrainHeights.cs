@@ -76,8 +76,9 @@ public sealed class TerrainHeights
     }
 
     /// <summary>
-    /// Where a ray first meets the surface: steps down the ray from the highest point of the terrain, then refines the crossing
-    /// by bisection. False only for rays that do not go down.
+    /// Where a ray first comes down onto the surface: steps down the ray, then refines the crossing by bisection. False for rays
+    /// that do not go down, and for rays that start under the ground and never come down onto it: such a ray has no visible
+    /// crossing, and its origin is not a point of the ground.
     /// </summary>
     public bool TryIntersectRay(Vector3 origin, Vector3 direction, out Vector3 hit)
     {
@@ -92,20 +93,24 @@ public sealed class TerrainHeights
         var start = origin.Y > top ? (origin.Y - top) / -direction.Y : 0f;
         var end = origin.Y / -direction.Y + RayStep; // past the lowest possible surface, height 0
 
+        // The first step from above the surface to on or below it. Starting under the surface, the ray has no such step
+        // until it climbs out, so its origin is never reported as the hit.
         var previous = start;
+        var above = AboveSurface(origin, direction, start) > 0f;
         for (var t = start + RayStep; t <= end; t += RayStep)
         {
-            if (AboveSurface(origin, direction, t) <= 0f)
+            var aboveNow = AboveSurface(origin, direction, t) > 0f;
+            if (above && !aboveNow)
             {
                 hit = origin + direction * Bisect(origin, direction, previous, t);
                 return true;
             }
 
+            above = aboveNow;
             previous = t;
         }
 
-        hit = origin + direction * Bisect(origin, direction, previous, end);
-        return true;
+        return false;
     }
 
     private void SetVertex(int x, int z, float height)

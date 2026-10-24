@@ -255,7 +255,10 @@ public partial class Main : Node3D
         var worstHeight = 0f;
         var worstClick = 0f;
         var missed = 0;
+        var occluded = 0;
         var samples = 0;
+        var onScreen = 0;
+        var view = GetViewport().GetVisibleRect();
         for (var z = 4.25f; z < map.Height; z += 7.5f)
         {
             for (var x = 3.5f; x < map.Width; x += 7.5f)
@@ -264,9 +267,23 @@ public partial class Main : Node3D
                 var rules = map.Heights.HeightAt(new WorldPos((int)(x * WorldPos.LeptonsPerCell), (int)(z * WorldPos.LeptonsPerCell)));
                 var point = new Vector3(x, terrain.HeightAt(x, z), z);
                 worstHeight = Math.Max(worstHeight, Math.Abs(point.Y - rules.Raw / (float)Rts.Simulation.Math.Fixed.OneRaw / WorldPos.LeptonsPerCell));
-                if (!camera.TryGroundAt(camera.UnprojectPosition(point), out var hit))
+                // Only what the player can point at: a point on the screen that no higher hill hides from the camera.
+                var screen = camera.UnprojectPosition(point);
+                if (screen.X < view.Position.X || screen.Y < view.Position.Y || screen.X > view.End.X || screen.Y > view.End.Y)
+                {
+                    continue;
+                }
+
+                onScreen++;
+                if (!camera.TryGroundAt(screen, out var hit))
                 {
                     missed++;
+                    continue;
+                }
+
+                if (hit.Y > point.Y + 0.05f)
+                {
+                    occluded++; // a higher hill stands in front of the point: the click rightly finds the hill
                     continue;
                 }
 
@@ -274,9 +291,9 @@ public partial class Main : Node3D
             }
         }
 
-        var ok = missed == 0 && worstClick <= 0.05f && worstHeight <= 0.0001f;
-        GD.Print($"[terrain] {(ok ? "OK" : "FAILED")}: {samples} points, worst height error {worstHeight:0.000000}, " +
-                 $"worst click error {worstClick:0.0000} cell, missed {missed}");
+        var ok = onScreen > 0 && missed == 0 && worstClick <= 0.05f && worstHeight <= 0.0001f;
+        GD.Print($"[terrain] {(ok ? "OK" : "FAILED")}: {samples} points, {onScreen} on screen ({occluded} hidden by a hill), " +
+                 $"worst height error {worstHeight:0.000000}, worst click error {worstClick:0.0000} cell, missed {missed}");
         return ok;
     }
 
