@@ -83,7 +83,7 @@
 | apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | работает: две пушки по земле, ракеты только по воздуху (этап 3в); самолечение — позже |
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | работает: запрыгивает в технику и ест её изнутри по 50 раз в 4 с, пехоту убивает сразу; мастерская его вытаскивает (этап 3г) |
 | demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | работает: только по приказу подъезжает и взрывается (300), взрывается и подбитым, оставляет немного яда (этап 3г) |
-| kirov_airship | Heavy Airship | bomber airship | Kirov Airship | летает, строится (этап 2б), без оружия — этап 3 |
+| kirov_airship | Heavy Airship | bomber airship | Kirov Airship | работает: бомбы 250 по площади 2 клетки; сбитый падает на тех, кто под ним (этап 3е) |
 | hover_transport | Hovercraft | carries units over water | Hover Transport | работает: 12 слотов (пехота 1, техника 3, MCV и Super Heavy Tank 6), по воде и суше; высадка — D (этап 3г) |
 | typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | работает: под водой, видна только сенсорам; торпеды по кораблям и подводным (этап 3д) |
 | sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | работает: флак по воде и берегу, зенитки по воздуху (этап 3д) |
@@ -105,9 +105,9 @@
 | alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | работает: луч 100, до 5 осколков по 30 в радиусе 3 клеток, здания — вдвое (этап 3в) |
 | alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | работает: стоя на месте, для врага — дерево, его не выбирают целью; сам за целью не едет (этап 3в) |
 | alliance_tank_destroyer | Tank Hunter | anti-tank gun | Tank Destroyer | работает: подкалиберная пушка 150, полный урон по лёгкой и тяжёлой технике, по пехоте 2 % (этап 3в) |
-| alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | летает, строится (этап 2б), без оружия — этап 3 |
-| alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | летает, строится (этап 2б), без оружия — этап 3 |
-| alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | летает, строится (этап 2б), без оружия — этап 3 |
+| alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | работает: везёт 5 пехотинцев (техника не помещается), пулемёт по земле по приказу (этап 3е) |
+| alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | работает: по приказу залп 2 × 150, затем летит к командованию ВВС и перезаряжается 18 с (этап 3е) |
+| alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | работает: по приказу залп 2 × 200, затем перезарядка у командования ВВС (этап 3е) |
 | alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | работает: 12 слотов, по воде и суше; высадка — D (этап 3г) |
 | alliance_robot_tank | Robot Tank | works only with the hub | Robot Tank | работает: пушка; без Drone Control Hub с энергией стоит и не стреляет; числа свои (этап 3г) |
 | alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | работает: под водой, сенсор 4 клетки; звуковая волна по кораблям и подводным (этап 3д) |

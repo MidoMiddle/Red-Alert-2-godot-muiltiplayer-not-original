@@ -22,14 +22,14 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
-        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo",
     ];
 
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
-        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots", "rearms_aircraft",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -126,6 +126,7 @@ internal static class DefinitionReader
             Robotic = fields.Optional("robotic", Scalars.Flag, false),
             Submerged = fields.Optional("submerged", Scalars.Flag, false),
             Sensors = fields.Optional("sensors", Scalars.Int, 0),
+            Ammo = fields.Optional("ammo", Scalars.Int, 0),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -180,6 +181,7 @@ internal static class DefinitionReader
             Capturable = fields.Optional("capturable", Scalars.Flag, true),
             SpyEffect = fields.Optional("spy_effect", SpyEffectOf, SpyEffect.None),
             ControlsRobots = fields.Optional("controls_robots", Scalars.Flag, false),
+            RearmsAircraft = fields.Optional("rearms_aircraft", Scalars.Flag, false),
         };
     }
 

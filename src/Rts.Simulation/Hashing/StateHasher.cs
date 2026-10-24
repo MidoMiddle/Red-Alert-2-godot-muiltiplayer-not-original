@@ -259,6 +259,10 @@ public static class StateHasher
                 hash.Add(unit.ParasiteWeapon);
                 hash.Add(unit.ParasiteTicks);
 
+                // Rules v54 (stage 3f): the ammo of a strike jet.
+                hash.Add(unit.Ammo);
+                hash.Add(unit.RearmTicks);
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)

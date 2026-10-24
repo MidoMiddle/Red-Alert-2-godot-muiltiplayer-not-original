@@ -192,3 +192,21 @@ dreadnought_missiles:  # of the Missile Battleship, RA2 DredLauncher: two of 300
   warhead: dreadnought_blast
   burst: 2
   burst_delay: 0.4s
+
+kirov_bombs:  # of the Heavy Airship, RA2 BlimpBomb: 250 straight down, ROF 50
+  kind: weapon
+  name: Airship Bombs
+  damage: 250
+  reload: 3.33s
+  range: 1.5
+  projectile: shell
+  warhead: blimp_bomb
+
+kirov_crash:  # the airship falling where it was brought down; ours
+  kind: weapon
+  name: Airship Crash
+  damage: 300
+  reload: 1s
+  range: 1
+  projectile: shell
+  warhead: blimp_bomb

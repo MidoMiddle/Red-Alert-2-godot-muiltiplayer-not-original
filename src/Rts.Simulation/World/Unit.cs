@@ -22,6 +22,7 @@ public sealed class Unit : Entity
         Weapons = !archetype.Armed ? [] : archetype.Secondary >= 0 ? [new(), new()] : [new()];
         Stance = archetype.Stance;
         Anchor = position;
+        Ammo = archetype.Ammo;
     }
 
     /// <summary>How the unit fights by itself (M4, 4.11). State: hashed.</summary>
@@ -80,6 +81,12 @@ public sealed class Unit : Entity
 
     /// <summary>The ticks until its next bite.</summary>
     public int ParasiteTicks { get; internal set; }
+
+    /// <summary>The volleys it has left (stage 3f: the strike jets); its type's ammo when built. State: hashed with the one below.</summary>
+    public int Ammo { get; internal set; }
+
+    /// <summary>The ticks it has loaded for its next volley beside a building that rearms aircraft.</summary>
+    public int RearmTicks { get; internal set; }
 
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }

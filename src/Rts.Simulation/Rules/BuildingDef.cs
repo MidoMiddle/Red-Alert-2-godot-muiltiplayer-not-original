@@ -141,4 +141,7 @@ public sealed record BuildingDef : IDefinition
 
     /// <summary>While it stands ready and online, its owner's robots work (stage 3d: the drone control hub).</summary>
     public bool ControlsRobots { get; init; }
+
+    /// <summary>Aircraft out of ammo fly here and load beside it (stage 3f: the air force command, RA2 airport pads).</summary>
+    public bool RearmsAircraft { get; init; }
 }

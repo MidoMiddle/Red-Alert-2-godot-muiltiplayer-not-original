@@ -266,3 +266,34 @@ carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: three Hornets a
   warhead: missile
   burst: 3
   burst_delay: 0.3s
+
+alliance_harrier_missiles:  # of the Strike Jet, RA2 Maverick: two of 150, one volley a sortie
+  kind: weapon
+  name: Maverick Missiles
+  damage: 150
+  reload: 1s
+  range: 6
+  projectile: rocket
+  warhead: orca_ap
+  burst: 2
+  burst_delay: 0.2s
+
+alliance_black_eagle_missiles:  # of the Heavy Strike Jet, RA2 Maverick2: two of 200
+  kind: weapon
+  name: Maverick Missiles
+  damage: 200
+  reload: 1s
+  range: 6
+  projectile: rocket
+  warhead: orca_ap
+  burst: 2
+  burst_delay: 0.2s
+
+alliance_nighthawk_gun:  # of the Transport Helicopter, RA2 BlackHawkCannon: at the ground only
+  kind: weapon
+  name: Door Gun
+  damage: 35
+  reload: 2.67s
+  range: 6
+  projectile: bullet
+  warhead: small_arms

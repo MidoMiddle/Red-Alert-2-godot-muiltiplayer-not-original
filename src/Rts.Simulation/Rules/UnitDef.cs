@@ -145,6 +145,12 @@ public sealed record UnitDef : IDefinition
     /// <summary>How far it finds units under the water, in cells (RA2 <c>Sensors</c>); 0 for none.</summary>
     public int Sensors { get; init; }
 
+    /// <summary>
+    /// The volleys it carries (stage 3f: the strike jets, RA2 <c>Ammo</c>); spent, it flies to a building that rearms aircraft and loads
+    /// there. 0 for a unit that never runs out.
+    /// </summary>
+    public int Ammo { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

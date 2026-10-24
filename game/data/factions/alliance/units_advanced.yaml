@@ -178,7 +178,7 @@ alliance_tank_destroyer:  # anti-tank gun, aimed with the hull (stage 3c)
   prerequisites: [alliance_war_factory, alliance_air_force_command]
   primary: alliance_sabot
 
-alliance_nighthawk:  # carries infantry
+alliance_nighthawk:  # carries five soldiers, a machine gun at the ground when ordered (stage 3f)
   kind: unit
   inherits: base_vehicle
   category: aircraft
@@ -195,9 +195,12 @@ alliance_nighthawk:  # carries infantry
   turret: false
   locomotor: hover
   prerequisites: [alliance_air_force_command]
-  ability_later: true
+  primary: alliance_nighthawk_gun
+  passengers: 5
+  passenger_size: 2
+  passive: true
 
-alliance_harrier:  # strikes and returns to rearm
+alliance_harrier:  # one volley, only when ordered, then back to the air force command to rearm (stage 3f)
   kind: unit
   inherits: base_vehicle
   category: aircraft
@@ -214,9 +217,11 @@ alliance_harrier:  # strikes and returns to rearm
   turret: false
   locomotor: hover
   prerequisites: [alliance_air_force_command]
-  ability_later: true
+  primary: alliance_harrier_missiles
+  ammo: 1
+  passive: true
 
-alliance_black_eagle:  # heavier strike jet
+alliance_black_eagle:  # the Strike Jet's heavier sister: one volley, then back to rearm (stage 3f)
   kind: unit
   inherits: base_vehicle
   category: aircraft
@@ -233,7 +238,9 @@ alliance_black_eagle:  # heavier strike jet
   turret: false
   locomotor: hover
   prerequisites: [alliance_air_force_command]
-  ability_later: true
+  primary: alliance_black_eagle_missiles
+  ammo: 1
+  passive: true
 
 alliance_amphibious_transport:  # carries 12 slots of units over water and land (stage 3d)
   kind: unit

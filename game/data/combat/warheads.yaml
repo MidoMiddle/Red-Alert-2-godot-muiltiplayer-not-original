@@ -238,3 +238,19 @@ sam:  # RA2 SAMWH: the cruiser's missiles at the air
   name: SAM
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
   affects_air: true
+
+blimp_bomb:  # RA2 BlimpBomb: the airship's bombs, 2 cells, half at the edge; the verses are ours
+  kind: warhead
+  name: Airship Bomb
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  spread: 2
+  percent_at_max: 50%
+  wall_damage: true
+  infantry_death: explode
+
+orca_ap:  # RA2 ORCAAP: the strike jets' missiles, 0.4 cells; the verses are ours, as an armor-piercing shell
+  kind: warhead
+  name: Strike Missile
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 75%, steel: 75%, concrete: 50%, special_1: 100%, special_2: 100% }
+  spread: 0.4
+  infantry_death: explode

@@ -183,7 +183,8 @@ public sealed class GameRules
                 unit.PassengerSlots,
                 unit.PassengerSizeLimit,
                 database.IndexOfWeapon(unit.IfvWeapon),
-                unit.Sensors);
+                unit.Sensors,
+                unit.Ammo);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];

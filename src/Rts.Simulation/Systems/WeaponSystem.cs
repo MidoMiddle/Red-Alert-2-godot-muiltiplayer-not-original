@@ -158,10 +158,22 @@ public static class WeaponSystem
 
         var distance = DamageCalculator.Distance(unit.Position, aimAt);
         var slots = rules.WeaponsOf(unit);
+
+        // Out of ammo (stage 3f: a strike jet), a unit fires out the volley under way and starts no other.
+        if (archetype.Ammo > 0 && unit.Ammo == 0 && !InVolley(unit.Weapons))
+        {
+            return;
+        }
+
         EntityId? targetId = hasTarget ? target.Id : null;
         var layer = hasTarget ? TargetingSystem.LayerOf(target) : WeaponTargets.Ground;
         if (Fire(world, rules, unit.Id, targetId, unit.Weapons, slots, distance, aimed, layer, events, hasTarget ? target : null) is { } weapon)
         {
+            if (archetype.Ammo > 0 && StartedVolley(rules, unit.Weapons, slots, weapon))
+            {
+                unit.Ammo--;
+            }
+
             shots.Add(new Shot(unit.Owner, unit.Id, weapon, targetId, unit.Position, aimAt));
         }
     }
@@ -327,6 +339,35 @@ public static class WeaponSystem
     /// <summary>Whether the weapon fires at <paramref name="layer"/> and <paramref name="distance"/> leptons is within its range.</summary>
     private static bool Reaches(WeaponDef weapon, int distance, WeaponTargets layer) =>
         (weapon.Targets & layer) != 0 && distance <= Aim.Leptons(weapon.Range) && distance >= Aim.Leptons(weapon.MinRange);
+
+    // Whether a volley of one of the weapons is under way.
+    private static bool InVolley(WeaponInstance[] weapons)
+    {
+        foreach (var weapon in weapons)
+        {
+            if (weapon.BurstLeft > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Whether the shot of the weapon just fired started its volley: its reload and its volley are whole.
+    private static bool StartedVolley(GameRules rules, WeaponInstance[] weapons, ImmutableArray<int> slots, int weapon)
+    {
+        var def = rules.Database.Weapons[weapon];
+        for (var slot = 0; slot < weapons.Length; slot++)
+        {
+            if (slots[slot] == weapon)
+            {
+                return weapons[slot].ReloadLeft == def.Reload && weapons[slot].BurstLeft == def.Burst - 1;
+            }
+        }
+
+        return false;
+    }
 
     private static void CountDown(WeaponInstance[] weapons)
     {

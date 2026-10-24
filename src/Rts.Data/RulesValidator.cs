@@ -167,6 +167,7 @@ internal static class RulesValidator
             NotNegative(unit.Id, "passengers", unit.PassengerSlots);
             NotNegative(unit.Id, "size", unit.Size);
             NotNegative(unit.Id, "sensors", unit.Sensors);
+            NotNegative(unit.Id, "ammo", unit.Ammo);
             if (unit.Submerged && unit.Category != UnitCategory.Naval)
             {
                 Error(unit.Id, "submerged", $"'{unit.Id}' cannot keep under the water: only a ship can");

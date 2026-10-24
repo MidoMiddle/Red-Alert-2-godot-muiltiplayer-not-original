@@ -151,7 +151,7 @@ demolition_truck:  # drives into its target and blows up, only when ordered; blo
   death_weapon: demolition_truck_bomb
   passive: true
 
-kirov_airship:  # bomber airship
+kirov_airship:  # a slow bomber: bombs straight down, and falls on what is under it when brought down (stage 3f)
   kind: unit
   inherits: base_vehicle
   category: aircraft
@@ -168,7 +168,8 @@ kirov_airship:  # bomber airship
   turret: false
   locomotor: hover
   prerequisites: [war_factory, tech_center]
-  ability_later: true
+  primary: kirov_bombs
+  death_weapon: kirov_crash
 
 hover_transport:  # carries 12 slots of units over water and land (stage 3d)
   kind: unit

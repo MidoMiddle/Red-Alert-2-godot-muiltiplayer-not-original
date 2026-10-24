@@ -105,6 +105,7 @@ public static class DataHasher
             hash.Add(unit.Robotic);
             hash.Add(unit.Submerged);
             hash.Add(unit.Sensors);
+            hash.Add(unit.Ammo);
             hash.Add(unit.AvailableLater);
         }
 
@@ -163,6 +164,7 @@ public static class DataHasher
             hash.Add(building.Capturable);
             hash.Add((byte)building.SpyEffect);
             hash.Add(building.ControlsRobots);
+            hash.Add(building.RearmsAircraft);
         }
 
         hash.Add(rules.Factions.Length);
