@@ -141,6 +141,7 @@ public sealed class GameSimulation
         RadiationSystem.Update(World, _events);
         SuperweaponSystem.Update(World, _events);
         ParasiteSystem.Update(World, _events);
+        GarrisonSystem.Update(World, _events);
         Probe?.Invoke("damage");
 
         // 4. Movement.

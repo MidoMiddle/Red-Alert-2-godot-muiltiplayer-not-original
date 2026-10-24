@@ -26,6 +26,9 @@ namespace Rts.Simulation.Systems;
 /// (<see cref="BuildingType.Garrison"/>) takes the soldiers of any player while it stands empty and neutral — the first one in makes it
 /// his — and more of his while there is room; an enemy's is closed until it is empty again. Empty — its soldiers out on an order, or
 /// their owner beaten — it is the neutral side's again. The tech buildings are taken by engineers, not soldiers.
+/// The soldiers inside are never hurt: the building is. Once it is critically damaged (<see cref="DamageState.Critical"/>, under a
+/// quarter of its hit points) they all come out after the damage of the tick, as they went in and with their hit points, and it takes
+/// none again until an engineer of any player mends it whole (<see cref="EntrySystem"/>).
 /// </para>
 /// </summary>
 public static class GarrisonSystem
@@ -46,7 +49,32 @@ public static class GarrisonSystem
     /// </summary>
     public static bool Holds(Building building, PlayerId player) =>
         building is { IsAlive: true, IsReady: true } && Capacity(building) > 0
-        && (building.Owner == player || (Civilian(building) && building.Owner.IsNeutral));
+        && (building.Owner == player || (Civilian(building) && building.Owner.IsNeutral))
+        && !(Civilian(building) && Critical(building));
+
+    /// <summary>Whether the building is critically damaged: a civilian one lets its soldiers out and takes none.</summary>
+    public static bool Critical(Building building) => DamageStates.Of(building.Hp, building.MaxHp) == DamageState.Critical;
+
+    /// <summary>
+    /// After the damage of the tick: the soldiers in a civilian building critically damaged come out, in id order of the buildings.
+    /// </summary>
+    public static void Update(GameWorld world, List<SimEvent>? events)
+    {
+        List<Building>? emptying = null;
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, Occupants.Count: > 0 } building && Civilian(building) && Critical(building))
+            {
+                (emptying ??= []).Add(building);
+            }
+        }
+
+        // The soldiers come out after the walk: the list of entities must not change while walked.
+        foreach (var building in emptying ?? [])
+        {
+            Evacuate(world, building, events);
+        }
+    }
 
     /// <summary>Whether the building has room for one more soldier.</summary>
     public static bool HasRoom(Building building) => building.Occupants.Count < Capacity(building);

@@ -10,8 +10,9 @@ namespace Rts.Data.Tests.Matches;
 
 /// <summary>
 /// Soldiers in the civilian buildings of the map (RA2 garrisons): the first one in makes an empty house his, more of his follow while
-/// there is room, an enemy's house is closed; they fire from it; they come out on an order — the house is nobody's again — and when it
-/// falls. Engineers, dogs and tech buildings stay out of it. By the game data, without the fog of war; two people play, no bot.
+/// there is room, an enemy's house is closed; they fire from it; they come out on an order — the house is nobody's again — and, whole
+/// as they went in, when it is critically damaged; then it takes none until an engineer mends it. Engineers, dogs and tech buildings
+/// stay out of it. By the game data, without the fog of war; two people play, no bot.
 /// </summary>
 public sealed class CivilianGarrisonTests
 {
@@ -55,6 +56,8 @@ public sealed class CivilianGarrisonTests
             simulation.Step();
         }
     }
+
+    private static bool Near(CellPos cell, CellPos to) => Math.Abs(cell.X - to.X) <= 8 && Math.Abs(cell.Y - to.Y) <= 8;
 
     private static Unit Spawn(GameWorld world, PlayerId owner, UnitType type, int x, int y) =>
         world.SpawnUnit(owner, type, new CellPos(x, y).Center, snapToSubcell: true);
@@ -107,7 +110,35 @@ public sealed class CivilianGarrisonTests
     }
 
     [Fact]
-    public void The_soldiers_come_out_when_the_house_falls()
+    public void At_critical_damage_the_soldiers_come_out_whole_as_they_went_in_and_the_house_stands()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var house = world.BuildingAt(House)!;
+        var hurt = Spawn(world, Allied, UnitType.AllianceRifleman, 28, 33);
+        var whole = Spawn(world, Allied, UnitType.AllianceRifleman, 29, 33);
+        world.SetHp(hurt, 80, null);
+        simulation.Enqueue(new EnterCommand(Allied, simulation.CurrentTick, 0, [hurt.Id, whole.Id], house.Id));
+        Run(simulation, 300, () => house.Occupants.Count == 2);
+        Assert.Equal(2, house.Occupants.Count);
+
+        // Tanks shell the house: the soldiers inside take nothing, the house does.
+        var tanks = Enumerable.Range(0, 4).Select(i => Spawn(world, Union, UnitType.HeavyTank, 36, 28 + i)).ToList();
+        simulation.Enqueue(new AttackCommand(Union, simulation.CurrentTick, 1, [.. tanks.Select(t => t.Id)], house.Id));
+        Run(simulation, 3000, () => house.Occupants.Count == 0);
+
+        Assert.True(house.IsAlive);
+        Assert.True(GarrisonSystem.Critical(house));
+        Assert.True(house.Owner.IsNeutral);
+        // Those by the house (the player's start has soldiers of its own).
+        var outside = world.Entities.OfType<Unit>()
+            .Where(unit => unit.IsAlive && unit.Owner == Allied && unit.Type == UnitType.AllianceRifleman && Near(unit.Position.ToCell(), House))
+            .Select(unit => unit.Hp).OrderBy(hp => hp).ToList();
+        Assert.Equal([80, whole.MaxHp], outside);
+    }
+
+    [Fact]
+    public void A_critically_damaged_house_takes_no_soldiers_until_an_engineer_mends_it()
     {
         var simulation = Match();
         var world = simulation.World;
@@ -116,12 +147,22 @@ public sealed class CivilianGarrisonTests
         simulation.Enqueue(new EnterCommand(Allied, simulation.CurrentTick, 0, [gi.Id], house.Id));
         Run(simulation, 300, () => house.Occupants.Count == 1);
 
-        var tanks = Enumerable.Range(0, 4).Select(i => Spawn(world, Union, UnitType.HeavyTank, 36, 28 + i)).ToList();
-        simulation.Enqueue(new AttackCommand(Union, simulation.CurrentTick, 1, [.. tanks.Select(t => t.Id)], house.Id));
-        Run(simulation, 3000, () => !house.IsAlive);
+        world.SetHp(house, house.MaxHp / 5, null);
+        Run(simulation, 1);
+        Assert.Empty(house.Occupants);
+        var outside = world.Entities.OfType<Unit>()
+            .First(unit => unit.IsAlive && unit.Owner == Allied && unit.Type == UnitType.AllianceRifleman && Near(unit.Position.ToCell(), House));
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, outside, house));
 
-        Assert.False(house.IsAlive);
-        Assert.Contains(world.Entities, entity => entity is Unit { IsAlive: true, Type: UnitType.AllianceRifleman } && entity.Owner == Allied);
+        // An engineer of any player mends it whole; then it takes soldiers again.
+        var engineer = Spawn(world, Union, UnitType.Engineer, 33, 33);
+        Assert.Equal(EntryAction.Mend, EntrySystem.ActionOf(world, engineer, house));
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 1, [engineer.Id], house.Id));
+        Run(simulation, 300, () => !engineer.IsAlive);
+
+        Assert.Equal(house.MaxHp, house.Hp);
+        Assert.True(house.Owner.IsNeutral);
+        Assert.Equal(EntryAction.Garrison, EntrySystem.ActionOf(world, outside, house));
     }
 
     [Fact]

@@ -82,6 +82,8 @@ public static class EntrySystem
             return unit.Archetype.Has(UnitTalents.Engineer)
                 ? building.Kind == BuildingKind.TechBridgeRepairHut ? BridgeRepair.Needed(world, building) ? EntryAction.RepairBridge : EntryAction.None
                     : own && building.Hp < building.MaxHp && building.Type.Capturable ? EntryAction.Mend
+                    // A damaged civilian building that holds soldiers, nobody's or its own: mended whole, it takes soldiers again (RA2).
+                    : (own || building.Owner.IsNeutral) && building.Hp < building.MaxHp && GarrisonSystem.Civilian(building) ? EntryAction.Mend
                     : (enemy || building.Owner.IsNeutral) && building.Type.Capturable ? EntryAction.Capture
                     : EntryAction.None
                 : own && building.Kind == BuildingKind.TechHospital && unit.Hp < unit.MaxHp && !unit.Archetype.Has(UnitTalents.Infiltrator)
