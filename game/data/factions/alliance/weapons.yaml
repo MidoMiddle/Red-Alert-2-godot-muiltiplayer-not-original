@@ -217,7 +217,7 @@ alliance_robot_gun:  # of the Robot Tank; the numbers are ours
   projectile: bullet
   warhead: light_mg
 
-dolphin_sonic:  # of the Sonic Dolphin, RA2 SonicZap; damage and reload ours (its wave hurts as it passes in RA2)
+dolphin_sonic:  # of the Sonic Dolphin, RA2 SonicZap (ROF 180, range 6); its wave hurts every frame it passes (AmbientDamage), which one hit cannot be: damage and reload ours
   kind: weapon
   name: Sonic Wave
   damage: 50
@@ -227,33 +227,46 @@ dolphin_sonic:  # of the Sonic Dolphin, RA2 SonicZap; damage and reload ours (it
   warhead: sonic_wave
   targets: [naval, underwater]
 
-destroyer_cannon:  # of the Destroyer; ours
+destroyer_cannon:  # of the Destroyer, RA2 155mm: 60, ROF 110, range 8
   kind: weapon
   name: Naval Gun
-  damage: 65
-  reload: 3.33s
-  range: 7
-  projectile: shell
-  warhead: ap_shell
-
-destroyer_depth_charges:  # of the Destroyer, what its Osprey drops in RA2, under the water only; ours
-  kind: weapon
-  name: Depth Charges
   damage: 60
-  reload: 4s
+  reload: 7.33s
+  range: 8
+  projectile: shell
+  warhead: destroyer_shell
+
+destroyer_osprey_launcher:  # of the Destroyer, RA2 ASW spawner: firing it launches the Osprey aboard at what is under the water
+  kind: weapon
+  name: Osprey Launcher
+  damage: 0
+  reload: 2s
   range: 8
   projectile: bullet
   warhead: depth_charge
   targets: [underwater]
+  launches_spawns: true
 
-aegis_missiles:  # of the Air Defense Cruiser, RA2 Medusa: at the air only
+osprey_bombs:  # of the Osprey, RA2 ASWBomb: 50, range 3, ROF 3; under the water only
+  kind: weapon
+  name: Depth Charges
+  damage: 50
+  reload: 0.2s
+  range: 3
+  projectile: shell
+  warhead: depth_charge
+  targets: [underwater]
+
+aegis_missiles:  # of the Air Defense Cruiser, RA2 Medusa: 100, a volley of 3 (13 frames apart), ROF 100; at the air only
   kind: weapon
   name: Aegis Missiles
   damage: 100
-  reload: 1s
+  reload: 6.67s
   range: 12
   projectile: rocket
   warhead: sam
+  burst: 3
+  burst_delay: 0.87s
   targets: [air]
 
 carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: firing it launches the Hornets aboard at the target, ROF 150
@@ -266,16 +279,14 @@ carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: firing it launc
   warhead: missile
   launches_spawns: true
 
-alliance_hornet_missiles:  # of a Hornet: two small missiles; ours
+alliance_hornet_bombs:  # of a Hornet, RA2 HornetBomb: 80, range 5, ROF 3
   kind: weapon
-  name: Hornet Missiles
-  damage: 50
-  reload: 1s
-  range: 4
-  projectile: rocket
-  warhead: orca_ap
-  burst: 2
-  burst_delay: 0.2s
+  name: Hornet Bomb
+  damage: 80
+  reload: 0.2s
+  range: 5
+  projectile: shell
+  warhead: hornet_bomb
 
 ifv_repair_arm:  # what an engineer gives the IFV, RA2 RepairBullet: mends a vehicle of its team by 50, ROF 80
   kind: weapon

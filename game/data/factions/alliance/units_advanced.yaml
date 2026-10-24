@@ -285,7 +285,7 @@ alliance_dolphin:  # under the water, a sonic wave at ships and what is under th
   submerged: true
   sensors: 4
 
-alliance_destroyer:  # a gun at the water and the shore, depth charges under the water, sensors (stage 3e)
+alliance_destroyer:  # RA2 DEST: the 155mm gun at the water and the shore; launches its Osprey at what is under the water, sensors
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -301,8 +301,11 @@ alliance_destroyer:  # a gun at the water and the shore, depth charges under the
   locomotor: naval
   prerequisites: [alliance_naval_shipyard]
   primary: destroyer_cannon
-  secondary: destroyer_depth_charges
+  secondary: destroyer_osprey_launcher
   sensors: 8
+  spawns: alliance_osprey
+  spawn_count: 1
+  spawn_regen: 27s
 
 alliance_aegis_cruiser:  # missiles at the air only, rockets in flight too (stage 3e)
   kind: unit
@@ -343,7 +346,7 @@ alliance_aircraft_carrier:  # launches its three Hornets at 25 cells when ordere
   spawn_count: 3
   spawn_regen: 27s
 
-alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); RA2 Robot Tank, the numbers are ours
+alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); YR Robot Tank: 600 credits, no veterancy; the other numbers are ours (no open source has them)
   kind: unit
   inherits: base_vehicle
   name: Robot Tank
@@ -361,7 +364,7 @@ alliance_robot_tank:  # works only while a Drone Control Hub stands ready with p
   robotic: true
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
-alliance_hornet:  # the aircraft carrier's jet: launched, never built; one volley, then back aboard (RA2 HORNET, the numbers are ours)
+alliance_hornet:  # the aircraft carrier's jet: launched, never built; five bombs, then back aboard (RA2 HORNET: HP 75, 5 bombs)
   kind: unit
   inherits: base_vehicle
   category: aircraft
@@ -370,15 +373,15 @@ alliance_hornet:  # the aircraft carrier's jet: launched, never built; one volle
   faction: alliance
   cost: 100
   build_time: 1s
-  hp: 50
+  hp: 75
   threat: 10
   armor: light
   speed: 84
   sight: 6
   turret: false
   locomotor: hover
-  primary: alliance_hornet_missiles
-  ammo: 1
+  primary: alliance_hornet_bombs
+  ammo: 5
   passive: true
   spawned: true
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
@@ -402,3 +405,25 @@ paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never bu
   passive: true
   spawned: true
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
+
+alliance_osprey:  # the destroyer's anti-submarine plane, RA2 ASW: launched, never built; 5 charges, then back aboard; HP 135, light
+  kind: unit
+  inherits: base_vehicle
+  category: aircraft
+  crusher: false
+  name: Osprey
+  faction: alliance
+  cost: 100
+  build_time: 1s
+  hp: 135
+  threat: 10
+  armor: light
+  speed: 70
+  sight: 6
+  turret: false
+  locomotor: hover
+  primary: osprey_bombs
+  ammo: 5
+  passive: true
+  spawned: true
+  trainable: false

@@ -199,7 +199,7 @@ ap_splash:  # RA2 APSplash: the submarine's torpedo
   spread: 0.5
   infantry_death: explode
 
-squid_grip:  # the squid's grip (stage 3e): a ship held still and crushed from close; 15 every half a second is ours
+squid_grip:  # the squid's grip (stage 3e), RA2 SquidGrab: a ship held still and crushed from close, 15 every 99 frames
   kind: warhead
   name: Squid Grip
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
@@ -207,7 +207,7 @@ squid_grip:  # the squid's grip (stage 3e): a ship held still and crushed from c
   parasite_naval: true
   paralyzes: true
   parasite_damage: 15
-  parasite_delay: 0.5s
+  parasite_delay: 6.6s
 
 squid_slap:  # the squid's tentacle, RA2 SquidPunch with HE; the verses are ours
   kind: warhead
@@ -228,10 +228,25 @@ sonic_wave:  # the dolphin's wave, RA2 SonicWarhead; the verses are ours; on a s
   frees_parasite: true
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
 
-depth_charge:  # the destroyer's charges under the water (the Osprey of RA2, here a weapon of the ship); ours
+depth_charge:  # RA2 ASWBomb's warhead: the Osprey's charges, 1.4 cells
   kind: warhead
   name: Depth Charge
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 85%, concrete: 60%, special_1: 100%, special_2: 100% }
+  spread: 1.4
+  infantry_death: explode
+
+destroyer_shell:  # RA2 155mm's warhead: the destroyer's gun
+  kind: warhead
+  name: Naval Shell
+  verses: { none: 100%, flak: 80%, plate: 60%, light: 100%, medium: 60%, heavy: 60%, wood: 100%, steel: 80%, concrete: 60%, special_1: 100%, special_2: 100% }
+  wall_damage: true
+  infantry_death: explode
+
+hornet_bomb:  # RA2 HornetBomb's warhead: 0.4 cells, concrete 75%
+  kind: warhead
+  name: Hornet Bomb
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 75%, special_1: 100%, special_2: 100% }
+  spread: 0.4
   infantry_death: explode
 
 sam:  # RA2 SAMWH: the cruiser's missiles at the air

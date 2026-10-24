@@ -65,4 +65,7 @@ public enum UnitType : byte
 
     // The plane of a paradrop (loose ends, stage 1), sent and never built.
     ParadropPlane = 49,
+
+    // The destroyer's anti-submarine plane (loose ends, stage 4), launched and never built.
+    AllianceOsprey = 50,
 }

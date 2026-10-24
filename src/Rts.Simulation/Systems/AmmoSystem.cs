@@ -14,8 +14,8 @@ namespace Rts.Simulation.Systems;
 /// RA2 <c>Spawns</c>), after the movement. A unit whose type carries ammo spends one with every volley it starts
 /// (<see cref="WeaponSystem"/>) and starts none without. Out of ammo, once its last volley is over, it forgets its target and flies home:
 /// a jet to the nearest ready building of its owner that rearms aircraft, where — within a cell of the footprint — it loads a volley every
-/// <see cref="RearmTicks"/> ticks up to its type's ammo; a Hornet to its carrier, which it boards beside, as it does when its target is
-/// gone. A Hornet whose carrier fell falls too. A player builds no more jets than its pads (<see cref="BuildingDef.AircraftDocks"/>). A
+/// <see cref="RearmTicks"/> ticks up to its type's ammo; a Hornet to its carrier, or the Osprey to its destroyer (loose ends, stage 4),
+/// which it boards beside, as it does when its target is gone. A Hornet whose carrier fell falls too. A player builds no more jets than its pads (<see cref="BuildingDef.AircraftDocks"/>). A
 /// carrier's weapon launches every Hornet aboard at its target (<see cref="Launch"/>); one lost is replaced aboard after the carrier's
 /// <see cref="UnitDef.SpawnRegen"/> ticks.
 /// </summary>

@@ -54,7 +54,8 @@ public sealed class M3GoldenValuesTests
         // Rules v57 (loose ends, stage 1): the same run and credits; the paradrop plane and the derrick's income are hashed.
         // Rules v58 (loose ends, stage 2): the same run and credits; Frozen Crossing has a repair hut by each of its bridges.
         // Rules v60 (loose ends, stage 3): the same run and credits; experience is hashed.
-        Assert.Equal((5972, 0x43d4232644c3c323UL), (fifth.Credits, fifth.Checksum));
+        // Rules v61 (loose ends, stage 4): the same run and credits; the destroyer's Osprey is a type of its own.
+        Assert.Equal((5972, 0x8118111bbe7d4fc3UL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

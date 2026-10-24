@@ -89,6 +89,39 @@ public sealed class ShipWeaponsTests
     }
 
     [Fact]
+    public void The_destroyer_launches_its_osprey_at_a_submarine_and_takes_it_back_aboard()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var sub = Spawn(world, Union, UnitType.TyphoonSub, 30, 30);
+        var destroyer = Spawn(world, Allied, UnitType.AllianceDestroyer, 36, 30);
+        Assert.Equal(1, destroyer.SpawnsDocked);
+
+        var events = Run(simulation, 300, () => sub.Hp < sub.MaxHp);
+        var launched = Assert.Single(events.OfType<SpawnLaunched>());
+        Assert.True(world.TryGet(launched.Unit, out var entity));
+        var osprey = Assert.IsType<Unit>(entity);
+        Assert.Equal(UnitType.AllianceOsprey, osprey.Type);
+        Assert.True(sub.Hp < sub.MaxHp, "its charges hit it");
+
+        Run(simulation, 1200, () => destroyer.SpawnsDocked == 1);
+        Assert.Equal(1, destroyer.SpawnsDocked);
+        Assert.False(osprey.IsAlive);
+    }
+
+    [Fact]
+    public void The_numbers_of_ra2_the_hornet_s_five_bombs_and_the_cruiser_s_volley_of_three()
+    {
+        var rules = Match().World.Rules;
+        var hornet = rules.Unit(UnitType.AllianceHornet);
+        Assert.Equal((75, 5), (hornet.Hp, hornet.Ammo));
+        Assert.Equal((80, 3), (rules.Database.Weapons[hornet.Primary].Damage, rules.Unit(UnitType.AllianceAegisCruiser) is var cruiser ? rules.Database.Weapons[cruiser.Primary].Burst : 0));
+        var osprey = rules.Unit(UnitType.AllianceOsprey);
+        Assert.Equal((135, 5, 50), (osprey.Hp, osprey.Ammo, rules.Database.Weapons[osprey.Primary].Damage));
+        Assert.Equal(60, rules.Database.Weapons[rules.Unit(UnitType.AllianceDestroyer).Primary].Damage);
+    }
+
+    [Fact]
     public void Torpedoes_hit_a_ship_and_never_a_tank_on_the_shore()
     {
         var simulation = Match();
@@ -117,7 +150,8 @@ public sealed class ShipWeaponsTests
         Assert.False(squid.IsAlive);
         var (at, hp) = (ship.Position, ship.Hp);
         simulation.Enqueue(new MoveCommand(Allied, simulation.CurrentTick, 0, [ship.Id], new CellPos(50, 30).Center));
-        Run(simulation, 60);
+        // RA2 SquidGrab: 15 every 99 frames.
+        Run(simulation, 110);
 
         Assert.Equal(at, ship.Position);
         Assert.True(ship.Hp < hp);

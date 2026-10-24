@@ -81,7 +81,8 @@ public sealed class LooseEndsTests
         world.SetHp(tank, 500, null);
         Run(simulation, 61);
 
-        Assert.InRange(tank.Hp, 506, 510);
+        // RA2 self-healing: 1 hit point a second (loose ends, stage 4).
+        Assert.InRange(tank.Hp, 503, 505);
     }
 
     [Fact]
