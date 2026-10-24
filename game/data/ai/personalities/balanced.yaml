@@ -9,9 +9,10 @@ balanced:
   kind: personality
   name: Balanced
   weights: { economy: 1, defense: 1, army: 1, tech: 1, harassment: 1 }
-  armies: { union: standard_army }
+  armies: { alliance: alliance_standard_army, union: standard_army }
   build_orders:
     union: { simple: balanced_simple, standard: standard, optimized: balanced_optimized }
+    alliance: { simple: alliance_balanced_simple, standard: alliance_balanced_standard, optimized: alliance_balanced_optimized }
   first_attack: { min: 360s, max: 480s }
   wave_interval: 180s
   retreat_threshold: 70%

@@ -1,0 +1,63 @@
+# The first units of the Alliance (docs/ra2_units/yaml_drafts/alliance, docs/content/names.md): its MCV and harvester, which a faction
+# needs, an infantry and a tank. The rest of the army comes with M11c. The templates' prerequisites are the Union's, so every unit
+# sets its own.
+alliance_rifleman:  # rifle infantry
+  kind: unit
+  inherits: base_infantry
+  name: Rifleman
+  faction: alliance
+  cost: 200
+  build_time: 8.4s
+  hp: 125
+  threat: 10
+  armor: flak
+  primary: alliance_rifle
+  sight: 5
+  prerequisites: [alliance_barracks]
+
+alliance_mcv:  # deploys into the Command Yard
+  kind: unit
+  inherits: base_vehicle
+  name: Mobile Command Unit
+  faction: alliance
+  cost: 3000
+  build_time: 126s
+  hp: 1000
+  threat: 5
+  speed: 24
+  sight: 6
+  turret: false
+  prerequisites: [alliance_war_factory]
+
+alliance_harvester:  # the refinery's free harvester
+  kind: unit
+  inherits: base_vehicle
+  name: Ore Hauler
+  faction: alliance
+  cost: 1400
+  build_time: 58.8s
+  hp: 1000
+  threat: 5
+  armor: medium
+  speed: 24
+  sight: 4
+  turret: false
+  # As the Union's: 1000 credits of ore, a stage in 0.8 s, 50 credits a tick unloaded. Unarmed.
+  harvest_capacity: 1000
+  harvest_time: 0.8s
+  unload_rate: 50
+  prerequisites: [alliance_war_factory, alliance_ore_refinery]
+
+alliance_light_tank:  # battle tank: quicker and lighter than the Union's heavy tank
+  kind: unit
+  inherits: base_vehicle
+  name: Light Tank
+  faction: alliance
+  cost: 700
+  build_time: 29.4s
+  hp: 300
+  threat: 25
+  primary: alliance_light_cannon
+  speed: 42
+  sight: 8
+  prerequisites: [alliance_war_factory]

@@ -23,7 +23,8 @@ public sealed class StartSquadsTests
 
         var blue = units.Where(u => u.Owner == new PlayerId(1)).ToList();
         var red = units.Where(u => u.Owner == new PlayerId(2)).ToList();
-        Assert.Equal(GameDataFiles.Rules.Units.Select(a => a.Type), blue.Select(u => u.Type));
+        // Every unit of the faction played by default, the Union: not those of the Alliance.
+        Assert.Equal(GameDataFiles.Rules.Units.Select(a => a.Type).Where(t => t <= UnitType.TeslaTank), blue.Select(u => u.Type));
         Assert.Equal([UnitType.HeavyTank, UnitType.SupportVehicle, UnitType.Conscript, UnitType.Rocketeer], red.Select(u => u.Type));
         Assert.Equal(ReliefTestMap.BlueStart, blue[0].Cell);
         Assert.Equal(new CellPos(ReliefTestMap.BlueStart.X + 3, ReliefTestMap.BlueStart.Y + 1), blue[7].Cell);

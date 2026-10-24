@@ -139,12 +139,12 @@ public partial class UnitView : Node3D
     {
         switch (type)
         {
-            case UnitType.Harvester:
+            case UnitType.Harvester or UnitType.AllianceHarvester:
                 // Hopper on the rear part of the roof, behind the turret.
                 AddPart(new BoxMesh { Size = new Vector3(size.X * 0.8f, 0.12f, size.Z * 0.3f) },
                     new Vector3(0, size.Y + 0.06f, size.Z * 0.36f), HopperMaterial);
                 break;
-            case UnitType.Mcv:
+            case UnitType.Mcv or UnitType.AllianceMcv:
                 // Mast and jib of the construction crane, front right.
                 AddPart(new BoxMesh { Size = new Vector3(0.05f, 0.3f, 0.05f) },
                     new Vector3(size.X * 0.3f, size.Y + 0.15f, -size.Z * 0.3f), DarkMaterial);
@@ -157,8 +157,9 @@ public partial class UnitView : Node3D
     /// <summary>Width, height and length in cells: the MCV and harvester are big, tanks medium, the support vehicle small.</summary>
     private static Vector3 VehicleSize(UnitType type) => type switch
     {
-        UnitType.Mcv => new Vector3(0.8f, 0.5f, 1.1f),
-        UnitType.Harvester => new Vector3(0.75f, 0.42f, 1f),
+        UnitType.Mcv or UnitType.AllianceMcv => new Vector3(0.8f, 0.5f, 1.1f),
+        UnitType.Harvester or UnitType.AllianceHarvester => new Vector3(0.75f, 0.42f, 1f),
+        UnitType.AllianceLightTank => new Vector3(0.58f, 0.27f, 0.8f),
         UnitType.SupportVehicle => new Vector3(0.5f, 0.28f, 0.75f),
         UnitType.HeavyTank => new Vector3(0.66f, 0.3f, 0.9f),
         UnitType.TeslaTank => new Vector3(0.6f, 0.3f, 0.85f),

@@ -152,6 +152,11 @@ public partial class BuildIcon : Control
     private string Tooltip(Cameo cameo)
     {
         var text = cameo.Name + "\n" + string.Format(Tr("UI_SIDEBAR_COST"), HudFormat.Credits(cameo.Cost));
+        if (cameo.AbilityLater)
+        {
+            text += "\n" + Tr("UI_SIDEBAR_ABILITY_LATER");
+        }
+
         return cameo.Missing.Length == 0 ? text : text + "\n" + string.Format(Tr("UI_SIDEBAR_REQUIRES"), cameo.Missing);
     }
 }

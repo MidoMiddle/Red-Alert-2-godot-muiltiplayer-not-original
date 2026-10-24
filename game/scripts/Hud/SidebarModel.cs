@@ -43,7 +43,11 @@ public sealed record Cameo(
     CameoState State,
     float Progress,
     int Count,
-    string Missing);
+    string Missing)
+{
+    /// <summary>A building whose own ability comes later (M11): the tooltip says so.</summary>
+    public bool AbilityLater { get; init; }
+}
 
 /// <summary>What a click on a square asks for.</summary>
 public enum CameoActionKind
@@ -168,6 +172,7 @@ public static class SidebarModel
         }
 
         var missing = available ? "" : Missing(rules, prerequisites, owned);
+        var later = kind == ProductionKind.Building && rules.Buildings[index].AbilityLater;
         if (first is not null)
         {
             var progress = Math.Clamp(first.Progress / (float)ProductionRules.TotalProgress(rules, kind, index), 0f, 1f);
@@ -175,12 +180,12 @@ public static class SidebarModel
                 : first.Paused ? CameoState.OnHold
                 : first.WaitingForFunds ? CameoState.WaitingForFunds
                 : CameoState.Building;
-            return new Cameo(kind, index, name, cost, state, first.Ready ? 1f : progress, count, missing);
+            return new Cameo(kind, index, name, cost, state, first.Ready ? 1f : progress, count, missing) { AbilityLater = later };
         }
 
         var full = kind == ProductionKind.Building ? queue.Count > 0 : queue.Count >= ProductionRules.MaxUnitQueue;
         var free = !available ? CameoState.Unavailable : full ? CameoState.Busy : CameoState.Available;
-        return new Cameo(kind, index, name, cost, free, 0f, 0, missing);
+        return new Cameo(kind, index, name, cost, free, 0f, 0, missing) { AbilityLater = later };
     }
 
     private static string Missing(RulesDatabase rules, ImmutableArray<string> prerequisites, HashSet<string> owned)

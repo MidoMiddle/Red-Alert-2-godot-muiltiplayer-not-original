@@ -11,12 +11,14 @@ public static class UnitTypes
 {
     // In UnitType order.
     private static readonly string[] Ids =
-        ["conscript", "rocketeer", "engineer", "mcv", "harvester", "support_vehicle", "heavy_tank", "tesla_tank"];
+        ["conscript", "rocketeer", "engineer", "mcv", "harvester", "support_vehicle", "heavy_tank", "tesla_tank",
+         "alliance_mcv", "alliance_harvester", "alliance_rifleman", "alliance_light_tank"];
 
     private static readonly UnitType[] Types =
     [
         UnitType.Conscript, UnitType.Rocketeer, UnitType.Engineer, UnitType.Mcv, UnitType.Harvester, UnitType.SupportVehicle,
-        UnitType.HeavyTank, UnitType.TeslaTank,
+        UnitType.HeavyTank, UnitType.TeslaTank, UnitType.AllianceMcv, UnitType.AllianceHarvester, UnitType.AllianceRifleman,
+        UnitType.AllianceLightTank,
     ];
 
     /// <summary>Every unit type, in <see cref="UnitType"/> order.</summary>

@@ -90,4 +90,10 @@ public sealed record BuildingDef : IDefinition
 
     /// <summary>Id of the sidebar icon; the simulation does not use it.</summary>
     public string Icon { get; init; } = "";
+
+    /// <summary>
+    /// The building's own ability needs a mechanic that comes later (M11: superweapons, ships, repair…): it is built, draws power and
+    /// opens the tech tree, and the sidebar says the rest is to come. The simulation does not use it.
+    /// </summary>
+    public bool AbilityLater { get; init; }
 }

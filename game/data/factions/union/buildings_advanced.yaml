@@ -1,0 +1,106 @@
+# The late buildings of the Union (docs/ra2_buildings/yaml_drafts/union, docs/content/names.md): working names of our own. Built,
+# drawing power and opening the tech tree now; an ability that needs a mechanic of M11 is marked `ability_later` and does nothing
+# yet — the shipyard builds no ships, the projector and the silo fire nothing, the workshop repairs nothing.
+naval_shipyard:  # shipyard; ships and their repair come with M11b — stands on land until then
+  kind: building
+  inherits: base_building
+  name: Dockyard
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 1500
+  sight: 10
+  armor: concrete
+  footprint: [4, 4]
+  power: -20
+  extends_base: false
+  adjacent: 10
+  ability_later: true
+  prerequisites: [refinery]
+
+service_depot:  # vehicle repair, M11
+  kind: building
+  inherits: base_building
+  name: Field Workshop
+  faction: union
+  cost: 800
+  build_time: 33.6s
+  hp: 1200
+  sight: 5
+  footprint: [3, 3]
+  power: -20
+  ability_later: true
+  prerequisites: [war_factory]
+
+nuclear_reactor:  # late power, +2000; the blast when it falls comes later
+  kind: building
+  inherits: base_building
+  name: Atomic Plant
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 1000
+  sight: 5
+  armor: concrete
+  footprint: [4, 4]
+  power: 2000
+  prerequisites: [tech_center]
+
+iron_curtain:  # superweapon: a group made invulnerable for a while, M11a
+  kind: building
+  inherits: base_building
+  name: Bastion Field Projector
+  faction: union
+  cost: 2500
+  build_time: 105s
+  hp: 750
+  sight: 4
+  armor: concrete
+  footprint: [3, 3]
+  power: -200
+  ability_later: true
+  prerequisites: [tech_center]
+
+nuclear_missile_silo:  # superweapon: a missile strike, M11a
+  kind: building
+  inherits: base_building
+  name: Strategic Missile Silo
+  faction: union
+  cost: 5000
+  build_time: 210s
+  hp: 1000
+  sight: 4
+  armor: concrete
+  footprint: [3, 3]
+  power: -200
+  ability_later: true
+  prerequisites: [tech_center]
+
+industrial_plant:  # cheaper vehicles, M11
+  kind: building
+  inherits: base_building
+  name: Heavy Industry Complex
+  faction: union
+  cost: 2500
+  build_time: 105s
+  hp: 1000
+  sight: 4
+  footprint: [3, 3]
+  power: -200
+  ability_later: true
+  prerequisites: [tech_center]
+
+battle_bunker:  # infantry garrison, M11a; stands without a weapon until then
+  kind: building
+  inherits: base_building
+  name: Fortified Bunker
+  faction: union
+  cost: 500
+  build_time: 21s
+  hp: 600
+  sight: 6
+  armor: steel
+  footprint: [2, 2]
+  extends_base: false
+  ability_later: true
+  prerequisites: [construction_yard]

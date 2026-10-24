@@ -145,7 +145,7 @@ public sealed class AiMemory
         EnemySeen |= view.VisibleEnemies.Count > 0;
         foreach (var enemy in view.VisibleEnemies)
         {
-            if (enemy is Unit { Type: UnitType.Mcv } || (enemy is Building { DefIndex: >= 0 } core
+            if ((enemy is Unit unit && view.Rules.IsMcv(unit.Type)) || (enemy is Building { DefIndex: >= 0 } core
                 && view.Rules.Database.Buildings[core.DefIndex].Produces.Contains(ProductionCategory.Building)))
             {
                 (CoreSeenTick, CoreSeenCell) = (view.Tick, enemy is Building yard ? yard.Cell : ((Unit)enemy).Position.ToCell());

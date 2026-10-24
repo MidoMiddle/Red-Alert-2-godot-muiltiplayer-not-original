@@ -299,6 +299,8 @@ public sealed class GoldenValuesTests
         // changes.
         // Replay format v21, rules v41 (the fog of war, an option of the match): no match setup here, so only the versions change; the
         // checksums do not.
-        Assert.Equal((22269, 16432081539738370926UL), (bytes.Length, hash.Value));
+        // Rules v42 (the Alliance: its unit types, the starting infantry of a faction): only the version changes — the scenario keeps to
+        // the eight unit types of M2.
+        Assert.Equal((22269, 16663876548549112683UL), (bytes.Length, hash.Value));
     }
 }

@@ -392,6 +392,10 @@ internal static class RulesValidator
             UnitOf(faction.Id, "harvester", faction.Harvester);
             BuildingOf(faction.Id, "construction_yard", faction.ConstructionYard);
             BuildingOf(faction.Id, "refinery", faction.Refinery);
+            if (faction.StartingInfantry.Length > 0)
+            {
+                UnitOf(faction.Id, "starting_infantry", faction.StartingInfantry);
+            }
         }
 
         /// <summary>

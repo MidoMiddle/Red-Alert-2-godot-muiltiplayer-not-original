@@ -23,7 +23,13 @@ public enum SlotKind
 /// One row of the skirmish screen (docs/implementation/M6_menus_skirmish.md, 4.3; M8, 4.12). <see cref="Team"/> is 0 for none — every
 /// player for itself — or 1–4; <see cref="Start"/> is the index of a start of the map, or <see cref="SkirmishConfig.RandomStart"/>.
 /// </summary>
-public sealed record SkirmishSlot(SlotKind Kind, AiDifficulty Difficulty, string Personality, int Color, int Team, int Start);
+public sealed record SkirmishSlot(SlotKind Kind, AiDifficulty Difficulty, string Personality, int Color, int Team, int Start)
+{
+    /// <summary>
+    /// The faction of the row: an id of the data, <see cref="SkirmishConfig.RandomFaction"/>, or empty — the faction played by default.
+    /// </summary>
+    public string Faction { get; init; } = "";
+}
 
 /// <summary>
 /// The skirmish screen without Godot (M6 step 7, M8 step 13): one row for every start of the map, the options, whether the match can
@@ -36,6 +42,9 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     public bool FogOfWar { get; init; }
 
     public const int RandomStart = -1;
+
+    /// <summary>A faction drawn from the seed of the match among the playable ones.</summary>
+    public const string RandomFaction = "random";
     public const int NoTeam = 0;
     public const int MaxTeam = 4;
 
@@ -50,6 +59,9 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
 
     // A stream of its own for the random starts: they are drawn from the seed of the match, as the replay keeps it.
     private const ulong RandomStartStream = 0x5354_4152_5400;
+
+    // And one for the random factions.
+    private const ulong RandomFactionStream = 0x4641_4354_0000;
 
     /// <summary>
     /// The rows for a map of <paramref name="starts"/> starts: the person, then a «Medium» bot of a random personality, the others closed;
@@ -85,6 +97,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
                 Difficulty = old.Difficulty,
                 Personality = old.Personality,
                 Team = old.Team is >= NoTeam and <= MaxTeam ? old.Team : NoTeam,
+                Faction = old.Faction,
             });
             if (old.Color is >= 0 and < MatchSetup.MaxColors)
             {
@@ -139,10 +152,11 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     }
 
     /// <summary>
-    /// The match of these rows on <paramref name="map"/>: the players in the order of the rows, slots 1, 2, …; every one plays
-    /// <paramref name="faction"/>; the random starts are drawn from <paramref name="seed"/> among those no row has taken.
+    /// The match of these rows on <paramref name="map"/>: the players in the order of the rows, slots 1, 2, …; a row plays its faction,
+    /// <paramref name="faction"/> when it has none, and a random one of <paramref name="playable"/> drawn from <paramref name="seed"/>; the
+    /// random starts are drawn from the seed too, among those no row has taken.
     /// </summary>
-    public MatchSetup ToSetup(MapDefinition map, string faction, ulong seed)
+    public MatchSetup ToSetup(MapDefinition map, string faction, ulong seed, IReadOnlyList<string>? playable = null)
     {
         if (!CanStart)
         {
@@ -159,6 +173,8 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
             .Where(start => !playing.Any(entry => entry.slot.Start == start))
             .ToList();
         var random = new DeterministicRandom(seed, RandomStartStream);
+        var randomFaction = new DeterministicRandom(seed, RandomFactionStream);
+        var choices = playable is { Count: > 0 } ? playable : [faction];
         var players = ImmutableArray.CreateBuilder<MatchPlayer>(playing.Count);
         foreach (var (slot, row) in playing)
         {
@@ -172,11 +188,17 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
 
             var start = map.Starts[index];
             var id = players.Count + 1;
+            var plays = slot.Faction switch
+            {
+                "" => faction,
+                RandomFaction => choices[randomFaction.NextInt(choices.Count)],
+                var chosen => chosen,
+            };
             players.Add(new MatchPlayer(
                 id,
                 slot.Kind == SlotKind.Human ? PlayerKind.Human : PlayerKind.Ai,
                 slot.Difficulty,
-                faction,
+                plays,
                 slot.Color,
                 TeamOf(slot, row),
                 start.Slot,
@@ -204,7 +226,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         foreach (var slot in Slots)
         {
             text.Append(CultureInfo.InvariantCulture,
-                $"slot={slot.Kind.ToString().ToLowerInvariant()},{(int)slot.Difficulty},{slot.Personality},{slot.Color},{slot.Team},{slot.Start}\n");
+                $"slot={slot.Kind.ToString().ToLowerInvariant()},{(int)slot.Difficulty},{slot.Personality},{slot.Color},{slot.Team},{slot.Start},{slot.Faction}\n");
         }
 
         return text.ToString();
@@ -249,7 +271,8 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     private static SkirmishSlot? ParseSlot(string value)
     {
         var parts = value.Split(',');
-        if (parts.Length != 6
+        // The faction came later: a config of before has six parts.
+        if (parts.Length is not (6 or 7)
             || !Enum.TryParse<SlotKind>(parts[0], ignoreCase: true, out var kind)
             || !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var level)
             || !Levels.Contains((AiDifficulty)level)
@@ -261,7 +284,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
             return null;
         }
 
-        return new SkirmishSlot(kind, (AiDifficulty)level, parts[2], color, team, start);
+        return new SkirmishSlot(kind, (AiDifficulty)level, parts[2], color, team, start) { Faction = parts.Length == 7 ? parts[6] : "" };
     }
 
     private static int TeamOf(SkirmishSlot slot, int row) => slot.Team == NoTeam ? OwnTeamBase + 1 + row : slot.Team;

@@ -4,9 +4,10 @@ saboteur:
   kind: personality
   name: Saboteur
   weights: { economy: 1.0, defense: 0.6, army: 0.9, tech: 0.8, harassment: 1.6 }
-  armies: { union: saboteur_army }
+  armies: { alliance: alliance_saboteur_army, union: saboteur_army }
   build_orders:
     union: { simple: balanced_simple, standard: saboteur_standard, optimized: saboteur_optimized }
+    alliance: { simple: alliance_balanced_simple, standard: alliance_saboteur_standard, optimized: alliance_saboteur_optimized }
   first_attack: { min: 240s, max: 360s }
   wave_interval: 90s
   retreat_threshold: 80%

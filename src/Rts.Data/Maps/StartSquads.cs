@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Rules;
@@ -25,7 +26,9 @@ public static class StartSquads
             var types = new List<UnitType>();
             if (start.Slot == 1)
             {
-                types.AddRange(UnitTypes.All);
+                // Every unit of the faction a player plays by default: the Union's eight of M2 (the Alliance's are its own).
+                var faction = rules.DefaultFaction.Id;
+                types.AddRange(UnitTypes.All.Where(type => rules.Database.TryGetUnit(UnitTypes.IdOf(type), out var unit) && unit.Faction == faction));
             }
             else
             {

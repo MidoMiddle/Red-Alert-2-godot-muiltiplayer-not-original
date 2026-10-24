@@ -98,6 +98,29 @@ public sealed class SkirmishConfigTests
     }
 
     [Fact]
+    public void Every_row_plays_its_faction_the_default_one_when_unset_and_a_random_one_from_the_seed()
+    {
+        var map = FourCorners();
+        var config = SkirmishConfig.For(4);
+        config = config
+            .With(0, config.Slots[0] with { Faction = "alliance" })
+            .With(2, config.Slots[2] with { Kind = SlotKind.Bot, Faction = SkirmishConfig.RandomFaction });
+
+        var setup = config.ToSetup(map, "union", seed: 9, ["union", "alliance"]);
+        var grid = map.ToMapGrid();
+
+        Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
+        Assert.Equal(["alliance", "union"], setup.Players.Take(2).Select(player => player.Faction));
+        Assert.Equal(setup.Players[2].Faction, config.ToSetup(map, "union", seed: 9, ["union", "alliance"]).Players[2].Faction);
+        var drawn = Enumerable.Range(1, 30).Select(seed => config.ToSetup(map, "union", (ulong)seed, ["union", "alliance"]).Players[2].Faction).Distinct().Order();
+        Assert.Equal(["alliance", "union"], drawn);
+
+        // Kept with the config; a config of before, without the faction, plays the default one.
+        Assert.Equal("alliance", SkirmishConfig.Load(config.Save())!.Slots[0].Faction);
+        Assert.Equal("", SkirmishConfig.Load("slot=human,1,random,0,0,-1\nslot=bot,1,random,1,0,-1\n")!.Slots[0].Faction);
+    }
+
+    [Fact]
     public void The_config_comes_back_from_its_text_and_fits_a_smaller_map()
     {
         var config = SkirmishConfig.For(4) with { Credits = 5_000, ShortGame = true };

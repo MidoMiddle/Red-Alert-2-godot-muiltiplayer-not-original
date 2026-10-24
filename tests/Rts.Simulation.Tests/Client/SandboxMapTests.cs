@@ -28,7 +28,8 @@ public sealed class SandboxMapTests
     {
         var map = Sandbox();
 
-        Assert.Equal(Enum.GetValues<UnitType>().Order(), map.Units.Where(u => u.Owner == new PlayerId(1)).Select(u => u.Type).Order());
+        // The Union's eight of M2: the units of the Alliance are not on the test maps.
+        Assert.Equal(Enum.GetValues<UnitType>().Where(t => t <= UnitType.TeslaTank).Order(), map.Units.Where(u => u.Owner == new PlayerId(1)).Select(u => u.Type).Order());
         Assert.Contains(map.Units, u => u.Owner == new PlayerId(2));
     }
 

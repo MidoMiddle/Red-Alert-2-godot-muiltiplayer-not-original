@@ -55,8 +55,39 @@ public sealed class GameRules
     /// <summary>The unit types, in <see cref="UnitType"/> order.</summary>
     public IReadOnlyList<UnitArchetype> Units => _units;
 
-    /// <summary>The faction every player plays until the skirmish setup chooses one (M6): the first of the data, in id order.</summary>
-    public FactionDef DefaultFaction => Database.Factions[0];
+    /// <summary>
+    /// The faction a player plays unless the skirmish setup chooses one: the one the data marks <c>default</c>, else the first in id
+    /// order.
+    /// </summary>
+    public FactionDef DefaultFaction
+    {
+        get
+        {
+            foreach (var faction in Database.Factions)
+            {
+                if (faction.IsDefault)
+                {
+                    return faction;
+                }
+            }
+
+            return Database.Factions[0];
+        }
+    }
+
+    /// <summary>Whether <paramref name="type"/> is the MCV of a faction of the data: the core of a base that is still on its wheels.</summary>
+    public bool IsMcv(UnitType type)
+    {
+        foreach (var faction in Database.Factions)
+        {
+            if (UnitTypes.TryGetById(faction.Mcv, out var mcv) && mcv == type)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>The general rules of the economy: the one <c>economy</c> record of the data.</summary>
     public EconomyDef Economy => Database.Economies[0];

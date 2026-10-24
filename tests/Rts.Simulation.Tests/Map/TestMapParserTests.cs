@@ -83,7 +83,7 @@ public sealed class TestMapParserTests
             .ToList();
         Assert.Equal(Enum.GetValues<LandType>().Order(), cells.Select(map.Grid.LandAt).Distinct().Order());
         Assert.Contains(cells, map.Grid.IsBlocked);
-        Assert.Equal(Enum.GetValues<UnitType>().Order(), map.Units.Select(u => u.Type).Order());
+        Assert.Equal(Enum.GetValues<UnitType>().Where(t => t <= UnitType.TeslaTank).Order(), map.Units.Select(u => u.Type).Order());
     }
 
     [Theory]

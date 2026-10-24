@@ -47,7 +47,8 @@ internal static class ReferenceScenario
                 var kind = random.NextInt(19);
                 if (kind < 5)
                 {
-                    var type = (UnitType)(1 + random.NextInt(TestRules.Standard.Units.Count));
+                    // The eight unit types of M2: the Alliance's, added later, would change the draws and every golden value.
+                    var type = (UnitType)(1 + random.NextInt((int)UnitType.TeslaTank));
                     commands.Add(new SpawnTestUnitCommand(owner, tick, sequences[player]++, type, point));
                     continue;
                 }

@@ -26,7 +26,7 @@ internal static class DefinitionReader
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
-        "prerequisites", "model", "icon",
+        "prerequisites", "model", "icon", "ability_later",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -44,7 +44,7 @@ internal static class DefinitionReader
 
     private static readonly string[] TerrainKeys = ["name", "code", "buildable", "speed"];
 
-    private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester"];
+    private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester", "starting_infantry", "default"];
 
     private static readonly string[] BuildOrderKeys = ["faction", "steps"];
 
@@ -142,6 +142,7 @@ internal static class DefinitionReader
             Prerequisites = fields.Optional("prerequisites", Scalars.IdList, ImmutableArray<string>.Empty),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
+            AbilityLater = fields.Optional("ability_later", Scalars.Flag, false),
         };
     }
 
@@ -239,6 +240,8 @@ internal static class DefinitionReader
             ConstructionYard = fields.Required("construction_yard", Scalars.Id, ""),
             Refinery = fields.Required("refinery", Scalars.Id, ""),
             Harvester = fields.Required("harvester", Scalars.Id, ""),
+            StartingInfantry = fields.Optional("starting_infantry", Scalars.Id, ""),
+            IsDefault = fields.Optional("default", Scalars.Flag, false),
         };
     }
 

@@ -1,0 +1,298 @@
+# The buildings of the Alliance (docs/ra2_buildings/yaml_drafts/alliance, docs/content/names.md): working names of our own, numbers
+# of the drafts; see templates.yaml. Footprints the drafts left open take the size of the Union building of the same role, so a base
+# fits the starts of the ready maps. An ability that needs a mechanic of M11 is marked `ability_later`: the building is built, draws
+# power and opens the tech tree, and does nothing else yet.
+alliance_construction_yard:  # base; comes from the MCV
+  kind: building
+  inherits: base_building
+  name: Command Yard
+  faction: alliance
+  cost: 3000
+  build_time: 126s
+  hp: 1000
+  sight: 8
+  armor: concrete
+  footprint: [3, 3]
+  produces: [building, defense]
+
+alliance_power_plant:  # power plant, +200
+  kind: building
+  inherits: base_building
+  name: Power Station
+  faction: alliance
+  cost: 800
+  build_time: 33.6s
+  hp: 750
+  sight: 4
+  footprint: [2, 2]
+  power: 200
+  prerequisites: [alliance_construction_yard]
+
+alliance_barracks:  # infantry production
+  kind: building
+  inherits: base_building
+  name: Training Camp
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 500
+  sight: 5
+  armor: steel
+  footprint: [2, 2]
+  power: -10
+  produces: [infantry]
+  exit_cell: [1, 2]
+  prerequisites: [alliance_power_plant]
+
+alliance_ore_refinery:  # ore processing; gives a free harvester
+  kind: building
+  inherits: base_building
+  name: Ore Processor
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 1000
+  sight: 6
+  footprint: [3, 3]
+  power: -50
+  dock_cell: [1, 3]
+  prerequisites: [alliance_power_plant]
+
+alliance_war_factory:  # vehicle production
+  kind: building
+  inherits: base_building
+  name: Vehicle Plant
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 1000
+  sight: 4
+  footprint: [3, 4]
+  power: -25
+  produces: [vehicle]
+  exit_cell: [1, 4]
+  prerequisites: [alliance_ore_refinery, alliance_barracks]
+
+alliance_air_force_command:  # radar; aircraft come with M11b
+  kind: building
+  inherits: base_building
+  name: Air Command
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  sight: 5
+  armor: steel
+  footprint: [3, 2]
+  power: -50
+  radar: true
+  ability_later: true
+  prerequisites: [alliance_ore_refinery]
+
+alliance_naval_shipyard:  # shipyard; ships come with M11b — stands on land until then
+  kind: building
+  inherits: base_building
+  name: Harbor
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 1500
+  sight: 10
+  armor: concrete
+  footprint: [4, 4]
+  power: -25
+  extends_base: false
+  adjacent: 10
+  ability_later: true
+  prerequisites: [alliance_ore_refinery]
+
+alliance_service_depot:  # vehicle repair, M11
+  kind: building
+  inherits: base_building
+  name: Repair Bay
+  faction: alliance
+  cost: 800
+  build_time: 33.6s
+  hp: 1200
+  sight: 5
+  footprint: [3, 3]
+  power: -25
+  ability_later: true
+  prerequisites: [alliance_war_factory]
+
+alliance_battle_lab:  # high tech: opens the late buildings
+  kind: building
+  inherits: base_building
+  name: Research Lab
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 500
+  sight: 6
+  footprint: [3, 3]
+  power: -100
+  prerequisites: [alliance_war_factory, alliance_air_force_command]
+
+alliance_ore_purifier:  # more credits from the ore, M11
+  kind: building
+  inherits: base_building
+  name: Ore Refining Annex
+  faction: alliance
+  cost: 2500
+  build_time: 105s
+  hp: 900
+  sight: 5
+  footprint: [3, 3]
+  power: -200
+  ability_later: true
+  prerequisites: [alliance_battle_lab]
+
+alliance_spy_satellite_uplink:  # reveals the map, M11; a radar meanwhile
+  kind: building
+  inherits: base_building
+  name: Orbital Uplink
+  faction: alliance
+  cost: 1500
+  build_time: 63s
+  hp: 1000
+  sight: 5
+  footprint: [2, 2]
+  power: -100
+  radar: true
+  ability_later: true
+  prerequisites: [alliance_battle_lab]
+
+alliance_robot_control_center:  # drives robot units, M11
+  kind: building
+  inherits: base_building
+  name: Drone Control Hub
+  faction: alliance
+  cost: 600
+  build_time: 25.2s
+  hp: 600
+  sight: 6
+  footprint: [2, 2]
+  power: -100
+  ability_later: true
+  prerequisites: [alliance_war_factory]
+
+alliance_chronosphere:  # superweapon: moves a group across the map, M11c
+  kind: building
+  inherits: base_building
+  name: Phase Gate
+  faction: alliance
+  cost: 2500
+  build_time: 105s
+  hp: 750
+  sight: 5
+  armor: concrete
+  footprint: [4, 3]
+  power: -200
+  ability_later: true
+  prerequisites: [alliance_battle_lab]
+
+alliance_weather_control_device:  # superweapon: a storm over an area, M11c
+  kind: building
+  inherits: base_building
+  name: Storm Generator
+  faction: alliance
+  cost: 5000
+  build_time: 210s
+  hp: 1000
+  sight: 5
+  armor: concrete
+  footprint: [3, 3]
+  power: -200
+  ability_later: true
+  prerequisites: [alliance_battle_lab]
+
+alliance_gap_generator:  # hides the base from the enemy, M11c
+  kind: building
+  inherits: base_building
+  name: Veil Generator
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 600
+  sight: 5
+  footprint: [1, 1]
+  power: -100
+  ability_later: true
+  prerequisites: [alliance_battle_lab]
+
+alliance_pillbox:  # light defence, machine gun
+  kind: building
+  inherits: base_defense
+  name: Gun Nest
+  faction: alliance
+  cost: 500
+  build_time: 21s
+  hp: 400
+  sight: 7
+  threat: 20
+  primary: alliance_pillbox_gun
+  footprint: [1, 1]
+  adjacent: 4
+  prerequisites: [alliance_barracks]
+
+alliance_patriot_missile_system:  # anti-air defence: fires once there are aircraft (M11b)
+  kind: building
+  inherits: base_defense
+  name: Sky Guard
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 900
+  sight: 10
+  threat: 10
+  primary: alliance_sky_guard_missile
+  footprint: [1, 1]
+  power: -50
+  adjacent: 4
+  prerequisites: [alliance_barracks]
+
+alliance_prism_tower:  # beam defence; the chains of towers come with M11c
+  kind: building
+  inherits: base_defense
+  name: Lens Tower
+  faction: alliance
+  cost: 1500
+  build_time: 63s
+  hp: 600
+  sight: 8
+  threat: 40
+  primary: alliance_lens_beam
+  footprint: [1, 1]
+  power: -75
+  prerequisites: [alliance_air_force_command]
+
+alliance_grand_cannon:  # long-range artillery defence
+  kind: building
+  inherits: base_defense
+  name: Siege Battery
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 900
+  sight: 10
+  threat: 45
+  primary: alliance_siege_shell
+  footprint: [2, 2]
+  power: -100
+  prerequisites: [alliance_air_force_command]
+
+alliance_wall:  # wall; placed by dragging
+  kind: building
+  inherits: base_defense
+  name: Barrier
+  faction: alliance
+  cost: 100
+  build_time: 4.2s
+  hp: 300
+  sight: 1
+  armor: concrete
+  footprint: [1, 1]
+  wall: true
+  powered: false
+  adjacent: 8
+  prerequisites: [alliance_barracks]

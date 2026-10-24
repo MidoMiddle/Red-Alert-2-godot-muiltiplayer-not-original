@@ -136,6 +136,8 @@ public static class DataHasher
             Add(hash, faction.ConstructionYard);
             Add(hash, faction.Refinery);
             Add(hash, faction.Harvester);
+            Add(hash, faction.StartingInfantry);
+            hash.Add(faction.IsDefault);
         }
 
         // The build orders of the bots (M5 step 5): a bot of other data builds otherwise.

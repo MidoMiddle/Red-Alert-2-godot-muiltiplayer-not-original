@@ -34,11 +34,14 @@ public sealed class GameDataTests
     {
         var database = GameDataFiles.Current.Database;
 
-        Assert.Equal(8, database.Units.Length);
-        Assert.Equal(11, database.Buildings.Length);
+        // The Union and the Alliance: every building that can be built, those whose ability comes in M11 among them.
+        Assert.Equal(12, database.Units.Length);
+        Assert.Equal(18, database.Buildings.Count(building => building.Faction == "union"));
+        Assert.Equal(20, database.Buildings.Count(building => building.Faction == "alliance"));
         Assert.Equal(6, database.Locomotors.Length);
         Assert.Equal(8, database.Terrains.Length);
-        Assert.Equal(new[] { "union" }, database.Factions.Select(faction => faction.Id));
+        Assert.Equal(new[] { "alliance", "union" }, database.Factions.Select(faction => faction.Id));
+        Assert.Equal("union", GameDataFiles.Rules.DefaultFaction.Id);
     }
 
     [Fact]
@@ -47,8 +50,8 @@ public sealed class GameDataTests
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources).
-        Assert.Equal(0x6d7d5c62a8f38695UL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources). The Alliance: the faction, its buildings, units, weapons and bots, the starting infantry and the default faction; the late buildings of the Union.
+        Assert.Equal(0x7401e414a9db5891UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
@@ -65,8 +68,8 @@ public sealed class GameDataTests
             database.Difficulties.Select(level => (level.Id, PlayerModifiers.Of(level))));
         Assert.All(database.Personalities, personality =>
         {
-            Assert.Equal("union", Assert.Single(personality.Armies).Faction);
-            Assert.Equal("union", Assert.Single(personality.BuildOrders).Faction);
+            Assert.Equal(["alliance", "union"], personality.Armies.Select(army => army.Faction));
+            Assert.Equal(["alliance", "union"], personality.BuildOrders.Select(orders => orders.Faction));
         });
     }
 
@@ -75,9 +78,17 @@ public sealed class GameDataTests
     {
         var rules = GameDataFiles.Rules;
 
-        foreach (var type in UnitTypes.All)
+        // The units of the Union: the tests play them. The weapons by id, as the data has more of them than the tests.
+        foreach (var type in UnitTypes.All.Where(type => rules.Database.Units.Any(unit => unit.Id == UnitTypes.IdOf(type) && unit.Faction == "union")))
         {
-            Assert.Equal(TestRules.Unit(type), rules.Unit(type));
+            Assert.Equal(Comparable(TestRules.Standard, type), Comparable(rules, type));
+        }
+
+        static (UnitArchetype, string, string) Comparable(Rts.Simulation.Rules.GameRules rules, UnitType type)
+        {
+            var unit = rules.Unit(type);
+            string Weapon(int index) => index < 0 ? "" : rules.Database.Weapons[index].Id;
+            return (unit with { Primary = 0, Secondary = 0 }, Weapon(unit.Primary), Weapon(unit.Secondary));
         }
 
         Assert.True(rules.Land.ContentEquals(TestRules.Standard.Land));
@@ -94,10 +105,13 @@ public sealed class GameDataTests
         var data = GameDataFiles.Current.Database;
         var test = TestRules.Standard.Database;
 
-        Assert.Equal(test.Buildings.Select(Shape), data.Buildings.Select(Shape));
-        Assert.Equal(test.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance, unit.Crusher, unit.Crushable)),
-            data.Units.Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance, unit.Crusher, unit.Crushable)));
-        Assert.Equal(test.Factions.Single(), data.Factions.Single() with { Name = test.Factions.Single().Name });
+        // The buildings and units of the tests are those of the Union of M3–M4; the data has the late ones and the Alliance besides.
+        var tested = test.Buildings.Select(building => building.Id).ToHashSet();
+        Assert.Equal(test.Buildings.Select(Shape), data.Buildings.Where(building => tested.Contains(building.Id)).Select(Shape));
+        Assert.Equal(test.Units.Where(unit => unit.Faction == "union").Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance, unit.Crusher, unit.Crushable)),
+            data.Units.Where(unit => unit.Faction == "union").Select(unit => (unit.Id, unit.Faction, string.Join(",", unit.Prerequisites), unit.Armor, unit.Primary, unit.Secondary, unit.Threat, unit.Stance, unit.Crusher, unit.Crushable)));
+        data.TryGetFaction("union", out var union);
+        Assert.Equal(test.Factions.Single(), union with { Name = test.Factions.Single().Name });
 
         Assert.Equal(test.Economies.Single(), data.Economies.Single());
 
@@ -118,7 +132,8 @@ public sealed class GameDataTests
         Assert.Equal(test.Armors.Select(armor => armor.Id), data.Armors.Select(armor => armor.Id));
         Assert.Equal(test.Warheads.Select(w => w with { Name = "" }), data.Warheads.Select(w => w with { Name = "" }));
         Assert.Equal(test.Projectiles.Select(p => p with { Name = "" }), data.Projectiles.Select(p => p with { Name = "" }));
-        Assert.Equal(test.Weapons.Select(w => w with { Name = "", Report = "" }), data.Weapons.Select(w => w with { Name = "", Report = "" }));
+        var weapons = test.Weapons.Select(weapon => weapon.Id).ToHashSet();
+        Assert.Equal(test.Weapons.Select(w => w with { Name = "", Report = "" }), data.Weapons.Where(w => weapons.Contains(w.Id)).Select(w => w with { Name = "", Report = "" }));
     }
 
     [Fact]

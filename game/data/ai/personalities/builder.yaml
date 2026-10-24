@@ -4,9 +4,10 @@ builder:
   kind: personality
   name: Builder
   weights: { economy: 1.4, defense: 1.5, army: 0.8, tech: 1.0, harassment: 0.2 }
-  armies: { union: builder_army }
+  armies: { alliance: alliance_builder_army, union: builder_army }
   build_orders:
     union: { simple: builder_simple, standard: builder_standard, optimized: builder_optimized }
+    alliance: { simple: alliance_builder_simple, standard: alliance_builder_standard, optimized: alliance_builder_optimized }
   first_attack: { min: 600s, max: 720s }
   wave_interval: 240s
   retreat_threshold: 80%

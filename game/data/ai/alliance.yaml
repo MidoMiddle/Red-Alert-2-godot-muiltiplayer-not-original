@@ -1,0 +1,90 @@
+# The build orders and armies of the bots of the Alliance, as those of the Union in union.yaml with the Alliance's buildings and its
+# two fighting units (docs/content/names.md). Not tuned: the Arena has not played them (owner's decision); the balance comes with M11c.
+
+# «Balanced».
+alliance_balanced_simple:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_war_factory]
+
+alliance_balanced_standard:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_war_factory, alliance_ore_refinery, alliance_power_plant, alliance_air_force_command, alliance_prism_tower]
+
+alliance_balanced_optimized:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_war_factory, alliance_power_plant]
+
+# «Aggressor»: the training camp before the refinery, a second vehicle plant soon, no defense.
+alliance_aggressor_simple:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_barracks, alliance_ore_refinery, alliance_war_factory]
+
+alliance_aggressor_standard:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_barracks, alliance_ore_refinery, alliance_war_factory, alliance_power_plant, alliance_war_factory]
+
+alliance_aggressor_optimized:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_war_factory, alliance_war_factory, alliance_power_plant]
+
+# «Builder»: two refineries, a gun nest at once, two lens towers once the air command stands.
+alliance_builder_simple:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_pillbox, alliance_war_factory]
+
+alliance_builder_standard:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_pillbox, alliance_ore_refinery, alliance_power_plant, alliance_war_factory, alliance_air_force_command, alliance_prism_tower, alliance_prism_tower]
+
+alliance_builder_optimized:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_ore_refinery, alliance_barracks, alliance_pillbox, alliance_war_factory, alliance_power_plant, alliance_air_force_command, alliance_prism_tower, alliance_prism_tower]
+
+# «Saboteur»: the vehicle plant early, for the light tanks of its raids.
+alliance_saboteur_standard:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_war_factory, alliance_power_plant, alliance_air_force_command]
+
+alliance_saboteur_optimized:
+  kind: build_order
+  faction: alliance
+  steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_war_factory, alliance_power_plant, alliance_air_force_command]
+
+# The armies: the light tank and the rifleman are all the Alliance fields until M11c.
+alliance_standard_army:
+  kind: army
+  faction: alliance
+  shares: { alliance_light_tank: 60%, alliance_rifleman: 40% }
+  against_infantry: [alliance_light_tank]
+  against_vehicles: [alliance_light_tank]
+
+alliance_aggressor_army:
+  kind: army
+  faction: alliance
+  shares: { alliance_light_tank: 70%, alliance_rifleman: 30% }
+  against_infantry: [alliance_light_tank]
+  against_vehicles: [alliance_light_tank]
+
+alliance_builder_army:
+  kind: army
+  faction: alliance
+  shares: { alliance_light_tank: 55%, alliance_rifleman: 45% }
+  against_infantry: [alliance_light_tank]
+  against_vehicles: [alliance_light_tank]
+
+alliance_saboteur_army:
+  kind: army
+  faction: alliance
+  shares: { alliance_light_tank: 75%, alliance_rifleman: 25% }
+  against_infantry: [alliance_light_tank]
+  against_vehicles: [alliance_light_tank]

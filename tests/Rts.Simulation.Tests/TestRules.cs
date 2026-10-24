@@ -167,6 +167,34 @@ internal static class TestRules
             Primary = "tesla_tank_bolt",
             Threat = 35,
         });
+
+        // The units of the Alliance, which the engine needs as it needs every unit type; unarmed here (their weapons are the game's).
+        builder.Add(VehicleDef(UnitType.AllianceMcv, Locomotor.Track, speed: 24, turret: false, sight: 6, "alliance_war_factory") with
+        {
+            Faction = "alliance",
+            Threat = 5,
+        });
+        builder.Add(VehicleDef(UnitType.AllianceHarvester, Locomotor.Track, speed: 24, turret: false, sight: 4, "alliance_war_factory", "alliance_ore_refinery") with
+        {
+            Faction = "alliance",
+            HarvestCapacity = 1000,
+            HarvestTime = 12,
+            UnloadRate = 50,
+            Armor = "medium",
+            Threat = 5,
+        });
+        builder.Add(InfantryDef(UnitType.AllianceRifleman, sight: 5) with
+        {
+            Faction = "alliance",
+            Armor = "flak",
+            Threat = 10,
+            Prerequisites = ["alliance_barracks"],
+        });
+        builder.Add(VehicleDef(UnitType.AllianceLightTank, Locomotor.Track, speed: 42, turret: true, sight: 8, "alliance_war_factory") with
+        {
+            Faction = "alliance",
+            Threat = 25,
+        });
         Combat(builder);
 
         // The buildings of docs/implementation/M3_base_economy.md, 4.6: id, footprint, power, prerequisites.
@@ -227,6 +255,8 @@ internal static class TestRules
             ConstructionYard = "construction_yard",
             Refinery = "refinery",
             Harvester = "harvester",
+            StartingInfantry = "conscript",
+            IsDefault = true,
         });
         // The build order of game/data/ai (M5 step 5).
         builder.Add(new BuildOrderDef
@@ -446,7 +476,8 @@ internal static class TestRules
         UnitType.Conscript => 125,
         UnitType.Rocketeer => 100,
         UnitType.Engineer => 75,
-        UnitType.Mcv or UnitType.Harvester => 1000,
+        UnitType.Mcv or UnitType.Harvester or UnitType.AllianceMcv or UnitType.AllianceHarvester => 1000,
+        UnitType.AllianceRifleman => 125,
         UnitType.SupportVehicle => 180,
         UnitType.HeavyTank => 400,
         _ => 300,

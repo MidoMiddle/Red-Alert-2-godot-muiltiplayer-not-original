@@ -109,7 +109,7 @@ public static class VictorySystem
                 continue;
             }
 
-            if (entity is Building building ? building.Def is not { Wall: true } : !shortGame || ((Unit)entity).Type == UnitType.Mcv)
+            if (entity is Building building ? building.Def is not { Wall: true } : !shortGame || world.Rules.IsMcv(((Unit)entity).Type))
             {
                 return false;
             }

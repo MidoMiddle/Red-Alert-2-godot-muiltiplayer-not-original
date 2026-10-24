@@ -192,7 +192,7 @@ public static class EconomyRun
                     case ProductionReady ready when ready.Player == player:
                         Note(tick, $"{Data.Buildings[ready.DefIndex].Id} ready to place");
                         break;
-                    case BuildingPlaced placed when placed.Player == player && Data.Buildings[placed.DefIndex].Id != Data.Factions[0].ConstructionYard:
+                    case BuildingPlaced placed when placed.Player == player && Data.Buildings[placed.DefIndex].Id != rules.DefaultFaction.ConstructionYard:
                         Note(tick, $"{Data.Buildings[placed.DefIndex].Id} placed at {placed.Cell.X},{placed.Cell.Y}");
                         break;
                     case BuildUpComplete complete when World.TryGet(complete.Building, out var entity) && entity is Building { Def: { } def } && entity.Owner == player:
@@ -330,7 +330,7 @@ public static class EconomyRun
         /// </summary>
         private CellPos? Spot(BuildingDef def)
         {
-            var yard = World.Entities.OfType<Building>().FirstOrDefault(b => b.IsAlive && b.Owner == player && b.Def?.Id == Data.Factions[0].ConstructionYard);
+            var yard = World.Entities.OfType<Building>().FirstOrDefault(b => b.IsAlive && b.Owner == player && b.Def?.Id == rules.DefaultFaction.ConstructionYard);
             if (yard is null)
             {
                 return null;

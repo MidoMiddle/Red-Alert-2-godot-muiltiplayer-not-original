@@ -44,6 +44,9 @@ public partial class SkirmishSetup : Control
     /// </summary>
     public const string RandomMapPath = "user://skirmish/random.rtsmap";
 
+    // The factions of the faction column, in its order: the ids of the data and «random».
+    private static readonly string[] FactionIds = ["union", "alliance", "cult", SkirmishConfig.RandomFaction];
+
     // The names of the colours of PlayerPalette, in its order.
     private static readonly string[] ColorKeys =
     [
@@ -325,17 +328,20 @@ public partial class SkirmishSetup : Control
 
             start.ItemSelected += item => Apply(_config.WithStart(row, item == 0 ? SkirmishConfig.RandomStart : (int)item - 1));
 
+            var faction = FactionOption(row);
+            faction.ItemSelected += item => Change(row, slot => slot with { Faction = FactionIds[(int)item] });
+
             var placeholder = row == 0;
             var controls = new Control[]
             {
-                who, placeholder ? new Control() : level, placeholder ? new Control() : personality, FactionOption(), color, team, start,
+                who, placeholder ? new Control() : level, placeholder ? new Control() : personality, faction, color, team, start,
             };
             foreach (var control in controls)
             {
                 _players.AddChild(control);
             }
 
-            _rows.Add(new PlayerRow(controls, who as OptionButton, level, personality, color, team, start));
+            _rows.Add(new PlayerRow(controls, who as OptionButton, level, personality, faction, color, team, start));
         }
 
         Refresh();
@@ -416,6 +422,7 @@ public partial class SkirmishSetup : Control
             row.Personality.TooltipText = SkirmishNames.PersonalityHint(this, slot.Personality);
             row.Color.Selected = slot.Color;
             row.Team.Selected = slot.Team;
+            row.Faction.Selected = Math.Max(0, Array.IndexOf(FactionIds, slot.Faction.Length == 0 ? DataFiles.Current.Rules.DefaultFaction.Id : slot.Faction));
             row.Start.Selected = slot.Start == SkirmishConfig.RandomStart ? 0 : slot.Start + 1;
             foreach (var control in new Control[] { row.Color, row.Team, row.Start })
             {
@@ -481,7 +488,7 @@ public partial class SkirmishSetup : Control
         }
 
         SaveConfig();
-        var setup = _config.ToSetup(entry.Map, DataFiles.Current.Rules.DefaultFaction.Id, MatchSetups.NewSeed());
+        var setup = _config.ToSetup(entry.Map, DataFiles.Current.Rules.DefaultFaction.Id, MatchSetups.NewSeed(), Playable());
         SceneRouter.Instance?.GoTo(MatchScene, new Dictionary<string, object>
         {
             [SimulationHost.MapArgument] = file,
@@ -519,11 +526,31 @@ public partial class SkirmishSetup : Control
         return ImageTexture.CreateFromImage(image);
     }
 
-    /// <summary>Union is the only faction until M11. Alliance and Cult are listed, Random means Union.</summary>
-    private OptionButton FactionOption()
+    /// <summary>
+    /// The faction of a row: Union, Alliance, Random among the factions of the data; the Cult is listed and locked until M11d, as is any
+    /// faction the data does not have.
+    /// </summary>
+    private OptionButton FactionOption(int row)
     {
-        return DisabledOption(
-            FieldWidth, 0, Tr("UI_FACTION_UNION"), Tr("UI_FACTION_ALLIANCE"), Tr("UI_FACTION_CULT"), Tr("UI_RANDOM"));
+        var option = Option($"Faction{row}", Tr("UI_FACTION_UNION"), Tr("UI_FACTION_ALLIANCE"), Tr("UI_FACTION_CULT"), Tr("UI_RANDOM"));
+        var database = DataFiles.Current.Rules.Database;
+        for (var i = 0; i < FactionIds.Length; i++)
+        {
+            if (FactionIds[i] != SkirmishConfig.RandomFaction && !database.TryGetFaction(FactionIds[i], out _))
+            {
+                option.SetItemDisabled(i, true);
+                option.SetItemTooltip(i, Tr("UI_COMING_SOON"));
+            }
+        }
+
+        return option;
+    }
+
+    /// <summary>The factions the screen offers that the data has: Random draws among them.</summary>
+    private static List<string> Playable()
+    {
+        var database = DataFiles.Current.Rules.Database;
+        return [.. FactionIds.Where(id => id != SkirmishConfig.RandomFaction && database.TryGetFaction(id, out _))];
     }
 
     /// <summary>A dropdown that shows its items and the selected one, but cannot be opened yet.</summary>
@@ -589,5 +616,6 @@ public partial class SkirmishSetup : Control
 
     /// <summary>The controls of a row of the players table, in the order of the columns, and those that show its slot.</summary>
     private sealed record PlayerRow(
-        Control[] Controls, OptionButton? Who, OptionButton Level, OptionButton Personality, OptionButton Color, OptionButton Team, OptionButton Start);
+        Control[] Controls, OptionButton? Who, OptionButton Level, OptionButton Personality, OptionButton Faction, OptionButton Color,
+        OptionButton Team, OptionButton Start);
 }

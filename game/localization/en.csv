@@ -288,6 +288,7 @@ UI_TAB_VEHICLES,Vehicles
 UI_SIDEBAR_READY,Ready
 UI_SIDEBAR_ON_HOLD,On Hold
 UI_SIDEBAR_COST,Cost: {0}
+UI_SIDEBAR_ABILITY_LATER,Its special ability comes in a later update
 UI_SIDEBAR_REQUIRES,Requires: {0}
 UI_SIDEBAR_SELL_HINT,Sell: click your building. Right click to stop.
 UI_SIDEBAR_REPAIR_HINT,Repair: click your building. Right click to stop.

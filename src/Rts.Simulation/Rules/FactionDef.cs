@@ -21,4 +21,10 @@ public sealed record FactionDef : IDefinition
 
     /// <summary>The harvester that the refinery gives for free.</summary>
     public required string Harvester { get; init; }
+
+    /// <summary>The infantry every player of the faction starts a match with, three of them beside the MCV (none when empty).</summary>
+    public string StartingInfantry { get; init; } = "";
+
+    /// <summary>The faction a player plays unless one is chosen: one of the data has it when there are several.</summary>
+    public bool IsDefault { get; init; }
 }

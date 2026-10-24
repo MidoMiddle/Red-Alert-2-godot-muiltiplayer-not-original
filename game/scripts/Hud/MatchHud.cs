@@ -42,6 +42,12 @@ public partial class MatchHud : CanvasLayer
             stats.Setup(host.Simulation.World.Stats.Of(SimulationHost.LocalPlayer).BuildingsBuilt, 0);
             stats.Toggle();
         };
+        // The faction the local player plays in the match: its colour is the accent (the Union outside a match).
+        if (host.Simulation.World.Match?.PlayerOf(SimulationHost.LocalPlayer) is { } local)
+        {
+            PlayerFaction = FactionPalette.Of(local.Faction);
+        }
+
         sidebar.Setup(PlayerFaction, host.Simulation.World.Player(SimulationHost.LocalPlayer).Credits);
         sidebar.Bind(host, player);
         var notices = new Notifications { Name = "Notifications" };

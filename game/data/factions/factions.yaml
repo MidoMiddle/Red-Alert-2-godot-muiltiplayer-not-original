@@ -6,3 +6,16 @@ union:
   construction_yard: construction_yard
   refinery: refinery
   harvester: harvester
+  starting_infantry: conscript
+  default: true
+
+# The Alliance (docs/content/names.md): playable from the skirmish screen; its buildings whose ability needs a mechanic of M11 are
+# built and draw power, the ability comes later (ability_later).
+alliance:
+  kind: faction
+  name: Alliance
+  mcv: alliance_mcv
+  construction_yard: alliance_construction_yard
+  refinery: alliance_ore_refinery
+  harvester: alliance_harvester
+  starting_infantry: alliance_rifleman

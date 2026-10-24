@@ -29,7 +29,7 @@ public sealed class MatchStartTests
             var mcv = Assert.Single(units, unit => unit.Type == UnitType.Mcv);
             Assert.Equal(player.Start.Center, mcv.Position);
             var conscripts = units.Where(unit => unit.Type == UnitType.Conscript).ToList();
-            Assert.Equal(MatchStart.Conscripts, conscripts.Count);
+            Assert.Equal(MatchStart.StartingInfantry, conscripts.Count);
             Assert.Equal(4, units.Count);
             // Outside the 3×3 yard the MCV deploys to, within a few cells of it.
             Assert.All(conscripts, conscript =>
@@ -58,7 +58,7 @@ public sealed class MatchStartTests
         var world = Start(MatchSetupTests.OneOnOne(), map).World;
 
         var conscripts = UnitsOf(world, new PlayerId(1)).Where(unit => unit.Type == UnitType.Conscript).ToList();
-        Assert.Equal(MatchStart.Conscripts, conscripts.Count);
+        Assert.Equal(MatchStart.StartingInfantry, conscripts.Count);
         Assert.All(conscripts, conscript => Assert.True(world.Map.CanEnter(conscript.Position.ToCell(), Locomotor.Foot)));
     }
 

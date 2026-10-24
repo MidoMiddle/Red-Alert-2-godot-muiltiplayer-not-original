@@ -1,0 +1,57 @@
+# The weapons of the Alliance (docs/content/names.md), as the Union's in game/data/factions/union/weapons.yaml: reload is RA2 ROF / 15
+# seconds, range in cells. The balance comes with M11c.
+alliance_rifle:  # of the Rifleman
+  kind: weapon
+  name: Assault Rifle
+  damage: 15
+  reload: 1.33s
+  range: 5
+  projectile: bullet
+  warhead: small_arms
+
+alliance_light_cannon:  # of the Light Tank
+  kind: weapon
+  name: 105mm Cannon
+  damage: 65
+  reload: 3.33s
+  range: 5.75
+  projectile: shell
+  warhead: ap_shell
+
+alliance_pillbox_gun:  # of the Gun Nest
+  kind: weapon
+  name: Heavy Machine Gun
+  damage: 40
+  reload: 1.33s
+  range: 5.5
+  projectile: bullet
+  warhead: small_arms
+
+alliance_lens_beam:  # of the Lens Tower
+  kind: weapon
+  name: Lens Beam
+  damage: 100
+  reload: 4s
+  range: 8
+  projectile: bolt
+  warhead: electric
+
+alliance_siege_shell:  # of the Siege Battery
+  kind: weapon
+  name: Siege Shell
+  damage: 150
+  reload: 4s
+  range: 10
+  min_range: 2
+  projectile: shell
+  warhead: ap_shell
+
+alliance_sky_guard_missile:  # of the Sky Guard: aircraft only
+  kind: weapon
+  name: Sky Guard Missile
+  damage: 50
+  reload: 1.33s
+  range: 10
+  projectile: rocket
+  warhead: flak_air
+  targets: [air]

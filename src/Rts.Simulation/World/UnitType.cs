@@ -14,4 +14,10 @@ public enum UnitType : byte
     SupportVehicle = 6,
     HeavyTank = 7,
     TeslaTank = 8,
+
+    // The Alliance (docs/content/names.md): its MCV, harvester and first infantry and tank.
+    AllianceMcv = 9,
+    AllianceHarvester = 10,
+    AllianceRifleman = 11,
+    AllianceLightTank = 12,
 }
