@@ -26,10 +26,13 @@ public static class BridgeRepair
         {
             foreach (var segment in bridge.Segments)
             {
-                var distance = IntMath.Max(IntMath.Abs(segment.Cell.X - hut.Cell.X), IntMath.Abs(segment.Cell.Y - hut.Cell.Y));
-                if (distance < bestDistance)
+                foreach (var cell in segment.Cells)
                 {
-                    (best, bestDistance) = (bridge, distance);
+                    var distance = IntMath.Max(IntMath.Abs(cell.X - hut.Cell.X), IntMath.Abs(cell.Y - hut.Cell.Y));
+                    if (distance < bestDistance)
+                    {
+                        (best, bestDistance) = (bridge, distance);
+                    }
                 }
             }
         }
@@ -90,7 +93,7 @@ public static class BridgeRepair
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && unit.Position.ToCell() == segment.Cell)
+            if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && segment.Cells.Contains(unit.Position.ToCell()))
             {
                 return true;
             }

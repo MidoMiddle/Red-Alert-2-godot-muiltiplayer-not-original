@@ -36,7 +36,10 @@ public static class MapChecks
         return MapGrid.FromLayers(map.Width, map.Height, land, map.BlockedLayer(), map.Heights.AsSpan(), objects);
     }
 
-    /// <summary>The cells of a bridge, from <see cref="BridgePlacement.From"/> to <see cref="BridgePlacement.To"/>; none when it is not straight.</summary>
+    /// <summary>
+    /// The cells of the middle line of a bridge, from <see cref="BridgePlacement.From"/> to <see cref="BridgePlacement.To"/>; none when it
+    /// is not straight. The water beside it the bridge takes as well comes with the map (<see cref="BridgeSegment.Cells"/>).
+    /// </summary>
     public static List<CellPos> BridgeCells(BridgePlacement bridge)
     {
         var cells = new List<CellPos>();
@@ -112,9 +115,14 @@ public static class MapChecks
         }
 
         var taken = new HashSet<CellPos>();
+        var states = new List<BridgeState>();
         foreach (var other in others)
         {
             taken.UnionWith(BridgeCells(other));
+            if (BridgeTypes.TryGetById(other.Type, out var otherType))
+            {
+                states.Add(BridgeState.New(otherType.Kind, other.From, other.To));
+            }
         }
 
         foreach (var cell in BridgeCells(bridge))
@@ -125,7 +133,9 @@ public static class MapChecks
             }
         }
 
-        return Problem(() => FromGround(ground, bridges: [BridgeState.New(type.Kind, bridge.From, bridge.To)]));
+        // With the others before it: a wide bridge takes the water beside its middle line (three tanks side by side).
+        states.Add(BridgeState.New(type.Kind, bridge.From, bridge.To));
+        return Problem(() => FromGround(ground, bridges: states));
     }
 
     /// <summary>What is wrong with the building on this ground beside <paramref name="others"/>, or null when it stands.</summary>

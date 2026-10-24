@@ -447,10 +447,11 @@ public sealed class MapGrid
             }
         }
 
-        var shore = ShoreProblem(from, to, length > 1 ? dx : 1, length > 1 ? dy : 0);
+        var (alongX, alongY) = length > 1 ? (dx, dy) : (1, 0);
+        var shore = ShoreProblem(from, to, alongX, alongY);
         if (shore is not null && length == 1 && ShoreProblem(from, to, 0, 1) is null)
         {
-            shore = null;
+            (shore, alongX, alongY) = (null, 0, 1);
         }
 
         if (shore is not null)
@@ -458,12 +459,37 @@ public sealed class MapGrid
             return shore;
         }
 
-        var bridge = new Bridge(_bridges.Count + 1, state.Kind, from, to, state.SegmentHp);
+        // The spans across: the middle cell, and beside it the water cells no bridge takes, as wide as the type.
+        var (acrossX, acrossY) = (alongY, alongX);
+        var half = (BridgeTypes.Get(state.Kind).Width - 1) / 2;
+        var spans = new System.Collections.Immutable.ImmutableArray<CellPos>[length];
+        for (var i = 0; i < length; i++)
+        {
+            var middle = new CellPos(from.X + dx * i, from.Y + dy * i);
+            var cells = System.Collections.Immutable.ImmutableArray.CreateBuilder<CellPos>();
+            cells.Add(middle);
+            for (var k = -half; k <= half; k++)
+            {
+                var beside = new CellPos(middle.X + acrossX * k, middle.Y + acrossY * k);
+                if (k != 0 && Contains(beside) && IsWater(_land[IndexOf(beside)]) && !_blocked[IndexOf(beside)]
+                    && !_segmentsByCell.ContainsKey(IndexOf(beside)))
+                {
+                    cells.Add(beside);
+                }
+            }
+
+            spans[i] = cells.ToImmutable();
+        }
+
+        var bridge = new Bridge(_bridges.Count + 1, state.Kind, from, to, state.SegmentHp, spans);
         _bridges.Add(bridge);
         foreach (var segment in bridge.Segments)
         {
-            _segmentsByCell.Add(IndexOf(segment.Cell), segment);
-            _passability.Update(this, segment.Cell);
+            foreach (var cell in segment.Cells)
+            {
+                _segmentsByCell.Add(IndexOf(cell), segment);
+                _passability.Update(this, cell);
+            }
         }
 
         _digest = null;
@@ -537,11 +563,15 @@ public sealed class MapGrid
         _digest = null;
     }
 
-    /// <summary>Destroys a bridge segment: its cell is the water under it again.</summary>
+    /// <summary>Destroys a bridge segment: its cells are the water under it again.</summary>
     internal void DestroySegment(BridgeSegment segment)
     {
         segment.Hp = 0;
-        _passability.Update(this, segment.Cell);
+        foreach (var cell in segment.Cells)
+        {
+            _passability.Update(this, cell);
+        }
+
         _digest = null;
         Version++;
     }
@@ -550,7 +580,11 @@ public sealed class MapGrid
     internal void RepairSegment(BridgeSegment segment)
     {
         segment.Hp = segment.Bridge.Type.SegmentHp;
-        _passability.Update(this, segment.Cell);
+        foreach (var cell in segment.Cells)
+        {
+            _passability.Update(this, cell);
+        }
+
         _digest = null;
         Version++;
     }

@@ -39,24 +39,33 @@ public sealed record DestroyObjectEdit(int ObjectId) : MapEdit
     internal override void Apply(MapGrid map) => map.DestroyObject(ObjectId);
 }
 
-/// <summary>A segment of a bridge is destroyed: its cell is water again, open to ships, closed to the ground movers.</summary>
+/// <summary>A segment of a bridge is destroyed: its cells are water again, open to ships, closed to the ground movers.</summary>
 public sealed record DestroyBridgeSegmentEdit(int BridgeId, int Segment) : MapEdit
 {
-    internal override (CellPos From, CellPos To) Area(MapGrid map) => (CellOf(map), CellOf(map));
+    internal override (CellPos From, CellPos To) Area(MapGrid map) => Span(map.Bridges[BridgeId - 1].Segments[Segment]);
 
     internal override void Apply(MapGrid map) => map.DestroySegment(map.Bridges[BridgeId - 1].Segments[Segment]);
 
-    private CellPos CellOf(MapGrid map) => map.Bridges[BridgeId - 1].Segments[Segment].Cell;
+    /// <summary>The box round the cells of a span across a bridge.</summary>
+    internal static (CellPos From, CellPos To) Span(BridgeSegment segment)
+    {
+        var (from, to) = (segment.Cell, segment.Cell);
+        foreach (var cell in segment.Cells)
+        {
+            from = new CellPos(Math.IntMath.Min(from.X, cell.X), Math.IntMath.Min(from.Y, cell.Y));
+            to = new CellPos(Math.IntMath.Max(to.X, cell.X), Math.IntMath.Max(to.Y, cell.Y));
+        }
+
+        return (from, to);
+    }
 }
 
-/// <summary>A destroyed segment of a bridge is mended (loose ends, stage 2): its cell is a road again, closed to ships.</summary>
+/// <summary>A destroyed segment of a bridge is mended (loose ends, stage 2): its cells are a road again, closed to ships.</summary>
 public sealed record RepairBridgeSegmentEdit(int BridgeId, int Segment) : MapEdit
 {
-    internal override (CellPos From, CellPos To) Area(MapGrid map) => (CellOf(map), CellOf(map));
+    internal override (CellPos From, CellPos To) Area(MapGrid map) => DestroyBridgeSegmentEdit.Span(map.Bridges[BridgeId - 1].Segments[Segment]);
 
     internal override void Apply(MapGrid map) => map.RepairSegment(map.Bridges[BridgeId - 1].Segments[Segment]);
-
-    private CellPos CellOf(MapGrid map) => map.Bridges[BridgeId - 1].Segments[Segment].Cell;
 }
 
 /// <summary>A building is placed: the cells from <paramref name="From"/> to <paramref name="To"/> (its footprint) close to every mover.</summary>

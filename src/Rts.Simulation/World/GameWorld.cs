@@ -496,8 +496,8 @@ public sealed class GameWorld
         events?.Add(new Events.BridgeSegmentDestroyed(CurrentTick, segment.Bridge.Id, segment.Cell));
         foreach (var entity in _entities)
         {
-            if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && unit.Position.ToCell() == segment.Cell
-                && !Map.CanEnter(segment.Cell, unit.Archetype.Locomotor))
+            if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && segment.Cells.Contains(unit.Position.ToCell())
+                && !Map.CanEnter(unit.Position.ToCell(), unit.Archetype.Locomotor))
             {
                 unit.MarkDead();
                 events?.Add(new Events.UnitKilled(CurrentTick, unit.Id, unit.Position));

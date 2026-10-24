@@ -371,8 +371,8 @@ public sealed class StateHasherTests
         "<Destroyed>k__BackingField",
     })]
     [InlineData(typeof(Bridge), new[] { "_segments", "<Id>k__BackingField", "<Kind>k__BackingField", "<From>k__BackingField", "<To>k__BackingField" })]
-    // Only the hit points are hashed: the bridge, the place in the chain and the cell follow from the bridge's ends.
-    [InlineData(typeof(BridgeSegment), new[] { "<Hp>k__BackingField", "<Bridge>k__BackingField", "<Index>k__BackingField", "<Cell>k__BackingField" })]
+    // Only the hit points are hashed: the bridge, the place in the chain and the cells follow from the bridge's ends and the water.
+    [InlineData(typeof(BridgeSegment), new[] { "<Hp>k__BackingField", "<Bridge>k__BackingField", "<Index>k__BackingField", "<Cells>k__BackingField" })]
     [InlineData(typeof(Building), new[]
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",

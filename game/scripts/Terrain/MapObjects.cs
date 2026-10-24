@@ -116,28 +116,40 @@ public partial class MapObjects : Node3D
         AddInstances("Snowdrifts", new SphereMesh { Radius = 0.45f, Height = 0.22f }, new Color(0.9f, 0.93f, 0.97f), drifts, 0.11f);
     }
 
-    /// <summary>The deck of a standing segment lies flat just above the water, so units on it seem to drive on the planks.</summary>
+    /// <summary>
+    /// The deck of a standing segment lies flat just above the water across all its cells (three tanks side by side), so units on it
+    /// seem to drive on the planks; the rails run along its outer edges.
+    /// </summary>
     private void AddBridge(Bridge bridge)
     {
-        var alongX = bridge.From.Y == bridge.To.Y;
+        // A bridge of one cell runs across the cells beside it.
+        var alongX = bridge.From != bridge.To ? bridge.From.Y == bridge.To.Y : !System.Linq.Enumerable.Any(bridge.Segments[0].Cells, cell => cell.X != bridge.From.X);
         var decks = new List<Vector3>();
         var rails = new List<Vector3>();
         var stubs = new List<Vector3>();
         var side = alongX ? new Vector3(0, 0, 0.44f) : new Vector3(0.44f, 0, 0);
         foreach (var segment in bridge.Segments)
         {
-            var at = Ground(segment.Cell.X, segment.Cell.Y);
-            if (segment.IsIntact)
+            // The outer cells of the span across, for the rails.
+            var (first, last) = (segment.Cell, segment.Cell);
+            foreach (var cell in segment.Cells)
             {
-                decks.Add(at);
-                rails.Add(at + side);
-                rails.Add(at - side);
+                decks.Add(Ground(cell.X, cell.Y));
+                (first, last) = alongX
+                    ? (cell.Y < first.Y ? cell : first, cell.Y > last.Y ? cell : last)
+                    : (cell.X < first.X ? cell : first, cell.X > last.X ? cell : last);
             }
-            else
+
+            if (!segment.IsIntact)
             {
-                stubs.Add(at + side);
-                stubs.Add(at - side);
+                decks.RemoveRange(decks.Count - segment.Cells.Length, segment.Cells.Length);
+                stubs.Add(Ground(first.X, first.Y) - side);
+                stubs.Add(Ground(last.X, last.Y) + side);
+                continue;
             }
+
+            rails.Add(Ground(first.X, first.Y) - side);
+            rails.Add(Ground(last.X, last.Y) + side);
         }
 
         var name = $"Bridge{bridge.Id}";

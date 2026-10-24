@@ -10,8 +10,11 @@ public enum BridgeKind : byte
     WoodLow = 1,
 }
 
-/// <summary>What a kind of bridge is (docs/implementation/M7_maps.md, 4.6; map_elements/05_bridges): hit points of each segment.</summary>
-public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp);
+/// <summary>
+/// What a kind of bridge is (docs/implementation/M7_maps.md, 4.6; map_elements/05_bridges): hit points of each segment and how many
+/// cells wide it is across — three tanks side by side on a low bridge (the owner's wish, 2026-10-24).
+/// </summary>
+public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp, int Width);
 
 /// <summary>
 /// The bridges, kept in code until the data files of M3 (map_objects.yaml) like the map objects. Hit points are a rough guide
@@ -22,7 +25,7 @@ public static class BridgeTypes
 {
     private static readonly BridgeType[] Types =
     [
-        new(BridgeKind.WoodLow, "bridge_wood_low", SegmentHp: 600),
+        new(BridgeKind.WoodLow, "bridge_wood_low", SegmentHp: 600, Width: 3),
     ];
 
     public static IReadOnlyList<BridgeType> All => Types;
@@ -65,26 +68,27 @@ public sealed record BridgeState(BridgeKind Kind, CellPos From, CellPos To, Immu
 }
 
 /// <summary>
-/// A low bridge over water (docs/implementation/M7_maps.md, 4.6): a straight chain of segments, one per cell, from shore to
-/// shore. While a segment stands its cell is a road for ground movers and closed to ships, which never pass under a low
-/// bridge; a destroyed segment leaves the water it stood on, and its neighbours stand on (no chain reaction). Part of the
-/// map, like the map objects: ids from the map's own counter, part of the state hash.
+/// A low bridge over water (docs/implementation/M7_maps.md, 4.6): a straight chain of segments from shore to shore along its middle
+/// line, one per cell of it. A segment is a span across, as wide as the type (<see cref="BridgeType.Width"/>, three tanks side by
+/// side): the middle cell and the water cells beside it that no other bridge takes. While a segment stands its cells are a road
+/// for ground movers and closed to ships, which never pass under a low bridge; a destroyed segment leaves the water it stood on,
+/// and its neighbours stand on (no chain reaction). Part of the map, like the map objects: ids from the map's own counter, part of
+/// the state hash.
 /// </summary>
 public sealed class Bridge
 {
     private readonly BridgeSegment[] _segments;
 
-    internal Bridge(int id, BridgeKind kind, CellPos from, CellPos to, ImmutableArray<int> hp)
+    internal Bridge(int id, BridgeKind kind, CellPos from, CellPos to, ImmutableArray<int> hp, IReadOnlyList<ImmutableArray<CellPos>> cells)
     {
         Id = id;
         Kind = kind;
         From = from;
         To = to;
         _segments = new BridgeSegment[hp.Length];
-        var (dx, dy) = Step(from, to);
         for (var i = 0; i < _segments.Length; i++)
         {
-            _segments[i] = new BridgeSegment(this, i, new CellPos(from.X + dx * i, from.Y + dy * i), hp[i]);
+            _segments[i] = new BridgeSegment(this, i, cells[i], hp[i]);
         }
     }
 
@@ -139,14 +143,14 @@ public sealed class Bridge
     }
 }
 
-/// <summary>One cell of a <see cref="Bridge"/>. Hit points 0 means destroyed: the cell is water again.</summary>
+/// <summary>One span of a <see cref="Bridge"/> across it. Hit points 0 means destroyed: its cells are water again.</summary>
 public sealed class BridgeSegment
 {
-    internal BridgeSegment(Bridge bridge, int index, CellPos cell, int hp)
+    internal BridgeSegment(Bridge bridge, int index, ImmutableArray<CellPos> cells, int hp)
     {
         Bridge = bridge;
         Index = index;
-        Cell = cell;
+        Cells = cells;
         Hp = hp;
     }
 
@@ -155,7 +159,11 @@ public sealed class BridgeSegment
     /// <summary>Place in the chain, 0 at <see cref="Map.Bridge.From"/>.</summary>
     public int Index { get; }
 
-    public CellPos Cell { get; }
+    /// <summary>The cell on the middle line.</summary>
+    public CellPos Cell => Cells[0];
+
+    /// <summary>Its cells: the middle one first, then those beside it, from one side to the other.</summary>
+    public ImmutableArray<CellPos> Cells { get; }
 
     public int Hp { get; internal set; }
 

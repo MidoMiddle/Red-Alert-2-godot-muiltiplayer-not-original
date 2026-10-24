@@ -116,7 +116,9 @@ public sealed class BridgeTests
         Assert.Contains(new BridgeSegmentDestroyed(0, 1, cell), events);
         Assert.Contains(new UnitKilled(0, conscript.Id, conscript.Position), events);
         Assert.Contains(new UnitKilled(0, other.Id, other.Position), events);
-        Assert.Contains(new MapChanged(0, cell, cell), events);
+        // The span across falls whole: three cells wide (three tanks side by side).
+        Assert.Contains(new MapChanged(0, new CellPos(7, 3), new CellPos(7, 5)), events);
+        Assert.False(world.Map.CanEnter(new CellPos(7, 3), Locomotor.Track));
         Assert.Equal(new[] { 600, 0, 600, 600 }, world.Map.Bridges[0].Segments.Select(s => s.Hp));
         Assert.Equal(PathStatus.Found, AStar.FindPath(world.Map, new CellPos(7, 0), new CellPos(7, 8), Locomotor.Naval).Status);
 
@@ -146,8 +148,9 @@ public sealed class BridgeTests
 
         Assert.True(tank.IsAlive);
         Assert.Equal(new CellPos(13, 4), tank.Position.ToCell());
-        Assert.DoesNotContain(new CellPos(8, 4), visited);
-        Assert.All(Enumerable.Range(6, 4), x => Assert.Contains(new CellPos(x, 7), visited));
+        Assert.DoesNotContain(visited, cell => cell.X == 8 && cell.Y is >= 3 and <= 5);
+        // Over the other bridge, by any of its three lanes; it may step onto it from a lane of the first one.
+        Assert.All(Enumerable.Range(7, 3), x => Assert.Contains(visited, cell => cell.X == x && cell.Y is >= 6 and <= 8));
     }
 
     [Fact]
@@ -300,5 +303,45 @@ public sealed class BridgeTests
         Assert.Equal(0, read.Settings.Map.BridgeAt(new CellPos(7, 2))!.Hp);
         Assert.Equal(bytes, ReplayFormat.Write(read));
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(read, TestRules.Standard).Status);
+    }
+
+    [Fact]
+    public void A_bridge_is_three_cells_wide_where_there_is_water_and_three_tanks_cross_side_by_side()
+    {
+        var world = new GameWorld(seed: 1, River(4), TestRules.Standard);
+        var segment = world.Map.Bridges[0].Segments[1];
+        Assert.Equal(new[] { new CellPos(7, 4), new CellPos(7, 3), new CellPos(7, 5) }, segment.Cells);
+        Assert.All(segment.Cells, cell => Assert.Same(segment, world.Map.BridgeAt(cell)));
+        Assert.All(segment.Cells, cell => Assert.Equal(LandType.Road, world.Map.SurfaceAt(cell)));
+        Assert.False(world.Map.CanEnter(new CellPos(7, 5), Locomotor.Naval));
+
+        var tanks = new[] { 3, 4, 5 }.Select(row => world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(4, row).Center)).ToList();
+        var events = new List<SimEvent>();
+        for (var i = 0; i < tanks.Count; i++)
+        {
+            Order(world, tanks[i], new CellPos(12, 3 + i));
+        }
+
+        for (var tick = 0; tick < 600 && tanks.Exists(Busy); tick++)
+        {
+            Step(world, events);
+        }
+
+        Assert.Equal(new[] { new CellPos(12, 3), new CellPos(12, 4), new CellPos(12, 5) }, tanks.Select(t => t.Position.ToCell()));
+    }
+
+    [Fact]
+    public void A_bridge_beside_the_shore_takes_only_the_water_cells_beside_it()
+    {
+        var land = Enumerable.Repeat((byte)LandType.Clear, Width * Height).ToArray();
+        for (var x = 6; x <= 9; x++)
+        {
+            land[4 * Width + x] = (byte)LandType.Deep;
+            land[5 * Width + x] = (byte)LandType.Deep;
+        }
+
+        var map = MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default, null,
+            [BridgeState.New(BridgeKind.WoodLow, new CellPos(6, 4), new CellPos(9, 4))]);
+        Assert.All(map.Bridges[0].Segments, segment => Assert.Equal(new[] { segment.Cell, new CellPos(segment.Cell.X, 5) }, segment.Cells));
     }
 }

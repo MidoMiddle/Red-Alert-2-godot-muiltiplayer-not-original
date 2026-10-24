@@ -342,7 +342,7 @@ public sealed class GoldenValuesTests
         // Rules v54 (stage 3f): the version and the checksums: the ammo of every unit is hashed.
         // Rules v55: again, with a carrier's Hornets.
         // Replay format v23, rules v56 (stage 2d): the versions and the checksums; the commands are the same.
-        // Rules v57 (loose ends, stage 1): the version and the checksums. Rules v58 (stage 2): the version.
-        Assert.Equal((22269, 9983232813810517976UL), (bytes.Length, hash.Value));
+        // Rules v57 (loose ends, stage 1): the version and the checksums. Rules v58 (stage 2): the version. Rules v59 (wide bridges): the version.
+        Assert.Equal((22269, 5053425008696536707UL), (bytes.Length, hash.Value));
     }
 }
