@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 
 namespace Rts.MapGen;
@@ -29,6 +30,15 @@ public sealed class Symmetry
     {
         var (x, y) = Image(k, cell.X, cell.Y, Size - 1);
         return new CellPos(x, y);
+    }
+
+    /// <summary>Every image of the cell, itself first (the bridge repair huts, loose ends, stage 2).</summary>
+    public IEnumerable<CellPos> Images(CellPos cell)
+    {
+        for (var k = 0; k < Order; k++)
+        {
+            yield return Cell(k, cell);
+        }
     }
 
     /// <summary>Image <paramref name="k"/> of the corner (<paramref name="x"/>, <paramref name="y"/>).</summary>

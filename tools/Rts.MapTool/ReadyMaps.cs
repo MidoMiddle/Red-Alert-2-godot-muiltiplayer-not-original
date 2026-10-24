@@ -20,14 +20,17 @@ public static class ReadyMaps
 {
     public static readonly string[] Files = ["frozen-crossing", "twin-rivers", "taiga-front", "four-corners"];
 
-    public static MapDefinition Build(string file) => file switch
-    {
-        "frozen-crossing" => FrozenCrossing(),
-        "twin-rivers" => TwinRivers(),
-        "taiga-front" => TaigaFront(),
-        "four-corners" => FourCorners(),
-        _ => throw new ArgumentException($"No ready map '{file}'."),
-    };
+    public static MapDefinition Build(string file) => BridgeHuts.AddTo(
+        file switch
+        {
+            "frozen-crossing" => FrozenCrossing(),
+            "twin-rivers" => TwinRivers(),
+            "taiga-front" => TaigaFront(),
+            "four-corners" => FourCorners(),
+            _ => throw new ArgumentException($"No ready map '{file}'."),
+        },
+        // A repair hut by every bridge (loose ends, stage 2), each by its own bridge.
+        images: null);
 
     /// <summary>
     /// 1 vs 1, turned by 180° (the left of the screen is the right). The playable area is a rectangle on the screen, as in RA2 (<see cref="MapArea"/>):

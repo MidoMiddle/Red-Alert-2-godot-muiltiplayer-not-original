@@ -209,6 +209,42 @@ if (args.Length >= 2 && args[0] == "add-drills")
     return failed == 0 ? 0 : 1;
 }
 
+// Loose ends, stage 2: the bridge repair huts on maps the generator made before it had them; the symmetry comes from the description.
+if (args.Length >= 2 && args[0] == "add-huts")
+{
+    var failed = 0;
+    foreach (var path in args.Skip(1))
+    {
+        try
+        {
+            var map = RtsMapReader.Read(File.ReadAllText(path));
+            var symmetry = System.Text.RegularExpressions.Regex.Match(map.Description, @"^Generated from seed \d+: \d players, (\w+),");
+            if (!symmetry.Success || !Enum.TryParse<Rts.MapGen.MapSymmetry>(symmetry.Groups[1].Value, out var kindOfSymmetry))
+            {
+                throw new ArgumentException("its description does not say the symmetry: it was not made by the generator");
+            }
+
+            var hutted = BridgeHuts.AddTo(map, new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width).Images);
+            var errors = MapValidator.Check(hutted).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            if (errors.Count > 0)
+            {
+                throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
+            }
+
+            File.WriteAllText(path, RtsMapWriter.Write(hutted));
+            var huts = hutted.Structures.Where(s => s.Type == BridgeHuts.Hut);
+            Console.WriteLine($"{path}: {map.Bridges.Length} bridges, huts {string.Join(", ", huts.Select(h => $"{h.Cell.X},{h.Cell.Y}"))}");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
+        {
+            Console.Error.WriteLine($"{path}: not changed — {e.Message}");
+            failed++;
+        }
+    }
+
+    return failed == 0 ? 0 : 1;
+}
+
 if (args.Length >= 2 && args[0] == "generate")
 {
     string Option(string name, string fallback)

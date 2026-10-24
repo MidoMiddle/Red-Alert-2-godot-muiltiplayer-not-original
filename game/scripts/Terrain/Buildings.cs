@@ -6,7 +6,7 @@ namespace Rts.Client.Terrain;
 /// <summary>
 /// Symbolic buildings (docs/implementation/conventions.md, section 12; M7_maps.md, 4.8): a block over the footprint, beige for
 /// civilian houses and grey-teal for tech buildings, with a mark of their own — a tower on the oil derrick, a white cross on
-/// the hospital, a pale runway on the airfield — and a band in the owner's colour on a building of a player. The buildings
+/// the hospital, a pale runway on the airfield, an orange roof on the bridge repair hut — and a band in the owner's colour on a building of a player. The buildings
 /// players place are drawn by <see cref="PlayerBuildings"/> (M3 step 13), one view each. The footprint sinks a little into the
 /// ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a building is placed or falls) or a tech building
 /// changes hands (loose ends, stage 1), which is rare.
@@ -96,6 +96,7 @@ public partial class Buildings : Node3D
             BuildingKind.NeutralCoolingTower => 1.2f,
             BuildingKind.NeutralFactoryHall => 0.9f,
             BuildingKind.NeutralBoilerHouse => 0.6f,
+            BuildingKind.TechBridgeRepairHut => 0.45f,
             _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "No symbolic height for this kind."),
         };
         var centre = new Vector3(cell.X + type.Width / 2f, 0, cell.Y + type.Height / 2f);
@@ -112,6 +113,10 @@ public partial class Buildings : Node3D
             case BuildingKind.TechHospital:
                 Box(new Vector3(1.4f, 0.04f, 0.4f), centre + new Vector3(0, top + 0.02f, 0), Colors.White);
                 Box(new Vector3(0.4f, 0.04f, 1.4f), centre + new Vector3(0, top + 0.02f, 0), Colors.White);
+                break;
+            case BuildingKind.TechBridgeRepairHut:
+                // The bridge repair hut (loose ends, stage 2): an orange roof.
+                Box(new Vector3(0.9f, 0.08f, 0.9f), centre + new Vector3(0, top + 0.04f, 0), new Color(0.9f, 0.5f, 0.15f));
                 break;
             case BuildingKind.TechAirfield:
                 Box(new Vector3(type.Width - 0.6f, 0.03f, 0.5f), centre + new Vector3(0, top + 0.015f, 0), new Color(0.85f, 0.85f, 0.8f));

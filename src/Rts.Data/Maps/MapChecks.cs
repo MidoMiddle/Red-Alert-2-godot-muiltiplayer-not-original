@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
+using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
 namespace Rts.Data.Maps;
@@ -53,6 +54,35 @@ public static class MapChecks
                 return cells;
             }
         }
+    }
+
+    /// <summary>
+    /// The cells a repair hut of the bridge may take (loose ends, stage 2), best first: up to <see cref="BridgeRepair.HutReach"/> cells from an end, nearest first,
+    /// the <see cref="BridgePlacement.From"/> end before the other, then row by row. Whether one is free is for
+    /// <see cref="BuildingProblem"/>.
+    /// </summary>
+    public static List<CellPos> HutCandidates(BridgePlacement bridge)
+    {
+        var cells = new List<CellPos>();
+        for (var ring = 1; ring <= BridgeRepair.HutReach; ring++)
+        {
+            foreach (var end in new[] { bridge.From, bridge.To })
+            {
+                for (var y = end.Y - ring; y <= end.Y + ring; y++)
+                {
+                    for (var x = end.X - ring; x <= end.X + ring; x++)
+                    {
+                        var cell = new CellPos(x, y);
+                        if (IntMath.Max(IntMath.Abs(x - end.X), IntMath.Abs(y - end.Y)) == ring && !cells.Contains(cell))
+                        {
+                            cells.Add(cell);
+                        }
+                    }
+                }
+            }
+        }
+
+        return cells;
     }
 
     /// <summary>The cells a structure of a known type takes; none for an unknown type.</summary>

@@ -64,6 +64,9 @@ internal static class Bridges
         }
     }
 
+    /// <summary>A repair hut by every bridge (loose ends, stage 2), symmetric: see <see cref="BridgeHuts"/>.</summary>
+    public static void Huts(GenMap map) => map.Structures.AddRange(BridgeHuts.For(map.ToDefinition("work", ""), map.Symmetry.Images));
+
     private static List<BridgePlacement> Images(GenMap map, BridgePlacement bridge, bool mirrored)
     {
         var images = new List<BridgePlacement> { bridge };

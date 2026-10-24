@@ -16,6 +16,7 @@ public enum BuildingKind : byte
     NeutralCoolingTower = 9,
     NeutralFactoryHall = 10,
     NeutralBoilerHouse = 11,
+    TechBridgeRepairHut = 12,
 }
 
 /// <summary>
@@ -57,6 +58,8 @@ public static class BuildingTypes
         new(BuildingKind.NeutralCoolingTower, "neutral_cooling_tower", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralFactoryHall, "neutral_factory_hall", 4, 3, MaxHp: 800, Garrison: 6, Capturable: false),
         new(BuildingKind.NeutralBoilerHouse, "neutral_boiler_house", 2, 2, MaxHp: 800, Garrison: 2, Capturable: false),
+        // RA2 bridge repair hut: cannot be hurt (Immune) nor taken; an engineer going in mends its bridge.
+        new(BuildingKind.TechBridgeRepairHut, "tech_bridge_repair_hut", 1, 1, MaxHp: 2000, Garrison: 0, Capturable: false),
     ];
 
     public static IReadOnlyList<BuildingType> All => Types;

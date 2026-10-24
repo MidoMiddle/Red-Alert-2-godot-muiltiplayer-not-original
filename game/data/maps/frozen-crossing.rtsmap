@@ -690,3 +690,5 @@ structures:
   - { type: neutral_house_a, cell: [35, 47], owner: neutral, facing: 2 }
   - { type: neutral_shed, cell: [45, 37], owner: neutral, facing: 0 }
   - { type: neutral_shed, cell: [44, 52], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [26, 30], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [62, 58], owner: neutral, facing: 0 }

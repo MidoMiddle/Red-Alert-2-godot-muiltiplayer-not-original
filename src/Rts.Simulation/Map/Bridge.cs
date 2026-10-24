@@ -15,7 +15,8 @@ public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp);
 
 /// <summary>
 /// The bridges, kept in code until the data files of M3 (map_objects.yaml) like the map objects. Hit points are a rough guide
-/// until the balance of M4. Only low bridges for now; high bridges and repair come in M11.
+/// until the balance of M4. Only low bridges for now; high bridges come in M11. An engineer mends a bridge through its repair hut
+/// (loose ends, stage 2).
 /// </summary>
 public static class BridgeTypes
 {

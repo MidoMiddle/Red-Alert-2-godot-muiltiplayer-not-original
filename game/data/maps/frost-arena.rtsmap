@@ -403,4 +403,8 @@ bridges:
   - { type: bridge_wood_low, from: [31, 33], to: [35, 33] }
   - { type: bridge_wood_low, from: [33, 54], to: [33, 58] }
   - { type: bridge_wood_low, from: [54, 56], to: [58, 56] }
-structures: []
+structures:
+  - { type: tech_bridge_repair_hut, cell: [52, 27], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [27, 37], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [62, 52], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [37, 62], owner: neutral, facing: 0 }

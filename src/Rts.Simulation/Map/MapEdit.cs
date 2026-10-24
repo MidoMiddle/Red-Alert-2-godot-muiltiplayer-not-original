@@ -49,6 +49,16 @@ public sealed record DestroyBridgeSegmentEdit(int BridgeId, int Segment) : MapEd
     private CellPos CellOf(MapGrid map) => map.Bridges[BridgeId - 1].Segments[Segment].Cell;
 }
 
+/// <summary>A destroyed segment of a bridge is mended (loose ends, stage 2): its cell is a road again, closed to ships.</summary>
+public sealed record RepairBridgeSegmentEdit(int BridgeId, int Segment) : MapEdit
+{
+    internal override (CellPos From, CellPos To) Area(MapGrid map) => (CellOf(map), CellOf(map));
+
+    internal override void Apply(MapGrid map) => map.RepairSegment(map.Bridges[BridgeId - 1].Segments[Segment]);
+
+    private CellPos CellOf(MapGrid map) => map.Bridges[BridgeId - 1].Segments[Segment].Cell;
+}
+
 /// <summary>A building is placed: the cells from <paramref name="From"/> to <paramref name="To"/> (its footprint) close to every mover.</summary>
 public sealed record TakeBuildingEdit(CellPos From, CellPos To) : MapEdit
 {

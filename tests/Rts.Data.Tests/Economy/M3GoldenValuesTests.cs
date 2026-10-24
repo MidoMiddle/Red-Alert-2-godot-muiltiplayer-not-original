@@ -52,7 +52,8 @@ public sealed class M3GoldenValuesTests
         // Rules v55: the same run and credits; a carrier's Hornets are hashed.
         // Stage 2d, rules v56: the same run and credits; the charges, the cover and the storms are hashed.
         // Rules v57 (loose ends, stage 1): the same run and credits; the paradrop plane and the derrick's income are hashed.
-        Assert.Equal((5972, 0x994c8eaf364827ddUL), (fifth.Credits, fifth.Checksum));
+        // Rules v58 (loose ends, stage 2): the same run and credits; Frozen Crossing has a repair hut by each of its bridges.
+        Assert.Equal((5972, 0x3a7fe02ff6bb18bUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

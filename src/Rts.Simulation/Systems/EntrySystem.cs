@@ -31,6 +31,9 @@ public enum EntryAction
 
     /// <summary>A hurt soldier is healed whole at its own hospital (RA2 tech hospital).</summary>
     Heal,
+
+    /// <summary>An engineer mends the bridge of a repair hut (loose ends, stage 2, <see cref="BridgeRepair"/>).</summary>
+    RepairBridge,
 }
 
 /// <summary>
@@ -42,7 +45,7 @@ public enum EntryAction
 /// building of a player outside its team and blacks out its owner's power for <see cref="BlackoutTicks"/> ticks, makes it forget its map,
 /// or takes half its credits. The engineer and the infiltrator are spent (they leave the map without a death). The tech buildings of the
 /// map (loose ends, stage 1): an engineer takes one of the neutral side or an enemy, or mends its own; a hurt soldier is healed whole
-/// at its own hospital and stays outside. One that stopped farther off, or can no longer do it, forgets the order; so does one given
+/// at its own hospital and stays outside. An engineer going into a bridge repair hut mends its bridge and is spent (stage 2). One that stopped farther off, or can no longer do it, forgets the order; so does one given
 /// another order.
 /// </summary>
 public static class EntrySystem
@@ -77,7 +80,8 @@ public static class EntrySystem
             // A building of the map: an engineer takes a tech building of the neutral side or an enemy, or mends its own; a hurt soldier
             // is healed at its own hospital.
             return unit.Archetype.Has(UnitTalents.Engineer)
-                ? own && building.Hp < building.MaxHp && building.Type.Capturable ? EntryAction.Mend
+                ? building.Kind == BuildingKind.TechBridgeRepairHut ? BridgeRepair.Needed(world, building) ? EntryAction.RepairBridge : EntryAction.None
+                    : own && building.Hp < building.MaxHp && building.Type.Capturable ? EntryAction.Mend
                     : (enemy || building.Owner.IsNeutral) && building.Type.Capturable ? EntryAction.Capture
                     : EntryAction.None
                 : own && building.Kind == BuildingKind.TechHospital && unit.Hp < unit.MaxHp && !unit.Archetype.Has(UnitTalents.Infiltrator)
@@ -181,6 +185,10 @@ public static class EntrySystem
                     break;
                 case EntryAction.Infiltrate:
                     Infiltrate(world, building!, unit.Owner, events);
+                    unit.MarkDead();
+                    break;
+                case EntryAction.RepairBridge:
+                    BridgeRepair.Mend(world, building!, events);
                     unit.MarkDead();
                     break;
                 case EntryAction.Heal:

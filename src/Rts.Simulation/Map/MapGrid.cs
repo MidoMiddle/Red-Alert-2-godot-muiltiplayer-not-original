@@ -546,6 +546,15 @@ public sealed class MapGrid
         Version++;
     }
 
+    /// <summary>Mends a destroyed bridge segment whole (loose ends, stage 2): its cell is the road of the bridge again.</summary>
+    internal void RepairSegment(BridgeSegment segment)
+    {
+        segment.Hp = segment.Bridge.Type.SegmentHp;
+        _passability.Update(this, segment.Cell);
+        _digest = null;
+        Version++;
+    }
+
     /// <summary>Sets the level of one corner (tests now; destructible relief later).</summary>
     internal void SetCornerLevel(int x, int y, int level)
     {

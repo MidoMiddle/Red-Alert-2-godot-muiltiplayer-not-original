@@ -31,6 +31,9 @@ public sealed record BridgeSegmentDamaged(int Tick, int BridgeId, CellPos Cell, 
 /// <summary>A bridge segment fell into the water; its neighbours stand.</summary>
 public sealed record BridgeSegmentDestroyed(int Tick, int BridgeId, CellPos Cell) : SimEvent(Tick);
 
+/// <summary>An engineer mended a bridge through its repair hut (loose ends, stage 2): its segments are whole again.</summary>
+public sealed record BridgeRepaired(int Tick, int BridgeId) : SimEvent(Tick);
+
 /// <summary>The unit died: for now only on a bridge segment that fell under it (weapons come in M4).</summary>
 public sealed record UnitKilled(int Tick, EntityId Unit, WorldPos Position) : SimEvent(Tick);
 

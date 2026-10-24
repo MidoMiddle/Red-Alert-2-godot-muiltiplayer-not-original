@@ -101,6 +101,7 @@ public static class MapGenerator
         PlaceDrills(map);
         Roads.Place(map);
         Features.Buildings(map, contested);
+        Bridges.Huts(map);
         Features.Rough(map);
         Features.Forest(map);
         Features.Ground(map);

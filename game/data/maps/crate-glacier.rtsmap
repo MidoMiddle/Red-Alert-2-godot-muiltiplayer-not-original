@@ -1272,6 +1272,10 @@ bridges:
   - { type: bridge_wood_low, from: [33, 54], to: [33, 58] }
   - { type: bridge_wood_low, from: [54, 56], to: [58, 56] }
 structures:
+  - { type: tech_bridge_repair_hut, cell: [53, 28], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [28, 36], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [61, 53], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [36, 61], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [45, 32], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [32, 43], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [56, 45], owner: neutral, facing: 0 }

@@ -326,6 +326,12 @@ public sealed class GameWorld
 
         if (Map.HasBuilding(cell) && BuildingAt(cell) is { } building)
         {
+            if (building.Kind == BuildingKind.TechBridgeRepairHut)
+            {
+                // RA2 Immune: the shot stops at it.
+                return true;
+            }
+
             if (building.Hp > amount)
             {
                 SetHp(building, building.Hp - amount, events);

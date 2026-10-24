@@ -50,12 +50,13 @@ public sealed class MapGeneratorTests
     {
         // Golden value: 64 x 64, two players mirrored, hills, rivers, seed 1. Changes only with the generator's rules. M8 step 10b:
         // the drills of the fields; without them the map is the one of before, byte for byte. 2026-10-24: the playable area of the
-        // screen — a 90 x 90 grid with the inscribed square, the starts and rivers in the screen's axes.
+        // screen — a 90 x 90 grid with the inscribed square, the starts and rivers in the screen's axes. Loose ends, stage 2: a bridge
+        // repair hut by every bridge.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("cf8419ef2686cd05bbf215bb8c0d9efd908ccc80d74947a61660030b07a2b4db", MapHasher.Hash(map));
-        Assert.Equal("e93b609632627e8118d95bff21d314a9362c396d7b47d87eacad903c63ed7cad", MapHasher.Hash(none));
+        Assert.Equal("2b998fa0f22d273d52219977ce778507abcf1452b6b700560e9774876c0f1468", MapHasher.Hash(map));
+        Assert.Equal("95405731904c99ce3cdefe76cd4785f7435769cfffd0998bcf7d9d0e235d2b7b", MapHasher.Hash(none));
     }
 
     [Theory]
@@ -254,6 +255,11 @@ public sealed class MapGeneratorTests
         if (settings.Water == WaterKind.Rivers)
         {
             Assert.True(map.Bridges.Length >= 2, $"{what}: {map.Bridges.Length} bridges");
+
+            // Loose ends, stage 2: a repair hut by every bridge that has a free cell for one in reach; every hut in reach of a bridge.
+            Assert.Empty(BridgeHuts.For(map));
+            Assert.All(map.Structures.Where(s => s.Type == BridgeHuts.Hut), hut => Assert.Contains(map.Bridges, bridge => MapChecks.BridgeCells(bridge).Exists(cell =>
+                Math.Max(Math.Abs(cell.X - hut.Cell.X), Math.Abs(cell.Y - hut.Cell.Y)) <= Rts.Simulation.Systems.BridgeRepair.HutReach)));
         }
     }
 
