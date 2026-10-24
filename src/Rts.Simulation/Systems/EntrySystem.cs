@@ -28,6 +28,9 @@ public enum EntryAction
 
     /// <summary>A unit boards its own transport (stage 3d, <see cref="TransportSystem"/>).</summary>
     Board,
+
+    /// <summary>A hurt soldier is healed whole at its own hospital (RA2 tech hospital).</summary>
+    Heal,
 }
 
 /// <summary>
@@ -37,8 +40,10 @@ public enum EntryAction
 /// an engineer takes a building of a player outside its team that can be taken (RA2 <c>Capturable</c>) — the soldiers inside come out
 /// for their owner, the building changes hands with its hit points — or mends its own damaged building whole; an infiltrator goes into a
 /// building of a player outside its team and blacks out its owner's power for <see cref="BlackoutTicks"/> ticks, makes it forget its map,
-/// or takes half its credits. The engineer and the infiltrator are spent (they leave the map without a death). One that stopped farther
-/// off, or can no longer do it, forgets the order; so does one given another order.
+/// or takes half its credits. The engineer and the infiltrator are spent (they leave the map without a death). The tech buildings of the
+/// map (loose ends, stage 1): an engineer takes one of the neutral side or an enemy, or mends its own; a hurt soldier is healed whole
+/// at its own hospital and stays outside. One that stopped farther off, or can no longer do it, forgets the order; so does one given
+/// another order.
 /// </summary>
 public static class EntrySystem
 {
@@ -59,7 +64,7 @@ public static class EntrySystem
             return TransportSystem.CanBoard(world, unit, transport) ? EntryAction.Board : EntryAction.None;
         }
 
-        if (target is not Building building || building is not { IsAlive: true, IsReady: true, Def: { } def } || unit.Archetype.Category != UnitCategory.Infantry
+        if (target is not Building { IsAlive: true, IsReady: true } building || unit.Archetype.Category != UnitCategory.Infantry
             || unit.Archetype.Flies)
         {
             return EntryAction.None;
@@ -67,6 +72,19 @@ public static class EntrySystem
 
         var own = building.Owner == unit.Owner;
         var enemy = !building.Owner.IsNeutral && !world.AreAllies(unit.Owner, building.Owner);
+        if (building.Def is not { } def)
+        {
+            // A building of the map: an engineer takes a tech building of the neutral side or an enemy, or mends its own; a hurt soldier
+            // is healed at its own hospital.
+            return unit.Archetype.Has(UnitTalents.Engineer)
+                ? own && building.Hp < building.MaxHp && building.Type.Capturable ? EntryAction.Mend
+                    : (enemy || building.Owner.IsNeutral) && building.Type.Capturable ? EntryAction.Capture
+                    : EntryAction.None
+                : own && building.Kind == BuildingKind.TechHospital && unit.Hp < unit.MaxHp && !unit.Archetype.Has(UnitTalents.Infiltrator)
+                    ? EntryAction.Heal
+                    : EntryAction.None;
+        }
+
         if (unit.Archetype.Has(UnitTalents.Engineer))
         {
             return own && building.Hp < building.MaxHp ? EntryAction.Mend
@@ -165,6 +183,11 @@ public static class EntrySystem
                     Infiltrate(world, building!, unit.Owner, events);
                     unit.MarkDead();
                     break;
+                case EntryAction.Heal:
+                    // RA2: in at the door, out whole.
+                    world.SetHp(unit, unit.MaxHp, events);
+                    events?.Add(new UnitHealed(world.CurrentTick, unit.Id, building!.Id));
+                    break;
             }
         }
     }
@@ -194,6 +217,11 @@ public static class EntrySystem
         building.Target = null;
         building.Repairing = false;
         building.RallyPoint = null;
+        if (building.Def is null)
+        {
+            TechBuildingSystem.Taken(world, building, from);
+        }
+
         world.BuildingsChanged();
         events?.Add(new BuildingCaptured(world.CurrentTick, building.Id, from, to));
     }

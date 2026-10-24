@@ -160,7 +160,7 @@ public sealed class MatchStats
                 case Unit { Archetype.Armed: true, Harvester: null } unit when unit.MaxHp > 0:
                     army[index] += _costs[(int)unit.Type] * unit.Hp / unit.MaxHp;
                     break;
-                case Building building when building.Def is not { Wall: true }:
+                case Building building when building.Def is { Wall: false }:
                     buildings[index]++;
                     break;
             }

@@ -217,11 +217,12 @@ public sealed class GoldenValuesTests
         // Rules v54 (stage 3f): the ammo of every unit in the hash (0 for all here); the states are the same.
         // Rules v55: a carrier and its Hornets in the hash (none); the states are the same.
         // Rules v56 (stage 2d): the charges, the cover and the storms in the hash (none); the states are the same.
+        // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash (none); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x55a0b0f6ca0fcb81UL),
-            new(500, 0xf1118f39bc32e2deUL),
-            new(1000, 0x419680cc7e11da20UL),
+            new(100, 0xc53f184e4f8ea3b5UL),
+            new(500, 0xe7dd260e5c2d482eUL),
+            new(1000, 0xd9401655f6652c1cUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -250,11 +251,12 @@ public sealed class GoldenValuesTests
         // Rules v54 (stage 3f): the ammo of every unit in the hash (0 for all); the battle is the same.
         // Rules v55: a carrier and its Hornets in the hash (none); the battle is the same.
         // Rules v56 (stage 2d): the charges, the cover and the storms in the hash; the battle is the same.
+        // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash; the battle is the same.
         StateChecksum[] expected =
         [
-            new(1000, 0xe58df0e5fb891592UL),
-            new(2000, 0x3c0c39e96fe66e4eUL),
-            new(3000, 0xdea609cf3d2e39e2UL),
+            new(1000, 0x02521026f491b086UL),
+            new(2000, 0x44abc329f2cbcc68UL),
+            new(3000, 0x7cfbd48ddab91914UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -340,6 +342,7 @@ public sealed class GoldenValuesTests
         // Rules v54 (stage 3f): the version and the checksums: the ammo of every unit is hashed.
         // Rules v55: again, with a carrier's Hornets.
         // Replay format v23, rules v56 (stage 2d): the versions and the checksums; the commands are the same.
-        Assert.Equal((22269, 969154873558571566UL), (bytes.Length, hash.Value));
+        // Rules v57 (loose ends, stage 1): the version and the checksums.
+        Assert.Equal((22269, 3787438722828451689UL), (bytes.Length, hash.Value));
     }
 }

@@ -703,6 +703,7 @@ public static class CommandProcessor
                 && entity is Unit unit
                 && unit.IsAlive
                 && unit.Owner == command.Player
+                && unit.Drop is null
                 && !units.Contains(unit))
             {
                 units.Add(unit);

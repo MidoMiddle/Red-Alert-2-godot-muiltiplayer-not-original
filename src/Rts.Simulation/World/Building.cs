@@ -61,6 +61,9 @@ public sealed class Building : Entity
     /// <summary>The ticks the superweapon still charges (stage 2d); 0 when it is ready to fire. State: hashed.</summary>
     public int ChargeLeft { get; internal set; }
 
+    /// <summary>The ticks until a taken oil derrick gives its owner credits again; 0 for any other building. State: hashed.</summary>
+    public int CashTimer { get; internal set; }
+
     /// <summary>The kind of a building of the map; 0 for a building of a player.</summary>
     public BuildingKind Kind { get; }
 

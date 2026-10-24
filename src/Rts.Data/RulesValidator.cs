@@ -516,6 +516,12 @@ internal static class RulesValidator
             {
                 UnitOf(faction.Id, "starting_infantry", faction.StartingInfantry);
             }
+
+            if (faction.Paradrop.Length > 0)
+            {
+                UnitOf(faction.Id, "paradrop", faction.Paradrop);
+                Positive(faction.Id, "paradrop_count", faction.ParadropCount);
+            }
         }
 
         /// <summary>

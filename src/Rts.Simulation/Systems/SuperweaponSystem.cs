@@ -26,7 +26,9 @@ namespace Rts.Simulation.Systems;
 /// lightning strikes the target every <see cref="StrikeEvery"/> ticks and a random cell within <see cref="StormSpread"/> every
 /// <see cref="ScatterEvery"/> (the simulation's generator).</item>
 /// </list>
-/// A player has no more of a superweapon than its <see cref="BuildingDef.BuildLimit"/>.
+/// A player has no more of a superweapon than its <see cref="BuildingDef.BuildLimit"/>. A taken airfield of the map charges its paradrop
+/// the same way (<see cref="BuildingType.Superweapon"/>, loose ends, stage 1): the plane of <see cref="ParadropSystem"/> drops the
+/// soldiers of the owner's faction.
 /// </summary>
 public static class SuperweaponSystem
 {
@@ -56,10 +58,10 @@ public static class SuperweaponSystem
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is Building { IsAlive: true, IsReady: true, ChargeLeft: > 0, Def.Superweapon: not SuperweaponKind.None } building
+            if (entity is Building { IsAlive: true, IsReady: true, ChargeLeft: > 0 } building && KindOf(building) != SuperweaponKind.None
                 && Defenses.IsOnline(world, building) && --building.ChargeLeft == 0)
             {
-                events?.Add(new SuperweaponReady(world.CurrentTick, building.Id, building.Owner, building.Def!.Superweapon));
+                events?.Add(new SuperweaponReady(world.CurrentTick, building.Id, building.Owner, KindOf(building)));
             }
         }
 
@@ -100,15 +102,16 @@ public static class SuperweaponSystem
     /// <summary>Fires the player's ready superweapon; false, and nothing happens, when it cannot.</summary>
     internal static bool Fire(GameWorld world, SuperweaponCommand command, List<SimEvent>? events)
     {
-        if (!world.TryGet(command.Building, out var entity) || entity is not Building { IsAlive: true, IsReady: true, ChargeLeft: 0, Def: { } def } building
-            || building.Owner != command.Player || def.Superweapon == SuperweaponKind.None || !Defenses.IsOnline(world, building)
+        if (!world.TryGet(command.Building, out var entity) || entity is not Building { IsAlive: true, IsReady: true, ChargeLeft: 0 } building
+            || building.Owner != command.Player || KindOf(building) == SuperweaponKind.None || !Defenses.IsOnline(world, building)
             || !world.Map.Contains(command.Target) || !world.Map.Contains(command.Second))
         {
             return false;
         }
 
-        var weapon = world.Rules.Database.IndexOfWeapon(def.SuperweaponWeapon);
-        switch (def.Superweapon)
+        var kind = KindOf(building);
+        var weapon = building.Def is { } def ? world.Rules.Database.IndexOfWeapon(def.SuperweaponWeapon) : -1;
+        switch (kind)
         {
             case SuperweaponKind.Curtain:
                 Curtain(world, building, command.Target, events);
@@ -122,11 +125,33 @@ public static class SuperweaponSystem
             case SuperweaponKind.Storm:
                 world.Storms.Add(new Storm(building.Owner, building.Id, weapon, command.Target, world.CurrentTick + StormDelay, world.CurrentTick + StormDelay + StormTicks));
                 break;
+            case SuperweaponKind.Paradrop:
+                if (Cargo(world, building) is not { } cargo)
+                {
+                    return false;
+                }
+
+                ParadropSystem.Send(world, building.Owner, building.Cell, command.Target, cargo.Type, cargo.Count);
+                break;
         }
 
-        building.ChargeLeft = def.Recharge;
-        events?.Add(new SuperweaponFired(world.CurrentTick, building.Id, building.Owner, def.Superweapon, command.Target));
+        building.ChargeLeft = RechargeOf(building);
+        events?.Add(new SuperweaponFired(world.CurrentTick, building.Id, building.Owner, kind, command.Target));
         return true;
+    }
+
+    /// <summary>The superweapon of a building: its definition's, a taken building of the map's by its type; none for the neutral side.</summary>
+    public static SuperweaponKind KindOf(Building building) =>
+        building.Def is { } def ? def.Superweapon : building.Owner.IsNeutral ? SuperweaponKind.None : building.Type.Superweapon;
+
+    /// <summary>The ticks the superweapon of a building charges.</summary>
+    public static int RechargeOf(Building building) => building.Def is { } def ? def.Recharge : building.Type.Recharge;
+
+    // What a paradrop drops: the soldiers of the owner's faction; null when the faction has none.
+    private static (UnitType Type, int Count)? Cargo(GameWorld world, Building building)
+    {
+        var faction = world.Player(building.Owner).Faction;
+        return faction.Paradrop.Length > 0 && UnitTypes.TryGetById(faction.Paradrop, out var type) ? (type, faction.ParadropCount) : null;
     }
 
     /// <summary>Whether the player may have one more of the building: fewer than its build limit, built and in its queues.</summary>

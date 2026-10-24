@@ -187,6 +187,8 @@ public static class DataHasher
             Add(hash, faction.Refinery);
             Add(hash, faction.Harvester);
             Add(hash, faction.StartingInfantry);
+            Add(hash, faction.Paradrop);
+            hash.Add(faction.ParadropCount);
             hash.Add(faction.IsDefault);
         }
 

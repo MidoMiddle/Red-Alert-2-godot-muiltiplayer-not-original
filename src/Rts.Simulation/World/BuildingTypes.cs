@@ -21,9 +21,20 @@ public enum BuildingKind : byte
 /// <summary>
 /// What a kind of building is (docs/implementation/M7_maps.md, 4.8): its footprint of <see cref="Width"/> × <see cref="Height"/>
 /// cells from the north-west corner, its hit points, how many soldiers it would hold and whether an engineer would take it.
-/// Garrisons and capture are M11: the fields are here, the logic is not.
+/// An engineer takes one that is <see cref="Capturable"/> (stage 1 of the loose ends); a tech building taken gives its owner what its
+/// kind gives (<see cref="Systems.TechBuildingSystem"/>), the airfield its <see cref="Superweapon"/> every <see cref="Recharge"/> ticks.
+/// Garrisons are M11: the field is here, the logic is not.
 /// </summary>
-public sealed record BuildingType(BuildingKind Kind, string Id, int Width, int Height, int MaxHp, int Garrison, bool Capturable);
+public sealed record BuildingType(
+    BuildingKind Kind,
+    string Id,
+    int Width,
+    int Height,
+    int MaxHp,
+    int Garrison,
+    bool Capturable,
+    Rules.SuperweaponKind Superweapon = Rules.SuperweaponKind.None,
+    int Recharge = 0);
 
 /// <summary>
 /// The neutral buildings and tech buildings of the rules so far (winter and industrial sets), kept in code until the data files of
@@ -39,7 +50,8 @@ public static class BuildingTypes
         new(BuildingKind.NeutralApartment, "neutral_apartment", 3, 3, MaxHp: 1500, Garrison: 10, Capturable: false),
         new(BuildingKind.TechOilDerrick, "tech_oil_derrick", 2, 2, MaxHp: 1000, Garrison: 0, Capturable: true),
         new(BuildingKind.TechHospital, "tech_hospital", 3, 3, MaxHp: 1500, Garrison: 0, Capturable: true),
-        new(BuildingKind.TechAirfield, "tech_airfield", 4, 3, MaxHp: 2000, Garrison: 0, Capturable: true),
+        // RA2 ParaDropSpecial: a paradrop every 4 minutes.
+        new(BuildingKind.TechAirfield, "tech_airfield", 4, 3, MaxHp: 2000, Garrison: 0, Capturable: true, Rules.SuperweaponKind.Paradrop, 240 * SimulationSettings.DefaultTicksPerSecond),
         new(BuildingKind.NeutralFuelTank, "neutral_fuel_tank", 1, 1, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralSmokestack, "neutral_smokestack", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralCoolingTower, "neutral_cooling_tower", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),

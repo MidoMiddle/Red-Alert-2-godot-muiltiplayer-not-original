@@ -98,6 +98,9 @@ public sealed class Unit : Entity
     /// <summary>The ticks a carrier has worked at replacing one it lost.</summary>
     public int SpawnRegenTicks { get; internal set; }
 
+    /// <summary>What a paradrop plane carries and where to; null for any other unit. State: hashed.</summary>
+    public Paradrop? Drop { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 

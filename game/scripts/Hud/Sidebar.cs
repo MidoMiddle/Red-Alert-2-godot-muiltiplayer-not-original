@@ -169,8 +169,8 @@ public partial class Sidebar : Control
         var seen = new HashSet<EntityId>();
         foreach (var entity in world.Entities)
         {
-            if (entity is not Building { IsAlive: true, IsReady: true, Def: { Superweapon: not Rts.Simulation.Rules.SuperweaponKind.None } def } building
-                || building.Owner != player)
+            if (entity is not Building { IsAlive: true, IsReady: true } building || building.Owner != player
+                || Rts.Simulation.Systems.SuperweaponSystem.KindOf(building) == Rts.Simulation.Rules.SuperweaponKind.None)
             {
                 continue;
             }
@@ -187,7 +187,8 @@ public partial class Sidebar : Control
 
             var ready = building.ChargeLeft == 0;
             var seconds = (building.ChargeLeft + Rts.Simulation.SimulationSettings.DefaultTicksPerSecond - 1) / Rts.Simulation.SimulationSettings.DefaultTicksPerSecond;
-            button.Text = $"{def.Name}  {(ready ? Tr("UI_SIDEBAR_SUPERWEAPON_READY") : $"{seconds / 60}:{seconds % 60:00}")}";
+            var name = building.Def?.Name ?? Tr("UI_SIDEBAR_PARADROP");
+            button.Text = $"{name}  {(ready ? Tr("UI_SIDEBAR_SUPERWEAPON_READY") : $"{seconds / 60}:{seconds % 60:00}")}";
             button.Disabled = !ready || _host!.IsPlayback;
             button.SetPressedNoSignal(_input!.Tool == PointerTool.Superweapon && _input.Superweapon.Building == building.Id);
         }

@@ -8,7 +8,8 @@ namespace Rts.Client.Terrain;
 /// civilian houses and grey-teal for tech buildings, with a mark of their own — a tower on the oil derrick, a white cross on
 /// the hospital, a pale runway on the airfield — and a band in the owner's colour on a building of a player. The buildings
 /// players place are drawn by <see cref="PlayerBuildings"/> (M3 step 13), one view each. The footprint sinks a little into the
-/// ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a building is placed or falls), which is rare.
+/// ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a building is placed or falls) or a tech building
+/// changes hands (loose ends, stage 1), which is rare.
 /// </summary>
 public partial class Buildings : Node3D
 {
@@ -20,16 +21,34 @@ public partial class Buildings : Node3D
 
     private object? _builtMap;
     private int _builtVersion = -1;
+    private long _builtOwners = -1;
 
     public override void _Process(double delta)
     {
         // The map of the terrain: a match's, or the editor's (M7 step 12), which has no world and shows its start buildings.
         var map = GetParent<TerrainBuilder>().Map;
         var world = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World;
-        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion)
+        var owners = Owners(world);
+        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion || owners != _builtOwners)
         {
+            _builtOwners = owners;
             Rebuild(map, world);
         }
+    }
+
+    // A digest of who owns the buildings of the map, to see one taken.
+    private static long Owners(GameWorld? world)
+    {
+        long digest = 0;
+        foreach (var entity in world?.Entities ?? [])
+        {
+            if (entity is Building { IsAlive: true, Def: null } building)
+            {
+                digest = (digest * 31) + (building.Id.Value * 17) + building.Owner.Value;
+            }
+        }
+
+        return digest;
     }
 
     private void Rebuild(Rts.Simulation.Map.MapGrid map, GameWorld? world)

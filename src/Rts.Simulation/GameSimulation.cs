@@ -125,6 +125,7 @@ public sealed class GameSimulation
         ProductionSystem.Update(World, _events);
         BuildUpSystem.Update(World, _events);
         HarvesterSystem.Update(World, _events);
+        TechBuildingSystem.Update(World, _events);
         RepairSystem.Update(World, _events);
         Probe?.Invoke("economy");
         TargetingSystem.Update(World);
@@ -148,6 +149,7 @@ public sealed class GameSimulation
         World.Spatial.Sync(World);
         Probe?.Invoke("index");
         EntrySystem.Update(World, _events);
+        ParadropSystem.Update(World, _events);
         BombSystem.Update(World, _events);
         AmmoSystem.Update(World, _events);
 

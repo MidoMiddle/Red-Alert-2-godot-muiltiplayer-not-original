@@ -282,6 +282,18 @@ public static class StateHasher
                 hash.Add(unit.SpawnsDocked);
                 hash.Add(unit.SpawnRegenTicks);
 
+                // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
+                hash.Add(unit.Drop is not null);
+                if (unit.Drop is { } drop)
+                {
+                    hash.Add((byte)drop.Type);
+                    hash.Add(drop.Count);
+                    hash.Add(drop.Point.X);
+                    hash.Add(drop.Point.Y);
+                    hash.Add(drop.Exit.X);
+                    hash.Add(drop.Exit.Y);
+                }
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)
@@ -322,6 +334,9 @@ public static class StateHasher
 
                 // Rules v56 (stage 2d): the charge of a superweapon.
                 hash.Add(building.ChargeLeft);
+
+                // Rules v57 (loose ends, stage 1): the income of a taken oil derrick.
+                hash.Add(building.CashTimer);
 
                 // Rules v48 (stage 2e): the soldiers inside.
                 hash.Add(building.Occupants.Count);

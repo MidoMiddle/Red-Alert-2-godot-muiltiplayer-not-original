@@ -377,3 +377,22 @@ alliance_hornet:  # the aircraft carrier's jet: launched, never built; one volle
   ammo: 1
   passive: true
   spawned: true
+
+paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never built; flies over the target, drops, leaves; RA2 PDPLANE, the numbers are ours
+  kind: unit
+  inherits: base_vehicle
+  category: aircraft
+  crusher: false
+  name: Cargo Plane
+  faction: alliance
+  cost: 100
+  build_time: 1s
+  hp: 300
+  threat: 1
+  armor: light
+  speed: 90
+  sight: 4
+  turret: false
+  locomotor: hover
+  passive: true
+  spawned: true

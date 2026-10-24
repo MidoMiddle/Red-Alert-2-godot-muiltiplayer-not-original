@@ -1,0 +1,170 @@
+using Rts.Simulation;
+using Rts.Simulation.Commands;
+using Rts.Simulation.Events;
+using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
+using Rts.Simulation.Matches;
+using Rts.Simulation.Systems;
+using Rts.Simulation.World;
+
+namespace Rts.Data.Tests.Matches;
+
+/// <summary>
+/// The tech buildings of the map (loose ends, stage 1): an engineer takes them; the oil derrick pays, the hospital heals, the airfield
+/// sends a paradrop; a tech building keeps nobody in the match. By the game data, without the fog of war; two people play, no bot.
+/// </summary>
+public sealed class TechBuildingTests
+{
+    private const int Size = 64;
+    private static readonly PlayerId Union = new(1);
+    private static readonly PlayerId Allied = new(2);
+    private static readonly CellPos Derrick = new(20, 18);
+    private static readonly CellPos Hospital = new(30, 18);
+    private static readonly CellPos Airfield = new(10, 40);
+
+    private static GameSimulation Match()
+    {
+        var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
+        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null,
+        [
+            new BuildingState(BuildingKind.TechOilDerrick, Derrick, PlayerId.Neutral, 0),
+            new BuildingState(BuildingKind.TechHospital, Hospital, PlayerId.Neutral, 0),
+            new BuildingState(BuildingKind.TechAirfield, Airfield, PlayerId.Neutral, 0),
+        ]);
+        var simulation = new GameSimulation(
+            SimulationSettings.ForMatch(
+                new MatchSetup(
+                    "tech",
+                    47,
+                    new MatchOptions(StartingCredits: 10_000, FogOfWar: false),
+                    [
+                        new MatchPlayer(1, PlayerKind.Human, AiDifficulty.Medium, "union", Color: 0, Team: 1, StartIndex: 1, new CellPos(4, 4)),
+                        new MatchPlayer(2, PlayerKind.Human, AiDifficulty.Medium, "alliance", Color: 1, Team: 2, StartIndex: 2, new CellPos(60, 60)),
+                    ],
+                    [new CellPos(4, 4), new CellPos(60, 60)]),
+                map),
+            GameDataFiles.Rules);
+        simulation.World.VisionOf(Union).ExploreAll();
+        simulation.World.VisionOf(Allied).ExploreAll();
+        return simulation;
+    }
+
+    private static Unit Spawn(GameWorld world, PlayerId player, UnitType type, int x, int y) =>
+        world.SpawnUnit(player, type, new CellPos(x, y).Center, snapToSubcell: true);
+
+    private static Building At(GameWorld world, CellPos cell) => world.BuildingAt(cell)!;
+
+    private static List<SimEvent> Run(GameSimulation simulation, int ticks, Func<bool>? until = null)
+    {
+        var events = new List<SimEvent>();
+        for (var tick = 0; tick < ticks && until?.Invoke() != true; tick++)
+        {
+            simulation.Step();
+            events.AddRange(simulation.LastTickEvents);
+        }
+
+        return events;
+    }
+
+    private static void Take(GameSimulation simulation, PlayerId player, UnitType engineer, CellPos building, uint sequence)
+    {
+        var unit = Spawn(simulation.World, player, engineer, building.X, building.Y + 4);
+        simulation.Enqueue(new EnterCommand(player, simulation.CurrentTick, sequence, [unit.Id], simulation.World.BuildingAt(building)!.Id));
+        Run(simulation, 300, () => !unit.IsAlive);
+        Assert.Equal(player, simulation.World.BuildingAt(building)!.Owner);
+    }
+
+    [Fact]
+    public void A_derrick_taken_from_the_neutral_side_gives_a_thousand_then_twenty_every_hundred_ticks()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var before = world.Player(Union).Credits;
+        Take(simulation, Union, UnitType.Engineer, Derrick, 0);
+        Assert.Equal(before + TechBuildingSystem.DerrickStartup, world.Player(Union).Credits);
+
+        Run(simulation, TechBuildingSystem.DerrickDelay * 3);
+        Assert.Equal(before + TechBuildingSystem.DerrickStartup + (3 * TechBuildingSystem.DerrickCash), world.Player(Union).Credits);
+
+        // Taken back from a player, it gives no thousand.
+        var allied = world.Player(Allied).Credits;
+        Take(simulation, Allied, UnitType.AllianceEngineer, Derrick, 1);
+        Assert.Equal(allied, world.Player(Allied).Credits);
+    }
+
+    [Fact]
+    public void A_hurt_soldier_is_healed_whole_at_its_own_hospital()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var soldier = Spawn(world, Union, UnitType.Conscript, Hospital.X + 4, Hospital.Y + 6);
+        world.SetHp(soldier, 20, null);
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, soldier, At(world, Hospital)));
+
+        Take(simulation, Union, UnitType.Engineer, Hospital, 0);
+        Assert.Equal(EntryAction.Heal, EntrySystem.ActionOf(world, soldier, At(world, Hospital)));
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 1, [soldier.Id], At(world, Hospital).Id));
+        var events = Run(simulation, 300, () => soldier.Hp == soldier.MaxHp);
+        Assert.Equal(soldier.MaxHp, soldier.Hp);
+        Assert.True(soldier.IsAlive);
+    }
+
+    [Fact]
+    public void A_taken_airfield_drops_its_faction_s_soldiers_where_it_is_aimed()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        Take(simulation, Union, UnitType.Engineer, Airfield, 0);
+        var airfield = At(world, Airfield);
+        Assert.Equal(airfield.Type.Recharge, airfield.ChargeLeft);
+
+        airfield.ChargeLeft = 0;
+        var target = new CellPos(40, 30);
+        simulation.Enqueue(new SuperweaponCommand(Union, simulation.CurrentTick, 1, airfield.Id, target, target));
+        var events = Run(simulation, 1);
+        Assert.Contains(events, e => e is SuperweaponFired { Kind: Rts.Simulation.Rules.SuperweaponKind.Paradrop });
+        var plane = world.Entities.OfType<Unit>().Single(unit => unit.Type == UnitType.ParadropPlane);
+        Assert.Equal(0, plane.Position.ToCell().X);
+
+        // The player cannot send it elsewhere.
+        simulation.Enqueue(new MoveCommand(Union, simulation.CurrentTick, 2, [plane.Id], new CellPos(5, 5).Center));
+        Run(simulation, 1500, () => !plane.IsAlive);
+        Assert.False(plane.IsAlive);
+        var dropped = world.Entities.OfType<Unit>().Count(unit => unit.IsAlive && unit.Type == UnitType.Conscript
+            && System.Math.Abs(unit.Position.ToCell().X - target.X) <= 2 && System.Math.Abs(unit.Position.ToCell().Y - target.Y) <= 2);
+        Assert.Equal(9, dropped);
+        Assert.InRange(airfield.ChargeLeft, airfield.Type.Recharge - 1600, airfield.Type.Recharge - 1);
+    }
+
+    [Fact]
+    public void A_plane_brought_down_drops_nobody()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        Take(simulation, Allied, UnitType.AllianceEngineer, Airfield, 0);
+        var airfield = At(world, Airfield);
+        airfield.ChargeLeft = 0;
+        simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 1, airfield.Id, new CellPos(40, 30), new CellPos(40, 30)));
+        Run(simulation, 5);
+        var plane = world.Entities.OfType<Unit>().Single(unit => unit.Type == UnitType.ParadropPlane);
+        DeathSystem.Kill(world, plane, EntityId.None, Union, DeathCause.Weapon, -1, null);
+        Run(simulation, 600);
+        Assert.DoesNotContain(world.Entities.OfType<Unit>(), unit => unit.IsAlive && unit.Type == UnitType.AllianceRifleman
+            && System.Math.Abs(unit.Position.ToCell().X - 40) <= 3 && System.Math.Abs(unit.Position.ToCell().Y - 30) <= 3);
+    }
+
+    [Fact]
+    public void A_tech_building_keeps_nobody_in_the_match()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        foreach (var unit in world.Entities.OfType<Unit>().Where(unit => unit.Owner == Union).ToList())
+        {
+            DeathSystem.Kill(world, unit, EntityId.None, Allied, DeathCause.Weapon, -1, null);
+        }
+
+        Take(simulation, Union, UnitType.Engineer, Derrick, 0);
+        Run(simulation, 30);
+        Assert.NotNull(world.Player(Union).DefeatedTick);
+    }
+}

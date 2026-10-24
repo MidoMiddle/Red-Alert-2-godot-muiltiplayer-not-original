@@ -16,4 +16,7 @@ public enum SuperweaponKind : byte
 
     /// <summary>The Storm Generator (RA2 Weather Control): a storm of lightning over an area after a delay.</summary>
     Storm = 4,
+
+    /// <summary>A paradrop (RA2 ParaDrop): a plane flies over the target and drops soldiers; shot down, it drops none.</summary>
+    Paradrop = 5,
 }

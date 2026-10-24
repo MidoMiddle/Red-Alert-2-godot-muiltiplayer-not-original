@@ -47,7 +47,7 @@ internal static class DefinitionReader
 
     private static readonly string[] TerrainKeys = ["name", "code", "buildable", "speed"];
 
-    private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester", "starting_infantry", "default"];
+    private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester", "starting_infantry", "paradrop", "paradrop_count", "default"];
 
     private static readonly string[] BuildOrderKeys = ["faction", "steps"];
 
@@ -308,6 +308,8 @@ internal static class DefinitionReader
             Refinery = fields.Required("refinery", Scalars.Id, ""),
             Harvester = fields.Required("harvester", Scalars.Id, ""),
             StartingInfantry = fields.Optional("starting_infantry", Scalars.Id, ""),
+            Paradrop = fields.Optional("paradrop", Scalars.Id, ""),
+            ParadropCount = fields.Optional("paradrop_count", Scalars.Int, 0),
             IsDefault = fields.Optional("default", Scalars.Flag, false),
         };
     }

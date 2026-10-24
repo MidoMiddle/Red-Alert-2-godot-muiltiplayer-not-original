@@ -7,6 +7,8 @@ union:
   refinery: refinery
   harvester: harvester
   starting_infantry: conscript
+  paradrop: conscript  # a taken airfield's paradrop: RA2 SovParaDrop, 9 conscripts
+  paradrop_count: 9
   default: true
 
 # The Alliance (docs/content/names.md): playable from the skirmish screen; its buildings whose ability needs a mechanic of M11 are
@@ -19,3 +21,5 @@ alliance:
   refinery: alliance_ore_refinery
   harvester: alliance_harvester
   starting_infantry: alliance_rifleman
+  paradrop: alliance_rifleman  # a taken airfield's paradrop: RA2 AllyParaDrop, 6 GIs
+  paradrop_count: 6

@@ -25,6 +25,12 @@ public sealed record FactionDef : IDefinition
     /// <summary>The infantry every player of the faction starts a match with, three of them beside the MCV (none when empty).</summary>
     public string StartingInfantry { get; init; } = "";
 
+    /// <summary>The soldier a paradrop of a taken airfield drops for the faction (RA2 <c>AllyParaDropInf</c>, <c>SovParaDropInf</c>).</summary>
+    public string Paradrop { get; init; } = "";
+
+    /// <summary>How many of <see cref="Paradrop"/> it drops.</summary>
+    public int ParadropCount { get; init; }
+
     /// <summary>The faction a player plays unless one is chosen: one of the data has it when there are several.</summary>
     public bool IsDefault { get; init; }
 }

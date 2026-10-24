@@ -92,6 +92,11 @@ public partial class HealthBars : Control
                         DrawBar(camera, WorldCoords.ToGodotOnGround(Aim.CentreOf(building), height), HealthPips.CountOf(building), building.Hp, building.MaxHp);
                         break;
                     }
+
+                // A tech building of the map a player took (loose ends, stage 1).
+                case Building { Def: null, Owner.IsNeutral: false } taken when HealthPips.Shows(mode, selected, taken.Hp, taken.MaxHp):
+                    DrawBar(camera, WorldCoords.ToGodotOnGround(Aim.CentreOf(taken), 1.4f), HealthPips.CountOf(taken), taken.Hp, taken.MaxHp);
+                    break;
             }
         }
     }

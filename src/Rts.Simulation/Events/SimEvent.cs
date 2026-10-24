@@ -177,6 +177,9 @@ public sealed record BuildingCaptured(int Tick, EntityId Building, PlayerId From
 /// <summary>An engineer of the owner mended <paramref name="Building"/> whole (stage 3b).</summary>
 public sealed record BuildingMended(int Tick, EntityId Building) : SimEvent(Tick);
 
+/// <summary>A hurt soldier was healed whole at a hospital (loose ends, stage 1).</summary>
+public sealed record UnitHealed(int Tick, EntityId Unit, EntityId Hospital) : SimEvent(Tick);
+
 /// <summary>
 /// An infiltrator of <paramref name="Player"/> went into <paramref name="Building"/> and did <paramref name="Effect"/>; the credits it
 /// took for a theft (stage 3b).

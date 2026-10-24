@@ -62,4 +62,7 @@ public enum UnitType : byte
 
     // The aircraft carrier's jet, launched and never built.
     AllianceHornet = 48,
+
+    // The plane of a paradrop (loose ends, stage 1), sent and never built.
+    ParadropPlane = 49,
 }
