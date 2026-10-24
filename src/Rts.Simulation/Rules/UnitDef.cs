@@ -154,6 +154,9 @@ public sealed record UnitDef : IDefinition
     /// <summary>The hit points it heals a second by itself (the Super Heavy Tank, RA2 <c>SelfHealing</c>); 0 for none.</summary>
     public int SelfHeal { get; init; }
 
+    /// <summary>Whether it gains experience from its kills (RA2 <c>Trainable</c>; loose ends, stage 3: veterancy).</summary>
+    public bool Trainable { get; init; } = true;
+
     /// <summary>The unit it carries and launches (the aircraft carrier's Hornets, RA2 <c>Spawns</c>); empty for none.</summary>
     public string Spawns { get; init; } = "";
 

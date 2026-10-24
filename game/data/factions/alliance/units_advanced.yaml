@@ -16,6 +16,7 @@ alliance_engineer:  # takes a building of the enemy, mends its own (stage 3b)
   prerequisites: [alliance_barracks]
   engineer: true
   ifv_weapon: ifv_repair_arm
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 alliance_attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   kind: unit
@@ -31,6 +32,7 @@ alliance_attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   prerequisites: [alliance_barracks]
   primary: alliance_dog_bite
   detects_disguise: true
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 alliance_rocketeer:  # flies over the field with a jet pack, fires at the ground and the air (stage 3a)
   kind: unit
@@ -64,6 +66,7 @@ alliance_spy:  # passes for the enemy's own soldier, goes into its buildings (st
   infiltrator: true
   disguised: true
   ifv_weapon: ifv_machine_gun
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 alliance_chrono_legionnaire:  # erases its target from time (stage 3a); jumps where it is sent (stage 3b)
   kind: unit
@@ -356,6 +359,7 @@ alliance_robot_tank:  # works only while a Drone Control Hub stands ready with p
   prerequisites: [alliance_war_factory, alliance_robot_control_center]
   primary: alliance_robot_gun
   robotic: true
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 alliance_hornet:  # the aircraft carrier's jet: launched, never built; one volley, then back aboard (RA2 HORNET, the numbers are ours)
   kind: unit
@@ -377,6 +381,7 @@ alliance_hornet:  # the aircraft carrier's jet: launched, never built; one volle
   ammo: 1
   passive: true
   spawned: true
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never built; flies over the target, drops, leaves; RA2 PDPLANE, the numbers are ours
   kind: unit
@@ -396,3 +401,4 @@ paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never bu
   locomotor: hover
   passive: true
   spawned: true
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)

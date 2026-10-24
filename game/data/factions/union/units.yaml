@@ -37,6 +37,7 @@ engineer:  # Engineer: takes a building of the enemy, mends its own (stage 3b)
   sight: 4
   engineer: true
   ifv_weapon: ifv_repair_arm
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 mcv:  # MCV
   kind: unit

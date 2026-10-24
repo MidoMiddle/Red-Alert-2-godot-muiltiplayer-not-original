@@ -83,6 +83,7 @@ public partial class HealthBars : Control
                         var height = UnitHeight + Units.UnitAltitude.Of(unit.Archetype);
                         var at = WorldCoords.ToGodotOnGround(previous, height).Lerp(WorldCoords.ToGodotOnGround(unit.Position, height), _host.Alpha);
                         DrawBar(camera, at, HealthPips.CountOf(unit), unit.Hp, unit.MaxHp);
+                        DrawRank(camera, at, HealthPips.CountOf(unit), Rts.Simulation.Systems.Veterancy.RankOf(unit));
                         break;
                     }
 
@@ -134,6 +135,24 @@ public partial class HealthBars : Control
         for (var i = 0; i < room; i++)
         {
             DrawRect(new Rect2(corner + new Vector2(Gap + i * (size + Gap), Gap), new Vector2(size, size)), i < inside ? Soldier : Empty);
+        }
+    }
+
+    /// <summary>The rank of a unit left of its bar (loose ends, stage 3): one gold chevron for a veteran, two for an elite.</summary>
+    private void DrawRank(Camera3D camera, Vector3 at, int pips, Rts.Simulation.Systems.Rank rank)
+    {
+        if (rank == Rts.Simulation.Systems.Rank.Rookie || camera.IsPositionBehind(at))
+        {
+            return;
+        }
+
+        var centre = camera.UnprojectPosition(at);
+        var left = centre.X - ((pips * (PipWidth + Gap)) + Gap) / 2f - 4f;
+        var gold = new Color(1f, 0.82f, 0.25f);
+        for (var i = 0; i < (int)rank; i++)
+        {
+            var y = centre.Y - PipHeight - (i * 4f);
+            DrawPolyline([new Vector2(left - 6f, y - 3f), new Vector2(left - 3f, y), new Vector2(left, y - 3f)], gold, 1.5f);
         }
     }
 

@@ -49,6 +49,12 @@ public sealed class PlayerState
     /// </summary>
     public int BlackoutUntil { get; internal set; }
 
+    /// <summary>A spy went into its enemy's barracks (loose ends, stage 3): the player's infantry comes out veteran. State: hashed.</summary>
+    public bool VeteranInfantry { get; internal set; }
+
+    /// <summary>A spy went into its enemy's war factory: the player's vehicles come out veteran. State: hashed.</summary>
+    public bool VeteranVehicles { get; internal set; }
+
     /// <summary>
     /// Whether the player's robots work: it has a ready, online building that controls robots (stage 3d). Derived from the buildings and
     /// the power by <see cref="Systems.PowerSystem"/>, not hashed.

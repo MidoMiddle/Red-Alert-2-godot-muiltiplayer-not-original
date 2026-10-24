@@ -270,6 +270,8 @@ public static class DamageSystem
             return;
         }
 
+        // Veterans hit harder and take less (loose ends, stage 3).
+        amount = Veterancy.Damage(world, entity, hit.Shooter, amount);
         var (attacker, weapon) = (hit.Shooter, hit.Weapon);
         switch (entity)
         {

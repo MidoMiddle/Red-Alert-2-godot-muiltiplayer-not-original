@@ -194,13 +194,14 @@ public static class MovementSystem
         }
 
         var delta = target - unit.Position;
-        if (delta.LengthSquared <= (long)unit.Speed * unit.Speed)
+        var speed = Veterancy.Speed(unit, unit.Speed);
+        if (delta.LengthSquared <= (long)speed * speed)
         {
             Arrive(world, unit, target, events);
             return;
         }
 
-        unit.Position += StepAlong(delta, unit.Speed);
+        unit.Position += StepAlong(delta, speed);
         unit.WaitTicks = 0;
     }
 
@@ -456,11 +457,12 @@ public static class MovementSystem
         return probe.ToCell() == unit.Position.ToCell() ? null : probe.ToCell();
     }
 
-    /// <summary>Speed this tick: the unit's speed times the land speed of its cell.</summary>
+    /// <summary>Speed this tick: the unit's speed — a veteran's a fifth more — times the land speed of its cell.</summary>
     private static int LandSpeed(GameWorld world, Unit unit)
     {
         var percent = world.Map.SpeedPercent(unit.Position.ToCell(), unit.Archetype.Locomotor);
-        return percent == 0 ? unit.Speed : (int)IntMath.DivRound((long)unit.Speed * percent, 100);
+        var speed = Veterancy.Speed(unit, unit.Speed);
+        return percent == 0 ? speed : (int)IntMath.DivRound((long)speed * percent, 100);
     }
 
     /// <summary>Turns the hull toward <paramref name="point"/>. Returns true when the unit may drive this tick.</summary>

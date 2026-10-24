@@ -218,11 +218,12 @@ public sealed class GoldenValuesTests
         // Rules v55: a carrier and its Hornets in the hash (none); the states are the same.
         // Rules v56 (stage 2d): the charges, the cover and the storms in the hash (none); the states are the same.
         // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash (none); the states are the same.
+        // Rules v60 (loose ends, stage 3): the experience of every unit and the veterans of a spy in the hash (none); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0xc53f184e4f8ea3b5UL),
-            new(500, 0xe7dd260e5c2d482eUL),
-            new(1000, 0xd9401655f6652c1cUL),
+            new(100, 0xecab7be0ebc5a755UL),
+            new(500, 0xacab72921839087aUL),
+            new(1000, 0x64022020e4774171UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -252,11 +253,12 @@ public sealed class GoldenValuesTests
         // Rules v55: a carrier and its Hornets in the hash (none); the battle is the same.
         // Rules v56 (stage 2d): the charges, the cover and the storms in the hash; the battle is the same.
         // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash; the battle is the same.
+        // Rules v60 (loose ends, stage 3): experience in the hash; the killers gain it, the veterans fight harder.
         StateChecksum[] expected =
         [
-            new(1000, 0x02521026f491b086UL),
-            new(2000, 0x44abc329f2cbcc68UL),
-            new(3000, 0x7cfbd48ddab91914UL),
+            new(1000, 0xa19b79fef3babcfeUL),
+            new(2000, 0xfb9d6988f76793d9UL),
+            new(3000, 0x738f1fdb13feb8bdUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -343,6 +345,7 @@ public sealed class GoldenValuesTests
         // Rules v55: again, with a carrier's Hornets.
         // Replay format v23, rules v56 (stage 2d): the versions and the checksums; the commands are the same.
         // Rules v57 (loose ends, stage 1): the version and the checksums. Rules v58 (stage 2): the version. Rules v59 (wide bridges): the version.
-        Assert.Equal((22269, 5053425008696536707UL), (bytes.Length, hash.Value));
+        // Rules v60 (stage 3: veterancy): the version and the checksums.
+        Assert.Equal((22269, 12581702786680315464UL), (bytes.Length, hash.Value));
     }
 }

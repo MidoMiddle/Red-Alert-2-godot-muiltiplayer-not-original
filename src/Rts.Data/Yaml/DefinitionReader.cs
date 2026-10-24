@@ -22,7 +22,7 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
-        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -128,6 +128,7 @@ internal static class DefinitionReader
             Sensors = fields.Optional("sensors", Scalars.Int, 0),
             Ammo = fields.Optional("ammo", Scalars.Int, 0),
             SelfHeal = fields.Optional("self_heal", Scalars.Int, 0),
+            Trainable = fields.Optional("trainable", Scalars.Flag, true),
             Spawns = fields.Optional("spawns", Scalars.Id, ""),
             SpawnCount = fields.Optional("spawn_count", Scalars.Int, 0),
             SpawnRegen = fields.Optional("spawn_regen", Scalars.Ticks, 0),
@@ -640,8 +641,10 @@ internal static class DefinitionReader
     }
 
     private static SpyEffect SpyEffectOf(string fileName, YamlNode node) =>
-        Scalars.Choice(fileName, node, "none", "blackout", "reset_map", "steal_credits", "reset_charge") switch
+        Scalars.Choice(fileName, node, "none", "blackout", "reset_map", "steal_credits", "reset_charge", "veteran_infantry", "veteran_vehicles") switch
         {
+            "veteran_infantry" => SpyEffect.VeteranInfantry,
+            "veteran_vehicles" => SpyEffect.VeteranVehicles,
             "blackout" => SpyEffect.Blackout,
             "reset_map" => SpyEffect.ResetMap,
             "steal_credits" => SpyEffect.StealCredits,

@@ -188,7 +188,8 @@ public sealed class GameRules
                 unit.SelfHeal,
                 UnitTypes.TryGetById(unit.Spawns, out var spawn) ? spawn : 0,
                 unit.SpawnCount,
-                unit.SpawnRegen);
+                unit.SpawnRegen,
+                unit.Cost);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -351,7 +352,8 @@ public sealed class GameRules
         | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0)
         | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0)
         | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0) | (unit.Robotic ? UnitTalents.Robotic : 0)
-        | (unit.Submerged ? UnitTalents.Submerged : 0) | (unit.Spawned ? UnitTalents.Spawned : 0);
+        | (unit.Submerged ? UnitTalents.Submerged : 0) | (unit.Spawned ? UnitTalents.Spawned : 0)
+        | (unit.Trainable ? 0 : UnitTalents.Untrainable);
 
     private static Locomotor? LocomotorOf(string id)
     {

@@ -41,4 +41,7 @@ public enum UnitTalents
 
     /// <summary>Launched by another unit, never built (<see cref="Rules.UnitDef.Spawned"/>).</summary>
     Spawned = 2048,
+
+    /// <summary>Gains no experience (<see cref="Rules.UnitDef.Trainable"/> false; RA2 <c>Trainable=no</c>).</summary>
+    Untrainable = 4096,
 }

@@ -132,6 +132,7 @@ public static class ProductionSystem
             var middle = new CellPos(factory.Cell.X + factory.Width / 2, factory.Cell.Y + factory.Height / 2);
             var flier = world.SpawnUnit(player.Id, type, middle.Center);
             events?.Add(new UnitProduced(world.CurrentTick, player.Id, flier.Id, factory.Id));
+            Veterancy.Produced(world, flier, events);
             var rally = factory.RallyPoint ?? new CellPos(middle.X, factory.Cell.Y + factory.Height + 1).Center;
             UnitOrders.MoveTo(world, flier, world.Contains(rally) ? rally : middle.Center);
             return true;
@@ -152,6 +153,7 @@ public static class ProductionSystem
 
         var unit = world.SpawnUnit(player.Id, type, exit.Center, snapToSubcell: true);
         events?.Add(new UnitProduced(world.CurrentTick, player.Id, unit.Id, factory.Id));
+        Veterancy.Produced(world, unit, events);
         var point = factory.RallyPoint?.ToCell() ?? new CellPos(exit.X, exit.Y + 1);
         if (FreeCellNear(world, point, exit, archetype) is { } place)
         {

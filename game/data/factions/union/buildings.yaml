@@ -58,6 +58,7 @@ barracks:  # infantry production
   produces: [infantry]
   exit_cell: [1, 2]
   prerequisites: [reactor]
+  spy_effect: veteran_infantry  # RA2: a spy makes the spy's infantry veteran (loose ends, stage 3)
 
 war_factory:  # vehicle production
   kind: building
@@ -74,6 +75,7 @@ war_factory:  # vehicle production
   produces: [vehicle, aircraft]
   exit_cell: [1, 4]
   prerequisites: [refinery]
+  spy_effect: veteran_vehicles  # RA2: a spy makes the spy's vehicles veteran
 
 radar:  # radar, minimap
   kind: building

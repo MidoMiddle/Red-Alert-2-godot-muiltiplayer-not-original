@@ -17,6 +17,7 @@ attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   prerequisites: [barracks]
   primary: war_hound_bite
   detects_disguise: true
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 tesla_trooper:  # electric infantry (stage 3a)
   kind: unit
@@ -133,6 +134,7 @@ terror_drone:  # jumps into a vehicle and eats it from inside, kills a soldier a
   prerequisites: [war_factory]
   primary: drone_jump
   size: 2
+  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
 demolition_truck:  # drives into its target and blows up, only when ordered; blows up when killed too (stage 3d)
   kind: unit

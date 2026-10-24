@@ -34,6 +34,8 @@ public sealed class EvaMessages
         UnderAttack attack when attack.Player == player => "UI_EVA_UNDER_ATTACK",
         PlayerDefeated defeated => defeated.Player == player ? "UI_EVA_YOU_ARE_DEFEATED" : "UI_EVA_PLAYER_DEFEATED",
         MatchEnded ended => ended.Winners.Contains(player) ? "UI_EVA_VICTORY" : "UI_EVA_DEFEAT",
+        // Loose ends, stage 3: a unit of the player promoted.
+        UnitPromoted promoted when promoted.Owner == player => "UI_EVA_UNIT_PROMOTED",
         // Loose ends, stage 2: a bridge mended.
         BridgeRepaired => "UI_EVA_BRIDGE_REPAIRED",
         // Loose ends, stage 1: a building taken by the player, or from them.

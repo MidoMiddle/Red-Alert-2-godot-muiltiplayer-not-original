@@ -17,4 +17,10 @@ public enum SpyEffect : byte
 
     /// <summary>A superweapon: its charge starts over (RA2).</summary>
     ResetCharge = 4,
+
+    /// <summary>The infantry of the owner of the barracks comes out as veterans from now on — for the spy's player (RA2; loose ends, stage 3).</summary>
+    VeteranInfantry = 5,
+
+    /// <summary>The vehicles of the owner of the war factory come out as veterans from now on — for the spy's player.</summary>
+    VeteranVehicles = 6,
 }

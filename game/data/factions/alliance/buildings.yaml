@@ -44,6 +44,7 @@ alliance_barracks:  # infantry production
   produces: [infantry]
   exit_cell: [1, 2]
   prerequisites: [alliance_power_plant]
+  spy_effect: veteran_infantry  # RA2: a spy makes the spy's infantry veteran (loose ends, stage 3)
 
 alliance_ore_refinery:  # ore processing; gives a free harvester
   kind: building
@@ -74,6 +75,7 @@ alliance_war_factory:  # vehicle production
   produces: [vehicle]
   exit_cell: [1, 4]
   prerequisites: [alliance_ore_refinery, alliance_barracks]
+  spy_effect: veteran_vehicles  # RA2: a spy makes the spy's vehicles veteran
 
 alliance_air_force_command:  # radar; builds the aircraft (stage 2b)
   kind: building

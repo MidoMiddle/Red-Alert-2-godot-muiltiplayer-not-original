@@ -251,6 +251,12 @@ public static class EntrySystem
             case SpyEffect.ResetCharge:
                 building.ChargeLeft = building.Def.Recharge;
                 break;
+            case SpyEffect.VeteranInfantry:
+                world.Player(spy).VeteranInfantry = true;
+                break;
+            case SpyEffect.VeteranVehicles:
+                world.Player(spy).VeteranVehicles = true;
+                break;
             case SpyEffect.StealCredits:
                 credits = owner.Credits * StealPercent / 100;
                 owner.Credits -= credits;

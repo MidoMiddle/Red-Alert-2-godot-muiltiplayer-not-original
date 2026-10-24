@@ -74,6 +74,10 @@ public static class StateHasher
             hash.Add(player.DefeatedTick ?? 0);
             // Rules v50 (stage 3b): the blackout an infiltrator brought.
             hash.Add(player.BlackoutUntil);
+
+            // Rules v60 (loose ends, stage 3): veterans from a spy.
+            hash.Add(player.VeteranInfantry);
+            hash.Add(player.VeteranVehicles);
             // Rules v39 (M8 step 2): the bonuses of the player and the hundredths of income it is owed.
             hash.Add(player.Modifiers.IncomeBonusPercent);
             hash.Add(player.Modifiers.BuildSpeedBonusPercent);
@@ -281,6 +285,9 @@ public static class StateHasher
                 hash.Add(unit.Mother?.Value ?? 0);
                 hash.Add(unit.SpawnsDocked);
                 hash.Add(unit.SpawnRegenTicks);
+
+                // Rules v60 (loose ends, stage 3): experience.
+                hash.Add(unit.Experience);
 
                 // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
                 hash.Add(unit.Drop is not null);

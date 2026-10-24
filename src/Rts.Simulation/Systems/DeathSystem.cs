@@ -10,7 +10,7 @@ namespace Rts.Simulation.Systems;
 /// the tick, which frees its place (<see cref="GameWorld.RemoveDead"/>); a harvester's load goes with it. A building is dead at once —
 /// no longer found, no power, no technologies — but its cells open only at the end of the tick, in <see cref="Update"/>, so nobody
 /// drives or builds into them on the tick it fell. Every death is an <see cref="EntityDestroyed"/> with its killer and the weapon, by
-/// whose warhead the client picks the kind of death.
+/// whose warhead the client picks the kind of death; the killer gains the worth of an enemy (<see cref="Veterancy"/>).
 /// </summary>
 public static class DeathSystem
 {
@@ -24,6 +24,7 @@ public static class DeathSystem
         world.SetHp(unit, 0, events);
         unit.MarkDead();
         events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, cause, weapon, killerOwner));
+        Veterancy.Credit(world, killer, unit, events);
         if (unit.Archetype.DeathWeapon >= 0 && cause != DeathCause.Defeat)
         {
             // Its death weapon (stage 3b: the demolition trooper) goes off where it fell, after the movement of the tick.
@@ -41,6 +42,7 @@ public static class DeathSystem
     {
         world.DestroyBuilding(building, events);
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
+        Veterancy.Credit(world, killer, building, events);
         GarrisonSystem.Evacuate(world, building, events);
         if (building.Def is { DeathWeapon.Length: > 0 } def && world.Rules.Database.IndexOfWeapon(def.DeathWeapon) is >= 0 and var blast)
         {
@@ -59,6 +61,7 @@ public static class DeathSystem
     {
         world.DestroyBuilding(building, events);
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
+        Veterancy.Credit(world, killer, building, events);
         GarrisonSystem.Evacuate(world, building, events);
     }
 

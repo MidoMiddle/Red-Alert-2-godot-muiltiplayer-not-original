@@ -35,9 +35,11 @@ public static class RepairSystem
 
         foreach (var entity in world.Entities)
         {
-            if (entity is Unit { IsAlive: true, ErasedBy: null, Archetype.SelfHeal: > 0 } unit && unit.Hp < unit.MaxHp)
+            if (entity is Unit { IsAlive: true, ErasedBy: null } unit && unit.Hp < unit.MaxHp
+                && unit.Archetype.SelfHeal + (Veterancy.RankOf(unit) == Rank.Elite ? Veterancy.EliteHeal : 0) is > 0 and var heal)
             {
-                world.SetHp(unit, IntMath.Min(unit.MaxHp, unit.Hp + unit.Archetype.SelfHeal), events);
+                // Self-repair, and an elite unit's (loose ends, stage 3).
+                world.SetHp(unit, IntMath.Min(unit.MaxHp, unit.Hp + heal), events);
             }
         }
     }

@@ -180,6 +180,9 @@ public sealed record BuildingCaptured(int Tick, EntityId Building, PlayerId From
 /// <summary>An engineer of the owner mended <paramref name="Building"/> whole (stage 3b).</summary>
 public sealed record BuildingMended(int Tick, EntityId Building) : SimEvent(Tick);
 
+/// <summary>A unit rose to <paramref name="Rank"/> by its kills, or came out a veteran (loose ends, stage 3).</summary>
+public sealed record UnitPromoted(int Tick, EntityId Unit, PlayerId Owner, Systems.Rank Rank) : SimEvent(Tick);
+
 /// <summary>A hurt soldier was healed whole at a hospital (loose ends, stage 1).</summary>
 public sealed record UnitHealed(int Tick, EntityId Unit, EntityId Hospital) : SimEvent(Tick);
 

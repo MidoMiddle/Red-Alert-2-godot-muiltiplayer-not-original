@@ -314,7 +314,7 @@ public static class WeaponSystem
         }
         else if (state.BurstLeft == 0 && state.ReloadLeft == 0)
         {
-            state.ReloadLeft = weapon.Reload;
+            state.ReloadLeft = Veterancy.Reload(world, shooter, weapon.Reload);
             state.BurstLeft = weapon.Burst - 1;
             state.BurstDelayLeft = weapon.BurstDelay;
         }

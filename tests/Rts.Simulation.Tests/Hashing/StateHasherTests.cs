@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "invulnerable", "storm", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "veteran infantry", "veteran vehicles", "invulnerable", "storm", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -92,6 +92,9 @@ public sealed class StateHasherTests
             case "spawns docked": moving.SpawnsDocked = 2; break;
             case "spawn regen": moving.SpawnRegenTicks = 4; break;
             case "drop": moving.Drop = new Paradrop(UnitType.Conscript, 3, new WorldPos(5, 5), new WorldPos(9, 9)); break;
+            case "experience": moving.Experience = 50; break;
+            case "veteran infantry": world.Player(Player1).VeteranInfantry = true; break;
+            case "veteran vehicles": world.Player(Player1).VeteranVehicles = true; break;
             case "cash timer": world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null).CashTimer = 5; break;
             case "warp ticks": moving.WarpTicks = 3; break;
             case "blackout": world.Player(Player1).BlackoutUntil = 50; break;
@@ -278,7 +281,7 @@ public sealed class StateHasherTests
         "<Deployed>k__BackingField", "<WarpTicks>k__BackingField",
         "<Passengers>k__BackingField", "<Parasite>k__BackingField", "<ParasiteOwner>k__BackingField", "<ParasiteHp>k__BackingField",
         "<ParasiteWeapon>k__BackingField", "<ParasiteTicks>k__BackingField", "<Ammo>k__BackingField", "<RearmTicks>k__BackingField",
-        "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField",
+        "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField", "<Experience>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {
@@ -335,6 +338,7 @@ public sealed class StateHasherTests
     [InlineData(typeof(PlayerState), new[]
     {
         "<Credits>k__BackingField", "_queues", "<LastUnderAttack>k__BackingField", "<DefeatedTick>k__BackingField", "<BlackoutUntil>k__BackingField",
+        "<VeteranInfantry>k__BackingField", "<VeteranVehicles>k__BackingField",
         "<Modifiers>k__BackingField", "<IncomeCarry>k__BackingField",
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField",

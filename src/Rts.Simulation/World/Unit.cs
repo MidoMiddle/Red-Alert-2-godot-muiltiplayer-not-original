@@ -101,6 +101,12 @@ public sealed class Unit : Entity
     /// <summary>What a paradrop plane carries and where to; null for any other unit. State: hashed.</summary>
     public Paradrop? Drop { get; internal set; }
 
+    /// <summary>
+    /// The worth of the enemies it killed (loose ends, stage 3), up to what makes it elite; its rank follows
+    /// (<see cref="Systems.Veterancy.RankOf"/>). State: hashed.
+    /// </summary>
+    public int Experience { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 
