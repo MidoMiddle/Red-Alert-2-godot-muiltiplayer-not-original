@@ -158,6 +158,11 @@ public static class DamageSystem
         }
 
         var damage = hit.BonusPercent > 0 ? (int)((long)weapon.Damage * (100 + hit.BonusPercent) / 100) : weapon.Damage;
+        if (hit.Target is null)
+        {
+            // A shell forced on a bridge (RA2): the segment there loses hit points.
+            BridgeDemolition.Shell(world, hit, warhead, warheadIndex, damage, events);
+        }
 
         if (hit.Target is { } targetId && world.TryGet(targetId, out var target) && target.IsAlive && Hurts(target, warhead))
         {

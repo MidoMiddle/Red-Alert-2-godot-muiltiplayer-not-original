@@ -45,8 +45,9 @@ public sealed record WarheadDef : IDefinition
     public int BombDelay { get; init; }
 
     /// <summary>
-    /// Its bomb goes on a standing bridge segment too and brings it down (RA2: the commando's C4 on a bridge;
-    /// <see cref="Systems.BridgeDemolition"/>).
+    /// It hurts a bridge (<see cref="Systems.BridgeDemolition"/>): its bomb goes on a standing bridge segment too and brings it down
+    /// (RA2: the commando's C4), and a shot of it forced on a point of a bridge takes hit points off the segment there by its share
+    /// against concrete (RA2: tanks and artillery force-firing at a bridge).
     /// </summary>
     public bool Bridges { get; init; }
 

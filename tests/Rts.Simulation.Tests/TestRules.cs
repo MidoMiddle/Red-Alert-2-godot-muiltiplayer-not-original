@@ -401,7 +401,7 @@ internal static class TestRules
         }
 
         Warhead(builder, "small_arms", [100, 80, 80, 50, 25, 25, 75, 50, 25, 100, 100], "normal");
-        Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 100, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true);
+        Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 100, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true, bridges: true);
         Warhead(builder, "electric", [100, 100, 100, 85, 100, 100, 50, 50, 50, 100, 100], "electro");
         Warhead(builder, "flak_ground", [150, 100, 50, 60, 10, 10, 30, 10, 10, 100, 100], "explode", spread: Fixed.One, atMax: 25);
         Warhead(builder, "flak_air", [100, 100, 100, 100, 20, 20, 0, 0, 0, 100, 100], "", spread: Fixed.One, atMax: 10, affectsAir: true);
@@ -437,7 +437,7 @@ internal static class TestRules
 
     private static void Warhead(
         RulesBuilder builder, string id, int[] verses, string death, Fixed spread = default, int atMax = 100, bool wallDamage = false,
-        bool affectsAir = false) =>
+        bool affectsAir = false, bool bridges = false) =>
         builder.Add(new WarheadDef
         {
             Id = id,
@@ -448,6 +448,7 @@ internal static class TestRules
             PercentAtMax = Percent(atMax),
             WallDamage = wallDamage,
             AffectsAir = affectsAir,
+            Bridges = bridges,
             InfantryDeath = death,
         });
 

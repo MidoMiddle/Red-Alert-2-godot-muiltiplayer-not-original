@@ -50,7 +50,7 @@ public static class StateHasher
             hash.Add(storm.End);
         }
 
-        // Rules v65: the C4 on bridges.
+        // Rules v65: the C4 on bridges (v66: shells hurt them too, the segments are in the map's digest).
         hash.Add(world.BridgeBombs.Count);
         foreach (var bomb in world.BridgeBombs)
         {

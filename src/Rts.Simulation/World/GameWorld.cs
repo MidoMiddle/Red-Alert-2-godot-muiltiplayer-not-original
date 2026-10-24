@@ -320,16 +320,7 @@ public sealed class GameWorld
                 return true;
             }
 
-            if (segment.Hp > amount)
-            {
-                Map.SetSegmentHp(segment, segment.Hp - amount);
-                events?.Add(new Events.BridgeSegmentDamaged(CurrentTick, segment.Bridge.Id, segment.Cell, segment.Hp));
-            }
-            else
-            {
-                DestroyBridgeSegment(segment, events);
-            }
-
+            DamageBridgeSegment(segment, amount, events);
             return true;
         }
 
@@ -499,6 +490,20 @@ public sealed class GameWorld
     /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. The dead keep
     /// their place in the cell until the end of the tick, like every unit that dies.
     /// </summary>
+    /// <summary>Takes <paramref name="amount"/> hit points off a standing bridge segment; at none it falls.</summary>
+    internal void DamageBridgeSegment(BridgeSegment segment, int amount, List<Events.SimEvent>? events)
+    {
+        if (segment.Hp > amount)
+        {
+            Map.SetSegmentHp(segment, segment.Hp - amount);
+            events?.Add(new Events.BridgeSegmentDamaged(CurrentTick, segment.Bridge.Id, segment.Cell, segment.Hp));
+        }
+        else
+        {
+            DestroyBridgeSegment(segment, events);
+        }
+    }
+
     internal void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events)
     {
         ChangeMap([new DestroyBridgeSegmentEdit(segment.Bridge.Id, segment.Index)], events);
@@ -510,6 +515,11 @@ public sealed class GameWorld
             {
                 unit.MarkDead();
                 events?.Add(new Events.UnitKilled(CurrentTick, unit.Id, unit.Position));
+            }
+            else if (entity is Unit { IsAlive: true, Target: null, TargetPoint: { } point } shooter && segment.Cells.Contains(point.ToCell()))
+            {
+                // Those forced to fire at the segment are done with it.
+                UnitOrders.ForgetTarget(shooter);
             }
         }
     }

@@ -391,11 +391,6 @@ internal static class RulesValidator
                 Error(warhead.Id, "bomb_delay", $"the bomb of '{warhead.Id}' needs a 'bomb_delay' above 0");
             }
 
-            if (warhead.Bridges && warhead.Bomb.Length == 0)
-            {
-                Error(warhead.Id, "bridges", $"'bridges' of '{warhead.Id}' needs a 'bomb' to put on the bridge");
-            }
-
             NotNegative(warhead.Id, "radiation", warhead.Radiation);
             if (warhead.Parasite && (warhead.ParasiteDamage <= 0 || warhead.ParasiteDelay <= 0))
             {

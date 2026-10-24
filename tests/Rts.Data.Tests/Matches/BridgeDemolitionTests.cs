@@ -10,13 +10,14 @@ using Rts.Simulation.World;
 namespace Rts.Data.Tests.Matches;
 
 /// <summary>
-/// The commando's C4 on a bridge (RA2): ordered at a bridge segment she walks up and plants it, the segment falls, and an engineer in the
-/// repair hut mends the bridge; with «Destroyable Bridges» off the bridge stands. By the game data, without the fog of war; two people
-/// play, no bot.
+/// Bridges falling to weapons (RA2): ordered at a bridge segment the commando walks up and plants her C4, the segment falls, and an
+/// engineer in the repair hut mends the bridge; tanks and artillery forced at a bridge wear a segment down; a soldier's bullets do
+/// nothing; with «Destroyable Bridges» off the bridge stands. By the game data, without the fog of war; two people play, no bot.
 /// </summary>
 public sealed class BridgeDemolitionTests
 {
     private const int Size = 64;
+    private static readonly PlayerId Union = new(1);
     private static readonly PlayerId Allied = new(2);
     private static readonly CellPos Hut = new(28, 22);
     private static readonly CellPos Middle = new(31, 20);
@@ -131,6 +132,40 @@ public sealed class BridgeDemolitionTests
 
         simulation.Enqueue(new ForceAttackCommand(Allied, simulation.CurrentTick, 0, [gi.Id], null, Middle.Center));
         Run(simulation, 300);
+
+        Assert.All(world.Map.Bridges[0].Segments, standing => Assert.Equal(standing.Bridge.Type.SegmentHp, standing.Hp));
+    }
+
+    [Theory]
+    [InlineData(UnitType.HeavyTank, 24)]
+    [InlineData(UnitType.RocketArtillery, 16)]
+    public void Tanks_and_artillery_forced_at_a_bridge_bring_a_segment_down(UnitType type, int x)
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var gun = world.SpawnUnit(Union, type, new CellPos(x, 20).Center, snapToSubcell: true);
+        // A plain order drives it over the bridge; only a forced attack fires at it.
+        Assert.False(BridgeDemolition.CanBlow(world, gun, Middle));
+        var segment = SegmentAt(world, Middle);
+
+        simulation.Enqueue(new ForceAttackCommand(Union, simulation.CurrentTick, 0, [gun.Id], null, Middle.Center));
+        Run(simulation, 200);
+        Assert.InRange(segment.Hp, 1, segment.Bridge.Type.SegmentHp - 1);
+        Run(simulation, 6000, () => !segment.IsIntact);
+
+        Assert.False(segment.IsIntact);
+        Assert.Null(gun.TargetPoint);
+        Assert.Equal(world.Map.Bridges[0].Segments.Count - 1, world.Map.Bridges[0].Segments.Count(standing => standing.IsIntact));
+    }
+
+    [Fact]
+    public void With_destroyable_bridges_off_a_tank_does_not_hurt_the_bridge()
+    {
+        var simulation = Match(destroyableBridges: false);
+        var world = simulation.World;
+        var tank = world.SpawnUnit(Union, UnitType.HeavyTank, new CellPos(24, 20).Center, snapToSubcell: true);
+        simulation.Enqueue(new ForceAttackCommand(Union, simulation.CurrentTick, 0, [tank.Id], null, Middle.Center));
+        Run(simulation, 600);
 
         Assert.All(world.Map.Bridges[0].Segments, standing => Assert.Equal(standing.Bridge.Type.SegmentHp, standing.Hp));
     }

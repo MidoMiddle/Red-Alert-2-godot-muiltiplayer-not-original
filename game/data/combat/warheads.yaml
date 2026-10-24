@@ -22,6 +22,7 @@ ap_shell:  # RA2 AP: tank shells, strong against vehicles
   percent_at_max: 50%
   wall_damage: true
   infantry_death: explode
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 electric:  # RA2 Electric: Tesla bolts, good against everything, half against buildings
   kind: warhead
@@ -154,6 +155,7 @@ apoc_ap:  # RA2 ApocAP: the Super Heavy Tank's cannons
   verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 70%, special_1: 100%, special_2: 100% }
   spread: 0.3
   infantry_death: explode
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 ultra_ap:  # RA2 UltraAP: the Tank Hunter's sabot, full against light and heavy only
   kind: warhead
@@ -168,18 +170,21 @@ v3_blast:  # RA2 V3WH: the rocket going off, a cell round it; the verses are our
   spread: 1
   percent_at_max: 50%
   infantry_death: explode
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 prism:  # the beam tank's beam: buildings take it double (RA2); the rest is ours
   kind: warhead
   name: Prism
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 200%, steel: 200%, concrete: 200%, special_1: 100%, special_2: 100% }
   infantry_death: electro
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 mirage:  # the holo tank's gun; the verses are ours
   kind: warhead
   name: Mirage
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 75%, heavy: 50%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
   infantry_death: normal
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 drone_parasite:  # RA2 ParasiteDog of the terror drone: into a vehicle, eating it 50 every 60 frames; a soldier dies at once; nothing to buildings
   kind: warhead
@@ -228,6 +233,7 @@ dreadnought_blast:  # the dreadnought's missile going off, 1.5 cells (RA2); the 
   spread: 1.5
   percent_at_max: 50%
   infantry_death: explode
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 sonic_wave:  # the dolphin's wave, RA2 SonicWarhead; the verses are ours; on a ship the squid holds it frees it
   kind: warhead
@@ -248,6 +254,7 @@ destroyer_shell:  # RA2 155mm's warhead: the destroyer's gun
   verses: { none: 100%, flak: 80%, plate: 60%, light: 100%, medium: 60%, heavy: 60%, wood: 100%, steel: 80%, concrete: 60%, special_1: 100%, special_2: 100% }
   wall_damage: true
   infantry_death: explode
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 hornet_bomb:  # RA2 HornetBomb's warhead: 0.4 cells, concrete 75%
   kind: warhead
@@ -270,6 +277,7 @@ blimp_bomb:  # RA2 BlimpBomb: the airship's bombs, 2 cells, half at the edge; th
   percent_at_max: 50%
   wall_damage: true
   infantry_death: explode
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 orca_ap:  # RA2 ORCAAP: the strike jets' missiles, 0.4 cells; the verses are ours, as an armor-piercing shell
   kind: warhead
