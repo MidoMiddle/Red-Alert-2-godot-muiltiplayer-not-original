@@ -22,10 +22,17 @@ public readonly record struct BuildingShape(float Height, float Inset, bool Stac
     public const float DefenseHeight = 0.7f;
     public const float Margin = 0.08f;
 
+    /// <summary>
+    /// How high the model of a building stands, by its id, when the table of models says (the height of its entry);
+    /// set by the client at start, null in the tests.
+    /// </summary>
+    public static Func<string, float?>? ModelHeight { get; set; }
+
     public static BuildingShape Of(BuildingDef def)
     {
         var wall = def.Wall;
-        var height = BuildingLooks.Known(def.Id) ? BuildingLooks.Top(def)
+        var height = ModelHeight?.Invoke(def.Id) is { } model ? model
+            : BuildingLooks.Known(def.Id) ? BuildingLooks.Top(def)
             : wall ? WallHeight
             : def.Category == ProductionCategory.Defense ? DefenseHeight
             : 0.35f + 0.2f * Math.Max(def.Footprint.Width, def.Footprint.Height);

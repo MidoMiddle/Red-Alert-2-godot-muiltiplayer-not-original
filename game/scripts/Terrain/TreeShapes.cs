@@ -66,9 +66,22 @@ public static class TreeShapes
         _ => Pine,
     };
 
-    /// <summary>A tree as nodes, for one that moves: the holo tank's disguise.</summary>
+    /// <summary>The name of the shape of a tree, its key in the table of models: <c>tree/palm</c> and the like.</summary>
+    public static string NameOf(TreeKind kind, int variant) => kind switch
+    {
+        TreeKind.Broadleaf => (variant & 3) >= 2 ? "broadleaf_big" : "broadleaf_small",
+        TreeKind.Desert => (variant & 3) >= 2 ? "cactus" : "palm",
+        _ => "pine",
+    };
+
+    /// <summary>A tree as nodes, for one that moves: the holo tank's disguise. Its model from the table when there is one.</summary>
     public static Node3D Build(TreeKind kind, int variant)
     {
+        if (Models.ModelLibrary.Instantiate("tree/" + NameOf(kind, variant)) is { } model)
+        {
+            return model;
+        }
+
         var tree = new Node3D();
         foreach (var part in Of(kind, variant))
         {

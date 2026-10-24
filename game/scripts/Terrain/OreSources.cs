@@ -7,7 +7,7 @@ namespace Rts.Client.Terrain;
 
 /// <summary>
 /// The ore and gem sources of the map (docs/implementation/M3_base_economy.md, 4.12, step 16): the drill tower of
-/// <see cref="ModelPath"/> — its still <c>tower</c> and its turning <c>drill</c>, the screw and the head, tinted in the colour of what it
+/// the model of the table (<c>object/ore_source</c>) — its still <c>tower</c> and its turning <c>drill</c>, the screw and the head, tinted in the colour of what it
 /// throws: gold for ore, blue for gems. Without the model file, a tower of boxes on a dark pad with a head of that colour. The drill turns
 /// slowly all the time; on <see cref="OreSourceErupted"/> it spins fast for <see cref="SpinSeconds"/> and a burst of crystals flies in an
 /// arc from the head to the cell that got the stage. In the editor there is no simulation, so the drills only turn. One view per source,
@@ -23,7 +23,8 @@ public partial class OreSources : Node3D
     private const float HeadHeight = 1.05f;
 
     /// <summary>The drill tower (docs/assets_registry.md): 0.9 of a cell wide, the head 3 cells up, as modelled.</summary>
-    public const string ModelPath = "res://assets/models/map/ore_source/ore_source.glb";
+    /// <summary>The key of the drill's model in the table of models (docs/art/model_standards.md): its file only.</summary>
+    public const string ModelKey = "object/ore_source";
 
     // Where the crystals leave the model: by the head, under the top of the screw.
     private const float ModelHeadHeight = 2.7f;
@@ -208,11 +209,7 @@ public partial class OreSources : Node3D
         if (!_modelLooked)
         {
             _modelLooked = true;
-            _model = ResourceLoader.Exists(ModelPath) ? GD.Load<PackedScene>(ModelPath) : null;
-            if (_model is null)
-            {
-                GD.PushWarning($"No drill model at {ModelPath}: the drills are drawn with boxes.");
-            }
+            _model = Models.ModelLibrary.PathOf(ModelKey) is { } path ? GD.Load<PackedScene>(path) : null;
         }
 
         return _model;

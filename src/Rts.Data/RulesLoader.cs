@@ -109,7 +109,7 @@ public static class RulesLoader
     /// docs/implementation/M6_menus_skirmish.md, 4.8), and the looks of <c>climates/</c>, read by the view (M7 4.12). Neither is
     /// in the data hash: they never change a match.
     /// </summary>
-    public static readonly string[] NotRulesFolders = ["audio", "climates"];
+    public static readonly string[] NotRulesFolders = ["audio", "climates", "visuals"];
 
     /// <summary>
     /// Every <c>.yaml</c> file below <paramref name="root"/> as (relative path with '/', text), in path order, except those of

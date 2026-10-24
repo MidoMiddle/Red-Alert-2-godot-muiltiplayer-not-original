@@ -1,0 +1,32 @@
+# The table of models (docs/art/model_standards.md): what in the game has a model, its file under game/assets/models/ and how it
+# sits. An object not here — or whose file is missing — is drawn with its placeholder, as before.
+#
+# Keys:
+#   building/<id>   a building of the players (game/data/factions) or of the map (neutral_*, tech_*): pivot at the centre of the
+#                   footprint on the ground; its team_mask node takes the owner's colour
+#   unit/<id>       a unit (game/data/factions): pivot at the centre on the ground, front to -Z; a turret node turns on its own
+#   object/<id>     a map object (pine_tree is drawn as a tree/<shape>): pivot at the centre of the cell on the ground
+#   tree/<shape>    a tree of a climate: pine (snow), broadleaf_small and broadleaf_big (temperate, urban), palm and cactus (desert);
+#                   the holo tank's disguise too
+#   ore/<kind>      the clusters of a field: ore and gems (the file only: the field scales and turns them)
+# Fields: file (required), scale (1), yaw in degrees (0), offset [x, y, z] in cells ([0, 0, 0]), height in cells for the bars over
+# a building (its look's when 0), climates — the climates it is drawn in (all when left out).
+format: models/1
+models:
+  # The industrial buildings of the map (docs/industrial_elements).
+  building/neutral_smokestack:     { file: industrial/smokestack/smokestack.glb, height: 6 }
+  building/neutral_cooling_tower:  { file: industrial/cooling_tower/cooling_tower.glb, height: 5 }
+  building/neutral_factory_hall:   { file: industrial/factory_hall/factory_hall.glb, height: 5 }
+  building/neutral_boiler_house:   { file: industrial/boiler_house/boiler_house.glb, height: 3.5 }
+  building/neutral_fuel_tank:      { file: industrial/fuel_tank/fuel_tank.glb, height: 2.5 }
+
+  # Map objects (docs/map_elements, docs/obstacle_elements). A fence and a pipe run along x, as their placeholders.
+  object/ore_source:          { file: map/ore_source/ore_source.glb }
+  object/fence_wood:          { file: map/fence_wood_section/fence_wood_section.glb }
+  object/pipeline:            { file: industrial/pipeline_straight/pipeline_straight.glb }
+  object/anti_tank_hedgehog:  { file: obstacle/anti_tank_hedgehog/obstacle_anti_tank_hedgehog.glb }
+  object/snowdrift:           { file: map/snowdrift_01/snowdrift_01.glb, climates: [winter] }
+
+  # The ore fields.
+  ore/ore:   { file: map/ore_cluster/ore_cluster.glb }
+  ore/gems:  { file: map/gem_cluster/gem_cluster.glb }

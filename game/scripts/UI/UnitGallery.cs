@@ -11,7 +11,8 @@ namespace Rts.Client.UI;
 /// until the models come, and to check them (<c>-- --ui-units</c>, with <c>--screenshot</c>). The Union's on the left rows, the
 /// Alliance's after them, in the order of <see cref="UnitTypes.All"/>. With <c>--icons</c> the squares of the sidebar instead: every
 /// unit and building of the data with its role colour and code. With <c>--buildings</c> every building of the players in its look
-/// (<see cref="Terrain.BuildingLooks"/>), the Allies' rows first, in the order of the sidebar.
+/// (<see cref="Terrain.BuildingLooks"/>), the Allies' rows first, in the order of the sidebar. With <c>--models</c> every model of the
+/// table of models (docs/art/model_standards.md) on a plate of its footprint, to check its size against the cells.
 /// </summary>
 public partial class UnitGallery : Node3D
 {
@@ -29,6 +30,7 @@ public partial class UnitGallery : Node3D
         }
 
         var buildings = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--buildings") >= 0;
+        var models = System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--models") >= 0;
         AddChild(new WorldEnvironment
         {
             Environment = new Environment
@@ -40,6 +42,13 @@ public partial class UnitGallery : Node3D
             },
         });
         AddChild(new DirectionalLight3D { RotationDegrees = new Vector3(-55f, -35f, 0f), ShadowEnabled = true });
+
+        if (models)
+        {
+            ShowModels();
+            ScreenshotCapture.AttachIfRequested(this);
+            return;
+        }
 
         if (buildings)
         {
@@ -84,6 +93,66 @@ public partial class UnitGallery : Node3D
             Current = true,
         });
         ScreenshotCapture.AttachIfRequested(this);
+    }
+
+    /// <summary>Every model of the table on a plate of its footprint, a cell grid on it, its key under it.</summary>
+    private void ShowModels()
+    {
+        const int ModelColumns = 6;
+        const float Step = 6f;
+        var database = DataFiles.Current.Rules.Database;
+        var keys = new System.Collections.Generic.List<string>(Models.ModelLibrary.Table.Keys);
+        keys.Sort(System.StringComparer.Ordinal);
+        var rows = (keys.Count + ModelColumns - 1) / ModelColumns;
+        for (var i = 0; i < keys.Count; i++)
+        {
+            var key = keys[i];
+            var id = key[(key.IndexOf('/') + 1)..];
+            var (width, height) = key.StartsWith("building/", System.StringComparison.Ordinal)
+                ? database.TryGetBuilding(id, out var def) ? (def.Footprint.Width, def.Footprint.Height)
+                : Rts.Simulation.World.BuildingTypes.TryGetById(id, out var type) ? (type.Width, type.Height) : (1, 1)
+                : (1, 1);
+            var at = new Vector3((i % ModelColumns - (ModelColumns - 1) / 2f) * Step, 0f, (i / ModelColumns - (rows - 1) / 2f) * Step);
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    AddChild(new MeshInstance3D
+                    {
+                        Mesh = new PlaneMesh { Size = new Vector2(0.94f, 0.94f) },
+                        Position = at + new Vector3(x - width / 2f + 0.5f, 0.005f, y - height / 2f + 0.5f),
+                        MaterialOverride = new StandardMaterial3D { AlbedoColor = (x + y) % 2 == 0 ? new Color(0.32f, 0.34f, 0.32f) : new Color(0.26f, 0.28f, 0.27f) },
+                    });
+                }
+            }
+
+            if (Models.ModelLibrary.Instantiate(key, Matches.PlayerColors.Of(new PlayerId(1))) is { } model)
+            {
+                model.Position += at;
+                AddChild(model);
+            }
+
+            AddChild(new Label3D
+            {
+                Text = key,
+                Position = at + new Vector3(0, 0.05f, height / 2f + 0.7f),
+                RotationDegrees = new Vector3(-60f, 0, 0),
+                FontSize = 40,
+                PixelSize = 0.01f,
+                OutlineSize = 10,
+                Modulate = new Color(0.95f, 0.93f, 0.85f),
+            });
+        }
+
+        AddChild(new Camera3D
+        {
+            Projection = Camera3D.ProjectionType.Orthogonal,
+            // Tall enough for the rows and wide enough for the columns of a 16:9 screen.
+            Size = Mathf.Max(rows * Step + 3f, (ModelColumns * Step + 1f) * 9f / 16f),
+            Position = new Vector3(0, 30f, 21f),
+            RotationDegrees = new Vector3(-55f, 0, 0),
+            Current = true,
+        });
     }
 
     /// <summary>Every building of the players in its look, in rows of <see cref="BuildingColumns"/>, the Allies first.</summary>

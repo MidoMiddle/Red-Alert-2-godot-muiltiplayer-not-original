@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using Rts.Simulation.Map;
 using Rts.Simulation.World;
@@ -38,6 +39,7 @@ public partial class UnitView : Node3D
 
     private MeshInstance3D _body = null!;
     private Node3D? _turret;
+    private List<MeshInstance3D>? _teamMeshes;
     private MeshInstance3D? _turretBody;
     private Node3D? _sandbags;
 
@@ -47,6 +49,16 @@ public partial class UnitView : Node3D
     public void Build(UnitArchetype archetype)
     {
         Type = archetype.Type;
+        if (Models.ModelLibrary.Instantiate("unit/" + archetype.Id) is { } model)
+        {
+            // The model of the table (docs/art/model_standards.md): its turret node turns, its team_mask takes the player's colour.
+            AddChild(model);
+            _turret = model.FindChild("turret", true, false) as Node3D;
+            _teamMeshes = [];
+            CollectTeam(model, false, _teamMeshes);
+            return;
+        }
+
         if (archetype.Category == UnitCategory.Infantry)
         {
             BuildInfantry(archetype.Type);
@@ -96,6 +108,16 @@ public partial class UnitView : Node3D
 
     public void SetMaterial(Material teamMaterial)
     {
+        if (_teamMeshes is not null)
+        {
+            foreach (var mesh in _teamMeshes)
+            {
+                mesh.MaterialOverride = teamMaterial;
+            }
+
+            return;
+        }
+
         _body.MaterialOverride = teamMaterial;
         if (_turretBody is not null)
         {
@@ -111,6 +133,21 @@ public partial class UnitView : Node3D
         if (_turret is not null)
         {
             _turret.Rotation = new Vector3(0, turretYaw - hullYaw, 0);
+        }
+    }
+
+    // The meshes under a node named team_mask.
+    private static void CollectTeam(Node node, bool inMask, List<MeshInstance3D> meshes)
+    {
+        inMask |= node.Name.ToString().StartsWith("team_mask", System.StringComparison.Ordinal);
+        if (inMask && node is MeshInstance3D mesh)
+        {
+            meshes.Add(mesh);
+        }
+
+        foreach (var child in node.GetChildren())
+        {
+            CollectTeam(child, inMask, meshes);
         }
     }
 

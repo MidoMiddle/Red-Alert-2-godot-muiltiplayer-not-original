@@ -116,13 +116,17 @@ public partial class MapObjects : Node3D
 
         AddInstances("Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
         AddInstances("Stumps", new CylinderMesh { TopRadius = 0.08f, BottomRadius = 0.09f, Height = 0.08f }, new Color(0.42f, 0.3f, 0.18f), stumps, 0.04f);
-        AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f);
-        AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f);
-        AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f);
-        AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f);
-        AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
-        AddInstances("Hedgehogs", new BoxMesh { Size = new Vector3(0.9f, 0.3f, 0.9f) }, new Color(0.3f, 0.31f, 0.34f), hedgehogs, 0.15f);
-        AddInstances("Pipes", new BoxMesh { Size = new Vector3(0.98f, 0.12f, 0.12f) }, new Color(0.22f, 0.25f, 0.28f), pipes, 0.06f);
+        // The models of the table by the object's id (docs/art/model_standards.md), the primitives without one.
+        AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f, "object/boulder");
+        AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f, "object/fence_wood");
+        AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f, "object/wall_stone");
+        if (!AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f, "object/lamp_post"))
+        {
+            AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
+        }
+
+        AddInstances("Hedgehogs", new BoxMesh { Size = new Vector3(0.9f, 0.3f, 0.9f) }, new Color(0.3f, 0.31f, 0.34f), hedgehogs, 0.15f, "object/anti_tank_hedgehog");
+        AddInstances("Pipes", new BoxMesh { Size = new Vector3(0.98f, 0.12f, 0.12f) }, new Color(0.22f, 0.25f, 0.28f), pipes, 0.06f, "object/pipeline");
         // A snowdrift of the map is a bush in summer and in town, a dune in the desert.
         var drift = kind switch
         {
@@ -130,7 +134,7 @@ public partial class MapObjects : Node3D
             Climates.TreeKind.Desert => new Color(0.85f, 0.74f, 0.52f),
             _ => new Color(0.9f, 0.93f, 0.97f),
         };
-        AddInstances("Snowdrifts", new SphereMesh { Radius = 0.45f, Height = 0.22f }, drift, drifts, 0.11f);
+        AddInstances("Snowdrifts", new SphereMesh { Radius = 0.45f, Height = 0.22f }, drift, drifts, 0.11f, "object/snowdrift");
     }
 
     /// <summary>
@@ -179,12 +183,34 @@ public partial class MapObjects : Node3D
 
     private static Vector3 Ground(int x, int y) => new(x + 0.5f, WorldCoords.Terrain!.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
 
-    /// <summary>The trees of the map and the skirt, every shape of <see cref="TreeShapes"/> one MultiMesh.</summary>
+    /// <summary>
+    /// The trees of the map and the skirt: the model of a shape from the table (<c>tree/&lt;shape&gt;</c>, <see cref="TreeShapes.NameOf"/>)
+    /// one MultiMesh for every mesh of it, or else every part of the shape of <see cref="TreeShapes"/> one MultiMesh.
+    /// </summary>
     private void AddTrees(Climates.TreeKind kind, List<(Vector3 At, int Variant)> trees)
     {
         var parts = new Dictionary<string, (TreePart Part, List<Transform3D> Places)>();
+        var modelled = new Dictionary<string, (Mesh Mesh, List<Transform3D> Places)>();
         foreach (var (at, variant) in trees)
         {
+            var shape = TreeShapes.NameOf(kind, variant);
+            if (Models.ModelLibrary.Meshes("tree/" + shape) is { } meshes)
+            {
+                for (var m = 0; m < meshes.Count; m++)
+                {
+                    var key = shape + m;
+                    if (!modelled.TryGetValue(key, out var entry))
+                    {
+                        entry = (meshes[m].Mesh, []);
+                        modelled[key] = entry;
+                    }
+
+                    entry.Places.Add(new Transform3D(Basis.Identity, at) * meshes[m].Place);
+                }
+
+                continue;
+            }
+
             foreach (var part in TreeShapes.Of(kind, variant))
             {
                 var key = part.Key + "/" + part.Color.ToHtml();
@@ -210,13 +236,45 @@ public partial class MapObjects : Node3D
 
             AddChild(new MultiMeshInstance3D { Name = "Trees" + part.Key + parts.Keys.ToList().IndexOf(key), Multimesh = multiMesh });
         }
+
+        foreach (var (key, (mesh, places)) in modelled)
+        {
+            var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = places.Count };
+            for (var i = 0; i < places.Count; i++)
+            {
+                multiMesh.SetInstanceTransform(i, places[i]);
+            }
+
+            AddChild(new MultiMeshInstance3D { Name = "TreeModel" + key, Multimesh = multiMesh });
+        }
     }
 
-    private void AddInstances(string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift)
+    /// <summary>
+    /// One MultiMesh of a kind of map object: its model of the table (<paramref name="key"/>, pivot on the ground) when there is one
+    /// for the climate — a MultiMesh for every mesh of it — or else the primitive raised by <paramref name="lift"/>. True for a model.
+    /// </summary>
+    private bool AddInstances(string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift, string? key = null)
     {
         if (positions.Count == 0)
         {
-            return;
+            return false;
+        }
+
+        if (key is not null && Models.ModelLibrary.Meshes(key, _builtClimate?.Id) is { } meshes)
+        {
+            for (var m = 0; m < meshes.Count; m++)
+            {
+                var (modelMesh, place) = meshes[m];
+                var instances = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = modelMesh, InstanceCount = positions.Count };
+                for (var i = 0; i < positions.Count; i++)
+                {
+                    instances.SetInstanceTransform(i, new Transform3D(Basis.Identity, positions[i]) * place);
+                }
+
+                AddChild(new MultiMeshInstance3D { Name = name + "Model" + m, Multimesh = instances });
+            }
+
+            return true;
         }
 
         mesh.Material = new StandardMaterial3D { AlbedoColor = color };
@@ -232,5 +290,6 @@ public partial class MapObjects : Node3D
         }
 
         AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
+        return false;
     }
 }

@@ -29,6 +29,8 @@ public partial class Boot : Control
     public override void _Ready()
     {
         Localization.Load();
+        // A building with a model stands as high as the table of models says, for the bars over it.
+        Terrain.BuildingShape.ModelHeight = id => Models.ModelLibrary.Find("building/" + id) is { Height: > 0f } entry ? entry.Height : null;
 
         var args = OS.GetCmdlineUserArgs();
         if (args.Contains("--ui-showcase"))

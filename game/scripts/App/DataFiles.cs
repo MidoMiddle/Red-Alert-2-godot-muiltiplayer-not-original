@@ -69,7 +69,7 @@ public static class DataFiles
 
         foreach (var name in DirAccess.GetDirectoriesAt(folder))
         {
-            // The sounds and the climate looks are not rules (RulesLoader.NotRulesFolders).
+            // The sounds, the climate looks and the table of models are not rules (RulesLoader.NotRulesFolders).
             if (prefix.Length == 0 && System.Array.IndexOf(RulesLoader.NotRulesFolders, name) >= 0)
             {
                 continue;

@@ -39,8 +39,14 @@ public partial class Buildings : Node3D
     // A digest of who owns the buildings of the map, to see one taken.
     private static long Owners(GameWorld? world)
     {
+        // The editor has no world. (An empty EntityList made by [] holds no list: enumerating it threw every frame.)
         long digest = 0;
-        foreach (var entity in world?.Entities ?? [])
+        if (world is null)
+        {
+            return digest;
+        }
+
+        foreach (var entity in world.Entities)
         {
             if (entity is Building { IsAlive: true, Def: null } building)
             {
@@ -101,6 +107,14 @@ public partial class Buildings : Node3D
         };
         var centre = new Vector3(cell.X + type.Width / 2f, 0, cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
+        if (Models.ModelLibrary.Instantiate("building/" + type.Id, owner.IsNeutral ? null : OwnerColor(owner)) is { } model)
+        {
+            // The model of the table (docs/art/model_standards.md); a taken tech building shows its owner in its team_mask.
+            model.Position += centre + new Vector3(0, ground, 0);
+            AddChild(model);
+            return;
+        }
+
         var size = new Vector3(type.Width - 2 * Margin, height + Sink, type.Height - 2 * Margin);
         Box(size, centre + new Vector3(0, ground + (height - Sink) / 2, 0), tech ? Tech : Civilian);
         var top = ground + height;

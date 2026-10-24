@@ -6,7 +6,7 @@ namespace Rts.Client.Terrain;
 
 /// <summary>
 /// The ore of a match (docs/implementation/M3_base_economy.md, 4.12, step 9): on every cell of ore a cluster of golden stones, on every
-/// cell of gems one of blue gems (<see cref="OreModel"/>, <see cref="GemModel"/>), larger the higher the stage and turned by the cell
+/// cell of gems one of blue gems (the models of the table, <c>ore/ore</c> and <c>ore/gems</c>: their files only), larger the higher the stage and turned by the cell
 /// (<see cref="OreCrystals.ClusterScale"/>). Without the model files, yellow and blue diamonds as before, one to four a cell
 /// (<see cref="OreCrystals.Of"/>, step 13). Rebuilt when the ore changes (<see cref="MapGrid.OreVersion"/>): it grows every 30 seconds,
 /// the drills throw it and the harvesters take it.
@@ -17,10 +17,10 @@ public partial class OreField : Node3D
     public static readonly Color GemColor = new(0.35f, 0.8f, 1f);
 
     /// <summary>The cluster of ore stones (docs/assets_registry.md): about 0.7 of a cell wide at full size.</summary>
-    public const string OreModel = "res://assets/models/map/ore_cluster/ore_cluster.glb";
+    public const string OreModel = "ore/ore";
 
     /// <summary>The cluster of gems, the same size.</summary>
-    public const string GemModel = "res://assets/models/map/gem_cluster/gem_cluster.glb";
+    public const string GemModel = "ore/gems";
 
     private static readonly Dictionary<string, Mesh?> Meshes = new();
 
@@ -97,12 +97,12 @@ public partial class OreField : Node3D
     }
 
     /// <summary>The mesh of the <c>body</c> of a model, loaded once; null without the file — the diamonds stand in.</summary>
-    private static Mesh? MeshOf(string path)
+    private static Mesh? MeshOf(string key)
     {
-        if (!Meshes.TryGetValue(path, out var mesh))
+        if (!Meshes.TryGetValue(key, out var mesh))
         {
             mesh = null;
-            if (ResourceLoader.Exists(path) && GD.Load<PackedScene>(path) is { } scene)
+            if (Models.ModelLibrary.PathOf(key) is { } path && GD.Load<PackedScene>(path) is { } scene)
             {
                 var root = scene.Instantiate<Node3D>();
                 mesh = (root.FindChild("body", true, false) as MeshInstance3D)?.Mesh;
@@ -111,10 +111,10 @@ public partial class OreField : Node3D
 
             if (mesh is null)
             {
-                GD.PushWarning($"No ore model at {path}: the ore is drawn with diamonds.");
+                GD.PushWarning($"No ore model for {key}: the ore is drawn with diamonds.");
             }
 
-            Meshes[path] = mesh;
+            Meshes[key] = mesh;
         }
 
         return mesh;

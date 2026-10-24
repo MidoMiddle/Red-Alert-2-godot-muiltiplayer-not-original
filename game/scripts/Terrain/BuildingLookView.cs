@@ -4,8 +4,10 @@ using Rts.Simulation.Rules;
 namespace Rts.Client.Terrain;
 
 /// <summary>
-/// The nodes of a building's look (<see cref="BuildingLooks"/>): its parts as meshes in the colours of its faction, and the owner's
-/// band round its base. Shared by the buildings on the map and the gallery (<c>-- --ui-units --buildings</c>).
+/// The nodes of a building's look: its model from the table (<see cref="Models.ModelLibrary"/>, key <c>building/&lt;id&gt;</c>) with
+/// its <c>team_mask</c> in the owner's colour, or else its placeholder (<see cref="BuildingLooks"/>): the parts as meshes in the colours
+/// of its faction and the owner's band round its base. Shared by the buildings on the map and the gallery
+/// (<c>-- --ui-units --buildings</c>).
 /// </summary>
 public static class BuildingLookView
 {
@@ -15,6 +17,14 @@ public static class BuildingLookView
     /// </summary>
     public static void AddTo(Node3D body, BuildingDef def, Color owner, float sink)
     {
+        if (Models.ModelLibrary.Instantiate("building/" + def.Id, owner) is { } model)
+        {
+            // Its pivot is the footprint's centre on the ground.
+            model.Position += new Vector3(0f, sink, 0f);
+            body.AddChild(model);
+            return;
+        }
+
         var soviet = def.Faction == "union";
         var parts = BuildingLooks.Of(def);
         for (var i = 0; i < parts.Count; i++)
