@@ -46,6 +46,17 @@ public static class DeathSystem
         }
     }
 
+    /// <summary>
+    /// The building is erased from time by <paramref name="killer"/>'s temporal beam (stage 3a): it goes as to a shot, its soldiers come
+    /// out, but nothing of it is left to blow up.
+    /// </summary>
+    public static void Erase(GameWorld world, Building building, EntityId killer, PlayerId killerOwner, int weapon, List<SimEvent>? events)
+    {
+        world.DestroyBuilding(building, events);
+        events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
+        GarrisonSystem.Evacuate(world, building, events);
+    }
+
     /// <summary>The building falls without a shot — <see cref="DeathCause.Defeat"/> of its owner (M5 step 10): no killer, no weapon.</summary>
     public static void Fall(GameWorld world, Building building, DeathCause cause, List<SimEvent>? events)
     {

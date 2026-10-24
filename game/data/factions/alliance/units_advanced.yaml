@@ -16,7 +16,7 @@ alliance_engineer:  # captures and repairs buildings
   prerequisites: [alliance_barracks]
   ability_later: true
 
-alliance_attack_dog:  # attack dog
+alliance_attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   kind: unit
   inherits: base_infantry
   name: Guard Dog
@@ -28,9 +28,9 @@ alliance_attack_dog:  # attack dog
   speed: 48
   sight: 9
   prerequisites: [alliance_barracks]
-  ability_later: true
+  primary: alliance_dog_bite
 
-alliance_rocketeer:  # flies over the field (M11b)
+alliance_rocketeer:  # flies over the field with a jet pack, fires at the ground and the air (stage 3a)
   kind: unit
   inherits: base_infantry
   name: Jetpack Trooper
@@ -42,7 +42,9 @@ alliance_rocketeer:  # flies over the field (M11b)
   speed: 54
   sight: 8
   prerequisites: [alliance_barracks, alliance_air_force_command]
-  ability_later: true
+  primary: alliance_jetpack_guns
+  jumpjet: true
+  crushable: false
 
 alliance_spy:  # disguises and enters enemy buildings
   kind: unit
@@ -59,7 +61,7 @@ alliance_spy:  # disguises and enters enemy buildings
   prerequisites: [alliance_barracks, alliance_battle_lab]
   ability_later: true
 
-alliance_chrono_legionnaire:  # erases targets from time
+alliance_chrono_legionnaire:  # erases its target from time (stage 3a)
   kind: unit
   inherits: base_infantry
   name: Time Trooper
@@ -71,9 +73,9 @@ alliance_chrono_legionnaire:  # erases targets from time
   speed: 30
   sight: 8
   prerequisites: [alliance_barracks, alliance_battle_lab]
-  ability_later: true
+  primary: alliance_neutron_rifle
 
-alliance_tanya:  # hero: kills infantry, bombs buildings
+alliance_tanya:  # hero: one shot kills a soldier (stage 3a); bombing buildings comes with 3b
   kind: unit
   inherits: base_infantry
   name: Elite Commando
@@ -86,9 +88,9 @@ alliance_tanya:  # hero: kills infantry, bombs buildings
   speed: 30
   sight: 8
   prerequisites: [alliance_barracks, alliance_battle_lab]
-  ability_later: true
+  primary: alliance_double_pistols
 
-alliance_sniper:  # long-range anti-infantry
+alliance_sniper:  # long-range anti-infantry (stage 3a)
   kind: unit
   inherits: base_infantry
   name: Marksman
@@ -100,7 +102,7 @@ alliance_sniper:  # long-range anti-infantry
   speed: 24
   sight: 8
   prerequisites: [alliance_barracks, alliance_air_force_command]
-  ability_later: true
+  primary: alliance_sniper_rifle
 
 alliance_ifv:  # weapon by its passenger
   kind: unit

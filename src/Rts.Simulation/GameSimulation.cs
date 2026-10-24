@@ -136,6 +136,7 @@ public sealed class GameSimulation
         ProjectileSystem.Update(World, _events);
         Probe?.Invoke("projectiles");
         DamageSystem.Update(World, _events);
+        ErasureSystem.Update(World, _events);
         Probe?.Invoke("damage");
 
         // 4. Movement.

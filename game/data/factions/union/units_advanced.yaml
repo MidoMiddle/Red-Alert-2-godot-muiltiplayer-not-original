@@ -3,7 +3,7 @@
 # are built by the shipyard on the water (category naval, stage 2a); the airship flies (category aircraft, stage 2b) and comes from
 # the war factory, as in RA2 — its locomotor is not used in flight. Units of a single country in RA2 are the whole faction's for now.
 
-attack_dog:  # attack dog: bites infantry, M11 weapon
+attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   kind: unit
   inherits: base_infantry
   name: War Hound
@@ -15,9 +15,9 @@ attack_dog:  # attack dog: bites infantry, M11 weapon
   speed: 48
   sight: 9
   prerequisites: [barracks]
-  ability_later: true
+  primary: war_hound_bite
 
-tesla_trooper:  # electric infantry
+tesla_trooper:  # electric infantry (stage 3a)
   kind: unit
   inherits: base_infantry
   name: Shock Infantry
@@ -30,7 +30,7 @@ tesla_trooper:  # electric infantry
   speed: 24
   sight: 6
   prerequisites: [barracks]
-  ability_later: true
+  primary: shock_bolt
 
 crazy_ivan:  # plants bombs
   kind: unit
@@ -61,7 +61,7 @@ terrorist:  # blows up with its target
   prerequisites: [barracks, radar]
   ability_later: true
 
-desolator:  # poisons the ground
+desolator:  # melts soldiers with its beam (stage 3a); poisoning the ground comes with 3b
   kind: unit
   inherits: base_infantry
   name: Toxin Trooper
@@ -74,7 +74,7 @@ desolator:  # poisons the ground
   speed: 24
   sight: 6
   prerequisites: [barracks, tech_center]
-  ability_later: true
+  primary: toxin_beam_gun
 
 rocket_artillery:  # long-range rocket (the draft listed it as desolator)
   kind: unit

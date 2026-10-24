@@ -166,7 +166,8 @@ public sealed class GameRules
                 unit.Threat,
                 unit.Stance,
                 unit.Crusher,
-                unit.Crushable);
+                unit.Crushable,
+                unit.Jumpjet);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];

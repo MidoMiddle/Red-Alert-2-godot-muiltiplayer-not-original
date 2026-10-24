@@ -43,13 +43,17 @@ public sealed record UnitArchetype(
     int Threat = 0,
     Stance Stance = Stance.Aggressive,
     bool Crusher = false,
-    bool Crushable = false)
+    bool Crushable = false,
+    bool Jumpjet = false)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;
 
-    /// <summary>A flier (stage 2b): it flies straight over land and water, takes no cell and is hit only by weapons at the air.</summary>
-    public bool Flies => Category == UnitCategory.Aircraft;
+    /// <summary>
+    /// A flier (stage 2b): it flies straight over land and water, takes no cell and is hit only by weapons at the air; an aircraft, or a
+    /// soldier with a jet pack (stage 3a).
+    /// </summary>
+    public bool Flies => Category == UnitCategory.Aircraft || Jumpjet;
 
     /// <summary>True for a unit that gathers ore.</summary>
     public bool Harvests => HarvestCapacity > 0;

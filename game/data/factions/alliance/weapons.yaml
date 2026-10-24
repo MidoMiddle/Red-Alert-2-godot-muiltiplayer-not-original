@@ -55,3 +55,49 @@ alliance_sky_guard_missile:  # of the Sky Guard: aircraft only
   projectile: rocket
   warhead: flak_air
   targets: [air]
+
+alliance_dog_bite:  # of the Guard Dog, RA2 BadTeeth: 1000 so that the bite kills any soldier
+  kind: weapon
+  name: Bite
+  damage: 1000
+  reload: 2s
+  range: 1.5
+  projectile: pounce
+  warhead: bite
+
+alliance_double_pistols:  # of the Elite Commando, RA2 DoublePistols
+  kind: weapon
+  name: Double Pistols
+  damage: 125
+  reload: 0.67s
+  range: 6
+  projectile: bullet
+  warhead: hollow_point
+
+alliance_sniper_rifle:  # of the Marksman, RA2 AWP: reaches farther than it sees
+  kind: weapon
+  name: Sniper Rifle
+  damage: 125
+  reload: 10s
+  range: 14
+  projectile: bullet
+  warhead: hollow_point
+
+alliance_jetpack_guns:  # of the Jetpack Trooper, RA2 20mm: at the ground and the air
+  kind: weapon
+  name: 20mm Guns
+  damage: 25
+  reload: 2s
+  range: 5
+  projectile: bullet
+  warhead: jetpack_rounds
+  targets: [ground, air]
+
+alliance_neutron_rifle:  # of the Time Trooper, RA2 NeutronRifle: the erasure a tick while the beam holds; it strikes again each second (RA2 120 frames; ours, to show the beam)
+  kind: weapon
+  name: Neutron Rifle
+  damage: 8
+  reload: 1s
+  range: 5
+  projectile: chrono_beam
+  warhead: chrono

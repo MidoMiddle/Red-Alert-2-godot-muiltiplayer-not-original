@@ -31,6 +31,10 @@ public partial class CombatEffects : Node3D
     private static readonly Color FlashColor = new(1f, 0.95f, 0.6f);
     private static readonly Color TracerColor = new(1f, 0.9f, 0.3f);
     private static readonly Color BoltColor = new(0.55f, 0.8f, 1f);
+
+    // The beams of stage 3a: the Toxin Trooper's green, the Time Trooper's pale blue.
+    private static readonly Color ToxinColor = new(0.45f, 1f, 0.3f);
+    private static readonly Color ChronoColor = new(0.7f, 0.9f, 1f);
     private static readonly Color FireColor = new(1f, 0.5f, 0.1f);
     private static readonly Color ElectroColor = new(0.45f, 0.75f, 1f);
     private static readonly Color DustColor = new(0.7f, 0.66f, 0.58f);
@@ -184,11 +188,16 @@ public partial class CombatEffects : Node3D
                 rules.TryGetProjectile(weapon.Projectile, out var projectile);
                 var warhead = rules.Warheads[rules.IndexOfWarhead(weapon.Warhead)];
                 var point = WorldCoords.ToGodotOnGround(impact.Point, 0.3f);
-                if (impact.Projectile is null && Know(impact.Shooter) is { } from)
+                // A dog's bite (stage 3a) leaves no trace in the air.
+                if (impact.Projectile is null && projectile.Visual != "none" && Know(impact.Shooter) is { } from)
                 {
-                    _lineEffects.Add(projectile.Visual == "electric_bolt"
-                        ? new Line(Zigzag(from.Gun, point), BoltColor, BoltLife)
-                        : new Line([from.Gun, point], TracerColor, TracerLife));
+                    _lineEffects.Add(projectile.Visual switch
+                    {
+                        "electric_bolt" => new Line(Zigzag(from.Gun, point), BoltColor, BoltLife),
+                        "toxin_beam" => new Line([from.Gun, point], ToxinColor, BoltLife),
+                        "chrono_beam" => new Line([from.Gun, point], ChronoColor, BoltLife),
+                        _ => new Line([from.Gun, point], TracerColor, TracerLife),
+                    });
                 }
 
                 var spread = (float)warhead.Spread.Raw / Fixed.OneRaw;

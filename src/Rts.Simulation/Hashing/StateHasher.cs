@@ -364,5 +364,11 @@ public static class StateHasher
         hash.Add(entity.Id.Value);
         hash.Add(entity.Owner.Value);
         hash.Add(entity.IsAlive);
+
+        // Rules v49 (stage 3a): the temporal beam that holds it.
+        hash.Add(entity.ErasedBy.HasValue);
+        hash.Add(entity.ErasedBy?.Value ?? 0);
+        hash.Add(entity.EraseWeapon);
+        hash.Add(entity.ErasePoints);
     }
 }

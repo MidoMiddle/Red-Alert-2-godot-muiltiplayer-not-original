@@ -41,7 +41,7 @@ public static class TargetingSystem
                 EndFallenOrder(world, ordered);
             }
 
-            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral)
+            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || entity.ErasedBy is not null)
             {
                 continue;
             }
@@ -212,7 +212,9 @@ public static class TargetingSystem
         var bestScore = int.MinValue;
         foreach (var id in nearby)
         {
+            // One held by another's temporal beam (stage 3a) is out of time: only that shooter keeps it.
             if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || world.AreAllies(candidate.Owner, me.Owner) || candidate.Owner.IsNeutral
+                || (candidate.ErasedBy is { } holder && holder != me.Id)
                 || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate))
             {
                 continue;

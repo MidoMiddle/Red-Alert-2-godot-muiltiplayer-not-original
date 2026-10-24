@@ -20,7 +20,7 @@ internal static class DefinitionReader
     private static readonly string[] UnitKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
-        "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later",
+        "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -37,7 +37,7 @@ internal static class DefinitionReader
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual"];
 
@@ -105,6 +105,7 @@ internal static class DefinitionReader
             Stance = fields.Optional("stance", StanceOf, Stance.Aggressive),
             Crusher = fields.Optional("crusher", Scalars.Flag, false),
             Crushable = fields.Optional("crushable", Scalars.Flag, false),
+            Jumpjet = fields.Optional("jumpjet", Scalars.Flag, false),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -197,6 +198,7 @@ internal static class DefinitionReader
             PercentAtMax = fields.Optional("percent_at_max", Scalars.Percent, Fixed.One),
             WallDamage = fields.Optional("wall_damage", Scalars.Flag, false),
             AffectsAir = fields.Optional("affects_air", Scalars.Flag, false),
+            Temporal = fields.Optional("temporal", Scalars.Flag, false),
             InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
         };
     }

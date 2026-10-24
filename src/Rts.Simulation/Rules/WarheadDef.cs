@@ -29,6 +29,12 @@ public sealed record WarheadDef : IDefinition
     /// <summary>Whether it hits aircraft in its area.</summary>
     public bool AffectsAir { get; init; }
 
+    /// <summary>
+    /// A beam that hurts nothing but erases its target from time (stage 3a: the time trooper, RA2 <c>Temporal</c>): its damage is the
+    /// erasure a tick while the shooter holds the beam on it (<see cref="Systems.ErasureSystem"/>).
+    /// </summary>
+    public bool Temporal { get; init; }
+
     /// <summary>How infantry dies of it, for the client: an id such as <c>explode</c>; the simulation does not use it.</summary>
     public string InfantryDeath { get; init; } = "";
 
@@ -36,7 +42,7 @@ public sealed record WarheadDef : IDefinition
     public bool Equals(WarheadDef? other) =>
         other is not null && Id == other.Id && Name == other.Name && Verses.SequenceEqual(other.Verses) && Spread == other.Spread
         && PercentAtMax == other.PercentAtMax && WallDamage == other.WallDamage && AffectsAir == other.AffectsAir
-        && InfantryDeath == other.InfantryDeath;
+        && Temporal == other.Temporal && InfantryDeath == other.InfantryDeath;
 
     public override int GetHashCode() => unchecked((Id.Length * 31) + Verses.Length);
 }

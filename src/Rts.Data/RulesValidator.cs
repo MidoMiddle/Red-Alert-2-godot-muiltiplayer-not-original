@@ -140,6 +140,11 @@ internal static class RulesValidator
                 Error(unit.Id, "crushable", $"'{unit.Id}' cannot be crushed: only infantry (placement: subcell) can be");
             }
 
+            if (unit.Jumpjet && (unit.Category != UnitCategory.Infantry || unit.Crushable))
+            {
+                Error(unit.Id, "jumpjet", $"'{unit.Id}' cannot have a jet pack: only infantry that cannot be crushed flies with one");
+            }
+
             NotNegative(unit.Id, "sight", unit.Sight);
             NotNegative(unit.Id, "harvest_capacity", unit.HarvestCapacity);
             if (unit.HarvestCapacity > 0)

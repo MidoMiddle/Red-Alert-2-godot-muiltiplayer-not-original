@@ -7,3 +7,30 @@ atomic_plant_blast:  # what the atomic plant leaves when a shot brings it down (
   range: 1
   projectile: shell
   warhead: atomic_blast
+
+shock_bolt:  # of the Shock Infantry, RA2 ElectricBolt
+  kind: weapon
+  name: Shock Bolt
+  damage: 50
+  reload: 4s
+  range: 3
+  projectile: bolt
+  warhead: electric
+
+toxin_beam_gun:  # of the Toxin Trooper, RA2 RadBeamWeapon
+  kind: weapon
+  name: Toxin Beam
+  damage: 125
+  reload: 3.33s
+  range: 6
+  projectile: toxin_beam
+  warhead: toxin
+
+war_hound_bite:  # of the War Hound, RA2 BadTeeth: 1000 so that the bite kills any soldier, as the parasite warhead of RA2 does
+  kind: weapon
+  name: Bite
+  damage: 1000
+  reload: 2s
+  range: 1.5
+  projectile: pounce
+  warhead: bite

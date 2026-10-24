@@ -34,3 +34,21 @@ rocket:
   speed: 30
   turn_rate: 8192
   lifetime: 6s
+
+toxin_beam:  # the Toxin Trooper's beam (stage 3a)
+  kind: projectile
+  name: Toxin Beam
+  motion: instant
+  visual: toxin_beam
+
+pounce:  # a dog's jump and bite: no shot to see
+  kind: projectile
+  name: Pounce
+  motion: instant
+  visual: none
+
+chrono_beam:  # the Time Trooper's beam
+  kind: projectile
+  name: Chrono Beam
+  motion: instant
+  visual: chrono_beam

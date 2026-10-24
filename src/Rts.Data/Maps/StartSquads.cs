@@ -26,11 +26,11 @@ public static class StartSquads
             var types = new List<UnitType>();
             if (start.Slot == 1)
             {
-                // Every finished unit of the faction a player plays by default — the Union's eight of M2: not the Alliance's, nor those
-                // whose weapon or mechanic comes later.
+                // The Union's eight of M2, the units of the faction played by default before the game was filled: the squad of the
+                // sandbox and of --smoke stays as it was while new units get their weapons (stage 3).
                 var faction = rules.DefaultFaction.Id;
-                types.AddRange(UnitTypes.All.Where(type => rules.Database.TryGetUnit(UnitTypes.IdOf(type), out var unit)
-                    && unit.Faction == faction && !unit.AvailableLater && !unit.AbilityLater));
+                types.AddRange(UnitTypes.All.Where(type => type <= UnitType.TeslaTank && rules.Database.TryGetUnit(UnitTypes.IdOf(type), out var unit)
+                    && unit.Faction == faction));
             }
             else
             {

@@ -27,8 +27,8 @@ public static class GarrisonSystem
     /// <summary>How far from the footprint a soldier goes in, in cells: a group of five crowds round the door.</summary>
     public const int DoorReach = 2;
 
-    /// <summary>Whether the unit may go into a building: soldiers only.</summary>
-    public static bool CanEnter(Unit unit) => unit.Archetype.Category == UnitCategory.Infantry;
+    /// <summary>Whether the unit may go into a building: soldiers only, and none with a jet pack (stage 3a).</summary>
+    public static bool CanEnter(Unit unit) => unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies;
 
     /// <summary>Whether <paramref name="building"/> is a ready building of <paramref name="player"/> that holds soldiers.</summary>
     public static bool Holds(Building building, PlayerId player) =>

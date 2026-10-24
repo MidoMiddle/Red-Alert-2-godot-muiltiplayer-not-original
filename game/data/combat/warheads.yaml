@@ -61,3 +61,34 @@ atomic_blast:  # RA2 NUKE of the nuclear reactor when it falls (stage 2c): every
   percent_at_max: 25%
   wall_damage: true
   infantry_death: explode
+
+hollow_point:  # RA2 HollowPoint: the pistols of the Elite Commando and the rifle of the Marksman; one shot kills a soldier, vehicles and buildings shrug it off
+  kind: warhead
+  name: Hollow Point
+  verses: { none: 200%, flak: 100%, plate: 100%, light: 1%, medium: 1%, heavy: 1%, wood: 1%, steel: 1%, concrete: 1%, special_1: 100%, special_2: 100% }
+  infantry_death: normal
+
+toxin:  # RA2 RadBeamWarhead: melts soldiers, hardly scratches vehicles, nothing to buildings
+  kind: warhead
+  name: Toxin
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 20%, medium: 15%, heavy: 10%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  infantry_death: electro
+
+bite:  # RA2 ParasiteDog: a dog's bite kills any soldier, does nothing to vehicles and buildings (the damage of the bite is set to kill)
+  kind: warhead
+  name: Bite
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 0%, medium: 0%, heavy: 0%, wood: 0%, steel: 0%, concrete: 0%, special_1: 0%, special_2: 0% }
+  infantry_death: normal
+
+jetpack_rounds:  # RA2 SSA: the 20mm guns of the Jetpack Trooper; wood and steel are ours (RA2 gives no number)
+  kind: warhead
+  name: Jetpack Rounds
+  verses: { none: 100%, flak: 100%, plate: 70%, light: 60%, medium: 40%, heavy: 40%, wood: 25%, steel: 25%, concrete: 25%, special_1: 100%, special_2: 100% }
+  infantry_death: normal
+
+chrono:  # RA2 ChronoBeam: hurts nothing, erases the target from time (temporal)
+  kind: warhead
+  name: Chrono Beam
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  temporal: true
+  infantry_death: electro

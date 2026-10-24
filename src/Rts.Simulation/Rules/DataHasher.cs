@@ -82,6 +82,7 @@ public static class DataHasher
             hash.Add((byte)unit.Stance);
             hash.Add(unit.Crusher);
             hash.Add(unit.Crushable);
+            hash.Add(unit.Jumpjet);
             hash.Add(unit.AvailableLater);
         }
 
@@ -265,6 +266,7 @@ public static class DataHasher
             hash.Add(warhead.PercentAtMax.Raw);
             hash.Add(warhead.WallDamage);
             hash.Add(warhead.AffectsAir);
+            hash.Add(warhead.Temporal);
         }
 
         hash.Add(rules.Projectiles.Length);

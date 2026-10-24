@@ -257,6 +257,16 @@ public sealed class RulesValidatorTests
     }
 
     [Fact]
+    public void Only_infantry_that_cannot_be_crushed_flies_with_a_jet_pack()
+    {
+        var tank = Fails(Units, "  cost: 3000\n", "  cost: 3000\n  jumpjet: true\n");
+        Assert.Contains("'mcv' cannot have a jet pack: only infantry that cannot be crushed flies with one", tank.Reason);
+
+        var crushable = Fails(Units, "  sight: 5\n  turret: false\n", "  sight: 5\n  turret: false\n  crushable: true\n  jumpjet: true\n");
+        Assert.Contains("'conscript' cannot have a jet pack: only infantry that cannot be crushed flies with one", crushable.Reason);
+    }
+
+    [Fact]
     public void A_wall_is_one_cell_that_extends_no_base()
     {
         var error = Fails(Buildings, "  power: 150\n", "  power: 150\n  wall: true\n");

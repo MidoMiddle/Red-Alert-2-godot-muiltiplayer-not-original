@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points",
         "building hp", "building target", "building reload",
     };
 
@@ -75,6 +75,9 @@ public sealed class StateHasherTests
             case "veil": world.VisionOf(new PlayerId(4)).Veil(new CellPos(5, 5), 2, 1); break;
             case "explore all": world.VisionOf(new PlayerId(5)).ExploreAll(); break;
             case "enter target": moving.EnterTarget = idle.Id; break;
+            case "erased by": moving.ErasedBy = idle.Id; break;
+            case "erase weapon": moving.EraseWeapon = 0; break;
+            case "erase points": moving.ErasePoints = 8; break;
             case "occupant":
             case "occupant hp":
                 var bunker = world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null);
@@ -233,6 +236,8 @@ public sealed class StateHasherTests
         "<Id>k__BackingField", "<Owner>k__BackingField", "<IsAlive>k__BackingField",
         // The sight circle an entity added (M4 step 11): derived from where it stands; the grids it went into are hashed.
         "<SightCell>k__BackingField", "<SightRadius>k__BackingField",
+        // The temporal beam that holds it (stage 3a).
+        "<ErasedBy>k__BackingField", "<EraseWeapon>k__BackingField", "<ErasePoints>k__BackingField",
     })]
     [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[] { "_counts", "_explored", "_veils", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(Unit), new[]

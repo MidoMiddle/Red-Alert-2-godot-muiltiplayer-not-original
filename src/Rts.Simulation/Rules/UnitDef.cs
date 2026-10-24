@@ -71,6 +71,12 @@ public sealed record UnitDef : IDefinition
     /// <summary>Whether a crushing vehicle can drive over it (RA2 <c>Crushable</c>, M4, 4.13); only infantry.</summary>
     public bool Crushable { get; init; }
 
+    /// <summary>
+    /// A soldier with a jet pack (stage 3a: the jetpack trooper, RA2 jumpjet): it hovers and flies as an aircraft does, built in the
+    /// barracks; only infantry.
+    /// </summary>
+    public bool Jumpjet { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

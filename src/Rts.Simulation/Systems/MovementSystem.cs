@@ -68,7 +68,8 @@ public static class MovementSystem
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is not Unit { IsAlive: true } unit)
+            // Held by a temporal beam (stage 3a), a unit stands still.
+            if (entity is not Unit { IsAlive: true, ErasedBy: null } unit)
             {
                 continue;
             }

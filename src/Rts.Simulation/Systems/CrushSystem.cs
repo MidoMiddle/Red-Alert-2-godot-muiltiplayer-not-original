@@ -28,7 +28,7 @@ public static class CrushSystem
         for (var spot = 0; spot < Reservations.SubcellsPerCell; spot++)
         {
             var id = reservations.InfantryAt(cell, spot);
-            if (id != EntityId.None && (!world.TryGet(id, out var entity) || entity is not Unit { Archetype.Crushable: true } soldier
+            if (id != EntityId.None && (!world.TryGet(id, out var entity) || entity is not Unit { Archetype.Crushable: true, ErasedBy: null } soldier
                 || world.AreAllies(soldier.Owner, vehicle.Owner)))
             {
                 return false;

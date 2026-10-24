@@ -62,6 +62,13 @@ public static class DamageSystem
         var weapon = rules.Database.Weapons[hit.Weapon];
         var warheadIndex = rules.Database.IndexOfWarhead(weapon.Warhead);
         var warhead = rules.Database.Warheads[warheadIndex];
+        if (warhead.Temporal)
+        {
+            // A temporal beam (stage 3a) hurts nothing: it holds its target for the erasure.
+            ErasureSystem.Hold(world, hit);
+            return;
+        }
+
         var damage = hit.BonusPercent > 0 ? (int)((long)weapon.Damage * (100 + hit.BonusPercent) / 100) : weapon.Damage;
 
         if (hit.Target is { } targetId && world.TryGet(targetId, out var target) && target.IsAlive && Hurts(target, warhead))
@@ -144,7 +151,8 @@ public static class DamageSystem
 
     private static void Damage(GameWorld world, Entity entity, int amount, Hit hit, List<SimEvent>? events)
     {
-        if (amount <= 0)
+        // Held by a temporal beam (stage 3a), it is out of time: nothing else hurts it.
+        if (amount <= 0 || entity.ErasedBy is not null)
         {
             return;
         }

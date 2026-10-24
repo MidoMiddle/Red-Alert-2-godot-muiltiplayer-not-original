@@ -74,11 +74,11 @@
 
 | id | Имя | Роль | Аналог RA2 | Сейчас |
 |---|---|---|---|---|
-| attack_dog | War Hound | attack dog: bites infantry, M11 weapon | Attack Dog | строится, без оружия — этап 3 |
-| tesla_trooper | Shock Infantry | electric infantry | Shock Trooper | строится, без оружия — этап 3 |
+| attack_dog | War Hound | attack dog: bites infantry, M11 weapon | Attack Dog | работает: укус убивает любого пехотинца, технику не трогает (этап 3а) |
+| tesla_trooper | Shock Infantry | electric infantry | Shock Trooper | работает: электроразряд, дальность 3 (этап 3а) |
 | crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | строится, без оружия — этап 3 |
 | terrorist | Demolition Trooper | blows up with its target | Terrorist | строится, без оружия — этап 3 |
-| desolator | Toxin Trooper | poisons the ground | Desolator | строится, без оружия — этап 3 |
+| desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); заражение земли — 3б |
 | rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | строится, без оружия — этап 3 |
 | apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | строится, без оружия — этап 3 |
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | строится, без оружия — этап 3 |
@@ -95,12 +95,12 @@
 | id | Имя | Роль | Аналог RA2 | Сейчас |
 |---|---|---|---|---|
 | alliance_engineer | Field Engineer | captures and repairs buildings | Engineer | строится, без оружия — этап 3 |
-| alliance_attack_dog | Guard Dog | attack dog | Attack Dog | строится, без оружия — этап 3 |
-| alliance_rocketeer | Jetpack Trooper | flies over the field (M11b) | Rocketeer | строится, без оружия — этап 3 |
+| alliance_attack_dog | Guard Dog | attack dog | Attack Dog | работает: укус убивает любого пехотинца, технику не трогает (этап 3а) |
+| alliance_rocketeer | Jetpack Trooper | flies over the field (M11b) | Rocketeer | работает: летает, бьёт по земле и воздуху; достать его может только ПВО (этап 3а) |
 | alliance_spy | Infiltrator | disguises and enters enemy buildings | Spy | строится, без оружия — этап 3 |
-| alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | строится, без оружия — этап 3 |
-| alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | строится, без оружия — этап 3 |
-| alliance_sniper | Marksman | long-range anti-infantry | Sniper | строится, без оружия — этап 3 |
+| alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | работает: луч замораживает и стирает цель, прерванный — цель цела (этап 3а); телепорт — позже |
+| alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | работает: пистолеты убивают пехотинца с выстрела (этап 3а); подрыв зданий — 3б |
+| alliance_sniper | Marksman | long-range anti-infantry | Sniper | работает: винтовка на 14 клеток против пехоты (этап 3а) |
 | alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | строится, без оружия — этап 3 |
 | alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | строится, без оружия — этап 3 |
 | alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | строится, без оружия — этап 3 |

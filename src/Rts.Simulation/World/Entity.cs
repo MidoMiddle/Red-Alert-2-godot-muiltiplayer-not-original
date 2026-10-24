@@ -28,4 +28,16 @@ public abstract class Entity
 
     /// <summary>The radius of that circle.</summary>
     internal int SightRadius { get; set; }
+
+    /// <summary>
+    /// The shooter whose temporal beam holds this unit or building (stage 3a: the time trooper); null while none does. Meanwhile it
+    /// stands still, does not fire and takes no other damage (<see cref="Systems.ErasureSystem"/>). State: hashed.
+    /// </summary>
+    public EntityId? ErasedBy { get; internal set; }
+
+    /// <summary>The temporal weapon of that shooter, by its place in the rules; -1 while none holds it. State: hashed.</summary>
+    public int EraseWeapon { get; internal set; } = -1;
+
+    /// <summary>The erasure gathered so far; at 10 × its hit points the entity is gone. State: hashed.</summary>
+    public int ErasePoints { get; internal set; }
 }
