@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
@@ -50,6 +51,27 @@ public sealed record Cameo(
 
     /// <summary>A unit that cannot be built until its mechanic comes (ships, aircraft): the tooltip says so instead of what is missing.</summary>
     public bool AvailableLater { get; init; }
+
+    /// <summary>What it is for, by which the square takes its colour until there are icons (the owner's wish, 2026-10-24).</summary>
+    public CameoRole Role { get; init; }
+
+    /// <summary>A short code of its name, big on the square until there are icons: GI, GBT, PT.</summary>
+    public string Code { get; init; } = "";
+}
+
+/// <summary>What a unit or building of the sidebar is for: the colour of its square.</summary>
+public enum CameoRole
+{
+    Support,
+    Infantry,
+    Vehicle,
+    Naval,
+    Aircraft,
+    Power,
+    Production,
+    Defense,
+    Superweapon,
+    Wall,
 }
 
 /// <summary>What a click on a square asks for.</summary>
@@ -115,7 +137,9 @@ public static class SidebarModel
                 var def = rules.Buildings[i];
                 if (def.Faction == state.Faction.Id && def.Category == category && def.Id != state.Faction.ConstructionYard)
                 {
-                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, Name(def.Id, def.Name), def.Cost, state.CanBuildBuilding(i), def.Prerequisites, owned, nameOf));
+                    var name = Name(def.Id, def.Name);
+                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, name, def.Cost, state.CanBuildBuilding(i), def.Prerequisites, owned, nameOf)
+                        with { Role = RoleOf(def), Code = CodeOf(name) });
                 }
             }
         }
@@ -133,7 +157,9 @@ public static class SidebarModel
                     var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));
                     // The price of the player: a vehicle costs less with a discount (stage 2c).
                     var cost = ProductionRules.CostOf(rules, state, ProductionKind.Unit, i);
-                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, Name(def.Id, def.Name), cost, state.CanBuildUnit(i), def.Prerequisites, owned, nameOf));
+                    var name = Name(def.Id, def.Name);
+                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, name, cost, state.CanBuildUnit(i), def.Prerequisites, owned, nameOf)
+                        with { Role = RoleOf(def.Category), Code = CodeOf(name) });
                 }
             }
         }
@@ -206,6 +232,49 @@ public static class SidebarModel
         var free = !available ? CameoState.Unavailable : full ? CameoState.Busy : CameoState.Available;
         return new Cameo(kind, index, name, cost, free, 0f, 0, missing) { AbilityLater = later, AvailableLater = availableLater };
     }
+
+    /// <summary>
+    /// The short code of a name: the first letters of up to three words (Grizzly Battle Tank: GBT); a word with a digit whole (V3);
+    /// a name of one word, its first three letters (Barracks: BAR); a name of two letters as it is (GI).
+    /// </summary>
+    public static string CodeOf(string name)
+    {
+        var words = name.Split([' ', '-'], StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 1)
+        {
+            return words[0].Length <= 3 ? words[0].ToUpperInvariant() : words[0][..3].ToUpperInvariant();
+        }
+
+        var code = new System.Text.StringBuilder();
+        foreach (var word in words)
+        {
+            code.Append(word.Any(char.IsDigit) ? word.ToUpperInvariant() : char.ToUpperInvariant(word[0]).ToString());
+            if (code.Length >= 3)
+            {
+                break;
+            }
+        }
+
+        return code.Length > 4 ? code.ToString()[..4] : code.ToString();
+    }
+
+    /// <summary>The role of a unit by its category.</summary>
+    public static CameoRole RoleOf(UnitCategory category) => category switch
+    {
+        UnitCategory.Infantry => CameoRole.Infantry,
+        UnitCategory.Naval => CameoRole.Naval,
+        UnitCategory.Aircraft => CameoRole.Aircraft,
+        _ => CameoRole.Vehicle,
+    };
+
+    /// <summary>The role of a building: its superweapon, a wall, power, production, a weapon or a garrison, or support.</summary>
+    public static CameoRole RoleOf(BuildingDef def) =>
+        def.Superweapon != SuperweaponKind.None ? CameoRole.Superweapon
+        : def.Wall ? CameoRole.Wall
+        : def.Power > 0 ? CameoRole.Power
+        : def.Produces.Length > 0 ? CameoRole.Production
+        : def.Primary.Length > 0 || def.GarrisonCapacity > 0 ? CameoRole.Defense
+        : CameoRole.Support;
 
     private static string Missing(RulesDatabase rules, ImmutableArray<string> prerequisites, HashSet<string> owned, Func<string, string, string>? nameOf)
     {

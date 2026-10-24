@@ -104,7 +104,7 @@ public sealed class SidebarModelTests
 
         Assert.Equal(CameoState.Available, Square(simulation, BuildGroup.Buildings, "reactor").State);
         Assert.Equal(new Cameo(ProductionKind.Building, TestRules.Standard.Database.IndexOfBuilding("barracks"), "barracks", 100,
-            CameoState.Unavailable, 0f, 0, "reactor"), Square(simulation, BuildGroup.Buildings, "barracks"));
+            CameoState.Unavailable, 0f, 0, "reactor") { Role = CameoRole.Production, Code = "BAR" }, Square(simulation, BuildGroup.Buildings, "barracks"));
         Assert.Equal("war_factory, radar", Square(simulation, BuildGroup.Buildings, "tech_center").Missing);
         Assert.Equal(CameoAction.None, SidebarModel.LeftClick(Square(simulation, BuildGroup.Buildings, "barracks"), false));
     }

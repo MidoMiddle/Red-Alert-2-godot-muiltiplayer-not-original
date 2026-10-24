@@ -144,7 +144,7 @@ public partial class UnitRenderer : Node3D
     }
 
     /// <summary>How the unit looks to the local player: as itself, or a disguised infiltrator of another team as the player's soldier.</summary>
-    private static (UnitArchetype Shape, PlayerId Colour) Disguise(GameWorld world, Unit unit)
+    internal static (UnitArchetype Shape, PlayerId Colour) Disguise(GameWorld world, Unit unit)
     {
         var viewer = SimulationHost.LocalPlayer;
         if (!unit.Archetype.Has(UnitTalents.Disguised) || world.AreAllies(viewer, unit.Owner) || viewer.IsNeutral

@@ -21,6 +21,7 @@ public partial class Boot : Control
     private const string StubScene = "res://scenes/ui/ScreenStub.tscn";
     private const string ShowcaseScene = "res://scenes/ui/ThemeShowcase.tscn";
     private const string MainScene = "res://scenes/Main.tscn";
+    private const string UnitGalleryScene = "res://scenes/ui/UnitGallery.tscn";
 
     private double _elapsed;
     private bool _finished;
@@ -37,6 +38,10 @@ public partial class Boot : Control
         else if (args.Contains("--ui-menu"))
         {
             OpenDebugScene(MainMenuScene);
+        }
+        else if (args.Contains("--ui-units"))
+        {
+            OpenDebugScene(UnitGalleryScene);
         }
         else if (args.Contains("--ui-skirmish"))
         {

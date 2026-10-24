@@ -6,7 +6,8 @@ namespace Rts.Client.Hud;
 
 /// <summary>
 /// One square of the item grid (docs/implementation/M3_base_economy.md, 4.17): until the models are rendered into icons (decision 6),
-/// a plate with the name and the cost in the faction's frame. Over it the clock darkens what is left to build, the number in the
+/// a plate with the name, a big short code in the colour of its role (<see cref="CameoRole"/>) and a band of that colour on the left,
+/// and the cost, in the faction's frame. Over it the clock darkens what is left to build, the number in the
 /// queue sits in the corner, and Ready or On Hold is written across. Unavailable and busy squares are greyed out; the tooltip tells
 /// the name, the cost and what is missing. An empty square only shows its frame.
 /// </summary>
@@ -80,8 +81,11 @@ public partial class BuildIcon : Control
         }
 
         var font = GetThemeFont("font", "Label");
-        DrawString(font, new Vector2(0f, 22f), cameo.Name, HorizontalAlignment.Center, Size.X, NameSize(font, cameo.Name), NameColor);
-        DrawString(font, new Vector2(6f, Size.Y - 7f), HudFormat.Credits(cameo.Cost), HorizontalAlignment.Left, Size.X - 12f, 13, CostColor);
+        var role = RoleColor(cameo.Role);
+        DrawRect(new Rect2(0f, 0f, 5f, Size.Y), role);
+        DrawString(font, new Vector2(5f, 15f), cameo.Name, HorizontalAlignment.Center, Size.X - 5f, NameSize(font, cameo.Name), NameColor);
+        DrawString(font, new Vector2(5f, 39f), cameo.Code, HorizontalAlignment.Center, Size.X - 5f, 22, role.Lightened(0.25f));
+        DrawString(font, new Vector2(9f, Size.Y - 5f), HudFormat.Credits(cameo.Cost), HorizontalAlignment.Left, Size.X - 14f, 12, CostColor);
 
         if (cameo.State is CameoState.Building or CameoState.OnHold or CameoState.WaitingForFunds)
         {
@@ -113,11 +117,27 @@ public partial class BuildIcon : Control
         DrawRect(rect, cameo.State is CameoState.Unavailable ? EmptyFrame : _accent, false, 2f);
     }
 
-    /// <summary>The font size at which the name fits the square: 15, smaller for a long name, 10 at least.</summary>
+    /// <summary>The colour of a role: green infantry, blue vehicles, teal ships, purple aircraft; for buildings yellow power, orange
+    /// production, red defence, magenta superweapons, grey walls, light blue the rest.</summary>
+    private static Color RoleColor(CameoRole role) => role switch
+    {
+        CameoRole.Infantry => new Color("#3FA34D"),
+        CameoRole.Vehicle => new Color("#3B7DD8"),
+        CameoRole.Naval => new Color("#2BB3B3"),
+        CameoRole.Aircraft => new Color("#9B59D0"),
+        CameoRole.Power => new Color("#E0B020"),
+        CameoRole.Production => new Color("#E07A1F"),
+        CameoRole.Defense => new Color("#C8352E"),
+        CameoRole.Superweapon => new Color("#D63AAF"),
+        CameoRole.Wall => new Color("#7A7F87"),
+        _ => new Color("#4FA3C7"),
+    };
+
+    /// <summary>The font size at which the name fits the square: 12, smaller for a long name, 9 at least.</summary>
     private int NameSize(Font font, string name)
     {
-        var size = 15;
-        while (size > 10 && font.GetStringSize(name, HorizontalAlignment.Left, -1f, size).X > Size.X - 6f)
+        var size = 12;
+        while (size > 9 && font.GetStringSize(name, HorizontalAlignment.Left, -1f, size).X > Size.X - 10f)
         {
             size--;
         }

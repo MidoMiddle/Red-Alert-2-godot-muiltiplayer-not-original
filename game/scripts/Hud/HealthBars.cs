@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using Rts.Client.App;
 using Rts.Client.Terrain;
@@ -21,6 +22,10 @@ public partial class HealthBars : Control
     private const float PipHeight = 5f;
     private const float Gap = 1f;
     private const float UnitHeight = 0.9f;
+
+    // The names over the field: their size, and how many selected units are named at most (more would hide the field).
+    private const int NameSize = 13;
+    private const int MaxNamedSelection = 8;
 
     private static readonly Color Frame = new(0.05f, 0.05f, 0.05f, 0.85f);
     private static readonly Color Empty = new(0.25f, 0.25f, 0.25f, 0.9f);
@@ -49,6 +54,7 @@ public partial class HealthBars : Control
         var mode = AppSettings.Instance?.Values.HealthBars ?? HealthBarMode.Damaged;
         var world = _host.Simulation.World;
         DrawRallyPoint(camera, world);
+        DrawNames(camera, world);
         foreach (var entity in world.Entities)
         {
             if (!entity.IsAlive || !FogOfWar.Shows(world, entity))
@@ -136,6 +142,78 @@ public partial class HealthBars : Control
         for (var i = 0; i < room; i++)
         {
             DrawRect(new Rect2(corner + new Vector2(Gap + i * (size + Gap), Gap), new Vector2(size, size)), i < inside ? Soldier : Empty);
+        }
+    }
+
+    /// <summary>
+    /// The names over the field (the owner's wish, 2026-10-24: there are no models yet): over the unit or building under the cursor,
+    /// over the selected units while they are few, and over the selected building — RA2's names for now (<see cref="DisplayNames"/>).
+    /// A disguised infiltrator is named as what it looks like, a holo tank that passes for a tree not at all.
+    /// </summary>
+    private void DrawNames(Camera3D camera, GameWorld world)
+    {
+        if (_input is null)
+        {
+            return;
+        }
+
+        var named = new HashSet<EntityId>();
+        if (_input.Hovered is { } hovered)
+        {
+            named.Add(hovered);
+        }
+        else if (_input.CellUnderPointer is { } cell && world.BuildingAt(cell) is { } underCursor)
+        {
+            named.Add(underCursor.Id);
+        }
+
+        if (_input.Selection.Units.Count <= MaxNamedSelection)
+        {
+            named.UnionWith(_input.Selection.Units);
+        }
+
+        if (_input.SelectedFactory is { } factory)
+        {
+            named.Add(factory);
+        }
+
+        foreach (var id in named)
+        {
+            if (!world.TryGet(id, out var entity) || !entity.IsAlive || !FogOfWar.Shows(world, entity) || NameAndPlace(world, entity) is not var (name, at)
+                || camera.IsPositionBehind(at))
+            {
+                continue;
+            }
+
+            var font = GetThemeDefaultFont();
+            var width = font.GetStringSize(name, HorizontalAlignment.Left, -1f, NameSize).X;
+            var point = camera.UnprojectPosition(at) - new Vector2(width / 2f, PipHeight + 8f);
+            DrawStringOutline(font, point, name, HorizontalAlignment.Left, -1f, NameSize, 4, new Color(0f, 0f, 0f, 0.85f));
+            DrawString(font, point, name, HorizontalAlignment.Left, -1f, NameSize, new Color(0.97f, 0.95f, 0.86f));
+        }
+    }
+
+    /// <summary>What the name over an entity says and where it stands, or null for one without a name to show.</summary>
+    private (string Name, Vector3 At)? NameAndPlace(GameWorld world, Entity entity)
+    {
+        var ra2 = AppSettings.Instance?.Values.Ra2Names ?? true;
+        switch (entity)
+        {
+            case Unit unit when !Units.Disguises.LooksLikeTree(world, unit):
+                var shape = UnitRenderer.Disguise(world, unit).Shape;
+                world.Rules.Database.TryGetUnit(shape.Id, out var def);
+                var height = UnitHeight + Units.UnitAltitude.Of(unit.Archetype);
+                return (DisplayNames.Of(shape.Id, def?.Name ?? shape.Id, ra2, key => Tr(key)), WorldCoords.ToGodotOnGround(unit.Position, height + 0.2f));
+            case Building { Def: { } building } placed:
+                return (DisplayNames.Of(building.Id, building.Name, ra2, key => Tr(key)),
+                    WorldCoords.ToGodotOnGround(Aim.CentreOf(placed), BuildingShape.Of(building).Height + 0.8f));
+            case Building map:
+                // The buildings of the map have plain names (Hospital, Oil Derrick), the same either way.
+                var key = DisplayNames.KeyOf(map.Type.Id);
+                var text = Tr(key);
+                return text == key ? null : (text, WorldCoords.ToGodotOnGround(Aim.CentreOf(map), 1.6f));
+            default:
+                return null;
         }
     }
 

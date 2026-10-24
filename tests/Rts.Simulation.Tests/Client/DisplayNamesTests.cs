@@ -15,4 +15,16 @@ public sealed class DisplayNamesTests
         Assert.Equal("Rifleman", DisplayNames.Of("alliance_rifleman", "Rifleman", ra2: false, Translate));
         Assert.Equal("Light Tank", DisplayNames.Of("alliance_light_tank", "Light Tank", ra2: true, Translate));
     }
+
+    [Theory]
+    [InlineData("GI", "GI")]
+    [InlineData("Grizzly Battle Tank", "GBT")]
+    [InlineData("Barracks", "BAR")]
+    [InlineData("V3 Rocket Launcher", "V3R")]
+    [InlineData("Night Hawk Transport", "NHT")]
+    [InlineData("Airforce Command HQ", "ACH")]
+    public void The_code_of_a_square_is_short(string name, string code)
+    {
+        Assert.Equal(code, SidebarModel.CodeOf(name));
+    }
 }

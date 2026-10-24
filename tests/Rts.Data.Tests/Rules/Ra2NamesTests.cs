@@ -17,7 +17,9 @@ public sealed class Ra2NamesTests
             .Select(line => line.Split(',', 2))
             .ToDictionary(parts => parts[0], parts => parts[1]);
         var database = GameDataFiles.Current.Database;
-        var ids = database.Units.Select(unit => unit.Id).Concat(database.Buildings.Select(building => building.Id)).ToList();
+        // The buildings of the map too: the names over the field show them.
+        var ids = database.Units.Select(unit => unit.Id).Concat(database.Buildings.Select(building => building.Id))
+            .Concat(Rts.Simulation.World.BuildingTypes.All.Select(type => type.Id)).ToList();
 
         Assert.All(ids, id => Assert.True(names.TryGetValue("RA2_NAME_" + id.ToUpperInvariant(), out var name) && name.Length > 0, id));
         Assert.Equal(ids.Count, names.Count);
