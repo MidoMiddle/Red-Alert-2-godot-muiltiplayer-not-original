@@ -59,6 +59,12 @@ public sealed record WarheadDef : IDefinition
     /// <summary>The ticks between two bites from inside.</summary>
     public int ParasiteDelay { get; init; }
 
+    /// <summary>The parasite takes a ship, not a vehicle (stage 3e: the squid's grab).</summary>
+    public bool ParasiteNaval { get; init; }
+
+    /// <summary>The host of the parasite cannot move (stage 3e: a ship in the squid's grip).</summary>
+    public bool Paralyzes { get; init; }
+
     /// <summary>How infantry dies of it, for the client: an id such as <c>explode</c>; the simulation does not use it.</summary>
     public string InfantryDeath { get; init; } = "";
 
@@ -68,7 +74,7 @@ public sealed record WarheadDef : IDefinition
         && PercentAtMax == other.PercentAtMax && WallDamage == other.WallDamage && AffectsAir == other.AffectsAir
         && Temporal == other.Temporal && Bomb == other.Bomb && BombDelay == other.BombDelay && Radiation == other.Radiation
         && Parasite == other.Parasite && ParasiteDamage == other.ParasiteDamage && ParasiteDelay == other.ParasiteDelay
-        && InfantryDeath == other.InfantryDeath;
+        && ParasiteNaval == other.ParasiteNaval && Paralyzes == other.Paralyzes && InfantryDeath == other.InfantryDeath;
 
     public override int GetHashCode() => unchecked((Id.Length * 31) + Verses.Length);
 }

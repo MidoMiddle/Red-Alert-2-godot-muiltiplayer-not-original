@@ -13,6 +13,10 @@ public static class UnitAltitude
     public const float Airship = 2f;
     public const float Jumpjet = 1f;
 
+    /// <summary>Under the water (stage 3e): a little below its face.</summary>
+    public const float Submerged = -0.2f;
+
     public static float Of(UnitArchetype archetype) =>
-        !archetype.Flies ? 0f : archetype.Jumpjet ? Jumpjet : archetype.Type == UnitType.KirovAirship ? Airship : Aircraft;
+        archetype.Has(UnitTalents.Submerged) ? Submerged
+        : !archetype.Flies ? 0f : archetype.Jumpjet ? Jumpjet : archetype.Type == UnitType.KirovAirship ? Airship : Aircraft;
 }

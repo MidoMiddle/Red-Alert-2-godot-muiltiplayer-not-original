@@ -182,7 +182,8 @@ public sealed class GameRules
                 unit.Size > 0 ? unit.Size : unit.Category == UnitCategory.Infantry ? 1 : 3,
                 unit.PassengerSlots,
                 unit.PassengerSizeLimit,
-                database.IndexOfWeapon(unit.IfvWeapon));
+                database.IndexOfWeapon(unit.IfvWeapon),
+                unit.Sensors);
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -344,7 +345,8 @@ public sealed class GameRules
         | (unit.Disguised ? UnitTalents.Disguised : 0) | (unit.DetectsDisguise ? UnitTalents.DetectsDisguise : 0)
         | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0)
         | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0)
-        | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0) | (unit.Robotic ? UnitTalents.Robotic : 0);
+        | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0) | (unit.Robotic ? UnitTalents.Robotic : 0)
+        | (unit.Submerged ? UnitTalents.Submerged : 0);
 
     private static Locomotor? LocomotorOf(string id)
     {

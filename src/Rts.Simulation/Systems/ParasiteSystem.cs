@@ -19,7 +19,10 @@ public static class ParasiteSystem
     /// <summary>A parasite shot lands: the shooter goes into the vehicle, unless one is there. True when it did, and nothing else happens.</summary>
     internal static bool Enter(GameWorld world, Hit hit, WarheadDef warhead, List<SimEvent>? events)
     {
-        if (hit.Target is not { } id || !world.TryGet(id, out var target) || target is not Unit { IsAlive: true, Archetype.Category: UnitCategory.Vehicle } host)
+        // A vehicle for the drone; a ship on the water for the squid (stage 3e).
+        var category = warhead.ParasiteNaval ? UnitCategory.Naval : UnitCategory.Vehicle;
+        if (hit.Target is not { } id || !world.TryGet(id, out var target) || target is not Unit { IsAlive: true } host
+            || host.Archetype.Category != category || host.Archetype.Has(UnitTalents.Submerged))
         {
             return false;
         }
@@ -82,6 +85,18 @@ public static class ParasiteSystem
 
             Clear(host);
         }
+    }
+
+    /// <summary>Whether the parasite inside <paramref name="host"/> holds it still (stage 3e: a ship in the squid's grip).</summary>
+    public static bool Paralyzed(GameWorld world, Unit host)
+    {
+        if (host.Parasite == 0 || host.ParasiteWeapon < 0)
+        {
+            return false;
+        }
+
+        var rules = world.Rules.Database;
+        return rules.Warheads[rules.IndexOfWarhead(rules.Weapons[host.ParasiteWeapon].Warhead)].Paralyzes;
     }
 
     /// <summary>The parasite is gone: killed by a repair, or out of its fallen host.</summary>

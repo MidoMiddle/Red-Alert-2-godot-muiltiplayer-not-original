@@ -330,6 +330,7 @@ public sealed class GoldenValuesTests
         // Rules v50 (stage 3b): again, with the bombs, the toxin, deploying, jumps and blackouts.
         // Rules v51 (stage 3c): the version and so the bytes.
         // Rules v52 (stage 3d): the version and the checksums: passengers and parasites are hashed.
-        Assert.Equal((22269, 10057605434083107777UL), (bytes.Length, hash.Value));
+        // Rules v53 (stage 3e): only the version; nothing new is hashed.
+        Assert.Equal((22269, 7639775115322686686UL), (bytes.Length, hash.Value));
     }
 }

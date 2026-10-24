@@ -21,6 +21,16 @@ public static class VisibilitySystem
 {
     public static void Update(GameWorld world)
     {
+        // The sensors of the moment (stage 3e).
+        world.Sensors.Clear();
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Unit { IsAlive: true, Archetype.Sensors: > 0 } sensor && !sensor.Owner.IsNeutral)
+            {
+                world.Sensors.Add((sensor.Owner, sensor.Position, sensor.Archetype.Sensors * WorldPos.LeptonsPerCell));
+            }
+        }
+
         foreach (var entity in world.Entities)
         {
             if (entity is not (Unit or Building))

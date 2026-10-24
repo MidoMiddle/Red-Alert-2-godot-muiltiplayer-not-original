@@ -150,3 +150,45 @@ ifv_toxin_beam:  # what the Toxin Trooper gives the IFV, RA2 CRRadBeamWeapon
   range: 7
   projectile: toxin_beam
   warhead: toxin
+
+typhoon_torpedo:  # of the Attack Submarine, RA2 SubTorpedo
+  kind: weapon
+  name: Torpedo
+  damage: 100
+  reload: 8s
+  range: 7
+  projectile: torpedo
+  warhead: ap_splash
+  targets: [naval, underwater]
+
+squid_grab:  # of the Trained Squid, RA2 SquidGrab: it grips a ship
+  kind: weapon
+  name: Grip
+  damage: 15
+  reload: 2s
+  range: 1.5
+  projectile: pounce
+  warhead: squid_grip
+  targets: [naval]
+
+squid_punch:  # of the Trained Squid, RA2 SquidPunch: at what it cannot grip
+  kind: weapon
+  name: Tentacle
+  damage: 50
+  reload: 2.13s
+  range: 1.83
+  projectile: pounce
+  warhead: squid_slap
+  targets: [naval, underwater]
+
+dreadnought_missiles:  # of the Missile Battleship, RA2 DredLauncher: two of 300 at 8 to 25 cells
+  kind: weapon
+  name: Dreadnought Missiles
+  damage: 300
+  reload: 3.33s
+  range: 25
+  min_range: 8
+  projectile: dreadnought_missile
+  warhead: dreadnought_blast
+  burst: 2
+  burst_delay: 0.4s

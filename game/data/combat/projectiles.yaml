@@ -67,3 +67,38 @@ prism_ray:  # the beam tank's beam and its splinters
   name: Prism Ray
   motion: instant
   visual: prism_ray
+
+torpedo:  # the submarine's torpedo (stage 3e): it follows its target under the water
+  kind: projectile
+  name: Torpedo
+  motion: homing
+  speed: 20
+  turn_rate: 4096
+  lifetime: 8s
+  visual: torpedo
+
+dreadnought_missile:  # the dreadnought's missile, RA2 DMISL: a flying thing anti-air can bring down (50 hp, special_2); speed and arc ours
+  kind: projectile
+  name: Dreadnought Missile
+  motion: ballistic
+  speed: 30
+  arc: 3
+  hp: 50
+  armor: special_2
+
+hornet:  # a Hornet of the aircraft carrier: a small jet flying at its target, anti-air can bring it down; ours, the carrier's jets
+  kind: projectile
+  name: Hornet
+  motion: homing
+  speed: 30
+  turn_rate: 4096
+  lifetime: 15s
+  hp: 50
+  armor: light
+  visual: hornet
+
+sonic:  # the dolphin's wave
+  kind: projectile
+  name: Sonic Wave
+  motion: instant
+  visual: sonic

@@ -136,6 +136,15 @@ public sealed record UnitDef : IDefinition
     /// <summary>It works only while its owner has a ready, powered building that controls robots (stage 3d: the robot tank).</summary>
     public bool Robotic { get; init; }
 
+    /// <summary>
+    /// It keeps under the water (stage 3e: the submarine, the dolphin, the squid): another team sees it only near a unit of theirs with
+    /// sensors, and only weapons at the underwater hit it.
+    /// </summary>
+    public bool Submerged { get; init; }
+
+    /// <summary>How far it finds units under the water, in cells (RA2 <c>Sensors</c>); 0 for none.</summary>
+    public int Sensors { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

@@ -98,8 +98,14 @@ public static class TargetingSystem
 
 
     /// <summary>The layer a weapon must fire at to hit <paramref name="target"/> (stage 2b): the air for a flier, else the ground.</summary>
-    public static WeaponTargets LayerOf(Entity? target) =>
-        target is Unit { Archetype.Flies: true } or Projectile ? WeaponTargets.Air : WeaponTargets.Ground;
+    public static WeaponTargets LayerOf(Entity? target) => target switch
+    {
+        Unit { Archetype.Flies: true } or Projectile => WeaponTargets.Air,
+        // Stage 3e: under the water; a ship, or a building on the water, is on the ground and on the water.
+        Unit unit when unit.Archetype.Has(UnitTalents.Submerged) => WeaponTargets.Underwater,
+        Unit { Archetype.Category: UnitCategory.Naval } or Building { Def.Water: true } => WeaponTargets.Ground | WeaponTargets.Naval,
+        _ => WeaponTargets.Ground,
+    };
 
     /// <summary>Whether one of the weapons fires at <paramref name="layer"/> (a forced attack: the ground, or a flier in the air).</summary>
     internal static bool Hits(GameRules rules, ImmutableArray<int> weapons, WeaponTargets layer)

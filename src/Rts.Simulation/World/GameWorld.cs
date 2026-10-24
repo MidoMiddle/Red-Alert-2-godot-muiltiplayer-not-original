@@ -131,6 +131,12 @@ public sealed class GameWorld
     /// </summary>
     internal List<(PlayerId Owner, EntityId Shooter, int Weapon, WorldPos Point)> DeathBlasts { get; } = [];
 
+    /// <summary>
+    /// The units with sensors (stage 3e: they find units under the water), their owner, place and reach in leptons; rebuilt by
+    /// <see cref="Systems.VisibilitySystem"/> with the sight, so derived: not hashed.
+    /// </summary>
+    internal List<(PlayerId Owner, WorldPos Position, int Reach)> Sensors { get; } = [];
+
     /// <summary>The level of toxin on every cell, in row order (stage 3b, <see cref="Systems.RadiationSystem"/>). State: hashed.</summary>
     internal ushort[] Radiation { get; }
 

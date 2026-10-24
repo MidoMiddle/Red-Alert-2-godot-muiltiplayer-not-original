@@ -216,3 +216,53 @@ alliance_robot_gun:  # of the Robot Tank; the numbers are ours
   range: 5.5
   projectile: bullet
   warhead: light_mg
+
+dolphin_sonic:  # of the Sonic Dolphin, RA2 SonicZap; damage and reload ours (its wave hurts as it passes in RA2)
+  kind: weapon
+  name: Sonic Wave
+  damage: 50
+  reload: 2s
+  range: 6
+  projectile: sonic
+  warhead: sonic_wave
+  targets: [naval, underwater]
+
+destroyer_cannon:  # of the Destroyer; ours
+  kind: weapon
+  name: Naval Gun
+  damage: 65
+  reload: 3.33s
+  range: 7
+  projectile: shell
+  warhead: ap_shell
+
+destroyer_depth_charges:  # of the Destroyer, what its Osprey drops in RA2, under the water only; ours
+  kind: weapon
+  name: Depth Charges
+  damage: 60
+  reload: 4s
+  range: 8
+  projectile: bullet
+  warhead: depth_charge
+  targets: [underwater]
+
+aegis_missiles:  # of the Air Defense Cruiser, RA2 Medusa: at the air only
+  kind: weapon
+  name: Aegis Missiles
+  damage: 100
+  reload: 1s
+  range: 12
+  projectile: rocket
+  warhead: sam
+  targets: [air]
+
+carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: three Hornets at 25 cells; their damage is ours
+  kind: weapon
+  name: Hornets
+  damage: 50
+  reload: 10s
+  range: 25
+  projectile: hornet
+  warhead: missile
+  burst: 3
+  burst_delay: 0.3s

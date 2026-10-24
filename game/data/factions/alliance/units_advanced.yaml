@@ -254,7 +254,7 @@ alliance_amphibious_transport:  # carries 12 slots of units over water and land 
   passengers: 12
   passenger_size: 6
 
-alliance_dolphin:  # sonic attack
+alliance_dolphin:  # under the water, a sonic wave at ships and what is under the water (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -270,9 +270,11 @@ alliance_dolphin:  # sonic attack
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
-  ability_later: true
+  primary: dolphin_sonic
+  submerged: true
+  sensors: 4
 
-alliance_destroyer:  # guns and anti-sub
+alliance_destroyer:  # a gun at the water and the shore, depth charges under the water, sensors (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -287,9 +289,11 @@ alliance_destroyer:  # guns and anti-sub
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard]
-  ability_later: true
+  primary: destroyer_cannon
+  secondary: destroyer_depth_charges
+  sensors: 8
 
-alliance_aegis_cruiser:  # anti-air missiles
+alliance_aegis_cruiser:  # missiles at the air only, rockets in flight too (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -305,9 +309,9 @@ alliance_aegis_cruiser:  # anti-air missiles
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard, alliance_air_force_command]
-  ability_later: true
+  primary: aegis_missiles
 
-alliance_aircraft_carrier:  # launches its own jets
+alliance_aircraft_carrier:  # a volley of three Hornets at 25 cells, only when ordered; anti-air can bring them down (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -322,7 +326,8 @@ alliance_aircraft_carrier:  # launches its own jets
   turret: false
   locomotor: naval
   prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
-  ability_later: true
+  primary: carrier_hornets
+  passive: true
 
 alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); RA2 Robot Tank, the numbers are ours
   kind: unit

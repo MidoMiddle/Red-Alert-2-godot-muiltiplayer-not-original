@@ -35,4 +35,7 @@ public enum UnitTalents
 
     /// <summary>Works only with a robot control of its owner's (<see cref="Rules.UnitDef.Robotic"/>).</summary>
     Robotic = 512,
+
+    /// <summary>Keeps under the water (<see cref="Rules.UnitDef.Submerged"/>).</summary>
+    Submerged = 1024,
 }

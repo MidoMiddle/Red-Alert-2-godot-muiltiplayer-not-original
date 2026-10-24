@@ -188,7 +188,7 @@ hover_transport:  # carries 12 slots of units over water and land (stage 3d)
   passengers: 12
   passenger_size: 6
 
-typhoon_sub:  # torpedoes ships
+typhoon_sub:  # under the water, torpedoes at ships and what is under the water (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -203,9 +203,11 @@ typhoon_sub:  # torpedoes ships
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard]
-  ability_later: true
+  primary: typhoon_torpedo
+  submerged: true
+  sensors: 4
 
-sea_scorpion:  # anti-air boat
+sea_scorpion:  # flak at the water and the air (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -220,9 +222,10 @@ sea_scorpion:  # anti-air boat
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard, radar]
-  ability_later: true
+  primary: flak_track_gun
+  secondary: flak_cannon_gun
 
-giant_squid:  # grabs ships
+giant_squid:  # under the water; grips a ship, holds it still and crushes it; slaps what it cannot grip (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -238,9 +241,11 @@ giant_squid:  # grabs ships
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard, tech_center]
-  ability_later: true
+  primary: squid_grab
+  secondary: squid_punch
+  submerged: true
 
-dreadnought:  # long-range missiles
+dreadnought:  # missiles at 8 to 25 cells, only when ordered; anti-air can bring them down (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -255,4 +260,5 @@ dreadnought:  # long-range missiles
   turret: false
   locomotor: naval
   prerequisites: [naval_shipyard, tech_center]
-  ability_later: true
+  primary: dreadnought_missiles
+  passive: true

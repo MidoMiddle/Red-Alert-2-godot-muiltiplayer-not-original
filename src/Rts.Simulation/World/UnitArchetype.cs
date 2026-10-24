@@ -51,7 +51,8 @@ public sealed record UnitArchetype(
     int Size = 1,
     int PassengerSlots = 0,
     int PassengerSizeLimit = 0,
-    int IfvWeapon = -1)
+    int IfvWeapon = -1,
+    int Sensors = 0)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;

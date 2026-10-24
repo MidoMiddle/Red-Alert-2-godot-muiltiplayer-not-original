@@ -191,3 +191,50 @@ demolition_blast:  # RA2 Demobomb: the demolition truck going off; the area and 
   percent_at_max: 50%
   radiation: 100
   infantry_death: explode
+
+ap_splash:  # RA2 APSplash: the submarine's torpedo
+  kind: warhead
+  name: AP Splash
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 60%, steel: 60%, concrete: 60%, special_1: 100%, special_2: 100% }
+  spread: 0.5
+  infantry_death: explode
+
+squid_grip:  # the squid's grip (stage 3e): a ship held still and crushed from close; 15 every half a second is ours
+  kind: warhead
+  name: Squid Grip
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  parasite: true
+  parasite_naval: true
+  paralyzes: true
+  parasite_damage: 15
+  parasite_delay: 0.5s
+
+squid_slap:  # the squid's tentacle, RA2 SquidPunch with HE; the verses are ours
+  kind: warhead
+  name: Squid Slap
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
+
+dreadnought_blast:  # the dreadnought's missile going off, 1.5 cells (RA2); the verses are ours
+  kind: warhead
+  name: Dreadnought Blast
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  spread: 1.5
+  percent_at_max: 50%
+  infantry_death: explode
+
+sonic_wave:  # the dolphin's wave, RA2 SonicWarhead; the verses are ours
+  kind: warhead
+  name: Sonic Wave
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
+
+depth_charge:  # the destroyer's charges under the water (the Osprey of RA2, here a weapon of the ship); ours
+  kind: warhead
+  name: Depth Charge
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  infantry_death: explode
+
+sam:  # RA2 SAMWH: the cruiser's missiles at the air
+  kind: warhead
+  name: SAM
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  affects_air: true

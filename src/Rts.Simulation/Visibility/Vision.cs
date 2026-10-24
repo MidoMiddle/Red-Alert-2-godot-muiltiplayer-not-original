@@ -27,6 +27,12 @@ public static class Vision
             return true;
         }
 
+        // Under the water (stage 3e), a unit of another team is found only by a sensor of the team in reach.
+        if (entity is Unit diver && diver.Archetype.Has(UnitTalents.Submerged) && !world.AreAllies(player, diver.Owner) && !Sensed(world, player, diver))
+        {
+            return false;
+        }
+
         var explored = NoFog(world);
         var allies = world.AlliesOf(player);
         for (var i = 0; i < PlayerId.MaxPlayers; i++)
@@ -99,6 +105,20 @@ public static class Vision
     /// <summary>What the team of the player knows of <paramref name="cell"/> (M6, A6); a player alone, its own grid's state.</summary>
     public static CellVisibility StateAt(GameWorld world, PlayerId player, Geometry.CellPos cell) =>
         IsVisible(world, player, cell) ? CellVisibility.Visible : IsExplored(world, player, cell) ? CellVisibility.Fog : CellVisibility.Shroud;
+
+    // Whether a sensor of the team of the player has the unit in reach.
+    private static bool Sensed(GameWorld world, PlayerId player, Unit unit)
+    {
+        foreach (var (owner, position, reach) in world.Sensors)
+        {
+            if (world.AreAllies(player, owner) && Combat.DamageCalculator.Distance(position, unit.Position) <= reach)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     // In sight of the grid now — or, without the fog of war, ever explored by it and not veiled from the player (stage 2d).
     private static bool SeenBy(GameWorld world, PlayerId player, VisibilityGrid grid, Entity entity, bool explored)

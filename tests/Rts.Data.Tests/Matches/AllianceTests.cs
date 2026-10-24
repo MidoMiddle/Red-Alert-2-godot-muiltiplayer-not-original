@@ -157,8 +157,8 @@ public sealed class AllianceTests
         Assert.True(CanBuild(world, Allied, "alliance_harrier"), "aircraft come from the air command since stage 2b");
 
         var units = world.Rules.Database.Units;
-        // The transports carry since stage 3d; the other ships and aircraft wait for their weapons.
-        Assert.All(units.Where(unit => unit.Category is UnitCategory.Aircraft or UnitCategory.Naval && unit.PassengerSlots == 0), unit => Assert.True(unit.AbilityLater, unit.Id));
+        // The ships fight since stage 3e; the aircraft wait for their weapons.
+        Assert.All(units.Where(unit => unit.Category is UnitCategory.Aircraft), unit => Assert.True(unit.AbilityLater, unit.Id));
         // Every unit can be built now: ships since stage 2a, aircraft since 2b; their weapons come with stage 3.
         Assert.DoesNotContain(units, unit => unit.AvailableLater);
         Assert.Equal(4, units.Count(unit => unit.Category == UnitCategory.Aircraft));

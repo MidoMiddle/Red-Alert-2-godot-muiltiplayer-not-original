@@ -10,6 +10,12 @@ public enum WeaponTargets : byte
     None = 0,
     Ground = 1,
     Air = 2,
+
+    /// <summary>Ships on the water and buildings on it (stage 3e): torpedoes hit nothing else; they are on the ground too.</summary>
+    Naval = 4,
+
+    /// <summary>Under the water (stage 3e: the submarine, the dolphin, the squid): only weapons at it hit them.</summary>
+    Underwater = 8,
 }
 
 /// <summary>

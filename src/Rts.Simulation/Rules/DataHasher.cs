@@ -103,6 +103,8 @@ public static class DataHasher
             hash.Add(unit.PassengerWeapon);
             Add(hash, unit.IfvWeapon);
             hash.Add(unit.Robotic);
+            hash.Add(unit.Submerged);
+            hash.Add(unit.Sensors);
             hash.Add(unit.AvailableLater);
         }
 
@@ -296,6 +298,8 @@ public static class DataHasher
             hash.Add(warhead.Parasite);
             hash.Add(warhead.ParasiteDamage);
             hash.Add(warhead.ParasiteDelay);
+            hash.Add(warhead.ParasiteNaval);
+            hash.Add(warhead.Paralyzes);
         }
 
         hash.Add(rules.Projectiles.Length);

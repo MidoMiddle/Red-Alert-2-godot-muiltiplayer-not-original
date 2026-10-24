@@ -85,10 +85,10 @@
 | demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | работает: только по приказу подъезжает и взрывается (300), взрывается и подбитым, оставляет немного яда (этап 3г) |
 | kirov_airship | Heavy Airship | bomber airship | Kirov Airship | летает, строится (этап 2б), без оружия — этап 3 |
 | hover_transport | Hovercraft | carries units over water | Hover Transport | работает: 12 слотов (пехота 1, техника 3, MCV и Super Heavy Tank 6), по воде и суше; высадка — D (этап 3г) |
-| typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | строится верфью (этап 2а), без оружия — этап 3 |
-| sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | строится верфью (этап 2а), без оружия — этап 3 |
-| giant_squid | Trained Squid | grabs ships | Giant Squid | строится верфью (этап 2а), без оружия — этап 3 |
-| dreadnought | Missile Battleship | long-range missiles | Dreadnought | строится верфью (этап 2а), без оружия — этап 3 |
+| typhoon_sub | Attack Submarine | torpedoes ships | Typhoon Attack Sub | работает: под водой, видна только сенсорам; торпеды по кораблям и подводным (этап 3д) |
+| sea_scorpion | Anti-Air Hydrofoil | anti-air boat | Sea Scorpion | работает: флак по воде и берегу, зенитки по воздуху (этап 3д) |
+| giant_squid | Trained Squid | grabs ships | Giant Squid | работает: под водой; хватает корабль, держит и давит; щупальцем бьёт подводных (этап 3д) |
+| dreadnought | Missile Battleship | long-range missiles | Dreadnought | работает: ракеты на 8–25 клеток по приказу, ПВО может их сбить (этап 3д) |
 
 ### Альянс
 
@@ -110,7 +110,7 @@
 | alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | летает, строится (этап 2б), без оружия — этап 3 |
 | alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | работает: 12 слотов, по воде и суше; высадка — D (этап 3г) |
 | alliance_robot_tank | Robot Tank | works only with the hub | Robot Tank | работает: пушка; без Drone Control Hub с энергией стоит и не стреляет; числа свои (этап 3г) |
-| alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | строится верфью (этап 2а), без оружия — этап 3 |
-| alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | строится верфью (этап 2а), без оружия — этап 3 |
-| alliance_aegis_cruiser | Air Defense Cruiser | anti-air missiles | Aegis Cruiser | строится верфью (этап 2а), без оружия — этап 3 |
-| alliance_aircraft_carrier | Aircraft Carrier | launches its own jets | Aircraft Carrier | строится верфью (этап 2а), без оружия — этап 3 |
+| alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | работает: под водой, сенсор 4 клетки; звуковая волна по кораблям и подводным (этап 3д) |
+| alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | работает: пушка по воде и берегу, глубинные бомбы под воду, сенсор 8 клеток (этап 3д) |
+| alliance_aegis_cruiser | Air Defense Cruiser | anti-air missiles | Aegis Cruiser | работает: ракеты только по воздуху, сбивает и ракеты в полёте (этап 3д) |
+| alliance_aircraft_carrier | Aircraft Carrier | launches its own jets | Aircraft Carrier | работает: по приказу — залп из трёх «Хорнетов» на 25 клеток, ПВО может их сбить; возврат на палубу не сделан (этап 3д) |

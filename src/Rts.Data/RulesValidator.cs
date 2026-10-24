@@ -166,6 +166,11 @@ internal static class RulesValidator
             WeaponOf(unit.Id, "ifv_weapon", unit.IfvWeapon);
             NotNegative(unit.Id, "passengers", unit.PassengerSlots);
             NotNegative(unit.Id, "size", unit.Size);
+            NotNegative(unit.Id, "sensors", unit.Sensors);
+            if (unit.Submerged && unit.Category != UnitCategory.Naval)
+            {
+                Error(unit.Id, "submerged", $"'{unit.Id}' cannot keep under the water: only a ship can");
+            }
             if (unit.PassengerSlots > 0 && unit.PassengerSizeLimit <= 0)
             {
                 Error(unit.Id, "passenger_size", $"'{unit.Id}' carries passengers but takes none: 'passenger_size' must be above zero");

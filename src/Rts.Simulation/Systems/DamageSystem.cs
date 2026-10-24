@@ -174,8 +174,10 @@ public static class DamageSystem
                 continue;
             }
 
-            // The splinters stay in their layer (stage 2b): a warhead at the air hurts only fliers, any other only what is on the ground.
-            if (entity is Unit { Archetype.Flies: true } != warhead.AffectsAir)
+            // The splinters stay in their layer (stage 2b): a warhead at the air hurts only fliers, any other only what is on the ground;
+            // under the water (stage 3e) only a weapon at it reaches.
+            if (entity is Unit { Archetype.Flies: true } != warhead.AffectsAir
+                || (entity is Unit diver && diver.Archetype.Has(UnitTalents.Submerged) && (weapon.Targets & WeaponTargets.Underwater) == 0))
             {
                 continue;
             }

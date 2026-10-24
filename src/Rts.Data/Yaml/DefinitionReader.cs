@@ -22,7 +22,7 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
-        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -39,7 +39,7 @@ internal static class DefinitionReader
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "parasite", "parasite_damage", "parasite_delay", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual", "hp", "armor"];
 
@@ -124,6 +124,8 @@ internal static class DefinitionReader
             PassengerWeapon = fields.Optional("passenger_weapon", Scalars.Flag, false),
             IfvWeapon = fields.Optional("ifv_weapon", Scalars.Id, ""),
             Robotic = fields.Optional("robotic", Scalars.Flag, false),
+            Submerged = fields.Optional("submerged", Scalars.Flag, false),
+            Sensors = fields.Optional("sensors", Scalars.Int, 0),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -230,6 +232,8 @@ internal static class DefinitionReader
             Parasite = fields.Optional("parasite", Scalars.Flag, false),
             ParasiteDamage = fields.Optional("parasite_damage", Scalars.Int, 0),
             ParasiteDelay = fields.Optional("parasite_delay", Scalars.Ticks, 0),
+            ParasiteNaval = fields.Optional("parasite_naval", Scalars.Flag, false),
+            Paralyzes = fields.Optional("paralyzes", Scalars.Flag, false),
             InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
         };
     }
@@ -589,7 +593,7 @@ internal static class DefinitionReader
             _ => ProjectileMotion.Homing,
         };
 
-    /// <summary>What a weapon fires at: a list of <c>ground</c> and <c>air</c>, each once.</summary>
+    /// <summary>What a weapon fires at: a list of <c>ground</c>, <c>air</c>, <c>naval</c> and <c>underwater</c>, each once.</summary>
     private static WeaponTargets TargetsOf(string fileName, YamlNode node)
     {
         if (node is not YamlSequenceNode { Children.Count: > 0 } sequence)
@@ -600,7 +604,13 @@ internal static class DefinitionReader
         var targets = WeaponTargets.None;
         foreach (var child in sequence.Children)
         {
-            var target = Scalars.Choice(fileName, child, "ground", "air") == "ground" ? WeaponTargets.Ground : WeaponTargets.Air;
+            var target = Scalars.Choice(fileName, child, "ground", "air", "naval", "underwater") switch
+            {
+                "ground" => WeaponTargets.Ground,
+                "air" => WeaponTargets.Air,
+                "naval" => WeaponTargets.Naval,
+                _ => WeaponTargets.Underwater,
+            };
             if ((targets & target) != 0)
             {
                 throw RulesFormatException.At(fileName, child, $"target '{((YamlScalarNode)child).Value}' repeats");
