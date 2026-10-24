@@ -256,16 +256,35 @@ aegis_missiles:  # of the Air Defense Cruiser, RA2 Medusa: at the air only
   warhead: sam
   targets: [air]
 
-carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: three Hornets at 25 cells; their damage is ours
+carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: firing it launches the Hornets aboard at the target, ROF 150
   kind: weapon
-  name: Hornets
-  damage: 50
+  name: Hornet Launcher
+  damage: 0
   reload: 10s
   range: 25
-  projectile: hornet
+  projectile: bullet
   warhead: missile
-  burst: 3
-  burst_delay: 0.3s
+  launches_spawns: true
+
+alliance_hornet_missiles:  # of a Hornet: two small missiles; ours
+  kind: weapon
+  name: Hornet Missiles
+  damage: 50
+  reload: 1s
+  range: 4
+  projectile: rocket
+  warhead: orca_ap
+  burst: 2
+  burst_delay: 0.2s
+
+ifv_repair_arm:  # what an engineer gives the IFV, RA2 RepairBullet: mends a vehicle of its team by 50, ROF 80
+  kind: weapon
+  name: Repair Arm
+  damage: 50
+  reload: 5.33s
+  range: 1.8
+  projectile: pounce
+  warhead: repair
 
 alliance_harrier_missiles:  # of the Strike Jet, RA2 Maverick: two of 150, one volley a sortie
   kind: weapon

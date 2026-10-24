@@ -36,6 +36,7 @@ engineer:  # Engineer: takes a building of the enemy, mends its own (stage 3b)
   threat: 5
   sight: 4
   engineer: true
+  ifv_weapon: ifv_repair_arm
 
 mcv:  # MCV
   kind: unit

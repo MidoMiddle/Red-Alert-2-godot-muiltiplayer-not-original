@@ -70,21 +70,34 @@ public static class ParasiteSystem
         // Out after the walk: the list of entities must not change while walked.
         foreach (var host in freed ?? [])
         {
-            var archetype = world.Rules.Unit(host.Parasite);
-            var cell = host.Position.ToCell();
-            if (!world.Reservations.HasRoomFor(cell, archetype.Placement, EntityId.None) || !world.Map.CanEnter(cell, archetype.Locomotor))
-            {
-                cell = TransportSystem.FreeCellAround(world, cell, archetype) ?? cell;
-            }
-
-            if (world.Map.CanEnter(cell, archetype.Locomotor))
-            {
-                var drone = world.SpawnUnit(host.ParasiteOwner, host.Parasite, cell.Center, snapToSubcell: true);
-                world.SetHp(drone, host.ParasiteHp, events);
-            }
-
-            Clear(host);
+            LetOut(world, host, events);
         }
+    }
+
+    /// <summary>A hit that frees the host (the dolphin's wave on a ship the squid holds): the parasite comes out beside it, alive.</summary>
+    internal static void Free(GameWorld world, Unit host, List<SimEvent>? events)
+    {
+        events?.Add(new ParasiteFreed(world.CurrentTick, host.Id));
+        LetOut(world, host, events);
+    }
+
+    // The parasite comes out with its hit points on the host's cell or the nearest free one round it; with no room it is lost.
+    private static void LetOut(GameWorld world, Unit host, List<SimEvent>? events)
+    {
+        var archetype = world.Rules.Unit(host.Parasite);
+        var cell = host.Position.ToCell();
+        if (!world.Reservations.HasRoomFor(cell, archetype.Placement, EntityId.None) || !world.Map.CanEnter(cell, archetype.Locomotor))
+        {
+            cell = TransportSystem.FreeCellAround(world, cell, archetype) ?? cell;
+        }
+
+        if (world.Map.CanEnter(cell, archetype.Locomotor) && world.Reservations.HasRoomFor(cell, archetype.Placement, EntityId.None))
+        {
+            var parasite = world.SpawnUnit(host.ParasiteOwner, host.Parasite, cell.Center, snapToSubcell: true);
+            world.SetHp(parasite, host.ParasiteHp, events);
+        }
+
+        Clear(host);
     }
 
     /// <summary>Whether the parasite inside <paramref name="host"/> holds it still (stage 3e: a ship in the squid's grip).</summary>

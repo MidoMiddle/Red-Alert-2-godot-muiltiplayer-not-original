@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -86,6 +86,9 @@ public sealed class StateHasherTests
             case "parasite ticks": moving.ParasiteTicks = 7; break;
             case "ammo": moving.Ammo = 2; break;
             case "rearm ticks": moving.RearmTicks = 5; break;
+            case "mother": moving.Mother = idle.Id; break;
+            case "spawns docked": moving.SpawnsDocked = 2; break;
+            case "spawn regen": moving.SpawnRegenTicks = 4; break;
             case "warp ticks": moving.WarpTicks = 3; break;
             case "blackout": world.Player(Player1).BlackoutUntil = 50; break;
             case "radiation": world.Radiation[7] = 100; break;
@@ -269,6 +272,7 @@ public sealed class StateHasherTests
         "<Deployed>k__BackingField", "<WarpTicks>k__BackingField",
         "<Passengers>k__BackingField", "<Parasite>k__BackingField", "<ParasiteOwner>k__BackingField", "<ParasiteHp>k__BackingField",
         "<ParasiteWeapon>k__BackingField", "<ParasiteTicks>k__BackingField", "<Ammo>k__BackingField", "<RearmTicks>k__BackingField",
+        "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {

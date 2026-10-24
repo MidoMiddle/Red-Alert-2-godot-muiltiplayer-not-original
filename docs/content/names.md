@@ -79,8 +79,8 @@
 | crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | работает: вешает бомбу, через 30 с взрыв 400 по площади; гибель носителя взрывает сразу (этап 3б) |
 | terrorist | Demolition Trooper | blows up with its target | Terrorist | работает: сам целей не ищет; по приказу подбегает и взрывается, взрывается и убитым (этап 3б) |
 | desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); развёрнутый (D) заражает землю ядом, яд ранит всех на земле, кроме него (этап 3б) |
-| rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | работает: ракета на 5–18 клеток, только по приказу; ПВО может её сбить (этап 3в) |
-| apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | работает: две пушки по земле, ракеты только по воздуху (этап 3в); самолечение — позже |
+| rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | работает: ракета на 5–18 клеток, только по приказу; ПВО может её сбить (этап 3в); от слишком близкой цели отъезжает |
+| apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | работает: две пушки по земле, ракеты только по воздуху (этап 3в); лечится сам, 2 HP в секунду |
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | работает: запрыгивает в технику и ест её изнутри по 50 раз в 4 с, пехоту убивает сразу; мастерская его вытаскивает (этап 3г) |
 | demolition_truck | Demolition Truck | drives into the target and blows up | Demolition Truck | работает: только по приказу подъезжает и взрывается (300), взрывается и подбитым, оставляет немного яда (этап 3г) |
 | kirov_airship | Heavy Airship | bomber airship | Kirov Airship | работает: бомбы 250 по площади 2 клетки; сбитый падает на тех, кто под ним (этап 3е) |
@@ -101,16 +101,17 @@
 | alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | работает: луч замораживает и стирает цель, прерванный — цель цела (этап 3а); прыгает туда, куда послан, и проявляется (этап 3б) |
 | alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | работает: пистолеты убивают пехотинца с выстрела (этап 3а); C4 сносит здание целиком за 2 с (этап 3б) |
 | alliance_sniper | Marksman | long-range anti-infantry | Sniper | работает: винтовка на 14 клеток против пехоты (этап 3а) |
-| alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | работает: пустой — ракеты по земле и воздуху; с пехотинцем — его оружие по таблице RA2 (этап 3г); ремонт с инженером — позже |
+| alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | работает: пустой — ракеты по земле и воздуху; с пехотинцем — его оружие по таблице RA2 (этап 3г); с инженером — ремонтный кран: чинит свою технику и вытаскивает дрона |
 | alliance_prism_tank | Beam Tank | splitting beam | Prism Tank | работает: луч 100, до 5 осколков по 30 в радиусе 3 клеток, здания — вдвое (этап 3в) |
 | alliance_mirage_tank | Holo Tank | disguised as a tree | Mirage Tank | работает: стоя на месте, для врага — дерево, его не выбирают целью; сам за целью не едет (этап 3в) |
 | alliance_tank_destroyer | Tank Hunter | anti-tank gun | Tank Destroyer | работает: подкалиберная пушка 150, полный урон по лёгкой и тяжёлой технике, по пехоте 2 % (этап 3в) |
 | alliance_nighthawk | Transport Helicopter | carries infantry | Night Hawk Transport | работает: везёт 5 пехотинцев (техника не помещается), пулемёт по земле по приказу (этап 3е) |
-| alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | работает: по приказу залп 2 × 150, затем летит к командованию ВВС и перезаряжается 18 с (этап 3е) |
+| alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | работает: по приказу залп 2 × 150, затем летит к командованию ВВС и перезаряжается 18 с (этап 3е); не больше 4 штурмовиков на командование |
 | alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | работает: по приказу залп 2 × 200, затем перезарядка у командования ВВС (этап 3е) |
 | alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | работает: 12 слотов, по воде и суше; высадка — D (этап 3г) |
 | alliance_robot_tank | Robot Tank | works only with the hub | Robot Tank | работает: пушка; без Drone Control Hub с энергией стоит и не стреляет; числа свои (этап 3г) |
-| alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | работает: под водой, сенсор 4 клетки; звуковая волна по кораблям и подводным (этап 3д) |
+| alliance_hornet | Hornet | the carrier's jet | Hornet | работает: не строится, его выпускает авианосец; один залп и обратно на палубу |
+| alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | работает: под водой, сенсор 4 клетки; звуковая волна по кораблям и подводным (этап 3д); освобождает свой корабль от кальмара |
 | alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | работает: пушка по воде и берегу, глубинные бомбы под воду, сенсор 8 клеток (этап 3д) |
 | alliance_aegis_cruiser | Air Defense Cruiser | anti-air missiles | Aegis Cruiser | работает: ракеты только по воздуху, сбивает и ракеты в полёте (этап 3д) |
-| alliance_aircraft_carrier | Aircraft Carrier | launches its own jets | Aircraft Carrier | работает: по приказу — залп из трёх «Хорнетов» на 25 клеток, ПВО может их сбить; возврат на палубу не сделан (этап 3д) |
+| alliance_aircraft_carrier | Aircraft Carrier | launches its own jets | Aircraft Carrier | работает: по приказу выпускает три «Хорнета» — настоящих самолёта: бьют и садятся обратно, потерянный восстанавливается за 27 с |

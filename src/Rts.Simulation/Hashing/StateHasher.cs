@@ -263,6 +263,12 @@ public static class StateHasher
                 hash.Add(unit.Ammo);
                 hash.Add(unit.RearmTicks);
 
+                // Rules v55: a carrier and its Hornets.
+                hash.Add(unit.Mother.HasValue);
+                hash.Add(unit.Mother?.Value ?? 0);
+                hash.Add(unit.SpawnsDocked);
+                hash.Add(unit.SpawnRegenTicks);
+
                 // Rules v23 (M3 step 10): the work of a harvester.
                 hash.Add(unit.Harvester is not null);
                 if (unit.Harvester is { } harvester)

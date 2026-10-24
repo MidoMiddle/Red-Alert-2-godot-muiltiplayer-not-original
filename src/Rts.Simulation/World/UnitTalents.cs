@@ -38,4 +38,7 @@ public enum UnitTalents
 
     /// <summary>Keeps under the water (<see cref="Rules.UnitDef.Submerged"/>).</summary>
     Submerged = 1024,
+
+    /// <summary>Launched by another unit, never built (<see cref="Rules.UnitDef.Spawned"/>).</summary>
+    Spawned = 2048,
 }

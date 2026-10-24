@@ -15,6 +15,7 @@ alliance_engineer:  # takes a building of the enemy, mends its own (stage 3b)
   sight: 4
   prerequisites: [alliance_barracks]
   engineer: true
+  ifv_weapon: ifv_repair_arm
 
 alliance_attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   kind: unit
@@ -318,7 +319,7 @@ alliance_aegis_cruiser:  # missiles at the air only, rockets in flight too (stag
   prerequisites: [alliance_naval_shipyard, alliance_air_force_command]
   primary: aegis_missiles
 
-alliance_aircraft_carrier:  # a volley of three Hornets at 25 cells, only when ordered; anti-air can bring them down (stage 3e)
+alliance_aircraft_carrier:  # launches its three Hornets at 25 cells when ordered; they strike and land back, one lost is replaced (stage 3e)
   kind: unit
   inherits: base_vehicle
   category: naval
@@ -335,6 +336,9 @@ alliance_aircraft_carrier:  # a volley of three Hornets at 25 cells, only when o
   prerequisites: [alliance_naval_shipyard, alliance_battle_lab]
   primary: carrier_hornets
   passive: true
+  spawns: alliance_hornet
+  spawn_count: 3
+  spawn_regen: 27s
 
 alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); RA2 Robot Tank, the numbers are ours
   kind: unit
@@ -352,3 +356,24 @@ alliance_robot_tank:  # works only while a Drone Control Hub stands ready with p
   prerequisites: [alliance_war_factory, alliance_robot_control_center]
   primary: alliance_robot_gun
   robotic: true
+
+alliance_hornet:  # the aircraft carrier's jet: launched, never built; one volley, then back aboard (RA2 HORNET, the numbers are ours)
+  kind: unit
+  inherits: base_vehicle
+  category: aircraft
+  crusher: false
+  name: Hornet
+  faction: alliance
+  cost: 100
+  build_time: 1s
+  hp: 50
+  threat: 10
+  armor: light
+  speed: 84
+  sight: 6
+  turret: false
+  locomotor: hover
+  primary: alliance_hornet_missiles
+  ammo: 1
+  passive: true
+  spawned: true

@@ -152,7 +152,7 @@ public sealed class ShipWeaponsTests
         simulation.Enqueue(new AttackCommand(Allied, simulation.CurrentTick, 0, [carrier.Id], target.Id));
         var events = Run(simulation, 300, () => target.Hp < target.MaxHp - 100);
 
-        Assert.True(events.OfType<WeaponFired>().Count(fired => fired.Shooter == carrier.Id) >= 3);
+        Assert.Equal(3, events.OfType<SpawnLaunched>().Count(launched => launched.Mother == carrier.Id));
         Assert.True(target.Hp <= target.MaxHp - 100);
     }
 

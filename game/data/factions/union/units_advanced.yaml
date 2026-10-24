@@ -115,6 +115,7 @@ apocalypse_tank:  # twin cannons at the ground, missiles at the air (stage 3c)
   primary: apocalypse_cannons
   secondary: apocalypse_tusks
   size: 6
+  self_heal: 2
 
 terror_drone:  # jumps into a vehicle and eats it from inside, kills a soldier at once (stage 3d)
   kind: unit

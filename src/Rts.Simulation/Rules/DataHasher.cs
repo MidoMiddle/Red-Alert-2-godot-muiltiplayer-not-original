@@ -56,6 +56,7 @@ public static class DataHasher
             hash.Add(weapon.Fragments);
             Add(hash, weapon.FragmentWeapon);
             hash.Add(weapon.FragmentRange.Raw);
+            hash.Add(weapon.LaunchesSpawns);
         }
 
         hash.Add(rules.Units.Length);
@@ -106,6 +107,11 @@ public static class DataHasher
             hash.Add(unit.Submerged);
             hash.Add(unit.Sensors);
             hash.Add(unit.Ammo);
+            hash.Add(unit.SelfHeal);
+            Add(hash, unit.Spawns);
+            hash.Add(unit.SpawnCount);
+            hash.Add(unit.SpawnRegen);
+            hash.Add(unit.Spawned);
             hash.Add(unit.AvailableLater);
         }
 
@@ -165,6 +171,7 @@ public static class DataHasher
             hash.Add((byte)building.SpyEffect);
             hash.Add(building.ControlsRobots);
             hash.Add(building.RearmsAircraft);
+            hash.Add(building.AircraftDocks);
         }
 
         hash.Add(rules.Factions.Length);
@@ -302,6 +309,8 @@ public static class DataHasher
             hash.Add(warhead.ParasiteDelay);
             hash.Add(warhead.ParasiteNaval);
             hash.Add(warhead.Paralyzes);
+            hash.Add(warhead.Repairs);
+            hash.Add(warhead.FreesParasite);
         }
 
         hash.Add(rules.Projectiles.Length);

@@ -70,4 +70,7 @@ public sealed record WeaponDef : IDefinition
 
     /// <summary>How far the splinters reach, in cells.</summary>
     public Fixed FragmentRange { get; init; }
+
+    /// <summary>Firing it launches its unit's carried units at the target instead of a shot (the aircraft carrier).</summary>
+    public bool LaunchesSpawns { get; init; }
 }

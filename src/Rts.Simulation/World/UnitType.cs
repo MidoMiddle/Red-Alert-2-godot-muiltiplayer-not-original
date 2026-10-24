@@ -59,4 +59,7 @@ public enum UnitType : byte
 
     // Stage 3d of filling the game: the robot of the drone control hub.
     AllianceRobotTank = 47,
+
+    // The aircraft carrier's jet, launched and never built.
+    AllianceHornet = 48,
 }

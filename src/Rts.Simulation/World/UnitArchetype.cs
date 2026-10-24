@@ -53,7 +53,11 @@ public sealed record UnitArchetype(
     int PassengerSizeLimit = 0,
     int IfvWeapon = -1,
     int Sensors = 0,
-    int Ammo = 0)
+    int Ammo = 0,
+    int SelfHeal = 0,
+    UnitType Spawn = 0,
+    int SpawnCount = 0,
+    int SpawnRegen = 0)
 {
     /// <summary>True for a unit with a weapon.</summary>
     public bool Armed => Primary >= 0;

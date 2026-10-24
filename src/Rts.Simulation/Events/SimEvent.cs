@@ -200,3 +200,9 @@ public sealed record ParasiteEntered(int Tick, EntityId Parasite, EntityId Host)
 
 /// <summary>A workshop mending <paramref name="Host"/> killed the parasite inside (stage 3d).</summary>
 public sealed record ParasiteKilled(int Tick, EntityId Host) : SimEvent(Tick);
+
+/// <summary>A hit freed <paramref name="Host"/> from the parasite that held it (the dolphin's wave on the squid's ship).</summary>
+public sealed record ParasiteFreed(int Tick, EntityId Host) : SimEvent(Tick);
+
+/// <summary><paramref name="Mother"/>, a carrier, launched <paramref name="Unit"/> at its target.</summary>
+public sealed record SpawnLaunched(int Tick, EntityId Unit, EntityId Mother) : SimEvent(Tick);

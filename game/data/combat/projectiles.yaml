@@ -86,17 +86,6 @@ dreadnought_missile:  # the dreadnought's missile, RA2 DMISL: a flying thing ant
   hp: 50
   armor: special_2
 
-hornet:  # a Hornet of the aircraft carrier: a small jet flying at its target, anti-air can bring it down; ours, the carrier's jets
-  kind: projectile
-  name: Hornet
-  motion: homing
-  speed: 30
-  turn_rate: 4096
-  lifetime: 15s
-  hp: 50
-  armor: light
-  visual: hornet
-
 sonic:  # the dolphin's wave
   kind: projectile
   name: Sonic Wave

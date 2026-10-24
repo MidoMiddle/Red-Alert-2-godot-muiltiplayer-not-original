@@ -65,6 +65,12 @@ public sealed record WarheadDef : IDefinition
     /// <summary>The host of the parasite cannot move (stage 3e: a ship in the squid's grip).</summary>
     public bool Paralyzes { get; init; }
 
+    /// <summary>It mends the vehicles of its owner's team by its damage instead of hurting (the IFV's repair arm, RA2 <c>RepairBullet</c>).</summary>
+    public bool Repairs { get; init; }
+
+    /// <summary>A hit on a unit held by an enemy parasite frees it, and the parasite comes out (the dolphin and the squid).</summary>
+    public bool FreesParasite { get; init; }
+
     /// <summary>How infantry dies of it, for the client: an id such as <c>explode</c>; the simulation does not use it.</summary>
     public string InfantryDeath { get; init; } = "";
 
@@ -74,7 +80,8 @@ public sealed record WarheadDef : IDefinition
         && PercentAtMax == other.PercentAtMax && WallDamage == other.WallDamage && AffectsAir == other.AffectsAir
         && Temporal == other.Temporal && Bomb == other.Bomb && BombDelay == other.BombDelay && Radiation == other.Radiation
         && Parasite == other.Parasite && ParasiteDamage == other.ParasiteDamage && ParasiteDelay == other.ParasiteDelay
-        && ParasiteNaval == other.ParasiteNaval && Paralyzes == other.Paralyzes && InfantryDeath == other.InfantryDeath;
+        && ParasiteNaval == other.ParasiteNaval && Paralyzes == other.Paralyzes && Repairs == other.Repairs
+        && FreesParasite == other.FreesParasite && InfantryDeath == other.InfantryDeath;
 
     public override int GetHashCode() => unchecked((Id.Length * 31) + Verses.Length);
 }

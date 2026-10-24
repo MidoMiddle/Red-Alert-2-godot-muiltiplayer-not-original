@@ -116,6 +116,21 @@ public static class DamageSystem
         var weapon = rules.Database.Weapons[hit.Weapon];
         var warheadIndex = rules.Database.IndexOfWarhead(weapon.Warhead);
         var warhead = rules.Database.Warheads[warheadIndex];
+        if (warhead.Repairs)
+        {
+            // A repair arm mends a vehicle of its team, and pulls out a parasite there.
+            Mend(world, rules, hit, weapon, warheadIndex, events);
+            return;
+        }
+
+        if (warhead.FreesParasite && hit.Target is { } heldId && world.TryGet(heldId, out var held)
+            && held is Unit { IsAlive: true, Parasite: not 0 } host && !world.AreAllies(host.ParasiteOwner, hit.Owner))
+        {
+            // A hit on what an enemy parasite holds frees it (the dolphin and the squid).
+            ParasiteSystem.Free(world, host, events);
+            return;
+        }
+
         if (warhead.Bomb.Length > 0)
         {
             // A bomb (stage 3b) hurts nothing now: it is planted on the target.
@@ -224,6 +239,24 @@ public static class DamageSystem
         Projectile shot => rules.ArmorOfShot(shot.Weapon),
         _ => 0,
     };
+
+    // The repair arm: a living vehicle or ship of the shooter's team gains the weapon's damage by the verses, up to whole.
+    private static void Mend(GameWorld world, GameRules rules, Hit hit, WeaponDef weapon, int warheadIndex, List<SimEvent>? events)
+    {
+        if (hit.Target is not { } id || !world.TryGet(id, out var target) || target is not World.Unit { IsAlive: true } unit
+            || !world.AreAllies(unit.Owner, hit.Owner) || unit.Archetype.Category is not (UnitCategory.Vehicle or UnitCategory.Naval))
+        {
+            return;
+        }
+
+        var gain = DamageCalculator.Direct(weapon.Damage, rules.Verses(warheadIndex, unit.Archetype.Armor));
+        world.SetHp(unit, IntMath.Min(unit.MaxHp, unit.Hp + gain), events);
+        if (unit.Parasite != 0)
+        {
+            ParasiteSystem.Clear(unit);
+            events?.Add(new ParasiteKilled(world.CurrentTick, unit.Id));
+        }
+    }
 
     /// <summary>Damage that comes of no shot (stage 3b: the toxin on the ground), as a shot's would.</summary>
     internal static void Hurt(GameWorld world, Entity entity, int amount, Hit hit, List<SimEvent>? events) => Damage(world, entity, amount, hit, events);

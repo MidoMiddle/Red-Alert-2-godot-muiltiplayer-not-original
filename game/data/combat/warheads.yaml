@@ -222,9 +222,10 @@ dreadnought_blast:  # the dreadnought's missile going off, 1.5 cells (RA2); the 
   percent_at_max: 50%
   infantry_death: explode
 
-sonic_wave:  # the dolphin's wave, RA2 SonicWarhead; the verses are ours
+sonic_wave:  # the dolphin's wave, RA2 SonicWarhead; the verses are ours; on a ship the squid holds it frees it
   kind: warhead
   name: Sonic Wave
+  frees_parasite: true
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
 
 depth_charge:  # the destroyer's charges under the water (the Osprey of RA2, here a weapon of the ship); ours
@@ -254,3 +255,9 @@ orca_ap:  # RA2 ORCAAP: the strike jets' missiles, 0.4 cells; the verses are our
   verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 75%, steel: 75%, concrete: 50%, special_1: 100%, special_2: 100% }
   spread: 0.4
   infantry_death: explode
+
+repair:  # RA2 RepairWH of the IFV's repair arm: mends vehicles and ships of its team, nothing else
+  kind: warhead
+  name: Repair
+  verses: { none: 0%, flak: 0%, plate: 0%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 0% }
+  repairs: true

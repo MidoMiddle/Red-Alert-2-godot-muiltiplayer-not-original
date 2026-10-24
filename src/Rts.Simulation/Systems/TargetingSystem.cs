@@ -165,6 +165,49 @@ public static class TargetingSystem
         return best;
     }
 
+    // A damaged vehicle or ship of my team, not me.
+    private static bool Mendable(GameWorld world, Entity me, Entity candidate) =>
+        candidate is Unit { Archetype.Category: UnitCategory.Vehicle or UnitCategory.Naval } unit && unit.Hp < unit.MaxHp
+        && world.AreAllies(unit.Owner, me.Owner);
+
+    // A unit of my team that an enemy parasite holds.
+    private static bool HeldByEnemy(GameWorld world, Entity me, Entity candidate) =>
+        candidate is Unit { Parasite: not 0 } host && !world.AreAllies(host.ParasiteOwner, me.Owner);
+
+    private static bool OnlyWarheads(GameRules rules, ImmutableArray<int> weapons, System.Func<WarheadDef, bool> test)
+    {
+        var any = false;
+        foreach (var weapon in weapons)
+        {
+            if (weapon < 0)
+            {
+                continue;
+            }
+
+            if (!test(rules.Database.Warheads[rules.Database.IndexOfWarhead(rules.Database.Weapons[weapon].Warhead)]))
+            {
+                return false;
+            }
+
+            any = true;
+        }
+
+        return any;
+    }
+
+    private static bool AnyWarhead(GameRules rules, ImmutableArray<int> weapons, System.Func<WarheadDef, bool> test)
+    {
+        foreach (var weapon in weapons)
+        {
+            if (weapon >= 0 && test(rules.Database.Warheads[rules.Database.IndexOfWarhead(rules.Database.Weapons[weapon].Warhead)]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>Whether <paramref name="me"/> takes the candidate, a disguised unit (stage 3b), for one of its own: all but the dogs do.</summary>
     internal static bool Fooled(Entity me, Entity candidate) =>
         candidate is Unit disguised
@@ -216,6 +259,8 @@ public static class TargetingSystem
 
     private static EntityId? Best(GameWorld world, GameRules rules, Entity me, Area area, ImmutableArray<int> weapons, EntityId? current, List<EntityId> nearby)
     {
+        var mending = OnlyWarheads(rules, weapons, warhead => warhead.Repairs);
+        var freeing = !mending && AnyWarhead(rules, weapons, warhead => warhead.FreesParasite);
         var from = area.From;
         world.Spatial.QueryRadius(world, from, area.Reach, nearby);
         foreach (var entity in world.Entities)
@@ -238,8 +283,12 @@ public static class TargetingSystem
         var bestScore = int.MinValue;
         foreach (var id in nearby)
         {
-            // One held by another's temporal beam (stage 3a) is out of time: only that shooter keeps it.
-            if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || world.AreAllies(candidate.Owner, me.Owner) || candidate.Owner.IsNeutral
+            // One held by another's temporal beam (stage 3a) is out of time: only that shooter keeps it. A repair arm picks only the
+            // damaged vehicles of its team, a weapon that frees from a parasite also a unit of the team held by an enemy one.
+            if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || candidate == me
+                || (mending ? !Mendable(world, me, candidate)
+                    : world.AreAllies(candidate.Owner, me.Owner) && !(freeing && HeldByEnemy(world, me, candidate)))
+                || candidate.Owner.IsNeutral
                 || (candidate.ErasedBy is { } holder && holder != me.Id)
                 // A disguised unit (stage 3b: the infiltrator) passes for one of ours, but not before a dog; one with a bomb on it is
                 // left by those that only plant bombs.

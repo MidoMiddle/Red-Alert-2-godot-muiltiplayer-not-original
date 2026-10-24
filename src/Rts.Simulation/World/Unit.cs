@@ -23,6 +23,7 @@ public sealed class Unit : Entity
         Stance = archetype.Stance;
         Anchor = position;
         Ammo = archetype.Ammo;
+        SpawnsDocked = archetype.SpawnCount;
     }
 
     /// <summary>How the unit fights by itself (M4, 4.11). State: hashed.</summary>
@@ -87,6 +88,15 @@ public sealed class Unit : Entity
 
     /// <summary>The ticks it has loaded for its next volley beside a building that rearms aircraft.</summary>
     public int RearmTicks { get; internal set; }
+
+    /// <summary>The carrier that launched it (a Hornet); null for any other unit. State: hashed with the two below.</summary>
+    public EntityId? Mother { get; internal set; }
+
+    /// <summary>The units a carrier has aboard, ready to launch; its type's count when built.</summary>
+    public int SpawnsDocked { get; internal set; }
+
+    /// <summary>The ticks a carrier has worked at replacing one it lost.</summary>
+    public int SpawnRegenTicks { get; internal set; }
 
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }

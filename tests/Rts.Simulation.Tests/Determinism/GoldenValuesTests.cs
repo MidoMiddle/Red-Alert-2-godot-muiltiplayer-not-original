@@ -215,11 +215,12 @@ public sealed class GoldenValuesTests
         // Rules v51 (stage 3c): the version only; no shot flies here.
         // Rules v52 (stage 3d): the passengers and the parasite of every unit in the hash (none); the states are the same.
         // Rules v54 (stage 3f): the ammo of every unit in the hash (0 for all here); the states are the same.
+        // Rules v55: a carrier and its Hornets in the hash (none); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0x5b0e9a9ddff34eb5UL),
-            new(500, 0x86f07004652ec2eeUL),
-            new(1000, 0xa6c02d4822c4ac6cUL),
+            new(100, 0xd9c0358cdd8c3ae1UL),
+            new(500, 0x544c91242f41122eUL),
+            new(1000, 0x6038a8003b02c520UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -246,11 +247,12 @@ public sealed class GoldenValuesTests
         // air; ticks 2000 and 3000, with none, are as they were.
         // Rules v52 (stage 3d): the passengers and the parasite of every unit in the hash (none); the battle is the same.
         // Rules v54 (stage 3f): the ammo of every unit in the hash (0 for all); the battle is the same.
+        // Rules v55: a carrier and its Hornets in the hash (none); the battle is the same.
         StateChecksum[] expected =
         [
-            new(1000, 0x0e7a8287ac459e46UL),
-            new(2000, 0xf1d475fdeff3e780UL),
-            new(3000, 0x2fb5f77d7e2b818cUL),
+            new(1000, 0xadef3f8c967acf62UL),
+            new(2000, 0x5585135570610deeUL),
+            new(3000, 0xa4bd9a760aabfd42UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -334,6 +336,7 @@ public sealed class GoldenValuesTests
         // Rules v52 (stage 3d): the version and the checksums: passengers and parasites are hashed.
         // Rules v53 (stage 3e): only the version; nothing new is hashed.
         // Rules v54 (stage 3f): the version and the checksums: the ammo of every unit is hashed.
-        Assert.Equal((22269, 13924130099404789209UL), (bytes.Length, hash.Value));
+        // Rules v55: again, with a carrier's Hornets.
+        Assert.Equal((22269, 15764641289837365838UL), (bytes.Length, hash.Value));
     }
 }

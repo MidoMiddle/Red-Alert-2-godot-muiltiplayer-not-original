@@ -151,6 +151,21 @@ public sealed record UnitDef : IDefinition
     /// </summary>
     public int Ammo { get; init; }
 
+    /// <summary>The hit points it heals a second by itself (the Super Heavy Tank, RA2 <c>SelfHealing</c>); 0 for none.</summary>
+    public int SelfHeal { get; init; }
+
+    /// <summary>The unit it carries and launches (the aircraft carrier's Hornets, RA2 <c>Spawns</c>); empty for none.</summary>
+    public string Spawns { get; init; } = "";
+
+    /// <summary>How many of them it carries (RA2 <c>SpawnsNumber</c>).</summary>
+    public int SpawnCount { get; init; }
+
+    /// <summary>The ticks to replace one that was lost (RA2 <c>SpawnRegenRate</c>).</summary>
+    public int SpawnRegen { get; init; }
+
+    /// <summary>It is launched by another unit and never built (a Hornet).</summary>
+    public bool Spawned { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

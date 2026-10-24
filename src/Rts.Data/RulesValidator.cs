@@ -168,6 +168,19 @@ internal static class RulesValidator
             NotNegative(unit.Id, "size", unit.Size);
             NotNegative(unit.Id, "sensors", unit.Sensors);
             NotNegative(unit.Id, "ammo", unit.Ammo);
+            NotNegative(unit.Id, "self_heal", unit.SelfHeal);
+            if (unit.Spawns.Length > 0)
+            {
+                if (!rules.TryGetUnit(unit.Spawns, out _))
+                {
+                    Error(unit.Id, "spawns", $"'{unit.Id}' carries '{unit.Spawns}', which is no unit");
+                }
+
+                if (unit.SpawnCount <= 0 || unit.SpawnRegen <= 0)
+                {
+                    Error(unit.Id, "spawn_count", $"'{unit.Id}' carries units: 'spawn_count' and 'spawn_regen' must be above zero");
+                }
+            }
             if (unit.Submerged && unit.Category != UnitCategory.Naval)
             {
                 Error(unit.Id, "submerged", $"'{unit.Id}' cannot keep under the water: only a ship can");

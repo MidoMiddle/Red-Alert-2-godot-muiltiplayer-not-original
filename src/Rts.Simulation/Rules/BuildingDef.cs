@@ -144,4 +144,9 @@ public sealed record BuildingDef : IDefinition
 
     /// <summary>Aircraft out of ammo fly here and load beside it (stage 3f: the air force command, RA2 airport pads).</summary>
     public bool RearmsAircraft { get; init; }
+
+    /// <summary>
+    /// The pads it has for aircraft that rearm (RA2 <c>NumberOfDocks</c>): a player builds no more such aircraft than its pads.
+    /// </summary>
+    public int AircraftDocks { get; init; }
 }

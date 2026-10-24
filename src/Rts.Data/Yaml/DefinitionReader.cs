@@ -22,24 +22,24 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
-        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned",
     ];
 
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
-        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots", "rearms_aircraft",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots", "rearms_aircraft", "aircraft_docks",
     ];
 
     private static readonly string[] WeaponKeys =
     [
-        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report", "suicide", "fragments", "fragment_weapon", "fragment_range",
+        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report", "suicide", "fragments", "fragment_weapon", "fragment_range", "launches_spawns",
     ];
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "repairs", "frees_parasite", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual", "hp", "armor"];
 
@@ -127,6 +127,11 @@ internal static class DefinitionReader
             Submerged = fields.Optional("submerged", Scalars.Flag, false),
             Sensors = fields.Optional("sensors", Scalars.Int, 0),
             Ammo = fields.Optional("ammo", Scalars.Int, 0),
+            SelfHeal = fields.Optional("self_heal", Scalars.Int, 0),
+            Spawns = fields.Optional("spawns", Scalars.Id, ""),
+            SpawnCount = fields.Optional("spawn_count", Scalars.Int, 0),
+            SpawnRegen = fields.Optional("spawn_regen", Scalars.Ticks, 0),
+            Spawned = fields.Optional("spawned", Scalars.Flag, false),
             Model = fields.Optional("model", Scalars.Path, ""),
             Icon = fields.Optional("icon", Scalars.Path, ""),
             HarvestCapacity = fields.Optional("harvest_capacity", Scalars.Int, 0),
@@ -182,6 +187,7 @@ internal static class DefinitionReader
             SpyEffect = fields.Optional("spy_effect", SpyEffectOf, SpyEffect.None),
             ControlsRobots = fields.Optional("controls_robots", Scalars.Flag, false),
             RearmsAircraft = fields.Optional("rearms_aircraft", Scalars.Flag, false),
+            AircraftDocks = fields.Optional("aircraft_docks", Scalars.Int, 0),
         };
     }
 
@@ -206,6 +212,7 @@ internal static class DefinitionReader
             Fragments = fields.Optional("fragments", Scalars.Int, 0),
             FragmentWeapon = fields.Optional("fragment_weapon", Scalars.Id, ""),
             FragmentRange = fields.Optional("fragment_range", Scalars.FixedNumber, Fixed.Zero),
+            LaunchesSpawns = fields.Optional("launches_spawns", Scalars.Flag, false),
         };
     }
 
@@ -236,6 +243,8 @@ internal static class DefinitionReader
             ParasiteDelay = fields.Optional("parasite_delay", Scalars.Ticks, 0),
             ParasiteNaval = fields.Optional("parasite_naval", Scalars.Flag, false),
             Paralyzes = fields.Optional("paralyzes", Scalars.Flag, false),
+            Repairs = fields.Optional("repairs", Scalars.Flag, false),
+            FreesParasite = fields.Optional("frees_parasite", Scalars.Flag, false),
             InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
         };
     }

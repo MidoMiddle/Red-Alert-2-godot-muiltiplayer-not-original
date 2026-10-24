@@ -125,7 +125,7 @@ public static class SidebarModel
                 var shown = category == ProductionCategory.Infantry
                     ? def.Category == UnitCategory.Infantry
                     : def.Category is UnitCategory.Vehicle or UnitCategory.Naval or UnitCategory.Aircraft;
-                if (def.Faction == state.Faction.Id && shown && UnitTypes.TryGetById(def.Id, out _))
+                if (def.Faction == state.Faction.Id && shown && !def.Spawned && UnitTypes.TryGetById(def.Id, out _))
                 {
                     var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));
                     // The price of the player: a vehicle costs less with a discount (stage 2c).

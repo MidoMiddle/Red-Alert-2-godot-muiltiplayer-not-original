@@ -19,6 +19,27 @@ public static class RepairSystem
     {
         RepairBuildings(world, events);
         RepairVehicles(world, events);
+        HealThemselves(world, events);
+    }
+
+    /// <summary>
+    /// A unit that heals itself (the Super Heavy Tank, RA2 <c>SelfHealing</c>) gains its <see cref="Rules.UnitDef.SelfHeal"/> hit points once a
+    /// second, up to whole, for nothing; one held by a temporal beam does not.
+    /// </summary>
+    private static void HealThemselves(GameWorld world, List<SimEvent>? events)
+    {
+        if (world.CurrentTick % SimulationSettings.DefaultTicksPerSecond != 0)
+        {
+            return;
+        }
+
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Unit { IsAlive: true, ErasedBy: null, Archetype.SelfHeal: > 0 } unit && unit.Hp < unit.MaxHp)
+            {
+                world.SetHp(unit, IntMath.Min(unit.MaxHp, unit.Hp + unit.Archetype.SelfHeal), events);
+            }
+        }
     }
 
     private static void RepairBuildings(GameWorld world, List<SimEvent>? events)

@@ -63,6 +63,13 @@ public static class WeaponSystem
                 continue;
             }
 
+            // A carrier's weapon launches the units it carries at the target instead of a shot.
+            if (rules.Database.Weapons[shot.Weapon].LaunchesSpawns && world.TryGet(shot.Shooter, out var launcher) && launcher is World.Unit carrier)
+            {
+                AmmoSystem.Launch(world, carrier, shot.Target, events);
+                continue;
+            }
+
             Launch(world, rules, shot, events);
         }
 
@@ -334,6 +341,32 @@ public static class WeaponSystem
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// The least range, in leptons, of the weapons that fire at <paramref name="layer"/>, can hurt <paramref name="victim"/> and reach
+    /// <paramref name="distance"/> but for being too near; null when none is too near (the rocket artillery, the dreadnought).
+    /// </summary>
+    internal static int? TooNear(GameRules rules, ImmutableArray<int> weapons, int distance, WeaponTargets layer, Entity victim)
+    {
+        int? least = null;
+        foreach (var index in weapons)
+        {
+            if (index < 0)
+            {
+                continue;
+            }
+
+            var weapon = rules.Database.Weapons[index];
+            var minimum = Aim.Leptons(weapon.MinRange);
+            if ((weapon.Targets & layer) != 0 && minimum > 0 && distance < minimum
+                && TargetingSystem.BestShare(rules, ImmutableArray.Create(index), victim) > 0)
+            {
+                least = IntMath.Max(least ?? 0, minimum);
+            }
+        }
+
+        return least;
     }
 
     /// <summary>Whether the weapon fires at <paramref name="layer"/> and <paramref name="distance"/> leptons is within its range.</summary>

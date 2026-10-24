@@ -92,6 +92,7 @@ alliance_air_force_command:  # radar; builds the aircraft (stage 2b)
   prerequisites: [alliance_ore_refinery]
   spy_effect: reset_map
   rearms_aircraft: true
+  aircraft_docks: 4
 
 alliance_naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   kind: building

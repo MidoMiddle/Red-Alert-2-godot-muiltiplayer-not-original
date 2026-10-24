@@ -73,6 +73,23 @@ public static class PursuitSystem
                 continue;
             }
 
+            // Too near for its weapons (the rocket artillery, the dreadnought): it backs off, straight away from the target, to a cell
+            // past its least range.
+            var distance = DamageCalculator.Distance(unit.Position, goal);
+            if (!crushing && chased is not null && WeaponSystem.TooNear(rules, weapons, distance, layer, chased) is { } least)
+            {
+                // A new way only when the place to back off to moved more than a cell: a new path every look would keep it turning.
+                var away = BackOff(world, unit.Position, goal, least + WorldPos.LeptonsPerCell);
+                if (unit.MoveTarget is not { } going || Chebyshev(going.ToCell(), away.ToCell()) > 1)
+                {
+                    UnitOrders.MoveTo(world, unit, away);
+                    unit.ChaseCell = null;
+                }
+
+                unit.Engaged = true;
+                continue;
+            }
+
             var cell = goal.ToCell();
             var drift = Chebyshev(cell, unit.ChaseCell ?? cell);
             if (unit.ChaseCell is null || (TargetingSystem.IsLookTick(world, unit.Id) && (drift > 1 || (crushing && (drift > 0 || unit.MoveTarget is null)))))
@@ -83,6 +100,23 @@ public static class PursuitSystem
 
             unit.Engaged = true;
         }
+    }
+
+    /// <summary>The point <paramref name="reach"/> leptons from <paramref name="goal"/> straight through <paramref name="from"/>, kept on the map.</summary>
+    private static WorldPos BackOff(GameWorld world, WorldPos from, WorldPos goal, int reach)
+    {
+        var (dx, dy) = ((long)from.X - goal.X, (long)from.Y - goal.Y);
+        var length = IntMath.Max(1, DamageCalculator.Distance(from, goal));
+        if (dx == 0 && dy == 0)
+        {
+            dx = 1;
+        }
+
+        var x = (int)(goal.X + dx * reach / length);
+        var y = (int)(goal.Y + dy * reach / length);
+        var last = (world.WidthCells * WorldPos.LeptonsPerCell) - 1;
+        var bottom = (world.HeightCells * WorldPos.LeptonsPerCell) - 1;
+        return new WorldPos(IntMath.Max(0, IntMath.Min(last, x)), IntMath.Max(0, IntMath.Min(bottom, y)));
     }
 
     /// <summary>

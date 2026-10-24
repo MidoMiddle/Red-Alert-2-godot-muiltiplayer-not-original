@@ -161,7 +161,8 @@ public sealed class AllianceTests
         Assert.DoesNotContain(units, unit => unit.AbilityLater);
         // Every unit can be built now: ships since stage 2a, aircraft since 2b; their weapons come with stage 3.
         Assert.DoesNotContain(units, unit => unit.AvailableLater);
-        Assert.Equal(4, units.Count(unit => unit.Category == UnitCategory.Aircraft));
+        // Four aircraft to build; the carrier's Hornet is launched, never built.
+        Assert.Equal(4, units.Count(unit => unit.Category == UnitCategory.Aircraft && !unit.Spawned));
     }
 
     [Fact]

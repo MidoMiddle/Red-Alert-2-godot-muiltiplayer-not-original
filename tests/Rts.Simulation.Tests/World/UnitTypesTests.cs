@@ -47,7 +47,7 @@ public sealed class UnitTypesTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(48)]
+    [InlineData(49)]
     [InlineData(255)]
     public void Unknown_types_are_not_known(int type)
     {

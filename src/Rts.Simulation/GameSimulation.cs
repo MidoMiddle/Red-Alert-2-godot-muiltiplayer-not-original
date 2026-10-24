@@ -148,7 +148,7 @@ public sealed class GameSimulation
         Probe?.Invoke("index");
         EntrySystem.Update(World, _events);
         BombSystem.Update(World, _events);
-        AmmoSystem.Update(World);
+        AmmoSystem.Update(World, _events);
 
         // 5. Ore grows and spreads (by its interval), the sources erupt (M3 step 16), then technologies, when the buildings changed.
         OreGrowthSystem.Update(World);

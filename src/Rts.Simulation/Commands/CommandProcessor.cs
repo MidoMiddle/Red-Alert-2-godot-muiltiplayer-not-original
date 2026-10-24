@@ -427,6 +427,12 @@ public static class CommandProcessor
         var room = category is ProductionCategory.Building or ProductionCategory.Defense
             ? 1 - queue.Count
             : IntMath.Min(command.Count, ProductionRules.MaxUnitQueue - queue.Count);
+        if (command.Kind == ProductionKind.Unit && rules.Units[command.DefIndex].Ammo > 0
+            && !rules.Units[command.DefIndex].Spawned)
+        {
+            // Aircraft that rearm need a free pad each (RA2 AirportBound): those flying and those in the queues count.
+            room = IntMath.Min(room, AmmoSystem.FreePads(world, command.Player));
+        }
         for (var i = 0; i < room; i++)
         {
             queue.Add(new ProductionItem(command.Kind, command.DefIndex));
