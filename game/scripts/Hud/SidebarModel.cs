@@ -128,7 +128,9 @@ public static class SidebarModel
                 if (def.Faction == state.Faction.Id && shown && UnitTypes.TryGetById(def.Id, out _))
                 {
                     var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));
-                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, def.Name, def.Cost, state.CanBuildUnit(i), def.Prerequisites, owned));
+                    // The price of the player: a vehicle costs less with a discount (stage 2c).
+                    var cost = ProductionRules.CostOf(rules, state, ProductionKind.Unit, i);
+                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, def.Name, cost, state.CanBuildUnit(i), def.Prerequisites, owned));
                 }
             }
         }

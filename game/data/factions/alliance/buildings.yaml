@@ -108,7 +108,7 @@ alliance_naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   exit_cell: [1, 4]
   prerequisites: [alliance_ore_refinery]
 
-alliance_service_depot:  # vehicle repair, M11
+alliance_service_depot:  # repairs the vehicles and ships beside it (stage 2c)
   kind: building
   inherits: base_building
   name: Repair Bay
@@ -119,7 +119,7 @@ alliance_service_depot:  # vehicle repair, M11
   sight: 5
   footprint: [3, 3]
   power: -25
-  ability_later: true
+  repairs_vehicles: true
   prerequisites: [alliance_war_factory]
 
 alliance_battle_lab:  # high tech: opens the late buildings
@@ -135,7 +135,7 @@ alliance_battle_lab:  # high tech: opens the late buildings
   power: -100
   prerequisites: [alliance_war_factory, alliance_air_force_command]
 
-alliance_ore_purifier:  # more credits from the ore, M11
+alliance_ore_purifier:  # the ore brings 25% more (stage 2c)
   kind: building
   inherits: base_building
   name: Ore Refining Annex
@@ -146,7 +146,7 @@ alliance_ore_purifier:  # more credits from the ore, M11
   sight: 5
   footprint: [3, 3]
   power: -200
-  ability_later: true
+  income_bonus: 25%
   prerequisites: [alliance_battle_lab]
 
 alliance_spy_satellite_uplink:  # reveals the map, M11; a radar meanwhile

@@ -26,7 +26,7 @@ internal static class DefinitionReader
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
-        "prerequisites", "model", "icon", "ability_later", "water",
+        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
     ];
 
     private static readonly string[] WeaponKeys =
@@ -146,6 +146,10 @@ internal static class DefinitionReader
             Icon = fields.Optional("icon", Scalars.Path, ""),
             AbilityLater = fields.Optional("ability_later", Scalars.Flag, false),
             Water = fields.Optional("water", Scalars.Flag, false),
+            RepairsVehicles = fields.Optional("repairs_vehicles", Scalars.Flag, false),
+            VehicleDiscountPercent = WholePercent(fields.Optional("vehicle_discount", Scalars.Percent, Fixed.Zero)),
+            IncomeBonusPercent = WholePercent(fields.Optional("income_bonus", Scalars.Percent, Fixed.Zero)),
+            DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
         };
     }
 

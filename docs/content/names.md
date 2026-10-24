@@ -20,11 +20,11 @@
 | tesla_coil | Tesla Coil | электрооборона | Tesla Coil | работает |
 | flak_cannon | Flak Cannon | ПВО | Flak Cannon | работает: бьёт по авиации (этап 2б) |
 | naval_shipyard | Dockyard | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
-| service_depot | Field Workshop | ремонт техники | Service Depot | позже |
-| nuclear_reactor | Atomic Plant | энергия +2000 | Nuclear Reactor | энергия работает; взрыв при гибели позже |
+| service_depot | Field Workshop | ремонт техники | Service Depot | работает: чинит технику и корабли рядом, за деньги (этап 2в) |
+| nuclear_reactor | Atomic Plant | энергия +2000 | Nuclear Reactor | работает: энергия; взрывается, если его разрушили выстрелом (этап 2в) |
 | iron_curtain | Bastion Field Projector | неуязвимость группе | Iron Curtain | позже (M11a) |
 | nuclear_missile_silo | Strategic Missile Silo | ракетный удар | Nuclear Missile Silo | позже (M11a) |
-| industrial_plant | Heavy Industry Complex | скидка на технику | Industrial Plant | позже |
+| industrial_plant | Heavy Industry Complex | скидка на технику | Industrial Plant | работает: техника, корабли и самолёты на 25 % дешевле (этап 2в) |
 | battle_bunker | Fortified Bunker | гарнизон | Battle Bunker | позже (M11a) |
 
 Имена первых одиннадцати пришли из M3 и тоже рабочие: «Tesla Coil», «War Factory», «Flak Cannon» совпадают с RA2 и заменяются вместе с остальными.
@@ -40,9 +40,9 @@
 | alliance_war_factory | Vehicle Plant | техника | War Factory | работает |
 | alliance_air_force_command | Air Command | радар; авиация | Airforce Command HQ | работает: радар и производство авиации (этап 2б) |
 | alliance_naval_shipyard | Harbor | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
-| alliance_service_depot | Repair Bay | ремонт техники | Service Depot | позже |
+| alliance_service_depot | Repair Bay | ремонт техники | Service Depot | работает: чинит технику и корабли рядом, за деньги (этап 2в) |
 | alliance_battle_lab | Research Lab | высокий тех | Battle Lab | работает |
-| alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | позже |
+| alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | работает: руда приносит на 25 % больше (этап 2в) |
 | alliance_spy_satellite_uplink | Orbital Uplink | открывает карту | Spy Satellite Uplink | радар работает; карта позже |
 | alliance_robot_control_center | Drone Control Hub | управление роботами | Robot Control Center | позже |
 | alliance_chronosphere | Phase Gate | переброска группы | Chronosphere | позже (M11c) |

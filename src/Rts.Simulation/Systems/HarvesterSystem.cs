@@ -308,12 +308,12 @@ public static class HarvesterSystem
     }
 
     /// <summary>
-    /// The credits of <paramref name="ore"/> unloaded: as much, and the income bonus of the player on top (M8 step 2), its hundredths kept
-    /// until they make a credit.
+    /// The credits of <paramref name="ore"/> unloaded: as much, and the income bonus of the player on top — its level's (M8 step 2) and
+    /// its buildings' (stage 2c), added — its hundredths kept until they make a credit.
     /// </summary>
     internal static void Earn(PlayerState player, int ore)
     {
-        var hundredths = ore * (100 + player.Modifiers.IncomeBonusPercent) + player.IncomeCarry;
+        var hundredths = ore * (100 + player.Modifiers.IncomeBonusPercent + player.BuildingIncomeBonusPercent) + player.IncomeCarry;
         player.Credits += hundredths / 100;
         player.IncomeCarry = hundredths % 100;
     }

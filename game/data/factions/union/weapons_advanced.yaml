@@ -1,0 +1,9 @@
+# The weapons of the late buildings of the Union (stage 2c of filling the game; docs/content/names.md).
+atomic_plant_blast:  # what the atomic plant leaves when a shot brings it down (death_weapon)
+  kind: weapon
+  name: Atomic Blast
+  damage: 600
+  reload: 1s
+  range: 1
+  projectile: shell
+  warhead: atomic_blast

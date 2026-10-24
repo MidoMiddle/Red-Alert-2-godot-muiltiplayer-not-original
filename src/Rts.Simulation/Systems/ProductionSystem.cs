@@ -88,8 +88,10 @@ public static class ProductionSystem
         GameWorld world, PlayerState player, ProductionItem item, int total, ProductionCategory category, int factories, List<SimEvent>? events)
     {
         var progress = IntMath.Min(total, item.Progress + RatePermille(world, player, factories));
-        var due = (int)((long)ProductionRules.CostOf(world.Rules.Database, item.Kind, item.DefIndex) * progress / total);
-        var payment = due - item.Paid;
+        // The price of the player (stage 2c: a vehicle with a discount); a discount that comes midway lowers what is still to pay, and
+        // never gives back what was paid.
+        var due = (int)((long)ProductionRules.CostOf(world.Rules.Database, player, item.Kind, item.DefIndex) * progress / total);
+        var payment = IntMath.Max(0, due - item.Paid);
         if (payment > player.Credits)
         {
             if (!item.WaitingForFunds)

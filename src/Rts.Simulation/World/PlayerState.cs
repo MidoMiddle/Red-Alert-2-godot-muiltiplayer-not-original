@@ -64,6 +64,12 @@ public sealed class PlayerState
     /// <summary>The player drains more than it produces (4.11).</summary>
     public bool LowPower { get; internal set; }
 
+    /// <summary>How many percent less vehicles, ships and aircraft cost: the best of the player's ready buildings (stage 2c).</summary>
+    public int VehicleDiscountPercent { get; internal set; }
+
+    /// <summary>How many percent more the ore brings: the best of the player's ready buildings (stage 2c), on top of its level's bonus.</summary>
+    public int BuildingIncomeBonusPercent { get; internal set; }
+
     internal List<EntityId> BuildingList { get; } = [];
 
     /// <summary>

@@ -21,7 +21,7 @@ naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   exit_cell: [1, 4]
   prerequisites: [refinery]
 
-service_depot:  # vehicle repair, M11
+service_depot:  # repairs the vehicles and ships beside it (stage 2c)
   kind: building
   inherits: base_building
   name: Field Workshop
@@ -32,10 +32,10 @@ service_depot:  # vehicle repair, M11
   sight: 5
   footprint: [3, 3]
   power: -20
-  ability_later: true
+  repairs_vehicles: true
   prerequisites: [war_factory]
 
-nuclear_reactor:  # late power, +2000; the blast when it falls comes later
+nuclear_reactor:  # late power, +2000; blows up when a shot brings it down (stage 2c)
   kind: building
   inherits: base_building
   name: Atomic Plant
@@ -47,6 +47,7 @@ nuclear_reactor:  # late power, +2000; the blast when it falls comes later
   armor: concrete
   footprint: [4, 4]
   power: 2000
+  death_weapon: atomic_plant_blast
   prerequisites: [tech_center]
 
 iron_curtain:  # superweapon: a group made invulnerable for a while, M11a
@@ -79,7 +80,7 @@ nuclear_missile_silo:  # superweapon: a missile strike, M11a
   ability_later: true
   prerequisites: [tech_center]
 
-industrial_plant:  # cheaper vehicles, M11
+industrial_plant:  # vehicles, ships and aircraft 25% cheaper (stage 2c)
   kind: building
   inherits: base_building
   name: Heavy Industry Complex
@@ -90,7 +91,7 @@ industrial_plant:  # cheaper vehicles, M11
   sight: 4
   footprint: [3, 3]
   power: -200
-  ability_later: true
+  vehicle_discount: 25%
   prerequisites: [tech_center]
 
 battle_bunker:  # infantry garrison, M11a; stands without a weapon until then

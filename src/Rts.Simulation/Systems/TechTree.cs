@@ -31,13 +31,21 @@ public static class TechTree
         foreach (var player in world.Players)
         {
             owned.Clear();
+            var (discount, income) = (0, 0);
             foreach (var entity in world.Entities)
             {
                 if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && building.Owner == player.Id)
                 {
                     owned.Add(def.Id);
+
+                    // The cheaper vehicles and the richer ore of stage 2c: the best building counts, two do not add up.
+                    discount = Math.IntMath.Max(discount, def.VehicleDiscountPercent);
+                    income = Math.IntMath.Max(income, def.IncomeBonusPercent);
                 }
             }
+
+            player.VehicleDiscountPercent = discount;
+            player.BuildingIncomeBonusPercent = income;
 
             var faction = player.Faction.Id;
             for (var i = 0; i < units.Length; i++)

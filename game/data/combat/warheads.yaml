@@ -52,3 +52,12 @@ missile:  # the anti-tank rocket of the Rocket Trooper (M4 plan, 4.18)
   spread: 0.3
   percent_at_max: 50%
   infantry_death: explode
+
+atomic_blast:  # RA2 NUKE of the nuclear reactor when it falls (stage 2c): everything around, buildings and walls too
+  kind: warhead
+  name: Atomic Blast
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  spread: 5
+  percent_at_max: 25%
+  wall_damage: true
+  infantry_death: explode

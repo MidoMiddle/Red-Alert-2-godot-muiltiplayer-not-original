@@ -99,4 +99,16 @@ public sealed record BuildingDef : IDefinition
 
     /// <summary>The building stands on deep water, not on land (the shipyards, stage 2a): every cell of its footprint is deep.</summary>
     public bool Water { get; init; }
+
+    /// <summary>Vehicles and ships of the owner that stand still beside it are repaired, at the price of repairing (stage 2c).</summary>
+    public bool RepairsVehicles { get; init; }
+
+    /// <summary>Vehicles, ships and aircraft cost its owner this many percent less while it stands ready (stage 2c); the best counts.</summary>
+    public int VehicleDiscountPercent { get; init; }
+
+    /// <summary>The ore unloaded brings its owner this many percent more while it stands ready (stage 2c); the best counts.</summary>
+    public int IncomeBonusPercent { get; init; }
+
+    /// <summary>The weapon that goes off where it stood when a shot brings it down (stage 2c: the atomic plant); empty for none.</summary>
+    public string DeathWeapon { get; init; } = "";
 }

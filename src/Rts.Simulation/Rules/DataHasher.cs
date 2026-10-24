@@ -128,6 +128,10 @@ public static class DataHasher
             hash.Add(building.Threat);
             hash.Add(building.Sight);
             hash.Add(building.Water);
+            hash.Add(building.RepairsVehicles);
+            hash.Add(building.VehicleDiscountPercent);
+            hash.Add(building.IncomeBonusPercent);
+            Add(hash, building.DeathWeapon);
         }
 
         hash.Add(rules.Factions.Length);

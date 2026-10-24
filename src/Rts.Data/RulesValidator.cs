@@ -201,6 +201,16 @@ internal static class RulesValidator
             Prerequisites(building.Id, building.Prerequisites);
             ArmorOf(building.Id, building.Armor);
             WeaponOf(building.Id, "primary", building.Primary);
+            WeaponOf(building.Id, "death_weapon", building.DeathWeapon);
+            if (building.VehicleDiscountPercent is < 0 or > 90)
+            {
+                Error(building.Id, "vehicle_discount", $"'vehicle_discount' of '{building.Id}' must be 0% to 90%");
+            }
+
+            if (building.IncomeBonusPercent is < 0 or > 100)
+            {
+                Error(building.Id, "income_bonus", $"'income_bonus' of '{building.Id}' must be 0% to 100%");
+            }
         }
 
         /// <summary>

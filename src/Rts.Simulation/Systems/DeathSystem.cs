@@ -26,11 +26,23 @@ public static class DeathSystem
         events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, cause, weapon, killerOwner));
     }
 
-    /// <summary>The building falls (<see cref="GameWorld.DestroyBuilding"/>) to a shot of <paramref name="killer"/>, a unit of <paramref name="killerOwner"/>.</summary>
+    /// <summary>
+    /// The building falls (<see cref="GameWorld.DestroyBuilding"/>) to a shot of <paramref name="killer"/>, a unit of
+    /// <paramref name="killerOwner"/>. One with a <see cref="Rules.BuildingDef.DeathWeapon"/> (stage 2c: the atomic plant) goes off where
+    /// it stood: a shot of that weapon lands on its centre the next tick and hurts all around, its owner's too. Sold or fallen with its
+    /// owner, it does not.
+    /// </summary>
     public static void Destroy(GameWorld world, Building building, EntityId killer, PlayerId killerOwner, int weapon, List<SimEvent>? events)
     {
         world.DestroyBuilding(building, events);
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
+        if (building.Def is { DeathWeapon.Length: > 0 } def && world.Rules.Database.IndexOfWeapon(def.DeathWeapon) is >= 0 and var blast)
+        {
+            var centre = Combat.Aim.CentreOf(building);
+            var shot = world.Launch(building.Owner, building.Id, blast, null, centre, centre);
+            shot.FlightTicks = 1;
+            shot.TicksLeft = 1;
+        }
     }
 
     /// <summary>The building falls without a shot — <see cref="DeathCause.Defeat"/> of its owner (M5 step 10): no killer, no weapon.</summary>
