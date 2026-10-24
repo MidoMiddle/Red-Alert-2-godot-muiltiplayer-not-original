@@ -75,6 +75,13 @@ public partial class AppSettings : Node
         Save();
     }
 
+    /// <summary>The names of RA2 for units and buildings on screen, or ours (<see cref="Hud.DisplayNames"/>).</summary>
+    public void SetRa2Names(bool enabled)
+    {
+        Values = Values with { Ra2Names = enabled };
+        Save();
+    }
+
     public void SetPlaytestSurvey(bool enabled)
     {
         Values = Values with { PlaytestSurvey = enabled };

@@ -1,11 +1,10 @@
-[gd_resource type="AudioBusLayout" load_steps=3 format=3]
+[gd_resource type="AudioBusLayout" format=3 uid="uid://df0ojfroh1633"]
 
 [sub_resource type="AudioEffectBandPassFilter" id="radio_band"]
 cutoff_hz = 1800.0
 resonance = 0.6
 
 [sub_resource type="AudioEffectDistortion" id="radio_grit"]
-mode = 0
 drive = 0.12
 
 [resource]

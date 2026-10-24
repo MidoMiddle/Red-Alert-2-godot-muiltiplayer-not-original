@@ -23,7 +23,8 @@ public partial class DebugOverlay : CanvasLayer
     private const string SharedControls =
         "Drag LMB box select · Shift+click add/remove · double click same type · Ctrl+1…9 group · 1…9 select (twice: camera) · Shift+1…9 add · " +
         "Shift+order queue · Ctrl+Shift+order attack-move · Z+orders waypoints, then order without Z · S stop · X scatter\n" +
-        "K damage map object, bridge or building (debug) · Alt+LMB spawn · B spawn (again: type) · T same type (twice: map) · E select all · Esc cancel or menu · P pause · N step · +/- speed · F5 save replay · F9 play replay · R new session · " +
+        "D deploy · Alt+order force move · T same type (twice: map) · P combat units (twice: map) · N/M idle unit · H base · Space last event · Q/W/E/R tabs · K/L repair/sell · " +
+        "O damage under the cursor (debug) · B spawn (again: type) · Esc cancel or menu · Pause · . step · +/- speed · F5 save replay · F9 play replay · Insert new session · " +
         "arrows/edge/wheel camera · F1…F4 bookmark (Ctrl: save)\n" +
         "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph · F10 fog revealed · F12 AI";
 

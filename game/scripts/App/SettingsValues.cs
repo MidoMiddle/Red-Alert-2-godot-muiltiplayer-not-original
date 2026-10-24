@@ -44,7 +44,8 @@ public sealed record SettingsValues(
     bool EdgeScroll,
     bool CameraDrag,
     HealthBarMode HealthBars = HealthBarMode.Damaged,
-    bool PlaytestSurvey = false)
+    bool PlaytestSurvey = false,
+    bool Ra2Names = true)
 {
     /// <summary>Layout version of the file, written as <c>meta/format</c>.</summary>
     public const int FormatVersion = 1;
@@ -74,6 +75,7 @@ public sealed record SettingsValues(
     private const string CameraDragKey = "controls/camera_drag";
     private const string HealthBarsKey = "interface/health_bars";
     private const string PlaytestSurveyKey = "interface/playtest_survey";
+    private const string Ra2NamesKey = "interface/ra2_names";
 
     /// <summary>Resolutions of the Graphics tab. This is the size of a windowed game; fullscreen uses the screen.</summary>
     public static WindowSize[] ResolutionChoices { get; } =
@@ -88,7 +90,8 @@ public sealed record SettingsValues(
 
     /// <summary>
     /// What the game uses without a settings file: windowed 1280 × 720, VSync, no frame limit, 100 % and full volume, Classic
-    /// scheme, scroll speed 5, edge scrolling and camera drag on, health bars of the selected and the damaged, no playtest survey (M8 step 14).
+    /// scheme, scroll speed 5, edge scrolling and camera drag on, health bars of the selected and the damaged, no playtest survey (M8 step 14),
+    /// the names of RA2 on screen (while there are no models).
     /// </summary>
     public static SettingsValues Defaults { get; } = new(
         WindowMode.Windowed,
@@ -118,7 +121,8 @@ public sealed record SettingsValues(
             ParseBool(raw, EdgeScrollKey, fallback.EdgeScroll),
             ParseBool(raw, CameraDragKey, fallback.CameraDrag),
             ParseHealthBars(raw, fallback.HealthBars),
-            ParseBool(raw, PlaytestSurveyKey, fallback.PlaytestSurvey));
+            ParseBool(raw, PlaytestSurveyKey, fallback.PlaytestSurvey),
+            ParseBool(raw, Ra2NamesKey, fallback.Ra2Names));
     }
 
     /// <summary>The values as file contents, keyed by <c>section/key</c>. Every known key is written.</summary>
@@ -140,6 +144,7 @@ public sealed record SettingsValues(
             [CameraDragKey] = CameraDrag ? "true" : "false",
             [HealthBarsKey] = HealthBars.ToString().ToLowerInvariant(),
             [PlaytestSurveyKey] = PlaytestSurvey ? "true" : "false",
+            [Ra2NamesKey] = Ra2Names ? "true" : "false",
         };
     }
 

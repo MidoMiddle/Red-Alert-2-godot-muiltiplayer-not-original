@@ -97,8 +97,11 @@ public static class SidebarModel
     /// The squares of a tab, in the order of the data: every item of the player's faction in the tab's category. Units are only those
     /// the simulation knows how to drive. The construction yard is left out: it comes from the MCV.
     /// </summary>
-    public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group)
+    public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null)
     {
+        // The name on screen of an id and its name of the data (DisplayNames: those of RA2 for now).
+        string Name(string id, string name) => nameOf?.Invoke(id, name) ?? name;
+
         var rules = world.Rules.Database;
         var state = world.Player(player);
         var category = CategoryOf(group);
@@ -112,7 +115,7 @@ public static class SidebarModel
                 var def = rules.Buildings[i];
                 if (def.Faction == state.Faction.Id && def.Category == category && def.Id != state.Faction.ConstructionYard)
                 {
-                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, def.Name, def.Cost, state.CanBuildBuilding(i), def.Prerequisites, owned));
+                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, Name(def.Id, def.Name), def.Cost, state.CanBuildBuilding(i), def.Prerequisites, owned, nameOf));
                 }
             }
         }
@@ -130,7 +133,7 @@ public static class SidebarModel
                     var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));
                     // The price of the player: a vehicle costs less with a discount (stage 2c).
                     var cost = ProductionRules.CostOf(rules, state, ProductionKind.Unit, i);
-                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, def.Name, cost, state.CanBuildUnit(i), def.Prerequisites, owned));
+                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, Name(def.Id, def.Name), cost, state.CanBuildUnit(i), def.Prerequisites, owned, nameOf));
                 }
             }
         }
@@ -172,7 +175,8 @@ public static class SidebarModel
         int cost,
         bool available,
         ImmutableArray<string> prerequisites,
-        HashSet<string> owned)
+        HashSet<string> owned,
+        Func<string, string, string>? nameOf = null)
     {
         ProductionItem? first = null;
         var count = 0;
@@ -186,7 +190,7 @@ public static class SidebarModel
         }
 
         var availableLater = kind == ProductionKind.Unit && rules.Units[index].AvailableLater;
-        var missing = available || availableLater ? "" : Missing(rules, prerequisites, owned);
+        var missing = available || availableLater ? "" : Missing(rules, prerequisites, owned, nameOf);
         var later = kind == ProductionKind.Building ? rules.Buildings[index].AbilityLater : rules.Units[index].AbilityLater;
         if (first is not null)
         {
@@ -203,7 +207,7 @@ public static class SidebarModel
         return new Cameo(kind, index, name, cost, free, 0f, 0, missing) { AbilityLater = later, AvailableLater = availableLater };
     }
 
-    private static string Missing(RulesDatabase rules, ImmutableArray<string> prerequisites, HashSet<string> owned)
+    private static string Missing(RulesDatabase rules, ImmutableArray<string> prerequisites, HashSet<string> owned, Func<string, string, string>? nameOf)
     {
         var names = new List<string>();
         foreach (var id in prerequisites)
@@ -211,7 +215,7 @@ public static class SidebarModel
             if (!owned.Contains(id))
             {
                 var index = rules.IndexOfBuilding(id);
-                names.Add(index >= 0 ? rules.Buildings[index].Name : id);
+                names.Add(index >= 0 ? nameOf?.Invoke(id, rules.Buildings[index].Name) ?? rules.Buildings[index].Name : id);
             }
         }
 

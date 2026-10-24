@@ -155,7 +155,7 @@ public partial class Sidebar : Control
         Minimap.Online = MinimapRule.Online(world, player, _host.RadarRule);
         UpdateTabs(world, player);
 
-        var cameos = SidebarModel.Cameos(world, player, _group);
+        var cameos = SidebarModel.Cameos(world, player, _group, NameOf);
         for (var i = 0; i < _icons.Count; i++)
         {
             _icons[i].Cameo = i < cameos.Count && SidebarModel.TabOpen(world, player, _group) ? cameos[i] : null;
@@ -167,6 +167,10 @@ public partial class Sidebar : Control
         _sell.Disabled = _host.IsPlayback;
         _repair.Disabled = _host.IsPlayback;
     }
+
+    /// <summary>The name on screen of a unit or building: RA2's while the setting says so (DisplayNames).</summary>
+    private string NameOf(string id, string name) =>
+        DisplayNames.Of(id, name, AppSettings.Instance?.Values.Ra2Names ?? true, key => Tr(key));
 
     /// <summary>
     /// A button for every ready superweapon of the player (stage 2d): its name and the time it still charges, or Ready; pressed, it arms
@@ -195,7 +199,7 @@ public partial class Sidebar : Control
 
             var ready = building.ChargeLeft == 0;
             var seconds = (building.ChargeLeft + Rts.Simulation.SimulationSettings.DefaultTicksPerSecond - 1) / Rts.Simulation.SimulationSettings.DefaultTicksPerSecond;
-            var name = building.Def?.Name ?? Tr("UI_SIDEBAR_PARADROP");
+            var name = building.Def is { } named ? NameOf(named.Id, named.Name) : Tr("UI_SIDEBAR_PARADROP");
             button.Text = $"{name}  {(ready ? Tr("UI_SIDEBAR_SUPERWEAPON_READY") : $"{seconds / 60}:{seconds % 60:00}")}";
             button.Disabled = !ready || _host!.IsPlayback;
             button.SetPressedNoSignal(_input!.Tool == PointerTool.Superweapon && _input.Superweapon.Building == building.Id);

@@ -57,6 +57,7 @@ public partial class Settings : Control
     private CheckBox _edgeScroll = null!;
     private CheckBox _cameraDrag = null!;
     private CheckBox _playtestSurvey = null!;
+    private CheckBox _ra2Names = null!;
     private OptionButton _healthBars = null!;
 
     private static AppSettings Store =>
@@ -242,6 +243,13 @@ public partial class Settings : Control
         AddRow(rows, "UI_SETTINGS_CONFIRM_SELL", NewCheckBox(true), locked: true);
         AddRow(rows, "UI_SETTINGS_HINTS", NewCheckBox(true), locked: true);
 
+        // The names of RA2 on screen while there are no models and icons (DisplayNames).
+        _ra2Names = NewCheckBox(true);
+        _ra2Names.Name = "Ra2Names";
+        _ra2Names.TooltipText = Tr("UI_SETTINGS_RA2_NAMES_HINT");
+        _ra2Names.Toggled += enabled => Store.SetRa2Names(enabled);
+        AddRow(rows, "UI_SETTINGS_RA2_NAMES", _ra2Names);
+
         // M8 step 14: the survey of the tests by people on the results screen.
         _playtestSurvey = NewCheckBox(false);
         _playtestSurvey.Name = "PlaytestSurvey";
@@ -426,6 +434,7 @@ public partial class Settings : Control
         _cameraDrag.SetPressedNoSignal(values.CameraDrag);
         _healthBars.Selected = (int)values.HealthBars;
         _playtestSurvey.SetPressedNoSignal(values.PlaytestSurvey);
+        _ra2Names.SetPressedNoSignal(values.Ra2Names);
     }
 
     /// <summary>Opens the tab named by <c>--tab</c>, so the tabs can be checked from the command line.</summary>
