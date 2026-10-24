@@ -116,8 +116,47 @@ public static class SidebarModel
             && (ProductionRules.HasFactory(world, player, ProductionCategory.Naval) || ProductionRules.HasFactory(world, player, ProductionCategory.Aircraft)));
 
     /// <summary>
-    /// The squares of a tab, in the order of the data: every item of the player's faction in the tab's category. Units are only those
-    /// the simulation knows how to drive. The construction yard is left out: it comes from the MCV.
+    /// The order of the squares of RA2 (the owner's list, 2026-10-24): every tab top to bottom, left to right, as the items open with
+    /// the buildings — the Allies, then the Soviets. The items the list does not name (the countries' own, those of Yuri's Revenge, the
+    /// service depot) stand by the tech of theirs, next to the nearest ones; an item not here comes last, in the order of the data.
+    /// </summary>
+    private static readonly string[] Ra2Order =
+    [
+        // Buildings (Q).
+        "alliance_power_plant", "alliance_ore_refinery", "alliance_barracks", "alliance_war_factory", "alliance_air_force_command",
+        "alliance_naval_shipyard", "alliance_service_depot", "alliance_battle_lab", "alliance_ore_purifier", "alliance_spy_satellite_uplink",
+        "alliance_robot_control_center", "alliance_chronosphere", "alliance_weather_control_device",
+        "reactor", "refinery", "barracks", "war_factory", "radar", "naval_shipyard", "service_depot", "tech_center", "nuclear_reactor",
+        "industrial_plant", "iron_curtain", "nuclear_missile_silo",
+
+        // Defenses (W).
+        "alliance_wall", "alliance_pillbox", "alliance_patriot_missile_system", "alliance_prism_tower", "alliance_gap_generator",
+        "alliance_grand_cannon",
+        "wall", "sentry_bunker", "flak_cannon", "tesla_coil", "battle_bunker",
+
+        // Infantry (E).
+        "alliance_attack_dog", "alliance_rifleman", "alliance_engineer", "alliance_rocketeer", "alliance_spy", "alliance_sniper",
+        "alliance_tanya", "alliance_chrono_legionnaire",
+        "attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator",
+
+        // Vehicles and aircraft (R).
+        "alliance_harvester", "alliance_light_tank", "alliance_ifv", "alliance_tank_destroyer", "alliance_mirage_tank", "alliance_prism_tank",
+        "alliance_robot_tank", "alliance_mcv", "alliance_harrier", "alliance_black_eagle", "alliance_nighthawk",
+        "alliance_amphibious_transport", "alliance_destroyer", "alliance_aegis_cruiser", "alliance_dolphin", "alliance_aircraft_carrier",
+        "harvester", "heavy_tank", "support_vehicle", "terror_drone", "demolition_truck", "rocket_artillery", "tesla_tank", "apocalypse_tank",
+        "mcv", "kirov_airship", "hover_transport", "typhoon_sub", "sea_scorpion", "giant_squid", "dreadnought",
+    ];
+
+    /// <summary>The place of an item in the order of RA2 (<see cref="Ra2Order"/>); one not named comes after all of them.</summary>
+    public static int Ra2Place(string id)
+    {
+        var place = Array.IndexOf(Ra2Order, id);
+        return place < 0 ? Ra2Order.Length : place;
+    }
+
+    /// <summary>
+    /// The squares of a tab, in the order of RA2 (<see cref="Ra2Place"/>): every item of the player's faction in the tab's category. Units
+    /// are only those the simulation knows how to drive. The construction yard is left out: it comes from the MCV.
     /// </summary>
     public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null)
     {
@@ -164,8 +203,12 @@ public static class SidebarModel
             }
         }
 
-        return cameos;
+        // A stable sort: the items not named keep the order of the data.
+        return [.. cameos.OrderBy(cameo => Ra2Place(IdOf(rules, cameo)))];
     }
+
+    private static string IdOf(RulesDatabase rules, Cameo cameo) =>
+        cameo.Kind == ProductionKind.Building ? rules.Buildings[cameo.DefIndex].Id : rules.Units[cameo.DefIndex].Id;
 
     /// <summary>
     /// A left click: a ready building goes to the placement mode, a paused item goes on (the order command resumes it), anything that

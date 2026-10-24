@@ -50,6 +50,12 @@
     <Compile Include="../../game/scripts/Matches/SkirmishConfig.cs" Link="Client/SkirmishConfig.cs" />
   </ItemGroup>
 
+  <!-- The sidebar of the client: the order of its squares by the game data. Pure, without Godot. -->
+  <ItemGroup>
+    <Compile Include="../../game/scripts/Hud/SidebarModel.cs" Link="Client/Hud/SidebarModel.cs" />
+    <Compile Include="../../game/scripts/Hud/SidebarLayout.cs" Link="Client/Hud/SidebarLayout.cs" />
+  </ItemGroup>
+
   <!-- The climate looks and the ground materials of the client (docs/implementation/M7_maps.md, 4.12): pure, without Godot. -->
   <ItemGroup>
     <Compile Include="../../game/scripts/Climates/ClimateLook.cs" Link="Client/ClimateLook.cs" />

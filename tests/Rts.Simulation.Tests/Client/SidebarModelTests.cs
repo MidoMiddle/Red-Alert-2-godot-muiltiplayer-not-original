@@ -87,12 +87,12 @@ public sealed class SidebarModelTests
     }
 
     [Fact]
-    public void A_tab_lists_the_items_of_its_category_in_data_order_without_the_construction_yard()
+    public void A_tab_lists_the_items_of_its_category_in_the_order_of_ra2_without_the_construction_yard()
     {
         var simulation = WithYard();
 
-        Assert.Equal(["barracks", "radar", "reactor", "refinery", "tech_center", "war_factory"], Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
-        Assert.Equal(["flak_cannon", "sentry_bunker", "tesla_coil", "wall"], Tab(simulation, BuildGroup.Defense).Select(c => c.Name));
+        Assert.Equal(["reactor", "refinery", "barracks", "war_factory", "radar", "tech_center"], Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
+        Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil"], Tab(simulation, BuildGroup.Defense).Select(c => c.Name));
         Assert.Equal(["conscript", "engineer", "rocketeer"], Tab(simulation, BuildGroup.Infantry).Select(c => c.Name));
         Assert.All(Tab(simulation, BuildGroup.Infantry), cameo => Assert.Equal(ProductionKind.Unit, cameo.Kind));
     }
