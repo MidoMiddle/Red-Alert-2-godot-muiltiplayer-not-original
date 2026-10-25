@@ -13,28 +13,33 @@
 # (0), offset [x, y, z] in cells ([0, 0, 0]), jitter — the share the size of each varies either way, 0…0.5 (0), spin — each turned
 # any way (false), height in cells for the bars over a building (its look's when 0), climates — the climates it is drawn in (all
 # when left out). The pick goes by the cell: the same tree is the same cactus every time, neighbours differ.
-# damaged, occupied, ruins — a building's file in its states: critically damaged (under a quarter of its hit points, its soldiers
-# come out), with soldiers inside, and fallen (the ruins stay on its footprint); without one, the file above is drawn. Its nodes
-# fire_1, fire_2… stand the flames of a damaged one.
+# damaged, damaged_occupied, occupied, abandoned, ruins — a building's file in its states: damaged (a quarter to a half of its hit
+# points), with soldiers inside (damaged_occupied for a damaged one, occupied for a whole one), abandoned (under a quarter: its soldiers
+# come out, the file of the critically damaged one) and fallen (the ruins stay on its footprint); without one, the file above is drawn.
+# Its nodes fire_1, fire_2… stand the flames of an abandoned one.
 format: models/1
 models:
-  # The civilian houses of the map (docs/map_elements/11_civilian_buildings): the house whole, the same house when it is critically
-  # damaged or holds soldiers, and its ruins once it has fallen.
+  # The civilian houses of the map (docs/map_elements/11_civilian_buildings): whole, damaged, abandoned (critically damaged, its soldiers
+  # out) and ruins once it has fallen; with soldiers inside, the whole one (occupied) and the damaged one (damaged_occupied).
   building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 2.5,
                               damaged: map/building_house_small_damaged/building_house_small_damaged.glb,
+                              damaged_occupied: map/building_house_small_damaged_occupied/building_house_small_damaged_occupied.glb,
                               occupied: map/building_house_small_occupied/building_house_small_occupied.glb,
+                              abandoned: map/building_house_small_abandoned/building_house_small_abandoned.glb,
                               ruins: map/building_house_ruins/building_house_ruins.glb }
 
-  # The apartment block of the map (docs/map_elements/11_civilian_buildings): the same four states as the house.
+  # The apartment block of the map (docs/map_elements/11_civilian_buildings): the same states as the house.
   building/neutral_apartment: { file: map/building_apartment_block/building_apartment_block.glb, height: 6,
                                 damaged: map/building_apartment_block_damaged/building_apartment_block_damaged.glb,
+                                damaged_occupied: map/building_apartment_block_damaged_occupied/building_apartment_block_damaged_occupied.glb,
                                 occupied: map/building_apartment_block_occupied/building_apartment_block_occupied.glb,
+                                abandoned: map/building_apartment_block_abandoned/building_apartment_block_abandoned.glb,
                                 ruins: map/building_apartment_block_ruins/building_apartment_block_ruins.glb }
 
   # The oil pumpjack of the map (docs/map_elements/12_tech_buildings): the beam nods while it works, the ring on the tank takes the
   # owner's colour, and its ruins stay where it fell.
   building/tech_oil_derrick: { file: map/tech_oil_derrick/tech_oil_derrick.glb, height: 2.2,
-                               damaged: map/tech_oil_derrick_damaged/tech_oil_derrick_damaged.glb,
+                               abandoned: map/tech_oil_derrick_abandoned/tech_oil_derrick_abandoned.glb,
                                ruins: map/tech_oil_derrick_ruins/tech_oil_derrick_ruins.glb }
 
   # The industrial buildings of the map (docs/industrial_elements).

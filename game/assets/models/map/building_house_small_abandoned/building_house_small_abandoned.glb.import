@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://xylt4pf7e353"
-path="res://.godot/imported/tech_oil_derrick_damaged.glb-390965fd8339b6413a2b5ac8e2d1ddcb.scn"
+uid="uid://ci6bhf5dgkcwt"
+path="res://.godot/imported/building_house_small_abandoned.glb-53b0316c4055640bcf0757db97205606.scn"
 
 [deps]
 
-source_file="res://assets/models/map/tech_oil_derrick_damaged/tech_oil_derrick_damaged.glb"
-dest_files=["res://.godot/imported/tech_oil_derrick_damaged.glb-390965fd8339b6413a2b5ac8e2d1ddcb.scn"]
+source_file="res://assets/models/map/building_house_small_abandoned/building_house_small_abandoned.glb"
+dest_files=["res://.godot/imported/building_house_small_abandoned.glb-53b0316c4055640bcf0757db97205606.scn"]
 
 [params]
 
@@ -41,5 +41,5 @@ materials/extract_format=0
 materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
-gltf/embedded_image_handling=2
+gltf/embedded_image_handling=1
 gltf/texture_map_mode=1
