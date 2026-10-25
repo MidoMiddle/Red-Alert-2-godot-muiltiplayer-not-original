@@ -1,0 +1,29 @@
+# The weapons of the tech buildings and the civilian buildings of the map (RA2), which the engine names in BuildingTypes and
+# the garrisons: the oil derrick's blast, the weapons of the soldiers in a civilian building.
+
+oil_explosion:  # RA2 OilExplosion: an oil derrick that falls blows up, 600 at the centre, 4 cells, half at the edge
+  kind: weapon
+  name: Oil Explosion
+  damage: 600
+  reload: 1s
+  range: 1
+  projectile: shell
+  warhead: oil_blast
+
+allied_occupy_gun:  # RA2 AlliedOccupyW: a GI in a civilian building, 30 every 15 frames, 7 cells
+  kind: weapon
+  name: Garrison Rifle
+  damage: 30
+  reload: 1s
+  range: 7
+  projectile: bullet
+  warhead: garrison_fire
+
+soviet_occupy_gun:  # RA2 SovietOccupyW: a conscript in a civilian building, 20 every 20 frames, 7 cells
+  kind: weapon
+  name: Garrison Rifle
+  damage: 20
+  reload: 1.33s
+  range: 7
+  projectile: bullet
+  warhead: garrison_fire

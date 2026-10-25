@@ -44,7 +44,9 @@ public static class DeathSystem
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
         Veterancy.Credit(world, killer, building, events);
         GarrisonSystem.Evacuate(world, building, events);
-        if (building.Def is { DeathWeapon.Length: > 0 } def && world.Rules.Database.IndexOfWeapon(def.DeathWeapon) is >= 0 and var blast)
+        // Of the data (the atomic plant) or of the map (RA2: the oil derrick).
+        var deathWeapon = building.Def?.DeathWeapon ?? (BuildingTypes.IsKnown(building.Kind) ? building.Type.DeathWeapon : "");
+        if (deathWeapon.Length > 0 && world.Rules.Database.IndexOfWeapon(deathWeapon) is >= 0 and var blast)
         {
             var centre = Combat.Aim.CentreOf(building);
             var shot = world.Launch(building.Owner, building.Id, blast, null, centre, centre);

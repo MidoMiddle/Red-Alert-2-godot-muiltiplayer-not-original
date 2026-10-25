@@ -122,6 +122,12 @@ public sealed record UnitDef : IDefinition
     /// <summary>The toxin on the ground does not hurt it (RA2: the desolator).</summary>
     public bool RadiationImmune { get; init; }
 
+    /// <summary>It may garrison a civilian building (RA2 <c>Occupier</c>: the GI and the conscript).</summary>
+    public bool Occupier { get; init; }
+
+    /// <summary>The weapon it fires from inside a civilian building (RA2 <c>AlliedOccupyW</c>, <c>SovietOccupyW</c>); empty for its own.</summary>
+    public string OccupyWeapon { get; init; } = "";
+
     /// <summary>Sent to its own building that can be charged (the tesla coil), it stands by it and charges it (RA2 tesla trooper).</summary>
     public bool ChargesCoils { get; init; }
 

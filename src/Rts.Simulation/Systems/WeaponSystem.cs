@@ -265,7 +265,7 @@ public static class WeaponSystem
         foreach (var occupant in building.Occupants)
         {
             if (occupant.Weapons.Length > 0
-                && Fire(world, rules, building.Id, target.Id, occupant.Weapons, rules.WeaponsOf(occupant.Type), distance, aimed: true, layer, events, target) is { } weapon)
+                && Fire(world, rules, building.Id, target.Id, occupant.Weapons, rules.GarrisonWeaponsOf(occupant.Type), distance, aimed: true, layer, events, target) is { } weapon)
             {
                 shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt));
             }

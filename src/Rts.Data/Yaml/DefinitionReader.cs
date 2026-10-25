@@ -21,7 +21,7 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
-        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "charges_coils", "psionic_immune", "deploy_once", "disguise_when_still",
+        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "occupier", "occupy_weapon", "charges_coils", "psionic_immune", "deploy_once", "disguise_when_still",
         "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
     ];
 
@@ -129,6 +129,8 @@ internal static class DefinitionReader
             DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
             DeployedWeapon = fields.Optional("deployed_weapon", Scalars.Id, ""),
             RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),
+            Occupier = fields.Optional("occupier", Scalars.Flag, false),
+            OccupyWeapon = fields.Optional("occupy_weapon", Scalars.Id, ""),
             ChargesCoils = fields.Optional("charges_coils", Scalars.Flag, false),
             PsionicImmune = fields.Optional("psionic_immune", Scalars.Flag, false),
             DeployOnce = fields.Optional("deploy_once", Scalars.Flag, false),

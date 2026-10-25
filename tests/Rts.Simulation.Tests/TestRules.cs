@@ -142,7 +142,7 @@ internal static class TestRules
         }
 
         // Speed in leptons per tick, turn rate in BAngle units per tick, sight in cells: the M2 values of each type.
-        builder.Add(InfantryDef(UnitType.Conscript, sight: 5) with { Armor = "flak", Primary = "conscript_rifle", Threat = 10 });
+        builder.Add(InfantryDef(UnitType.Conscript, sight: 5) with { Armor = "flak", Primary = "conscript_rifle", Threat = 10, Occupier = true, OccupyWeapon = "soviet_occupy_gun" });
         builder.Add(InfantryDef(UnitType.Rocketeer, sight: 5) with { Primary = "rocketeer_rocket", Threat = 15 });
         builder.Add(InfantryDef(UnitType.Engineer, sight: 4) with { Threat = 5, Engineer = true });
         builder.Add(VehicleDef(UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6, "war_factory", "service_depot") with { Threat = 5, Size = 6 });
@@ -407,6 +407,7 @@ internal static class TestRules
         }
 
         Warhead(builder, "small_arms", [100, 80, 80, 50, 25, 25, 75, 50, 25, 100, 100], "normal");
+        Warhead(builder, "garrison_fire", [100, 80, 70, 50, 25, 25, 75, 30, 20, 100, 100], "normal");
         Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 100, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true, bridges: true);
         Warhead(builder, "electric", [100, 100, 100, 85, 100, 100, 50, 50, 50, 100, 100], "electro");
         Warhead(builder, "flak_ground", [150, 100, 50, 60, 10, 10, 30, 10, 10, 100, 100], "explode", spread: Fixed.One, atMax: 25);
@@ -430,6 +431,7 @@ internal static class TestRules
 
         // Damage, reload in ticks, range in cells (quarters for 5.75 and halves for 5.5), projectile, warhead.
         Weapon(builder, "conscript_rifle", 15, 25, Fixed.FromInt(4), "bullet", "small_arms");
+        Weapon(builder, "soviet_occupy_gun", 20, 20, Fixed.FromInt(7), "bullet", "garrison_fire");
         Weapon(builder, "rocketeer_rocket", 50, 60, Fixed.FromInt(6), "rocket", "missile");
         Weapon(builder, "heavy_tank_cannon", 90, 65, Fixed.FromRatio(23, 4), "shell", "ap_shell");
         Weapon(builder, "tesla_tank_bolt", 135, 75, Fixed.FromInt(4), "bolt", "electric");

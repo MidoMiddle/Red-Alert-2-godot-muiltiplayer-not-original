@@ -130,7 +130,8 @@ public sealed class GarrisonTests
     [Fact]
     public void The_soldiers_inside_fire_with_their_range_counted_from_the_wall()
     {
-        // The rifle reaches 4 cells: from the centre of the office 4.5 cells is out of reach, from its wall 3.5 is in.
+        // The conscript's gun of the garrison reaches 7 cells (RA2 SovietOccupyW): from the centre of the office 7.5 cells is out of
+        // reach, from its wall 6.5 is in.
         var simulation = Match();
         var world = simulation.World;
         var office = OfficeOf(world);
@@ -139,8 +140,8 @@ public sealed class GarrisonTests
         // A civilian building gives its soldiers no sight of their own: the map is in sight.
         world.VisionOf(Union).ExploreAll();
 
-        var near = world.SpawnUnit(Allied, UnitType.AllianceEngineer, new CellPos(25, 20).Center);
-        var far = world.SpawnUnit(Allied, UnitType.AllianceEngineer, new CellPos(21, 27).Center);
+        var near = world.SpawnUnit(Allied, UnitType.AllianceEngineer, new CellPos(28, 20).Center);
+        var far = world.SpawnUnit(Allied, UnitType.AllianceEngineer, new CellPos(21, 30).Center);
         var full = far.Hp;
         Step(simulation, 120);
 

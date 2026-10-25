@@ -78,7 +78,8 @@ public sealed record BuildingType(
     string Armor = "",
     int Sight = 0,
     bool RepairsVehicles = false,
-    bool ExtendsBase = false);
+    bool ExtendsBase = false,
+    string DeathWeapon = "");
 
 /// <summary>
 /// The neutral buildings and tech buildings of the rules so far — winter and industrial sets, and the town, beach, desert, harbour and
@@ -93,10 +94,10 @@ public static class BuildingTypes
         new(BuildingKind.NeutralShed, "neutral_shed", 1, 1, MaxHp: 300, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralHouseA, "neutral_house_a", 2, 2, MaxHp: 800, Garrison: 3, Capturable: false),
         new(BuildingKind.NeutralApartment, "neutral_apartment", 3, 3, MaxHp: 1500, Garrison: 10, Capturable: false),
-        new(BuildingKind.TechOilDerrick, "tech_oil_derrick", 2, 2, MaxHp: 1000, Garrison: 0, Capturable: true),
-        new(BuildingKind.TechHospital, "tech_hospital", 6, 4, MaxHp: 800, Garrison: 0, Capturable: true), // RA2: 6 x 4, 800
+        new(BuildingKind.TechOilDerrick, "tech_oil_derrick", 2, 2, MaxHp: 1000, Garrison: 0, Capturable: true, ExtendsBase: true, DeathWeapon: "oil_explosion"),
+        new(BuildingKind.TechHospital, "tech_hospital", 6, 4, MaxHp: 800, Garrison: 0, Capturable: true, ExtendsBase: true), // RA2: 6 x 4, 800
         // RA2 ParaDropSpecial: a paradrop every 4 minutes.
-        new(BuildingKind.TechAirfield, "tech_airfield", 3, 3, MaxHp: 800, Garrison: 0, Capturable: true, Rules.SuperweaponKind.Paradrop, 240 * SimulationSettings.DefaultTicksPerSecond),
+        new(BuildingKind.TechAirfield, "tech_airfield", 3, 3, MaxHp: 800, Garrison: 0, Capturable: true, Rules.SuperweaponKind.Paradrop, 240 * SimulationSettings.DefaultTicksPerSecond, ExtendsBase: true),
         new(BuildingKind.NeutralFuelTank, "neutral_fuel_tank", 1, 1, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralSmokestack, "neutral_smokestack", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralCoolingTower, "neutral_cooling_tower", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),

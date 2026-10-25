@@ -263,4 +263,17 @@ public sealed class TechBuildingTests
         Assert.Equal(PlacementProblem.None, PlacementRules.Check(world, Union, barracks, beside));
         Assert.Equal(PlacementProblem.TooFar, PlacementRules.Check(world, Allied, barracks, beside));
     }
+    [Fact]
+    public void A_taken_hospital_extends_its_owner_s_base()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        world.Rules.Database.TryGetBuilding("barracks", out var barracks);
+        // The hospital (6 x 4 at (30, 18)) ends at x 35: the barracks 2 cells east of it.
+        var beside = new CellPos(38, 18);
+        Assert.Equal(PlacementProblem.TooFar, PlacementRules.Check(world, Union, barracks, beside));
+
+        Take(simulation, Union, UnitType.Engineer, Hospital, 0);
+        Assert.Equal(PlacementProblem.None, PlacementRules.Check(world, Union, barracks, beside));
+    }
 }

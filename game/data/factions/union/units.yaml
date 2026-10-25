@@ -12,6 +12,8 @@ conscript:  # Conscript
   primary: conscript_rifle
   sight: 5
   ifv_weapon: ifv_machine_gun
+  occupier: true  # RA2 Occupier: it may garrison a civilian building
+  occupy_weapon: soviet_occupy_gun  # what it fires from inside (RA2)
 
 rocketeer:  # Flak Trooper
   kind: unit

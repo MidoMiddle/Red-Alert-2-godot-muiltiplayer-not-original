@@ -16,6 +16,8 @@ alliance_rifleman:  # rifle infantry
   sight: 5
   prerequisites: [alliance_barracks]
   ifv_weapon: ifv_machine_gun
+  occupier: true  # RA2 Occupier: it may garrison a civilian building
+  occupy_weapon: allied_occupy_gun  # what it fires from inside (RA2)
 
 alliance_mcv:  # deploys into the Command Yard
   kind: unit

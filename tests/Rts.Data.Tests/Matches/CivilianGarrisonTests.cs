@@ -179,4 +179,44 @@ public sealed class CivilianGarrisonTests
         Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, gi, derrick));
         Assert.Equal(0, GarrisonSystem.Capacity(derrick));
     }
+    [Fact]
+    public void Only_the_gi_and_the_conscript_go_in_and_from_inside_the_house_sees()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var house = world.BuildingAt(House)!;
+        var trooper = Spawn(world, Union, UnitType.TeslaTrooper, 28, 33);
+        var ivan = Spawn(world, Union, UnitType.CrazyIvan, 29, 33);
+        var conscript = Spawn(world, Union, UnitType.Conscript, 30, 33);
+
+        // RA2 Occupier: the GI and the conscript alone.
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, trooper, house));
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, ivan, house));
+        Assert.Equal(EntryAction.Garrison, EntrySystem.ActionOf(world, conscript, house));
+
+        Assert.Null(VisibilitySystem.SightOf(world, house).Cell);
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 0, [conscript.Id], house.Id));
+        Run(simulation, 300, () => house.Occupants.Count == 1);
+        // RA2: the house sees 4 cells round it while soldiers are inside.
+        var (cell, radius) = VisibilitySystem.SightOf(world, house);
+        Assert.NotNull(cell);
+        Assert.True(radius > 0);
+    }
+
+    [Fact]
+    public void A_derrick_that_falls_blows_up_round_it()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var derrick = world.BuildingAt(Derrick)!;
+        var tank = Spawn(world, Allied, UnitType.AllianceLightTank, 43, 30);
+        world.SetHp(derrick, 1, null);
+        var cannon = world.Rules.Database.IndexOfWeapon("alliance_light_cannon");
+        world.Hits.Add(new Rts.Simulation.Combat.Hit(tank.Id, tank.Id, Allied, cannon, Rts.Simulation.Combat.Aim.CentreOf(derrick), derrick.Id));
+        Run(simulation, 4);
+
+        // RA2 OilExplosion: 600 at the centre, 4 cells round.
+        Assert.False(derrick.IsAlive);
+        Assert.True(!tank.IsAlive || tank.Hp < tank.MaxHp, "the blast hurt the tank beside it");
+    }
 }

@@ -52,4 +52,7 @@ public enum UnitTalents
 
     /// <summary>Charges its own tesla coil standing by it (<see cref="Rules.UnitDef.ChargesCoils"/>).</summary>
     ChargesCoils = 32768,
+
+    /// <summary>It may garrison a civilian building (<see cref="Rules.UnitDef.Occupier"/>).</summary>
+    Occupier = 65536,
 }

@@ -10,7 +10,7 @@ public sealed class Occupant
     {
         Type = archetype.Type;
         Hp = hp;
-        Weapons = !archetype.Armed ? [] : archetype.Secondary >= 0 ? [new(), new()] : [new()];
+        Weapons = archetype.OccupyWeapon >= 0 ? [new()] : !archetype.Armed ? [] : archetype.Secondary >= 0 ? [new(), new()] : [new()];
     }
 
     public UnitType Type { get; }

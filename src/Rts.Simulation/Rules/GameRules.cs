@@ -32,6 +32,9 @@ public sealed class GameRules
     private readonly int[] _buildingWeapon;
     private readonly ImmutableArray<int>[] _unitWeapons;
 
+    // What each type fires from inside a civilian building: its weapon of the garrison (RA2), else its own.
+    private readonly ImmutableArray<int>[] _garrisonWeapons;
+
     // Every weapon alone in the first place, the second empty: what a passenger gives an IFV (stage 3d).
     private readonly ImmutableArray<int>[] _single;
     private readonly ImmutableArray<int>[] _buildingWeapons;
@@ -58,6 +61,8 @@ public sealed class GameRules
 
         // The weapons of every unit type and building, laid out once (M4 step 15), so a tick builds no arrays for them.
         _unitWeapons = System.Array.ConvertAll(units, unit => unit is null ? ImmutableArray<int>.Empty : ImmutableArray.Create(unit.Primary, unit.Secondary));
+        _garrisonWeapons = System.Array.ConvertAll(units, unit => unit is null ? ImmutableArray<int>.Empty
+            : unit.OccupyWeapon >= 0 ? ImmutableArray.Create(unit.OccupyWeapon) : ImmutableArray.Create(unit.Primary, unit.Secondary));
         _single = new ImmutableArray<int>[database.Weapons.Length];
         for (var weapon = 0; weapon < _single.Length; weapon++)
         {
@@ -160,6 +165,9 @@ public sealed class GameRules
     /// <summary>The primary and the secondary weapon of a unit type, their places in <see cref="RulesDatabase.Weapons"/>; -1 for none.</summary>
     public ImmutableArray<int> WeaponsOf(UnitType type) => _unitWeapons[(int)type - 1];
 
+    /// <summary>What a soldier of the type fires from inside a building: its weapon of the garrison (RA2 <c>OccupyW</c>), else its own.</summary>
+    public ImmutableArray<int> GarrisonWeaponsOf(UnitType type) => _garrisonWeapons[(int)type - 1];
+
     /// <summary>The weapon of the building at <paramref name="defIndex"/> as a list of one, -1 without one.</summary>
     public ImmutableArray<int> WeaponsOfBuilding(int defIndex) => _buildingWeapons[defIndex];
 
@@ -235,7 +243,8 @@ public sealed class GameRules
                 unit.SpawnCount,
                 unit.SpawnRegen,
                 unit.Cost,
-                database.IndexOfWeapon(unit.DeployedWeapon));
+                database.IndexOfWeapon(unit.DeployedWeapon),
+                database.IndexOfWeapon(unit.OccupyWeapon));
         }
 
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
@@ -407,7 +416,7 @@ public sealed class GameRules
         | (unit.Submerged ? UnitTalents.Submerged : 0) | (unit.Spawned ? UnitTalents.Spawned : 0)
         | (unit.Trainable ? 0 : UnitTalents.Untrainable)
         | (unit.PsionicImmune ? UnitTalents.PsionicImmune : 0) | (unit.DeployOnce ? UnitTalents.DeployOnce : 0)
-        | (unit.ChargesCoils ? UnitTalents.ChargesCoils : 0);
+        | (unit.ChargesCoils ? UnitTalents.ChargesCoils : 0) | (unit.Occupier ? UnitTalents.Occupier : 0);
 
     private static Locomotor? LocomotorOf(string id)
     {

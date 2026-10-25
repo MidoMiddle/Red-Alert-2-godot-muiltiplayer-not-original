@@ -37,11 +37,12 @@ public static class GarrisonSystem
     /// Whether the unit may sit in a building: soldiers only — none with a jet pack (stage 3a), no engineer nor infiltrator (stage 3b,
     /// RA2 <c>Occupier</c>).
     /// </summary>
+    /// <summary>How far a civilian building with soldiers inside sees, in cells (RA2: 4).</summary>
+    public const int Sight = 4;
+
     public static bool CanEnter(Unit unit) =>
-        unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies
-        && !unit.Archetype.Has(UnitTalents.Engineer) && !unit.Archetype.Has(UnitTalents.Infiltrator)
-        // A dog is no occupier (RA2 Occupier=no); nor is a soldier in a mind control (RA2).
-        && unit.Archetype.Type is not (UnitType.AttackDog or UnitType.AllianceAttackDog) && unit.ControlledBy is null;
+        // RA2 Occupier: the GI and the conscript; not one held by a mind control.
+        unit.Archetype.Has(UnitTalents.Occupier) && !unit.Archetype.Flies && unit.ControlledBy is null;
 
     /// <summary>
     /// Whether <paramref name="building"/> is a ready building that takes the soldiers of <paramref name="player"/>: one of his that holds
@@ -108,7 +109,7 @@ public static class GarrisonSystem
         var weapons = ImmutableArray.CreateBuilder<int>();
         foreach (var occupant in building.Occupants)
         {
-            weapons.AddRange(rules.WeaponsOf(occupant.Type));
+            weapons.AddRange(rules.GarrisonWeaponsOf(occupant.Type));
         }
 
         return weapons.ToImmutable();

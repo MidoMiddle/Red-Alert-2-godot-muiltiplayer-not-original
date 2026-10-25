@@ -333,3 +333,19 @@ grand_cannon:  # RA2 GrandCannonWH: 2 cells round, 20% at the edge; wood and con
   spread: 2
   percent_at_max: 20%
   wall_damage: true
+
+
+oil_blast:  # RA2: the oil derrick's blast, buildings double, soldiers 150%, vehicles less
+  kind: warhead
+  name: Oil Explosion
+  verses: { none: 150%, flak: 150%, plate: 150%, light: 90%, medium: 70%, heavy: 50%, wood: 200%, steel: 200%, concrete: 200%, special_1: 100%, special_2: 100% }
+  spread: 4
+  percent_at_max: 50%
+  wall_damage: true
+  infantry_death: explode
+
+garrison_fire:  # RA2 SSAB: the soldiers in a civilian building
+  kind: warhead
+  name: Garrison Fire
+  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 30%, concrete: 20%, special_1: 100%, special_2: 100% }
+  infantry_death: normal
