@@ -46,11 +46,17 @@ public sealed class ReplayRecorder
         }
     }
 
+    /// <summary>Who plays a network match (M9 step 11): it goes into the replay; null on one computer.</summary>
+    public ReplayNetwork? Network { get; set; }
+
     public Replay Build() => new(
         SimulationVersion.Current,
         _dataHash,
         _simulation.Settings,
         _simulation.CurrentTick,
         new List<Command>(_simulation.ExecutedCommands),
-        new List<StateChecksum>(_checksums));
+        new List<StateChecksum>(_checksums))
+    {
+        Network = Network,
+    };
 }

@@ -106,6 +106,22 @@ public sealed class ReplayTests
     }
 
     [Fact]
+    public void The_network_of_a_match_is_kept_in_the_replay_and_a_single_match_has_none()
+    {
+        // Format 27 (M9 step 11): the version of the game, the hash of the map, the names by player.
+        var setup = Matches.MatchSetupTests.OneOnOne();
+        var single = new Replay(
+            SimulationVersion.Current, DataHasher.NoData, SimulationSettings.ForMatch(setup, new Rts.Simulation.Map.MapGrid(64, 64)), 0, [], []);
+        var network = single with { Network = new ReplayNetwork("0.9.0+abc", 0xFEED_F00D_1234_5678UL, new Dictionary<int, string> { [2] = "Guest", [1] = "Хост" }) };
+
+        var read = ReplayFormat.Read(ReplayFormat.Write(network)).Network!;
+
+        Assert.Null(ReplayFormat.Read(ReplayFormat.Write(single)).Network);
+        Assert.Equal(("0.9.0+abc", 0xFEED_F00D_1234_5678UL), (read.GameVersion, read.MapHash));
+        Assert.Equal([(1, "Хост"), (2, "Guest")], read.Names.Select(pair => (pair.Key, pair.Value)));
+    }
+
+    [Fact]
     public void The_data_hash_is_written_after_the_rules_version_and_read_back()
     {
         var simulation = new GameSimulation(new SimulationSettings(5), TestRules.Standard);

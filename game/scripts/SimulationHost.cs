@@ -134,6 +134,9 @@ public partial class SimulationHost : Node
     private HBoxContainer? _kickButtons;
     private readonly HashSet<PlayerId> _votedOut = new();
 
+    // The replay of the network match is saved once, whenever the match ends for this computer (M9 step 11).
+    private bool _netReplaySaved;
+
     // Why the match is over for this computer (M9 step 10): the host left, or the others put this player out; empty while it goes.
     private string _netEnded = "";
 
@@ -713,6 +716,21 @@ public partial class SimulationHost : Node
         return LastReplayPath;
     }
 
+    /// <summary>
+    /// The replay of the network match up to the last computed tick, into user://replays/net (M9 step 11, 4.13): once, when the match
+    /// ends for this computer — won or lost, the host gone, this player dropped, a desync, or the player leaving it.
+    /// </summary>
+    private void SaveNetworkReplay()
+    {
+        if (_netReplaySaved || _match is null)
+        {
+            return;
+        }
+
+        _netReplaySaved = true;
+        SaveReplay($"{ReplayDirectory}/net", $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{_match.MapId}_p{LocalPlayer.Value}");
+    }
+
     /// <summary>Where the unit was and how it was turned on the previous tick, for interpolation.</summary>
     public bool TryGetPreviousPose(EntityId id, out UnitPose pose) => _previousPoses.TryGetValue(id, out pose);
 
@@ -803,6 +821,11 @@ public partial class SimulationHost : Node
         lockstep.Update((long)(delta * 1000 * SpeedMultiplier));
         Alpha = lockstep.TickProgress;
         UpdateKickButtons(lockstep);
+
+        if (Simulation.World.Result is not null || _netEnded != "" || _checksums!.Stopped)
+        {
+            SaveNetworkReplay();
+        }
 
         if (_netEnded != "")
         {
@@ -1007,6 +1030,9 @@ public partial class SimulationHost : Node
         }
 
         _lockstep.PlayerRemoved += OnPlayerRemoved;
+        // The replay of a network match says who played it and with what (step 11).
+        var names = (net.Lobby?.Slots ?? []).Where(slot => slot.Kind == PlayerKind.Human).ToDictionary(slot => slot.Slot, slot => slot.Name);
+        _recorder!.Network = new ReplayNetwork(Net.NetGame.Identity.GameVersion, start.MapHash, names);
         _lockstep.Start();
         GD.Print($"[net] tick 0 as {LocalPlayer}, players {string.Join(", ", net.ActivePlayers)}, input delay {start.InputDelay}");
     }
@@ -1045,7 +1071,12 @@ public partial class SimulationHost : Node
 
     public override void _ExitTree()
     {
-        // Leaving the match leaves the network game.
+        // Leaving the match leaves the network game; its replay up to here stays.
+        if (_lockstep is not null)
+        {
+            SaveNetworkReplay();
+        }
+
         _net?.Close();
         _net = null;
     }

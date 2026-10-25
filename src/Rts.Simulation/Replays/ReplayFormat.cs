@@ -2,6 +2,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
@@ -39,11 +40,13 @@ namespace Rts.Simulation.Replays;
 /// of war, an option of the skirmish screen) adds u8 fogOfWar after the game speed; v22 (stage 2e) command format v11 (Garrison,
 /// Evacuate); v23 (stage 2d) command format v12 (Superweapon); v24 (loose ends, stage 5) adds the country of every player after its
 /// faction: u16 length + UTF-8 id, empty for the whole faction; v25 (the skirmish screen of RA2) adds u8 mcvRepacks | u8 superweapons |
-/// u8 destroyableBridges after the fog of war; v26 (M9 step 10) command format v13 (PlayerLeft).
+/// u8 destroyableBridges after the fog of war; v26 (M9 step 10) command format v13 (PlayerLeft); v27 (M9 step 11) adds the network
+/// of the match after its setup: u8 0, or u8 1 | u16 length + UTF-8 game version | u64 mapHash | u8 count, then u8 player | u16 length +
+/// UTF-8 name each.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 26;
+    public const ushort FormatVersion = 27;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -75,7 +78,7 @@ public static class ReplayFormat
 
         mapSize += map is null ? 0 : 4 + BuildingSize * map.StartBuildings.Count;
 
-        var match = WriteMatch(replay.Settings.Match);
+        var match = WriteMatch(replay.Settings.Match).Concat(WriteNetwork(replay.Network)).ToArray();
         var buffer = new byte[HeaderSize + mapSize + match.Length + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
         var span = buffer.AsSpan();
 
@@ -300,6 +303,7 @@ public static class ReplayFormat
 
         var credits = BinaryPrimitives.ReadInt32LittleEndian(source[42..]);
         var setup = ReadMatch(source, ref offset, seed, credits);
+        var network = ReadNetwork(source, ref offset);
         var settings = (map is null ? new SimulationSettings(seed) : new SimulationSettings(seed, map)) with
         {
             TicksPerSecond = BinaryPrimitives.ReadInt32LittleEndian(source[26..]),
@@ -331,7 +335,7 @@ public static class ReplayFormat
             offset += ChecksumSize;
         }
 
-        return new Replay(simVersion, dataHash, settings, tickCount, commands, checksums);
+        return new Replay(simVersion, dataHash, settings, tickCount, commands, checksums) { Network = network };
     }
 
     /// <summary>The match block: one zero byte without a setup.</summary>
@@ -455,6 +459,65 @@ public static class ReplayFormat
         return new MatchSetup(
             mapId, seed, new MatchOptions(credits, shortGame == 1, speed, fog == 1, repacks == 1, superweapons == 1, bridges == 1), players.MoveToImmutable(),
             starts.MoveToImmutable());
+    }
+
+    private static byte[] WriteNetwork(ReplayNetwork? network)
+    {
+        if (network is null)
+        {
+            return [0];
+        }
+
+        var bytes = new List<byte> { 1 };
+        AddText(bytes, network.GameVersion);
+        for (var shift = 0; shift < 64; shift += 8)
+        {
+            bytes.Add((byte)(network.MapHash >> shift));
+        }
+
+        bytes.Add((byte)network.Names.Count);
+        foreach (var (player, name) in network.Names.OrderBy(pair => pair.Key))
+        {
+            bytes.Add((byte)player);
+            AddText(bytes, name);
+        }
+
+        return bytes.ToArray();
+    }
+
+    private static ReplayNetwork? ReadNetwork(ReadOnlySpan<byte> source, ref int offset)
+    {
+        Require(source[offset..], 1);
+        var hasNetwork = source[offset++];
+        if (hasNetwork > 1)
+        {
+            throw new InvalidDataException($"Invalid network flag {hasNetwork}.");
+        }
+
+        if (hasNetwork == 0)
+        {
+            return null;
+        }
+
+        var version = ReadText(source, ref offset);
+        Require(source[offset..], 8 + 1);
+        var mapHash = BinaryPrimitives.ReadUInt64LittleEndian(source[offset..]);
+        var count = source[offset + 8];
+        offset += 9;
+        var names = new SortedDictionary<int, string>();
+        for (var i = 0; i < count; i++)
+        {
+            Require(source[offset..], 1);
+            var player = source[offset++];
+            if (player is < 1 or > World.PlayerId.MaxPlayers || names.ContainsKey(player))
+            {
+                throw new InvalidDataException($"Invalid player {player} in the network names.");
+            }
+
+            names.Add(player, ReadText(source, ref offset));
+        }
+
+        return new ReplayNetwork(version, mapHash, names);
     }
 
     private static void AddText(List<byte> bytes, string text)

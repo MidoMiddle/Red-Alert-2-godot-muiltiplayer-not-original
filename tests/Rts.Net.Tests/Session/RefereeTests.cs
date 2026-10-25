@@ -10,6 +10,7 @@ using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Matches;
+using Rts.Simulation.Replays;
 using Rts.Simulation.Tests;
 using Rts.Simulation.World;
 
@@ -19,6 +20,7 @@ namespace Rts.Net.Tests.Session;
 /// Step 10 of M9 (docs/implementation/M9_network.md, 4.11, 4.12): a player who leaves — the connection lost, silent too long, voted
 /// out — is out on the same tick on every computer, and the match goes on without it; a pause stops everyone on the same tick, as many
 /// times and as long as the rules let. Three computers of a match, the clients connected to the host only, as in the direct mode.
+/// Step 11 (4.13): the replay every computer records plays back on one computer with the same checksums.
 /// </summary>
 public sealed class RefereeTests
 {
@@ -202,6 +204,27 @@ public sealed class RefereeTests
     }
 
     [Fact]
+    public void The_replay_of_every_computer_plays_back_alone_with_the_same_checksums()
+    {
+        var match = new Match(new RefereeSettings());
+        match.Run(2000);
+        match[1].Engine.Issue(new MoveCommand(P2, 0, 0, match[1].Own(), new CellPos(32, 32).Center, false));
+        match.Run(1000);
+        match.Network.Disconnect(match[2].Transport, match[2].Transport.Peers[0]);
+        match.Run(2000);
+
+        var replays = match.Computers.Select(computer => ReplayFormat.Read(ReplayFormat.Write(computer.Recorder.Build()))).ToList();
+
+        // The one who left has its match up to where it stopped; the others theirs with the leaving in it.
+        Assert.All(replays, replay => Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status));
+        Assert.All(replays, replay => Assert.True(replay.Checksums.Count >= 3, $"{replay.Checksums.Count} checksums"));
+        Assert.Contains(replays[0].Commands, command => command is PlayerLeftCommand { Player.Value: 3 });
+        Assert.Contains(replays[2].Commands, command => command is MoveCommand { Player.Value: 2 });
+        var shared = Math.Min(replays[0].TickCount, replays[1].TickCount);
+        Assert.Equal(replays[0].Commands.Where(command => command.ExecuteTick < shared), replays[1].Commands.Where(command => command.ExecuteTick < shared));
+    }
+
+    [Fact]
     public void A_client_that_loses_the_host_hears_of_it()
     {
         var match = new Match(new RefereeSettings());
@@ -297,7 +320,15 @@ public sealed class RefereeTests
             Engine = new LockstepEngine(Simulation, transport, player, players, new LockstepSettings { InputDelay = 3, WaitNoticeMs = 1000 });
             Checksums = new ChecksumExchange(Engine, Simulation, transport, players);
             Status = new MatchStatus(settings);
+            Recorder = new ReplayRecorder(Simulation);
+            Engine.Stepped += _ => Recorder.AfterStep();
         }
+
+        public ReplayRecorder Recorder { get; }
+
+        /// <summary>The living units of its player.</summary>
+        public ImmutableArray<EntityId> Own() =>
+            Simulation.World.Entities.Where(entity => entity is Unit { IsAlive: true } && entity.Owner == Engine.LocalPlayer).Select(entity => entity.Id).ToImmutableArray();
 
         public SimulatedTransport Transport { get; }
 
