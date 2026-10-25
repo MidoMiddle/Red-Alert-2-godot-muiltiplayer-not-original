@@ -9,7 +9,7 @@ namespace Rts.Client.UI;
 /// Main menu, laid out after the classic RA2 menu (docs/menu/README.md, section 3.2): a large screen with the
 /// title on the left, a column with the header and the entries on the right. All entries are shown in the order of
 /// section 2.3. An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with
-/// Replays with step 15, Multiplayer with M9, Online with M10. Credits has no step yet.
+/// Replays with step 15, Online with M10; Multiplayer opens the network menu of M9 (host or join by address). Credits has no step yet.
 /// Skirmish opens its setup screen (step 7, no match start yet), Settings the settings screen (step 5), and Map Editor the
 /// map editor (M7 step 11).
 /// Test Sandbox is a temporary entry: it opens the debug scene <c>Main</c> with everything that is ready (M0 simulation,
@@ -46,7 +46,7 @@ public partial class MainMenu : Control
         AddEntry("UI_MAIN_SANDBOX", OpenSandbox);
         AddEntry("UI_MAIN_QUICK_SKIRMISH", OpenQuickSkirmish);
         AddEntry("UI_MAIN_SKIRMISH", OpenSkirmishSetup);
-        AddEntry("UI_MAIN_MULTIPLAYER", null);
+        AddEntry("UI_MAIN_MULTIPLAYER", OpenNetwork);
         AddEntry("UI_MAIN_ONLINE", null);
         AddEntry("UI_MAIN_MAP_EDITOR", OpenMapEditor);
         AddEntry("UI_MAIN_REPLAYS", null);
@@ -64,6 +64,14 @@ public partial class MainMenu : Control
         AddChild(_exitDialog);
 
         FocusFirstReadyEntry();
+
+        // The launch options of a network game go straight to its menu (M9 step 9).
+        var args = OS.GetCmdlineUserArgs();
+        if (args.Contains("--net-host") || args.Contains("--net-join"))
+        {
+            // After the router's fade into this screen: it opens nothing while it switches.
+            GetTree().CreateTimer(0.5).Timeout += OpenNetwork;
+        }
     }
 
     /// <summary>Adds an entry. Without an action it is disabled and says "coming soon".</summary>
@@ -110,6 +118,12 @@ public partial class MainMenu : Control
     private void OpenQuickSkirmish()
     {
         SceneRouter.Instance?.GoTo(QuickSkirmishScene);
+    }
+
+    // The network game of M9: host or join by address.
+    private void OpenNetwork()
+    {
+        SceneRouter.Instance?.GoTo(Net.NetMenu.Scene);
     }
 
     private void OpenSettings()

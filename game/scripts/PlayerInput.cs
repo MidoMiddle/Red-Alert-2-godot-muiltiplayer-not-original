@@ -234,8 +234,17 @@ public partial class PlayerInput : Node
         Apply(_interpreter.Press(ToPointerButton(mouse.ButtonIndex), at, context));
     }
 
+    // In a network match the game goes at the pace of everyone: no pause, step, speed, new session or replay by one, and no debug orders.
+    private static readonly string[] NetworkLocked =
+        ["pause", "step", "speed_up", "speed_down", "load_replay", "new_session", "spawn", "debug_damage", "debug_build", "debug_produce", "debug_switch_player"];
+
     private void HandleKey(InputEventKey key)
     {
+        if (_host.IsNetwork && Array.Exists(NetworkLocked, action => key.IsActionPressed(action, false, true)))
+        {
+            return;
+        }
+
         if (key is { Pressed: true, Echo: false, Keycode: Key.Space })
         {
             // Space (RA2): the camera goes to the last event of the radar.

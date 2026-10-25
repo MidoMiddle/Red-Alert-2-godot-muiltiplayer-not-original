@@ -31,6 +31,9 @@ public partial class SceneRouter : Node
     /// <summary>The running router. Set when the autoload is ready.</summary>
     public static SceneRouter? Instance { get; private set; }
 
+    /// <summary>A screen is being switched to: another switch now is ignored, so a screen that must go somewhere waits for this to end.</summary>
+    public bool Switching => _switching;
+
     /// <summary>Parameters for the screen that is being entered. Empty after <see cref="Back"/>.</summary>
     public Dictionary<string, object> Args { get; private set; } = new();
 

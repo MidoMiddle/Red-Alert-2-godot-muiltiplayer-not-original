@@ -16,10 +16,10 @@ internal sealed class LockstepClient
 {
     private readonly Queue<Command> _script;
 
-    public LockstepClient(SimulatedTransport transport, PlayerId player, IReadOnlyList<PlayerId> players, LockstepSettings settings, IEnumerable<Command> script, int frameMs)
+    public LockstepClient(SimulatedTransport transport, PlayerId player, IReadOnlyList<PlayerId> players, LockstepSettings settings, IEnumerable<Command> script, int frameMs, int hashInterval = 15)
     {
         Transport = transport;
-        Simulation = new GameSimulation(ReferenceScenario.Settings() with { HashInterval = 15 }, TestRules.Standard);
+        Simulation = new GameSimulation(ReferenceScenario.Settings() with { HashInterval = hashInterval }, TestRules.Standard);
         Engine = new LockstepEngine(Simulation, transport, player, players, settings);
         FrameMs = frameMs;
         _script = new Queue<Command>(script.Where(command => command.Player == player));
@@ -86,13 +86,13 @@ internal sealed class LockstepMatch
 {
     private long _sinceStart;
 
-    public LockstepMatch(int players, LinkConditions conditions, LockstepSettings settings, int scriptTicks, ulong networkSeed = 2026, params int[] frameMs)
+    public LockstepMatch(int players, LinkConditions conditions, LockstepSettings settings, int scriptTicks, ulong networkSeed = 2026, int hashInterval = 15, params int[] frameMs)
     {
         Network = new SimulatedNetwork(networkSeed);
         var ids = Enumerable.Range(1, players).Select(id => new PlayerId(id)).ToList();
         var script = scriptTicks > 0 ? ReferenceScenario.Commands(scriptTicks) : [];
         Clients = ids.Select((id, i) => new LockstepClient(
-            Network.AddPeer(), id, ids, settings, script, frameMs.Length == 0 ? 16 : frameMs[i % frameMs.Length])).ToList();
+            Network.AddPeer(), id, ids, settings, script, frameMs.Length == 0 ? 16 : frameMs[i % frameMs.Length], hashInterval)).ToList();
         for (var i = 0; i < Clients.Count; i++)
         {
             for (var j = i + 1; j < Clients.Count; j++)

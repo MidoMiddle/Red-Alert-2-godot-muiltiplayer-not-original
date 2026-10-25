@@ -126,6 +126,25 @@ public sealed class DesyncTests
     }
 
     [Fact]
+    public void A_match_that_hashes_every_tick_and_computed_its_first_tick_before_the_lockstep_agrees_on_every_tick()
+    {
+        // As a match of the game (M9 step 9): the simulation hashes every tick, and the loading screen computes the first tick before
+        // the lockstep starts — its checksum is sent when the exchange begins.
+        var match = new LockstepMatch(2, new LinkConditions { LatencyMs = 5 }, new LockstepSettings { InputDelay = 3 }, scriptTicks: 300, hashInterval: 1);
+        foreach (var client in match.Clients)
+        {
+            client.Simulation.Step();
+        }
+
+        var exchanges = match.Clients.Select(client => new ChecksumExchange(client.Engine, client.Simulation, client.Transport, [P1, P2])).ToList();
+        match.Start();
+        match.RunUntil(200, limitMs: 60_000);
+
+        Assert.All(exchanges, exchange => Assert.True(exchange.Detector.LastAgreedTick >= 195, $"agreed up to {exchange.Detector.LastAgreedTick}"));
+        Assert.All(exchanges, exchange => Assert.Equal(1, exchange.OwnChecksums[0].Tick));
+    }
+
+    [Fact]
     public void Two_dumps_compare_field_by_field_and_name_the_owner_of_each_difference()
     {
         var first = "tick = 30\nworld.Random = 5\nplayer[1].Credits = 1000\nentity[12].Hp = 300\nentity[12].Position = (1, 2)\nmap.land[3] = 0011\n";

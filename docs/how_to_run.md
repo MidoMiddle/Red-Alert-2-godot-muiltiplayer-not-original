@@ -517,6 +517,22 @@ dotnet run --project tools/Rts.Arena -c Release -- run --config tools/Rts.Arena/
 - [ ] `replay` по одному из повторов печатает `: match`.
 - [ ] Неверный профиль (`--a insane`) — строка `rts-arena: 'insane' … is not a level: one of easy, medium, hard, brutal`, код 2.
 
+### Сетевая игра (M9)
+
+В главном меню — **Multiplayer**: имя; «Host a game» — карта и порт (по умолчанию 27015), **Create**; «Join a game» — адрес хоста `адрес:порт`, **Connect**. В лобби — фракция и **Ready**; хост жмёт **Start**, когда все готовы. Партия начинается у всех одновременно; если кого-то ждут дольше 3 с, сверху надпись «Waiting for player…». Пауза, скорость и отладочные клавиши в сетевой партии не работают; меню (Esc) игру не останавливает.
+
+Две копии на одном компьютере, без кликов (из папки проекта, в двух Терминалах):
+
+```bash
+/Applications/Godot_mono.app/Contents/MacOS/Godot --path game -- --net-host 27015 --net-map palm-shore --net-name Host --net-ready --net-players 2
+```
+
+```bash
+/Applications/Godot_mono.app/Contents/MacOS/Godot --path game -- --net-join 127.0.0.1:27015 --net-name Guest --net-ready
+```
+
+Ещё: `--net-test-orders` — на тике 30 свои юниты идут в середину карты; `--net-ticks N` — на тике N игра выходит и пишет в лог, до какого тика сошлись контрольные суммы (код 0 — без рассинхрона). Рассинхрон: игра останавливается, дампы — в `user://desync/<дата>_<тик>/`, разбор — `tools/Rts.DesyncDiff`.
+
 ### Запуск без окна
 
 ```bash

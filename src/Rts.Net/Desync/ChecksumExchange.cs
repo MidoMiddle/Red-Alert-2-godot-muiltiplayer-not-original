@@ -40,9 +40,14 @@ public sealed class ChecksumExchange
         {
             if (message is Checksum checksum)
             {
+                ReceivedChecksums++;
                 Found(Detector.Report(checksum.Player, checksum.Tick, checksum.Hash));
             }
         };
+
+        // A match whose first tick was computed before the lockstep (the loading screen brings the starting units in so) has the
+        // checksum of that tick already: it is everyone's too.
+        AfterStep(simulation.CurrentTick - 1);
     }
 
     /// <summary>The desync, once; the lockstep goes on to <see cref="StopTick"/> and stops there.</summary>
@@ -55,6 +60,9 @@ public sealed class ChecksumExchange
 
     /// <summary>Stopped on <see cref="StopTick"/>: the state to dump is this one, the same tick as everyone's.</summary>
     public bool Stopped => StopTick is { } stop && _engine.CurrentTick >= stop;
+
+    /// <summary>The checksums of the others that came.</summary>
+    public int ReceivedChecksums { get; private set; }
 
     /// <summary>The checksums of this computer, in order: those of its replay.</summary>
     public IReadOnlyList<Rts.Simulation.Hashing.StateChecksum> OwnChecksums => _own;

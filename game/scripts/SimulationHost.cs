@@ -120,6 +120,16 @@ public partial class SimulationHost : Node
     private int _ticksThisSecond;
     private double _secondTimer;
 
+    // A network match (M9 step 9): its game, and once everyone has loaded its lockstep and what goes with it.
+    private Net.NetGame? _net;
+    private Rts.Net.Lockstep.LockstepEngine? _lockstep;
+    private Rts.Net.Desync.ChecksumExchange? _checksums;
+    private Rts.Net.Lockstep.LatencyMonitor? _latency;
+    private Rts.Net.Lockstep.InputDelayAuthority? _delay;
+    private long _netClockMs;
+    private bool _desyncSaved;
+    private Label? _netStatus;
+
     public GameSimulation Simulation { get; private set; } = null!;
 
     /// <summary>The look of the map being played (climate, time of day, texture layer): the simulation map has none of it.</summary>
@@ -135,6 +145,9 @@ public partial class SimulationHost : Node
     public event Action? SessionStarted;
 
     public bool IsPlayback => _playback is not null;
+
+    /// <summary>A match over the network (M9): the tick goes when everyone's commands are here; no pause, speed or replays by hand.</summary>
+    public bool IsNetwork => _net is not null;
 
     /// <summary>The bots of the live match, for the debug overlay of step 13; none in the sandbox and in a replay, which runs no bots.</summary>
     public IReadOnlyList<AiPlayer> Bots { get; private set; } = [];
@@ -217,6 +230,18 @@ public partial class SimulationHost : Node
 
     public void StartLiveSession()
     {
+        // A network match is started once, by everyone together; R and Play Again do not apply.
+        if (_net is not null && Simulation is not null)
+        {
+            return;
+        }
+
+        _net ??= SceneRouter.Instance?.Args.TryGetValue(Net.NetGame.MatchArgument, out var routedNet) == true ? routedNet as Net.NetGame : null;
+        if (_net?.Start is { } netStart)
+        {
+            _match = netStart.Setup;
+        }
+
         QueueHistory.Clear();
         var (map, definition) = LoadMap(MapPath);
         Look = definition is not null ? Climates.MapLook.FromDefinition(definition) : Climates.MapLook.FromLand(map.Grid);
@@ -230,7 +255,7 @@ public partial class SimulationHost : Node
             // --no-bots: the opponents stand idle (a measure of the frame on a real map without a bot playing).
             Bots = OS.GetCmdlineUserArgs().Contains("--no-bots") ? [] : MatchBots.AttachAll(Simulation);
             Debug.AiJournalFiles.Attach(Bots, _match);
-            LocalPlayer = _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
+            LocalPlayer = _net?.LocalPlayer ?? _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
             CallDeferred(MethodName.LookAtStart);
             GD.Print($"[host] match on {_match.MapId}, seed {_match.Seed}: " +
                      string.Join(", ", _match.Players.Select(player => $"{player.Id} {player.Kind}{BotProfile(player)} at {player.Start.X},{player.Start.Y}")));
@@ -259,10 +284,20 @@ public partial class SimulationHost : Node
 
         GD.Print("[host] live session started");
         SessionStarted?.Invoke();
+        if (_net is not null)
+        {
+            // The lockstep goes on while the pause menu is open: the others do not wait for this computer's menu.
+            ProcessMode = ProcessModeEnum.Always;
+        }
     }
 
     public void StartPlayback()
     {
+        if (_net is not null)
+        {
+            return;
+        }
+
         QueueHistory.Clear();
         if (LastReplayPath is null)
         {
@@ -300,6 +335,12 @@ public partial class SimulationHost : Node
     public override void _Process(double delta)
     {
         MeasureTicksPerSecond(delta);
+        if (_net is not null)
+        {
+            ProcessNetwork(delta);
+            return;
+        }
+
         if (Paused || PlaybackFinished)
         {
             Alpha = 1f;
@@ -705,10 +746,145 @@ public partial class SimulationHost : Node
 
     private void Issue(Command command)
     {
-        if (!IsPlayback)
+        if (_lockstep is not null)
+        {
+            // To everyone, on the tick D ticks ahead; the lockstep numbers it.
+            _lockstep.Issue(command);
+        }
+        else if (_net is not null)
+        {
+            // Before tick 0 nobody gives orders.
+        }
+        else if (!IsPlayback)
         {
             Simulation.Enqueue(command);
         }
+    }
+
+    /// <summary>
+    /// A frame of a network match (docs/implementation/M9_network.md, 4.16): until everyone has loaded the match waits; then the lockstep
+    /// computes the ticks whose commands are all here, at the speed of the match, the host keeps the input delay to the network, the
+    /// checksums are compared, and the screen says when someone is awaited or the match went apart.
+    /// </summary>
+    private void ProcessNetwork(double delta)
+    {
+        var net = _net!;
+        if (net.Phase != Rts.Net.Session.SessionPhase.Running)
+        {
+            Alpha = 1f;
+            ShowNetStatus(net.Phase == Rts.Net.Session.SessionPhase.Loading ? Tr("UI_NET_WAITING_LOAD") : "");
+            return;
+        }
+
+        if (_lockstep is null)
+        {
+            StartLockstep(net);
+        }
+
+        var lockstep = _lockstep!;
+        NetworkTestOptions(lockstep);
+        _netClockMs += (long)(delta * 1000);
+        _latency!.Update(_netClockMs);
+        _delay?.Update(_netClockMs);
+        lockstep.Update((long)(delta * 1000 * SpeedMultiplier));
+        Alpha = lockstep.TickProgress;
+
+        if (_checksums!.Detector.Found is { } desync)
+        {
+            if (_checksums.Stopped && !_desyncSaved)
+            {
+                _desyncSaved = true;
+                var folder = ProjectSettings.GlobalizePath($"user://desync/{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{desync.Tick}");
+                Rts.Net.Desync.DesyncDump.Save(folder, desync, LocalPlayer, Simulation, _checksums.OwnChecksums, DataHash);
+                GD.PrintErr($"[net] {desync}; dumps in {folder}");
+            }
+
+            ShowNetStatus(string.Format(Tr("UI_NET_DESYNC"), desync.Tick));
+        }
+        else if (lockstep.IsWaitingForPlayers)
+        {
+            var who = string.Join(", ", lockstep.MissingPlayers().Select(player => player.Value));
+            ShowNetStatus(string.Format(Tr("UI_NET_WAITING_PLAYER"), who, lockstep.WaitingMs / 1000));
+        }
+        else
+        {
+            ShowNetStatus("");
+        }
+    }
+
+    // For trying two copies on one computer: --net-test-orders sends the own units to the middle of the map on tick 30;
+    // --net-ticks N ends the game on tick N and prints how far the checksums agreed.
+    private bool _testOrdered;
+
+    private void NetworkTestOptions(Rts.Net.Lockstep.LockstepEngine lockstep)
+    {
+        var args = OS.GetCmdlineUserArgs();
+        if (!_testOrdered && lockstep.CurrentTick >= 30 && args.Contains("--net-test-orders"))
+        {
+            _testOrdered = true;
+            var own = Simulation.World.Entities.Where(entity => entity is Unit && entity.Owner == LocalPlayer).Select(entity => entity.Id).ToList();
+            var middle = new Rts.Simulation.Geometry.CellPos(Simulation.World.WidthCells / 2, Simulation.World.HeightCells / 2).Center;
+            IssueMove(own, middle, false);
+            GD.Print($"[net] {own.Count} units sent to the middle");
+        }
+
+        if (Array.IndexOf(args, "--net-ticks") is var at and >= 0 && at + 1 < args.Length && int.TryParse(args[at + 1], out var last)
+            && lockstep.CurrentTick >= last)
+        {
+            var players = Simulation.ExecutedCommands.Select(command => command.Player.Value).Distinct().Order();
+            GD.Print($"[net] done on tick {lockstep.CurrentTick}: checksums agreed up to tick {_checksums!.Detector.LastAgreedTick}, "
+                     + $"desync {(_checksums.Detector.Found?.ToString() ?? "none")}, commands of players {string.Join(", ", players)}, "
+                     + $"input delay {lockstep.InputDelay}, checksums sent {_checksums.OwnChecksums.Count}, received {_checksums.ReceivedChecksums}");
+            GetTree().Quit(_checksums.Detector.Found is null ? 0 : 1);
+        }
+    }
+
+    // Tick 0: the lockstep of the match over the game's network — the host's through its relay — with the checksums, the pings, and on
+    // the host the input delay.
+    private void StartLockstep(Net.NetGame net)
+    {
+        var start = net.Start!;
+        Rts.Net.Transport.ITransport transport = net.IsHost ? new Rts.Net.Transport.HostRelay(net.Transport) : net.Transport;
+        _lockstep = new Rts.Net.Lockstep.LockstepEngine(Simulation, transport, LocalPlayer, net.ActivePlayers,
+            new Rts.Net.Lockstep.LockstepSettings { InputDelay = start.InputDelay });
+        _lockstep.Stepping += _ => CapturePoses();
+        _lockstep.Stepped += _ => AfterStep();
+        _checksums = new Rts.Net.Desync.ChecksumExchange(_lockstep, Simulation, transport, net.ActivePlayers);
+        _latency = new Rts.Net.Lockstep.LatencyMonitor(transport);
+        _latency.Attach(_lockstep);
+        _delay = net.IsHost ? new Rts.Net.Lockstep.InputDelayAuthority(_lockstep, _latency, transport, Simulation.Settings.TicksPerSecond) : null;
+        _lockstep.Start();
+        GD.Print($"[net] tick 0 as {LocalPlayer}, players {string.Join(", ", net.ActivePlayers)}, input delay {start.InputDelay}");
+    }
+
+    private void ShowNetStatus(string text)
+    {
+        if (_netStatus is null)
+        {
+            var layer = new CanvasLayer { Layer = 50 };
+            AddChild(layer);
+            _netStatus = new Label
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                AnchorLeft = 0f,
+                AnchorRight = 1f,
+                OffsetTop = 120f,
+                OffsetBottom = 160f,
+            };
+            _netStatus.AddThemeFontSizeOverride("font_size", 22);
+            _netStatus.AddThemeColorOverride("font_outline_color", Colors.Black);
+            _netStatus.AddThemeConstantOverride("outline_size", 6);
+            layer.AddChild(_netStatus);
+        }
+
+        _netStatus.Text = text;
+    }
+
+    public override void _ExitTree()
+    {
+        // Leaving the match leaves the network game.
+        _net?.Close();
+        _net = null;
     }
 
     /// <summary>A match opens with the camera over the start of the person at the keyboard.</summary>
@@ -770,6 +946,14 @@ public partial class SimulationHost : Node
 
     private void StepSimulation()
     {
+        CapturePoses();
+        Simulation.Step();
+        AfterStep();
+    }
+
+    // Where every unit is before the tick, to draw it between the two.
+    private void CapturePoses()
+    {
         _previousPoses.Clear();
         foreach (var entity in Simulation.World.Entities)
         {
@@ -778,8 +962,11 @@ public partial class SimulationHost : Node
                 _previousPoses[unit.Id] = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             }
         }
+    }
 
-        Simulation.Step();
+    // What follows a tick: the replay, the measures, the events for the screen.
+    private void AfterStep()
+    {
         _recorder?.AfterStep();
         _ticksThisSecond++;
         QueueHistory.Add(Simulation.World.PathRequests.ExpandedLastTick, Simulation.World.PathRequests.Requests.Count);

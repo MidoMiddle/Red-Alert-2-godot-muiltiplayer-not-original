@@ -608,3 +608,23 @@ UI_MATCH_RESUME,Resume Mission
 UI_MATCH_ABORT,Abort Mission
 UI_MATCH_FULLSCREEN,Fullscreen
 UI_MATCH_WINDOWED,Windowed
+UI_NET_TITLE,Network Game
+UI_NET_NAME,Your name
+UI_NET_HOST,Host a game
+UI_NET_PORT,Port
+UI_NET_CREATE,Create
+UI_NET_JOIN,Join a game
+UI_NET_CONNECT,Connect
+UI_NET_BAD_PORT,Choose a map and a port number.
+UI_NET_BAD_ADDRESS,Write the address of the host: 192.168.1.20:27015 or the like.
+UI_NET_REJECTED,The host refused: {0}
+UI_NET_CONNECTING,Connecting…
+UI_NET_LOBBY_TITLE,{0} — {1} of {2} players
+UI_NET_TEAM,team {0}
+UI_NET_READY,Ready
+UI_NET_NOT_READY,not ready
+UI_NET_START,Start
+UI_NET_LEAVE,Leave
+UI_NET_WAITING_LOAD,Waiting for everyone to load…
+UI_NET_WAITING_PLAYER,Waiting for player {0}… {1} s
+UI_NET_DESYNC,The match went apart on tick {0}: the game stopped and the dumps are saved.

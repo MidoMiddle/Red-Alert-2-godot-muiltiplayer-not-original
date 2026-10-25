@@ -114,6 +114,9 @@ public partial class LoadingScreen : CanvasLayer
             host.Paused = false;
             GetTree().CurrentScene = match;
             GD.Print("[loading] the match starts");
+            // A network match: loaded — tick 0 comes for everyone once the last one is too (M9 step 9). The tick of step 4 is the same
+            // first tick without commands on every computer, computed before anyone's lockstep starts.
+            Net.NetGame.Current?.ReportLoaded(100);
             QueueFree();
         }
         catch (Exception error)
@@ -144,6 +147,8 @@ public partial class LoadingScreen : CanvasLayer
     {
         var percent = LoadingPlan.Stages[stage].Percent;
         _bar.Value = percent;
+        // Everyone of a network match sees how far each has loaded; 100 only once all is done.
+        Net.NetGame.Current?.ReportLoaded(Math.Min(99, (int)percent));
         _percent.Text = string.Format(Tr(PercentKey), percent);
         await NextFrame();
     }

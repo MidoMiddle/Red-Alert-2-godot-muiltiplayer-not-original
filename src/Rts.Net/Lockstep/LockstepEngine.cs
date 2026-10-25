@@ -89,8 +89,14 @@ public sealed class LockstepEngine
         _delayChanges[tick] = delay;
     }
 
+    /// <summary>Before each computed tick, with its number: the game keeps the poses of the units to draw them between ticks.</summary>
+    public event Action<int>? Stepping;
+
     /// <summary>After each computed tick, with its number; the replay is recorded here (<c>ReplayRecorder.AfterStep</c>).</summary>
     public event Action<int>? Stepped;
+
+    /// <summary>How far into the next tick the local clock is, 0…1: the game draws the units that far between two ticks.</summary>
+    public float TickProgress => Math.Clamp((float)_clock / UnitsPerTick, 0f, 1f);
 
     /// <summary>A message other than a bundle, for the session above (the lobby, the checksums, the pings).</summary>
     public event Action<PeerId, NetMessage>? MessageReceived;
@@ -318,6 +324,7 @@ public sealed class LockstepEngine
             bundles.Remove(tick);
         }
 
+        Stepping?.Invoke(tick);
         _simulation.Step();
         Stepped?.Invoke(tick);
     }
