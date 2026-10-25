@@ -45,6 +45,39 @@ public static class MinimapImage
         return pixels;
     }
 
+    public static readonly (byte R, byte G, byte B) OreColor = (214, 168, 44);
+
+    public static readonly (byte R, byte G, byte B) GemsColor = (70, 180, 214);
+
+    /// <summary>
+    /// The ore of the map over the ground (M6 step 11): RGBA bytes like <see cref="Pixels"/>, gold for ore, blue for gems, clear where
+    /// there is none. Made again when the ore changes (<see cref="MapGrid.OreVersion"/>).
+    /// </summary>
+    public static byte[] OrePixels(MapGrid map)
+    {
+        var pixels = new byte[map.Width * map.Height * 4];
+        for (var y = 0; y < map.Height; y++)
+        {
+            for (var x = 0; x < map.Width; x++)
+            {
+                var ore = map.OreAt(new CellPos(x, y));
+                if (ore.IsEmpty)
+                {
+                    continue;
+                }
+
+                var (r, g, b) = ore.Kind == OreKind.Gems ? GemsColor : OreColor;
+                var index = (y * map.Width + x) * 4;
+                pixels[index] = r;
+                pixels[index + 1] = g;
+                pixels[index + 2] = b;
+                pixels[index + 3] = 255;
+            }
+        }
+
+        return pixels;
+    }
+
     private static (float R, float G, float B) Shaded((float R, float G, float B) color) => (color.R * Shade, color.G * Shade, color.B * Shade);
 
     public static byte ToByte(float component) => (byte)(component <= 0f ? 0 : component >= 1f ? 255 : (int)(component * 255f + 0.5f));

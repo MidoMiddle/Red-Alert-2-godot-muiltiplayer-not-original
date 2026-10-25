@@ -37,6 +37,23 @@ public sealed class MinimapImageTests
     }
 
     [Fact]
+    public void Ore_is_gold_gems_blue_and_the_rest_clear()
+    {
+        // M6 step 11: the ore layer over the ground, RGBA.
+        var map = new MapGrid(3, 1);
+        map.SetOre(new Rts.Simulation.Geometry.CellPos(0, 0), new OreCell(OreKind.Ore, 5));
+        map.SetOre(new Rts.Simulation.Geometry.CellPos(2, 0), new OreCell(OreKind.Gems, 1));
+
+        var pixels = MinimapImage.OrePixels(map);
+
+        var (r, g, b) = MinimapImage.OreColor;
+        Assert.Equal([r, g, b, 255], pixels[0..4]);
+        Assert.Equal([0, 0, 0, 0], pixels[4..8]);
+        var gems = MinimapImage.GemsColor;
+        Assert.Equal([gems.R, gems.G, gems.B, 255], pixels[8..12]);
+    }
+
+    [Fact]
     public void ComponentsRoundAndClampToBytes()
     {
         Assert.Equal(0, MinimapImage.ToByte(-0.5f));

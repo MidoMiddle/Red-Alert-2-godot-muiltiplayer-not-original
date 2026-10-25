@@ -672,3 +672,5 @@ UI_REPLAY_TIME,{0} / {1}
 UI_PAUSE_RESTART,Restart
 UI_PAUSE_RESTART_TEXT,Start this match over? It begins again from the start.
 UI_SETTINGS_KEYS_FROM_MENU,The keys are changed from the main menu.
+UI_EVA_RADAR_ONLINE,Radar online
+UI_EVA_RADAR_OFFLINE,Radar offline

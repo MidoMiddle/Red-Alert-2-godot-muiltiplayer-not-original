@@ -66,11 +66,15 @@ public partial class Notifications : VBoxContainer
 
     private void OnEvent(SimEvent simEvent)
     {
-        if (_messages.Next(simEvent, SimulationHost.LocalPlayer, _now) is not { } key)
+        if (_messages.Next(simEvent, SimulationHost.LocalPlayer, _now) is { } key)
         {
-            return;
+            Say(key);
         }
+    }
 
+    /// <summary>A notice of the client, not of an event of the simulation: the radar coming on or going off (M6 step 11).</summary>
+    public void Say(string key)
+    {
         if (_lines.Count == MaxLines)
         {
             _lines[0].Label.QueueFree();

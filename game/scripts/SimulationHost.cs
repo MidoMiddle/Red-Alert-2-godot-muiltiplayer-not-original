@@ -246,10 +246,13 @@ public partial class SimulationHost : Node
     public bool DebugBuild { get; private set; }
 
     /// <summary>
-    /// Whether the minimap follows the radar rule of a match (4.17): only the <c>--radar-rule</c> launch option turns it on for now;
-    /// the sandbox keeps the minimap open (decision of the owner 2026-10-22). The skirmish of M6 turns it on.
+    /// Whether the minimap follows the radar rule (M3, 4.17; M6 step 11): in a match — on one computer or over the network — it opens
+    /// only with a radar and the power for it, as in RA2. The sandbox keeps it open (decision of the owner 2026-10-22), and so does a
+    /// replay, watched from outside; <c>--radar-rule</c> turns the rule on in the sandbox too.
     /// </summary>
-    public bool RadarRule { get; } = OS.GetCmdlineUserArgs().Contains("--radar-rule");
+    public bool RadarRule => _forceRadarRule || (Simulation.World.Match is not null && _playback is null);
+
+    private readonly bool _forceRadarRule = OS.GetCmdlineUserArgs().Contains("--radar-rule");
 
     /// <summary>The id of <see cref="BuildIndex"/>, such as <c>reactor</c>.</summary>
     public string BuildId => Data.Database.Buildings[BuildIndex].Id;

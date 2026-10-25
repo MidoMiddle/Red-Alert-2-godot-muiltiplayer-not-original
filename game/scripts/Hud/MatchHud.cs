@@ -69,6 +69,8 @@ public partial class MatchHud : CanvasLayer
         var notices = new Notifications { Name = "Notifications" };
         AddChild(notices);
         notices.Bind(host);
+        // The shutters of the radar move: EVA says so, in a match where the radar counts (M6 step 11).
+        sidebar.Minimap.OnlineChanged += online => notices.Say(online ? "UI_EVA_RADAR_ONLINE" : "UI_EVA_RADAR_OFFLINE");
         // Watching a replay (M6 step 15): its controls over the field.
         var replayBar = new ReplayBar { Name = "ReplayBar", Theme = theme };
         AddChild(replayBar);
