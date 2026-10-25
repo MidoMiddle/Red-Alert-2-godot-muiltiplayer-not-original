@@ -45,7 +45,8 @@ public static class HarvesterSystem
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is Unit { IsAlive: true, Harvester: { } harvester } unit)
+            // One a player left behind (M9 step 10) stands.
+            if (entity is Unit { IsAlive: true, Harvester: { } harvester } unit && !world.IsDefeated(unit.Owner))
             {
                 Step(world, unit, harvester, events);
             }

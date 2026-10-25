@@ -36,6 +36,7 @@ public sealed class ChecksumExchange
         _transport = transport;
         Detector = new DesyncDetector(players);
         engine.Stepped += AfterStep;
+        engine.PlayerRemoved += (player, _) => Drop(player);
         engine.MessageReceived += (_, message) =>
         {
             if (message is Checksum checksum)

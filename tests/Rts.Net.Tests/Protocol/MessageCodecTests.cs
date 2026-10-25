@@ -112,7 +112,7 @@ public sealed class MessageCodecTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(20)]
+    [InlineData(21)]
     [InlineData(255)]
     public void An_unknown_type_is_refused(byte type)
     {

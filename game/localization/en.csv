@@ -628,3 +628,12 @@ UI_NET_LEAVE,Leave
 UI_NET_WAITING_LOAD,Waiting for everyone to load…
 UI_NET_WAITING_PLAYER,Waiting for player {0}… {1} s
 UI_NET_DESYNC,The match went apart on tick {0}: the game stopped and the dumps are saved.
+UI_NET_PAUSED,Player {0} paused the game… {1} s (your pauses left: {2})
+UI_NET_PAUSED_OWN,You paused the game… {1} s; P to go on (pauses left: {2})
+UI_NET_KICK,Drop player {0}
+UI_NET_KICK_VOTED,Voted to drop player {0}
+UI_NET_LEFT,Player {0} left the match.
+UI_NET_LEFT_TIMEOUT,Player {0} was silent too long and is out of the match.
+UI_NET_LEFT_KICKED,Player {0} was voted out of the match.
+UI_NET_YOU_WERE_DROPPED,You are out of the match: the others went on without you.
+UI_NET_HOST_LEFT,The host left: the match is over.

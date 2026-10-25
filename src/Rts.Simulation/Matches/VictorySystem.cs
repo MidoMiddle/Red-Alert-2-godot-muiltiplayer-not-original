@@ -18,7 +18,8 @@ public sealed record MatchResult(int Tick, ImmutableArray<PlayerId> Winners);
 /// game (<see cref="MatchOptions.ShortGame"/>) with no building but walls and no MCV.</item>
 /// <item>The defeated (<see cref="Defeat"/>, also by <see cref="Commands.SurrenderCommand"/>): <see cref="PlayerState.DefeatedTick"/>,
 /// a <see cref="PlayerDefeated"/>; whatever of theirs is left, walls too, is destroyed with <see cref="DeathCause.Defeat"/>; their queues
-/// are emptied. Their commands are refused from then on, and their bot no longer thinks.</item>
+/// are emptied. Their commands are refused from then on, and their bot no longer thinks. One who left a network match
+/// (<see cref="Abandon"/>, by <see cref="Commands.PlayerLeftCommand"/>) is defeated too, but what is theirs stays, idle.</item>
 /// <item>The match ends when the players still standing are all of one team (<see cref="MatchPlayer.Team"/>), or none is left:
 /// <see cref="GameWorld.Result"/> and a <see cref="MatchEnded"/>. The simulation goes on after it, with no more checks.</item>
 /// </list>
@@ -92,6 +93,44 @@ public static class VictorySystem
                     break;
                 case Building building:
                     DeathSystem.Fall(world, building, DeathCause.Defeat, events);
+                    break;
+            }
+        }
+
+        for (var category = ProductionCategory.Infantry; category <= ProductionCategories.Last; category++)
+        {
+            state.QueueList(category).Clear();
+        }
+    }
+
+    /// <summary>
+    /// The player left a network match (docs/implementation/M9_network.md, 4.11, step 10): defeated as by <see cref="Defeat"/>, but what
+    /// is theirs stays on the map, idle, as in RA2 — no ally takes it. Their units stop and forget their targets, their buildings their
+    /// targets and repair, their queues are emptied; from then on nothing of theirs looks for a target or harvests
+    /// (<see cref="GameWorld.IsDefeated"/>). The others may still destroy it.
+    /// </summary>
+    public static void Abandon(GameWorld world, PlayerId player, List<SimEvent>? events)
+    {
+        var state = world.Player(player);
+        state.DefeatedTick = world.CurrentTick;
+        events?.Add(new PlayerDefeated(world.CurrentTick, player));
+        foreach (var entity in world.Entities)
+        {
+            if (!entity.IsAlive || entity.Owner != player)
+            {
+                continue;
+            }
+
+            switch (entity)
+            {
+                case Unit unit:
+                    Movement.UnitOrders.Stop(world, unit);
+                    Movement.UnitOrders.ForgetTarget(unit);
+                    unit.Anchor = unit.Position;
+                    break;
+                case Building building:
+                    building.Target = null;
+                    building.Repairing = false;
                     break;
             }
         }

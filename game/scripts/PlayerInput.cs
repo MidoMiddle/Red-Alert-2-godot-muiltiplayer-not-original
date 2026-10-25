@@ -234,12 +234,19 @@ public partial class PlayerInput : Node
         Apply(_interpreter.Press(ToPointerButton(mouse.ButtonIndex), at, context));
     }
 
-    // In a network match the game goes at the pace of everyone: no pause, step, speed, new session or replay by one, and no debug orders.
+    // In a network match the game goes at the pace of everyone: no step, speed, new session or replay by one, and no debug orders. The
+    // pause is everyone's (M9 step 10): the host's to give.
     private static readonly string[] NetworkLocked =
-        ["pause", "step", "speed_up", "speed_down", "load_replay", "new_session", "spawn", "debug_damage", "debug_build", "debug_produce", "debug_switch_player"];
+        ["step", "speed_up", "speed_down", "load_replay", "new_session", "spawn", "debug_damage", "debug_build", "debug_produce", "debug_switch_player"];
 
     private void HandleKey(InputEventKey key)
     {
+        if (_host.IsNetwork && key.IsActionPressed("pause", false, true))
+        {
+            _host.ToggleNetworkPause();
+            return;
+        }
+
         if (_host.IsNetwork && Array.Exists(NetworkLocked, action => key.IsActionPressed(action, false, true)))
         {
             return;

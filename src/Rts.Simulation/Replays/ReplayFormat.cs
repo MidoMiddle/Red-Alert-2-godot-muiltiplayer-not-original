@@ -39,11 +39,11 @@ namespace Rts.Simulation.Replays;
 /// of war, an option of the skirmish screen) adds u8 fogOfWar after the game speed; v22 (stage 2e) command format v11 (Garrison,
 /// Evacuate); v23 (stage 2d) command format v12 (Superweapon); v24 (loose ends, stage 5) adds the country of every player after its
 /// faction: u16 length + UTF-8 id, empty for the whole faction; v25 (the skirmish screen of RA2) adds u8 mcvRepacks | u8 superweapons |
-/// u8 destroyableBridges after the fog of war.
+/// u8 destroyableBridges after the fog of war; v26 (M9 step 10) command format v13 (PlayerLeft).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 25;
+    public const ushort FormatVersion = 26;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

@@ -20,6 +20,11 @@ namespace Rts.Net.Lockstep;
 /// their bundles for ticks past its own are here — computes up to <see cref="LockstepSettings.MaxTicksPerFrame"/> a frame to catch up.
 /// Time spent waiting for bundles is not owed afterwards: everyone waited.
 /// </para>
+/// <para>
+/// A player who leaves (step 10, 4.11) is awaited no more from the tick the host names (<see cref="RemovePlayer"/>): on it every
+/// computer puts in the <see cref="PlayerLeftCommand"/>. A pause (4.12) stops every computer before the tick the host names, and
+/// the simulation does not notice it: it is only ticks not computed yet.
+/// </para>
 /// Single-threaded: the game calls <see cref="Update"/> every frame on its main thread.
 /// </summary>
 public sealed class LockstepEngine
@@ -33,6 +38,9 @@ public sealed class LockstepEngine
     // By player id: the bundles not executed yet, by tick; and the first tick from the current one whose bundle has not come.
     private readonly Dictionary<int, TickBundle>?[] _bundles = new Dictionary<int, TickBundle>?[PlayerId.MaxPlayers + 1];
     private readonly int[] _received = new int[PlayerId.MaxPlayers + 1];
+
+    // By player id: the first tick it is no longer in the match, int.MaxValue while it is.
+    private readonly int[] _leftAt = new int[PlayerId.MaxPlayers + 1];
 
     private readonly List<Command> _pending = new();
 
@@ -63,6 +71,7 @@ public sealed class LockstepEngine
         {
             _bundles[player.Value] = new Dictionary<int, TickBundle>();
             _received[player.Value] = simulation.CurrentTick;
+            _leftAt[player.Value] = int.MaxValue;
         }
 
         _nextBundleTick = simulation.CurrentTick;
@@ -101,6 +110,15 @@ public sealed class LockstepEngine
     /// <summary>A message other than a bundle, for the session above (the lobby, the checksums, the pings).</summary>
     public event Action<PeerId, NetMessage>? MessageReceived;
 
+    /// <summary>A connection was lost or closed: to the host a player's, to a client the host's.</summary>
+    public event Action<PeerId>? PeerDisconnected;
+
+    /// <summary>A player is out from a tick on (<see cref="RemovePlayer"/>): the player, the tick.</summary>
+    public event Action<PlayerId, int>? PlayerRemoved;
+
+    /// <summary>A pause was set for a tick, or taken off (null).</summary>
+    public event Action<int?>? PauseChanged;
+
     public LockstepSettings Settings { get; }
 
     public PlayerId LocalPlayer { get; }
@@ -109,6 +127,9 @@ public sealed class LockstepEngine
 
     /// <summary>The tick computed next.</summary>
     public int CurrentTick => _simulation.CurrentTick;
+
+    /// <summary>The tick of our next bundle to leave: nobody can have computed it yet, the host pauses there (4.12).</summary>
+    public int NextBundleTick => _nextBundleTick;
 
     /// <summary>How long a tick has been due without the bundles to compute it; 0 while the game goes.</summary>
     public long WaitingMs { get; private set; }
@@ -129,7 +150,71 @@ public sealed class LockstepEngine
     public int RejectedMessages { get; private set; }
 
     /// <summary>The players whose bundle for <see cref="CurrentTick"/> has not come.</summary>
-    public IReadOnlyList<PlayerId> MissingPlayers() => Players.Where(player => _received[player.Value] <= CurrentTick).ToList();
+    public IReadOnlyList<PlayerId> MissingPlayers() => Players.Where(player => !IsHere(player, CurrentTick)).ToList();
+
+    /// <summary>The players still in the match: not removed, or removed from a tick not reached yet.</summary>
+    public IReadOnlyList<PlayerId> RemainingPlayers() => Players.Where(player => _leftAt[player.Value] == int.MaxValue).ToList();
+
+    /// <summary>The first tick whose bundle of <paramref name="player"/> has not come: the tick a player who leaves now leaves on.</summary>
+    public int ReceivedUntil(PlayerId player) =>
+        Players.Contains(player) ? _received[player.Value] : throw new ArgumentException($"{player} is not in the match.", nameof(player));
+
+    /// <summary>The tick the lockstep stands before for a pause (4.12); null when there is no pause.</summary>
+    public int? PauseTick { get; private set; }
+
+    /// <summary>Standing in a pause now.</summary>
+    public bool IsPaused => PauseTick is { } pause && CurrentTick >= pause;
+
+    /// <summary>
+    /// A pause from <paramref name="tick"/> on: that tick is not computed until <see cref="Resume"/>. The host names a tick no computer can
+    /// have reached — that of its next bundle — so all stand on the same one; one that hears of it late stops at once.
+    /// </summary>
+    public void PauseAt(int tick)
+    {
+        PauseTick = tick;
+        PauseChanged?.Invoke(tick);
+    }
+
+    /// <summary>The pause is over: the ticks go on.</summary>
+    public void Resume()
+    {
+        if (PauseTick is null)
+        {
+            return;
+        }
+
+        PauseTick = null;
+        PauseChanged?.Invoke(null);
+    }
+
+    /// <summary>
+    /// <paramref name="player"/> is out of the match from <paramref name="tick"/> on (step 10, 4.11): its bundles are no longer awaited
+    /// from that tick — those that came for it or later are thrown away — and on it the simulation gets its <see cref="PlayerLeftCommand"/>.
+    /// The host names the tick: the first one whose bundle of the player it has not got, so nobody has computed it — everyone gets the
+    /// player's bundles through the host. The local player removed (dropped by the others) stops there. Once for each player.
+    /// </summary>
+    public void RemovePlayer(PlayerId player, int tick)
+    {
+        if (!Players.Contains(player) || _leftAt[player.Value] != int.MaxValue)
+        {
+            return;
+        }
+
+        // A tick already computed cannot be taken back: the leaving comes at once, and the checksums will tell if that was wrong.
+        tick = Math.Max(tick, CurrentTick);
+        _leftAt[player.Value] = tick;
+        foreach (var late in _bundles[player.Value]!.Keys.Where(late => late >= tick).ToList())
+        {
+            _bundles[player.Value]!.Remove(late);
+        }
+
+        if (player == LocalPlayer)
+        {
+            StopAt(tick);
+        }
+
+        PlayerRemoved?.Invoke(player, tick);
+    }
 
     /// <summary>Computes no tick from <paramref name="tick"/> on; the network is still read.</summary>
     public void StopAt(int tick) => StopTick = StopTick is { } stop ? Math.Min(stop, tick) : tick;
@@ -177,14 +262,15 @@ public sealed class LockstepEngine
         _clock += elapsedMs * _simulation.Settings.TicksPerSecond;
         var ticks = 0;
         while (ticks < Settings.MaxTicksPerFrame && (_clock >= UnitsPerTick || IsBehind()) && IsReady(CurrentTick)
-               && (StopTick is not { } stop || CurrentTick < stop))
+               && (StopTick is not { } stop || CurrentTick < stop) && !IsPaused)
         {
             Step();
             ticks++;
             _clock = Math.Max(0, _clock - UnitsPerTick);
         }
 
-        var stalled = ticks < Settings.MaxTicksPerFrame && _clock >= UnitsPerTick && !IsReady(CurrentTick) && StopTick != CurrentTick;
+        var stalled = ticks < Settings.MaxTicksPerFrame && _clock >= UnitsPerTick && !IsReady(CurrentTick) && StopTick != CurrentTick
+                      && !IsPaused;
         WaitingMs = stalled ? WaitingMs + elapsedMs : 0;
         // Never more than one tick owed: waiting is not paid back, and a frame that ran out of ticks drops the rest, as the single game
         // does; a computer left behind catches up by the bundles of the others.
@@ -205,7 +291,7 @@ public sealed class LockstepEngine
             return false;
         }
 
-        if (bundle.Tick < _received[player.Value] || bundles.ContainsKey(bundle.Tick))
+        if (bundle.Tick < _received[player.Value] || bundles.ContainsKey(bundle.Tick) || bundle.Tick >= _leftAt[player.Value])
         {
             DuplicateBundles++;
             return false;
@@ -220,6 +306,11 @@ public sealed class LockstepEngine
         _transport.Poll();
         while (_transport.TryReceive(out var received))
         {
+            if (received.Kind == TransportEventKind.Disconnected)
+            {
+                PeerDisconnected?.Invoke(received.Peer);
+            }
+
             if (received.Kind != TransportEventKind.Message)
             {
                 continue;
@@ -240,13 +331,25 @@ public sealed class LockstepEngine
             {
                 Receive(bundle);
             }
-            else if (message is Protocol.Messages.InputDelayChange change)
-            {
-                ScheduleInputDelay(change.Tick, change.Delay);
-                MessageReceived?.Invoke(received.Peer, message);
-            }
             else
             {
+                // What the host decides for everyone the lockstep does itself; the session above hears of it too.
+                switch (message)
+                {
+                    case Protocol.Messages.InputDelayChange change:
+                        ScheduleInputDelay(change.Tick, change.Delay);
+                        break;
+                    case Protocol.Messages.PlayerLeft left:
+                        RemovePlayer(left.Player, left.Tick);
+                        break;
+                    case Protocol.Messages.Pause pause:
+                        PauseAt(pause.Tick);
+                        break;
+                    case Protocol.Messages.Resume:
+                        Resume();
+                        break;
+                }
+
                 MessageReceived?.Invoke(received.Peer, message);
             }
         }
@@ -266,7 +369,7 @@ public sealed class LockstepEngine
     {
         foreach (var player in Players)
         {
-            if (_received[player.Value] <= tick)
+            if (!IsHere(player, tick))
             {
                 return false;
             }
@@ -274,6 +377,9 @@ public sealed class LockstepEngine
 
         return true;
     }
+
+    // The bundle of the player for the tick is here, or not awaited: the player is out by then.
+    private bool IsHere(PlayerId player, int tick) => _received[player.Value] > tick || _leftAt[player.Value] <= tick;
 
     /// <summary>
     /// The others are past us: each has sent the bundle of a tick further than D ahead of ours, so each has computed ticks we have not.
@@ -283,7 +389,7 @@ public sealed class LockstepEngine
         var any = false;
         foreach (var player in Players)
         {
-            if (player == LocalPlayer)
+            if (player == LocalPlayer || _leftAt[player.Value] != int.MaxValue)
             {
                 continue;
             }
@@ -315,6 +421,16 @@ public sealed class LockstepEngine
         SendUntil(tick + InputDelay);
         foreach (var player in Players)
         {
+            if (_leftAt[player.Value] <= tick)
+            {
+                if (_leftAt[player.Value] == tick)
+                {
+                    _simulation.Enqueue(new PlayerLeftCommand(player, tick, 0));
+                }
+
+                continue;
+            }
+
             var bundles = _bundles[player.Value]!;
             foreach (var command in bundles[tick].Commands)
             {

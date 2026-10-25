@@ -33,6 +33,7 @@ public static class CommandProcessor
         var applied = command switch
         {
             SurrenderCommand surrender => ApplySurrender(world, surrender, events),
+            PlayerLeftCommand left => ApplyPlayerLeft(world, left, events),
             SpawnTestUnitCommand spawn => ApplySpawn(world, spawn, events),
             MoveCommand move => ApplyRoute(world, move, [move.Target], loop: false, move.Queue, attackMove: false, events),
             AttackMoveCommand attack => ApplyRoute(world, attack, [attack.Target], loop: false, attack.Queue, attackMove: true, events),
@@ -356,6 +357,18 @@ public static class CommandProcessor
         }
 
         Matches.VictorySystem.Defeat(world, command.Player, events);
+        return true;
+    }
+
+    /// <summary>The player left a network match: defeated, what is theirs left idle (M9, 4.11, step 10). Refused as a surrender is.</summary>
+    private static bool ApplyPlayerLeft(GameWorld world, PlayerLeftCommand command, List<SimEvent>? events)
+    {
+        if (world.Match?.PlayerOf(command.Player) is null || world.Result is not null)
+        {
+            return false;
+        }
+
+        Matches.VictorySystem.Abandon(world, command.Player, events);
         return true;
     }
 

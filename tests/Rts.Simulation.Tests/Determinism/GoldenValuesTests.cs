@@ -348,6 +348,7 @@ public sealed class GoldenValuesTests
         // Rules v60 (stage 3: veterancy): the version and the checksums. Rules v61 (stage 4: the Osprey): the version.
         // Replay format v24, rules v62 (stage 5: the countries): the versions. Rules v63 (the yard packs up, the Rifleman digs in): the version.
         // Replay format v25, rules v71 (the repair mode mends a taken tech building): the versions.
-        Assert.Equal((22269, 13981906162915434206UL), (bytes.Length, hash.Value));
+        // Replay format v26, rules v72 (M9 step 10: PlayerLeft): the versions; nothing new is hashed.
+        Assert.Equal((22269, 14499804278111472930UL), (bytes.Length, hash.Value));
     }
 }

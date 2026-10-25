@@ -11,7 +11,8 @@ namespace Rts.Simulation.Tests.Matches;
 
 /// <summary>
 /// Victory and defeat (docs/implementation/M5_first_bot.md, 4.8, step 10): who loses in the normal and the short game, when it is
-/// checked, what the defeated leave, when the match ends, surrender, and the commands of the defeated.
+/// checked, what the defeated leave, when the match ends, surrender, and the commands of the defeated; one who left a network match
+/// (M9 step 10).
 /// </summary>
 public sealed class VictorySystemTests
 {
@@ -216,6 +217,65 @@ public sealed class VictorySystemTests
         var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
 
         Assert.Contains(replay.Commands, command => command is SurrenderCommand);
+        Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
+    }
+
+    [Fact]
+    public void One_who_left_is_defeated_but_what_is_theirs_stays_idle()
+    {
+        var simulation = Start();
+        simulation.Enqueue(new SpawnTestUnitCommand(Person, 0, 0, UnitType.HeavyTank, new CellPos(30, 30).Center));
+        simulation.Enqueue(new SpawnTestUnitCommand(Bot, 0, 0, UnitType.HeavyTank, new CellPos(33, 30).Center));
+        PlayThrough(simulation, 0);
+        var owned = simulation.World.Entities.Count(entity => entity.IsAlive && entity.Owner == Bot);
+        var units = simulation.World.Entities.OfType<Unit>().Where(unit => unit.Owner == Bot).Select(unit => unit.Id).ToImmutableArray();
+        simulation.Enqueue(new PlayerLeftCommand(Bot, 1, 0));
+        simulation.Enqueue(new MoveCommand(Bot, 2, 0, units, new CellPos(20, 20).Center));
+
+        var events = PlayThrough(simulation, 1);
+
+        Assert.Equal(1, simulation.World.Player(Bot).DefeatedTick);
+        Assert.Contains(new PlayerDefeated(1, Bot), events);
+        Assert.Equal(owned, simulation.World.Entities.Count(entity => entity.IsAlive && entity.Owner == Bot));
+
+        // Its tank does not fire at the enemy tank beside it, and its orders are refused; the match ends with the one left standing.
+        events = PlayThrough(simulation, 15);
+        var tank = simulation.World.Entities.OfType<Unit>().Single(unit => unit.Owner == Person && unit.Type == UnitType.HeavyTank);
+        Assert.Equal(tank.MaxHp, tank.Hp);
+        Assert.All(simulation.World.Entities.OfType<Unit>().Where(unit => unit.Owner == Bot), unit => Assert.Null(unit.Target));
+        Assert.Contains(simulation.RefusedCommands, command => command is MoveCommand { Player.Value: 2 });
+        Assert.Equal([Person], simulation.World.Result!.Winners.AsEnumerable());
+    }
+
+    [Fact]
+    public void One_who_left_cannot_leave_twice_nor_after_the_end()
+    {
+        var simulation = Start();
+        simulation.Enqueue(new PlayerLeftCommand(Bot, 1, 0));
+        simulation.Enqueue(new PlayerLeftCommand(Bot, 2, 0));
+        PlayThrough(simulation, 15);
+        simulation.Enqueue(new PlayerLeftCommand(Person, 16, 0));
+        PlayThrough(simulation, 16);
+
+        Assert.Equal(2, simulation.RefusedCommands.Count);
+        Assert.Null(simulation.World.Player(Person).DefeatedTick);
+    }
+
+    [Fact]
+    public void A_match_with_a_player_who_left_plays_back_from_its_replay()
+    {
+        var simulation = Start();
+        var recorder = new ReplayRecorder(simulation);
+        simulation.Enqueue(new PlayerLeftCommand(Bot, 40, 0));
+        for (var tick = 0; tick < 120; tick++)
+        {
+            simulation.Step();
+            recorder.AfterStep();
+        }
+
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+
+        Assert.Contains(replay.Commands, command => command is PlayerLeftCommand);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
     }
 

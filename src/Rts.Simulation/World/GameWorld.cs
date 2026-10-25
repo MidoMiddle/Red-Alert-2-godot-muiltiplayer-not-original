@@ -391,6 +391,12 @@ public sealed class GameWorld
         return allies;
     }
 
+    /// <summary>
+    /// Whether <paramref name="player"/> is a player 1…8 out of the match (M5 step 10). What is left of one is that of a player who left a
+    /// network match (<see cref="Matches.VictorySystem.Abandon"/>): it neither looks for targets nor harvests.
+    /// </summary>
+    public bool IsDefeated(PlayerId player) => player.Value is >= 1 and <= PlayerId.MaxPlayers && _players[player.Value - 1].DefeatedTick is not null;
+
     /// <summary>The economy of a player 1…8.</summary>
     public PlayerState Player(PlayerId player) =>
         player.Value is >= 1 and <= PlayerId.MaxPlayers

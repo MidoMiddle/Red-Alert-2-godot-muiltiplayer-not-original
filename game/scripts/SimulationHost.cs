@@ -126,9 +126,20 @@ public partial class SimulationHost : Node
     private Rts.Net.Desync.ChecksumExchange? _checksums;
     private Rts.Net.Lockstep.LatencyMonitor? _latency;
     private Rts.Net.Lockstep.InputDelayAuthority? _delay;
+    private Rts.Net.Session.MatchReferee? _referee;
+    private readonly Rts.Net.Session.MatchStatus _netMatch = new();
     private long _netClockMs;
     private bool _desyncSaved;
     private Label? _netStatus;
+    private HBoxContainer? _kickButtons;
+    private readonly HashSet<PlayerId> _votedOut = new();
+
+    // Why the match is over for this computer (M9 step 10): the host left, or the others put this player out; empty while it goes.
+    private string _netEnded = "";
+
+    // A player who left lately, shown for a few seconds: the text and until when on the network clock.
+    private string _leftNotice = "";
+    private long _leftNoticeUntil;
 
     public GameSimulation Simulation { get; private set; } = null!;
 
@@ -783,13 +794,21 @@ public partial class SimulationHost : Node
 
         var lockstep = _lockstep!;
         NetworkTestOptions(lockstep);
-        _netClockMs += (long)(delta * 1000);
+        var elapsedMs = (long)(delta * 1000);
+        _netClockMs += elapsedMs;
         _latency!.Update(_netClockMs);
         _delay?.Update(_netClockMs);
+        _referee?.Update(elapsedMs);
+        _netMatch.Update(elapsedMs);
         lockstep.Update((long)(delta * 1000 * SpeedMultiplier));
         Alpha = lockstep.TickProgress;
+        UpdateKickButtons(lockstep);
 
-        if (_checksums!.Detector.Found is { } desync)
+        if (_netEnded != "")
+        {
+            ShowNetStatus(_netEnded);
+        }
+        else if (_checksums!.Detector.Found is { } desync)
         {
             if (_checksums.Stopped && !_desyncSaved)
             {
@@ -801,6 +820,11 @@ public partial class SimulationHost : Node
 
             ShowNetStatus(string.Format(Tr("UI_NET_DESYNC"), desync.Tick));
         }
+        else if (_netMatch.PausedBy is { } pauser)
+        {
+            ShowNetStatus(string.Format(Tr(pauser == LocalPlayer ? "UI_NET_PAUSED_OWN" : "UI_NET_PAUSED"), pauser.Value,
+                (_netMatch.PauseLeftMs + 999) / 1000, _netMatch.PausesLeft(LocalPlayer)));
+        }
         else if (lockstep.IsWaitingForPlayers)
         {
             var who = string.Join(", ", lockstep.MissingPlayers().Select(player => player.Value));
@@ -808,8 +832,123 @@ public partial class SimulationHost : Node
         }
         else
         {
-            ShowNetStatus("");
+            ShowNetStatus(_netClockMs < _leftNoticeUntil ? _leftNotice : "");
         }
+    }
+
+    /// <summary>
+    /// P in a network match (M9 step 10, 4.12): a pause for everyone, of those this player has left, or the end of its own pause. The
+    /// host decides; a client asks it.
+    /// </summary>
+    public void ToggleNetworkPause()
+    {
+        if (_lockstep is null || _netEnded != "")
+        {
+            return;
+        }
+
+        var pause = _netMatch.PausedBy != LocalPlayer;
+        if (_referee is not null)
+        {
+            _referee.RequestPause(LocalPlayer, pause);
+        }
+        else
+        {
+            SendToHost(new Rts.Net.Protocol.Messages.PauseRequest(LocalPlayer, pause));
+        }
+    }
+
+    // A vote to drop a player who keeps everyone waiting (4.11): the host counts its own at once, a client's goes to it.
+    private void VoteOut(PlayerId target)
+    {
+        _votedOut.Add(target);
+        if (_referee is not null)
+        {
+            _referee.Vote(LocalPlayer, target);
+        }
+        else
+        {
+            SendToHost(new Rts.Net.Protocol.Messages.KickVote(LocalPlayer, target));
+        }
+    }
+
+    // A client is connected to the host only: to everyone is to the host.
+    private void SendToHost(Rts.Net.Protocol.NetMessage message) =>
+        _net!.Transport.SendToAll(Rts.Net.Protocol.MessageCodec.Write(message), Rts.Net.Transport.DeliveryChannel.ReliableOrdered);
+
+    // After 10 s of waiting a button for each player awaited: «Drop player N»; pressed, it waits for the others' votes.
+    private void UpdateKickButtons(Rts.Net.Lockstep.LockstepEngine lockstep)
+    {
+        if (_kickButtons is null)
+        {
+            return;
+        }
+
+        var targets = _netEnded == "" && lockstep.WaitingMs >= _netMatch.Settings.KickVoteAfterMs
+            ? lockstep.MissingPlayers().Where(player => player != LocalPlayer).ToList()
+            : [];
+        if (targets.Count == 0)
+        {
+            _votedOut.Clear();
+        }
+
+        var wanted = string.Join(",", targets.Select(player => $"{player.Value}{(_votedOut.Contains(player) ? "v" : "")}"));
+        if ((string)_kickButtons.GetMeta("shown", "") == wanted)
+        {
+            return;
+        }
+
+        _kickButtons.SetMeta("shown", wanted);
+        foreach (var child in _kickButtons.GetChildren())
+        {
+            child.QueueFree();
+        }
+
+        foreach (var target in targets)
+        {
+            var voted = _votedOut.Contains(target);
+            var button = new Button
+            {
+                Text = string.Format(Tr(voted ? "UI_NET_KICK_VOTED" : "UI_NET_KICK"), target.Value),
+                Disabled = voted,
+                FocusMode = Control.FocusModeEnum.None,
+            };
+            button.Pressed += () => VoteOut(target);
+            _kickButtons.AddChild(button);
+        }
+    }
+
+    // What the host decided about who is in the match: a player out — this one, or another — and the host gone.
+    private void OnPlayerRemoved(PlayerId player, int tick)
+    {
+        var reason = _netMatch.Left.TryGetValue(player, out var why) ? why : Rts.Net.Protocol.Messages.LeaveReason.Disconnected;
+        GD.Print($"[net] player {player.Value} out on tick {tick}: {reason}");
+        if (player == LocalPlayer)
+        {
+            _netEnded = Tr("UI_NET_YOU_WERE_DROPPED");
+            return;
+        }
+
+        _leftNotice = string.Format(Tr(reason switch
+        {
+            Rts.Net.Protocol.Messages.LeaveReason.Timeout => "UI_NET_LEFT_TIMEOUT",
+            Rts.Net.Protocol.Messages.LeaveReason.Kicked => "UI_NET_LEFT_KICKED",
+            _ => "UI_NET_LEFT",
+        }), player.Value);
+        _leftNoticeUntil = _netClockMs + 6000;
+    }
+
+    private void OnHostLost()
+    {
+        if (_netEnded != "")
+        {
+            return;
+        }
+
+        // The direct mode has no host but the one (4.11): the match ends here, where it stands.
+        _lockstep!.StopAt(_lockstep.CurrentTick);
+        _netEnded = Tr("UI_NET_HOST_LEFT");
+        GD.Print($"[net] the host left on tick {_lockstep.CurrentTick}");
     }
 
     // For trying two copies on one computer: --net-test-orders sends the own units to the middle of the map on tick 30;
@@ -853,6 +992,21 @@ public partial class SimulationHost : Node
         _latency = new Rts.Net.Lockstep.LatencyMonitor(transport);
         _latency.Attach(_lockstep);
         _delay = net.IsHost ? new Rts.Net.Lockstep.InputDelayAuthority(_lockstep, _latency, transport, Simulation.Settings.TicksPerSecond) : null;
+        // Who leaves and when the game pauses the host decides (step 10); the clients hear of it.
+        if (net.Host is { } host)
+        {
+            var players = host.Seats.Where(seat => net.ActivePlayers.Contains(new PlayerId(seat.Value)))
+                .ToDictionary(seat => seat.Key, seat => new PlayerId(seat.Value));
+            _referee = new Rts.Net.Session.MatchReferee(_lockstep, transport, players);
+            _referee.Announced += _netMatch.Apply;
+        }
+        else
+        {
+            _lockstep.MessageReceived += (_, message) => _netMatch.Apply(message);
+            _lockstep.PeerDisconnected += _ => OnHostLost();
+        }
+
+        _lockstep.PlayerRemoved += OnPlayerRemoved;
         _lockstep.Start();
         GD.Print($"[net] tick 0 as {LocalPlayer}, players {string.Join(", ", net.ActivePlayers)}, input delay {start.InputDelay}");
     }
@@ -875,6 +1029,15 @@ public partial class SimulationHost : Node
             _netStatus.AddThemeColorOverride("font_outline_color", Colors.Black);
             _netStatus.AddThemeConstantOverride("outline_size", 6);
             layer.AddChild(_netStatus);
+            _kickButtons = new HBoxContainer
+            {
+                Alignment = BoxContainer.AlignmentMode.Center,
+                AnchorLeft = 0f,
+                AnchorRight = 1f,
+                OffsetTop = 165f,
+                OffsetBottom = 200f,
+            };
+            layer.AddChild(_kickButtons);
         }
 
         _netStatus.Text = text;

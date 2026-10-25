@@ -47,7 +47,8 @@ internal static class Samples
             new EnterCommand(player, tick, sequence++, Units(19, 20), new EntityId(21)),
             new EvacuateCommand(player, tick, sequence++, new EntityId(21)),
             new SuperweaponCommand(player, tick, sequence++, new EntityId(22), cell, new CellPos(13, 34)),
-            new SurrenderCommand(player, tick, sequence),
+            new SurrenderCommand(player, tick, sequence++),
+            new PlayerLeftCommand(player, tick, sequence),
         ];
     }
 
@@ -87,5 +88,6 @@ internal static class Samples
         new Surrender(P2),
         new DesyncReport(P2, 3000, 42UL),
         new InputDelayChange(4500, 6),
+        new KickVote(P2, new PlayerId(3)),
     ];
 }

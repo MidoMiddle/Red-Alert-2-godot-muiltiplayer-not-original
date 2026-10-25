@@ -98,6 +98,23 @@ public sealed record PlayerLeft(PlayerId Player, LeaveReason Reason, int Tick) :
 }
 
 /// <summary>
+/// A player votes to drop another who keeps everyone waiting (4.11): <c>i32 voter | i32 target</c>. To the host only, which counts the
+/// votes; never passed on.
+/// </summary>
+public sealed record KickVote(PlayerId Voter, PlayerId Target) : NetMessage
+{
+    public override MessageType Type => MessageType.KickVote;
+
+    internal override void WriteBody(MessageWriter writer)
+    {
+        writer.WritePlayer(Voter);
+        writer.WritePlayer(Target);
+    }
+
+    internal static KickVote ReadBody(ref MessageReader reader) => new(reader.ReadPlayer(), reader.ReadPlayer());
+}
+
+/// <summary>
 /// A player gives up: <c>i32 player</c>. The defeat itself is the surrender command in the player's tick bundle (4.4); this message
 /// only lets the others know at once.
 /// </summary>

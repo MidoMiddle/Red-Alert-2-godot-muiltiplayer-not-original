@@ -22,9 +22,9 @@ namespace Rts.Simulation.Systems;
 /// that holds its position, a harvester and a defense; a guarding unit takes nothing farther than <see cref="PursuitSystem.GuardLeash"/>
 /// cells and its range from its anchor. With nothing in reach it keeps its target only while that is still in reach: a target that
 /// left its sight is dropped. A unit with a target ordered by the player does not look while that stands, nor does a unit on a leg of
-/// a plain move: such a move ignores the enemies until it arrives (4.12). Neutral units and buildings look for nothing, nor does a defense off for want of
-/// power (<see cref="Defenses.IsOnline"/>, step 10). Only what the owner sees counts (<see cref="Vision.Sees"/>, step 11): a target
-/// gone into the fog is dropped, an ordered one too.
+/// a plain move: such a move ignores the enemies until it arrives (4.12). Neutral units and buildings look for nothing, nor do those a
+/// player left behind (M9 step 10), nor does a defense off for want of power (<see cref="Defenses.IsOnline"/>, step 10). Only what the
+/// owner sees counts (<see cref="Vision.Sees"/>, step 11): a target gone into the fog is dropped, an ordered one too.
 /// </summary>
 public static class TargetingSystem
 {
@@ -41,7 +41,7 @@ public static class TargetingSystem
                 EndFallenOrder(world, ordered);
             }
 
-            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || entity.ErasedBy is not null
+            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || world.IsDefeated(entity.Owner) || entity.ErasedBy is not null
                 || entity is Unit { WarpTicks: > 0 } || (entity is Unit robot && Defenses.IsAsleep(world, robot)))
             {
                 continue;

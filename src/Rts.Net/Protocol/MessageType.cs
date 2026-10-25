@@ -25,4 +25,5 @@ public enum MessageType : byte
     Surrender = 17,
     DesyncReport = 18,
     InputDelayChange = 19,
+    KickVote = 20,
 }
