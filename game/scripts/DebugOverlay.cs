@@ -14,7 +14,8 @@ namespace Rts.Client;
 
 /// <summary>
 /// Debug panel: mode, tick, rates, entity count, last checksum, replay check, the map cell under the pointer with its
-/// speed for each locomotor, and the controls of the current scheme.
+/// speed for each locomotor, and the controls of the current scheme. The key <c>debug_overlay</c> (` by default) shows and hides it
+/// (the owner, 2026-10-25); it starts hidden.
 /// </summary>
 public partial class DebugOverlay : CanvasLayer
 {
@@ -26,7 +27,10 @@ public partial class DebugOverlay : CanvasLayer
         "D deploy · Alt+order force move · T same type (twice: map) · P combat units (twice: map) · N/M idle unit · H base · Space last event · Q/W/E/R tabs · K/L repair/sell · " +
         "O damage under the cursor (debug) · B spawn (again: type) · Esc cancel or menu · Pause · . step · +/- speed · F5 save replay · F9 play replay · Insert new session · " +
         "arrows/edge/wheel camera · F1…F4 bookmark (Ctrl: save)\n" +
-        "Debug: F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph · F10 fog revealed · F12 AI";
+        "Debug: ` this text · F6 paths of the selected · F7 cells (passability / reservations / buckets) · F8 path queue graph · F10 fog revealed · F12 AI";
+
+    // Shown or not as the player last chose with the key in this run of the game: hidden at first (the owner's wish).
+    private static bool _shown;
 
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
@@ -49,8 +53,24 @@ public partial class DebugOverlay : CanvasLayer
         AddChild(_queueGraph);
     }
 
+    public override void _UnhandledKeyInput(InputEvent @event)
+    {
+        if (@event.IsActionPressed("debug_overlay", false, true))
+        {
+            _shown = !_shown;
+            GetViewport().SetInputAsHandled();
+        }
+    }
+
     public override void _Process(double delta)
     {
+        // Hidden, it costs nothing: the text is not made.
+        Visible = _shown;
+        if (!Visible)
+        {
+            return;
+        }
+
         // Main adds the path preview in its own _Ready, which runs after this one.
         _pathPreview ??= GetNodeOrNull<PathPreview>("../PathPreview");
         _cellOverlay ??= GetNodeOrNull<CellOverlay>("../CellOverlay");

@@ -271,6 +271,13 @@ public sealed class KeyBindingsTests
     }
 
     [Fact]
+    public void TheBackquoteShowsAndHidesTheDebugText()
+    {
+        // The owner's wish (2026-10-25): a key for the debug text on the field.
+        Assert.Equal("QuoteLeft", new KeyBindings().KeyOf("debug_overlay"));
+    }
+
+    [Fact]
     public void AnOlderFileWithSpawnOnTKeepsTypeSelectOnT()
     {
         var raw = new Dictionary<string, string>

@@ -266,6 +266,7 @@ UI_KEY_DEBUG_PRODUCE,Produce units of the spawn type (Shift: five) (debug)
 UI_KEY_DEBUG_REVEAL,Show the whole map through the fog of war (debug)
 UI_KEY_DEBUG_SWITCH_PLAYER,Play as the next player (debug builds)
 UI_KEY_DEBUG_AI,Show what the bot thinks (debug builds)
+UI_KEY_DEBUG_OVERLAY,Show or hide the debug text on the field
 UI_KEY_CANCEL_SELECTION,Cancel selection or menu
 UI_KEY_WAITING,Press a key...
 UI_KEYS_SWAPPED,{0} was used by {1}. {1} now uses {2}.
