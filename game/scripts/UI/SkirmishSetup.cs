@@ -459,7 +459,7 @@ public partial class SkirmishSetup : Control
             row.Personality.TooltipText = SkirmishNames.PersonalityHint(this, slot.Personality);
             var side = SkirmishConfig.SideOf(slot, faction);
             row.Side.Selected = Math.Max(0, _sides.IndexOf(side));
-            row.Side.TooltipText = bot ? Tr("UI_SKIRMISH_SIDE_BOT_HINT") : Tr("UI_SKIRMISH_COUNTRY_HINT");
+            row.Side.TooltipText = Tr("UI_SKIRMISH_COUNTRY_HINT");
             var flag = Flags.Of(side);
             row.Flag.Texture = flag;
             row.Unknown.Visible = flag is null;

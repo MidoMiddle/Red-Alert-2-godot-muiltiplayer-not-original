@@ -397,7 +397,6 @@ UI_EVA_BRIDGE_REPAIRED,Bridge repaired
 UI_EVA_UNIT_PROMOTED,Unit promoted
 UI_SKIRMISH_COUNTRY,Country
 UI_SKIRMISH_COUNTRY_HINT,Each country has a unit or building of its own; the USA drops paratroopers from its air force command
-UI_SKIRMISH_COUNTRY_NONE,A bot plays the whole faction
 UI_SKIRMISH_COUNTRY_DASH,—
 UI_KEY_TAB_BUILDINGS,Buildings tab
 UI_KEY_TAB_DEFENSE,Defense tab
@@ -518,7 +517,6 @@ UI_SKIRMISH_SIDE,Side
 UI_SKIRMISH_PLAYER_ONE,Player 1
 UI_SKIRMISH_ENEMY,{0} Enemy
 UI_RANDOM_SHORT,???
-UI_SKIRMISH_SIDE_BOT_HINT,The side gives the bot its faction; a bot builds the whole faction
 UI_OPTION_MCV_REPACKS,MCV Repacks
 UI_OPTION_DESTROYABLE_BRIDGES,Destroyable Bridges
 UI_OPTION_MULTI_ENGINEER,Multi Engineer

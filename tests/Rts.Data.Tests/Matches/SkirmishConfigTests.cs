@@ -154,7 +154,7 @@ public sealed class SkirmishConfigTests
     }
 
     [Fact]
-    public void The_person_plays_its_country_or_one_drawn_from_its_faction_and_a_bot_none()
+    public void Every_player_plays_its_country_or_one_drawn_from_its_faction()
     {
         var map = FourCorners();
         var countries = GameDataFiles.Rules.Database.Countries;
@@ -165,7 +165,14 @@ public sealed class SkirmishConfigTests
 
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
         Assert.Equal("france", setup.Players[0].Country);
-        Assert.Equal("", setup.Players[1].Country);
+        // A bot too (RA2): its country, or one of its faction drawn.
+        Assert.All(setup.Players, player => Assert.Contains(countries, country => country.Id == player.Country && country.Faction == player.Faction));
+        var iraq = config.With(1, config.Slots[1] with { Faction = "union", Country = "iraq" });
+        Assert.Equal("iraq", iraq.ToSetup(map, "union", seed: 3, null, countries).Players[1].Country);
+
+        // The quick skirmish: a country of the faction for everyone; without the countries, as the bots' tests pin it, none.
+        Assert.All(MatchSetups.TwoOnTwo(map, "union", 3, countries).Players, player => Assert.Contains(player.Country, new[] { "cuba", "iraq", "libya", "russia" }));
+        Assert.All(MatchSetups.OneOnOne(map, "union", 3).Players, player => Assert.Equal("", player.Country));
 
         // Random, or a country of another faction: one of the faction played, from the seed.
         var random = config.With(0, config.Slots[0] with { Faction = "union", Country = "france" });

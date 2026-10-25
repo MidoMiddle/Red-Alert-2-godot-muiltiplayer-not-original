@@ -129,8 +129,8 @@ public partial class QuickSkirmish : Control
 
         var faction = DataFiles.Current.Rules.DefaultFaction.Id;
         var setup = _twoOnTwo
-            ? MatchSetups.TwoOnTwo(_shown.Map, faction, MatchSetups.NewSeed())
-            : MatchSetups.OneOnOne(_shown.Map, faction, MatchSetups.NewSeed());
+            ? MatchSetups.TwoOnTwo(_shown.Map, faction, MatchSetups.NewSeed(), DataFiles.Current.Rules.Database.Countries)
+            : MatchSetups.OneOnOne(_shown.Map, faction, MatchSetups.NewSeed(), DataFiles.Current.Rules.Database.Countries);
         SceneRouter.Instance?.GoTo(MatchScene, new Dictionary<string, object>
         {
             [SimulationHost.MapArgument] = _shown.File,

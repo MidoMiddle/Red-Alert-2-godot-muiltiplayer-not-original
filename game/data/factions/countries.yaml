@@ -1,5 +1,5 @@
-# The countries of RA2 (loose ends, stage 5): a person picks one on the skirmish screen; what only it has, or may not have, is said on
-# the units and buildings (countries, forbidden_countries). A bot plays the whole faction. The passive bonuses of RA2 were cut out of
+# The countries of RA2 (loose ends, stage 5): every player plays one, a bot too, picked on the skirmish screen or drawn; what only it
+# has, or may not have, is said on the units and buildings (countries, forbidden_countries). The passive bonuses of RA2 were cut out of
 # its rules and are not done.
 usa:
   kind: country

@@ -227,7 +227,8 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     /// The match of these rows on <paramref name="map"/>: the players in the order of the rows, slots 1, 2, …; a row plays its faction,
     /// <paramref name="faction"/> when it has none, and a random one of <paramref name="playable"/> drawn from <paramref name="seed"/>; the
     /// random starts are drawn from the seed too, among those no row has taken. The person plays its country of
-    /// <paramref name="countries"/> if it is one of the faction played, else one drawn among them (loose ends, stage 5); a bot plays none.
+    /// <paramref name="countries"/> if it is one of the faction played, else one drawn among them (loose ends, stage 5); so does a bot (RA2: a
+    /// player always plays a country, the owner, 2026-10-26).
     /// </summary>
     public MatchSetup ToSetup(
         MapDefinition map, string faction, ulong seed, IReadOnlyList<string>? playable = null, IReadOnlyList<Rts.Simulation.Rules.CountryDef>? countries = null)
@@ -270,7 +271,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
                 var chosen => chosen,
             };
             var own = countries?.Where(country => country.Faction == plays).Select(country => country.Id).ToList() ?? [];
-            var country = slot.Kind != SlotKind.Human || own.Count == 0 ? ""
+            var country = own.Count == 0 ? ""
                 : own.Contains(slot.Country) ? slot.Country
                 : own[randomCountry.NextInt(own.Count)];
             players.Add(new MatchPlayer(

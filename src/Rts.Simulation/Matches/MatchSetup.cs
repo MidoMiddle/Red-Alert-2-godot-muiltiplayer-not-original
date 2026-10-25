@@ -82,8 +82,8 @@ public sealed record MatchPlayer(
     public string Personality { get; init; } = DefaultPersonality;
 
     /// <summary>
-    /// The country the player plays (loose ends, stage 5): one of its faction in the data, or empty for the whole faction — every bot, as
-    /// its build orders want.
+    /// The country the player plays (loose ends, stage 5): one of its faction in the data. The game gives every player one, bots too (RA2,
+    /// the owner, 2026-10-26); empty for the whole faction, as the matches of the bots' tests and the arena are pinned.
     /// </summary>
     public string Country { get; init; } = "";
 }

@@ -351,8 +351,8 @@ public partial class PauseMenu : CanvasLayer
             }
             else
             {
-                // A bot plays the whole faction, no country (MatchPlayer.Country): the emblem of its side stands for the flag, and the
-                // name says the side.
+                // A player of the whole faction, no country (the sandbox, a replay of before): the emblem of its side stands for the
+                // flag, and the name says the side.
                 _table.AddChild(new FactionEmblem
                 {
                     Faction = FactionPalette.Of(faction), Small = true, TooltipText = side,

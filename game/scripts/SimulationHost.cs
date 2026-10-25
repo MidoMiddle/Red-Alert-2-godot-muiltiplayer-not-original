@@ -318,7 +318,7 @@ public partial class SimulationHost : Node
         var (map, definition) = LoadMap(MapPath);
         Look = definition is not null ? Climates.MapLook.FromDefinition(definition) : Climates.MapLook.FromLand(map.Grid);
         _match ??= RoutedMatch() ?? (!IsBattle && definition is not null && MatchSetups.IsPlayable(definition)
-            ? MatchSetups.OneOnOne(definition, Data.Rules.DefaultFaction.Id, MatchSetups.NewSeed())
+            ? MatchSetups.OneOnOne(definition, Data.Rules.DefaultFaction.Id, MatchSetups.NewSeed(), Data.Rules.Database.Countries)
             : null);
         if (_match is not null && RoutedMatch() is null && _net is null && OS.GetCmdlineUserArgs().Contains("--crates"))
         {
