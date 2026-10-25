@@ -36,6 +36,11 @@ public sealed class GameRules
     private readonly ImmutableArray<int>[] _single;
     private readonly ImmutableArray<int>[] _buildingWeapons;
 
+    // The weapon and armor of the buildings of the map by kind (the outpost): -1 and 0 for those without, and for data that lacks them
+    // (the small datasets of the tests); the game data has both (GameDataTests).
+    private readonly ImmutableArray<int>[] _kindWeapons;
+    private readonly int[] _kindArmor;
+
     private GameRules(
         RulesDatabase database, UnitArchetype[] units, LandSpeeds land, bool[] buildable, Fixed[] verses, int[] buildingArmor, int[] buildingWeapon)
     {
@@ -56,6 +61,20 @@ public sealed class GameRules
             _single[weapon] = ImmutableArray.Create(weapon, -1);
         }
         _buildingWeapons = System.Array.ConvertAll(buildingWeapon, weapon => ImmutableArray.Create(weapon));
+        var kinds = 0;
+        foreach (var type in BuildingTypes.All)
+        {
+            kinds = IntMath.Max(kinds, (int)type.Kind + 1);
+        }
+
+        _kindWeapons = new ImmutableArray<int>[kinds];
+        _kindArmor = new int[kinds];
+        System.Array.Fill(_kindWeapons, ImmutableArray.Create(-1));
+        foreach (var type in BuildingTypes.All)
+        {
+            _kindWeapons[(int)type.Kind] = ImmutableArray.Create(database.IndexOfWeapon(type.Weapon));
+            _kindArmor[(int)type.Kind] = IntMath.Max(0, database.IndexOfArmor(type.Armor));
+        }
     }
 
     /// <summary>The definitions the rules are made from.</summary>
@@ -135,6 +154,13 @@ public sealed class GameRules
 
     /// <summary>The weapon of the building at <paramref name="defIndex"/> as a list of one, -1 without one.</summary>
     public ImmutableArray<int> WeaponsOfBuilding(int defIndex) => _buildingWeapons[defIndex];
+
+    /// <summary>The weapon of a building of the data or of the map (the outpost) as a list of one, -1 without one.</summary>
+    public ImmutableArray<int> WeaponsOf(Building building) =>
+        building.DefIndex >= 0 ? _buildingWeapons[building.DefIndex] : _kindWeapons[(int)building.Kind];
+
+    /// <summary>The armor number of a building of the data or of the map; a building of the map without armor counts as the first type.</summary>
+    public int ArmorOf(Building building) => building.DefIndex >= 0 ? _buildingArmor[building.DefIndex] : _kindArmor[(int)building.Kind];
 
     public UnitArchetype Unit(UnitType type) => UnitTypes.IsKnown(type)
         ? _units[(int)type - 1]

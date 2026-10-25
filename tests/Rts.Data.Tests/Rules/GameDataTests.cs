@@ -43,6 +43,11 @@ public sealed class GameDataTests
         Assert.Equal(16, database.Buildings.Count(building => building.Faction == "union"));
         Assert.Equal(19, database.Buildings.Count(building => building.Faction == "alliance"));
         Assert.Equal(6, database.Locomotors.Length);
+
+        // The weapon and armor of the outpost of the map are in the data.
+        var outpost = BuildingTypes.Get(BuildingKind.TechOutpost);
+        Assert.True(database.IndexOfWeapon(outpost.Weapon) >= 0, outpost.Weapon);
+        Assert.True(database.IndexOfArmor(outpost.Armor) >= 0, outpost.Armor);
         Assert.Equal(8, database.Terrains.Length);
         Assert.Equal(new[] { "alliance", "union" }, database.Factions.Select(faction => faction.Id));
         Assert.Equal("union", GameDataFiles.Rules.DefaultFaction.Id);

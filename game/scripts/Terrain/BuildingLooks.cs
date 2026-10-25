@@ -615,6 +615,17 @@ public static class BuildingLooks
             Box(1.7f, 0.14f, 0.04f, 0, 1.68f, 0.48f, LookTint.Wood),
             Box(0.3f, 0.45f, 0.05f, 0, 0, 0.6f, LookTint.Dark),
         ],
+        // The outpost of RA2: a concrete pad, a block with the missile turret on it, the repair circle and its crane.
+        ["tech_outpost"] =
+        [
+            Box(3.9f, 0.15f, 2.9f, 0, 0, 0, LookTint.Concrete),
+            Box(1.6f, 0.6f, 1.2f, -1.1f, 0.15f, -0.8f, LookTint.Body),
+            Cyl(0.6f, 0.3f, -1.1f, 0.75f, -0.8f, LookTint.Metal),
+            Box(0.5f, 0.2f, 0.32f, -1.1f, 1.05f, -0.8f, LookTint.Dark),
+            Cyl(1.6f, 0.04f, 0.9f, 0.15f, 0.35f, LookTint.Accent),
+            Box(0.15f, 1.1f, 0.15f, 1.75f, 0.15f, -1.3f, LookTint.Metal),
+            Box(1.6f, 0.12f, 0.15f, 1.0f, 1.25f, -1.3f, LookTint.Metal),
+        ],
 
         // The Soviets.
         ["construction_yard"] =

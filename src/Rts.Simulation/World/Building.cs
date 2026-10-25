@@ -27,6 +27,7 @@ public sealed class Building : Entity
         Height = BuildingTypes.Get(kind).Height;
         Hp = BuildingTypes.Get(kind).MaxHp;
         DefIndex = -1;
+        Weapons = BuildingTypes.Get(kind).Weapon.Length > 0 ? [new()] : [];
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public sealed class Building : Entity
     /// <summary>What a defense shoots at (M4, 4.7); null without a target. State: hashed.</summary>
     public EntityId? Target { get; internal set; }
 
-    /// <summary>The state of the weapon of a defense; empty for any other building.</summary>
+    /// <summary>The state of the weapon of a defense (or of the outpost of the map); empty for any other building.</summary>
     public Combat.WeaponInstance[] Weapons { get; } = [];
 
     /// <summary>

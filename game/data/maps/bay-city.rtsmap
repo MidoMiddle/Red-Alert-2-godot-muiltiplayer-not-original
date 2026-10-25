@@ -1097,3 +1097,5 @@ structures:
   - { type: tech_oil_derrick, cell: [81, 76], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [66, 126], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [68, 126], owner: neutral, facing: 0 }
+  - { type: tech_outpost, cell: [62, 62], owner: neutral, facing: 0 }
+  - { type: tech_outpost, cell: [70, 62], owner: neutral, facing: 0 }

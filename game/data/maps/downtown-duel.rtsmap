@@ -973,3 +973,5 @@ structures:
   - { type: tech_bridge_repair_hut, cell: [69, 89], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [60, 67], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [74, 67], owner: neutral, facing: 0 }
+  - { type: tech_outpost, cell: [62, 63], owner: neutral, facing: 0 }
+  - { type: tech_outpost, cell: [70, 63], owner: neutral, facing: 0 }

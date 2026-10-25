@@ -105,6 +105,10 @@ public static class VisibilitySystem
             case Building { Def: { Sight: > 0 } def } building:
                 var middle = MiddleOf(building);
                 return (middle, SightRules.SightAt(world.Map, middle, def.Sight));
+            // A taken building of the map that sees (the outpost).
+            case Building { Def: null } taken when BuildingTypes.IsKnown(taken.Kind) && taken.Type.Sight > 0:
+                var centre = MiddleOf(taken);
+                return (centre, SightRules.SightAt(world.Map, centre, taken.Type.Sight));
             default:
                 return (null, 0);
         }

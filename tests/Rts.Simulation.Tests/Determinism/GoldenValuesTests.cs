@@ -355,6 +355,7 @@ public sealed class GoldenValuesTests
         // Replay format v29, rules v74 (M11 a6: the crates; this scenario has no match, so no option byte): the versions only.
         // Rules v75 (the content of Yuri's Revenge taken out: the robot tank, its control centre, the industrial plant, the battle bunker,
         // the machine shop and the power plant): the version only.
-        Assert.Equal((22270, 2368509261015726454UL), (bytes.Length, hash.Value));
+        // Rules v76 (the outpost of RA2): the version only.
+        Assert.Equal((22270, 11299144653241318825UL), (bytes.Length, hash.Value));
     }
 }

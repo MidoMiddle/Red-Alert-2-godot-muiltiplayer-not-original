@@ -209,7 +209,7 @@ if (args.Length >= 2 && args[0] == "add-drills")
     return failed == 0 ? 0 : 1;
 }
 
-// M11 a5: a power plant and a machine shop near the middle of a generated map, copied to every image of its symmetry (TechSites).
+// The outposts of RA2 near the middle of a generated map, copied to every image of its symmetry (TechSites).
 if (args.Length >= 2 && args[0] == "add-tech")
 {
     var failed = 0;
@@ -232,7 +232,7 @@ if (args.Length >= 2 && args[0] == "add-tech")
             }
 
             File.WriteAllText(path, RtsMapWriter.Write(teched));
-            var added = teched.Structures.Where(s => s.Type is TechSites.PowerPlant or TechSites.MachineShop);
+            var added = teched.Structures.Where(s => s.Type is TechSites.Outpost);
             Console.WriteLine($"{path}: {string.Join(", ", added.Select(s => $"{s.Type} {s.Cell.X},{s.Cell.Y}"))} · {MapValidator.Check(teched).Count} warnings");
         }
         catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)

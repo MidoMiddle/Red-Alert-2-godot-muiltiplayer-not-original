@@ -51,6 +51,9 @@ public enum BuildingKind : byte
 
     // 42 and 43 were the machine shop and the power plant of Yuri's Revenge (M11 a5), taken out on 2026-10-25 to keep to RA2: never
     // reuse the numbers.
+
+    // The outpost of RA2 (CAOUTP), 2026-10-25: a repair pad with a missile turret that extends the base of its owner.
+    TechOutpost = 44,
 }
 
 /// <summary>
@@ -58,7 +61,8 @@ public enum BuildingKind : byte
 /// cells from the north-west corner, its hit points, how many soldiers it would hold and whether an engineer would take it.
 /// An engineer takes one that is <see cref="Capturable"/> (stage 1 of the loose ends); a tech building taken gives its owner what its
 /// kind gives (<see cref="Systems.TechBuildingSystem"/>), the airfield its <see cref="Superweapon"/> every <see cref="Recharge"/> ticks.
-/// Garrisons are M11: the field is here, the logic is not.
+/// Taken, the outpost of RA2 fires its <see cref="Weapon"/> (a weapon of the data, by id) at its owner's enemies, has the
+/// <see cref="Armor"/> of the data, sees <see cref="Sight"/> cells, mends its owner's vehicles beside it and extends its owner's base.
 /// </summary>
 public sealed record BuildingType(
     BuildingKind Kind,
@@ -69,7 +73,12 @@ public sealed record BuildingType(
     int Garrison,
     bool Capturable,
     Rules.SuperweaponKind Superweapon = Rules.SuperweaponKind.None,
-    int Recharge = 0);
+    int Recharge = 0,
+    string Weapon = "",
+    string Armor = "",
+    int Sight = 0,
+    bool RepairsVehicles = false,
+    bool ExtendsBase = false);
 
 /// <summary>
 /// The neutral buildings and tech buildings of the rules so far — winter and industrial sets, and the town, beach, desert, harbour and
@@ -127,6 +136,11 @@ public static class BuildingTypes
         new(BuildingKind.NeutralBarn, "neutral_barn", 3, 2, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralSilo, "neutral_silo", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralWindmill, "neutral_windmill", 2, 2, MaxHp: 700, Garrison: 0, Capturable: false),
+
+        // The outpost of RA2 (docs/ra2_buildings/tech/outpost): 4 x 3, 2000 hit points, concrete, sight 6; the IFV's HoverMissile, a pad
+        // that mends vehicles, a base of its owner's. A neutral one does not fire.
+        new(BuildingKind.TechOutpost, "tech_outpost", 4, 3, MaxHp: 2000, Garrison: 0, Capturable: true, Weapon: "alliance_ifv_missiles",
+            Armor: "concrete", Sight: 6, RepairsVehicles: true, ExtendsBase: true),
     ];
 
     // The rows by kind; a number that was taken out has none.

@@ -234,13 +234,13 @@ public static class DamageSystem
         warhead.WallDamage || entity is not Building { Def.Wall: true };
 
     /// <summary>
-    /// The armor number of a unit or a building of a player. A building of the map has no armor in the data yet (M3 step 14a): it counts as
-    /// the first armor type.
+    /// The armor number of a unit or a building. A building of the map has no armor in the data (M3 step 14a) but the outpost's: it counts
+    /// as the first armor type.
     /// </summary>
     private static int ArmorOf(GameRules rules, Entity entity) => entity switch
     {
         World.Unit unit => unit.Archetype.Armor,
-        Building { DefIndex: >= 0 } building => rules.ArmorOfBuilding(building.DefIndex),
+        Building building => rules.ArmorOf(building),
         Projectile shot => rules.ArmorOfShot(shot.Weapon),
         _ => 0,
     };

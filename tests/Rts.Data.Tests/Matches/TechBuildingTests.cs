@@ -11,7 +11,8 @@ namespace Rts.Data.Tests.Matches;
 
 /// <summary>
 /// The tech buildings of the map (loose ends, stage 1): an engineer takes them; the oil derrick pays, the hospital heals, the airfield
-/// sends a paradrop; a tech building keeps nobody in the match. By the game data, without the fog of war; two people play, no bot.
+/// sends a paradrop, the outpost of RA2 fires, mends vehicles and extends the base; a tech building keeps nobody in the match. By the
+/// game data, without the fog of war; two people play, no bot.
 /// </summary>
 public sealed class TechBuildingTests
 {
@@ -22,6 +23,9 @@ public sealed class TechBuildingTests
     private static readonly CellPos Hospital = new(30, 18);
     private static readonly CellPos Airfield = new(10, 40);
 
+    // An outpost of 4 x 3 cells: (40, 30) to (43, 32), its centre at (42, 31.5).
+    private static readonly CellPos Outpost = new(40, 30);
+
     private static GameSimulation Match()
     {
         var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
@@ -30,6 +34,7 @@ public sealed class TechBuildingTests
             new BuildingState(BuildingKind.TechOilDerrick, Derrick, PlayerId.Neutral, 0),
             new BuildingState(BuildingKind.TechHospital, Hospital, PlayerId.Neutral, 0),
             new BuildingState(BuildingKind.TechAirfield, Airfield, PlayerId.Neutral, 0),
+            new BuildingState(BuildingKind.TechOutpost, Outpost, PlayerId.Neutral, 0),
         ]);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
@@ -198,5 +203,64 @@ public sealed class TechBuildingTests
         Take(simulation, Union, UnitType.Engineer, Derrick, 0);
         Run(simulation, 30);
         Assert.NotNull(world.Player(Union).DefeatedTick);
+    }
+
+    [Fact]
+    public void A_neutral_outpost_is_silent_and_a_taken_one_fires_at_its_owner_s_enemies()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        // Unarmed, 4 cells east of the centre: within the turret's 6.
+        var mcv = Spawn(world, Allied, UnitType.AllianceMcv, 46, 31);
+        Run(simulation, 120);
+        Assert.Equal(mcv.MaxHp, mcv.Hp);
+
+        Take(simulation, Union, UnitType.Engineer, Outpost, 0);
+        Run(simulation, 200, () => mcv.Hp < mcv.MaxHp);
+        Assert.True(mcv.Hp < mcv.MaxHp, "the turret hit the vehicle");
+        Assert.Equal(world.Rules.Database.IndexOfArmor("concrete"), world.Rules.ArmorOf(At(world, Outpost)));
+    }
+
+    [Fact]
+    public void A_taken_outpost_fires_at_an_aircraft()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        Take(simulation, Union, UnitType.Engineer, Outpost, 0);
+        var helicopter = Spawn(world, Allied, UnitType.AllianceNighthawk, 42, 27);
+        Run(simulation, 200, () => helicopter.Hp < helicopter.MaxHp);
+
+        Assert.True(helicopter.Hp < helicopter.MaxHp, "the turret hit the helicopter");
+    }
+
+    [Fact]
+    public void A_taken_outpost_mends_its_owner_s_vehicles_beside_it()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        // Beside the east side of the footprint.
+        var tank = Spawn(world, Union, UnitType.HeavyTank, 44, 31);
+        world.SetHp(tank, tank.MaxHp / 2, null);
+        Run(simulation, 60);
+        Assert.Equal(tank.MaxHp / 2, tank.Hp);
+
+        Take(simulation, Union, UnitType.Engineer, Outpost, 0);
+        var hurt = tank.Hp;
+        Run(simulation, 30);
+        Assert.True(tank.Hp > hurt, "mended on the pad");
+    }
+
+    [Fact]
+    public void A_taken_outpost_extends_its_owner_s_base()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        world.Rules.Database.TryGetBuilding("barracks", out var barracks);
+        var beside = new CellPos(45, 30);
+        Assert.Equal(PlacementProblem.TooFar, PlacementRules.Check(world, Union, barracks, beside));
+
+        Take(simulation, Union, UnitType.Engineer, Outpost, 0);
+        Assert.Equal(PlacementProblem.None, PlacementRules.Check(world, Union, barracks, beside));
+        Assert.Equal(PlacementProblem.TooFar, PlacementRules.Check(world, Allied, barracks, beside));
     }
 }

@@ -130,7 +130,9 @@ public static class PlacementRules
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is Building { IsAlive: true, Def: { } other } building && building.Owner == player && (other.ExtendsBase || (def.Wall && other.Id == def.Id)))
+            if (entity is Building { IsAlive: true } building && building.Owner == player
+                && (building.Def is { } other ? other.ExtendsBase || (def.Wall && other.Id == def.Id)
+                    : BuildingTypes.IsKnown(building.Kind) && building.Type.ExtendsBase))
             {
                 var gapX = IntMath.Max(0, IntMath.Max(building.Cell.X - far.X, cell.X - building.FarCell.X) - 1);
                 var gapY = IntMath.Max(0, IntMath.Max(building.Cell.Y - far.Y, cell.Y - building.FarCell.Y) - 1);

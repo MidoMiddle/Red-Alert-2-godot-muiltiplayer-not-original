@@ -102,7 +102,8 @@ public static class RepairSystem
         HashSet<EntityId>? repaired = null;
         foreach (var entity in world.Entities)
         {
-            if (entity is not Building { IsAlive: true, IsReady: true, Def.RepairsVehicles: true } workshop)
+            if (entity is not Building { IsAlive: true, IsReady: true } workshop
+                || !(workshop.Def?.RepairsVehicles ?? (BuildingTypes.IsKnown(workshop.Kind) && workshop.Type.RepairsVehicles)))
             {
                 continue;
             }

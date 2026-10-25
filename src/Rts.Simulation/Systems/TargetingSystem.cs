@@ -74,7 +74,7 @@ public static class TargetingSystem
 
                 case Building { IsReady: true } building when building.Weapons.Length > 0:
                     {
-                        var weapons = rules.WeaponsOfBuilding(building.DefIndex);
+                        var weapons = rules.WeaponsOf(building);
                         var centre = Aim.CentreOf(building);
                         building.Target = Best(world, rules, building, new Area(centre, Reach(rules, weapons), centre, -1), weapons, building.Target, nearby);
                         break;
@@ -139,7 +139,7 @@ public static class TargetingSystem
         var armor = candidate switch
         {
             Unit unit => unit.Archetype.Armor,
-            Building { DefIndex: >= 0 } building => rules.ArmorOfBuilding(building.DefIndex),
+            Building building => rules.ArmorOf(building),
             Projectile shot => rules.ArmorOfShot(shot.Weapon),
             _ => 0,
         };
