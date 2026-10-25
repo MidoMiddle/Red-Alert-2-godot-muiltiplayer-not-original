@@ -907,7 +907,7 @@ structures:
   - { type: neutral_lifeguard_tower, cell: [70, 116], owner: neutral, facing: 2 }
   - { type: neutral_lighthouse, cell: [33, 48], owner: neutral, facing: 0 }
   - { type: neutral_lighthouse, cell: [101, 48], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [52, 66], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [82, 66], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [52, 63], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [82, 63], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [66, 126], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [68, 126], owner: neutral, facing: 0 }

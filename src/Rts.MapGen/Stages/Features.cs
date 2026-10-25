@@ -29,7 +29,8 @@ internal static class Features
     public static void Buildings(GenMap map, CellPos contested)
     {
         var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
-        foreach (var (dx, dy) in new[] { (3, 0), (0, 3), (-4, 0), (0, -4), (3, 3), (-4, -4) })
+        // Out of the ore zone round the contested field — its ore and what its gem drill throws — and clear of it (GenMap.OreClearance).
+        foreach (var (dx, dy) in new[] { (6, 0), (0, 6), (-7, 0), (0, -7), (5, 5), (-6, -6), (8, 0), (0, 8), (-9, 0), (0, -9) })
         {
             var corner = new CellPos(contested.X + dx, contested.Y + dy);
             var images = new List<StructurePlacement>();
@@ -340,11 +341,12 @@ internal static class Features
         return false;
     }
 
+    // No cell of the building within GenMap.OreClearance of the ore zone.
     private static bool NoOre(GenMap map, StructurePlacement placement)
     {
         foreach (var cell in MapChecks.Footprint(placement))
         {
-            if (!map.Contains(cell) || map.Ore[cell.Y * map.N + cell.X] > 0)
+            if (!map.Contains(cell) || map.NearOre(cell, GenMap.OreClearance))
             {
                 return false;
             }

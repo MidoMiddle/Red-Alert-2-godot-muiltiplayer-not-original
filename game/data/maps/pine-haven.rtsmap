@@ -6780,7 +6780,7 @@ structures:
   - { type: tech_bridge_repair_hut, cell: [64, 70], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [117, 111], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [70, 117], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [93, 66], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [66, 87], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [114, 93], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [87, 114], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [89, 76], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [104, 89], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [76, 91], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [91, 104], owner: neutral, facing: 0 }

@@ -1183,7 +1183,7 @@ structures:
   - { type: neutral_rock_mesa, cell: [43, 123], owner: neutral, facing: 2 }
   - { type: neutral_rock_mesa, cell: [123, 137], owner: neutral, facing: 2 }
   - { type: neutral_rock_mesa, cell: [98, 143], owner: neutral, facing: 6 }
-  - { type: tech_oil_derrick, cell: [94, 72], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [72, 86], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [108, 94], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [86, 108], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [88, 69], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [111, 88], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [69, 92], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [92, 111], owner: neutral, facing: 0 }

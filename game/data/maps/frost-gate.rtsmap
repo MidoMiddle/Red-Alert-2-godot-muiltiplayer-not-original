@@ -590,34 +590,26 @@ objects:
   - { type: barbed_wire, cell: [87, 101], variant: 0 }
   - { type: barbed_wire, cell: [88, 101], variant: 0 }
   - { type: barbed_wire, cell: [89, 101], variant: 0 }
-  - { type: farm_tractor, cell: [48, 70], variant: 0 }
-  - { type: farm_tractor, cell: [87, 70], variant: 0 }
   - { type: gem_source, cell: [53, 66], variant: 0 }
   - { type: gem_source, cell: [82, 66], variant: 0 }
-  - { type: hay_bale, cell: [52, 70], variant: 0 }
-  - { type: hay_bale, cell: [53, 70], variant: 1 }
-  - { type: hay_bale, cell: [82, 70], variant: 1 }
-  - { type: hay_bale, cell: [83, 70], variant: 0 }
-  - { type: hay_bale, cell: [52, 71], variant: 2 }
-  - { type: hay_bale, cell: [83, 71], variant: 2 }
-  - { type: hedge, cell: [46, 65], variant: 0 }
-  - { type: hedge, cell: [47, 65], variant: 0 }
-  - { type: hedge, cell: [48, 65], variant: 0 }
-  - { type: hedge, cell: [49, 65], variant: 0 }
-  - { type: hedge, cell: [50, 65], variant: 0 }
-  - { type: hedge, cell: [51, 65], variant: 0 }
-  - { type: hedge, cell: [84, 65], variant: 0 }
-  - { type: hedge, cell: [85, 65], variant: 0 }
-  - { type: hedge, cell: [86, 65], variant: 0 }
-  - { type: hedge, cell: [87, 65], variant: 0 }
-  - { type: hedge, cell: [88, 65], variant: 0 }
-  - { type: hedge, cell: [89, 65], variant: 0 }
+  - { type: hedge, cell: [60, 40], variant: 0 }
+  - { type: hedge, cell: [61, 40], variant: 0 }
+  - { type: hedge, cell: [62, 40], variant: 0 }
+  - { type: hedge, cell: [63, 40], variant: 0 }
+  - { type: hedge, cell: [64, 40], variant: 0 }
+  - { type: hedge, cell: [65, 40], variant: 0 }
+  - { type: hedge, cell: [66, 40], variant: 0 }
+  - { type: hedge, cell: [69, 40], variant: 0 }
+  - { type: hedge, cell: [70, 40], variant: 0 }
+  - { type: hedge, cell: [71, 40], variant: 0 }
+  - { type: hedge, cell: [72, 40], variant: 0 }
+  - { type: hedge, cell: [73, 40], variant: 0 }
+  - { type: hedge, cell: [74, 40], variant: 0 }
+  - { type: hedge, cell: [75, 40], variant: 0 }
   - { type: ore_source, cell: [40, 73], variant: 0 }
   - { type: ore_source, cell: [95, 73], variant: 0 }
   - { type: pine_tree, cell: [63, 44], variant: 2 }
   - { type: pine_tree, cell: [72, 44], variant: 2 }
-  - { type: pine_tree, cell: [62, 45], variant: 3 }
-  - { type: pine_tree, cell: [73, 45], variant: 3 }
   - { type: pine_tree, cell: [65, 48], variant: 0 }
   - { type: pine_tree, cell: [70, 48], variant: 0 }
   - { type: pine_tree, cell: [64, 49], variant: 1 }
@@ -1160,19 +1152,19 @@ objects:
   - { type: pine_tree, cell: [74, 135], variant: 1 }
   - { type: pine_tree, cell: [118, 135], variant: 2 }
   - { type: pine_tree, cell: [119, 135], variant: 1 }
-  - { type: well, cell: [47, 70], variant: 0 }
-  - { type: well, cell: [88, 70], variant: 0 }
+  - { type: well, cell: [62, 45], variant: 0 }
+  - { type: well, cell: [73, 45], variant: 0 }
 bridges:
   - { type: bridge_wood_low, from: [67, 45], to: [68, 45] }
   - { type: bridge_wood_low, from: [66, 90], to: [69, 90] }
 structures:
-  - { type: neutral_farmhouse, cell: [47, 67], owner: neutral, facing: 0 }
-  - { type: neutral_farmhouse, cell: [87, 67], owner: neutral, facing: 0 }
-  - { type: neutral_silo, cell: [50, 70], owner: neutral, facing: 0 }
-  - { type: neutral_silo, cell: [85, 70], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [62, 42], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [72, 42], owner: neutral, facing: 0 }
+  - { type: neutral_windmill, cell: [59, 43], owner: neutral, facing: 0 }
+  - { type: neutral_windmill, cell: [75, 43], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [66, 44], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [69, 44], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [64, 88], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [71, 88], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [56, 66], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [78, 66], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [59, 66], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [75, 66], owner: neutral, facing: 0 }

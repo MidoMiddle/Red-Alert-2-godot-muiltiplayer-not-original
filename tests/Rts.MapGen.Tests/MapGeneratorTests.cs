@@ -52,12 +52,13 @@ public sealed class MapGeneratorTests
         // the drills of the fields; without them the map is the one of before, byte for byte. 2026-10-24: the playable area of the
         // screen — a 90 x 90 grid with the inscribed square, the starts and rivers in the screen's axes. Loose ends, stage 2: a bridge
         // repair hut by every bridge. Later on 2026-10-24: a base of radius 12, its home field by its edge, the contested field three
-        // fifths of the way to the centre. 2026-10-25: the dressing of the climate (a farm and barbed wire in the snow).
+        // fifths of the way to the centre. 2026-10-25: the dressing of the climate (a farm and barbed wire in the snow); no building within
+        // two cells of the ore zone, the oil derrick out of it.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("fe87cd267f513d6e2edad5c7cd635c2b6c70d4fc4d7479dcecf785f0fee7450b", MapHasher.Hash(map));
-        Assert.Equal("447d36a4f964a2b02b385aa6420070ef0a34e2537c4ea8b40172a03a8dacd06b", MapHasher.Hash(none));
+        Assert.Equal("527a6a35b04b92d0875aeb17b6400309ba8ea6d9ecdb98a7bfdfa927f7ca952f", MapHasher.Hash(map));
+        Assert.Equal("b668d92dc451bcccd6176ba02242c5ef7ad208ec1221c2f8d423903be0cd539c", MapHasher.Hash(none));
     }
 
     [Theory]

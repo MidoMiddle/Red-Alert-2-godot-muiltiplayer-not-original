@@ -22,7 +22,8 @@ namespace Rts.MapGen.Stages;
 /// <item>barbed wire across the open ground (snow, desert).</item>
 /// </list>
 /// Every piece goes with its images under the symmetry, or not at all: inside the playable area, on clear ground (or the beach),
-/// off roads, ore, cliffs, bridges and what stands already, away from the bases. What stops movers keeps a cell off the roads, so
+/// off roads, cliffs, bridges and what stands already, away from the bases; a thing off the ore zone (the ore and what the drills
+/// throw), a building <see cref="GenMap.OreClearance"/> cells clear of it. What stops movers keeps a cell off the roads, so
 /// no diagonal step of a road closes.
 /// </summary>
 internal static class Dressing
@@ -376,7 +377,7 @@ internal static class Dressing
         /// <summary>Whether a thing may stand on the cell: what stops movers keeps a cell off the roads.</summary>
         public bool Free(CellPos cell, bool blocking) =>
             _map.Contains(cell) && _map.Area.Contains(cell) && _map.LandAt(cell) is LandType.Clear or LandType.Rough or LandType.Beach
-            && !_map.IsCliff(cell) && !_taken.Contains(cell) && _map.Ore[cell.Y * _map.N + cell.X] == 0
+            && !_map.IsCliff(cell) && !_taken.Contains(cell) && !_map.NearOre(cell, 0)
             && _map.StartDistanceSquared(cell) > (Starts.FlatRadius + 2) * (Starts.FlatRadius + 2)
             && (!blocking || !Roads(_map, cell, 1));
 
@@ -432,8 +433,9 @@ internal static class Dressing
             foreach (var placement in images)
             {
                 var footprint = MapChecks.Footprint(placement);
-                // A building blocks: none of its cells by a road, as for a blocking thing.
-                if (!footprint.TrueForAll(cell => Free(cell, blocking: true)) || MapChecks.BuildingProblem(_ground, placement, placed) is not null)
+                // A building blocks: none of its cells by a road, as for a blocking thing, nor near the ore (GenMap.OreClearance).
+                if (!footprint.TrueForAll(cell => Free(cell, blocking: true) && !_map.NearOre(cell, GenMap.OreClearance))
+                    || MapChecks.BuildingProblem(_ground, placement, placed) is not null)
                 {
                     return false;
                 }

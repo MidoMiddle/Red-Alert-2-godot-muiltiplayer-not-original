@@ -1028,11 +1028,11 @@ structures:
   - { type: neutral_lifeguard_tower, cell: [94, 120], owner: neutral, facing: 6 }
   - { type: neutral_lifeguard_tower, cell: [104, 154], owner: neutral, facing: 2 }
   - { type: neutral_lifeguard_tower, cell: [100, 156], owner: neutral, facing: 2 }
-  - { type: tech_oil_derrick, cell: [93, 66], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [93, 63], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [81, 78], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [102, 81], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [66, 87], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [114, 93], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [63, 87], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [117, 93], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [78, 99], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [99, 102], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [87, 114], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [87, 117], owner: neutral, facing: 0 }

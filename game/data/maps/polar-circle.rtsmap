@@ -804,14 +804,10 @@ objects:
   - { type: gem_source, cell: [94, 110], variant: 0 }
   - { type: hay_bale, cell: [93, 64], variant: 0 }
   - { type: hay_bale, cell: [94, 64], variant: 1 }
-  - { type: hay_bale, cell: [93, 65], variant: 2 }
   - { type: hay_bale, cell: [64, 87], variant: 1 }
   - { type: hay_bale, cell: [64, 88], variant: 0 }
-  - { type: hay_bale, cell: [65, 88], variant: 2 }
-  - { type: hay_bale, cell: [116, 93], variant: 2 }
   - { type: hay_bale, cell: [117, 93], variant: 0 }
   - { type: hay_bale, cell: [117, 94], variant: 1 }
-  - { type: hay_bale, cell: [88, 116], variant: 2 }
   - { type: hay_bale, cell: [87, 117], variant: 1 }
   - { type: hay_bale, cell: [88, 117], variant: 0 }
   - { type: hedge, cell: [86, 59], variant: 0 }
@@ -1628,7 +1624,7 @@ structures:
   - { type: tech_bridge_repair_hut, cell: [63, 72], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [118, 109], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [72, 118], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [86, 74], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [106, 86], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [74, 94], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [94, 106], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [92, 65], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [65, 88], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [115, 92], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [88, 115], owner: neutral, facing: 0 }

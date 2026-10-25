@@ -572,16 +572,22 @@ layers:
     ........................................................................................................................................
     ........................................................................................................................................
 objects:
+  - { type: billboard, cell: [69, 61], variant: 0 }
+  - { type: billboard, cell: [73, 64], variant: 0 }
+  - { type: billboard, cell: [62, 71], variant: 0 }
+  - { type: billboard, cell: [66, 74], variant: 0 }
   - { type: bus_stop, cell: [69, 64], variant: 3 }
   - { type: bus_stop, cell: [66, 71], variant: 3 }
+  - { type: flowerbed, cell: [73, 59], variant: 0 }
+  - { type: flowerbed, cell: [62, 76], variant: 0 }
   - { type: gem_source, cell: [77, 60], variant: 0 }
   - { type: gem_source, cell: [58, 75], variant: 0 }
+  - { type: lamp_post, cell: [72, 61], variant: 3 }
+  - { type: lamp_post, cell: [63, 74], variant: 3 }
   - { type: mailbox, cell: [76, 57], variant: 0 }
   - { type: mailbox, cell: [59, 78], variant: 0 }
   - { type: ore_source, cell: [82, 58], variant: 0 }
   - { type: ore_source, cell: [53, 77], variant: 0 }
-  - { type: phone_booth, cell: [79, 59], variant: 0 }
-  - { type: phone_booth, cell: [56, 76], variant: 0 }
   - { type: pine_tree, cell: [59, 31], variant: 3 }
   - { type: pine_tree, cell: [60, 31], variant: 3 }
   - { type: pine_tree, cell: [58, 32], variant: 1 }
@@ -718,23 +724,15 @@ objects:
   - { type: street_stall, cell: [70, 68], variant: 0 }
   - { type: traffic_light, cell: [76, 56], variant: 0 }
   - { type: traffic_light, cell: [59, 79], variant: 0 }
+  - { type: trash_bin, cell: [72, 60], variant: 0 }
+  - { type: trash_bin, cell: [63, 75], variant: 0 }
 bridges: []
 structures:
-  - { type: neutral_boiler_house, cell: [74, 56], owner: neutral, facing: 0 }
-  - { type: neutral_boiler_house, cell: [60, 78], owner: neutral, facing: 0 }
-  - { type: neutral_cafe, cell: [71, 66], owner: neutral, facing: 4 }
-  - { type: neutral_cafe, cell: [63, 69], owner: neutral, facing: 4 }
-  - { type: neutral_church, cell: [71, 59], owner: neutral, facing: 6 }
-  - { type: neutral_church, cell: [63, 74], owner: neutral, facing: 6 }
-  - { type: neutral_kiosk, cell: [75, 62], owner: neutral, facing: 0 }
-  - { type: neutral_kiosk, cell: [60, 73], owner: neutral, facing: 0 }
-  - { type: neutral_office, cell: [69, 61], owner: neutral, facing: 4 }
-  - { type: neutral_office, cell: [65, 73], owner: neutral, facing: 4 }
-  - { type: neutral_school, cell: [73, 64], owner: neutral, facing: 4 }
-  - { type: neutral_school, cell: [60, 70], owner: neutral, facing: 4 }
-  - { type: neutral_shed, cell: [72, 58], owner: neutral, facing: 7 }
+  - { type: neutral_office, cell: [70, 61], owner: neutral, facing: 3 }
+  - { type: neutral_office, cell: [64, 73], owner: neutral, facing: 3 }
   - { type: neutral_shed, cell: [66, 64], owner: neutral, facing: 6 }
   - { type: neutral_shed, cell: [69, 71], owner: neutral, facing: 6 }
-  - { type: neutral_shed, cell: [63, 77], owner: neutral, facing: 7 }
-  - { type: tech_oil_derrick, cell: [73, 59], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [61, 75], owner: neutral, facing: 0 }
+  - { type: neutral_skyscraper, cell: [72, 65], owner: neutral, facing: 3 }
+  - { type: neutral_skyscraper, cell: [62, 69], owner: neutral, facing: 3 }
+  - { type: tech_oil_derrick, cell: [70, 59], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [64, 75], owner: neutral, facing: 0 }

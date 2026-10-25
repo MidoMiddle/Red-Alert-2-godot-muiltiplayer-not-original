@@ -94,6 +94,69 @@ internal sealed class GenMap
         return Corner(cell.X + 1, cell.Y) == level && Corner(cell.X, cell.Y + 1) == level && Corner(cell.X + 1, cell.Y + 1) == level;
     }
 
+    /// <summary>
+    /// How far a building keeps from the ore zone, in cells (the owner, 2026-10-25: «a house on the field where ore is mined, an oil
+    /// derrick right by it — stupid»): no cell of its footprint within this many cells of it.
+    /// </summary>
+    public const int OreClearance = 2;
+
+    /// <summary>The cells a drill throws ore on round it: <c>source_radius</c> of game/data/shared/economy.yaml.</summary>
+    public const int DrillThrow = 3;
+
+    private bool[]? _oreZone;
+
+    /// <summary>
+    /// Whether the cell is within <paramref name="clearance"/> cells (either way) of the ore zone: the ore and gems of the map and
+    /// every cell its drills throw on. Built once the drills stand (the stages that ask come after them).
+    /// </summary>
+    public bool NearOre(CellPos cell, int clearance)
+    {
+        var zone = _oreZone ??= OreZone();
+        for (var y = IntMath.Max(0, cell.Y - clearance); y <= IntMath.Min(N - 1, cell.Y + clearance); y++)
+        {
+            for (var x = IntMath.Max(0, cell.X - clearance); x <= IntMath.Min(N - 1, cell.X + clearance); x++)
+            {
+                if (zone[y * N + x])
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool[] OreZone()
+    {
+        var zone = new bool[N * N];
+        for (var i = 0; i < zone.Length; i++)
+        {
+            zone[i] = Ore[i] > 0;
+        }
+
+        foreach (var drill in Objects)
+        {
+            if (drill.Type is not (Drills.OreSource or Drills.GemSource))
+            {
+                continue;
+            }
+
+            for (var dy = -DrillThrow; dy <= DrillThrow; dy++)
+            {
+                for (var dx = -DrillThrow; dx <= DrillThrow; dx++)
+                {
+                    var cell = new CellPos(drill.Cell.X + dx, drill.Cell.Y + dy);
+                    if (dx * dx + dy * dy <= DrillThrow * DrillThrow && Contains(cell))
+                    {
+                        zone[cell.Y * N + cell.X] = true;
+                    }
+                }
+            }
+        }
+
+        return zone;
+    }
+
     /// <summary>Squared distance from the cell to the nearest start.</summary>
     public int StartDistanceSquared(CellPos cell)
     {

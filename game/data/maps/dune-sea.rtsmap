@@ -635,8 +635,6 @@ objects:
   - { type: dry_shrub, cell: [128, 64], variant: 3 }
   - { type: dry_shrub, cell: [59, 66], variant: 2 }
   - { type: dry_shrub, cell: [76, 66], variant: 2 }
-  - { type: dry_shrub, cell: [51, 67], variant: 3 }
-  - { type: dry_shrub, cell: [84, 67], variant: 3 }
   - { type: dry_shrub, cell: [17, 68], variant: 2 }
   - { type: dry_shrub, cell: [118, 68], variant: 2 }
   - { type: dry_shrub, cell: [56, 70], variant: 2 }
@@ -644,6 +642,8 @@ objects:
   - { type: dry_shrub, cell: [66, 71], variant: 0 }
   - { type: dry_shrub, cell: [69, 71], variant: 0 }
   - { type: dry_shrub, cell: [17, 72], variant: 3 }
+  - { type: dry_shrub, cell: [48, 72], variant: 1 }
+  - { type: dry_shrub, cell: [87, 72], variant: 1 }
   - { type: dry_shrub, cell: [118, 72], variant: 3 }
   - { type: dry_shrub, cell: [65, 73], variant: 0 }
   - { type: dry_shrub, cell: [70, 73], variant: 0 }
@@ -783,9 +783,9 @@ structures:
   - { type: neutral_rock_arch, cell: [78, 37], owner: neutral, facing: 0 }
   - { type: neutral_rock_mesa, cell: [50, 20], owner: neutral, facing: 1 }
   - { type: neutral_rock_mesa, cell: [84, 20], owner: neutral, facing: 1 }
-  - { type: neutral_rock_mesa, cell: [44, 72], owner: neutral, facing: 4 }
-  - { type: neutral_rock_mesa, cell: [90, 72], owner: neutral, facing: 4 }
+  - { type: neutral_rock_mesa, cell: [65, 28], owner: neutral, facing: 2 }
+  - { type: neutral_rock_mesa, cell: [69, 28], owner: neutral, facing: 2 }
   - { type: neutral_rock_mesa, cell: [57, 81], owner: neutral, facing: 2 }
   - { type: neutral_rock_mesa, cell: [77, 81], owner: neutral, facing: 2 }
-  - { type: tech_oil_derrick, cell: [55, 65], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [79, 65], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [45, 65], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [89, 65], owner: neutral, facing: 0 }

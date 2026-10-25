@@ -930,12 +930,12 @@ structures:
   - { type: neutral_container_stack, cell: [70, 100], owner: neutral, facing: 7 }
   - { type: neutral_house_a, cell: [60, 46], owner: neutral, facing: 1 }
   - { type: neutral_house_a, cell: [74, 46], owner: neutral, facing: 1 }
-  - { type: neutral_house_a, cell: [49, 64], owner: neutral, facing: 1 }
-  - { type: neutral_house_a, cell: [85, 64], owner: neutral, facing: 1 }
   - { type: neutral_kiosk, cell: [59, 47], owner: neutral, facing: 4 }
   - { type: neutral_kiosk, cell: [76, 47], owner: neutral, facing: 4 }
   - { type: neutral_kiosk, cell: [52, 53], owner: neutral, facing: 4 }
   - { type: neutral_kiosk, cell: [83, 53], owner: neutral, facing: 4 }
+  - { type: neutral_kiosk, cell: [58, 54], owner: neutral, facing: 6 }
+  - { type: neutral_kiosk, cell: [77, 54], owner: neutral, facing: 6 }
   - { type: neutral_kiosk, cell: [58, 55], owner: neutral, facing: 0 }
   - { type: neutral_kiosk, cell: [77, 55], owner: neutral, facing: 0 }
   - { type: neutral_kiosk, cell: [56, 56], owner: neutral, facing: 7 }
@@ -958,12 +958,12 @@ structures:
   - { type: neutral_school, cell: [79, 59], owner: neutral, facing: 4 }
   - { type: neutral_shed, cell: [59, 46], owner: neutral, facing: 1 }
   - { type: neutral_shed, cell: [76, 46], owner: neutral, facing: 1 }
+  - { type: neutral_shed, cell: [47, 58], owner: neutral, facing: 4 }
+  - { type: neutral_shed, cell: [88, 58], owner: neutral, facing: 4 }
   - { type: neutral_shop, cell: [63, 49], owner: neutral, facing: 6 }
   - { type: neutral_shop, cell: [71, 49], owner: neutral, facing: 6 }
   - { type: neutral_shop, cell: [55, 57], owner: neutral, facing: 6 }
   - { type: neutral_shop, cell: [79, 57], owner: neutral, facing: 6 }
-  - { type: neutral_shop, cell: [52, 61], owner: neutral, facing: 0 }
-  - { type: neutral_shop, cell: [82, 61], owner: neutral, facing: 0 }
   - { type: neutral_skyscraper, cell: [62, 51], owner: neutral, facing: 5 }
   - { type: neutral_skyscraper, cell: [72, 51], owner: neutral, facing: 5 }
   - { type: neutral_skyscraper, cell: [59, 54], owner: neutral, facing: 3 }
@@ -972,5 +972,5 @@ structures:
   - { type: tech_bridge_repair_hut, cell: [70, 44], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [66, 89], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [69, 89], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [57, 67], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [77, 67], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [60, 67], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [74, 67], owner: neutral, facing: 0 }

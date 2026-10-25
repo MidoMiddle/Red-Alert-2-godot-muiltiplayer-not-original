@@ -817,5 +817,5 @@ structures:
   - { type: neutral_rock_mesa, cell: [109, 68], owner: neutral, facing: 4 }
   - { type: neutral_rock_mesa, cell: [6, 70], owner: neutral, facing: 3 }
   - { type: neutral_rock_mesa, cell: [76, 110], owner: neutral, facing: 4 }
-  - { type: tech_oil_derrick, cell: [76, 56], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [58, 78], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [76, 51], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [58, 83], owner: neutral, facing: 0 }

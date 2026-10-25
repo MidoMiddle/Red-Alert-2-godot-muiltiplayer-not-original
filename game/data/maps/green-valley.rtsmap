@@ -605,8 +605,8 @@ objects:
   - { type: farm_tractor, cell: [85, 48], variant: 0 }
   - { type: farm_tractor, cell: [50, 53], variant: 0 }
   - { type: farm_tractor, cell: [85, 53], variant: 0 }
-  - { type: farm_tractor, cell: [48, 68], variant: 0 }
-  - { type: farm_tractor, cell: [87, 68], variant: 0 }
+  - { type: farm_tractor, cell: [47, 70], variant: 0 }
+  - { type: farm_tractor, cell: [88, 70], variant: 0 }
   - { type: fishing_nets, cell: [65, 4], variant: 0 }
   - { type: fishing_nets, cell: [70, 4], variant: 0 }
   - { type: fishing_nets, cell: [66, 60], variant: 0 }
@@ -627,12 +627,12 @@ objects:
   - { type: hay_bale, cell: [81, 48], variant: 0 }
   - { type: hay_bale, cell: [54, 49], variant: 2 }
   - { type: hay_bale, cell: [81, 49], variant: 2 }
-  - { type: hay_bale, cell: [52, 68], variant: 0 }
-  - { type: hay_bale, cell: [53, 68], variant: 1 }
-  - { type: hay_bale, cell: [82, 68], variant: 1 }
-  - { type: hay_bale, cell: [83, 68], variant: 0 }
-  - { type: hay_bale, cell: [52, 69], variant: 2 }
-  - { type: hay_bale, cell: [83, 69], variant: 2 }
+  - { type: hay_bale, cell: [51, 70], variant: 0 }
+  - { type: hay_bale, cell: [52, 70], variant: 1 }
+  - { type: hay_bale, cell: [83, 70], variant: 1 }
+  - { type: hay_bale, cell: [84, 70], variant: 0 }
+  - { type: hay_bale, cell: [51, 71], variant: 2 }
+  - { type: hay_bale, cell: [84, 71], variant: 2 }
   - { type: hedge, cell: [47, 43], variant: 0 }
   - { type: hedge, cell: [48, 43], variant: 0 }
   - { type: hedge, cell: [49, 43], variant: 0 }
@@ -657,22 +657,16 @@ objects:
   - { type: hedge, cell: [84, 48], variant: 0 }
   - { type: hedge, cell: [87, 48], variant: 0 }
   - { type: hedge, cell: [88, 48], variant: 0 }
-  - { type: hedge, cell: [45, 63], variant: 0 }
-  - { type: hedge, cell: [46, 63], variant: 0 }
-  - { type: hedge, cell: [47, 63], variant: 0 }
-  - { type: hedge, cell: [48, 63], variant: 0 }
-  - { type: hedge, cell: [49, 63], variant: 0 }
-  - { type: hedge, cell: [50, 63], variant: 0 }
-  - { type: hedge, cell: [51, 63], variant: 0 }
-  - { type: hedge, cell: [52, 63], variant: 0 }
-  - { type: hedge, cell: [83, 63], variant: 0 }
-  - { type: hedge, cell: [84, 63], variant: 0 }
-  - { type: hedge, cell: [85, 63], variant: 0 }
-  - { type: hedge, cell: [86, 63], variant: 0 }
-  - { type: hedge, cell: [87, 63], variant: 0 }
-  - { type: hedge, cell: [88, 63], variant: 0 }
-  - { type: hedge, cell: [89, 63], variant: 0 }
-  - { type: hedge, cell: [90, 63], variant: 0 }
+  - { type: hedge, cell: [45, 65], variant: 0 }
+  - { type: hedge, cell: [46, 65], variant: 0 }
+  - { type: hedge, cell: [47, 65], variant: 0 }
+  - { type: hedge, cell: [48, 65], variant: 0 }
+  - { type: hedge, cell: [49, 65], variant: 0 }
+  - { type: hedge, cell: [86, 65], variant: 0 }
+  - { type: hedge, cell: [87, 65], variant: 0 }
+  - { type: hedge, cell: [88, 65], variant: 0 }
+  - { type: hedge, cell: [89, 65], variant: 0 }
+  - { type: hedge, cell: [90, 65], variant: 0 }
   - { type: ore_source, cell: [40, 69], variant: 0 }
   - { type: ore_source, cell: [95, 69], variant: 0 }
   - { type: pine_tree, cell: [14, 0], variant: 0 }
@@ -3325,8 +3319,8 @@ objects:
   - { type: well, cell: [86, 48], variant: 0 }
   - { type: well, cell: [49, 53], variant: 0 }
   - { type: well, cell: [86, 53], variant: 0 }
-  - { type: well, cell: [47, 68], variant: 0 }
-  - { type: well, cell: [88, 68], variant: 0 }
+  - { type: well, cell: [46, 70], variant: 0 }
+  - { type: well, cell: [89, 70], variant: 0 }
 bridges:
   - { type: bridge_wood_low, from: [66, 45], to: [69, 45] }
   - { type: bridge_wood_low, from: [67, 90], to: [68, 90] }
@@ -3345,17 +3339,17 @@ structures:
   - { type: neutral_farmhouse, cell: [85, 45], owner: neutral, facing: 0 }
   - { type: neutral_farmhouse, cell: [49, 50], owner: neutral, facing: 0 }
   - { type: neutral_farmhouse, cell: [85, 50], owner: neutral, facing: 0 }
-  - { type: neutral_farmhouse, cell: [47, 65], owner: neutral, facing: 0 }
-  - { type: neutral_farmhouse, cell: [87, 65], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [46, 67], owner: neutral, facing: 0 }
+  - { type: neutral_farmhouse, cell: [88, 67], owner: neutral, facing: 0 }
   - { type: neutral_silo, cell: [52, 48], owner: neutral, facing: 0 }
   - { type: neutral_silo, cell: [83, 48], owner: neutral, facing: 0 }
-  - { type: neutral_silo, cell: [50, 68], owner: neutral, facing: 0 }
-  - { type: neutral_silo, cell: [85, 68], owner: neutral, facing: 0 }
+  - { type: neutral_silo, cell: [49, 70], owner: neutral, facing: 0 }
+  - { type: neutral_silo, cell: [86, 70], owner: neutral, facing: 0 }
   - { type: neutral_windmill, cell: [46, 46], owner: neutral, facing: 0 }
   - { type: neutral_windmill, cell: [88, 46], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [63, 42], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [72, 42], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [64, 91], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [71, 91], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [56, 65], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [78, 65], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [53, 71], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [81, 71], owner: neutral, facing: 0 }

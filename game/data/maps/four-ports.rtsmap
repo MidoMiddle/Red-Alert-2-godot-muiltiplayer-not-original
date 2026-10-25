@@ -811,13 +811,13 @@ objects:
   - { type: beached_boat, cell: [69, 142], variant: 0 }
   - { type: beached_boat, cell: [71, 143], variant: 0 }
   - { type: bench, cell: [92, 59], variant: 3 }
-  - { type: bench, cell: [94, 70], variant: 1 }
-  - { type: bench, cell: [70, 87], variant: 1 }
   - { type: bench, cell: [59, 89], variant: 3 }
   - { type: bench, cell: [122, 92], variant: 3 }
-  - { type: bench, cell: [111, 94], variant: 1 }
-  - { type: bench, cell: [87, 111], variant: 1 }
   - { type: bench, cell: [89, 122], variant: 3 }
+  - { type: billboard, cell: [91, 67], variant: 0 }
+  - { type: billboard, cell: [67, 90], variant: 0 }
+  - { type: billboard, cell: [114, 91], variant: 0 }
+  - { type: billboard, cell: [90, 114], variant: 0 }
   - { type: bus_stop, cell: [92, 60], variant: 2 }
   - { type: bus_stop, cell: [60, 89], variant: 2 }
   - { type: bus_stop, cell: [121, 92], variant: 2 }
@@ -1042,6 +1042,7 @@ objects:
   - { type: pine_tree, cell: [81, 83], variant: 1 }
   - { type: pine_tree, cell: [82, 83], variant: 0 }
   - { type: pine_tree, cell: [97, 83], variant: 3 }
+  - { type: pine_tree, cell: [78, 84], variant: 3 }
   - { type: pine_tree, cell: [79, 84], variant: 3 }
   - { type: pine_tree, cell: [80, 84], variant: 2 }
   - { type: pine_tree, cell: [81, 84], variant: 0 }
@@ -1265,10 +1266,14 @@ objects:
   - { type: road_sign, cell: [58, 89], variant: 1 }
   - { type: road_sign, cell: [123, 92], variant: 1 }
   - { type: road_sign, cell: [89, 123], variant: 1 }
+  - { type: street_stall, cell: [95, 68], variant: 0 }
   - { type: street_stall, cell: [91, 69], variant: 0 }
+  - { type: street_stall, cell: [68, 86], variant: 0 }
   - { type: street_stall, cell: [69, 90], variant: 0 }
   - { type: street_stall, cell: [112, 91], variant: 0 }
+  - { type: street_stall, cell: [113, 95], variant: 0 }
   - { type: street_stall, cell: [90, 112], variant: 0 }
+  - { type: street_stall, cell: [86, 113], variant: 0 }
   - { type: sun_lounger, cell: [93, 20], variant: 0 }
   - { type: sun_lounger, cell: [103, 31], variant: 0 }
   - { type: sun_lounger, cell: [106, 34], variant: 0 }
@@ -1315,14 +1320,10 @@ objects:
   - { type: traffic_light, cell: [90, 119], variant: 0 }
   - { type: trash_bin, cell: [94, 59], variant: 0 }
   - { type: trash_bin, cell: [94, 61], variant: 2 }
-  - { type: trash_bin, cell: [94, 80], variant: 3 }
   - { type: trash_bin, cell: [59, 87], variant: 0 }
   - { type: trash_bin, cell: [61, 87], variant: 2 }
-  - { type: trash_bin, cell: [80, 87], variant: 3 }
-  - { type: trash_bin, cell: [101, 94], variant: 3 }
   - { type: trash_bin, cell: [120, 94], variant: 2 }
   - { type: trash_bin, cell: [122, 94], variant: 0 }
-  - { type: trash_bin, cell: [87, 101], variant: 3 }
   - { type: trash_bin, cell: [87, 120], variant: 2 }
   - { type: trash_bin, cell: [87, 122], variant: 0 }
   - { type: volleyball_net, cell: [111, 39], variant: 0 }
@@ -1343,10 +1344,6 @@ objects:
   - { type: volleyball_net, cell: [70, 142], variant: 0 }
 bridges: []
 structures:
-  - { type: neutral_apartment, cell: [95, 67], owner: neutral, facing: 2 }
-  - { type: neutral_apartment, cell: [67, 84], owner: neutral, facing: 2 }
-  - { type: neutral_apartment, cell: [112, 95], owner: neutral, facing: 2 }
-  - { type: neutral_apartment, cell: [84, 112], owner: neutral, facing: 2 }
   - { type: neutral_auto_repair, cell: [91, 80], owner: neutral, facing: 2 }
   - { type: neutral_auto_repair, cell: [80, 89], owner: neutral, facing: 2 }
   - { type: neutral_auto_repair, cell: [100, 91], owner: neutral, facing: 2 }
@@ -1371,14 +1368,10 @@ structures:
   - { type: neutral_beach_cabin, cell: [95, 157], owner: neutral, facing: 0 }
   - { type: neutral_beach_cabin, cell: [92, 160], owner: neutral, facing: 0 }
   - { type: neutral_beach_cabin, cell: [90, 161], owner: neutral, facing: 0 }
-  - { type: neutral_boiler_house, cell: [95, 73], owner: neutral, facing: 6 }
-  - { type: neutral_boiler_house, cell: [73, 85], owner: neutral, facing: 6 }
   - { type: neutral_boiler_house, cell: [88, 87], owner: neutral, facing: 7 }
   - { type: neutral_boiler_house, cell: [93, 88], owner: neutral, facing: 7 }
   - { type: neutral_boiler_house, cell: [87, 92], owner: neutral, facing: 7 }
   - { type: neutral_boiler_house, cell: [92, 93], owner: neutral, facing: 7 }
-  - { type: neutral_boiler_house, cell: [107, 95], owner: neutral, facing: 6 }
-  - { type: neutral_boiler_house, cell: [85, 107], owner: neutral, facing: 6 }
   - { type: neutral_container_stack, cell: [88, 23], owner: neutral, facing: 5 }
   - { type: neutral_container_stack, cell: [82, 29], owner: neutral, facing: 1 }
   - { type: neutral_container_stack, cell: [114, 44], owner: neutral, facing: 7 }
@@ -1403,22 +1396,18 @@ structures:
   - { type: neutral_fountain, cell: [101, 95], owner: neutral, facing: 7 }
   - { type: neutral_fountain, cell: [85, 96], owner: neutral, facing: 4 }
   - { type: neutral_fountain, cell: [85, 101], owner: neutral, facing: 7 }
-  - { type: neutral_hotel, cell: [95, 76], owner: neutral, facing: 1 }
-  - { type: neutral_hotel, cell: [76, 84], owner: neutral, facing: 1 }
-  - { type: neutral_hotel, cell: [104, 95], owner: neutral, facing: 1 }
-  - { type: neutral_hotel, cell: [84, 104], owner: neutral, facing: 1 }
   - { type: neutral_house_a, cell: [95, 65], owner: neutral, facing: 2 }
+  - { type: neutral_house_a, cell: [95, 77], owner: neutral, facing: 3 }
   - { type: neutral_house_a, cell: [65, 85], owner: neutral, facing: 2 }
+  - { type: neutral_house_a, cell: [77, 85], owner: neutral, facing: 3 }
+  - { type: neutral_house_a, cell: [103, 95], owner: neutral, facing: 3 }
   - { type: neutral_house_a, cell: [115, 95], owner: neutral, facing: 2 }
+  - { type: neutral_house_a, cell: [85, 103], owner: neutral, facing: 3 }
   - { type: neutral_house_a, cell: [85, 115], owner: neutral, facing: 2 }
-  - { type: neutral_kiosk, cell: [91, 67], owner: neutral, facing: 1 }
   - { type: neutral_kiosk, cell: [95, 81], owner: neutral, facing: 3 }
   - { type: neutral_kiosk, cell: [81, 86], owner: neutral, facing: 3 }
-  - { type: neutral_kiosk, cell: [67, 90], owner: neutral, facing: 1 }
-  - { type: neutral_kiosk, cell: [114, 91], owner: neutral, facing: 1 }
   - { type: neutral_kiosk, cell: [100, 95], owner: neutral, facing: 3 }
   - { type: neutral_kiosk, cell: [86, 100], owner: neutral, facing: 3 }
-  - { type: neutral_kiosk, cell: [90, 114], owner: neutral, facing: 1 }
   - { type: neutral_office, cell: [90, 85], owner: neutral, facing: 2 }
   - { type: neutral_office, cell: [85, 90], owner: neutral, facing: 2 }
   - { type: neutral_office, cell: [95, 90], owner: neutral, facing: 2 }
@@ -1443,10 +1432,6 @@ structures:
   - { type: neutral_shed, cell: [117, 95], owner: neutral, facing: 4 }
   - { type: neutral_shed, cell: [90, 116], owner: neutral, facing: 1 }
   - { type: neutral_shed, cell: [86, 117], owner: neutral, facing: 4 }
-  - { type: neutral_shop, cell: [91, 77], owner: neutral, facing: 4 }
-  - { type: neutral_shop, cell: [77, 89], owner: neutral, facing: 4 }
-  - { type: neutral_shop, cell: [103, 91], owner: neutral, facing: 4 }
-  - { type: neutral_shop, cell: [89, 103], owner: neutral, facing: 4 }
   - { type: neutral_skyscraper, cell: [91, 82], owner: neutral, facing: 5 }
   - { type: neutral_skyscraper, cell: [95, 82], owner: neutral, facing: 1 }
   - { type: neutral_skyscraper, cell: [82, 85], owner: neutral, facing: 1 }
@@ -1457,9 +1442,9 @@ structures:
   - { type: neutral_skyscraper, cell: [89, 98], owner: neutral, facing: 5 }
   - { type: tech_oil_derrick, cell: [52, 48], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [132, 52], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [91, 75], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [75, 89], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [105, 91], owner: neutral, facing: 0 }
-  - { type: tech_oil_derrick, cell: [89, 105], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [91, 78], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [78, 89], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [102, 91], owner: neutral, facing: 0 }
+  - { type: tech_oil_derrick, cell: [89, 102], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [48, 128], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [128, 132], owner: neutral, facing: 0 }
