@@ -266,4 +266,23 @@ public sealed class EnemyEstimateTests
 
         Assert.Equal(new CellPos(56, 8), errand);
     }
+    [Fact]
+    public void A_building_of_the_map_an_enemy_holds_is_remembered_without_a_definition()
+    {
+        // 2026-10-25: a match froze when a bot met an enemy's taken tech building — a building of the map, DefIndex -1 — and looked it up
+        // in the buildings of the data. Now it counts as a building, neither a refinery nor tech, nor a defense to weigh.
+        var land = Enumerable.Repeat((byte)LandType.Clear, 64 * 64).ToArray();
+        var map = MapGrid.FromLayers(64, 64, land, new byte[land.Length], default, null, null,
+            [new BuildingState(BuildingKind.TechOutpost, new CellPos(12, 10), Scene.Enemy, 0), new BuildingState(BuildingKind.TechOilDerrick, new CellPos(8, 12), Scene.Enemy, 0)]);
+        var scene = new Scene(map: map);
+        scene.Spawn(Scene.Me, UnitType.Conscript, 10, 10);
+        scene.Build(Scene.Enemy, "refinery", 12, 14);
+
+        scene.Look();
+
+        Assert.Equal(3, scene.Memory.Buildings.Count);
+        Assert.Contains(scene.Memory.Buildings, building => building.DefIndex < 0);
+        Assert.Equal((3, 1), (Enemy(scene).Buildings, Enemy(scene).Refineries));
+        Assert.True(scene.Memory.EnemyStrength(scene.View) >= 0);
+    }
 }

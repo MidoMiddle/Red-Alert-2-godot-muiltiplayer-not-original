@@ -7,7 +7,7 @@ using Rts.Simulation.World;
 namespace Rts.AI.View;
 
 /// <summary>An enemy building as the bot saw it last.</summary>
-/// <param name="DefIndex">Its kind, an index of the buildings of the rules.</param>
+/// <param name="DefIndex">Its kind, an index of the buildings of the rules; -1 for a building of the map (a tech or civilian building).</param>
 /// <param name="SeenTick">The last tick it was seen on.</param>
 public sealed record RememberedBuilding(EntityId Id, PlayerId Owner, int DefIndex, CellPos Cell, CellPos FarCell, int Hp, int SeenTick);
 
@@ -122,6 +122,12 @@ public sealed class AiMemory
 
         foreach (var building in Buildings)
         {
+            // A building of the map (a taken tech building, a held civilian one) has no definition to weigh.
+            if (building.DefIndex < 0)
+            {
+                continue;
+            }
+
             var def = view.Rules.Database.Buildings[building.DefIndex];
             if (def.Primary.Length > 0 && def.Hp > 0)
             {

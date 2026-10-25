@@ -137,8 +137,14 @@ public sealed class EnemyEstimate
             {
                 tally.LastSeen = IntMath.Max(tally.LastSeen, building.SeenTick);
                 tally.Buildings++;
-                tally.Refineries += IsRefinery(rules, building.DefIndex) ? 1 : 0;
-                tally.Tech = IntMath.Max(tally.Tech, Depth(rules, building.DefIndex));
+
+                // A building of the map an enemy holds (a tech building it took, a civilian building with its soldiers) is in no table
+                // of the data: no refinery, no tech.
+                if (building.DefIndex >= 0)
+                {
+                    tally.Refineries += IsRefinery(rules, building.DefIndex) ? 1 : 0;
+                    tally.Tech = IntMath.Max(tally.Tech, Depth(rules, building.DefIndex));
+                }
             }
         }
 
@@ -187,6 +193,23 @@ public sealed class EnemyEstimate
             if (index >= 0)
             {
                 depth = IntMath.Max(depth, Depth(rules, index) + 1);
+                continue;
+            }
+
+            // A prerequisite group of RA2 (power, proc, radar, barracks, tech): as deep as the shallowest building of the faction in it.
+            var group = -1;
+            for (var other = 0; other < rules.Buildings.Length; other++)
+            {
+                if (rules.Buildings[other].Faction == rules.Buildings[building].Faction && rules.Buildings[other].Provides.Contains(id))
+                {
+                    var deep = Depth(rules, other);
+                    group = group < 0 ? deep : IntMath.Min(group, deep);
+                }
+            }
+
+            if (group >= 0)
+            {
+                depth = IntMath.Max(depth, group + 1);
             }
         }
 

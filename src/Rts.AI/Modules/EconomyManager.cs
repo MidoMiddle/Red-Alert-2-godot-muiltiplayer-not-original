@@ -316,7 +316,7 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         var buildings = context.View.Rules.Database.Buildings;
         foreach (var building in context.Memory.Buildings)
         {
-            if (buildings[building.DefIndex].Primary.Length > 0 && Distance(cell, building.Cell) < settings.DangerCells)
+            if (building.DefIndex >= 0 && buildings[building.DefIndex].Primary.Length > 0 && Distance(cell, building.Cell) < settings.DangerCells)
             {
                 return true;
             }
