@@ -290,13 +290,13 @@ public sealed class MapGrid
     /// </summary>
     public MapGrid Clone(LandSpeeds? speeds = null)
     {
+        // The blocked cells come after the start buildings: the ruins of one that fell (RA2) lie where it stood.
         var copy = FromLayers(
-            Width, Height, LandBytes(), BlockedBytes(), _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings, _ore, speeds ?? Speeds);
-        if (!_building.AsSpan().SequenceEqual(copy._building))
-        {
-            _building.CopyTo(copy._building, 0);
-            copy._passability = new Passability(copy);
-        }
+            Width, Height, LandBytes(), new byte[Width * Height], _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings, _ore,
+            speeds ?? Speeds);
+        _blocked.CopyTo(copy._blocked, 0);
+        _building.CopyTo(copy._building, 0);
+        copy._passability = new Passability(copy);
 
         return copy;
     }

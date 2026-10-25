@@ -12,7 +12,8 @@ namespace Rts.Simulation.World;
 /// gives power and opens technologies once it is <see cref="IsReady"/>.</item>
 /// </list>
 /// The buildings of the map move to the data with M3 step 6; M11 adds garrisons and capture. The footprint does not turn with
-/// <see cref="Facing"/>, which is for the look only. A destroyed building leaves no ruins: its cells open at once.
+/// <see cref="Facing"/>, which is for the look only. A destroyed building of a player leaves no ruins: its cells open at once; one of
+/// the map leaves ruins that close its cells for good (RA2, <see cref="GameWorld.LeavesRuins"/>).
 /// </summary>
 public sealed class Building : Entity
 {

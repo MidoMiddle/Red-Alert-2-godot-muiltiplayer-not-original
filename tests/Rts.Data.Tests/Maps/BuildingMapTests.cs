@@ -67,14 +67,14 @@ public sealed class BuildingMapTests
     }
 
     [Fact]
-    public void The_sandbox_village_stands_in_the_way_until_a_house_falls()
+    public void The_sandbox_village_stands_in_the_way_and_a_fallen_house_leaves_its_ruins_there()
     {
         var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
         Assert.Equal(7, grid.StartBuildings.Count);
         Assert.All(grid.StartBuildings, b => Assert.True(b.Owner.IsNeutral));
         Assert.Equal(3, grid.StartBuildings.Count(b => BuildingTypes.Get(b.Kind).Capturable));
 
-        // The house at (36, 52)…(37, 53): a jeep drives round it, and straight through once it is down.
+        // The house at (36, 52)…(37, 53): a jeep drives round it, and round its ruins once it is down (RA2).
         var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid), GameDataFiles.Rules);
         var round = AStar.FindPath(simulation.World.Map, new CellPos(34, 52), new CellPos(39, 52), Locomotor.Wheel);
         Assert.DoesNotContain(round.Cells, simulation.World.Map.HasBuilding);
@@ -86,7 +86,8 @@ public sealed class BuildingMapTests
         simulation.Step();
 
         Assert.Equal(6, simulation.World.Entities.Count);
-        var through = AStar.FindPath(simulation.World.Map, new CellPos(34, 52), new CellPos(39, 52), Locomotor.Wheel);
-        Assert.Contains(new CellPos(36, 52), through.Cells);
+        var after = AStar.FindPath(simulation.World.Map, new CellPos(34, 52), new CellPos(39, 52), Locomotor.Wheel);
+        Assert.DoesNotContain(new CellPos(36, 52), after.Cells);
+        Assert.True(simulation.World.Map.IsBlocked(new CellPos(36, 52)));
     }
 }

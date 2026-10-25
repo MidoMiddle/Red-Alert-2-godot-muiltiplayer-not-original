@@ -219,4 +219,27 @@ public sealed class CivilianGarrisonTests
         Assert.False(derrick.IsAlive);
         Assert.True(!tank.IsAlive || tank.Hp < tank.MaxHp, "the blast hurt the tank beside it");
     }
+    [Fact]
+    public void A_house_that_falls_leaves_ruins_that_close_its_cells_for_good()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var house = world.BuildingAt(House)!;
+        var hash = Rts.Simulation.Hashing.StateHasher.Compute(world);
+        world.SetHp(house, 1, null);
+        var cannon = world.Rules.Database.IndexOfWeapon("alliance_light_cannon");
+        world.Hits.Add(new Rts.Simulation.Combat.Hit(house.Id, house.Id, Allied, cannon, Rts.Simulation.Combat.Aim.CentreOf(house), house.Id));
+        Run(simulation, 3);
+
+        // RA2: the ruins stay; nothing drives through them, nothing is built on them.
+        Assert.False(house.IsAlive);
+        Assert.Null(world.BuildingAt(House));
+        Assert.True(world.Map.IsBlocked(House));
+        Assert.False(world.Map.CanEnter(House, Locomotor.Track));
+        Assert.False(world.Map.CanEnter(House, Locomotor.Foot));
+        Assert.NotEqual(PlacementProblem.None, PlacementRules.CellProblem(world, House, world.Map.Heights.CellLevel(House)));
+        Assert.NotEqual(hash, Rts.Simulation.Hashing.StateHasher.Compute(world));
+        Run(simulation, 300);
+        Assert.True(world.Map.IsBlocked(House));
+    }
 }

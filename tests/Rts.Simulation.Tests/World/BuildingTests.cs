@@ -88,7 +88,7 @@ public sealed class BuildingTests
     }
 
     [Fact]
-    public void Blows_take_hit_points_until_the_building_falls_and_its_cells_open()
+    public void Blows_take_hit_points_until_the_building_falls_and_its_ruins_close_its_cells()
     {
         var land = ClearLand();
         var world = new GameWorld(seed: 1, MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default,
@@ -118,21 +118,22 @@ public sealed class BuildingTests
         Assert.Equal(0, house.Hp);
         Assert.Contains(new BuildingDestroyed(0, house.Id, BuildingKind.NeutralHouseA, House), events);
 
-        // M4 step 9: the cells stay closed on the tick it fell and open at its end.
+        // M4 step 9: the building leaves the cells at the end of the tick it fell; a building of the map leaves its ruins there, which
+        // close them for good (RA2).
         Assert.True(world.Map.HasBuilding(House));
         Assert.DoesNotContain(events, e => e is MapChanged);
         DeathSystem.Update(world, events);
         Assert.Contains(new MapChanged(0, House, new CellPos(8, 5)), events);
-        Assert.All(Footprint(House, 2, 2), cell => Assert.True(world.Map.CanEnter(cell, Locomotor.Wheel)));
+        Assert.All(Footprint(House, 2, 2), cell => Assert.False(world.Map.CanEnter(cell, Locomotor.Wheel)));
         Assert.Null(world.BuildingAt(House));
         Assert.False(world.DamageAtCell(House, 200, events));
 
         world.RemoveDead();
         Assert.DoesNotContain(world.Entities, e => e.Id == house.Id);
-        // Along row 5: the tree still stands on row 4.
+        // Along row 5 the jeep goes round the ruins.
         var jeep = world.SpawnUnit(Blue, UnitType.SupportVehicle, new CellPos(2, 5).Center);
         Order(world, jeep, new CellPos(13, 5));
-        Assert.Contains(new CellPos(8, 5), RunToStop(world, jeep));
+        Assert.DoesNotContain(new CellPos(8, 5), RunToStop(world, jeep));
     }
 
     [Theory]
@@ -207,7 +208,9 @@ public sealed class BuildingTests
         Assert.True(copy.ContentEquals(world.Map));
         Assert.False(copy.ContentEquals(pristine));
         Assert.False(copy.HasBuilding(House));
-        Assert.True(copy.CanEnter(House, Locomotor.Foot));
+        // Its ruins (RA2).
+        Assert.True(copy.IsBlocked(House));
+        Assert.False(copy.CanEnter(House, Locomotor.Foot));
     }
 
     [Fact]

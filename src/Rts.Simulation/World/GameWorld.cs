@@ -571,16 +571,35 @@ public sealed class GameWorld
         events?.Add(new Events.BuildingDestroyed(CurrentTick, building.Id, building.Kind, building.Cell));
     }
 
-    /// <summary>The cells of the buildings that fell this tick open through <see cref="ChangeMap"/> (M4 step 9).</summary>
+    /// <summary>
+    /// The cells of the buildings that fell this tick open through <see cref="ChangeMap"/> (M4 step 9) — but a tech building or a civilian
+    /// building of the map leaves its ruins (RA2): its cells stay closed to every mover and to building, for good.
+    /// </summary>
     internal void OpenWrecks(List<Events.SimEvent>? events)
     {
         foreach (var wreck in Wrecks)
         {
-            ChangeMap([new ClearBuildingEdit(wreck.Cell, wreck.FarCell)], events);
+            var edits = new List<MapEdit> { new ClearBuildingEdit(wreck.Cell, wreck.FarCell) };
+            if (LeavesRuins(wreck))
+            {
+                for (var y = wreck.Cell.Y; y <= wreck.FarCell.Y; y++)
+                {
+                    for (var x = wreck.Cell.X; x <= wreck.FarCell.X; x++)
+                    {
+                        edits.Add(new SetObstacleEdit(new CellPos(x, y), true));
+                    }
+                }
+            }
+
+            ChangeMap([.. edits], events);
         }
 
         Wrecks.Clear();
     }
+
+    /// <summary>Whether a fallen building leaves ruins (RA2): one of the map, not the bridge repair hut, which nothing brings down.</summary>
+    public static bool LeavesRuins(Building building) =>
+        building.Def is null && BuildingTypes.IsKnown(building.Kind) && building.Kind != BuildingKind.TechBridgeRepairHut;
 
     /// <summary>
     /// The player sells a building (docs/implementation/M3_base_economy.md, 4.8): <paramref name="refund"/> credits come back, the

@@ -27,6 +27,7 @@ public partial class Buildings : Node3D
     private int _builtVersion = -1;
     private long _builtOwners = -1;
     private SimulationHost? _host;
+    private static readonly Color RubbleColor = new(0.2f, 0.19f, 0.18f);
     private readonly List<Ruin> _ruins = [];
 
     public override void _Ready()
@@ -217,11 +218,12 @@ public partial class Buildings : Node3D
     /// <summary>The colour of a player's band.</summary>
     internal static Color OwnerColor(PlayerId owner) => Matches.PlayerColors.Of(owner);
 
-    // A civilian building that falls leaves its ruins on the footprint, where the table names a model of them.
+    // A building of the map that falls leaves its ruins on the footprint (RA2): the model of them where the table names one, else a slab
+    // of rubble.
     private void OnEvent(SimEvent simEvent)
     {
-        if (simEvent is BuildingDestroyed destroyed && _host is not null
-            && Models.ModelLibrary.Find("building/" + BuildingTypes.Get(destroyed.Kind).Id)?.Ruins is not null)
+        if (simEvent is BuildingDestroyed destroyed && _host is not null && BuildingTypes.IsKnown(destroyed.Kind)
+            && destroyed.Kind != BuildingKind.TechBridgeRepairHut)
         {
             _ruins.Add(new Ruin(_host.Simulation.World, destroyed.Kind, destroyed.Cell));
             _builtOwners = -1;
@@ -233,10 +235,33 @@ public partial class Buildings : Node3D
         var type = BuildingTypes.Get(ruin.Kind);
         var centre = new Vector3(ruin.Cell.X + type.Width / 2f, 0, ruin.Cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
-        if (Models.ModelLibrary.Instantiate("building/" + type.Id, variant: Models.ModelVariant.Ruins) is { } model)
+        if (Models.ModelLibrary.Find("building/" + type.Id)?.Ruins is not null
+            && Models.ModelLibrary.Instantiate("building/" + type.Id, variant: Models.ModelVariant.Ruins) is { } model)
         {
             model.Position += centre + new Vector3(0, ground, 0);
             AddChild(model);
+            return;
+        }
+
+        // A low slab of rubble with a few broken blocks on it.
+        var rubble = new StandardMaterial3D { AlbedoColor = RubbleColor, Roughness = 1f };
+        AddChild(new MeshInstance3D
+        {
+            Mesh = new BoxMesh { Size = new Vector3(type.Width - 0.1f, 0.18f, type.Height - 0.1f) },
+            MaterialOverride = rubble,
+            Position = centre + new Vector3(0, ground + 0.09f, 0),
+        });
+        for (var i = 0; i < type.Width * type.Height / 2 + 1; i++)
+        {
+            var x = ((i * 37 % 10) / 10f - 0.45f) * (type.Width - 0.4f);
+            var z = ((i * 53 % 10) / 10f - 0.45f) * (type.Height - 0.4f);
+            AddChild(new MeshInstance3D
+            {
+                Mesh = new BoxMesh { Size = new Vector3(0.35f, 0.22f + (i % 3) * 0.08f, 0.3f) },
+                MaterialOverride = rubble,
+                Position = centre + new Vector3(x, ground + 0.25f, z),
+                RotationDegrees = new Vector3(0, i * 29 % 90, (i % 2) * 12f),
+            });
         }
     }
 
