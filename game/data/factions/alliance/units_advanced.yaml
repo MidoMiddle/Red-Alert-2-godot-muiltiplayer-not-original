@@ -97,6 +97,7 @@ alliance_tanya:  # hero: one shot kills a soldier (stage 3a), C4 brings a buildi
   armor: flak
   speed: 30
   sight: 8
+  locomotor: amphibious  # RA2 SpeedType=Amphibious: she swims, at the same speed as on land
   prerequisites: [alliance_barracks, alliance_battle_lab]
   primary: alliance_double_pistols
   secondary: alliance_c4

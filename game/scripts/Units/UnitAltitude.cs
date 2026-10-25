@@ -25,6 +25,9 @@ public static class UnitAltitude
     /// <summary>Under the water (stage 3e): a little below its face.</summary>
     public const float Submerged = -0.2f;
 
+    /// <summary>A soldier in the water (Tanya, RA2 SpeedType=Amphibious): sunk to the shoulders, the head and arms above it.</summary>
+    public const float Swimming = -0.25f;
+
     /// <summary>Cells a second a helicopter goes down to land or up to take off.</summary>
     public const float ClimbRate = 1.2f;
 
@@ -36,6 +39,14 @@ public static class UnitAltitude
 
     /// <summary>The height the unit is drawn at now: a helicopter on its way down or up, else that of its kind.</summary>
     public static float Of(Unit unit) => DrawnHeights.TryGetValue(unit.Id, out var height) ? height : Of(unit.Archetype);
+
+    /// <summary>How much lower than its kind a unit on the ground is drawn: a soldier on water swims, all else 0.</summary>
+    public static float Swim(GameWorld world, Unit unit)
+    {
+        var cell = unit.Position.ToCell();
+        return unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies && world.Map.Contains(cell)
+            && world.Map.SurfaceAt(cell) is LandType.Shallow or LandType.Deep ? Swimming : 0f;
+    }
 
     /// <summary>Whether the unit is a helicopter, which lands when idle.</summary>
     public static bool Lands(UnitArchetype archetype) => archetype.Type == UnitType.AllianceNighthawk;

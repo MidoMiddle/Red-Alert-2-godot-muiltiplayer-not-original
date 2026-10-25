@@ -76,7 +76,7 @@ public partial class UnitRenderer : Node3D
             // A helicopter idle over open ground sets down, and rises again when it has to go.
             var altitude = Units.UnitAltitude.Lands(unit.Archetype)
                 ? Units.UnitAltitude.Step(unit.Id, Units.UnitAltitude.Of(unit.Archetype), Units.UnitAltitude.Target(world, unit), (float)delta)
-                : Units.UnitAltitude.Of(unit.Archetype);
+                : Units.UnitAltitude.Of(unit.Archetype) + Units.UnitAltitude.Swim(world, unit);
             view.SetPose(
                 WorldCoords.ToGodotOnGround(previous.Position, altitude).Lerp(WorldCoords.ToGodotOnGround(current.Position, altitude), alpha),
                 UnitFacing.InterpolatedYaw(previous.Facing, current.Facing, alpha),

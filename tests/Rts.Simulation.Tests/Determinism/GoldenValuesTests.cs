@@ -372,6 +372,7 @@ public sealed class GoldenValuesTests
         // Rules v89 (the stolen technology of RA2 and its four units): the version only.
         // Rules v90 (the commando's C4 on a bridge repair hut, RA2): the version only.
         // Rules v91 (the models branch merged: its check against rules.ini moves the game data): the version only.
-        Assert.Equal((22270, 14999916653202610182UL), (bytes.Length, hash.Value));
+        // Rules v92 (Tanya swims, RA2 SpeedType=Amphibious): the version only.
+        Assert.Equal((22270, 2962473439659788537UL), (bytes.Length, hash.Value));
     }
 }
