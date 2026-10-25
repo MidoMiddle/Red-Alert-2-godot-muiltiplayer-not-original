@@ -51,6 +51,7 @@ mcv:  # MCV
   speed: 24
   sight: 6
   turret: false
+  prerequisites: [war_factory, service_depot]  # RA2: NAWEAP + NADEPT
   size: 6
 
 harvester:  # War Miner

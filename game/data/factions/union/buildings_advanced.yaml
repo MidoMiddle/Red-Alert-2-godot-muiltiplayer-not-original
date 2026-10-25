@@ -14,13 +14,15 @@ naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   armor: concrete
   footprint: [4, 4]
   power: -20
+  powered: true  # RA2: the Soviet shipyard needs power (not in Yuri's Revenge)
   extends_base: false
-  adjacent: 10
+  adjacent: 12  # RA2 Adjacent=12
   water: true
   produces: [naval]
   exit_cell: [1, 4]
   prerequisites: [refinery]
   capturable: false
+  repairs_vehicles: true  # RA2 UnitRepair: it mends the ships beside it
 
 service_depot:  # repairs the vehicles and ships beside it (stage 2c)
   kind: building

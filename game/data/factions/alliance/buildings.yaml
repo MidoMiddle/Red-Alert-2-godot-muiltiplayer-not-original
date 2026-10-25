@@ -114,12 +114,13 @@ alliance_naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   footprint: [4, 4]
   power: -25
   extends_base: false
-  adjacent: 10
+  adjacent: 12  # RA2 Adjacent=12
   water: true
   produces: [naval]
   exit_cell: [1, 4]
   prerequisites: [alliance_ore_refinery]
   capturable: false
+  repairs_vehicles: true  # RA2 UnitRepair: it mends the ships beside it
 
 alliance_service_depot:  # repairs the vehicles and ships beside it (stage 2c)
   kind: building

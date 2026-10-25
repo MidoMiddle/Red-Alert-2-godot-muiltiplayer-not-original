@@ -124,7 +124,8 @@ public sealed class SidebarModelTests
         Assert.Equal(1, building.Count);
         // The queue of buildings takes one: the others wait, a second click on it does nothing.
         Assert.Equal(CameoState.Busy, Square(simulation, BuildGroup.Buildings, "reactor").State);
-        Assert.Equal(CameoState.Available, Square(simulation, BuildGroup.Defense, "wall").State);
+        // The wall waits for the barracks (RA2), the defense queue is free.
+        Assert.Equal(CameoState.Unavailable, Square(simulation, BuildGroup.Defense, "wall").State);
         Assert.Equal(CameoAction.None, SidebarModel.LeftClick(building, false));
 
         Right(simulation, BuildGroup.Buildings, "barracks");

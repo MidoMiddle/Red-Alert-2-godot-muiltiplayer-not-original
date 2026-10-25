@@ -56,7 +56,7 @@ public sealed class DamageStateTests
         simulation.Enqueue(new ToggleRepairCommand(Player1, simulation.CurrentTick, sequence++, reactor.Id));
         simulation.Step();
         states.AddRange(simulation.LastTickEvents.OfType<DamageStateChanged>().Select(changed => changed.State));
-        for (var i = 0; i < 200 && reactor.Repairing; i++)
+        for (var i = 0; i < 1000 && reactor.Repairing; i++)
         {
             simulation.Step();
             states.AddRange(simulation.LastTickEvents.OfType<DamageStateChanged>().Select(changed => changed.State));

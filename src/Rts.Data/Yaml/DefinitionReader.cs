@@ -69,7 +69,7 @@ internal static class DefinitionReader
     [
         "name", "low_power_min_rate", "multiple_factory_bonus", "max_factory_rate", "ore_value", "gem_value", "ore_growth_interval",
         "ore_growth_chance", "ore_spread_stage", "ore_spread_chance", "source_interval", "source_radius", "sell_refund", "repair_cost",
-        "repair_rate",
+        "repair_rate", "repair_delay",
     ];
 
     private static readonly string[] CratesKeys =
@@ -616,6 +616,7 @@ internal static class DefinitionReader
             SellRefund = fields.Required("sell_refund", Scalars.Percent, Fixed.Zero),
             RepairCost = fields.Required("repair_cost", Scalars.Percent, Fixed.Zero),
             RepairRate = fields.Required("repair_rate", Scalars.Int, 0),
+            RepairDelay = fields.Optional("repair_delay", Scalars.Int, 1),
         };
     }
 

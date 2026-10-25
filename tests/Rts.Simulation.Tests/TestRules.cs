@@ -145,7 +145,7 @@ internal static class TestRules
         builder.Add(InfantryDef(UnitType.Conscript, sight: 5) with { Armor = "flak", Primary = "conscript_rifle", Threat = 10 });
         builder.Add(InfantryDef(UnitType.Rocketeer, sight: 5) with { Primary = "rocketeer_rocket", Threat = 15 });
         builder.Add(InfantryDef(UnitType.Engineer, sight: 4) with { Threat = 5, Engineer = true });
-        builder.Add(VehicleDef(UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6) with { Threat = 5, Size = 6 });
+        builder.Add(VehicleDef(UnitType.Mcv, Locomotor.Track, speed: 24, turret: false, sight: 6, "war_factory", "service_depot") with { Threat = 5, Size = 6 });
         builder.Add(VehicleDef(UnitType.Harvester, Locomotor.Track, speed: 24, turret: true, sight: 4, "war_factory", "refinery") with
         {
             HarvestCapacity = 1000,
@@ -232,8 +232,9 @@ internal static class TestRules
         });
         builder.Add(Def("radar", 2, 2, power: -50, "refinery") with { Radar = true });
         Building(builder, "tech_center", 3, 3, power: -100, "war_factory", "radar");
-        builder.Add(Def("wall", 1, 1, power: 0, "construction_yard") with
+        builder.Add(Def("wall", 1, 1, power: 0, "barracks") with
         {
+            Adjacent = 8,
             ExtendsBase = false,
             Wall = true,
             Category = ProductionCategory.Defense,
@@ -258,8 +259,9 @@ internal static class TestRules
             SourceInterval = 60,
             SourceRadius = 3,
             SellRefund = Percent(50),
-            RepairCost = Percent(50),
-            RepairRate = 5,
+            RepairCost = Percent(15),
+            RepairRate = 8,
+            RepairDelay = 14,
         });
         builder.Add(new FactionDef
         {

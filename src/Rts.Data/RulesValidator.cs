@@ -457,6 +457,7 @@ internal static class RulesValidator
             Positive(economy.Id, "gem_value", economy.GemValue);
             Positive(economy.Id, "ore_growth_interval", economy.OreGrowthInterval);
             Positive(economy.Id, "repair_rate", economy.RepairRate);
+            Positive(economy.Id, "repair_delay", economy.RepairDelay);
             foreach (var (key, chance) in new[]
             {
                 ("ore_growth_chance", economy.OreGrowthChance), ("ore_spread_chance", economy.OreSpreadChance),

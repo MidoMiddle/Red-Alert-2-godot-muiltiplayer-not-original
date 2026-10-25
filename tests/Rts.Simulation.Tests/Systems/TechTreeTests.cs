@@ -35,12 +35,13 @@ public sealed class TechTreeTests
     }
 
     [Fact]
-    public void With_a_construction_yard_the_reactor_and_the_wall_open()
+    public void With_a_construction_yard_the_reactor_opens()
     {
         var world = NewWorld();
         Build(world, "construction_yard", 0, 0);
 
-        Assert.Equal(["reactor", "wall"], Available(world));
+        // The wall waits for the barracks (RA2: NAHAND).
+        Assert.Equal(["reactor"], Available(world));
         Assert.False(CanBuild(world, "barracks"));
     }
 
@@ -51,7 +52,7 @@ public sealed class TechTreeTests
         Build(world, "construction_yard", 0, 0);
         Build(world, "reactor", 4, 0);
 
-        Assert.Equal(["barracks", "reactor", "refinery", "wall"], Available(world));
+        Assert.Equal(["barracks", "reactor", "refinery"], Available(world));
     }
 
     [Fact]

@@ -118,7 +118,8 @@ wall:  # Wall; placed by dragging
   footprint: [1, 1]
   wall: true
   powered: false
-  prerequisites: [construction_yard]
+  adjacent: 8  # RA2 Adjacent=8
+  prerequisites: [barracks]  # RA2: NAHAND
 
 sentry_bunker:  # light defence, machine gun
   kind: building

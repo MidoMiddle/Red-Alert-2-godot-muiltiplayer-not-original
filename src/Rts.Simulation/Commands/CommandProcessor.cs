@@ -113,7 +113,9 @@ public static class CommandProcessor
     /// <summary>Turns the repair of the player's ready building — or of a tech building of the map he took — on or off (4.8).</summary>
     private static bool ApplyToggleRepair(GameWorld world, ToggleRepairCommand command, List<SimEvent>? events)
     {
-        if ((OwnReady(world, command.Player, command.Building) ?? OwnTech(world, command.Player, command.Building)) is not { } building)
+        // A wall is not repaired (RA2 Repairable=no).
+        if ((OwnReady(world, command.Player, command.Building) ?? OwnTech(world, command.Player, command.Building)) is not { } building
+            || building.Def is { Wall: true })
         {
             return false;
         }

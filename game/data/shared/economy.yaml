@@ -21,8 +21,10 @@ economy:
   # brings about 375 credits a minute, a gem source twice that; the balance is M8's.
   source_interval: 4s
   source_radius: 3
-  # A sold building gives back sell_refund of its cost times its share of hit points. A repair gives repair_rate hit points a
-  # tick; from nothing to full it costs repair_cost of the building's cost (RA2: half).
+  # A sold building gives back sell_refund of its cost times its share of hit points. A repair gives repair_rate hit points every
+  # repair_delay (RA2 RepairStep=8 every RepairRate/URepairRate=.016 minutes, 14 frames); from nothing to full it costs repair_cost
+  # of the building's or the vehicle's cost (RA2 RepairPercent=15%).
   sell_refund: 50%
-  repair_cost: 50%
-  repair_rate: 5
+  repair_cost: 15%
+  repair_rate: 8
+  repair_delay: 14

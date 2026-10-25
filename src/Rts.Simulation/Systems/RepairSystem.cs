@@ -7,11 +7,13 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Systems;
 
 /// <summary>
-/// Repairs (docs/implementation/M3_base_economy.md, 4.8): a building whose repair is on gains <c>repair_rate</c> hit points a tick and
-/// costs <c>cost × repair_cost × hit points / max hit points</c>, with the remainder of the rounding carried on, so a whole repair costs
+/// Repairs (docs/implementation/M3_base_economy.md, 4.8): a building whose repair is on gains <c>repair_rate</c> hit points every
+/// <c>repair_delay</c> ticks (RA2: 8 every 14 frames) and costs <c>cost × repair_cost × hit points / max hit points</c> (RA2: 15% for
+/// a whole repair), with the remainder of the rounding carried on, so a whole repair costs
 /// exactly its share of the cost. Without the credits for a tick it stands, still on, and goes on when they come; at full hit points it
-/// turns off. After the harvesters, before movement (4.15). A workshop (<see cref="Rules.BuildingDef.RepairsVehicles"/>, stage 2c)
-/// repairs the vehicles and ships of its owner that stand still beside it the same way, at the same rate and share of their cost.
+/// turns off. A wall is not repaired (RA2 <c>Repairable=no</c>). After the harvesters, before movement (4.15). A workshop
+/// (<see cref="Rules.BuildingDef.RepairsVehicles"/>, stage 2c: the service depot, the shipyards, the outpost) repairs one vehicle or
+/// ship of its owner that stands still beside it at a time (RA2: one on its pad), the same way, at the same rate and share of its cost.
 /// A tech building of the map its owner took (an oil derrick, a hospital, an airfield; not the bridge repair hut, which nothing hurts)
 /// is repaired the same way, as if it cost its hit points in credits (ours: the map's buildings have no price).
 /// </summary>
@@ -53,10 +55,16 @@ public static class RepairSystem
     private static void RepairBuildings(GameWorld world, List<SimEvent>? events)
     {
         var economy = world.Rules.Economy;
+        if (world.CurrentTick % economy.RepairDelay != 0)
+        {
+            return;
+        }
+
         var share = IntMath.DivRound(economy.RepairCost.Raw * 1000, Fixed.OneRaw);
         foreach (var entity in world.Entities)
         {
-            if (entity is not Building { IsAlive: true, Repairing: true } building || (building.Def is null && !Repairable(building)))
+            if (entity is not Building { IsAlive: true, Repairing: true } building || (building.Def is null && !Repairable(building))
+                || building.Def is { Wall: true })
             {
                 continue;
             }
@@ -97,13 +105,19 @@ public static class RepairSystem
     private static void RepairVehicles(GameWorld world, List<SimEvent>? events)
     {
         var economy = world.Rules.Economy;
+        if (world.CurrentTick % economy.RepairDelay != 0)
+        {
+            return;
+        }
+
         var share = IntMath.DivRound(economy.RepairCost.Raw * 1000, Fixed.OneRaw);
         List<EntityId>? near = null;
         HashSet<EntityId>? repaired = null;
         foreach (var entity in world.Entities)
         {
             if (entity is not Building { IsAlive: true, IsReady: true } workshop
-                || !(workshop.Def?.RepairsVehicles ?? (BuildingTypes.IsKnown(workshop.Kind) && workshop.Type.RepairsVehicles)))
+                || !(workshop.Def?.RepairsVehicles ?? (BuildingTypes.IsKnown(workshop.Kind) && workshop.Type.RepairsVehicles))
+                || !Combat.Defenses.IsOnline(world, workshop))
             {
                 continue;
             }
@@ -128,20 +142,21 @@ public static class RepairSystem
                 var scale = 1000L * unit.MaxHp;
                 var price = (int)(((long)def.Cost * share * gain + scale - 1) / scale);
                 var player = world.Player(unit.Owner);
-                if (price > player.Credits)
+                // One at a time (RA2: one on the pad); without the credits it waits, and so do the others.
+                if (price <= player.Credits)
                 {
-                    continue;
+                    player.Credits -= price;
+                    world.Stats.Spent(unit.Owner, price);
+                    world.SetHp(unit, unit.Hp + gain, events);
+                    if (unit.Parasite != 0)
+                    {
+                        // The workshop pulls the parasite out (stage 3d).
+                        ParasiteSystem.Clear(unit);
+                        events?.Add(new ParasiteKilled(world.CurrentTick, unit.Id));
+                    }
                 }
 
-                player.Credits -= price;
-                world.Stats.Spent(unit.Owner, price);
-                world.SetHp(unit, unit.Hp + gain, events);
-                if (unit.Parasite != 0)
-                {
-                    // The workshop pulls the parasite out (stage 3d).
-                    ParasiteSystem.Clear(unit);
-                    events?.Add(new ParasiteKilled(world.CurrentTick, unit.Id));
-                }
+                break;
             }
         }
     }

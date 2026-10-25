@@ -51,6 +51,9 @@ public sealed record EconomyDef : IDefinition
     /// <summary>What a repair from nothing to full hit points costs, as a share of the cost of the building.</summary>
     public required Fixed RepairCost { get; init; }
 
-    /// <summary>Hit points a repair gives per tick.</summary>
+    /// <summary>Hit points a repair gives at a time.</summary>
     public required int RepairRate { get; init; }
+
+    /// <summary>The ticks between two steps of a repair (RA2 <c>RepairRate</c>, <c>URepairRate</c>); 1 for every tick.</summary>
+    public int RepairDelay { get; init; } = 1;
 }

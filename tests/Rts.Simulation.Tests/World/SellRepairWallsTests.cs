@@ -55,6 +55,9 @@ public sealed class SellRepairWallsTests
     private void ReadyWall(GameSimulation simulation)
     {
         Build(simulation, "construction_yard", 2, 2);
+        // The wall needs the barracks (RA2), far from the walls of the tests, with the power for it.
+        Build(simulation, "barracks", 34, 24);
+        Build(simulation, "reactor", 30, 24);
         simulation.Step();
         Send(simulation, new ProduceCommand(Player1, simulation.CurrentTick, _sequence++, ProductionKind.Building, Index("wall"), 1));
         for (var i = 0; i < 40 && !simulation.World.Player(Player1).Queue(ProductionCategory.Defense)[0].Ready; i++)
@@ -143,7 +146,7 @@ public sealed class SellRepairWallsTests
     }
 
     [Fact]
-    public void A_whole_repair_costs_half_the_cost_and_turns_off_when_done()
+    public void A_whole_repair_costs_fifteen_percent_of_the_cost_and_turns_off_when_done()
     {
         var simulation = Match();
         var reactor = Build(simulation, "reactor", 10, 10);
@@ -152,10 +155,11 @@ public sealed class SellRepairWallsTests
 
         var toggled = Repair(simulation, reactor);
         Assert.Contains(new RepairToggled(simulation.CurrentTick - 1, reactor.Id, true), toggled);
-        Assert.Equal(1 + 5, reactor.Hp);
+        // RA2: 8 hit points every 14 ticks.
+        Assert.InRange(reactor.Hp, 1, 1 + 8);
 
         var done = false;
-        for (var i = 0; i < 200 && !done; i++)
+        for (var i = 0; i < 1000 && !done; i++)
         {
             simulation.Step();
             done = simulation.LastTickEvents.OfType<RepairDone>().Any();
@@ -165,8 +169,8 @@ public sealed class SellRepairWallsTests
         Assert.Equal(500, reactor.Hp);
         Assert.False(reactor.Repairing);
 
-        // 100 × 50 % × 499 / 500 = 49.9: the carried remainders add up to 49 exactly.
-        Assert.Equal(49, before - Credits(simulation));
+        // RA2 RepairPercent: 100 × 15 % × 499 / 500 = 14.97: the carried remainders add up to 14 exactly.
+        Assert.Equal(14, before - Credits(simulation));
     }
 
     [Fact]
@@ -181,17 +185,18 @@ public sealed class SellRepairWallsTests
             simulation.Step();
         }
 
+        // A step of 8 costs 0.24 credits here: the first ones round down to nothing, until the carried remainder makes a credit.
         Assert.True(reactor.Repairing);
-        Assert.InRange(reactor.Hp, 100, 110);
+        Assert.InRange(reactor.Hp, 100, 100 + (8 * 4));
 
         simulation.World.Player(Player1).Credits = 1000;
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < 800; i++)
         {
             simulation.Step();
         }
 
         Assert.Equal(500, reactor.Hp);
-        Assert.True(Credits(simulation) >= 1000 - 50);
+        Assert.True(Credits(simulation) >= 1000 - 15);
     }
 
     [Fact]
@@ -263,6 +268,7 @@ public sealed class SellRepairWallsTests
     {
         var simulation = Match();
         Build(simulation, "construction_yard", 2, 2);
+        Build(simulation, "barracks", 34, 24);
         simulation.Step();
 
         Assert.Contains(Walls(simulation, Row(5, 7, 3)), e => e is CannotPlace { Problem: PlacementProblem.NotReady });

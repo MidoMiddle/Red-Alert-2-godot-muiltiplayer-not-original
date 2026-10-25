@@ -324,6 +324,7 @@ public static class DataHasher
             hash.Add(economy.SellRefund.Raw);
             hash.Add(economy.RepairCost.Raw);
             hash.Add(economy.RepairRate);
+            hash.Add(economy.RepairDelay);
         }
 
         // M4 step 1: armor, warheads and projectiles; the death of infantry and the look of a projectile are the client's.

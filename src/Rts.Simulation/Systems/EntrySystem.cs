@@ -103,7 +103,7 @@ public static class EntrySystem
 
         if (unit.Archetype.Has(UnitTalents.Engineer))
         {
-            return own && building.Hp < building.MaxHp ? EntryAction.Mend
+            return own && building.Hp < building.MaxHp && !def.Wall ? EntryAction.Mend
                 : enemy && def.Capturable && def.Wall is false ? EntryAction.Capture
                 : EntryAction.None;
         }

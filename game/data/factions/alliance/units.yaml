@@ -29,7 +29,7 @@ alliance_mcv:  # deploys into the Command Yard
   speed: 24
   sight: 6
   turret: false
-  prerequisites: [alliance_war_factory]
+  prerequisites: [alliance_war_factory, alliance_service_depot]  # RA2: GAWEAP + GADEPT
   size: 6
 
 alliance_harvester:  # the refinery's free harvester

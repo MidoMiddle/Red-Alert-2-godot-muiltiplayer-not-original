@@ -81,7 +81,7 @@ public sealed record BuildingDef : IDefinition
     public const int DefaultAdjacent = 3;
 
     /// <summary>The largest <see cref="Adjacent"/> the data may set.</summary>
-    public const int MaxAdjacent = 10;
+    public const int MaxAdjacent = 12;
 
     public ImmutableArray<string> Prerequisites { get; init; } = ImmutableArray<string>.Empty;
 

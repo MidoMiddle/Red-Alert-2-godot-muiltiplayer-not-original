@@ -362,6 +362,7 @@ public sealed class GoldenValuesTests
         // Rules v80 (the defenses with the numbers of RA2): the version only.
         // Rules v81 (the tesla coil charged by tesla troopers): the version only.
         // Rules v82 (the superweapons and the atomic plant of RA2): the version only.
-        Assert.Equal((22270, 7348813997680395439UL), (bytes.Length, hash.Value));
+        // Rules v83 (the repairs, shipyards and walls of RA2): the version only.
+        Assert.Equal((22270, 5218835306748888974UL), (bytes.Length, hash.Value));
     }
 }
