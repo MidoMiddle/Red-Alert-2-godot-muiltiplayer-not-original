@@ -126,7 +126,7 @@ public static class SidebarModel
         "alliance_naval_shipyard", "alliance_service_depot", "alliance_battle_lab", "alliance_ore_purifier", "alliance_spy_satellite_uplink",
         "alliance_chronosphere", "alliance_weather_control_device",
         "reactor", "refinery", "barracks", "war_factory", "radar", "naval_shipyard", "service_depot", "tech_center", "nuclear_reactor",
-        "iron_curtain", "nuclear_missile_silo",
+        "cloning_vats", "iron_curtain", "nuclear_missile_silo",
 
         // Defenses (W).
         "alliance_wall", "alliance_pillbox", "alliance_patriot_missile_system", "alliance_prism_tower", "alliance_gap_generator",

@@ -195,6 +195,12 @@ public sealed record UnitPromoted(int Tick, EntityId Unit, PlayerId Owner, Syste
 /// <summary>A hurt soldier was healed whole at a hospital (loose ends, stage 1).</summary>
 public sealed record UnitHealed(int Tick, EntityId Unit, EntityId Hospital) : SimEvent(Tick);
 
+/// <summary>A soldier just trained came out once more, free, at the player's cloning vats (RA2).</summary>
+public sealed record UnitCloned(int Tick, PlayerId Player, EntityId Unit, EntityId Vats) : SimEvent(Tick);
+
+/// <summary>A soldier went into its owner's cloning vats and left for <paramref name="Credits"/> (RA2).</summary>
+public sealed record UnitRecycled(int Tick, EntityId Unit, EntityId Vats, int Credits) : SimEvent(Tick);
+
 /// <summary>
 /// An infiltrator of <paramref name="Player"/> went into <paramref name="Building"/> and did <paramref name="Effect"/>; the credits it
 /// took for a theft (stage 3b).

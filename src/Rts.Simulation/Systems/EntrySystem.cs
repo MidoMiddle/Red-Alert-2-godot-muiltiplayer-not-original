@@ -34,6 +34,9 @@ public enum EntryAction
 
     /// <summary>An engineer mends the bridge of a repair hut (loose ends, stage 2, <see cref="BridgeRepair"/>).</summary>
     RepairBridge,
+
+    /// <summary>A soldier goes into its owner's cloning vats and leaves for half its price (RA2).</summary>
+    Recycle,
 }
 
 /// <summary>
@@ -45,7 +48,8 @@ public enum EntryAction
 /// building of a player outside its team and blacks out its owner's power for <see cref="BlackoutTicks"/> ticks, makes it forget its map,
 /// or takes half its credits. The engineer and the infiltrator are spent (they leave the map without a death). The tech buildings of the
 /// map (loose ends, stage 1): an engineer takes one of the neutral side or an enemy, or mends its own; a hurt soldier is healed whole
-/// at its own hospital and stays outside. An engineer going into a bridge repair hut mends its bridge and is spent (stage 2). One that stopped farther off, or can no longer do it, forgets the order; so does one given
+/// at its own hospital and stays outside. An engineer going into a bridge repair hut mends its bridge and is spent (stage 2). A soldier
+/// going into its owner's cloning vats leaves for half its price (RA2). One that stopped farther off, or can no longer do it, forgets the order; so does one given
 /// another order.
 /// </summary>
 public static class EntrySystem
@@ -99,6 +103,12 @@ public static class EntrySystem
             return own && building.Hp < building.MaxHp ? EntryAction.Mend
                 : enemy && def.Capturable && def.Wall is false ? EntryAction.Capture
                 : EntryAction.None;
+        }
+
+        // RA2 cloning vats: any other soldier of the owner's but one that teleports goes in for half its price.
+        if (own && def.ClonesInfantry)
+        {
+            return unit.Archetype.Has(UnitTalents.Teleports) ? EntryAction.None : EntryAction.Recycle;
         }
 
         if (unit.Archetype.Has(UnitTalents.Infiltrator))
@@ -201,9 +211,18 @@ public static class EntrySystem
                     world.SetHp(unit, unit.MaxHp, events);
                     events?.Add(new UnitHealed(world.CurrentTick, unit.Id, building!.Id));
                     break;
+                case EntryAction.Recycle:
+                    var credits = RecycleRefund(unit);
+                    world.Player(unit.Owner).Credits += credits;
+                    events?.Add(new UnitRecycled(world.CurrentTick, unit.Id, building!.Id, credits));
+                    unit.MarkDead();
+                    break;
             }
         }
     }
+
+    /// <summary>What a soldier going into its owner's cloning vats leaves for: half its price, rounded down.</summary>
+    public static int RecycleRefund(Unit unit) => unit.Archetype.Cost / 2;
 
     /// <summary>
     /// The building changes hands: its soldiers come out for the old owner, its sight and veil leave the old owner's grid (the new owner's

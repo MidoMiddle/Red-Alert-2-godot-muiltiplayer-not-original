@@ -168,6 +168,7 @@ public static class DataHasher
             hash.Add(building.Water);
             hash.Add(building.RepairsVehicles);
             hash.Add(building.IncomeBonusPercent);
+            hash.Add(building.ClonesInfantry);
             Add(hash, building.DeathWeapon);
             hash.Add(building.RevealsMap);
             hash.Add(building.VeilRadius);

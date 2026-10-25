@@ -158,7 +158,38 @@ public static class ProductionSystem
             UnitOrders.MoveTo(world, unit, place.Center);
         }
 
+        if (archetype.Category == UnitCategory.Infantry)
+        {
+            Clone(world, player, type, archetype, events);
+        }
+
         return true;
+    }
+
+    /// <summary>
+    /// RA2 cloning vats (<see cref="BuildingDef.ClonesInfantry"/>): every ready vats of the player puts out a free copy of the soldier
+    /// just trained, on the nearest free cell round it, in id order, with or without power; a vats with no free cell round it gives none.
+    /// </summary>
+    private static void Clone(GameWorld world, PlayerState player, UnitType type, UnitArchetype archetype, List<SimEvent>? events)
+    {
+        List<Building>? vats = null;
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, IsReady: true, Def.ClonesInfantry: true } building && building.Owner == player.Id)
+            {
+                (vats ??= []).Add(building);
+            }
+        }
+
+        foreach (var building in vats ?? [])
+        {
+            if (ExitAround(world, building, archetype) is { } cell)
+            {
+                var clone = world.SpawnUnit(player.Id, type, cell.Center, snapToSubcell: true);
+                events?.Add(new UnitCloned(world.CurrentTick, player.Id, clone.Id, building.Id));
+                Veterancy.Produced(world, clone, events);
+            }
+        }
     }
 
     /// <summary>

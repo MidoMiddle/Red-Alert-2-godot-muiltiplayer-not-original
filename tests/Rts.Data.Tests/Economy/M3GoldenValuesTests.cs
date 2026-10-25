@@ -57,7 +57,8 @@ public sealed class M3GoldenValuesTests
         // Rules v61 (loose ends, stage 4): the same run and credits; the destroyer's Osprey is a type of its own.
         // Rules v75: the same run and credits; the content of Yuri's Revenge is out, and the numbers of the Alliance's units in the
         // data move.
-        Assert.Equal((5972, 0x233c547498d18604UL), (fifth.Credits, fifth.Checksum));
+        // Rules v77: the same run and credits; the cloning vats join the Union's buildings in the data.
+        Assert.Equal((5972, 0xba65535811ef0c88UL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

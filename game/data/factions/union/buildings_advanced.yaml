@@ -52,6 +52,22 @@ nuclear_reactor:  # late power, +2000; blows up when a shot brings it down (stag
   prerequisites: [tech_center]
   spy_effect: blackout
 
+cloning_vats:  # RA2 Cloning Vats (NACLON): every soldier the barracks train comes out a second time here, free, with or without power; a soldier sent in gives half its price back
+  kind: building
+  inherits: base_building
+  name: Replication Vats
+  faction: union
+  cost: 2500
+  build_time: 105s
+  hp: 1000
+  sight: 5
+  footprint: [2, 2]
+  power: -200
+  prerequisites: [tech_center]
+  build_limit: 1
+  capturable: false
+  clones_infantry: true
+
 iron_curtain:  # superweapon: 3 x 3 cells cannot be hurt for 50 s, soldiers there die; charges 5 min (stage 2d)
   kind: building
   inherits: base_building

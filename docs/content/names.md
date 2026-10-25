@@ -22,6 +22,7 @@
 | naval_shipyard | Dockyard | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | service_depot | Field Workshop | ремонт техники | Service Depot | работает: чинит технику и корабли рядом, за деньги (этап 2в) |
 | nuclear_reactor | Atomic Plant | энергия +2000 | Nuclear Reactor | работает: энергия; взрывается, если его разрушили выстрелом (этап 2в) |
+| cloning_vats | Replication Vats | второй пехотинец бесплатно | Cloning Vats | работает: каждый обученный в казармах пехотинец выходит ещё раз у чанов; свой пехотинец, посланный внутрь, — половина цены назад |
 | iron_curtain | Bastion Field Projector | неуязвимость группе | Iron Curtain | работает: 3×3 клетки неуязвимы 50 с, пехота там гибнет; заряд 5 мин (этап 2д) |
 | nuclear_missile_silo | Strategic Missile Silo | ракетный удар | Nuclear Missile Silo | работает: ракета 600 на 10 клеток, бетон 8 %, после — яд; заряд 10 мин (этап 2д) |
 

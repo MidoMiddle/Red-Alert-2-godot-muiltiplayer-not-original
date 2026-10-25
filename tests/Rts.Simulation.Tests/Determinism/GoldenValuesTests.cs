@@ -356,6 +356,7 @@ public sealed class GoldenValuesTests
         // Rules v75 (the content of Yuri's Revenge taken out: the robot tank, its control centre, the industrial plant, the battle bunker,
         // the machine shop and the power plant): the version only.
         // Rules v76 (the outpost of RA2): the version only.
-        Assert.Equal((22270, 11299144653241318825UL), (bytes.Length, hash.Value));
+        // Rules v77 (the cloning vats of RA2): the version only.
+        Assert.Equal((22270, 5076591376660123024UL), (bytes.Length, hash.Value));
     }
 }

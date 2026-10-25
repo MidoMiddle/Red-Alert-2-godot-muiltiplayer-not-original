@@ -121,6 +121,12 @@ public sealed record BuildingDef : IDefinition
     /// <summary>The ore unloaded brings its owner this many percent more while it stands ready (stage 2c); the best counts.</summary>
     public int IncomeBonusPercent { get; init; }
 
+    /// <summary>
+    /// RA2 cloning vats (<c>Cloning</c>): while it stands ready, every soldier its owner's barracks train comes out once more beside it,
+    /// free, with or without power; a soldier of the owner's sent in leaves for half its price (<see cref="Systems.EntryAction.Recycle"/>).
+    /// </summary>
+    public bool ClonesInfantry { get; init; }
+
     /// <summary>The weapon that goes off where it stood when a shot brings it down (stage 2c: the atomic plant); empty for none.</summary>
     public string DeathWeapon { get; init; } = "";
 

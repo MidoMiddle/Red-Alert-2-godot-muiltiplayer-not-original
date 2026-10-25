@@ -75,7 +75,7 @@ public sealed class SidebarOrderTests
         var world = World();
         Assert.Equal(
             ["reactor", "refinery", "barracks", "war_factory", "radar", "naval_shipyard", "service_depot", "tech_center", "nuclear_reactor",
-             "iron_curtain", "nuclear_missile_silo"],
+             "cloning_vats", "iron_curtain", "nuclear_missile_silo"],
             Tab(world, Union, BuildGroup.Buildings));
         Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil"], Tab(world, Union, BuildGroup.Defense));
         Assert.Equal(
