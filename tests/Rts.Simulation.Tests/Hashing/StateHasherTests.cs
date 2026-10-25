@@ -368,6 +368,8 @@ public sealed class StateHasherTests
         "<Speeds>k__BackingField",
         // A counter of ore changes for the client to redraw (M3 step 9).
         "<OreVersion>k__BackingField",
+        // A counter of destroyed objects, for the client to hide them without rebuilding the map.
+        "<ObjectDeaths>k__BackingField",
     })]
     [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(MapObject), new[]

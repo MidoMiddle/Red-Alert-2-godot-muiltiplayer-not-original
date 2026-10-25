@@ -29,7 +29,7 @@ public partial class Buildings : Node3D
         var map = GetParent<TerrainBuilder>().Map;
         var world = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World;
         var owners = Owners(world);
-        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion || owners != _builtOwners)
+        if (!ReferenceEquals(map, _builtMap) || map.LayoutVersion != _builtVersion || owners != _builtOwners)
         {
             _builtOwners = owners;
             Rebuild(map, world);
@@ -66,7 +66,7 @@ public partial class Buildings : Node3D
         }
 
         _builtMap = map;
-        _builtVersion = map.Version;
+        _builtVersion = map.LayoutVersion;
         if (world is null)
         {
             foreach (var start in map.StartBuildings)

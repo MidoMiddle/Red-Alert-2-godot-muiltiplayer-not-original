@@ -13,7 +13,9 @@ namespace Rts.Client.Terrain;
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
 /// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell. One MultiMesh
 /// per shape (and per direction for bridges). A snowdrift is a bush in summer and a dune in the desert. Rebuilt whenever the map changes
-/// (a tree felled, a bridge blown up) or its climate does (the editor), which is rare.
+/// (a bridge blown up, the editor) or its climate does (the editor), which is rare. An object destroyed in a match (a lamp post or a
+/// fence crushed, a tree felled) is not a rebuild — on a big map that took tens of milliseconds every time a tank drove down a street —
+/// but its copies hide and a felled tree's stump shows (<see cref="MapGrid.ObjectDeaths"/>).
 /// </summary>
 public partial class MapObjects : Node3D
 {
@@ -21,7 +23,19 @@ public partial class MapObjects : Node3D
     private const float TrunkHeight = 0.25f;
     private const float CrownHeight = 0.8f;
 
+    // A copy hidden: a MultiMesh draws nothing of an instance scaled to nothing.
+    private static readonly Transform3D Hidden = new(new Basis(Vector3.Zero, Vector3.Zero, Vector3.Zero), Vector3.Zero);
+
     private MapGrid _map = null!;
+
+    // The copies of each map object by its id (gone when it is destroyed) and the stump of each tree (shown when it is felled).
+    private readonly Dictionary<int, List<(MultiMesh Mesh, int Index, Transform3D Place)>> _copies = [];
+    private readonly Dictionary<int, List<(MultiMesh Mesh, int Index, Transform3D Place)>> _stumps = [];
+    private bool[] _shownDead = [];
+    private int _builtDeaths = -1;
+
+    // A point of a shape and the map object it stands for (0: none — a rock, a bridge, a tree of the skirt).
+    private readonly record struct Spot(Vector3 At, int Object);
     private int _builtVersion = -1;
     private MapGrid? _builtMap;
     private Climates.ClimateLook? _builtClimate;
@@ -31,11 +45,45 @@ public partial class MapObjects : Node3D
         // A new match or a new map in the editor (another map object), or a change of this one.
         var map = GetParent<TerrainBuilder>().Map;
         var climate = GetParent<TerrainBuilder>().Climate;
-        if (!ReferenceEquals(map, _builtMap) || map.Version != _builtVersion || !ReferenceEquals(climate, _builtClimate))
+        if (!ReferenceEquals(map, _builtMap) || map.LayoutVersion != _builtVersion || !ReferenceEquals(climate, _builtClimate))
         {
             _map = map;
             _builtClimate = climate;
             Rebuild();
+        }
+        else if (map.ObjectDeaths != _builtDeaths)
+        {
+            ShowDeaths();
+        }
+    }
+
+    /// <summary>Hides the copies of the objects destroyed since the last look and shows the stumps of the felled trees.</summary>
+    private void ShowDeaths()
+    {
+        _builtDeaths = _map.ObjectDeaths;
+        foreach (var mapObject in _map.Objects)
+        {
+            if (!mapObject.Destroyed || _shownDead[mapObject.Id - 1])
+            {
+                continue;
+            }
+
+            _shownDead[mapObject.Id - 1] = true;
+            if (_copies.TryGetValue(mapObject.Id, out var copies))
+            {
+                foreach (var (mesh, index, _) in copies)
+                {
+                    mesh.SetInstanceTransform(index, Hidden);
+                }
+            }
+
+            if (_stumps.TryGetValue(mapObject.Id, out var stumps))
+            {
+                foreach (var (mesh, index, place) in stumps)
+                {
+                    mesh.SetInstanceTransform(index, place);
+                }
+            }
         }
     }
 
@@ -47,68 +95,63 @@ public partial class MapObjects : Node3D
         }
 
         _builtMap = _map;
-        _builtVersion = _map.Version;
+        _builtVersion = _map.LayoutVersion;
+        _copies.Clear();
+        _stumps.Clear();
         var kind = _builtClimate?.Trees ?? Climates.TreeKind.Pine;
-        var trees = new List<(Vector3 At, int Variant)>();
-        var stumps = new List<Vector3>();
-        var boulders = new List<Vector3>();
-        var fences = new List<Vector3>();
-        var walls = new List<Vector3>();
-        var posts = new List<Vector3>();
-        var rocks = new List<Vector3>();
-        var hedgehogs = new List<Vector3>();
-        var pipes = new List<Vector3>();
-        var drifts = new List<Vector3>();
-        var props = new SortedDictionary<string, List<Vector3>>(System.StringComparer.Ordinal);
+        var trees = new List<(Vector3 At, int Variant, int Object)>();
+        var stumps = new List<Spot>();
+        var boulders = new List<Spot>();
+        var fences = new List<Spot>();
+        var walls = new List<Spot>();
+        var posts = new List<Spot>();
+        var rocks = new List<Spot>();
+        var hedgehogs = new List<Spot>();
+        var pipes = new List<Spot>();
+        var drifts = new List<Spot>();
+        var props = new SortedDictionary<string, List<Spot>>(System.StringComparer.Ordinal);
         for (var y = 0; y < _map.Height; y++)
         {
             for (var x = 0; x < _map.Width; x++)
             {
                 if (_map.LandAt(new CellPos(x, y)) == LandType.Rock)
                 {
-                    rocks.Add(Ground(x, y));
+                    rocks.Add(new Spot(Ground(x, y), 0));
                 }
             }
         }
 
+        // Every object, standing or not: the copies of the destroyed ones hide below (ShowDeaths), as they will in the match.
         foreach (var mapObject in _map.Objects)
         {
-            var at = Ground(mapObject.Cell.X, mapObject.Cell.Y);
-            var list = (mapObject.Kind, mapObject.Destroyed) switch
+            var spot = new Spot(Ground(mapObject.Cell.X, mapObject.Cell.Y), mapObject.Id);
+            var list = mapObject.Kind switch
             {
-                (MapObjectKind.PineTree, false) => null,
-                (MapObjectKind.PineTree, true) => stumps,
-                (MapObjectKind.Boulder, _) => boulders,
-                (MapObjectKind.FenceWood, false) => fences,
-                (MapObjectKind.FenceWood, true) => null,
-                (MapObjectKind.WallStone, false) => walls,
-                (MapObjectKind.WallStone, true) => null,
-                (MapObjectKind.LampPost, false) => posts,
-                (MapObjectKind.LampPost, true) => null,
-                (MapObjectKind.AntiTankHedgehog, false) => hedgehogs,
-                (MapObjectKind.AntiTankHedgehog, true) => null,
-                (MapObjectKind.Pipeline, false) => pipes,
-                (MapObjectKind.Pipeline, true) => null,
-                (MapObjectKind.Snowdrift, false) => drifts,
-                (MapObjectKind.Snowdrift, true) => null,
+                MapObjectKind.PineTree => stumps,
+                MapObjectKind.Boulder => boulders,
+                MapObjectKind.FenceWood => fences,
+                MapObjectKind.WallStone => walls,
+                MapObjectKind.LampPost => posts,
+                MapObjectKind.AntiTankHedgehog => hedgehogs,
+                MapObjectKind.Pipeline => pipes,
+                MapObjectKind.Snowdrift => drifts,
                 // Drawn and animated by OreSources.
-                (MapObjectKind.OreSource or MapObjectKind.GemSource, _) => null,
-                // The props of the element documents (PropLooks): gone when destroyed.
-                (_, false) when PropLooks.Known(mapObject.Type.Id) => PropsOf(props, mapObject.Type.Id),
-                (_, true) when PropLooks.Known(mapObject.Type.Id) => null,
+                MapObjectKind.OreSource or MapObjectKind.GemSource => null,
+                // The props of the element documents (PropLooks).
+                _ when PropLooks.Known(mapObject.Type.Id) => PropsOf(props, mapObject.Type.Id),
                 _ => throw new System.ArgumentOutOfRangeException(nameof(mapObject), mapObject.Kind, "No symbolic look for this kind."),
             };
-            list?.Add(at);
-            if (mapObject is { Kind: MapObjectKind.PineTree, Destroyed: false })
+            list?.Add(spot);
+            if (mapObject.Kind == MapObjectKind.PineTree)
             {
-                trees.Add((at, mapObject.Variant));
+                trees.Add((spot.At, mapObject.Variant, mapObject.Id));
             }
         }
 
         // The pines beyond the edge (MapSkirt): only a picture, the rules never see them.
         foreach (var (x, z) in GetParent<TerrainBuilder>().Skirt.Trees)
         {
-            trees.Add((new Vector3(x, WorldCoords.Terrain!.HeightAt(x, z), z), (int)(System.MathF.Abs(x * 7f + z * 13f) % 4)));
+            trees.Add((new Vector3(x, WorldCoords.Terrain!.HeightAt(x, z), z), (int)(System.MathF.Abs(x * 7f + z * 13f) % 4), 0));
         }
 
         AddTrees(kind, trees);
@@ -119,7 +162,7 @@ public partial class MapObjects : Node3D
         }
 
         AddInstances("Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
-        AddInstances("Stumps", new CylinderMesh { TopRadius = 0.08f, BottomRadius = 0.09f, Height = 0.08f }, new Color(0.42f, 0.3f, 0.18f), stumps, 0.04f);
+        AddInstances("Stumps", new CylinderMesh { TopRadius = 0.08f, BottomRadius = 0.09f, Height = 0.08f }, new Color(0.42f, 0.3f, 0.18f), stumps, 0.04f, slots: _stumps);
         // The models of the table by the object's id (docs/art/model_standards.md), the primitives without one.
         AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f, "object/boulder");
         AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f, "object/fence_wood");
@@ -143,6 +186,18 @@ public partial class MapObjects : Node3D
         {
             AddProps(id, points);
         }
+
+        // The stumps stand hidden until their trees fall; the destroyed objects of the map hide now.
+        foreach (var copies in _stumps.Values)
+        {
+            foreach (var (mesh, index, _) in copies)
+            {
+                mesh.SetInstanceTransform(index, Hidden);
+            }
+        }
+
+        _shownDead = new bool[_map.Objects.Count];
+        ShowDeaths();
     }
 
     /// <summary>
@@ -153,9 +208,9 @@ public partial class MapObjects : Node3D
     {
         // A bridge of one cell runs across the cells beside it.
         var alongX = bridge.From != bridge.To ? bridge.From.Y == bridge.To.Y : !System.Linq.Enumerable.Any(bridge.Segments[0].Cells, cell => cell.X != bridge.From.X);
-        var decks = new List<Vector3>();
-        var rails = new List<Vector3>();
-        var stubs = new List<Vector3>();
+        var decks = new List<Spot>();
+        var rails = new List<Spot>();
+        var stubs = new List<Spot>();
         var side = alongX ? new Vector3(0, 0, 0.44f) : new Vector3(0.44f, 0, 0);
         foreach (var segment in bridge.Segments)
         {
@@ -163,7 +218,7 @@ public partial class MapObjects : Node3D
             var (first, last) = (segment.Cell, segment.Cell);
             foreach (var cell in segment.Cells)
             {
-                decks.Add(Ground(cell.X, cell.Y));
+                decks.Add(new Spot(Ground(cell.X, cell.Y), 0));
                 (first, last) = alongX
                     ? (cell.Y < first.Y ? cell : first, cell.Y > last.Y ? cell : last)
                     : (cell.X < first.X ? cell : first, cell.X > last.X ? cell : last);
@@ -172,13 +227,13 @@ public partial class MapObjects : Node3D
             if (!segment.IsIntact)
             {
                 decks.RemoveRange(decks.Count - segment.Cells.Length, segment.Cells.Length);
-                stubs.Add(Ground(first.X, first.Y) - side);
-                stubs.Add(Ground(last.X, last.Y) + side);
+                stubs.Add(new Spot(Ground(first.X, first.Y) - side, 0));
+                stubs.Add(new Spot(Ground(last.X, last.Y) + side, 0));
                 continue;
             }
 
-            rails.Add(Ground(first.X, first.Y) - side);
-            rails.Add(Ground(last.X, last.Y) + side);
+            rails.Add(new Spot(Ground(first.X, first.Y) - side, 0));
+            rails.Add(new Spot(Ground(last.X, last.Y) + side, 0));
         }
 
         var name = $"Bridge{bridge.Id}";
@@ -196,11 +251,11 @@ public partial class MapObjects : Node3D
     /// each tree the kind, size and turn of its cell, one MultiMesh for every mesh of every kind; or else every part of the shape of
     /// <see cref="TreeShapes"/> one MultiMesh.
     /// </summary>
-    private void AddTrees(Climates.TreeKind kind, List<(Vector3 At, int Variant)> trees)
+    private void AddTrees(Climates.TreeKind kind, List<(Vector3 At, int Variant, int Object)> trees)
     {
-        var parts = new Dictionary<string, (TreePart Part, List<Transform3D> Places)>();
-        var modelled = new Dictionary<string, List<Vector3>>();
-        foreach (var (at, variant) in trees)
+        var parts = new Dictionary<string, (TreePart Part, List<Transform3D> Places, List<int> Objects)>();
+        var modelled = new Dictionary<string, List<Spot>>();
+        foreach (var (at, variant, id) in trees)
         {
             var shape = TreeShapes.NameOf(kind, variant);
             if (Models.ModelLibrary.Find("tree/" + shape) is not null)
@@ -211,7 +266,7 @@ public partial class MapObjects : Node3D
                     modelled[shape] = points;
                 }
 
-                points.Add(at);
+                points.Add(new Spot(at, id));
                 continue;
             }
 
@@ -220,15 +275,16 @@ public partial class MapObjects : Node3D
                 var key = part.Key + "/" + part.Color.ToHtml();
                 if (!parts.TryGetValue(key, out var entry))
                 {
-                    entry = (part, []);
+                    entry = (part, [], []);
                     parts[key] = entry;
                 }
 
                 entry.Places.Add(new Transform3D(Basis.FromEuler(new Vector3(0, Mathf.DegToRad(part.YawDegrees), 0)), at + part.Offset));
+                entry.Objects.Add(id);
             }
         }
 
-        foreach (var (key, (part, places)) in parts)
+        foreach (var (key, (part, places, objects)) in parts)
         {
             var mesh = part.Mesh();
             mesh.Material = new StandardMaterial3D { AlbedoColor = part.Color };
@@ -236,6 +292,7 @@ public partial class MapObjects : Node3D
             for (var i = 0; i < places.Count; i++)
             {
                 multiMesh.SetInstanceTransform(i, places[i]);
+                Remember(_copies, objects[i], multiMesh, i, places[i]);
             }
 
             AddChild(new MultiMeshInstance3D { Name = "Trees" + part.Key + parts.Keys.ToList().IndexOf(key), Multimesh = multiMesh });
@@ -243,11 +300,11 @@ public partial class MapObjects : Node3D
 
         foreach (var (shape, points) in modelled)
         {
-            AddModelInstances("TreeModel" + shape, Models.ModelLibrary.Instances("tree/" + shape, null, points)!);
+            AddModelInstances("TreeModel" + shape, Models.ModelLibrary.Instances("tree/" + shape, null, PointsOf(points))!, points, _copies);
         }
     }
 
-    private static List<Vector3> PropsOf(SortedDictionary<string, List<Vector3>> props, string id)
+    private static List<Spot> PropsOf(SortedDictionary<string, List<Spot>> props, string id)
     {
         if (!props.TryGetValue(id, out var points))
         {
@@ -262,11 +319,11 @@ public partial class MapObjects : Node3D
     /// The props of one kind: its model of the table (<c>object/&lt;id&gt;</c>) when there is one for the climate, or else a MultiMesh
     /// for every part of its look (<see cref="PropLooks"/>) in the civilian colours.
     /// </summary>
-    private void AddProps(string id, List<Vector3> points)
+    private void AddProps(string id, List<Spot> points)
     {
-        if (Models.ModelLibrary.Instances("object/" + id, _builtClimate?.Id, points) is { } groups)
+        if (Models.ModelLibrary.Instances("object/" + id, _builtClimate?.Id, PointsOf(points)) is { } groups)
         {
-            AddModelInstances("Prop" + id, groups);
+            AddModelInstances("Prop" + id, groups, points, _copies);
             return;
         }
 
@@ -277,7 +334,9 @@ public partial class MapObjects : Node3D
             var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = points.Count };
             for (var i = 0; i < points.Count; i++)
             {
-                multiMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity, points[i]) * place);
+                var placed = new Transform3D(Basis.Identity, points[i].At) * place;
+                multiMesh.SetInstanceTransform(i, placed);
+                Remember(_copies, points[i].Object, multiMesh, i, placed);
             }
 
             AddChild(new MultiMeshInstance3D { Name = "Prop" + id + p, Multimesh = multiMesh });
@@ -285,15 +344,20 @@ public partial class MapObjects : Node3D
     }
 
     /// <summary>A MultiMesh for every mesh of the copies of a model (<see cref="Models.ModelLibrary.Instances"/>).</summary>
-    private void AddModelInstances(string name, List<(Mesh Mesh, List<Transform3D> Places)> groups)
+    private void AddModelInstances(
+        string name,
+        List<(Mesh Mesh, List<Transform3D> Places, List<int> Points)> groups,
+        List<Spot> spots,
+        Dictionary<int, List<(MultiMesh Mesh, int Index, Transform3D Place)>> slots)
     {
         for (var g = 0; g < groups.Count; g++)
         {
-            var (mesh, places) = groups[g];
+            var (mesh, places, points) = groups[g];
             var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = places.Count };
             for (var i = 0; i < places.Count; i++)
             {
                 multiMesh.SetInstanceTransform(i, places[i]);
+                Remember(slots, spots[points[i]].Object, multiMesh, i, places[i]);
             }
 
             AddChild(new MultiMeshInstance3D { Name = name + g, Multimesh = multiMesh });
@@ -305,16 +369,24 @@ public partial class MapObjects : Node3D
     /// for the climate — a MultiMesh for every mesh of every kind of it, each copy the kind, size and turn of its cell — or else the
     /// primitive raised by <paramref name="lift"/>. True for a model.
     /// </summary>
-    private bool AddInstances(string name, PrimitiveMesh mesh, Color color, List<Vector3> positions, float lift, string? key = null)
+    private bool AddInstances(
+        string name,
+        PrimitiveMesh mesh,
+        Color color,
+        List<Spot> positions,
+        float lift,
+        string? key = null,
+        Dictionary<int, List<(MultiMesh Mesh, int Index, Transform3D Place)>>? slots = null)
     {
+        slots ??= _copies;
         if (positions.Count == 0)
         {
             return false;
         }
 
-        if (key is not null && Models.ModelLibrary.Instances(key, _builtClimate?.Id, positions) is { } groups)
+        if (key is not null && Models.ModelLibrary.Instances(key, _builtClimate?.Id, PointsOf(positions)) is { } groups)
         {
-            AddModelInstances(name + "Model", groups);
+            AddModelInstances(name + "Model", groups, positions, slots);
             return true;
         }
 
@@ -327,10 +399,31 @@ public partial class MapObjects : Node3D
         };
         for (var i = 0; i < positions.Count; i++)
         {
-            multiMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity, positions[i] + new Vector3(0, lift, 0)));
+            var place = new Transform3D(Basis.Identity, positions[i].At + new Vector3(0, lift, 0));
+            multiMesh.SetInstanceTransform(i, place);
+            Remember(slots, positions[i].Object, multiMesh, i, place);
         }
 
         AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
         return false;
+    }
+
+    private static List<Vector3> PointsOf(List<Spot> spots) => spots.ConvertAll(spot => spot.At);
+
+    // A copy of a map object (none for 0), to hide or show when it is destroyed.
+    private static void Remember(Dictionary<int, List<(MultiMesh Mesh, int Index, Transform3D Place)>> slots, int id, MultiMesh mesh, int index, Transform3D place)
+    {
+        if (id == 0)
+        {
+            return;
+        }
+
+        if (!slots.TryGetValue(id, out var copies))
+        {
+            copies = [];
+            slots[id] = copies;
+        }
+
+        copies.Add((mesh, index, place));
     }
 }

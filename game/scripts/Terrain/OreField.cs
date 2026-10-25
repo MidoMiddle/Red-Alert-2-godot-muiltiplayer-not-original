@@ -9,7 +9,8 @@ namespace Rts.Client.Terrain;
 /// cell of gems one of blue gems (the models of the table, <c>ore/ore</c> and <c>ore/gems</c>: their files only), larger the higher the stage and turned by the cell
 /// (<see cref="OreCrystals.ClusterScale"/>). Without the model files, yellow and blue diamonds as before, one to four a cell
 /// (<see cref="OreCrystals.Of"/>, step 13). Rebuilt when the ore changes (<see cref="MapGrid.OreVersion"/>): it grows every 30 seconds,
-/// the drills throw it and the harvesters take it.
+/// the drills throw it and the harvesters take it — at most every <see cref="RebuildPause"/> seconds on the same map, since every
+/// harvester takes a bite of a cell every few ticks and the whole field is drawn anew each time.
 /// </summary>
 public partial class OreField : Node3D
 {
@@ -24,19 +25,25 @@ public partial class OreField : Node3D
 
     private static readonly Dictionary<string, Mesh?> Meshes = new();
 
+    /// <summary>The shortest time between two redraws of the ore of one map: a bite taken shows a moment later, no one sees it.</summary>
+    private const double RebuildPause = 0.25;
+
     private object? _builtMap;
     private int _builtVersion = -1;
+    private double _sinceBuilt;
 
     public override void _Process(double delta)
     {
         var map = GetParent<TerrainBuilder>().Map;
+        _sinceBuilt += delta;
         // The editor draws its own ore (EditorMarks), from the map it edits.
         if (GetNodeOrNull<SimulationHost>("../../SimulationHost") is null || WorldCoords.Terrain is not { } terrain
-            || (ReferenceEquals(map, _builtMap) && map.OreVersion == _builtVersion))
+            || (ReferenceEquals(map, _builtMap) && (map.OreVersion == _builtVersion || _sinceBuilt < RebuildPause)))
         {
             return;
         }
 
+        _sinceBuilt = 0;
         _builtMap = map;
         _builtVersion = map.OreVersion;
         foreach (var child in GetChildren())

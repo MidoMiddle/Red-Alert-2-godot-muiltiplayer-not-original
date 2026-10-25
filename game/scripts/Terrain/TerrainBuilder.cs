@@ -65,7 +65,7 @@ public partial class TerrainBuilder : Node3D
             BuildChunk(chunk);
         }
 
-        (_builtMap, _builtVersion, _builtLook) = (map, map.Version, look);
+        (_builtMap, _builtVersion, _builtLook) = (map, map.LayoutVersion, look);
         AddChild(new MapObjects { Name = "MapObjects" });
         AddChild(new Buildings { Name = "Buildings" });
         AddChild(new PlayerBuildings { Name = "PlayerBuildings" });
@@ -78,7 +78,7 @@ public partial class TerrainBuilder : Node3D
         // Runs before the children: map objects and buildings rebuilt on the same change read the new heights.
         var map = _source();
         var look = _lookSource();
-        if (ReferenceEquals(map, _builtMap) && map.Version == _builtVersion)
+        if (ReferenceEquals(map, _builtMap) && map.LayoutVersion == _builtVersion)
         {
             if (!ReferenceEquals(look, _builtLook))
             {
@@ -118,7 +118,7 @@ public partial class TerrainBuilder : Node3D
             BuildChunk(chunk);
         }
 
-        (_builtMap, _builtVersion, _builtLook) = (map, map.Version, look);
+        (_builtMap, _builtVersion, _builtLook) = (map, map.LayoutVersion, look);
     }
 
     public override void _ExitTree()

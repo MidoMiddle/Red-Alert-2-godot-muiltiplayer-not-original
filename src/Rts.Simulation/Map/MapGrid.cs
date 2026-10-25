@@ -395,7 +395,18 @@ public sealed class MapGrid
         _passability.Update(this, mapObject.Cell);
         _digest = null;
         Version++;
+        ObjectDeaths++;
     }
+
+    /// <summary>
+    /// Counts the objects destroyed (<see cref="DestroyObject"/>), each of which also grows <see cref="Version"/>: the client hides a
+    /// crushed lamp post or a felled tree at once and rebuilds the rest of the map only when <see cref="LayoutVersion"/> grows. Not part
+    /// of the state.
+    /// </summary>
+    public int ObjectDeaths { get; private set; }
+
+    /// <summary>Grows with every change of the map but an object's destruction: the land, the heights, the bridges, the buildings.</summary>
+    public int LayoutVersion => Version - ObjectDeaths;
 
     /// <summary>
     /// Adds a bridge (docs/implementation/M7_maps.md, 4.6) and returns null, or returns what is wrong with it and adds nothing:

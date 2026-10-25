@@ -78,9 +78,10 @@ public static class ModelLibrary
 
     /// <summary>
     /// Many of one model at once (MultiMesh: trees, snowdrifts, fences): at every point, the file, the size and the turn of its cell.
-    /// For every mesh of every file used, the places of its copies. Null when there is no model — the caller draws its placeholder.
+    /// For every mesh of every file used, the places of its copies and the point (its index) each stands for, so a copy can be hidden
+    /// when its object is destroyed. Null when there is no model — the caller draws its placeholder.
     /// </summary>
-    public static List<(Mesh Mesh, List<Transform3D> Places)>? Instances(string key, string? climate, IReadOnlyList<Vector3> points)
+    public static List<(Mesh Mesh, List<Transform3D> Places, List<int> Points)>? Instances(string key, string? climate, IReadOnlyList<Vector3> points)
     {
         if (Find(key, climate) is not { } entry)
         {
@@ -88,9 +89,10 @@ public static class ModelLibrary
         }
 
         var sets = MeshSetsOf(entry);
-        var groups = new Dictionary<(int File, int Mesh), (Mesh Mesh, List<Transform3D> Places)>();
-        foreach (var point in points)
+        var groups = new Dictionary<(int File, int Mesh), (Mesh Mesh, List<Transform3D> Places, List<int> Points)>();
+        for (var p = 0; p < points.Count; p++)
         {
+            var point = points[p];
             var pick = entry.Pick(Mathf.FloorToInt(point.X), Mathf.FloorToInt(point.Z), sets.Count);
             var placed = new Transform3D(Basis.Identity, point) * Placement(entry, pick);
             var set = sets[pick.Index];
@@ -98,11 +100,12 @@ public static class ModelLibrary
             {
                 if (!groups.TryGetValue((pick.Index, m), out var group))
                 {
-                    group = (set[m].Mesh, []);
+                    group = (set[m].Mesh, [], []);
                     groups[(pick.Index, m)] = group;
                 }
 
                 group.Places.Add(placed * set[m].Place);
+                group.Points.Add(p);
             }
         }
 
