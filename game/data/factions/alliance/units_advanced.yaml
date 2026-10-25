@@ -33,6 +33,7 @@ alliance_attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   primary: alliance_dog_bite
   detects_disguise: true
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
+  psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
 
 alliance_rocketeer:  # flies over the field with a jet pack, fires at the ground and the air (stage 3a)
   kind: unit

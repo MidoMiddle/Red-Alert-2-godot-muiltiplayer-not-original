@@ -123,6 +123,13 @@ public static class DamageSystem
             return;
         }
 
+        if (warhead.MindControl)
+        {
+            // Yuri's mind control (RA2) hurts nothing: the unit hit changes hands.
+            MindControlSystem.Take(world, hit, events);
+            return;
+        }
+
         if (warhead.FreesParasite && hit.Target is { } heldId && world.TryGet(heldId, out var held)
             && held is Unit { IsAlive: true, Parasite: not 0 } host && !world.AreAllies(host.ParasiteOwner, hit.Owner))
         {
@@ -187,9 +194,16 @@ public static class DamageSystem
         }
 
         area.Sort();
+        var shooterType = warhead.SparesOwnKind && world.TryGet(hit.Shooter, out var source) && source is World.Unit kind ? kind.Type : (UnitType?)null;
         foreach (var id in area)
         {
             if (id == hit.Target || !world.TryGet(id, out var entity) || !entity.IsAlive || !Hurts(entity, warhead))
+            {
+                continue;
+            }
+
+            // Yuri's wave (RA2 TypeImmune) spares the Yuris of his owner, himself among them.
+            if (shooterType is { } spared && entity is World.Unit same && same.Type == spared && same.Owner == hit.Owner)
             {
                 continue;
             }

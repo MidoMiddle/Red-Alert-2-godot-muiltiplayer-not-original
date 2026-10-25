@@ -195,6 +195,12 @@ public sealed record UnitPromoted(int Tick, EntityId Unit, PlayerId Owner, Syste
 /// <summary>A hurt soldier was healed whole at a hospital (loose ends, stage 1).</summary>
 public sealed record UnitHealed(int Tick, EntityId Unit, EntityId Hospital) : SimEvent(Tick);
 
+/// <summary>Yuri's mind control took a unit: it is <paramref name="To"/>'s now, held by <paramref name="Yuri"/> (RA2).</summary>
+public sealed record UnitControlled(int Tick, EntityId Yuri, EntityId Unit, PlayerId From, PlayerId To) : SimEvent(Tick);
+
+/// <summary>A mind control broke: the unit is <paramref name="To"/>'s again, or nobody's when its player is out (RA2).</summary>
+public sealed record UnitReleased(int Tick, EntityId Unit, PlayerId To) : SimEvent(Tick);
+
 /// <summary>A soldier just trained came out once more, free, at the player's cloning vats (RA2).</summary>
 public sealed record UnitCloned(int Tick, PlayerId Player, EntityId Unit, EntityId Vats) : SimEvent(Tick);
 

@@ -43,4 +43,10 @@ public enum UnitTalents
 
     /// <summary>Gains no experience (<see cref="Rules.UnitDef.Trainable"/> false; RA2 <c>Trainable=no</c>).</summary>
     Untrainable = 4096,
+
+    /// <summary>No mind control takes it (<see cref="Rules.UnitDef.PsionicImmune"/>).</summary>
+    PsionicImmune = 8192,
+
+    /// <summary>Fires its deploy weapon once and stands up again (<see cref="Rules.UnitDef.DeployOnce"/>).</summary>
+    DeployOnce = 16384,
 }

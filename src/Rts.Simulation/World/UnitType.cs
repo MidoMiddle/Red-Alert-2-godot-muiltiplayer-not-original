@@ -67,4 +67,7 @@ public enum UnitType : byte
 
     // The destroyer's anti-submarine plane (loose ends, stage 4), launched and never built.
     AllianceOsprey = 50,
+
+    // Yuri of RA2's Soviets (2026-10-25): mind control and the psychic wave.
+    Yuri = 51,
 }

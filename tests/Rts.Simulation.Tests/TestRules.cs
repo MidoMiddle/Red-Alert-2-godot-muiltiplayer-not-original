@@ -154,6 +154,7 @@ internal static class TestRules
             Armor = "medium",
             Primary = "harvester_machine_gun",
             Threat = 5,
+            PsionicImmune = true,
         });
         builder.Add(VehicleDef(UnitType.SupportVehicle, Locomotor.Wheel, speed: 48, turret: true, sight: 8) with
         {
@@ -182,6 +183,7 @@ internal static class TestRules
             UnloadRate = 50,
             Armor = "medium",
             Threat = 5,
+            PsionicImmune = true,
         });
         builder.Add(InfantryDef(UnitType.AllianceRifleman, sight: 5) with
         {

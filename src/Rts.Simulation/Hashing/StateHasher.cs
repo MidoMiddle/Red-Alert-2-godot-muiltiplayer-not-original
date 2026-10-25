@@ -320,6 +320,26 @@ public static class StateHasher
                     hash.Add((byte)unit.Upgrades);
                 }
 
+                // Yuri of RA2: only a unit in a mind control, or one that will stand up, so the hashes of the matches without him stay.
+                if (unit.ControlledBy is { } holder)
+                {
+                    hash.Add(1);
+                    hash.Add(holder.Value);
+                    hash.Add(unit.ControlledFrom.Value);
+                }
+
+                if (unit.Controlling is { } held)
+                {
+                    hash.Add(2);
+                    hash.Add(held.Value);
+                }
+
+                if (unit.UndeployIn != 0)
+                {
+                    hash.Add(3);
+                    hash.Add(unit.UndeployIn);
+                }
+
                 // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
                 hash.Add(unit.Drop is not null);
                 if (unit.Drop is { } drop)

@@ -265,6 +265,7 @@ public static class TargetingSystem
     {
         var mending = OnlyWarheads(rules, weapons, warhead => warhead.Repairs);
         var freeing = !mending && AnyWarhead(rules, weapons, warhead => warhead.FreesParasite);
+        var controlling = !mending && OnlyWarheads(rules, weapons, warhead => warhead.MindControl);
         var from = area.From;
         world.Spatial.QueryRadius(world, from, area.Reach, nearby);
         foreach (var entity in world.Entities)
@@ -301,7 +302,9 @@ public static class TargetingSystem
                 // A parasite (stage 3d) leaves a vehicle with one inside, a ship and a flier.
                 || (candidate is Unit { Parasite: not 0 } or Unit { Archetype.Category: UnitCategory.Naval or UnitCategory.Aircraft }
                     && ParasiteSystem.ParasitesOnly(rules, weapons))
-                || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate))
+                || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate)
+                // Yuri (RA2) looks by himself only while he holds nobody, and only at what his control can take.
+                || (controlling && !MindControlSystem.CanTake(world, me, candidate, byItself: true)))
             {
                 continue;
             }

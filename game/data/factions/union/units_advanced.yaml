@@ -18,6 +18,7 @@ attack_dog:  # attack dog: its bite kills any soldier (stage 3a)
   primary: war_hound_bite
   detects_disguise: true
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
+  psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
 
 tesla_trooper:  # electric infantry (stage 3a)
   kind: unit
@@ -86,6 +87,25 @@ desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the 
   ifv_weapon: ifv_toxin_beam
   countries: [iraq]  # RA2 RequiredHouses (loose ends, stage 5)
 
+yuri:  # RA2 Yuri (YURI): takes one enemy unit at a time for his owner; deployed, a psychic wave kills the soldiers round him, friend or foe
+  kind: unit
+  inherits: base_infantry
+  name: Psi Commando
+  faction: union
+  cost: 1200
+  build_time: 50.4s
+  hp: 100
+  threat: 30
+  armor: none
+  speed: 24
+  sight: 12
+  prerequisites: [barracks, tech_center]
+  primary: yuri_mind_control
+  deploy_weapon: yuri_psi_wave
+  deploy_once: true  # RA2 UndeployDelay: one wave, then he stands up
+  detects_disguise: true
+  psionic_immune: true
+
 rocket_artillery:  # a rocket from afar, only when ordered; anti-air can bring it down (stage 3c)
   kind: unit
   inherits: base_vehicle
@@ -137,6 +157,7 @@ terror_drone:  # jumps into a vehicle and eats it from inside, kills a soldier a
   primary: drone_jump
   size: 2
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
+  psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
 
 demolition_truck:  # drives into its target and blows up, only when ordered; blows up when killed too (stage 3d)
   kind: unit
@@ -251,6 +272,7 @@ giant_squid:  # under the water; grips a ship, holds it still and crushes it; sl
   primary: squid_grab
   secondary: squid_punch
   submerged: true
+  psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
 
 dreadnought:  # missiles at 8 to 25 cells, only when ordered; anti-air can bring them down (stage 3e)
   kind: unit

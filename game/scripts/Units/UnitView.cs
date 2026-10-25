@@ -213,6 +213,11 @@ public partial class UnitView : Node3D
                 AddPart(new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.06f, Height = 0.28f }, new Vector3(0, Height * 0.6f, Radius + 0.05f), ToxinMaterial);
                 AddPart(new BoxMesh { Size = new Vector3(0.05f, 0.05f, 0.22f) }, new Vector3(Radius, Height * 0.55f, -0.1f), DarkMaterial);
                 break;
+            case UnitType.Yuri:
+                // A shaved head with a glow, and a psychic collar.
+                AddPart(new SphereMesh { Radius = 0.07f, Height = 0.14f }, new Vector3(0, Height + 0.05f, 0), GlowMaterial);
+                AddPart(new CylinderMesh { TopRadius = Radius + 0.02f, BottomRadius = Radius + 0.02f, Height = 0.04f }, new Vector3(0, Height - 0.02f, 0), DarkMaterial);
+                break;
             case UnitType.AllianceRocketeer:
                 // A jet pack: a box and two nozzles.
                 AddPart(new BoxMesh { Size = new Vector3(0.16f, 0.18f, 0.08f) }, new Vector3(0, Height * 0.65f, Radius + 0.04f), DarkMaterial);

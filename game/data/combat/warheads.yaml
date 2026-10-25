@@ -309,3 +309,18 @@ ion:  # RA2 IonWH: a lightning of the storm, 2 cells, half at the edge; concrete
   spread: 2
   percent_at_max: 50%
   infantry_death: electro
+
+mind_control:  # RA2 Controller: hurts nothing; the unit hit changes hands (MindControlSystem); none at buildings, so they are never aimed at
+  kind: warhead
+  name: Mind Control
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 0%, special_2: 0% }
+  mind_control: true
+
+psi_wave:  # RA2 PsiPulse: only soldiers, 85% at the edge of 3 cells; the Yuris of the shooter's owner are spared (RA2 TypeImmune)
+  kind: warhead
+  name: Psychic Wave
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 0%, medium: 0%, heavy: 0%, wood: 0%, steel: 0%, concrete: 0%, special_1: 0%, special_2: 0% }
+  spread: 3
+  percent_at_max: 85%
+  spares_own_kind: true
+  infantry_death: electro

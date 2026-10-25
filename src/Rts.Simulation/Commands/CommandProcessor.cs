@@ -558,6 +558,7 @@ public static class CommandProcessor
             UnitOrders.Stop(world, trooper);
             UnitOrders.ForgetTarget(trooper);
             trooper.Deployed = deployed;
+            trooper.UndeployIn = 0;
             return true;
         }
 

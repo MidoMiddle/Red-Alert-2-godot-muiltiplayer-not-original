@@ -169,6 +169,7 @@ public sealed class GameSimulation
 
         // 6. The cells of the buildings that fell open (M4 step 9), the players see anew (step 11); entities that died this tick leave the world.
         DeathSystem.Update(World, _events);
+        MindControlSystem.Update(World, _events);
         VisibilitySystem.Update(World);
         Probe?.Invoke("death and vision");
 

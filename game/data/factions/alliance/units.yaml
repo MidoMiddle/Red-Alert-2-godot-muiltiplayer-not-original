@@ -50,6 +50,7 @@ alliance_harvester:  # the refinery's free harvester
   harvest_time: 0.8s
   unload_rate: 50
   prerequisites: [alliance_war_factory, alliance_ore_refinery]
+  psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
 
 alliance_light_tank:  # battle tank: quicker and lighter than the Union's heavy tank
   kind: unit

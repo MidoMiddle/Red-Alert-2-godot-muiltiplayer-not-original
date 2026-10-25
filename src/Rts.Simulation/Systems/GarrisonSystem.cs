@@ -40,8 +40,8 @@ public static class GarrisonSystem
     public static bool CanEnter(Unit unit) =>
         unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies
         && !unit.Archetype.Has(UnitTalents.Engineer) && !unit.Archetype.Has(UnitTalents.Infiltrator)
-        // A dog is no occupier (RA2 Occupier=no).
-        && unit.Archetype.Type is not (UnitType.AttackDog or UnitType.AllianceAttackDog);
+        // A dog is no occupier (RA2 Occupier=no); nor is a soldier in a mind control (RA2).
+        && unit.Archetype.Type is not (UnitType.AttackDog or UnitType.AllianceAttackDog) && unit.ControlledBy is null;
 
     /// <summary>
     /// Whether <paramref name="building"/> is a ready building that takes the soldiers of <paramref name="player"/>: one of his that holds

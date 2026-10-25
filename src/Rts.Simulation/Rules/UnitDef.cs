@@ -122,6 +122,12 @@ public sealed record UnitDef : IDefinition
     /// <summary>The toxin on the ground does not hurt it (RA2: the desolator).</summary>
     public bool RadiationImmune { get; init; }
 
+    /// <summary>No mind control takes it (RA2 <c>ImmuneToPsionics</c>: dogs, the terror drone, harvesters, the squid, Yuri).</summary>
+    public bool PsionicImmune { get; init; }
+
+    /// <summary>Deployed, it fires its deploy weapon once and stands up again after a while (RA2 <c>UndeployDelay</c>: Yuri's wave).</summary>
+    public bool DeployOnce { get; init; }
+
     /// <summary>
     /// Standing still, it looks like a tree to other teams, and none of their units picks it as a target (stage 3c: the holo tank, RA2
     /// <c>DisguiseWhenStill</c>).

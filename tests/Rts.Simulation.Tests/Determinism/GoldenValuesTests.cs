@@ -358,6 +358,7 @@ public sealed class GoldenValuesTests
         // Rules v76 (the outpost of RA2): the version only.
         // Rules v77 (the cloning vats of RA2): the version only.
         // Rules v78 (the psychic sensor of RA2): the version only.
-        Assert.Equal((22270, 32727009685317619UL), (bytes.Length, hash.Value));
+        // Rules v79 (Yuri of RA2): the version only.
+        Assert.Equal((22270, 18046490188305988722UL), (bytes.Length, hash.Value));
     }
 }

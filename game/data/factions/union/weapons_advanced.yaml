@@ -219,3 +219,21 @@ nuclear_missile:  # of the Strategic Missile Silo, RA2 NukePayload
   range: 1
   projectile: nuclear_missile_shot
   warhead: nuke
+
+yuri_mind_control:  # of Yuri, RA2 MindControl (ROF 200, range 7): the unit hit changes hands at once; the damage only ranks the targets
+  kind: weapon
+  name: Mind Control
+  damage: 100
+  reload: 13.33s
+  range: 7
+  projectile: psi_link
+  warhead: mind_control
+
+yuri_psi_wave:  # Yuri deployed, RA2 PsiWave: 250 at every soldier within 3 cells, friend or foe, 85% at the edge; fired once, at once
+  kind: weapon
+  name: Psychic Wave
+  damage: 250
+  reload: 10s
+  range: 1
+  projectile: bullet
+  warhead: psi_wave

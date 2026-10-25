@@ -71,6 +71,7 @@ harvester:  # War Miner
   harvest_time: 0.8s
   unload_rate: 50
   prerequisites: [war_factory, refinery]
+  psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
 
 support_vehicle:  # Flak Track
   kind: unit

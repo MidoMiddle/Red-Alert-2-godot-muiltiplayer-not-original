@@ -125,6 +125,7 @@ internal static class UnitOrders
         unit.ChaseCell = null;
         unit.EnterTarget = null;
         unit.Deployed = false;
+        unit.UndeployIn = 0;
     }
 
     /// <summary>

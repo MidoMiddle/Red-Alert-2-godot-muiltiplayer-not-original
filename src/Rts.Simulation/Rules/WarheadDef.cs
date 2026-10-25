@@ -78,6 +78,12 @@ public sealed record WarheadDef : IDefinition
     /// <summary>A hit on a unit held by an enemy parasite frees it, and the parasite comes out (the dolphin and the squid).</summary>
     public bool FreesParasite { get; init; }
 
+    /// <summary>It hurts nothing: the unit hit changes hands, held by the shooter (RA2 <c>MindControl</c>, <see cref="Systems.MindControlSystem"/>).</summary>
+    public bool MindControl { get; init; }
+
+    /// <summary>Units of the shooter's own type and owner in its area are spared (RA2 <c>TypeImmune</c>: Yuri's wave).</summary>
+    public bool SparesOwnKind { get; init; }
+
     /// <summary>How infantry dies of it, for the client: an id such as <c>explode</c>; the simulation does not use it.</summary>
     public string InfantryDeath { get; init; } = "";
 
@@ -89,7 +95,8 @@ public sealed record WarheadDef : IDefinition
         && Radiation == other.Radiation
         && Parasite == other.Parasite && ParasiteDamage == other.ParasiteDamage && ParasiteDelay == other.ParasiteDelay
         && ParasiteNaval == other.ParasiteNaval && Paralyzes == other.Paralyzes && Repairs == other.Repairs
-        && FreesParasite == other.FreesParasite && InfantryDeath == other.InfantryDeath;
+        && FreesParasite == other.FreesParasite && MindControl == other.MindControl && SparesOwnKind == other.SparesOwnKind
+        && InfantryDeath == other.InfantryDeath;
 
     public override int GetHashCode() => unchecked((Id.Length * 31) + Verses.Length);
 }

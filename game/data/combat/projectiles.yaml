@@ -41,6 +41,12 @@ toxin_beam:  # the Toxin Trooper's beam (stage 3a)
   motion: instant
   visual: toxin_beam
 
+psi_link:  # Yuri's mind control: a purple beam, at once
+  kind: projectile
+  name: Psychic Link
+  motion: instant
+  visual: psi_beam
+
 pounce:  # a dog's jump and bite: no shot to see
   kind: projectile
   name: Pounce

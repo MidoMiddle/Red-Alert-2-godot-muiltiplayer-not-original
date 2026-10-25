@@ -21,7 +21,7 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
-        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
+        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "psionic_immune", "deploy_once", "disguise_when_still",
         "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
     ];
 
@@ -40,7 +40,7 @@ internal static class DefinitionReader
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "bridges", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "repairs", "frees_parasite", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "bridges", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "repairs", "frees_parasite", "mind_control", "spares_own_kind", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual", "hp", "armor"];
 
@@ -129,6 +129,8 @@ internal static class DefinitionReader
             DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
             DeployedWeapon = fields.Optional("deployed_weapon", Scalars.Id, ""),
             RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),
+            PsionicImmune = fields.Optional("psionic_immune", Scalars.Flag, false),
+            DeployOnce = fields.Optional("deploy_once", Scalars.Flag, false),
             DisguiseWhenStill = fields.Optional("disguise_when_still", Scalars.Flag, false),
             PassengerSlots = fields.Optional("passengers", Scalars.Int, 0),
             PassengerSizeLimit = fields.Optional("passenger_size", Scalars.Int, 0),
@@ -269,6 +271,8 @@ internal static class DefinitionReader
             Paralyzes = fields.Optional("paralyzes", Scalars.Flag, false),
             Repairs = fields.Optional("repairs", Scalars.Flag, false),
             FreesParasite = fields.Optional("frees_parasite", Scalars.Flag, false),
+            MindControl = fields.Optional("mind_control", Scalars.Flag, false),
+            SparesOwnKind = fields.Optional("spares_own_kind", Scalars.Flag, false),
             InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
         };
     }

@@ -44,11 +44,30 @@ public static class RadiationSystem
         }
     }
 
+    /// <summary>The ticks a unit that deploys once stays down after its shot (RA2 <c>UndeployDelay=150</c> frames: Yuri).</summary>
+    public const int UndeployDelay = 150;
+
     public static void Update(GameWorld world, List<SimEvent>? events)
     {
         var rules = world.Rules;
         foreach (var entity in world.Entities)
         {
+            // Yuri (RA2): one wave as he deploys, then he stands up after UndeployDelay.
+            if (entity is Unit { IsAlive: true, Deployed: true, Archetype.DeployWeapon: >= 0 } once && once.Archetype.Has(UnitTalents.DeployOnce))
+            {
+                if (once.UndeployIn == 0)
+                {
+                    world.Hits.Add(new Hit(once.Id, once.Id, once.Owner, once.Archetype.DeployWeapon, once.Position, null));
+                    once.UndeployIn = UndeployDelay;
+                }
+                else if (--once.UndeployIn == 0)
+                {
+                    once.Deployed = false;
+                }
+
+                continue;
+            }
+
             if (entity is Unit { IsAlive: true, Deployed: true, Archetype.DeployWeapon: >= 0 } unit
                 && (world.CurrentTick + unit.Id.Value) % IntMath.Max(1, rules.Database.Weapons[unit.Archetype.DeployWeapon].Reload) == 0)
             {

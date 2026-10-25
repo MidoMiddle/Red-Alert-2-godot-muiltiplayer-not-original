@@ -79,7 +79,7 @@ public sealed class SidebarOrderTests
             Tab(world, Union, BuildGroup.Buildings));
         Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil", "psychic_sensor"], Tab(world, Union, BuildGroup.Defense));
         Assert.Equal(
-            ["attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator"],
+            ["attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator", "yuri"],
             Tab(world, Union, BuildGroup.Infantry));
         Assert.Equal(
             ["harvester", "heavy_tank", "support_vehicle", "terror_drone", "demolition_truck", "rocket_artillery", "tesla_tank", "apocalypse_tank",

@@ -110,6 +110,21 @@ public sealed class Unit : Entity
     /// <summary>What crates gave it for good (M11 a6): Armor, Firepower, Speed. State: hashed when it has any.</summary>
     public CrateUpgrade Upgrades { get; internal set; }
 
+    /// <summary>The Yuri whose mind control holds this unit (RA2); null while none does. State: hashed while held, with the next.</summary>
+    public EntityId? ControlledBy { get; internal set; }
+
+    /// <summary>Whose the unit was before the mind control took it: it goes back there when the hold breaks.</summary>
+    public PlayerId ControlledFrom { get; internal set; }
+
+    /// <summary>The unit this Yuri holds (RA2: one at a time); null while none. State: hashed while it holds one.</summary>
+    public EntityId? Controlling { get; internal set; }
+
+    /// <summary>
+    /// The ticks until a unit that deploys once stands up again (RA2 <c>UndeployDelay</c>: Yuri after his wave); 0 otherwise. State:
+    /// hashed while not 0.
+    /// </summary>
+    public int UndeployIn { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 

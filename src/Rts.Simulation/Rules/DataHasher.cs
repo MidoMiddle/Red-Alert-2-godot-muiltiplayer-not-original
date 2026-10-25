@@ -99,6 +99,8 @@ public static class DataHasher
             hash.Add(unit.Teleports);
             Add(hash, unit.DeployWeapon);
             hash.Add(unit.RadiationImmune);
+            hash.Add(unit.PsionicImmune);
+            hash.Add(unit.DeployOnce);
             hash.Add(unit.DisguiseWhenStill);
             hash.Add(unit.PassengerSlots);
             hash.Add(unit.PassengerSizeLimit);
@@ -356,6 +358,8 @@ public static class DataHasher
             hash.Add(warhead.Paralyzes);
             hash.Add(warhead.Repairs);
             hash.Add(warhead.FreesParasite);
+            hash.Add(warhead.MindControl);
+            hash.Add(warhead.SparesOwnKind);
         }
 
         hash.Add(rules.Projectiles.Length);
