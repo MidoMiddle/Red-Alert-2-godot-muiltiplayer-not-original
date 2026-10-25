@@ -14,7 +14,7 @@ public sealed class HealthPipsTests
 
         Assert.Equal(4, HealthPips.CountOf(world.SpawnUnit(new PlayerId(1), UnitType.Conscript, new CellPos(2, 2).Center)));
         Assert.Equal(8, HealthPips.CountOf(world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(4, 4).Center)));
-        Assert.Equal(6, HealthPips.CountOf(world.CreateBuilding(new PlayerId(1), TestRules.BuildingDef("construction_yard"), new CellPos(10, 10), true, null)));
+        Assert.Equal(8, HealthPips.CountOf(world.CreateBuilding(new PlayerId(1), TestRules.BuildingDef("construction_yard"), new CellPos(10, 10), true, null)));
     }
 
     [Fact]

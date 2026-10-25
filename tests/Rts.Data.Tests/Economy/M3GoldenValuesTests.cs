@@ -61,7 +61,8 @@ public sealed class M3GoldenValuesTests
         // Rules v78: the same run and credits; so does the psychic sensor.
         // Rules v85: the war factory of the Union needs barracks too (RA2 prerequisite groups): the run builds them first, 35 credits more
         // by minute 5.
-        Assert.Equal((6007, 0x1af1e1eee31735aaUL), (fifth.Credits, fifth.Checksum));
+        // Rules v86: the same run and credits; the buildings have the footprints of RA2.
+        Assert.Equal((6007, 0x758867ee1a6d5626UL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:18 (tick 3873; rules v85: the war factory waits for the barracks).
         Assert.Equal(3873, Run.Value.TankTicks[0]);
     }

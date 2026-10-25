@@ -33,7 +33,7 @@ service_depot:  # repairs the vehicles and ships beside it (stage 2c)
   build_time: 33.6s
   hp: 1200
   sight: 5
-  footprint: [3, 3]
+  footprint: [4, 3]  # RA2 Foundation 4x3
   power: -20
   repairs_vehicles: true
   prerequisites: [war_factory]

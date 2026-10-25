@@ -41,11 +41,11 @@ public sealed class PlacementRulesTests
         PlacementRules.Check(world, Player1, TestRules.BuildingDef(id), new CellPos(x, y), needsBase, ignoreUnit);
 
     [Theory]
-    [InlineData(8, 2, PlacementProblem.None)]      // three cells between the yard (2…4) and the reactor (the owner's wish, 2026-10-24)
-    [InlineData(9, 2, PlacementProblem.TooFar)]    // four cells between
-    [InlineData(8, 8, PlacementProblem.None)]      // three cells across a diagonal count as three
-    [InlineData(9, 8, PlacementProblem.TooFar)]
-    [InlineData(5, 5, PlacementProblem.None)]      // touching at a corner
+    [InlineData(9, 2, PlacementProblem.None)]      // three cells between the yard (2…5) and the reactor (the owner's wish, 2026-10-24)
+    [InlineData(10, 2, PlacementProblem.TooFar)]   // four cells between
+    [InlineData(9, 9, PlacementProblem.None)]      // three cells across a diagonal count as three
+    [InlineData(10, 9, PlacementProblem.TooFar)]
+    [InlineData(6, 6, PlacementProblem.None)]      // touching at a corner
     public void A_building_stands_within_three_cells_of_the_base(int x, int y, PlacementProblem expected)
     {
         var world = Open();
@@ -55,8 +55,8 @@ public sealed class PlacementRulesTests
     }
 
     [Theory]
-    [InlineData(9, PlacementProblem.None)]      // four cells between the yard (2…4) and the bunker: the sentry bunker's adjacent is 4
-    [InlineData(10, PlacementProblem.TooFar)]
+    [InlineData(10, PlacementProblem.None)]     // four cells between the yard (2…5) and the bunker: the sentry bunker's adjacent is 4
+    [InlineData(11, PlacementProblem.TooFar)]
     public void A_sentry_bunker_stands_within_four_cells_of_the_base(int x, PlacementProblem expected)
     {
         var world = Open();
@@ -73,8 +73,8 @@ public sealed class PlacementRulesTests
         Assert.Equal(PlacementProblem.None, Check(world, "tesla_coil", 7, 2));
         world.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(7, 2), ready: true, null);
 
-        // Two cells from the coil (7…8), six from the yard: as in RA2 (BaseNormal=no) a defense is no base.
-        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 11, 2));
+        // Two cells from the coil (7), four from the yard: as in RA2 (BaseNormal=no) a defense is no base.
+        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 10, 2));
         Assert.Equal(PlacementProblem.TooFar, Check(world, "tesla_coil", 10, 2));
     }
 
@@ -84,7 +84,7 @@ public sealed class PlacementRulesTests
         var world = Open();
         Yard(world, 2, 2, ready: false);
 
-        Assert.Equal(PlacementProblem.None, Check(world, "reactor", 5, 2));
+        Assert.Equal(PlacementProblem.None, Check(world, "reactor", 6, 2));
     }
 
     [Fact]
@@ -92,10 +92,10 @@ public sealed class PlacementRulesTests
     {
         var world = Open();
         Yard(world, 2, 2);
-        world.CreateBuilding(Player1, TestRules.BuildingDef("wall"), new CellPos(6, 2), ready: true, null);
+        world.CreateBuilding(Player1, TestRules.BuildingDef("wall"), new CellPos(7, 2), ready: true, null);
 
         // Two cells from the wall, four from the yard.
-        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 9, 2));
+        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 10, 2));
     }
 
     [Fact]
@@ -104,8 +104,8 @@ public sealed class PlacementRulesTests
         var world = Open();
         Yard(world, 2, 2, Player2);
 
-        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 5, 2));
-        Assert.Equal(PlacementProblem.None, Check(world, "reactor", 5, 2, needsBase: false));
+        Assert.Equal(PlacementProblem.TooFar, Check(world, "reactor", 6, 2));
+        Assert.Equal(PlacementProblem.None, Check(world, "reactor", 6, 2, needsBase: false));
     }
 
     [Theory]

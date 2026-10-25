@@ -74,7 +74,7 @@ public sealed class ProductionTests
         var built = new List<Building>();
         for (var i = 0; i < factories; i++)
         {
-            built.Add(Build(simulation, "war_factory", 1 + 4 * i, 6));
+            built.Add(Build(simulation, "war_factory", 1 + 6 * i, 6));
         }
 
         for (var i = 0; !lowPower && i < factories; i++)
@@ -373,7 +373,7 @@ public sealed class ProductionTests
         Assert.Equal(factories[1].Id, produced.Factory);
         simulation.World.TryGet(produced.Unit, out var entity);
         var tank = (Unit)entity;
-        var exit = new CellPos(factories[1].Cell.X + 1, factories[1].Cell.Y + 4);
+        var exit = new CellPos(factories[1].Cell.X + 2, factories[1].Cell.Y + 3);
         Assert.Equal(exit, tank.Position.ToCell());
 
         for (var i = 0; i < 60; i++)
@@ -408,7 +408,7 @@ public sealed class ProductionTests
     {
         var simulation = Match();
         var factory = Base(simulation, 1)[0];
-        var exit = new CellPos(factory.Cell.X + 1, factory.Cell.Y + 4);
+        var exit = new CellPos(factory.Cell.X + 2, factory.Cell.Y + 3);
         var blocker = simulation.World.SpawnForTest(Player1, exit.Center, speed: 0, UnitType.HeavyTank);
         Tanks(simulation);
 

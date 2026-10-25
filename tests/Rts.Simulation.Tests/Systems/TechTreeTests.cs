@@ -101,7 +101,7 @@ public sealed class TechTreeTests
         Assert.False(CanBuild(world, "tesla_tank"));
         Assert.False(CanBuild(world, "conscript"));
 
-        Build(world, "radar", 15, 0);
+        Build(world, "radar", 16, 0);
         Build(world, "tech_center", 18, 0);
         Build(world, "barracks", 22, 0);
         TechTree.Update(world);

@@ -89,7 +89,7 @@ public sealed class AllianceTests
         Build(world, Allied, "alliance_barracks", 17, 10);
         Build(world, Allied, "alliance_ore_refinery", 10, 14);
         Build(world, Allied, "alliance_war_factory", 14, 14);
-        Build(world, Allied, "alliance_air_force_command", 18, 14);
+        Build(world, Allied, "alliance_air_force_command", 19, 14);
         Assert.True(CanBuild(world, Allied, "alliance_rifleman"));
         Assert.True(CanBuild(world, Allied, "alliance_light_tank"));
         Assert.True(CanBuild(world, Allied, "alliance_prism_tower"));
@@ -112,7 +112,7 @@ public sealed class AllianceTests
         Build(world, Union, "refinery", 48, 52);
         Build(world, Union, "war_factory", 52, 52);
         Build(world, Union, "radar", 56, 48);
-        Build(world, Union, "tech_center", 56, 52);
+        Build(world, Union, "tech_center", 57, 52);
         Assert.True(CanBuild(world, Union, "iron_curtain"));
         Assert.True(CanBuild(world, Union, "nuclear_reactor"));
 
@@ -140,7 +140,7 @@ public sealed class AllianceTests
 
         Build(world, Union, "refinery", 48, 52);
         Build(world, Union, "war_factory", 52, 52);
-        Build(world, Union, "radar", 56, 52);
+        Build(world, Union, "radar", 57, 52);
         Build(world, Union, "tech_center", 44, 52);
         Build(world, Union, "naval_shipyard", 40, 44);
         Assert.True(CanBuild(world, Union, "apocalypse_tank"));

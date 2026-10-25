@@ -254,11 +254,12 @@ public sealed class GoldenValuesTests
         // Rules v56 (stage 2d): the charges, the cover and the storms in the hash; the battle is the same.
         // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash; the battle is the same.
         // Rules v60 (loose ends, stage 3): experience in the hash; the killers gain it, the veterans fight harder.
+        // Rules v86 (the sizes of RA2): the battle's base has the buildings of RA2's footprints; the battle runs otherwise.
         StateChecksum[] expected =
         [
-            new(1000, 0xd1bccb27290223eeUL),
-            new(2000, 0x6f2f22b17ad18279UL),
-            new(3000, 0xd629a75f933a181dUL),
+            new(1000, 0x54f33b4c4bab9429UL),
+            new(2000, 0x6f01ac331877c77eUL),
+            new(3000, 0x3631bf4b20fd17eaUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -365,6 +366,7 @@ public sealed class GoldenValuesTests
         // Rules v83 (the repairs, shipyards and walls of RA2): the version only.
         // Rules v84 (the economy and power of RA2): the version only.
         // Rules v85 (the prerequisite groups of RA2): the version only.
-        Assert.Equal((22270, 11677646077179226920UL), (bytes.Length, hash.Value));
+        // Rules v86 (the building sizes of RA2): the version only.
+        Assert.Equal((22270, 13391267158938872843UL), (bytes.Length, hash.Value));
     }
 }

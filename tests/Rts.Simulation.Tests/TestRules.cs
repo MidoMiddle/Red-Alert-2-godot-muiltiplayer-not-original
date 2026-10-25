@@ -212,14 +212,14 @@ internal static class TestRules
         Combat(builder);
 
         // The buildings of docs/implementation/M3_base_economy.md, 4.6: id, footprint, power, prerequisites.
-        builder.Add(Def("construction_yard", 3, 3, power: 0) with
+        builder.Add(Def("construction_yard", 4, 4, power: 0) with
         {
             Produces = [ProductionCategory.Building, ProductionCategory.Defense],
             Armor = "concrete",
         });
         // The prerequisite groups of RA2 (power, proc, radar, barracks, tech), as game/data names them.
-        builder.Add(Def("reactor", 2, 2, power: 150, "construction_yard") with { Provides = ["power"] });
-        builder.Add(Def("refinery", 3, 3, power: -50, "power") with { DockCell = new CellPos(1, 3), Provides = ["proc"] });
+        builder.Add(Def("reactor", 3, 2, power: 150, "construction_yard") with { Provides = ["power"] });
+        builder.Add(Def("refinery", 4, 3, power: -50, "power") with { DockCell = new CellPos(1, 3), Provides = ["proc"] });
         builder.Add(Def("barracks", 2, 2, power: -10, "power") with
         {
             Provides = ["barracks"],
@@ -227,10 +227,10 @@ internal static class TestRules
             Produces = [ProductionCategory.Infantry],
             ExitCell = new CellPos(1, 2),
         });
-        builder.Add(Def("war_factory", 3, 4, power: -25, "proc", "barracks") with
+        builder.Add(Def("war_factory", 5, 3, power: -25, "proc", "barracks") with
         {
             Produces = [ProductionCategory.Vehicle, ProductionCategory.Aircraft],
-            ExitCell = new CellPos(1, 4),
+            ExitCell = new CellPos(2, 3),
         });
         builder.Add(Def("radar", 2, 2, power: -50, "proc") with { Radar = true, Provides = ["radar"] });
         builder.Add(Def("tech_center", 3, 3, power: -100, "war_factory", "radar") with { Provides = ["tech"] });
@@ -243,8 +243,8 @@ internal static class TestRules
             Armor = "concrete",
         });
         builder.Add(Defense("sentry_bunker", 1, 1, power: 0, "sentry_machine_gun", "barracks") with { Threat = 20, Adjacent = 4 });
-        builder.Add(Defense("tesla_coil", 2, 2, power: -75, "tesla_coil_bolt", "power", "radar") with { Threat = 40 });
-        builder.Add(Defense("flak_cannon", 2, 2, power: -50, "flak_cannon_gun", "barracks") with { Threat = 10 });
+        builder.Add(Defense("tesla_coil", 1, 1, power: -75, "tesla_coil_bolt", "power", "radar") with { Threat = 40 });
+        builder.Add(Defense("flak_cannon", 1, 1, power: -50, "flak_cannon_gun", "barracks") with { Threat = 10 });
         builder.Add(new EconomyDef
         {
             Id = "economy",

@@ -163,13 +163,13 @@ public sealed class BuildingTests
     [Fact]
     public void A_footprint_lies_along_x_and_does_not_turn_with_the_facing()
     {
-        var turned = new BuildingState(BuildingKind.TechAirfield, new CellPos(10, 1), PlayerId.Neutral, 2);
+        var turned = new BuildingState(BuildingKind.TechHospital, new CellPos(10, 1), PlayerId.Neutral, 2);
         var world = new GameWorld(seed: 1, Village(turned), TestRules.Standard);
-        var airfield = (Building)world.Entities[1];
+        var hospital = (Building)world.Entities[1];
 
-        Assert.All(Footprint(new CellPos(10, 1), 4, 3), cell => Assert.True(airfield.Covers(cell) && world.Map.HasBuilding(cell)));
-        Assert.Equal(12, Enumerable.Range(0, Width * Height).Count(i => airfield.Covers(new CellPos(i % Width, i / Width))));
-        Assert.False(world.Map.HasBuilding(new CellPos(10, 4)));
+        Assert.All(Footprint(new CellPos(10, 1), 6, 4), cell => Assert.True(hospital.Covers(cell) && world.Map.HasBuilding(cell)));
+        Assert.Equal(24, Enumerable.Range(0, Width * Height).Count(i => hospital.Covers(new CellPos(i % Width, i / Width))));
+        Assert.False(world.Map.HasBuilding(new CellPos(10, 5)));
     }
 
     [Theory]
@@ -213,7 +213,7 @@ public sealed class BuildingTests
     [Fact]
     public void A_match_that_knocks_down_a_building_survives_the_replay()
     {
-        var start = Village(new BuildingState(BuildingKind.TechHospital, new CellPos(11, 6), new PlayerId(1), 4));
+        var start = Village(new BuildingState(BuildingKind.TechHospital, new CellPos(10, 6), new PlayerId(1), 4));
         var simulation = new GameSimulation(new SimulationSettings(seed: 5, start), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation);
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 0, UnitType.HeavyTank, new CellPos(2, 4).Center));

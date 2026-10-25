@@ -168,10 +168,13 @@ public sealed class PlaceBuildingTests
             simulation.Step();
         }
 
-        // The reactor closes x 12…13 of row 12, right across the tank's straight way.
-        Assert.Contains(Place(simulation, "reactor", 12, 11), e => e is BuildingPlaced);
+        // The reactor, under the yard, closes x 12…14 of row 12, right across the tank's straight way.
+        Assert.Contains(Place(simulation, "reactor", 12, 12), e => e is BuildingPlaced);
 
-        var footprint = new[] { new CellPos(12, 11), new CellPos(13, 11), new CellPos(12, 12), new CellPos(13, 12) };
+        var footprint = new[]
+        {
+            new CellPos(12, 12), new CellPos(13, 12), new CellPos(14, 12), new CellPos(12, 13), new CellPos(13, 13), new CellPos(14, 13),
+        };
         for (var i = 0; i < 600 && tank.Position.ToCell() != new CellPos(25, 12); i++)
         {
             simulation.Step();

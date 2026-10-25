@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Rts.Simulation.Rules;
 
 namespace Rts.Client.Terrain;
@@ -142,7 +143,9 @@ public static class BuildingLooks
     };
 
     /// <summary>The parts of the building, the first its base.</summary>
-    public static IReadOnlyList<LookPart> Of(BuildingDef def) => Of(def.Id, def.Footprint.Width, def.Footprint.Height, def.Wall);
+    /// <summary>The look of a building of the data, stretched over its footprint when it was drawn for another (<see cref="Fit"/>).</summary>
+    public static IReadOnlyList<LookPart> Of(BuildingDef def) =>
+        Looks.TryGetValue(def.Id, out var parts) ? Fit(parts, def.Footprint.Width, def.Footprint.Height) : Block(def.Footprint.Width, def.Footprint.Height, def.Wall);
 
     /// <summary>Whether the building has a look of its own, not the block of <see cref="Block"/>.</summary>
     public static bool Known(string id) => Looks.ContainsKey(id);
@@ -173,6 +176,36 @@ public static class BuildingLooks
 
     public static IReadOnlyList<LookPart> Of(string id, int width, int height, bool wall) =>
         Looks.TryGetValue(id, out var parts) ? parts : Block(width, height, wall);
+
+    /// <summary>
+    /// The parts stretched over the footprint when they were drawn for another (the sizes of RA2 came after the looks, 2026-10-25): the
+    /// size they were drawn for is the whole cells round them; heights stay.
+    /// </summary>
+    private static IReadOnlyList<LookPart> Fit(IReadOnlyList<LookPart> parts, int width, int height)
+    {
+        var (halfX, halfZ) = (0f, 0f);
+        foreach (var part in parts.Where(part => part.Tilt == 0f))
+        {
+            halfX = MathF.Max(halfX, MathF.Abs(part.X) + part.SizeX / 2f);
+            halfZ = MathF.Max(halfZ, MathF.Abs(part.Z) + part.SizeZ / 2f);
+        }
+
+        var drawnX = Math.Max(1, (int)MathF.Ceiling(halfX * 2f - 0.3f));
+        var drawnZ = Math.Max(1, (int)MathF.Ceiling(halfZ * 2f - 0.3f));
+        if (drawnX == width && drawnZ == height)
+        {
+            return parts;
+        }
+
+        var (scaleX, scaleZ) = ((float)width / drawnX, (float)height / drawnZ);
+        return [.. parts.Select(part => part with
+        {
+            X = part.X * scaleX,
+            Z = part.Z * scaleZ,
+            SizeX = part.SizeX * scaleX,
+            SizeZ = part.SizeZ * scaleZ,
+        })];
+    }
 
     /// <summary>A block over the footprint, taller with its size: a building of the data without a look of its own.</summary>
     public static IReadOnlyList<LookPart> Block(int width, int height, bool wall)

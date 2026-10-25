@@ -15,7 +15,7 @@ public sealed class PlacementPreviewTests
 {
     private static readonly PlayerId Player1 = new(1);
 
-    /// <summary>A yard at (2, 2)–(4, 4), its technologies worked out.</summary>
+    /// <summary>A yard at (2, 2)–(5, 5), its technologies worked out.</summary>
     private static GameSimulation WithYard(int credits = 10_000, params CellPos[] water)
     {
         var map = new MapGrid(40, 30, TestRules.Standard.Land);
@@ -48,7 +48,9 @@ public sealed class PlacementPreviewTests
         var simulation = WithYard();
         var cells = PlacementPreview.Footprint(simulation.World, Player1, TestRules.BuildingDef("reactor"), new CellPos(6, 2));
 
-        Assert.Equal([new CellPos(6, 2), new CellPos(7, 2), new CellPos(6, 3), new CellPos(7, 3)], cells.Select(cell => cell.Cell));
+        Assert.Equal(
+            [new CellPos(6, 2), new CellPos(7, 2), new CellPos(8, 2), new CellPos(6, 3), new CellPos(7, 3), new CellPos(8, 3)],
+            cells.Select(cell => cell.Cell));
         Assert.All(cells, cell => Assert.Equal(PreviewState.Ok, cell.State));
     }
 
@@ -58,7 +60,7 @@ public sealed class PlacementPreviewTests
         var simulation = WithYard(10_000, new CellPos(7, 3));
         var cells = PlacementPreview.Footprint(simulation.World, Player1, TestRules.BuildingDef("reactor"), new CellPos(6, 2));
 
-        Assert.Equal([PreviewState.Ok, PreviewState.Ok, PreviewState.Ok, PreviewState.Refused], States(cells));
+        Assert.Equal([PreviewState.Ok, PreviewState.Ok, PreviewState.Ok, PreviewState.Ok, PreviewState.Refused, PreviewState.Ok], States(cells));
         Assert.Equal(PlacementProblem.NotBuildable, PlacementRules.Check(simulation.World, Player1, TestRules.BuildingDef("reactor"), new CellPos(6, 2)));
     }
 
@@ -66,9 +68,9 @@ public sealed class PlacementPreviewTests
     public void Over_the_yard_the_taken_cells_are_red()
     {
         var simulation = WithYard();
-        var cells = PlacementPreview.Footprint(simulation.World, Player1, TestRules.BuildingDef("reactor"), new CellPos(4, 4));
+        var cells = PlacementPreview.Footprint(simulation.World, Player1, TestRules.BuildingDef("reactor"), new CellPos(5, 5));
 
-        Assert.Equal([PreviewState.Refused, PreviewState.Ok, PreviewState.Ok, PreviewState.Ok], States(cells));
+        Assert.Equal([PreviewState.Refused, PreviewState.Ok, PreviewState.Ok, PreviewState.Ok, PreviewState.Ok, PreviewState.Ok], States(cells));
     }
 
     [Fact]
@@ -117,9 +119,9 @@ public sealed class PlacementPreviewTests
     [Fact]
     public void A_wall_preview_shows_water_red_and_what_the_credits_do_not_reach_grey()
     {
-        // From a wall at (5, 3): (6, 3) takes the ready wall, (7, 3) is water, (8, 3) and (9, 3) are paid, the rest unpaid.
-        var simulation = WithYard(credits: 250, new CellPos(7, 3));
-        var cells = PlacementPreview.WallLine(new CellPos(5, 3), new CellPos(12, 3));
+        // From a wall at (6, 3): (7, 3) takes the ready wall, (8, 3) is water, (9, 3) and (10, 3) are paid, the rest unpaid.
+        var simulation = WithYard(credits: 250, new CellPos(8, 3));
+        var cells = PlacementPreview.WallLine(new CellPos(6, 3), new CellPos(13, 3));
 
         var preview = PlacementPreview.Wall(simulation.World, Player1, TestRules.BuildingDef("wall"), cells);
 
@@ -133,7 +135,7 @@ public sealed class PlacementPreviewTests
     {
         var simulation = WithYard();
         var preview = PlacementPreview.Wall(
-            simulation.World, Player1, TestRules.BuildingDef("wall"), PlacementPreview.WallLine(new CellPos(5, 3), new CellPos(25, 3)));
+            simulation.World, Player1, TestRules.BuildingDef("wall"), PlacementPreview.WallLine(new CellPos(6, 3), new CellPos(26, 3)));
 
         Assert.All(preview, cell => Assert.Equal(PreviewState.Ok, cell.State));
     }

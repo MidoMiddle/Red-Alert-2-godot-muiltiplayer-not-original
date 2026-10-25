@@ -20,7 +20,7 @@ public sealed class TeslaCoilTests
     private static readonly PlayerId Union = new(1);
     private static readonly PlayerId Allied = new(2);
 
-    // A coil of 2 x 2 cells at (20, 20); its centre is the corner of (21, 21). The target stands 6 cells east, the troopers west.
+    // A coil of 1 x 1 cell at (20, 20) (RA2). The target stands 6 cells east, the troopers west.
     private static readonly CellPos Coil = new(20, 20);
 
     private static GameSimulation Match()
@@ -74,7 +74,7 @@ public sealed class TeslaCoilTests
             simulation.Step();
         }
 
-        var mcv = world.SpawnUnit(Allied, UnitType.AllianceMcv, new CellPos(27, 21).Center);
+        var mcv = world.SpawnUnit(Allied, UnitType.AllianceMcv, new CellPos(26, 20).Center);
         for (var tick = 0; tick < 200 && mcv.Hp == mcv.MaxHp; tick++)
         {
             simulation.Step();

@@ -1052,7 +1052,7 @@ objects:
 bridges: []
 structures:
   - { type: tech_hospital, cell: [62, 8], owner: neutral, facing: 0 }
-  - { type: tech_hospital, cell: [117, 62], owner: neutral, facing: 0 }
-  - { type: tech_hospital, cell: [8, 63], owner: neutral, facing: 0 }
-  - { type: tech_hospital, cell: [63, 117], owner: neutral, facing: 0 }
+  - { type: tech_hospital, cell: [8, 60], owner: neutral, facing: 0 }
+  - { type: tech_hospital, cell: [116, 62], owner: neutral, facing: 0 }
+  - { type: tech_hospital, cell: [60, 116], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [63, 63], owner: neutral, facing: 0 }

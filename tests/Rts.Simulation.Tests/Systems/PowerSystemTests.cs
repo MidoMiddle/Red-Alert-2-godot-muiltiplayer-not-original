@@ -50,7 +50,7 @@ public sealed class PowerSystemTests
         Build(world, "refinery", 3, 0);
         Update(world);
         Build(world, "war_factory", 7, 0);
-        Build(world, "radar", 11, 0);
+        Build(world, "radar", 12, 0);
 
         var events = Update(world);
 
@@ -74,15 +74,15 @@ public sealed class PowerSystemTests
         var world = simulation.World;
         Build(world, "reactor", 0, 0);
         Build(world, "war_factory", 3, 0);
-        Build(world, "radar", 7, 0);
+        Build(world, "radar", 8, 0);
         Build(world, "barracks", 10, 0);
         Build(world, "refinery", 13, 0);
-        Build(world, "radar", 16, 0);
+        Build(world, "radar", 17, 0);
         simulation.Step();
         Assert.Contains(new LowPower(0, Player1), simulation.LastTickEvents);
 
-        // The radar at (7, 0) falls: 185 - 50 = 135 against 150.
-        simulation.Enqueue(new DamageMapObjectCommand(Player1, 1, 0, new CellPos(7, 0), DamageMapObjectCommand.MaxAmount));
+        // The radar at (8, 0) falls: 185 - 50 = 135 against 150.
+        simulation.Enqueue(new DamageMapObjectCommand(Player1, 1, 0, new CellPos(8, 0), DamageMapObjectCommand.MaxAmount));
         simulation.Step();
 
         Assert.False(world.Player(Player1).LowPower);

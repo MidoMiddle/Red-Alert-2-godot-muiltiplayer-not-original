@@ -228,7 +228,7 @@ public sealed class SellRepairWallsTests
         ReadyWall(simulation);
         var before = Credits(simulation);
 
-        var events = Walls(simulation, Row(5, 9, 3));
+        var events = Walls(simulation, Row(6, 10, 3));
 
         Assert.Equal(5, events.OfType<BuildingPlaced>().Count());
         Assert.Equal(4 * 100, before - Credits(simulation));
@@ -238,14 +238,14 @@ public sealed class SellRepairWallsTests
     [Fact]
     public void A_wall_line_skips_water_and_ends_when_the_credits_do()
     {
-        var simulation = Match(credits: 10_000, new CellPos(7, 3));
+        var simulation = Match(credits: 10_000, new CellPos(8, 3));
         ReadyWall(simulation);
         simulation.World.Player(Player1).Credits = 250;
 
-        var events = Walls(simulation, Row(5, 12, 3));
+        var events = Walls(simulation, Row(6, 13, 3));
 
-        // 5 (ready), 6 (paid), 7 water, 8 (paid), then 50 credits are left.
-        Assert.Equal([new CellPos(5, 3), new CellPos(6, 3), new CellPos(8, 3)], events.OfType<BuildingPlaced>().Select(placed => placed.Cell));
+        // 6 (ready), 7 (paid), 8 water, 9 (paid), then 50 credits are left.
+        Assert.Equal([new CellPos(6, 3), new CellPos(7, 3), new CellPos(9, 3)], events.OfType<BuildingPlaced>().Select(placed => placed.Cell));
         Assert.Equal(50, Credits(simulation));
     }
 
@@ -255,12 +255,12 @@ public sealed class SellRepairWallsTests
         var simulation = Match();
         ReadyWall(simulation);
 
-        var events = Walls(simulation, Row(5, 20, 3));
+        var events = Walls(simulation, Row(6, 21, 3));
 
         Assert.Equal(16, events.OfType<BuildingPlaced>().Count());
         Assert.Equal(
             PlacementProblem.TooFar,
-            PlacementRules.Check(simulation.World, Player1, TestRules.BuildingDef("reactor"), new CellPos(19, 4)));
+            PlacementRules.Check(simulation.World, Player1, TestRules.BuildingDef("reactor"), new CellPos(20, 4)));
     }
 
     [Fact]
@@ -271,7 +271,7 @@ public sealed class SellRepairWallsTests
         Build(simulation, "barracks", 34, 24);
         simulation.Step();
 
-        Assert.Contains(Walls(simulation, Row(5, 7, 3)), e => e is CannotPlace { Problem: PlacementProblem.NotReady });
+        Assert.Contains(Walls(simulation, Row(6, 8, 3)), e => e is CannotPlace { Problem: PlacementProblem.NotReady });
     }
 
     [Fact]
