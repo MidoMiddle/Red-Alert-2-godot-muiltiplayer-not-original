@@ -147,6 +147,23 @@ public sealed class CarriersAndDronesTests
         Assert.Equal(4, events.OfType<UnitUnloaded>().Count());
     }
 
+    [Theory]
+    [InlineData(UnitType.AllianceNighthawk)]
+    [InlineData(UnitType.AllianceAmphibiousTransport)]
+    public void Engineers_board_the_helicopter_and_the_landing_craft(UnitType transportType)
+    {
+        // The owner, 2026-10-25: engineers sent into the helicopter or the landing craft did nothing.
+        var simulation = Match();
+        var world = simulation.World;
+        var transport = Spawn(world, Allied, transportType, 30, 30);
+        var engineers = new[] { Spawn(world, Allied, UnitType.AllianceEngineer, 26, 30), Spawn(world, Allied, UnitType.AllianceEngineer, 26, 31) };
+        Assert.All(engineers, engineer => Assert.Equal(EntryAction.Board, EntrySystem.ActionOf(world, engineer, transport)));
+
+        simulation.Enqueue(new EnterCommand(Allied, simulation.CurrentTick, 0, [.. engineers.Select(e => e.Id)], transport.Id));
+        Run(simulation, 300, () => transport.Passengers.Count == 2);
+        Assert.Equal(2, transport.Passengers.Count);
+    }
+
     [Fact]
     public void The_transport_takes_no_more_than_its_slots()
     {

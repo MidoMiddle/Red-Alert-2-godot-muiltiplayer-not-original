@@ -145,6 +145,25 @@ public sealed class InputGestureTests
         Assert.Equal([new ToggleUnit(Blue)], input.Release(PointerButton.Left));
     }
 
+    [Theory]
+    [InlineData(ControlScheme.Classic)]
+    [InlineData(ControlScheme.Modern)]
+    public void An_order_on_a_transport_the_selection_can_board_is_an_order_not_a_pick(ControlScheme scheme)
+    {
+        // The owner, 2026-10-25: a click with engineers selected on the helicopter only picked the helicopter.
+        var input = new InputInterpreter(scheme, cameraDrag: true);
+        var context = Context(OwnUnit, hasSelection: true) with { TargetBoards = true };
+        var orderButton = scheme == ControlScheme.Classic ? PointerButton.Left : PointerButton.Right;
+
+        var intents = input.Press(orderButton, Here, context).Concat(input.Release(orderButton)).ToList();
+        Assert.Contains(intents, intent => intent is OrderMove);
+        Assert.DoesNotContain(intents, intent => intent is SelectUnit);
+
+        // Shift still adds the transport to the selection.
+        input.Press(PointerButton.Left, Here, context with { Shift = true });
+        Assert.Equal([new ToggleUnit(Blue)], input.Release(PointerButton.Left));
+    }
+
     [Fact]
     public void One_tool_at_a_time()
     {

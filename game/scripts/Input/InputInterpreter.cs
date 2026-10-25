@@ -73,6 +73,10 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <param name="WaypointMode">Whether the waypoints mode is on (the command bar's flag, or Z held): an order adds a waypoint instead.</param>
 /// <param name="HasWaypoints">Whether waypoints are laid out and not sent yet: an order without Z sends them.</param>
 /// <param name="TargetDeploys">Whether the unit under the pointer is an own MCV already selected: a click deploys it (M3 step 13).</param>
+/// <param name="TargetBoards">
+/// Whether the unit under the pointer is an own transport one of the selection can board (a helicopter, a landing craft, an IFV): a
+/// click is an order to board it, not a pick (the owner, 2026-10-25: «engineers sent into the helicopter did nothing»).
+/// </param>
 public readonly record struct PointerContext(
     WorldPos? Ground,
     PointerTarget Target,
@@ -84,7 +88,8 @@ public readonly record struct PointerContext(
     bool WaypointMode = false,
     bool HasWaypoints = false,
     bool TargetDeploys = false,
-    EntityId? OwnFactory = null);
+    EntityId? OwnFactory = null,
+    bool TargetBoards = false);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
@@ -497,6 +502,8 @@ public sealed class InputInterpreter
                 return new Intent[] { new ToggleUnit(context.Target.Unit) };
             case PointerTargetKind.OwnUnit when context.TargetDeploys:
                 return new Intent[] { new DeployUnit(context.Target.Unit) };
+            case PointerTargetKind.OwnUnit when context.TargetBoards && _scheme == ControlScheme.Classic:
+                return Order(context);
             case PointerTargetKind.OwnUnit:
                 return new Intent[] { new SelectUnit(context.Target.Unit) };
             case PointerTargetKind.Ground when _scheme == ControlScheme.Modern:

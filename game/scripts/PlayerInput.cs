@@ -962,7 +962,8 @@ public partial class PlayerInput : Node
             WaypointMode: WaypointArmed || WaypointHeld(),
             HasWaypoints: !Waypoints.IsEmpty,
             TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && Deploys(target.Unit),
-            OwnFactory: ground is { } point ? FactoryAt(point) : null);
+            OwnFactory: ground is { } point ? FactoryAt(point) : null,
+            TargetBoards: target.Kind == PointerTargetKind.OwnUnit && !Selection.Contains(target.Unit) && EnterAt(target.Unit) is not null);
     }
 
     // The building that produces selected instead of units: an order on the ground sets its rally point.
