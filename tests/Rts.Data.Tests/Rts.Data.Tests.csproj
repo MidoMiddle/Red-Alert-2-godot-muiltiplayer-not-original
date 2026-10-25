@@ -42,6 +42,7 @@
     <Compile Include="../../game/scripts/Maps/MapPreview.cs" Link="Client/MapPreview.cs" />
     <Compile Include="../../game/scripts/Maps/MapCatalog.cs" Link="Client/MapCatalog.cs" />
     <Compile Include="../../game/scripts/Terrain/LandColors.cs" Link="Client/LandColors.cs" />
+    <Compile Include="../../game/scripts/Units/UnitAltitude.cs" Link="Client/UnitAltitude.cs" />
   </ItemGroup>
 
   <!-- The matches the client sets up on the ready maps (docs/implementation/M5_first_bot.md, step 2): pure, without Godot. -->
