@@ -106,6 +106,27 @@ public sealed class ReplayTests
     }
 
     [Fact]
+    public void The_header_alone_tells_the_length_and_whether_this_build_plays_it()
+    {
+        // M6 step 15: the list of replays reads it from a file of any format version.
+        var replay = new Replay(SimulationVersion.Current, DataHasher.NoData, new SimulationSettings(9), 450, [], []);
+        var bytes = ReplayFormat.Write(replay);
+
+        var header = ReplayFormat.ReadHeader(bytes);
+        Assert.Equal((ReplayFormat.FormatVersion, SimulationVersion.Current, 15, 450), (header.FormatVersion, header.SimVersion, header.TicksPerSecond, header.TickCount));
+        Assert.True(header.Playable);
+
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(4), ReplayFormat.FormatVersion - 1);
+        Assert.False(ReplayFormat.ReadHeader(bytes).Playable);
+        Assert.False((header with { SimVersion = SimulationVersion.Current - 1 }).Playable);
+        Assert.Throws<InvalidDataException>(() => ReplayFormat.ReadHeader(bytes.AsSpan(0, 20)));
+
+        // Before v10 the header was another: no length.
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(4), 9);
+        Assert.Equal(-1, ReplayFormat.ReadHeader(bytes).TickCount);
+    }
+
+    [Fact]
     public void The_network_of_a_match_is_kept_in_the_replay_and_a_single_match_has_none()
     {
         // Format 27 (M9 step 11): the version of the game, the hash of the map, the names by player.

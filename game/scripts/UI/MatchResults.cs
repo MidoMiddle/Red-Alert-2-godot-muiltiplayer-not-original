@@ -12,7 +12,8 @@ namespace Rts.Client.UI;
 /// it opens <see cref="DelaySeconds"/> after the match ends — the banner shows first — and pauses the game. The outcome and the length,
 /// a row of the statistics of every player, the graph of the strength of the armies, and three buttons: Play Again — the same match
 /// with a new seed, on the spot; Save Replay — into user://replays, its path shown; Exit — as Quit in the pause menu. Not while a replay
-/// plays back. The look of RA2 comes with M6.
+/// plays back. The look is that of the match screen of RA2 (M6 step 15, as <see cref="PauseMenu"/>): the field turns into the emblem of
+/// the player's faction with the results on a dark plate over it, and the sidebar holds the emblem and the three buttons.
 /// </summary>
 public partial class MatchResults : CanvasLayer
 {
@@ -48,6 +49,8 @@ public partial class MatchResults : CanvasLayer
     private Button _again = null!;
     private Button _exit = null!;
     private VBoxContainer _column = null!;
+    private FactionEmblem _field = null!;
+    private FactionEmblem _logo = null!;
     private PlaytestSurvey? _survey;
     private Label _army = null!;
     private MatchSummary? _summary;
@@ -72,14 +75,24 @@ public partial class MatchResults : CanvasLayer
         _overlay = new Control { Visible = false, MouseFilter = Control.MouseFilterEnum.Stop, Theme = _theme };
         _overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         AddChild(_overlay);
-        var dimmer = new ColorRect { Color = new Color(0, 0, 0, 0.7f), MouseFilter = Control.MouseFilterEnum.Ignore };
-        dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        _overlay.AddChild(dimmer);
-
+        // The field: the emblem of the faction, dimmed, with the results on a dark plate in its middle.
+        _field = new FactionEmblem { Name = "Field", Dim = true };
+        _field.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        _field.OffsetRight = -Hud.SidebarLayout.Width;
+        _field.OffsetBottom = -Hud.CommandBarLayout.Height;
+        _overlay.AddChild(_field);
         var center = new CenterContainer();
         center.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        _overlay.AddChild(center);
+        _field.AddChild(center);
         var panel = new PanelContainer();
+        panel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = new Color(0.04f, 0.05f, 0.06f, 0.82f),
+            ContentMarginLeft = 28,
+            ContentMarginRight = 28,
+            ContentMarginTop = 20,
+            ContentMarginBottom = 20,
+        });
         center.AddChild(panel);
         var column = new VBoxContainer();
         column.AddThemeConstantOverride("separation", 14);
@@ -102,11 +115,23 @@ public partial class MatchResults : CanvasLayer
         _graph = new ArmyGraph { CustomMinimumSize = new Vector2(900, 220) };
         column.AddChild(_graph);
 
-        _saved = new Label { HorizontalAlignment = HorizontalAlignment.Center };
+        _saved = new Label { HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         column.AddChild(_saved);
-        var buttons = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
-        buttons.AddThemeConstantOverride("separation", 16);
-        column.AddChild(buttons);
+
+        // The sidebar: the emblem where the minimap was, and the buttons under it.
+        var side = new PanelContainer { Name = "Side", ClipContents = true };
+        side.SetAnchorsPreset(Control.LayoutPreset.RightWide);
+        side.OffsetLeft = -Hud.SidebarLayout.Width;
+        side.OffsetRight = 0;
+        _overlay.AddChild(side);
+        var sideColumn = new VBoxContainer();
+        sideColumn.AddThemeConstantOverride("separation", 10);
+        side.AddChild(sideColumn);
+        _logo = new FactionEmblem { Name = "Logo", Small = true, CustomMinimumSize = new Vector2(0, Hud.SidebarLayout.MinimapSize + 40) };
+        sideColumn.AddChild(_logo);
+        var buttons = new VBoxContainer();
+        buttons.AddThemeConstantOverride("separation", 8);
+        sideColumn.AddChild(buttons);
         var again = AddButton("UI_RESULTS_PLAY_AGAIN", buttons);
         again.Name = "PlayAgain";
         again.Pressed += () => _host?.PlayAgain();
@@ -169,6 +194,12 @@ public partial class MatchResults : CanvasLayer
         });
         _duration.Text = string.Format(Tr("UI_RESULTS_DURATION"), summary.Duration);
         _summary = summary;
+        var faction = _host.Simulation.World.Match?.PlayerOf(SimulationHost.LocalPlayer) is { } local
+            ? FactionPalette.Of(local.Faction)
+            : FactionPalette.Of(_host.Simulation.World.Player(SimulationHost.LocalPlayer).Faction.Id);
+        _field.Faction = _logo.Faction = faction;
+        _field.QueueRedraw();
+        _logo.QueueRedraw();
         _saved.Text = "";
         _save.Disabled = false;
         OpenSurvey();
@@ -310,9 +341,11 @@ public partial class MatchResults : CanvasLayer
         }
     }
 
+    // A button of the sidebar: the labels of RA2 in a smaller type, the sidebar is narrow.
     private Button AddButton(string key, Container parent)
     {
-        var button = new Button { Text = Tr(key), CustomMinimumSize = new Vector2(220, 52) };
+        var button = new Button { Text = Tr(key), CustomMinimumSize = new Vector2(0, 44), ClipText = true };
+        button.AddThemeFontSizeOverride("font_size", 17);
         parent.AddChild(button);
         return button;
     }

@@ -35,3 +35,14 @@ public sealed record Replay(
 /// <param name="MapHash">The hash of the map file (the lobby's).</param>
 /// <param name="Names">The name of every person of the match, by player id.</param>
 public sealed record ReplayNetwork(string GameVersion, ulong MapHash, IReadOnlyDictionary<int, string> Names);
+
+/// <summary>The header of a replay file, of whatever format version (<see cref="ReplayFormat.ReadHeader"/>).</summary>
+/// <param name="FormatVersion">The version of the file format.</param>
+/// <param name="SimVersion">The rules version the match was played with.</param>
+/// <param name="TicksPerSecond">The tick rate of the match.</param>
+/// <param name="TickCount">Number of ticks played; −1 when the format is too old to tell.</param>
+public sealed record ReplayHeader(ushort FormatVersion, uint SimVersion, int TicksPerSecond, int TickCount)
+{
+    /// <summary>Whether this build reads the file and plays it with the same rules.</summary>
+    public bool Playable => FormatVersion == ReplayFormat.FormatVersion && SimVersion == SimulationVersion.Current;
+}

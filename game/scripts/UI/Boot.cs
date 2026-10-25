@@ -9,7 +9,8 @@ namespace Rts.Client.UI;
 /// <c>--smoke</c>, <c>--check-camera</c>, <c>--check-terrain</c> and <c>--screenshot</c> go straight to <c>Main</c>, so the M0 checks keep
 /// working; <c>--sandbox</c> goes through the loading screen, as every match does (docs/implementation/M6_menus_skirmish.md, 4.14).
 /// <c>--ui-menu</c>, <c>--ui-skirmish</c>, <c>--ui-settings</c>, <c>--ui-stub</c> and <c>--ui-showcase</c> open UI screens for visual checks;
-/// <c>--ui-loading</c> opens the loading screen and holds it at its end.
+/// <c>--ui-loading</c> opens the loading screen and holds it at its end; <c>--ui-replays</c> the list of replays, and <c>--watch FILE|latest</c>
+/// watches a replay from it.
 /// </summary>
 public partial class Boot : Control
 {
@@ -60,6 +61,10 @@ public partial class Boot : Control
         else if (args.Contains("--ui-stub"))
         {
             OpenDebugScene(StubScene);
+        }
+        else if (args.Contains("--ui-replays") || args.Contains("--watch"))
+        {
+            OpenDebugScene(ReplaysScreen.Scene);
         }
         else if (args.Contains("--ui-loading"))
         {

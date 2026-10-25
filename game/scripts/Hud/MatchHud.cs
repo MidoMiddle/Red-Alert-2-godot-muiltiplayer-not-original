@@ -69,6 +69,10 @@ public partial class MatchHud : CanvasLayer
         var notices = new Notifications { Name = "Notifications" };
         AddChild(notices);
         notices.Bind(host);
+        // Watching a replay (M6 step 15): its controls over the field.
+        var replayBar = new ReplayBar { Name = "ReplayBar", Theme = theme };
+        AddChild(replayBar);
+        replayBar.Bind(host);
         var banner = new MatchBanner { Name = "MatchBanner" };
         AddChild(banner);
         banner.Bind(host);

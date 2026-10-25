@@ -9,9 +9,9 @@ namespace Rts.Client.UI;
 /// Main menu, laid out after the classic RA2 menu (docs/menu/README.md, section 3.2): a large screen with the
 /// title on the left, a column with the header and the entries on the right. All entries are shown in the order of
 /// section 2.3. An entry whose screen does not exist yet is greyed out and marked "coming soon": Settings comes with
-/// Replays with step 15, Online with M10; Multiplayer opens the network menu of M9 (host or join by address). Credits has no step yet.
+/// Online with M10; Multiplayer opens the network menu of M9 (host or join by address). Credits has no step yet.
 /// Skirmish opens its setup screen (step 7, no match start yet), Settings the settings screen (step 5), and Map Editor the
-/// map editor (M7 step 11).
+/// map editor (M7 step 11), Replays the list of replays (step 15).
 /// Test Sandbox is a temporary entry: it opens the debug scene <c>Main</c> with everything that is ready (M0 simulation,
 /// M1 camera and lighting) until a real match can be started from the skirmish screen. In it, Esc or the Menu button
 /// opens the pause menu, which returns to this menu.
@@ -23,7 +23,7 @@ public partial class MainMenu : Control
     private const int EntrySeparation = 12;
     private const float ExitSpacerHeight = 32f;
     private const string SkirmishSetupScene = "res://scenes/ui/SkirmishSetup.tscn";
-    private const string SettingsScene = "res://scenes/ui/Settings.tscn";
+    private const string SettingsScene = Settings.Scene;
     private const string SandboxScene = "res://scenes/Main.tscn";
     private const string QuickSkirmishScene = "res://scenes/debug/QuickSkirmish.tscn";
     private const string MapEditorScene = "res://scenes/editor/MapEditor.tscn";
@@ -49,7 +49,7 @@ public partial class MainMenu : Control
         AddEntry("UI_MAIN_MULTIPLAYER", OpenNetwork);
         AddEntry("UI_MAIN_ONLINE", null);
         AddEntry("UI_MAIN_MAP_EDITOR", OpenMapEditor);
-        AddEntry("UI_MAIN_REPLAYS", null);
+        AddEntry("UI_MAIN_REPLAYS", OpenReplays);
         AddEntry("UI_MAIN_SETTINGS", OpenSettings);
         AddEntry("UI_MAIN_CREDITS", null);
         _entries.AddChild(new Control { Name = "ExitSpacer", CustomMinimumSize = new Vector2(0f, ExitSpacerHeight) });
@@ -124,6 +124,12 @@ public partial class MainMenu : Control
     private void OpenNetwork()
     {
         SceneRouter.Instance?.GoTo(Net.NetMenu.Scene);
+    }
+
+    // The list of replays (M6 step 15).
+    private void OpenReplays()
+    {
+        SceneRouter.Instance?.GoTo(ReplaysScreen.Scene);
     }
 
     private void OpenSettings()

@@ -16,6 +16,8 @@ namespace Rts.Client.UI;
 /// </summary>
 public partial class Settings : Control
 {
+    public const string Scene = "res://scenes/ui/Settings.tscn";
+
     private const int GraphicsTab = 0;
     private const int AudioTab = 1;
     private const int ControlsTab = 2;
@@ -62,6 +64,15 @@ public partial class Settings : Control
 
     private static AppSettings Store =>
         AppSettings.Instance ?? throw new InvalidOperationException("AppSettings autoload is missing");
+
+    /// <summary>
+    /// Opened over a match from its menu (M6 step 15) rather than as a screen of its own: Back and Esc close it (<see cref="Closed"/>)
+    /// instead of going back a screen, and the key bindings — a screen of their own — are left to the main menu.
+    /// </summary>
+    public bool OverMatch { get; set; }
+
+    /// <summary>Back or Esc over a match: the menu of the match takes it away.</summary>
+    public event System.Action? Closed;
 
     public override void _Ready()
     {
@@ -132,6 +143,7 @@ public partial class Settings : Control
         if (@event.IsActionPressed("ui_cancel") && !_keepDialog.Visible)
         {
             OnBackPressed();
+            GetViewport().SetInputAsHandled();
         }
     }
 
@@ -229,6 +241,12 @@ public partial class Settings : Control
             CustomMinimumSize = new Vector2(ActionWidth, FieldHeight),
         };
         keys.Pressed += () => SceneRouter.Instance?.GoTo(KeyBindingsScene);
+        if (OverMatch)
+        {
+            keys.Disabled = true;
+            keys.TooltipText = Tr("UI_SETTINGS_KEYS_FROM_MENU");
+        }
+
         AddRow(rows, "UI_SETTINGS_KEY_BINDINGS", keys);
     }
 
@@ -450,6 +468,12 @@ public partial class Settings : Control
 
     private void OnBackPressed()
     {
+        if (OverMatch)
+        {
+            Closed?.Invoke();
+            return;
+        }
+
         SceneRouter.Instance?.Back();
     }
 

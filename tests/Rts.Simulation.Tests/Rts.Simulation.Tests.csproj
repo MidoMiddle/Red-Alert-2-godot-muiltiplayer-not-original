@@ -50,6 +50,7 @@
     <Compile Include="../../game/scripts/Matches/PlayerPalette.cs" Link="Client/PlayerPalette.cs" />
     <Compile Include="../../game/scripts/Matches/MatchSummary.cs" Link="Client/MatchSummary.cs" />
     <Compile Include="../../game/scripts/Matches/GameSpeeds.cs" Link="Client/GameSpeeds.cs" />
+    <Compile Include="../../game/scripts/Matches/ReplayListing.cs" Link="Client/ReplayListing.cs" />
     <Compile Include="../../game/scripts/Matches/PlaytestRecord.cs" Link="Client/PlaytestRecord.cs" />
     <Compile Include="../../game/scripts/Matches/PlaytestReport.cs" Link="Client/PlaytestReport.cs" />
     <Compile Include="../../game/scripts/App/ResolutionChange.cs" Link="Client/ResolutionChange.cs" />

@@ -646,3 +646,29 @@ UI_NET_BAD_RELAY,Write the address of the relay server and choose a map to open 
 UI_NET_ROOM,Room {0}: give this code to the others.
 UI_NET_ROOM_OPENING,Opening a room on the relay…
 UI_NET_RELAY_LOST,The relay server cannot be reached or closed the room.
+UI_REPLAYS_TITLE,Replays
+UI_REPLAYS_DATE,Date
+UI_REPLAYS_MAP,Map
+UI_REPLAYS_PLAYERS,Players
+UI_REPLAYS_LENGTH,Length
+UI_REPLAYS_VERSION,Rules
+UI_REPLAYS_OLD,(old)
+UI_REPLAYS_WATCH,Watch
+UI_REPLAYS_NONE,No replays yet: save one from the results of a match.
+UI_REPLAYS_SANDBOX,Sandbox
+UI_REPLAYS_FOLDER,The replays are files in {0}; delete them there.
+UI_REPLAY_WATCHING,Replay
+UI_REPLAY_PLAY,Play
+UI_REPLAY_PAUSE,Pause
+UI_REPLAY_VIEW_ALL,Whole map
+UI_REPLAY_VIEW_PLAYER,Player {0}
+UI_REPLAY_VIEW_BOT,Bot {0}
+UI_REPLAY_VIEW_HINT,Whose eyes to watch with: their fog and their sidebar.
+UI_REPLAY_FINISHED_OK,Finished: the checksums match.
+UI_REPLAY_FINISHED_BAD,Finished: the checksums differ.
+UI_REPLAY_EXIT,Exit
+UI_REPLAY_SPEED,{0}×
+UI_REPLAY_TIME,{0} / {1}
+UI_PAUSE_RESTART,Restart
+UI_PAUSE_RESTART_TEXT,Start this match over? It begins again from the start.
+UI_SETTINGS_KEYS_FROM_MENU,The keys are changed from the main menu.

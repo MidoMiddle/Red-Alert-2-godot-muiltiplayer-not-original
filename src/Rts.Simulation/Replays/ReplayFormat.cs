@@ -166,6 +166,26 @@ public static class ReplayFormat
         return buffer;
     }
 
+    /// <summary>
+    /// The fixed header of a replay of any format version (M6 step 15): enough for a list of replays to tell the length and whether this
+    /// build plays it, without reading the rest — which only the current format can. The rules version has stood after the format
+    /// version from the start; the rest of the header as it is since v10, so an older file tells no length (−1).
+    /// </summary>
+    public static ReplayHeader ReadHeader(ReadOnlySpan<byte> source)
+    {
+        Require(source, HeaderSize);
+        if (!source[..4].SequenceEqual(Magic))
+        {
+            throw new InvalidDataException("Not a replay file: wrong magic bytes.");
+        }
+
+        var format = BinaryPrimitives.ReadUInt16LittleEndian(source[4..]);
+        var simVersion = BinaryPrimitives.ReadUInt32LittleEndian(source[6..]);
+        return format < 10
+            ? new ReplayHeader(format, simVersion, 0, -1)
+            : new ReplayHeader(format, simVersion, BinaryPrimitives.ReadInt32LittleEndian(source[26..]), BinaryPrimitives.ReadInt32LittleEndian(source[46..]));
+    }
+
     public static Replay Read(ReadOnlySpan<byte> source)
     {
         Require(source, HeaderSize);

@@ -74,6 +74,12 @@ public partial class SimulationHost : Node
     /// </summary>
     public const string MatchArgument = "match";
 
+    /// <summary>The router argument of a replay to watch (M6 step 15): the path of its file; the scene plays it instead of a match.</summary>
+    public const string ReplayArgument = "replay";
+
+    /// <summary>The speeds of watching a replay, on top of the game speed it was played at (M6, 4.16).</summary>
+    public static readonly int[] PlaybackFactors = [1, 2, 4, 8];
+
     /// <summary>
     /// <c>--perf-battle</c>: the live session is the general battle of M4 (<see cref="BattleScenario"/>, both armies without their
     /// bases) on the land of the load map, instead of the map's own units.
@@ -175,8 +181,41 @@ public partial class SimulationHost : Node
     /// <summary>The game speed of RA2, 1–6, the clock runs at (M6 step 8).</summary>
     public int GameSpeed => _gameSpeed;
 
-    /// <summary>How much faster than 15 ticks a second the clock runs at <see cref="GameSpeed"/>.</summary>
-    public double SpeedMultiplier => Matches.GameSpeeds.Multiplier(_gameSpeed, SimulationSettings.DefaultTicksPerSecond);
+    /// <summary>How much faster than 15 ticks a second the clock runs at <see cref="GameSpeed"/> — and, watching a replay, its factor.</summary>
+    public double SpeedMultiplier =>
+        Matches.GameSpeeds.Multiplier(_gameSpeed, SimulationSettings.DefaultTicksPerSecond) * (IsPlayback ? PlaybackFactor : 1);
+
+    /// <summary>How many times faster a replay is watched than it was played: 1, 2, 4 or 8 (<see cref="PlaybackFactors"/>).</summary>
+    public int PlaybackFactor { get; set; } = 1;
+
+    /// <summary>Watching a replay: the whole map, or null while it is seen with the eyes of <see cref="LocalPlayer"/>.</summary>
+    public bool WatchingAll { get; private set; }
+
+    /// <summary>The replay being watched; null in a live session.</summary>
+    public Replay? Playback => _playback;
+
+    /// <summary>
+    /// Watching a replay, with the eyes of <paramref name="player"/> — its fog, its money and its queues on the sidebar — or of nobody:
+    /// the whole map (M6, 4.16). Nothing of the match changes.
+    /// </summary>
+    public void Watch(PlayerId? player)
+    {
+        if (!IsPlayback)
+        {
+            return;
+        }
+
+        WatchingAll = player is null;
+        if (player is { } watched)
+        {
+            LocalPlayer = watched;
+            Terrain.FogOfWar.Current?.Conceal();
+        }
+        else
+        {
+            Terrain.FogOfWar.Current?.Reveal();
+        }
+    }
 
     public int MeasuredTicksPerSecond { get; private set; }
 
@@ -233,6 +272,20 @@ public partial class SimulationHost : Node
         {
             GetTree().Quit(1);
             return;
+        }
+
+        // A replay chosen in the list of replays (M6 step 15) is watched in this scene; when it cannot be, the scene plays as usual.
+        if (RoutedReplay() is { } replayPath)
+        {
+            var (map, definition) = LoadMap(MapPath);
+            Look = definition is not null ? Climates.MapLook.FromDefinition(definition) : Climates.MapLook.FromLand(map.Grid);
+            StartPlayback(replayPath);
+            if (IsPlayback)
+            {
+                return;
+            }
+
+            GD.PrintErr($"[host] cannot watch {replayPath}: {ReplayStatus}");
         }
 
         StartLiveSession();
@@ -307,7 +360,11 @@ public partial class SimulationHost : Node
         }
     }
 
-    public void StartPlayback()
+    /// <summary>
+    /// Plays back the replay at <paramref name="path"/> — the last one saved when null (F9) — in this scene, without bots: their commands
+    /// are in it. A file this build cannot read or play leaves the session as it is and says why in <see cref="ReplayStatus"/>.
+    /// </summary>
+    public void StartPlayback(string? path = null)
     {
         if (_net is not null)
         {
@@ -315,18 +372,31 @@ public partial class SimulationHost : Node
         }
 
         QueueHistory.Clear();
-        if (LastReplayPath is null)
+        path ??= LastReplayPath;
+        if (path is null)
         {
             ReplayStatus = "no replay saved yet (F5)";
             return;
         }
 
-        var replay = ReplayFormat.Read(File.ReadAllBytes(ProjectSettings.GlobalizePath(LastReplayPath)));
+        Replay replay;
+        try
+        {
+            replay = ReplayFormat.Read(File.ReadAllBytes(ProjectSettings.GlobalizePath(path)));
+        }
+        catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)
+        {
+            ReplayStatus = $"cannot read the replay: {error.Message}";
+            return;
+        }
+
         if (replay.SimVersion != SimulationVersion.Current)
         {
             ReplayStatus = $"replay is for rules v{replay.SimVersion}, current v{SimulationVersion.Current}";
             return;
         }
+
+        LastReplayPath = path;
 
         // Without bots: their commands are in the replay (M5, 4.4).
         Simulation = ReplayPlayer.CreateSimulation(replay, Data.Rules);
@@ -343,6 +413,14 @@ public partial class SimulationHost : Node
         _nextPlaybackChecksum = 0;
         PlaybackVerified = false;
         ResetClock();
+        // Watched at the speed it was played, with the eyes of its first person (or player 1): the bar of the replay changes both.
+        _gameSpeed = replay.Settings.Match?.Options.GameSpeed ?? Matches.GameSpeeds.Normal;
+        PlaybackFactor = 1;
+        WatchingAll = false;
+        Terrain.FogOfWar.Current?.Conceal();
+        LocalPlayer = replay.Settings.Match?.Players.FirstOrDefault(player => player.Kind == PlayerKind.Human)?.Id
+                      ?? replay.Settings.Match?.Players.FirstOrDefault()?.Id ?? new PlayerId(1);
+        CallDeferred(MethodName.LookAtStart);
         _dataWarning = ReplayPlayer.DataWarning(replay, DataHash) is { } warning ? $"; {warning}" : "";
         ReplayStatus = $"playing {replay.TickCount} ticks, {replay.Checksums.Count} checksums to compare{_dataWarning}";
         GD.Print($"[host] playback of {LastReplayPath}");
@@ -751,6 +829,9 @@ public partial class SimulationHost : Node
         StartLiveSession();
     }
 
+    /// <summary>Whether the match can start over (the menu's Restart, M6 step 15): a match on one computer, not a replay.</summary>
+    public bool CanRestart => _match is not null && _net is null && _playback is null;
+
     /// <summary>Whether the person at the keyboard is in a match that goes on and has not lost it: then they may surrender (M5 step 10).</summary>
     public bool CanSurrender =>
         Simulation.World.Match?.PlayerOf(LocalPlayer) is not null && Simulation.World.Player(LocalPlayer).DefeatedTick is null
@@ -1076,17 +1157,21 @@ public partial class SimulationHost : Node
     /// <summary>A match opens with the camera over the start of the person at the keyboard.</summary>
     private void LookAtStart()
     {
-        if (_match?.PlayerOf(LocalPlayer) is { } player)
+        if ((_playback?.Settings.Match ?? _match)?.PlayerOf(LocalPlayer) is { } player)
         {
             GetNodeOrNull<RtsCamera>("../CameraRig")?.CenterOn(WorldCoords.ToGodotOnGround(player.Start.Center));
         }
 
-        if (_match is { } chosen)
+        if (_match is { } chosen && _playback is null)
         {
             // The speed of the skirmish screen, 1–6 as in RA2: 8 to 25 ticks a second.
             _gameSpeed = chosen.Options.GameSpeed;
         }
     }
+
+    /// <summary>The replay the scene router brought to watch, if any.</summary>
+    private static string? RoutedReplay() =>
+        SceneRouter.Instance?.Args.TryGetValue(ReplayArgument, out var routed) == true ? routed as string : null;
 
     /// <summary>The match setup the scene router brought, if any.</summary>
     private static MatchSetup? RoutedMatch() =>

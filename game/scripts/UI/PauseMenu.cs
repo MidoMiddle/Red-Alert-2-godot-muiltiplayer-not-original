@@ -11,8 +11,9 @@ namespace Rts.Client.UI;
 /// The match screen of RA2 (docs/menu/README.md, 3.4; docs/implementation/M6_menus_skirmish.md, 4.15; the owner's screenshots,
 /// 2026-10-25): the sidebar stays where it is with other contents — the emblem of the player's faction at its top, the buttons of
 /// the screen in its middle, Resume Mission at its bottom — and the field turns into the emblem of the faction. Esc or the Menu button
-/// opens the menu: Fullscreen, Surrender (asked first, for a player still in the match: <c>SurrenderCommand</c>, M5 step 10), Abort
-/// Mission (asked first: the match is left unsaved). Tab or the Stats button opens the statistics over the emblem: every player with
+/// opens the menu: Settings (the screen of settings over the match, M6 step 15), Fullscreen, Restart (asked first: the same match with
+/// a new seed — a match on one computer only), Surrender (asked first, for a player still in the match: <c>SurrenderCommand</c>, M5
+/// step 10), Abort Mission (asked first: the match is left unsaved). Tab or the Stats button opens the statistics over the emblem: every player with
 /// the flag of his country, whether he is your ally, his kills; the map and the options of the match. Either stops the game tree —
 /// the simulation, the camera and the player input stop with it; Resume Mission, Esc, or Tab on the statistics close it.
 /// </summary>
@@ -38,6 +39,9 @@ public partial class PauseMenu : CanvasLayer
     private Label _info = null!;
     private ConfirmationDialog _leaveDialog = null!;
     private ConfirmationDialog _surrenderDialog = null!;
+    private ConfirmationDialog _restartDialog = null!;
+    private Button _restart = null!;
+    private Settings? _settings;
     private SimulationHost? _host;
     private bool _open;
     private Screen _screen;
@@ -66,6 +70,7 @@ public partial class PauseMenu : CanvasLayer
         _overlay.Theme = _theme;
         _leaveDialog.Theme = _theme;
         _surrenderDialog.Theme = _theme;
+        _restartDialog.Theme = _theme;
     }
 
     /// <summary>Whether the screen is up, the menu or the statistics.</summary>
@@ -128,10 +133,15 @@ public partial class PauseMenu : CanvasLayer
         buttons.AddThemeConstantOverride("separation", 8);
         _menuButtons = buttons;
         column.AddChild(buttons);
+        var settings = new Button { Name = "SettingsButton", Text = Tr("UI_MAIN_SETTINGS"), ClipText = true };
+        settings.Pressed += OpenSettings;
+        buttons.AddChild(settings);
         _fullscreen = new Button { ClipText = true };
         _fullscreen.Pressed += ToggleFullscreen;
         buttons.AddChild(_fullscreen);
-        _surrender = new Button { Text = Tr("UI_PAUSE_SURRENDER"), ClipText = true };
+        _restart = new Button { Name = "RestartButton", Text = Tr("UI_PAUSE_RESTART"), ClipText = true };
+        buttons.AddChild(_restart);
+        _surrender = new Button { Name = "SurrenderButton", Text = Tr("UI_PAUSE_SURRENDER"), ClipText = true };
         buttons.AddChild(_surrender);
         var abort = new Button { Text = Tr("UI_MATCH_ABORT"), ClipText = true };
         buttons.AddChild(abort);
@@ -139,7 +149,7 @@ public partial class PauseMenu : CanvasLayer
         _resume = new Button { Text = Tr("UI_MATCH_RESUME"), CustomMinimumSize = new Vector2(0, 44), ClipText = true };
         _resume.Pressed += Close;
         column.AddChild(_resume);
-        foreach (var button in new[] { _fullscreen, _surrender, abort, _resume })
+        foreach (var button in new[] { settings, _fullscreen, _restart, _surrender, abort, _resume })
         {
             // The sidebar is narrow: the labels of RA2 in a smaller type.
             button.AddThemeFontSizeOverride("font_size", 17);
@@ -162,6 +172,15 @@ public partial class PauseMenu : CanvasLayer
         _surrenderDialog.Confirmed += Surrender;
         AddChild(_surrenderDialog);
         _surrender.Pressed += () => _surrenderDialog.PopupCentered();
+
+        _restartDialog = new ConfirmationDialog
+        {
+            Title = Tr("UI_PAUSE_RESTART"),
+            DialogText = Tr("UI_PAUSE_RESTART_TEXT"),
+        };
+        _restartDialog.Confirmed += Restart;
+        AddChild(_restartDialog);
+        _restart.Pressed += () => _restartDialog.PopupCentered();
         ApplyTheme();
     }
 
@@ -171,7 +190,7 @@ public partial class PauseMenu : CanvasLayer
     // Tab before the interface: a focused button would take it to move the focus.
     public override void _Input(InputEvent inputEvent)
     {
-        if (!_leaveDialog.Visible && !_surrenderDialog.Visible && inputEvent is InputEventKey { Pressed: true, Echo: false, Keycode: Key.Tab })
+        if (!_leaveDialog.Visible && !_surrenderDialog.Visible && !_restartDialog.Visible && _settings is null && inputEvent is InputEventKey { Pressed: true, Echo: false, Keycode: Key.Tab })
         {
             ToggleStats();
             GetViewport().SetInputAsHandled();
@@ -180,8 +199,8 @@ public partial class PauseMenu : CanvasLayer
 
     public override void _UnhandledInput(InputEvent inputEvent)
     {
-        // While a dialog is up, its keys belong to it.
-        if (_leaveDialog.Visible || _surrenderDialog.Visible)
+        // While a dialog or the settings are up, their keys belong to them.
+        if (_leaveDialog.Visible || _surrenderDialog.Visible || _restartDialog.Visible || _settings is not null)
         {
             return;
         }
@@ -220,6 +239,7 @@ public partial class PauseMenu : CanvasLayer
         _stats.Visible = screen == Screen.Stats;
         _field.Dim = screen == Screen.Stats;
         _surrender.Visible = _host?.CanSurrender == true;
+        _restart.Visible = _host?.CanRestart == true;
         _fullscreen.Text = Tr(DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen ? "UI_MATCH_WINDOWED" : "UI_MATCH_FULLSCREEN");
         if (screen == Screen.Stats)
         {
@@ -236,8 +256,39 @@ public partial class PauseMenu : CanvasLayer
         _resume.GrabFocus();
     }
 
+    // The settings over the match, the menu under them; Back or Esc there brings the menu back.
+    private void OpenSettings()
+    {
+        if (_settings is not null)
+        {
+            return;
+        }
+
+        _settings = GD.Load<PackedScene>(Settings.Scene).Instantiate<Settings>();
+        _settings.OverMatch = true;
+        _settings.ProcessMode = Node.ProcessModeEnum.Always;
+        _settings.Closed += CloseSettings;
+        _overlay!.AddChild(_settings);
+        _settings.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+    }
+
+    private void CloseSettings()
+    {
+        _settings?.QueueFree();
+        _settings = null;
+        _resume.GrabFocus();
+    }
+
+    // The same match with a new seed, on the spot (as Play Again of the results).
+    private void Restart()
+    {
+        Close();
+        _host?.PlayAgain();
+    }
+
     private void Close()
     {
+        CloseSettings();
         _open = false;
         _overlay!.Hide();
         GetTree().Paused = false;
@@ -397,8 +448,9 @@ public partial class PauseMenu : CanvasLayer
         // Unpause first: the router's fade runs on a tween, and a paused tree would hold it.
         tree.Paused = false;
 
-        // A match started by «Play» in the map editor goes back to the editor (M7 step 12).
-        if (SceneRouter.Instance?.Args.ContainsKey(Rts.Client.Editor.MapEditorScene.FromEditorArgument) == true)
+        // A match started by «Play» in the map editor goes back to the editor (M7 step 12), a replay to the list of replays (M6 step 15).
+        if (SceneRouter.Instance?.Args.ContainsKey(Rts.Client.Editor.MapEditorScene.FromEditorArgument) == true
+            || SceneRouter.Instance?.Args.ContainsKey(SimulationHost.ReplayArgument) == true)
         {
             SceneRouter.Instance.Back();
             return;
