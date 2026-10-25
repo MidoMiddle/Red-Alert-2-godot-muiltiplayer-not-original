@@ -123,14 +123,14 @@ public static class SidebarModel
     [
         // Buildings (Q).
         "alliance_power_plant", "alliance_ore_refinery", "alliance_barracks", "alliance_war_factory", "alliance_air_force_command",
-        "alliance_naval_shipyard", "alliance_service_depot", "alliance_battle_lab", "alliance_ore_purifier", "alliance_spy_satellite_uplink",
+        "alliance_naval_shipyard", "alliance_service_depot", "alliance_battle_lab", "alliance_ore_purifier",
         "alliance_chronosphere", "alliance_weather_control_device",
         "reactor", "refinery", "barracks", "war_factory", "radar", "naval_shipyard", "service_depot", "tech_center", "nuclear_reactor",
         "cloning_vats", "iron_curtain", "nuclear_missile_silo",
 
         // Defenses (W).
         "alliance_wall", "alliance_pillbox", "alliance_patriot_missile_system", "alliance_prism_tower", "alliance_gap_generator",
-        "alliance_grand_cannon",
+        "alliance_spy_satellite_uplink", "alliance_grand_cannon",
         "wall", "sentry_bunker", "flak_cannon", "tesla_coil", "psychic_sensor",
 
         // Infantry (E).

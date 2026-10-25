@@ -52,11 +52,12 @@ public sealed class SidebarOrderTests
         var world = World();
         Assert.Equal(
             ["alliance_power_plant", "alliance_ore_refinery", "alliance_barracks", "alliance_war_factory", "alliance_air_force_command",
-             "alliance_naval_shipyard", "alliance_service_depot", "alliance_battle_lab", "alliance_ore_purifier", "alliance_spy_satellite_uplink",
+             "alliance_naval_shipyard", "alliance_service_depot", "alliance_battle_lab", "alliance_ore_purifier",
              "alliance_chronosphere", "alliance_weather_control_device"],
             Tab(world, Allied, BuildGroup.Buildings));
         Assert.Equal(
-            ["alliance_wall", "alliance_pillbox", "alliance_patriot_missile_system", "alliance_prism_tower", "alliance_gap_generator", "alliance_grand_cannon"],
+            ["alliance_wall", "alliance_pillbox", "alliance_patriot_missile_system", "alliance_prism_tower", "alliance_gap_generator",
+             "alliance_spy_satellite_uplink", "alliance_grand_cannon"],
             Tab(world, Allied, BuildGroup.Defense));
         Assert.Equal(
             ["alliance_attack_dog", "alliance_rifleman", "alliance_engineer", "alliance_rocketeer", "alliance_spy", "alliance_sniper", "alliance_tanya",
