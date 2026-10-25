@@ -196,7 +196,7 @@ public sealed class GameRules
         var percent = new int[LandSpeeds.LandCount, LandSpeeds.LocomotorCount];
         var slope = new int[LandSpeeds.LocomotorCount];
         var buildable = new bool[LandSpeeds.LandCount];
-        for (var land = LandType.Clear; land <= LandType.Ice; land++)
+        for (var land = LandType.Clear; land <= LandType.Path; land++)
         {
             database.TryGetTerrain(LandSpeeds.IdOf(land), out var terrain);
             buildable[(int)land - 1] = terrain.Buildable;
@@ -206,7 +206,7 @@ public sealed class GameRules
         {
             database.TryGetLocomotor(LandSpeeds.IdOf(locomotor), out var definition);
             slope[(int)locomotor - 1] = PercentOf(definition.Slope);
-            for (var land = LandType.Clear; land <= LandType.Ice; land++)
+            for (var land = LandType.Clear; land <= LandType.Path; land++)
             {
                 database.TryGetTerrain(LandSpeeds.IdOf(land), out var terrain);
                 percent[(int)land - 1, (int)locomotor - 1] = PercentOf(SpeedOn(terrain, LandSpeeds.IdOf(locomotor)));
@@ -289,7 +289,7 @@ public sealed class GameRules
             }
         }
 
-        for (var land = LandType.Clear; land <= LandType.Ice; land++)
+        for (var land = LandType.Clear; land <= LandType.Path; land++)
         {
             var id = LandSpeeds.IdOf(land);
             if (!database.TryGetTerrain(id, out var terrain))

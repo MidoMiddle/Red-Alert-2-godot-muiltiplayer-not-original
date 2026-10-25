@@ -58,12 +58,14 @@ public sealed class MapDefinition
         ImmutableArray<BridgePlacement> bridges,
         ImmutableArray<StructurePlacement> structures,
         string lighting = MapLighting.Default,
-        MapArea? playable = null)
+        MapArea? playable = null,
+        string origin = MapOrigin.Default)
     {
         Require(MapNames.IsId(id), $"id '{id}' must be lowercase letters, digits, '-' or '_'");
         Require(MapNames.IsText(name) && MapNames.IsText(author) && MapNames.IsText(description), "name, author and description are single lines");
         Require(width is >= MinSize and <= MaxSize && height is >= MinSize and <= MaxSize, $"size {width}x{height} is outside {MinSize}…{MaxSize}");
         Require(MapNames.IsId(climate), $"climate '{climate}' must be lowercase letters, digits, '-' or '_'");
+        Require(MapOrigin.IsKnown(origin), $"origin '{origin}' is none of {string.Join(", ", MapOrigin.Ids)}");
         Require(MapLighting.IsKnown(lighting), $"lighting '{lighting}' is none of {string.Join(", ", MapLighting.Ids)}");
         Require(players is >= 1 and <= PlayerId.MaxPlayers, $"players {players} is outside 1…{PlayerId.MaxPlayers}");
         Require(heights.Length == (width + 1) * (height + 1) && heights.All(h => h <= MaxHeight), "heights must be (W+1)×(H+1) levels 0…14");
@@ -81,6 +83,7 @@ public sealed class MapDefinition
         Height = height;
         Climate = climate;
         Lighting = lighting;
+        Origin = origin;
         Playable = playable;
         Players = players;
         Starts = starts.Sort((a, b) => a.Slot.CompareTo(b.Slot));
@@ -120,6 +123,9 @@ public sealed class MapDefinition
 
     /// <summary>The time of day, one of <see cref="MapLighting.Ids"/>: visual only.</summary>
     public string Lighting { get; }
+
+    /// <summary>Where the map comes from, one of <see cref="MapOrigin.Ids"/>: for the menus only.</summary>
+    public string Origin { get; }
 
     /// <summary>The playable area, or null when every cell plays (<see cref="MapArea"/>).</summary>
     public MapArea? Playable { get; }
@@ -248,7 +254,7 @@ public sealed class MapDefinition
     /// <summary>Same content field by field (the canonical text of equal maps is equal too).</summary>
     public bool ContentEquals(MapDefinition other) =>
         Id == other.Id && Name == other.Name && Author == other.Author && Description == other.Description
-        && Width == other.Width && Height == other.Height && Climate == other.Climate && Lighting == other.Lighting && Playable == other.Playable && Players == other.Players
+        && Width == other.Width && Height == other.Height && Climate == other.Climate && Lighting == other.Lighting && Origin == other.Origin && Playable == other.Playable && Players == other.Players
         && Starts.SequenceEqual(other.Starts) && TextureLegend.SequenceEqual(other.TextureLegend)
         && Heights.SequenceEqual(other.Heights) && Land.SequenceEqual(other.Land) && Texture.SequenceEqual(other.Texture)
         && Ore.SequenceEqual(other.Ore) && Objects.SequenceEqual(other.Objects) && Bridges.SequenceEqual(other.Bridges)

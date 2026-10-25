@@ -219,6 +219,7 @@ alliance_harrier:  # one volley, only when ordered, then back to the air force c
   threat: 25
   armor: light
   speed: 84
+  turn_rate: 1229
   sight: 8
   turret: false
   locomotor: hover
@@ -241,6 +242,7 @@ alliance_black_eagle:  # the Strike Jet's heavier sister: one volley, then back 
   threat: 30
   armor: light
   speed: 84
+  turn_rate: 1229
   sight: 8
   turret: false
   locomotor: hover
@@ -281,6 +283,7 @@ alliance_dolphin:  # under the water, a sonic wave at ships and what is under th
   threat: 15
   armor: light
   speed: 48
+  turn_rate: 2458
   sight: 4
   turret: false
   locomotor: naval
@@ -323,6 +326,7 @@ alliance_aegis_cruiser:  # missiles at the air only, rockets in flight too (stag
   threat: 20
   armor: light
   speed: 24
+  turn_rate: 410
   sight: 8
   turret: false
   locomotor: naval
@@ -340,6 +344,7 @@ alliance_aircraft_carrier:  # launches its three Hornets at 25 cells when ordere
   hp: 800
   threat: 45
   speed: 24
+  turn_rate: 410
   sight: 7
   turret: false
   locomotor: naval
@@ -350,17 +355,17 @@ alliance_aircraft_carrier:  # launches its three Hornets at 25 cells when ordere
   spawn_count: 3
   spawn_regen: 27s
 
-alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); YR Robot Tank: 600 credits, no veterancy; the other numbers are ours (no open source has them)
+alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); YR ROBO: 600 credits, HP 180, heavy, speed 10, no veterancy
   kind: unit
   inherits: base_vehicle
   name: Robot Tank
   faction: alliance
   cost: 600
   build_time: 25.2s
-  hp: 200
+  hp: 180
   threat: 20
-  armor: light
-  speed: 42
+  armor: heavy
+  speed: 60
   sight: 6
   locomotor: hover
   prerequisites: [alliance_war_factory, alliance_robot_control_center]
@@ -375,12 +380,13 @@ alliance_hornet:  # the aircraft carrier's jet: launched, never built; five bomb
   crusher: false
   name: Hornet
   faction: alliance
-  cost: 100
+  cost: 50
   build_time: 1s
   hp: 75
   threat: 10
   armor: light
-  speed: 84
+  speed: 72
+  turn_rate: 1229
   sight: 6
   turret: false
   locomotor: hover
@@ -390,7 +396,7 @@ alliance_hornet:  # the aircraft carrier's jet: launched, never built; five bomb
   spawned: true
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
-paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never built; flies over the target, drops, leaves; RA2 PDPLANE, the numbers are ours
+paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never built; flies over the target, drops, leaves; RA2 PDPLANE: HP 400, light, speed 15, ROT 2; cost and sight are ours
   kind: unit
   inherits: base_vehicle
   category: aircraft
@@ -399,10 +405,11 @@ paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never bu
   faction: alliance
   cost: 100
   build_time: 1s
-  hp: 300
+  hp: 400
   threat: 1
   armor: light
   speed: 90
+  turn_rate: 819
   sight: 4
   turret: false
   locomotor: hover
@@ -410,19 +417,19 @@ paradrop_plane:  # the plane of a paradrop (loose ends, stage 1): sent, never bu
   spawned: true
   trainable: false  # RA2 Trainable=no (loose ends, stage 3)
 
-alliance_osprey:  # the destroyer's anti-submarine plane, RA2 ASW: launched, never built; 5 charges, then back aboard; HP 135, light
+alliance_osprey:  # the destroyer's anti-submarine plane, RA2 ASW: launched, never built; 5 charges, then back aboard; HP 30, light, speed 12
   kind: unit
   inherits: base_vehicle
   category: aircraft
   crusher: false
   name: Osprey
   faction: alliance
-  cost: 100
+  cost: 50
   build_time: 1s
-  hp: 135
+  hp: 30
   threat: 10
   armor: light
-  speed: 70
+  speed: 72
   sight: 6
   turret: false
   locomotor: hover

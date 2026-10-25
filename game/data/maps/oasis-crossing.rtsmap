@@ -3,6 +3,7 @@ id: oasis-crossing
 name: "Oasis Crossing"
 author: "Map generator"
 description: "Generated from seed 2202: 2 players, Rotate180, Hilly, water Lakes, forest Low, resources Medium, drills OreAndGems."
+origin: generated
 size: [136, 136]
 playable: { left: -68, top: 68, right: 68, bottom: 204 }
 climate: desert

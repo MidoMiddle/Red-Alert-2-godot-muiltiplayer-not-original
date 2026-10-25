@@ -144,8 +144,9 @@ public sealed class VehicleWeaponsTests
 
         Run(simulation, 60, () => first.Hp < first.MaxHp);
 
-        Assert.Equal(100, first.MaxHp - first.Hp);
-        Assert.Equal(30, near.MaxHp - near.Hp);
+        // RA2 CometWH: heavy armor takes half, of the beam (100) and of a splinter (30).
+        Assert.Equal(50, first.MaxHp - first.Hp);
+        Assert.Equal(15, near.MaxHp - near.Hp);
         Assert.Equal(far.MaxHp, far.Hp);
     }
 

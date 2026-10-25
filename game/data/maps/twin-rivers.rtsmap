@@ -3,6 +3,7 @@ id: twin-rivers
 name: "Twin Rivers"
 author: "Ready maps (M7)"
 description: "Two rivers and four bridges; the plateau between them watches every crossing."
+origin: ready
 size: [96, 96]
 climate: winter
 lighting: day

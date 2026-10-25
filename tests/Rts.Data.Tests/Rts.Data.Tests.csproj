@@ -58,6 +58,7 @@
     <Compile Include="../../game/scripts/Terrain/BuildingLooks.cs" Link="Client/Terrain/BuildingLooks.cs" />
     <Compile Include="../../game/scripts/Terrain/PropLooks.cs" Link="Client/Terrain/PropLooks.cs" />
     <Compile Include="../../game/scripts/Models/ModelTable.cs" Link="Client/Models/ModelTable.cs" />
+    <Compile Include="../../game/scripts/Models/BuildingStates.cs" Link="Client/Models/BuildingStates.cs" />
   </ItemGroup>
 
   <!-- The climate looks and the ground materials of the client (docs/implementation/M7_maps.md, 4.12): pure, without Godot. -->

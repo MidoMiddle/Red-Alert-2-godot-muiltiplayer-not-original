@@ -13,11 +13,11 @@ namespace Rts.Simulation.Map;
 public sealed class LandSpeeds
 {
     public const int LocomotorCount = 6;
-    public const int LandCount = 8;
+    public const int LandCount = 10;
 
     // The ids of the data files, in enum order.
     private static readonly string[] LocomotorIds = ["foot", "track", "wheel", "amphibious", "naval", "hover"];
-    private static readonly string[] LandIds = ["clear", "rough", "road", "beach", "shallow", "deep", "rock", "ice"];
+    private static readonly string[] LandIds = ["clear", "rough", "road", "beach", "shallow", "deep", "rock", "ice", "unpaved", "path"];
 
     private readonly byte[] _percent;
     private readonly byte[] _slopePercent;
@@ -79,11 +79,13 @@ public sealed class LandSpeeds
             { 0, 0, 0, 100, 100, 100 },       // Deep
             { 0, 0, 0, 0, 0, 0 },             // Rock
             { 80, 90, 90, 100, 0, 100 },      // Ice
+            { 100, 100, 110, 100, 0, 100 },   // Track: gravel, dirt and packed-snow roads; wheels only
+            { 100, 100, 100, 100, 0, 100 },   // Path: footpaths and trails; the foot bonus waits for its own version step
         },
         // Foot 80 %, track 75 %, wheel 65 %; amphibious and hover as wheels; ships never meet a slope (water is flat).
         [80, 75, 65, 65, 100, 65]);
 
-    public static bool IsKnown(LandType land) => land >= LandType.Clear && land <= LandType.Ice;
+    public static bool IsKnown(LandType land) => land >= LandType.Clear && land <= LandType.Path;
 
     public static bool IsKnown(Locomotor locomotor) => locomotor >= Locomotor.Foot && locomotor <= Locomotor.Hover;
 
@@ -169,7 +171,7 @@ public sealed class LandSpeeds
         {
             var straight = int.MaxValue;
             var diagonal = int.MaxValue;
-            for (var land = LandType.Clear; land <= LandType.Ice; land++)
+            for (var land = LandType.Clear; land <= LandType.Path; land++)
             {
                 var cost = StepCost(locomotor, land, diagonal: false);
                 if (cost > 0)

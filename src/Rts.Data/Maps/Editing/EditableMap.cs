@@ -53,6 +53,7 @@ public sealed class EditableMap
         Height = map.Height;
         Climate = map.Climate;
         Lighting = map.Lighting;
+        Origin = map.Origin;
         Playable = map.Playable;
         Players = map.Players;
         _starts = [.. map.Starts];
@@ -82,6 +83,9 @@ public sealed class EditableMap
 
     /// <summary>The time of day, one of <see cref="MapLighting.Ids"/>; checked by <see cref="ToDefinition"/>.</summary>
     public string Lighting { get; set; }
+
+    /// <summary>Where the map comes from (<see cref="MapOrigin"/>); a map saved in the editor becomes the player's own.</summary>
+    public string Origin { get; set; }
 
     /// <summary>The playable area (<see cref="MapArea"/>), or null when the whole map plays.</summary>
     public MapArea? Playable { get; }
@@ -136,7 +140,7 @@ public sealed class EditableMap
     /// <summary>The map as a checked definition; throws <see cref="ArgumentException"/> when a field does not fit the format.</summary>
     public MapDefinition ToDefinition() => new(
         Id, Name, Author, Description, Width, Height, Climate, Players, [.. _starts], [.. _legend],
-        [.. _heights], [.. _land], [.. _texture], [.. _ore], [.. _objects], [.. _bridges], [.. _structures], Lighting, Playable);
+        [.. _heights], [.. _land], [.. _texture], [.. _ore], [.. _objects], [.. _bridges], [.. _structures], Lighting, Playable, Origin);
 
     /// <summary>The lists as they are now.</summary>
     public MapLists Lists() => new([.. _objects], [.. _bridges], [.. _structures], [.. _starts]);

@@ -336,7 +336,7 @@ public sealed class MapEditSession
 
     private void PaintLand(List<CellPos> cells, LandType land)
     {
-        var code = (byte)Map.CodeFor(TestMapConverter.MaterialOf(land));
+        var code = (byte)Map.CodeFor(ClimateGrounds.MaterialOf(Map.Climate, land));
         foreach (var under in cells)
         {
             Set(EditLayer.Land, Map.CellIndex(under), (byte)land);

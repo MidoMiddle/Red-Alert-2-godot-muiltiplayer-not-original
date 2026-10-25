@@ -1,11 +1,11 @@
 """Oil pumpjack, tech_oil_derrick (docs/map_elements/12_tech_buildings): the silo tank, the engine, the beam on its stand.
 
-Footprint 2x2 cells, origin at the centre of the footprint on the ground. A concrete slab; a silo tank with a cone top, a ladder and
-a ring of the owner's colour; the engine with a pipe to the tank; a control shed; the A-frame stand and the beam. The beam is its own
-node "beam" with its pivot at its axis of rotation, so the game can nod it. "team_mask" is the ring on the tank.
-One GLB per state:
+Footprint 2x2 cells, origin at the centre of the footprint on the ground. A concrete slab (the base node, docs/art/model_standards.md,
+3.1); a silo tank with a cone top, a ladder and a ring of the owner's colour; the engine with a pipe to the tank; a control shed; the
+A-frame stand and the beam. The beam is its own node "beam" with its pivot at its axis of rotation, so the game can nod it.
+"team_mask" is the ring on the tank. One GLB per state:
     tech_oil_derrick            intact, working: the beam nods
-    tech_oil_derrick_damaged    almost destroyed: the tank tilted, the ladder torn off, the beam dropped, fire on the tank, the
+    tech_oil_derrick_abandoned  critically damaged: the tank tilted, the ladder torn off, the beam dropped, fire on the tank, the
                                 engine and the head of the beam (nodes fire_1..3)
     tech_oil_derrick_ruins      destroyed: the tank fallen on the slab, the beam on the ground, the rubble
 Texture 1024: a 2x2 structure (docs/map_elements/12_tech_buildings/prompts.md).
@@ -32,14 +32,14 @@ TANK_TOP = 1.7  # the cylinder of the silo; its cone goes on to 2.05
 
 VARIANTS = {
     "tech_oil_derrick": "intact",
-    "tech_oil_derrick_damaged": "damaged",
+    "tech_oil_derrick_abandoned": "abandoned",
     "tech_oil_derrick_ruins": "ruins",
 }
 
-# The flames of the damaged derrick: the top of the tank, the engine, the head of the beam.
+# The flames of the abandoned derrick: the top of the tank, the engine, the head of the beam.
 FIRE_POINTS = ((-0.55, 0.25, 2.0), (0.6, -0.4, 0.65), (0.95, 0.1, 1.42))
 
-# The rubble on the slab, round the ruins and the damaged one: x, y of its corner, its side, its height.
+# The rubble on the slab, round the ruins and the abandoned one: x, y of its corner, its side, its height.
 RUBBLE = (
     (-0.2, -0.8, 0.3, 0.2),
     (0.3, -0.7, 0.25, 0.18),
@@ -50,6 +50,11 @@ RUBBLE = (
 )
 
 
+def _slab(bm):
+    """The concrete slab the pumpjack stands on: the base node, 0.12 high."""
+    rc.add_box(bm, (-0.95, -0.95, 0.0), (0.95, 0.95, 0.12))
+
+
 def _tank(bm, variant):
     cx, cy = TANK
     if variant == "ruins":
@@ -58,7 +63,7 @@ def _tank(bm, variant):
         bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=14, radius1=TANK_R, radius2=TANK_R,
                               depth=1.2, matrix=matrix)
         return
-    tilt = Matrix.Rotation(0.09, 4, 'X') if variant == "damaged" else Matrix.Identity(4)
+    tilt = Matrix.Rotation(0.09, 4, 'X') if variant == "abandoned" else Matrix.Identity(4)
     height = TANK_TOP - 0.12
     bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=14, radius1=TANK_R, radius2=TANK_R,
                           depth=height, matrix=Matrix.Translation((cx, cy, 0.12 + height / 2)) @ tilt)
@@ -78,7 +83,6 @@ def _ladder(bm):
 
 def _body(bm, variant):
     cx, cy = TANK
-    rc.add_box(bm, (-0.95, -0.95, 0.0), (0.95, 0.95, 0.12))  # the concrete slab
     _tank(bm, variant)
     if variant == "ruins":
         rc.add_box(bm, (0.35, -0.65, 0.12), (0.85, -0.15, 0.32))  # the engine block, its lower part
@@ -106,14 +110,14 @@ def _beam(bm, variant):
     rc.add_box(bm, (-0.25, -0.06, -0.06), (0.75, 0.06, 0.06))  # the beam
     rc.add_box(bm, (-0.42, -0.1, -0.22), (-0.22, 0.1, 0.1))  # the counterweight
     rc.add_box(bm, (0.7, -0.09, -0.12), (0.82, 0.09, 0.12))  # the head, on the pump rod
-    if variant == "damaged":
+    if variant == "abandoned":
         # The head drops: the beam is broken and hangs down.
         bmesh.ops.transform(bm, matrix=Matrix.Rotation(0.5, 4, 'Y'), verts=list(bm.verts))
 
 
 def _team(bm, variant):
     cx, cy = TANK
-    tilt = Matrix.Rotation(0.09, 4, 'X') if variant == "damaged" else Matrix.Identity(4)
+    tilt = Matrix.Rotation(0.09, 4, 'X') if variant == "abandoned" else Matrix.Identity(4)
     # A ring round the silo, a little wider than it: the game paints it in the owner's colour.
     bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=14, radius1=TANK_R + 0.012,
                           radius2=TANK_R + 0.012, depth=0.16, matrix=Matrix.Translation((cx, cy, 1.5)) @ tilt)
@@ -124,16 +128,24 @@ def _finish(bm):
 
 
 def _material(mat_name, variant):
-    """Painted steel with rust blotches; the damaged one has cracks, the ruins are sooty at the foot."""
+    """Painted steel with rust blotches and the concrete slab; the abandoned one has cracks, the ruins are sooty at the foot."""
     mat = rc.new_material(mat_name)
     g = rc.Graph(mat)
     ao = g.ao(0.25)
-    z = g.axis(g.object_coord(), 'Z')
+    coord = g.object_coord()
+    x = g.axis(coord, 'X')
+    y = g.axis(coord, 'Y')
+    z = g.axis(coord, 'Z')
     grain = g.noise(14.0, 4.0)
     steel = g.mix(grain, (0.40, 0.43, 0.46), (0.52, 0.55, 0.58))
     rust = g.clamp01(g.math('MULTIPLY_ADD', g.noise(7.0, 2.0), 5.0, -2.6))
     base = g.mix(rust, steel, (0.45, 0.25, 0.13))
-    if variant == "damaged":
+    # The concrete slab (the base node): the foot of the pumpjack, up to 0.12 high and inside 0.97 of the centre.
+    outside = g.math('MAXIMUM', g.math('ABSOLUTE', x), g.math('ABSOLUTE', y))
+    slab = g.math('MULTIPLY', g.clamp01(g.math('MULTIPLY_ADD', z, -60.0, 7.2)),
+                  g.clamp01(g.math('MULTIPLY_ADD', outside, -60.0, 58.2)))
+    base = g.mix(slab, base, g.mix(grain, (0.46, 0.45, 0.42), (0.55, 0.54, 0.51)))
+    if variant == "abandoned":
         crack = g.clamp01(g.math('MULTIPLY_ADD', g.math('ABSOLUTE', g.math('SUBTRACT', grain, 0.5)), -100.0, 1.0))
         base = g.mix(crack, base, (0.10, 0.09, 0.08))
     if variant == "ruins":
@@ -152,8 +164,14 @@ def build(variant_id):
     _body(bm_body, variant)
     _finish(bm_body)
     body = rc.make_object("derrick_body", bm_body)
-    objs = [body]
-    if variant != "ruins":
+    bm_base = bmesh.new()
+    _slab(bm_base)
+    _finish(bm_base)
+    base = rc.make_object("derrick_base", bm_base)
+    if variant == "ruins":
+        objs = [body, base]
+        ranges = [(body, 0.0, 0.8), (base, 0.8, 1.0)]
+    else:
         bm_beam = bmesh.new()
         _beam(bm_beam, variant)
         _finish(bm_beam)
@@ -163,10 +181,8 @@ def build(variant_id):
         _team(bm_team, variant)
         _finish(bm_team)
         team = rc.make_object("derrick_team", bm_team)
-        objs += [beam, team]
-    ranges = [(body, 0.0, 0.85)]
-    if variant != "ruins":
-        ranges += [(objs[1], 0.85, 0.95), (objs[2], 0.95, 1.0)]
+        objs = [body, beam, team, base]
+        ranges = [(body, 0.0, 0.8), (beam, 0.8, 0.87), (team, 0.87, 0.93), (base, 0.93, 1.0)]
     for obj, lo, hi in ranges:
         rc.uv_smart(obj)
         rc.place_uv(obj, lo, hi)
@@ -177,18 +193,19 @@ def build(variant_id):
 
 
 def run(variant_id):
-    """Builds, bakes, saves the .blend, exports the GLB with the nodes body, beam and team_mask (fire_1..3 when damaged)."""
+    """Builds, bakes, saves the .blend, exports the GLB with the nodes body, beam, team_mask and base (fire_1..3 when abandoned)."""
     objs, mat, graph = build(variant_id)
     variant = VARIANTS[variant_id]
-    nodes = rc.fire_nodes(FIRE_POINTS) if variant == "damaged" else []
-    names = ["body"] if variant == "ruins" else ["body", "beam", "team_mask"]
+    nodes = rc.fire_nodes(FIRE_POINTS) if variant == "abandoned" else []
+    rc.arrange(objs + nodes, variant_id)
+    names = ["body", "base"] if variant == "ruins" else ["body", "beam", "team_mask", "base"]
     base = os.path.join(rc.SRC_ROOT, "map", variant_id)
     report = [f"{variant_id}: triangles {sum(rc.tri_count(o) for o in objs)}, "
               f"size {tuple(round(v, 3) for v in objs[0].dimensions)}"]
     imgs = rc.bake_material(objs, graph, SIZE, variant_id, os.path.join(base, "bake"))
     rc.wire_final(mat, imgs)
     glb = os.path.join(rc.GLB_ROOT, "map", variant_id, variant_id + ".glb")
-    with rc.node_names(objs, names):
+    with rc.node_names(objs + nodes, names + rc.fire_names(nodes)):
         rc.save_blend(objs + nodes, mat, imgs, os.path.join(base, variant_id + ".blend"))
         rc.export_glb(objs + nodes, glb)
     report.append(rc.glb_report(glb))

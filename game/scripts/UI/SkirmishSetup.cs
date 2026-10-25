@@ -7,6 +7,7 @@ using Rts.Client.App;
 using Rts.Client.Hud;
 using Rts.Client.Maps;
 using Rts.Client.Matches;
+using Rts.Data.Maps;
 using Rts.Simulation.Matches;
 
 namespace Rts.Client.UI;
@@ -102,6 +103,7 @@ public partial class SkirmishSetup : Control
     private ItemList _mapList = null!;
     private readonly List<MapEntry> _listed = [];
     private OptionButton _filter = null!;
+    private OptionButton _originFilter = null!;
     private LineEdit _search = null!;
     private bool _byPlayers;
     private Control _listBox = null!;
@@ -605,6 +607,10 @@ public partial class SkirmishSetup : Control
         _filter = Option("MapFilter", FieldWidth, Tr("UI_MAP_FILTER_ALL"), Tr("UI_MAP_FILTER_TWO"), Tr("UI_MAP_FILTER_FOUR"), Tr("UI_MAP_FILTER_MORE"));
         _filter.ItemSelected += _ => FillMapList();
         header.AddChild(_filter);
+        // Where the maps come from: those of RA2, the hand-made, the generated…, so it is plain which are kept.
+        _originFilter = Option("MapOriginFilter", FieldWidth, [Tr("UI_MAP_ORIGIN_ALL"), .. MapOrigin.Ids.Select(id => Tr(MapCatalog.OriginKey(id)))]);
+        _originFilter.ItemSelected += _ => FillMapList();
+        header.AddChild(_originFilter);
         _listBox.AddChild(header);
         _mapList = new ItemList { Name = "MapList", CustomMinimumSize = new Vector2(520f, 480f), SizeFlagsVertical = SizeFlags.ExpandFill };
         _mapList.ItemSelected += index => Browse(_listed[(int)index]);
@@ -667,7 +673,8 @@ public partial class SkirmishSetup : Control
     {
         var (min, max) = PlayerFilters[Math.Max(0, _filter.Selected)];
         var search = _search.Text.Trim();
-        var shown = _maps
+        var origin = _originFilter.Selected > 0 ? MapOrigin.Ids[_originFilter.Selected - 1] : null;
+        var shown = MapCatalog.OfOrigin(_maps, origin)
             .Where(entry => entry.Map.Players >= min && entry.Map.Players <= max)
             .Where(entry => search.Length == 0 || entry.Map.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
         shown = _byPlayers ? shown.OrderBy(entry => entry.Map.Players).ThenBy(entry => entry.Map.Name, StringComparer.OrdinalIgnoreCase)
@@ -677,7 +684,8 @@ public partial class SkirmishSetup : Control
         _mapList.Clear();
         foreach (var entry in _listed)
         {
-            var index = _mapList.AddItem(string.Format(CultureInfo.InvariantCulture, Tr("UI_MAP_LIST_ITEM"), entry.Map.Name, entry.Map.Players));
+            var index = _mapList.AddItem(string.Format(CultureInfo.InvariantCulture, Tr("UI_MAP_LIST_ITEM_ORIGIN"), entry.Map.Name, entry.Map.Players,
+                Tr(MapCatalog.OriginKey(entry.Map.Origin))));
             if (ReferenceEquals(entry, _browsed))
             {
                 _mapList.Select(index);

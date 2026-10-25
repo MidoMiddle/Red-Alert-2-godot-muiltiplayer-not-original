@@ -62,7 +62,7 @@ public static class UnitAltitude
     public static bool CanLand(GameWorld world, CellPos cell, EntityId self)
     {
         var map = world.Map;
-        if (!map.Contains(cell) || map.LandAt(cell) is not (LandType.Clear or LandType.Rough or LandType.Road or LandType.Beach)
+        if (!map.Contains(cell) || map.LandAt(cell) is not (LandType.Clear or LandType.Rough or LandType.Road or LandType.Beach or LandType.Track or LandType.Path)
             || map.BridgeAt(cell) is not null || world.BuildingAt(cell) is not null)
         {
             return false;

@@ -24,6 +24,8 @@ public sealed record ClimateGround(
     string Rock,
     string Water,
     string Ice,
+    string Track,
+    string Path,
     ImmutableArray<TextureEntry> Legend)
 {
     /// <summary>The material of a role, in the order of <see cref="ClimateGrounds.Roles"/>.</summary>
@@ -38,14 +40,17 @@ public sealed record ClimateGround(
         6 => Shore,
         7 => Rock,
         8 => Water,
-        _ => Ice,
+        9 => Ice,
+        10 => Track,
+        11 => Path,
+        _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown role."),
     };
 }
 
 public static class ClimateGrounds
 {
     /// <summary>The number of roles of a ground (<see cref="ClimateGround.Of"/>).</summary>
-    internal const int Roles = 10;
+    internal const int Roles = 12;
 
     public const string Winter = "winter";
     public const string Temperate = "temperate";
@@ -58,25 +63,31 @@ public static class ClimateGrounds
 
     private static readonly Dictionary<string, ClimateGround> Grounds = new(StringComparer.Ordinal)
     {
-        [Winter] = new(Winter, "snow", "dirt", "grass", "dirt", "asphalt", "asphalt", "shore", "rock", "water", "ice", TestMapConverter.Legend),
-        [Temperate] = new(Temperate, "grass", "dirt", "field", "dirt", "asphalt", "asphalt", "shore", "rock", "water", "water",
+        [Winter] = new(Winter, "snow", "dirt", "grass", "dirt", "asphalt", "asphalt", "shore", "rock", "water", "ice", "track", "path",
+        [
+            .. TestMapConverter.Legend,
+            new('t', "path"), new('u', "track"),
+        ]),
+        [Temperate] = new(Temperate, "grass", "dirt", "field", "dirt", "asphalt", "asphalt", "shore", "rock", "water", "water", "track", "path",
         [
             new('a', "asphalt"), new('b', "shore"), new('d', "dirt"), new('f', "field"), new('g', "grass"), new('k', "rock"), new('w', "water"),
+            new('t', "path"), new('u', "track"),
         ]),
-        [Urban] = new(Urban, "grass", "dirt", "pavers", "dirt", "asphalt", "slabs", "shore", "rock", "water", "water",
+        [Urban] = new(Urban, "grass", "dirt", "pavers", "dirt", "asphalt", "slabs", "shore", "rock", "water", "water", "track", "path",
         [
             new('a', "asphalt"), new('b', "shore"), new('d', "dirt"), new('g', "grass"), new('k', "rock"), new('l', "slabs"), new('p', "pavers"),
-            new('w', "water"),
+            new('w', "water"), new('t', "path"), new('u', "track"),
         ]),
-        [Desert] = new(Desert, "sand", "clay", "gravel", "gravel", "asphalt", "asphalt", "shore", "rock", "water", "water",
+        [Desert] = new(Desert, "sand", "clay", "gravel", "gravel", "asphalt", "asphalt", "shore", "rock", "water", "water", "track", "path",
         [
             new('a', "asphalt"), new('b', "shore"), new('c', "clay"), new('k', "rock"), new('n', "sand"), new('v', "gravel"), new('w', "water"),
+            new('t', "path"), new('u', "track"),
         ]),
         // Dry seaside grass with patches of sand and of greener meadow, pebbles for rough land, wet sand at the water.
-        [Coast] = new(Coast, "grass", "sand", "meadow", "pebbles", "asphalt", "asphalt", "shore", "rock", "water", "water",
+        [Coast] = new(Coast, "grass", "sand", "meadow", "pebbles", "asphalt", "asphalt", "shore", "rock", "water", "water", "track", "path",
         [
             new('a', "asphalt"), new('b', "shore"), new('g', "grass"), new('k', "rock"), new('m', "meadow"), new('n', "sand"), new('v', "pebbles"),
-            new('w', "water"),
+            new('w', "water"), new('t', "path"), new('u', "track"),
         ]),
     };
 
@@ -97,6 +108,8 @@ public static class ClimateGrounds
             LandType.Shallow or LandType.Deep => ground.Water,
             LandType.Rock => ground.Rock,
             LandType.Ice => ground.Ice,
+            LandType.Track => ground.Track,
+            LandType.Path => ground.Path,
             _ => ground.Plain,
         };
     }

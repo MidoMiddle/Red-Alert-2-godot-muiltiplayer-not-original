@@ -28,7 +28,7 @@ public sealed class ModelTableTests
         foreach (var (key, entry) in table)
         {
             Assert.All(entry.Files, file => Assert.True(File.Exists(Path.Combine(Root, "assets", "models", file)), $"{key}: no file {file}"));
-            Assert.All(new[] { entry.Damaged, entry.Occupied, entry.Ruins }.OfType<string>(),
+            Assert.All(new[] { entry.Damaged, entry.DamagedOccupied, entry.Occupied, entry.Abandoned, entry.Ruins }.OfType<string>(),
                 file => Assert.True(File.Exists(Path.Combine(Root, "assets", "models", file)), $"{key}: no file {file}"));
             var id = key[(key.IndexOf('/') + 1)..];
             var known = key[..key.IndexOf('/')] switch
@@ -68,14 +68,16 @@ public sealed class ModelTableTests
         var house = ModelTable.Read("""
             format: models/1
             models:
-              building/neutral_house_a: { file: map/house.glb, height: 2.5, damaged: map/house_damaged.glb, occupied: map/house_occupied.glb, ruins: map/house_ruins.glb }
+              building/neutral_house_a: { file: map/house.glb, height: 2.5, damaged: map/house_damaged.glb, damaged_occupied: map/house_damaged_occupied.glb, occupied: map/house_occupied.glb, abandoned: map/house_abandoned.glb, ruins: map/house_ruins.glb }
             """)["building/neutral_house_a"];
-        Assert.Equal(("map/house.glb", "map/house_damaged.glb", "map/house_occupied.glb", "map/house_ruins.glb"),
-            (house.File, house.Damaged, house.Occupied, house.Ruins));
+        Assert.Equal(("map/house.glb", "map/house_damaged.glb", "map/house_damaged_occupied.glb", "map/house_occupied.glb", "map/house_abandoned.glb", "map/house_ruins.glb"),
+            (house.File, house.Damaged, house.DamagedOccupied, house.Occupied, house.Abandoned, house.Ruins));
 
         var shed = ModelTable.Read("format: models/1\nmodels:\n  building/neutral_shed: { file: map/shed.glb }\n")["building/neutral_shed"];
         Assert.Null(shed.Damaged);
+        Assert.Null(shed.DamagedOccupied);
         Assert.Null(shed.Occupied);
+        Assert.Null(shed.Abandoned);
         Assert.Null(shed.Ruins);
     }
 
@@ -130,6 +132,8 @@ public sealed class ModelTableTests
     [InlineData("format: models/1\nmodels:\n  unit/heavy_tank: { file: a/b.fbx }\n", "is not a .glb path")]
     [InlineData("format: models/1\nmodels:\n  unit/heavy_tank: { file: ../b.glb }\n", "is not a .glb path")]
     [InlineData("format: models/1\nmodels:\n  building/neutral_house_a: { file: a/b.glb, damaged: a/b.fbx }\n", "is not a .glb path")]
+    [InlineData("format: models/1\nmodels:\n  building/neutral_house_a: { file: a/b.glb, damaged_occupied: a/b.fbx }\n", "is not a .glb path")]
+    [InlineData("format: models/1\nmodels:\n  building/neutral_house_a: { file: a/b.glb, abandoned: a/b.fbx }\n", "is not a .glb path")]
     [InlineData("format: models/1\nmodels:\n  building/neutral_house_a: { file: a/b.glb, ruins: a/b.obj }\n", "is not a .glb path")]
     [InlineData("format: models/1\nmodels:\n  unit/heavy_tank: { file: a/b.glb, size: 2 }\n", "unknown key 'size'")]
     [InlineData("format: models/1\nmodels:\n  unit/heavy_tank: { file: a/b.glb, scale: 0 }\n", "scale must be")]

@@ -3,6 +3,7 @@ id: resort-bay
 name: "Resort Bay"
 author: "Map generator"
 description: "Generated from seed 351: 2 players, Mirror, Hilly, water Sea 20%, forest Medium, resources Medium, drills OreAndGems."
+origin: generated
 size: [136, 136]
 playable: { left: -68, top: 68, right: 68, bottom: 204 }
 climate: coast

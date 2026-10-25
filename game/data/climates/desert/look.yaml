@@ -10,6 +10,8 @@ materials:
   shore:   { albedo: sand_beach.png, tiling: 5, roughness: 0.9 }
   rock:    { albedo: rock_red.png, tiling: 4, roughness: 0.9 }
   water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.2, tint: "#3f8c9c", water: true }
+  track: { albedo: sand_gravel.png, tiling: 4, roughness: 0.9, tint: "#b8a48a" }
+  path:  { albedo: clay_cracked.png, tiling: 4, roughness: 0.9, tint: "#d9b98e" }
 cliff: rock
 trees: desert
 water_normal: water_normal.png

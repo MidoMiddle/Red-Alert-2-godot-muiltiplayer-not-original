@@ -122,8 +122,10 @@ internal static class TestRules
             [0, 0, 0, 100, 100, 100],       // Deep
             [0, 0, 0, 0, 0, 0],             // Rock
             [80, 90, 90, 100, 0, 100],      // Ice
+            [100, 100, 110, 100, 0, 100],   // Track
+            [100, 100, 100, 100, 0, 100],   // Path
         ];
-        for (var land = LandType.Clear; land <= LandType.Ice; land++)
+        for (var land = LandType.Clear; land <= LandType.Path; land++)
         {
             var row = ImmutableArray.CreateBuilder<LocomotorSpeed>(LandSpeeds.LocomotorCount);
             for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
@@ -136,7 +138,7 @@ internal static class TestRules
                 Id = LandSpeeds.IdOf(land),
                 Name = LandSpeeds.IdOf(land),
                 Code = TestMapParser.CodeOf(land),
-                Buildable = land is LandType.Clear or LandType.Rough or LandType.Road or LandType.Beach,
+                Buildable = land is LandType.Clear or LandType.Rough or LandType.Road or LandType.Beach or LandType.Track or LandType.Path,
                 Speed = row.MoveToImmutable().Sort((a, b) => string.CompareOrdinal(a.Locomotor, b.Locomotor)),
             });
         }
@@ -368,7 +370,7 @@ internal static class TestRules
     private static int BuildingSight(string id) => id switch
     {
         "construction_yard" or "tesla_coil" => 8,
-        "barracks" or "tech_center" => 6,
+        "barracks" or "tech_center" or "refinery" => 6,
         "radar" => 10,
         "wall" => 1,
         "sentry_bunker" => 7,
@@ -401,11 +403,11 @@ internal static class TestRules
         }
 
         Warhead(builder, "small_arms", [100, 80, 80, 50, 25, 25, 75, 50, 25, 100, 100], "normal");
-        Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 100, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true, bridges: true);
-        Warhead(builder, "electric", [100, 100, 100, 85, 100, 100, 50, 50, 50, 100, 100], "electro");
+        Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 60, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true, bridges: true);
+        Warhead(builder, "electric", [100, 100, 100, 85, 100, 100, 50, 50, 50, 200, 100], "electro");
         Warhead(builder, "flak_ground", [150, 100, 50, 60, 10, 10, 30, 10, 10, 100, 100], "explode", spread: Fixed.One, atMax: 25);
         Warhead(builder, "flak_air", [100, 100, 100, 100, 20, 20, 0, 0, 0, 100, 100], "", spread: Fixed.One, atMax: 10, affectsAir: true);
-        Warhead(builder, "light_mg", [100, 80, 70, 50, 20, 20, 20, 10, 10, 100, 100], "normal");
+        Warhead(builder, "light_mg", [100, 80, 70, 50, 20, 20, 20, 10, 10, 400, 100], "normal");
         Warhead(builder, "missile", [25, 25, 25, 75, 100, 100, 50, 50, 25, 100, 100], "explode", spread: Tenths(3), atMax: 50);
 
         builder.Add(new ProjectileDef { Id = "bullet", Name = "bullet", Motion = ProjectileMotion.Instant });

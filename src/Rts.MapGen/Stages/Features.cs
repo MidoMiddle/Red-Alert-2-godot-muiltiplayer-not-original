@@ -156,7 +156,7 @@ internal static class Features
             for (var dx = -reach; dx <= reach; dx++)
             {
                 var near = new CellPos(cell.X + dx, cell.Y + dy);
-                if (map.Contains(near) && map.LandAt(near) == LandType.Road)
+                if (map.Contains(near) && GenMap.IsRoad(map.LandAt(near)))
                 {
                     return true;
                 }
@@ -317,7 +317,7 @@ internal static class Features
             for (var dx = -1; dx <= 1; dx++)
             {
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (map.Contains(next) && map.LandAt(next) == LandType.Road)
+                if (map.Contains(next) && GenMap.IsRoad(map.LandAt(next)))
                 {
                     return true;
                 }

@@ -84,7 +84,7 @@ public static class BridgeHuts
         return new MapDefinition(
             map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts,
             map.TextureLegend, map.Heights, map.Land, map.Texture, map.Ore, map.Objects, map.Bridges, [.. map.Structures, .. huts],
-            map.Lighting, map.Playable);
+            map.Lighting, map.Playable, map.Origin);
     }
 
     // Whether the cell is within the reach of a hut from the bridge.

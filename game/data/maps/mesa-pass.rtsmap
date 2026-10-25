@@ -3,6 +3,7 @@ id: mesa-pass
 name: "Mesa Pass"
 author: "Map generator"
 description: "Generated from seed 2203: 4 players, Rotate90, Mountainous, water None, forest Low, resources Medium, drills OreAndGems."
+origin: generated
 size: [182, 182]
 playable: { left: -91, top: 91, right: 91, bottom: 273 }
 climate: desert

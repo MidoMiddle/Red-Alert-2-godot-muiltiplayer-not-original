@@ -1,7 +1,7 @@
 // Every land type of M2 (docs/implementation/M7_maps.md, 4.3) and trees, 24 x 12.
-// Codes: . clear  , rough  = road  b beach  ~ shallow  W deep  # rock  i ice  T tree
+// Codes: . clear  g unpaved road  p footpath  , rough  = road  b beach  ~ shallow  W deep  # rock  i ice  T tree
 // Bands from left to right, a road across, a forest and a frozen lake.
-. . . , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
+g p . , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
 . . . , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
 . T T , , , = = b b ~ ~ W W ~ ~ b b # # i i . .
 . T T , , , = = b b ~ ~ W W ~ ~ b b # # i i . .

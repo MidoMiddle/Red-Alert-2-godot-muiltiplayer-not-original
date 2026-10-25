@@ -3,6 +3,7 @@ id: polar-circle
 name: "Polar Circle"
 author: "Map generator"
 description: "Generated from seed 1010: 4 players, Rotate90, Hilly, water Rivers, forest Low, resources Medium, drills OreAndGems."
+origin: generated
 size: [182, 182]
 playable: { left: -91, top: 91, right: 91, bottom: 273 }
 climate: winter

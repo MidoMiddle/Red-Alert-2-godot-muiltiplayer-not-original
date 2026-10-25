@@ -1,278 +1,554 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="992" height="2256" viewBox="0 0 992 2256">
-<rect x="0" y="0" width="992" height="2256" fill="#F4F3EF"/>
-<text x="16" y="34" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="bold" fill="#15171B">Палитра стайлгайда: черновик 2026-10-25</text>
-<text x="16" y="56" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#5A5F66">Значения из кода (тема, PlayerPalette, OrderMarkers, FX-константы, look.yaml). ⚠ — расхождение кода и документов. Источник правды: 01_colour.md.</text>
-<text x="16" y="96" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Интерфейс: токены</text>
-<rect x="16" y="108" width="150" height="56" rx="4" fill="#2A2D33" stroke="#6E747D" stroke-width="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="992" height="4344" viewBox="0 0 992 4344">
+<rect x="0" y="0" width="992" height="4344" fill="#F4F3EF"/>
+<text x="16" y="34" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="bold" fill="#15171B">Палитра стайлгайда, вариант A (наш дизайн)</text>
+<text x="16" y="56" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#5A5F66">Все HEX в верхней части — наш выбор по описаниям RA2 и нашим принципам. Нижняя часть — значения из кода: не RA2, не утверждены. Источник: 01_colour.md.</text>
+<text x="16" y="96" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Интерфейс: токены (наш выбор)</text>
+<rect x="16" y="108" width="150" height="56" rx="4" fill="#24282E" stroke="#6E747D" stroke-width="1"/>
 <text x="16" y="179" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">panel</text>
-<text x="16" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2A2D33</text>
-<rect x="178" y="108" width="150" height="56" rx="4" fill="#6E747D" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#24282E</text>
+<rect x="178" y="108" width="150" height="56" rx="4" fill="#6F7782" stroke="#6E747D" stroke-width="1"/>
 <text x="178" y="179" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">frame</text>
-<text x="178" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#6E747D</text>
-<rect x="340" y="108" width="150" height="56" rx="4" fill="#EAE6D8" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#6F7782</text>
+<rect x="340" y="108" width="150" height="56" rx="4" fill="#EFEAD8" stroke="#6E747D" stroke-width="1"/>
 <text x="340" y="179" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">text</text>
-<text x="340" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#EAE6D8</text>
-<rect x="502" y="108" width="150" height="56" rx="4" fill="#9CA3AD" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#EFEAD8</text>
+<rect x="502" y="108" width="150" height="56" rx="4" fill="#A9B0BA" stroke="#6E747D" stroke-width="1"/>
 <text x="502" y="179" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">text_dim</text>
-<text x="502" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9CA3AD</text>
-<rect x="664" y="108" width="150" height="56" rx="4" fill="#7D838C" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#A9B0BA</text>
+<rect x="664" y="108" width="150" height="56" rx="4" fill="#7A818C" stroke="#6E747D" stroke-width="1"/>
 <text x="664" y="179" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">disabled_text</text>
-<text x="664" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7D838C</text>
-<rect x="826" y="108" width="150" height="56" rx="4" fill="#8E1416" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="179" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">button</text>
-<text x="826" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8E1416</text>
-<rect x="16" y="204" width="150" height="56" rx="4" fill="#B3121C" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">button_hover</text>
-<text x="16" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B3121C</text>
-<rect x="178" y="204" width="150" height="56" rx="4" fill="#5E0C10" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">button_pressed</text>
-<text x="178" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5E0C10</text>
-<rect x="340" y="204" width="150" height="56" rx="4" fill="#3A0608" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">button_border</text>
-<text x="340" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3A0608</text>
-<rect x="502" y="204" width="150" height="56" rx="4" fill="#F4C843" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">button_text</text>
-<text x="502" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F4C843</text>
-<rect x="664" y="204" width="150" height="56" rx="4" fill="#FFE68C" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">button_text_hover</text>
-<text x="664" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFE68C</text>
-<rect x="826" y="204" width="150" height="56" rx="4" fill="#F4C843" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">focus</text>
-<text x="826" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F4C843</text>
-<rect x="16" y="300" width="150" height="56" rx="4" fill="#E3A21A" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="371" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">warning</text>
-<text x="16" y="386" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E3A21A</text>
-<text x="16" y="426" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Фракции</text>
-<rect x="16" y="438" width="150" height="56" rx="4" fill="#B3121C" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Союз: акцент</text>
-<text x="16" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B3121C</text>
-<rect x="178" y="438" width="150" height="56" rx="4" fill="#2A62C8" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: акцент (сайдбар) ⚠</text>
-<text x="178" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2A62C8</text>
-<rect x="340" y="438" width="150" height="56" rx="4" fill="#2152B8" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: кнопка</text>
-<text x="340" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2152B8</text>
-<rect x="502" y="438" width="150" height="56" rx="4" fill="#3873E6" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: наведение</text>
-<text x="502" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3873E6</text>
-<rect x="664" y="438" width="150" height="56" rx="4" fill="#1A2133" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: панель</text>
-<text x="664" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1A2133</text>
-<rect x="826" y="438" width="150" height="56" rx="4" fill="#738FB8" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: сталь</text>
-<text x="826" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#738FB8</text>
-<rect x="16" y="534" width="150" height="56" rx="4" fill="#7D838C" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="605" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Культ: акцент, сейчас</text>
-<text x="16" y="620" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7D838C</text>
-<rect x="178" y="534" width="150" height="56" rx="4" fill="#7B2CBF" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="605" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Культ: акцент (предл.)</text>
-<text x="178" y="620" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7B2CBF</text>
-<rect x="340" y="534" width="150" height="56" rx="4" fill="#4B1A6E" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="605" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Культ: кнопка (предл.)</text>
-<text x="340" y="620" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4B1A6E</text>
-<rect x="502" y="534" width="150" height="56" rx="4" fill="#9CFF2E" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="605" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Культ: свечение (предл.)</text>
-<text x="502" y="620" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9CFF2E</text>
-<text x="16" y="660" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Цвета команд</text>
-<rect x="16" y="672" width="150" height="56" rx="4" fill="#3373F2" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">1 синий</text>
-<text x="16" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3373F2</text>
-<rect x="178" y="672" width="150" height="56" rx="4" fill="#E64033" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">2 красный</text>
-<text x="178" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E64033</text>
-<rect x="340" y="672" width="150" height="56" rx="4" fill="#40BF4D" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">3 зелёный</text>
-<text x="340" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#40BF4D</text>
-<rect x="502" y="672" width="150" height="56" rx="4" fill="#F2D933" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">4 жёлтый</text>
-<text x="502" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F2D933</text>
-<rect x="664" y="672" width="150" height="56" rx="4" fill="#F28C26" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">5 оранжевый</text>
-<text x="664" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F28C26</text>
-<rect x="826" y="672" width="150" height="56" rx="4" fill="#994DD9" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">6 фиолетовый</text>
-<text x="826" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#994DD9</text>
-<rect x="16" y="768" width="150" height="56" rx="4" fill="#33BFBF" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="839" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">7 бирюзовый</text>
-<text x="16" y="854" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#33BFBF</text>
-<rect x="178" y="768" width="150" height="56" rx="4" fill="#F273B3" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="839" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">8 розовый</text>
-<text x="178" y="854" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F273B3</text>
-<rect x="340" y="768" width="150" height="56" rx="4" fill="#999999" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="839" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нейтральный</text>
-<text x="340" y="854" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#999999</text>
-<text x="16" y="894" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Климаты: небо (день) и глубокая вода</text>
-<rect x="16" y="906" width="150" height="56" rx="4" fill="#8F9EB3" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: зима</text>
-<text x="16" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8F9EB3</text>
-<rect x="178" y="906" width="150" height="56" rx="4" fill="#9DB4CC" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: умеренный</text>
-<text x="178" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9DB4CC</text>
-<rect x="340" y="906" width="150" height="56" rx="4" fill="#C9B896" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: пустыня</text>
-<text x="340" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C9B896</text>
-<rect x="502" y="906" width="150" height="56" rx="4" fill="#A0A8B4" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: город</text>
-<text x="502" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#A0A8B4</text>
-<rect x="664" y="906" width="150" height="56" rx="4" fill="#8FC0E0" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: побережье</text>
-<text x="664" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8FC0E0</text>
-<rect x="826" y="906" width="150" height="56" rx="4" fill="#1A3D8F" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: зима</text>
-<text x="826" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1A3D8F</text>
-<rect x="16" y="1002" width="150" height="56" rx="4" fill="#173F66" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1073" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: умеренный</text>
-<text x="16" y="1088" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#173F66</text>
-<rect x="178" y="1002" width="150" height="56" rx="4" fill="#14485A" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1073" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: пустыня</text>
-<text x="178" y="1088" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#14485A</text>
-<rect x="340" y="1002" width="150" height="56" rx="4" fill="#1A3A52" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1073" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: город</text>
-<text x="340" y="1088" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1A3A52</text>
-<rect x="502" y="1002" width="150" height="56" rx="4" fill="#0F4F7A" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1073" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: побережье</text>
-<text x="502" y="1088" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#0F4F7A</text>
-<text x="16" y="1128" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Игровые сигналы</text>
-<rect x="16" y="1140" width="150" height="56" rx="4" fill="#59FF59" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1211" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">приказ движения</text>
-<text x="16" y="1226" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#59FF59</text>
-<rect x="178" y="1140" width="150" height="56" rx="4" fill="#FF4026" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1211" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">атака: внешнее</text>
-<text x="178" y="1226" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF4026</text>
-<rect x="340" y="1140" width="150" height="56" rx="4" fill="#FFD91A" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1211" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">атака: ядро</text>
-<text x="340" y="1226" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFD91A</text>
-<rect x="502" y="1140" width="150" height="56" rx="4" fill="#FF3326" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1211" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">запрещено</text>
-<text x="502" y="1226" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF3326</text>
-<rect x="664" y="1140" width="150" height="56" rx="4" fill="#66FF66" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="1211" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">рамка выделения</text>
-<text x="664" y="1226" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#66FF66</text>
-<rect x="826" y="1140" width="150" height="56" rx="4" fill="#F2CC26" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="1211" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">руда</text>
-<text x="826" y="1226" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F2CC26</text>
-<rect x="16" y="1236" width="150" height="56" rx="4" fill="#59CCFF" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1307" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">самоцветы</text>
-<text x="16" y="1322" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#59CCFF</text>
-<rect x="178" y="1236" width="150" height="56" rx="4" fill="#33B340" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1307" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">союзник</text>
-<text x="178" y="1322" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#33B340</text>
-<rect x="340" y="1236" width="150" height="56" rx="4" fill="#731414" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1307" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">враг</text>
-<text x="340" y="1322" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#731414</text>
-<rect x="502" y="1236" width="150" height="56" rx="4" fill="#4DF259" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1307" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ремонт</text>
-<text x="502" y="1322" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4DF259</text>
-<rect x="664" y="1236" width="150" height="56" rx="4" fill="#33D940" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="1307" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">здоровье: норма</text>
-<text x="664" y="1322" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#33D940</text>
-<rect x="826" y="1236" width="150" height="56" rx="4" fill="#F2CC26" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="1307" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">здоровье: 1/4–1/2 ⚠</text>
-<text x="826" y="1322" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F2CC26</text>
-<rect x="16" y="1332" width="150" height="56" rx="4" fill="#E63326" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1403" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">здоровье: мало</text>
-<text x="16" y="1418" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E63326</text>
-<rect x="178" y="1332" width="150" height="56" rx="4" fill="#4FB04A" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1403" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия: норма</text>
-<text x="178" y="1418" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4FB04A</text>
-<rect x="340" y="1332" width="150" height="56" rx="4" fill="#E3B23C" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1403" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия: мало</text>
-<text x="340" y="1418" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E3B23C</text>
-<rect x="502" y="1332" width="150" height="56" rx="4" fill="#D2342B" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1403" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия: нехватка</text>
-<text x="502" y="1418" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#D2342B</text>
-<rect x="664" y="1332" width="150" height="56" rx="4" fill="#40E64D" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="1403" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">можно строить</text>
-<text x="664" y="1418" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#40E64D</text>
-<rect x="826" y="1332" width="150" height="56" rx="4" fill="#F23326" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="1403" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нельзя строить</text>
-<text x="826" y="1418" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F23326</text>
-<rect x="16" y="1428" width="150" height="56" rx="4" fill="#8C8C8C" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1499" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нет денег</text>
-<text x="16" y="1514" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8C8C8C</text>
-<text x="16" y="1554" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Эффекты</text>
-<rect x="16" y="1566" width="150" height="56" rx="4" fill="#8CCCFF" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1637" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">тесла: зигзаг</text>
-<text x="16" y="1652" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8CCCFF</text>
-<rect x="178" y="1566" width="150" height="56" rx="4" fill="#73D9FF" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1637" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">тесла: катушка</text>
-<text x="178" y="1652" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#73D9FF</text>
-<rect x="340" y="1566" width="150" height="56" rx="4" fill="#E6F2FF" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1637" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">шторм: молния</text>
-<text x="340" y="1652" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E6F2FF</text>
-<rect x="502" y="1566" width="150" height="56" rx="4" fill="#CCE6FF" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1637" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">шторм: вспышка</text>
-<text x="502" y="1652" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#CCE6FF</text>
-<rect x="664" y="1566" width="150" height="56" rx="4" fill="#FFF299" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="1637" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">выстрел: вспышка</text>
-<text x="664" y="1652" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFF299</text>
-<rect x="826" y="1566" width="150" height="56" rx="4" fill="#FFE64D" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="1637" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">выстрел: трассер</text>
-<text x="826" y="1652" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFE64D</text>
-<rect x="16" y="1662" width="150" height="56" rx="4" fill="#E6F2FF" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1733" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">призма ⚠</text>
-<text x="16" y="1748" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E6F2FF</text>
-<rect x="178" y="1662" width="150" height="56" rx="4" fill="#73FF4D" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1733" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ядовитый луч</text>
-<text x="178" y="1748" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#73FF4D</text>
-<rect x="340" y="1662" width="150" height="56" rx="4" fill="#66FF33" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1733" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">радиация</text>
-<text x="340" y="1748" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#66FF33</text>
-<rect x="502" y="1662" width="150" height="56" rx="4" fill="#B3E6FF" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1733" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">хроно-луч</text>
-<text x="502" y="1748" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B3E6FF</text>
-<rect x="664" y="1662" width="150" height="56" rx="4" fill="#4DB3FF" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="1733" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">звуковой удар</text>
-<text x="664" y="1748" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4DB3FF</text>
-<rect x="826" y="1662" width="150" height="56" rx="4" fill="#73BFFF" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="1733" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">электро</text>
-<text x="826" y="1748" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#73BFFF</text>
-<rect x="16" y="1758" width="150" height="56" rx="4" fill="#FF8019" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1829" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">огонь: выстрелы</text>
-<text x="16" y="1844" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF8019</text>
-<rect x="178" y="1758" width="150" height="56" rx="4" fill="#FF731A" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1829" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">огонь: здания</text>
-<text x="178" y="1844" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF731A</text>
-<rect x="340" y="1758" width="150" height="56" rx="4" fill="#404040" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1829" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">дым</text>
-<text x="340" y="1844" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#404040</text>
-<rect x="502" y="1758" width="150" height="56" rx="4" fill="#B3A894" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1829" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">пыль</text>
-<text x="502" y="1844" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B3A894</text>
-<rect x="664" y="1758" width="150" height="56" rx="4" fill="#1A1510" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="1829" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">копоть</text>
-<text x="664" y="1844" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1A1510</text>
-<text x="16" y="1884" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Иконки производства: цвет роли ⚠</text>
-<rect x="16" y="1896" width="150" height="56" rx="4" fill="#3FA34D" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="1967" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">пехота</text>
-<text x="16" y="1982" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3FA34D</text>
-<rect x="178" y="1896" width="150" height="56" rx="4" fill="#3B7DD8" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="1967" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">техника</text>
-<text x="178" y="1982" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3B7DD8</text>
-<rect x="340" y="1896" width="150" height="56" rx="4" fill="#2BB3B3" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="1967" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">флот</text>
-<text x="340" y="1982" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2BB3B3</text>
-<rect x="502" y="1896" width="150" height="56" rx="4" fill="#9B59D0" stroke="#6E747D" stroke-width="1"/>
-<text x="502" y="1967" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">авиация</text>
-<text x="502" y="1982" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9B59D0</text>
-<rect x="664" y="1896" width="150" height="56" rx="4" fill="#E0B020" stroke="#6E747D" stroke-width="1"/>
-<text x="664" y="1967" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия</text>
-<text x="664" y="1982" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E0B020</text>
-<rect x="826" y="1896" width="150" height="56" rx="4" fill="#E07A1F" stroke="#6E747D" stroke-width="1"/>
-<text x="826" y="1967" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">производство</text>
-<text x="826" y="1982" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E07A1F</text>
-<rect x="16" y="1992" width="150" height="56" rx="4" fill="#C8352E" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="2063" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">оборона</text>
-<text x="16" y="2078" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C8352E</text>
-<rect x="178" y="1992" width="150" height="56" rx="4" fill="#D63AAF" stroke="#6E747D" stroke-width="1"/>
-<text x="178" y="2063" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">супероружие</text>
-<text x="178" y="2078" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#D63AAF</text>
-<rect x="340" y="1992" width="150" height="56" rx="4" fill="#7A7F87" stroke="#6E747D" stroke-width="1"/>
-<text x="340" y="2063" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">стена</text>
-<text x="340" y="2078" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7A7F87</text>
-<text x="16" y="2118" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Запрещено в игре</text>
-<rect x="16" y="2130" width="150" height="56" rx="4" fill="#FF00FF" stroke="#6E747D" stroke-width="1"/>
-<text x="16" y="2201" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">маска команды (только исходники)</text>
-<text x="16" y="2216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF00FF</text>
+<text x="664" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7A818C</text>
+<rect x="826" y="108" width="150" height="56" rx="4" fill="#F2A516" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="179" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">warning</text>
+<text x="826" y="194" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F2A516</text>
+<rect x="16" y="204" width="150" height="56" rx="4" fill="#FFD23F" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">focus</text>
+<text x="16" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFD23F</text>
+<rect x="178" y="204" width="150" height="56" rx="4" fill="#FFD23F" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="275" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">button_text</text>
+<text x="178" y="290" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFD23F</text>
+<text x="16" y="330" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Союз (наш выбор)</text>
+<rect x="16" y="342" width="150" height="56" rx="4" fill="#D12E2E" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="413" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">акцент</text>
+<text x="16" y="428" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#D12E2E</text>
+<rect x="178" y="342" width="150" height="56" rx="4" fill="#7E1A1F" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="413" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">кнопка</text>
+<text x="178" y="428" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7E1A1F</text>
+<rect x="340" y="342" width="150" height="56" rx="4" fill="#B82A2F" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="413" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">наведение</text>
+<text x="340" y="428" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B82A2F</text>
+<rect x="502" y="342" width="150" height="56" rx="4" fill="#520E12" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="413" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нажатие</text>
+<text x="502" y="428" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#520E12</text>
+<rect x="664" y="342" width="150" height="56" rx="4" fill="#3A0C0F" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="413" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">рамка кнопки</text>
+<text x="664" y="428" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3A0C0F</text>
+<rect x="826" y="342" width="150" height="56" rx="4" fill="#3A3F47" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="413" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">сталь</text>
+<text x="826" y="428" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3A3F47</text>
+<rect x="16" y="438" width="150" height="56" rx="4" fill="#8E8A80" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">бетон</text>
+<text x="16" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8E8A80</text>
+<rect x="178" y="438" width="150" height="56" rx="4" fill="#7B4A2C" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ржавчина</text>
+<text x="178" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7B4A2C</text>
+<rect x="340" y="438" width="150" height="56" rx="4" fill="#15161A" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">чёрный</text>
+<text x="340" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#15161A</text>
+<rect x="502" y="438" width="150" height="56" rx="4" fill="#FF8A2A" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="509" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">огонь</text>
+<text x="502" y="524" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF8A2A</text>
+<text x="16" y="564" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Альянс (наш выбор)</text>
+<rect x="16" y="576" width="150" height="56" rx="4" fill="#1E9BE8" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="647" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">акцент</text>
+<text x="16" y="662" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1E9BE8</text>
+<rect x="178" y="576" width="150" height="56" rx="4" fill="#1D4FA6" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="647" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">кнопка</text>
+<text x="178" y="662" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1D4FA6</text>
+<rect x="340" y="576" width="150" height="56" rx="4" fill="#2F6BD0" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="647" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">наведение</text>
+<text x="340" y="662" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2F6BD0</text>
+<rect x="502" y="576" width="150" height="56" rx="4" fill="#143A7A" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="647" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нажатие</text>
+<text x="502" y="662" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#143A7A</text>
+<rect x="664" y="576" width="150" height="56" rx="4" fill="#0C2A5C" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="647" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">рамка кнопки</text>
+<text x="664" y="662" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#0C2A5C</text>
+<rect x="826" y="576" width="150" height="56" rx="4" fill="#1E2A3A" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="647" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">панель</text>
+<text x="826" y="662" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1E2A3A</text>
+<rect x="16" y="672" width="150" height="56" rx="4" fill="#8FB0D0" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">стальная рамка</text>
+<text x="16" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8FB0D0</text>
+<rect x="178" y="672" width="150" height="56" rx="4" fill="#C9D2DC" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">светлый металл</text>
+<text x="178" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C9D2DC</text>
+<rect x="340" y="672" width="150" height="56" rx="4" fill="#EEF3F8" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">белая эмаль</text>
+<text x="340" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#EEF3F8</text>
+<rect x="502" y="672" width="150" height="56" rx="4" fill="#7FB7E0" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">стекло</text>
+<text x="502" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7FB7E0</text>
+<rect x="664" y="672" width="150" height="56" rx="4" fill="#BFE6FF" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="743" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">свечение</text>
+<text x="664" y="758" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#BFE6FF</text>
+<text x="16" y="798" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Культ (наш выбор, решение владельца)</text>
+<rect x="16" y="810" width="150" height="56" rx="4" fill="#7A2A9E" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="881" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">акцент</text>
+<text x="16" y="896" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7A2A9E</text>
+<rect x="178" y="810" width="150" height="56" rx="4" fill="#4B1D6E" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="881" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">кнопка</text>
+<text x="178" y="896" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4B1D6E</text>
+<rect x="340" y="810" width="150" height="56" rx="4" fill="#7B2FBE" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="881" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">наведение</text>
+<text x="340" y="896" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7B2FBE</text>
+<rect x="502" y="810" width="150" height="56" rx="4" fill="#2F1245" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="881" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нажатие</text>
+<text x="502" y="896" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2F1245</text>
+<rect x="664" y="810" width="150" height="56" rx="4" fill="#241A2C" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="881" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">панель</text>
+<text x="664" y="896" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#241A2C</text>
+<rect x="826" y="810" width="150" height="56" rx="4" fill="#2B1B33" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="881" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">тёмный фиолетовый</text>
+<text x="826" y="896" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2B1B33</text>
+<rect x="16" y="906" width="150" height="56" rx="4" fill="#5A3A4F" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">органика</text>
+<text x="16" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5A3A4F</text>
+<rect x="178" y="906" width="150" height="56" rx="4" fill="#B4FF3C" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="977" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">свечение</text>
+<text x="178" y="992" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B4FF3C</text>
+<text x="16" y="1032" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Нейтральные материалы (наш выбор)</text>
+<rect x="16" y="1044" width="150" height="56" rx="4" fill="#8A6A4A" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1115" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">дерево</text>
+<text x="16" y="1130" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8A6A4A</text>
+<rect x="178" y="1044" width="150" height="56" rx="4" fill="#9A5B45" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1115" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">кирпич</text>
+<text x="178" y="1130" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9A5B45</text>
+<rect x="340" y="1044" width="150" height="56" rx="4" fill="#8E8A80" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="1115" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">бетон</text>
+<text x="340" y="1130" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8E8A80</text>
+<rect x="502" y="1044" width="150" height="56" rx="4" fill="#4B4F57" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="1115" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">асфальт</text>
+<text x="502" y="1130" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4B4F57</text>
+<text x="16" y="1170" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Цвета команд (наш выбор)</text>
+<rect x="16" y="1182" width="150" height="56" rx="4" fill="#2C72EA" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1253" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">1 синий</text>
+<text x="16" y="1268" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2C72EA</text>
+<rect x="178" y="1182" width="150" height="56" rx="4" fill="#FF4D3F" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1253" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">2 красный</text>
+<text x="178" y="1268" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF4D3F</text>
+<rect x="340" y="1182" width="150" height="56" rx="4" fill="#FFE03A" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="1253" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">3 жёлтый</text>
+<text x="340" y="1268" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFE03A</text>
+<rect x="502" y="1182" width="150" height="56" rx="4" fill="#5FC734" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="1253" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">4 зелёный</text>
+<text x="502" y="1268" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5FC734</text>
+<rect x="664" y="1182" width="150" height="56" rx="4" fill="#FFAA2A" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="1253" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">5 оранжевый</text>
+<text x="664" y="1268" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFAA2A</text>
+<rect x="826" y="1182" width="150" height="56" rx="4" fill="#8230D6" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="1253" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">6 фиолетовый</text>
+<text x="826" y="1268" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8230D6</text>
+<rect x="16" y="1278" width="150" height="56" rx="4" fill="#14B3A8" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1349" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">7 бирюзовый</text>
+<text x="16" y="1364" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#14B3A8</text>
+<rect x="178" y="1278" width="150" height="56" rx="4" fill="#FFB3DD" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1349" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">8 розовый</text>
+<text x="178" y="1364" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFB3DD</text>
+<rect x="340" y="1278" width="150" height="56" rx="4" fill="#8C929B" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="1349" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нейтральный</text>
+<text x="340" y="1364" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8C929B</text>
+<text x="16" y="1404" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Климаты: земля, вода, небо (наш выбор)</text>
+<rect x="16" y="1416" width="150" height="56" rx="4" fill="#E9F0F7" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1487" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">зима: снег</text>
+<text x="16" y="1502" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E9F0F7</text>
+<rect x="178" y="1416" width="150" height="56" rx="4" fill="#7FA656" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1487" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">умер.: трава</text>
+<text x="178" y="1502" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7FA656</text>
+<rect x="340" y="1416" width="150" height="56" rx="4" fill="#E3C27E" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="1487" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">пустыня: песок</text>
+<text x="340" y="1502" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E3C27E</text>
+<rect x="502" y="1416" width="150" height="56" rx="4" fill="#4B4F57" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="1487" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">город: асфальт</text>
+<text x="502" y="1502" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4B4F57</text>
+<rect x="664" y="1416" width="150" height="56" rx="4" fill="#EED8A0" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="1487" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">побережье: песок</text>
+<text x="664" y="1502" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#EED8A0</text>
+<rect x="826" y="1416" width="150" height="56" rx="4" fill="#23477A" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="1487" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: зима</text>
+<text x="826" y="1502" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#23477A</text>
+<rect x="16" y="1512" width="150" height="56" rx="4" fill="#2A6F9A" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1583" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: умер.</text>
+<text x="16" y="1598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2A6F9A</text>
+<rect x="178" y="1512" width="150" height="56" rx="4" fill="#2E8C8F" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1583" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: пустыня</text>
+<text x="178" y="1598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2E8C8F</text>
+<rect x="340" y="1512" width="150" height="56" rx="4" fill="#2D5C7E" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="1583" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: город</text>
+<text x="340" y="1598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2D5C7E</text>
+<rect x="502" y="1512" width="150" height="56" rx="4" fill="#1C5D8C" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="1583" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода: побережье</text>
+<text x="502" y="1598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1C5D8C</text>
+<rect x="664" y="1512" width="150" height="56" rx="4" fill="#5C8FB8" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="1583" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода мелкая: зима</text>
+<text x="664" y="1598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5C8FB8</text>
+<rect x="826" y="1512" width="150" height="56" rx="4" fill="#5C9CC0" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="1583" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода мелкая: умер.</text>
+<text x="826" y="1598" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5C9CC0</text>
+<rect x="16" y="1608" width="150" height="56" rx="4" fill="#6FB6B0" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1679" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода мелкая: пустыня</text>
+<text x="16" y="1694" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#6FB6B0</text>
+<rect x="178" y="1608" width="150" height="56" rx="4" fill="#5A8AA6" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1679" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода мелкая: город</text>
+<text x="178" y="1694" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5A8AA6</text>
+<rect x="340" y="1608" width="150" height="56" rx="4" fill="#3CC2C6" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="1679" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">вода мелкая: побережье</text>
+<text x="340" y="1694" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3CC2C6</text>
+<rect x="502" y="1608" width="150" height="56" rx="4" fill="#9AA6B4" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="1679" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">второй тон: зима, асфальт</text>
+<text x="502" y="1694" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9AA6B4</text>
+<rect x="664" y="1608" width="150" height="56" rx="4" fill="#6E5A41" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="1679" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">второй тон: умер., грязь</text>
+<text x="664" y="1694" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#6E5A41</text>
+<rect x="826" y="1608" width="150" height="56" rx="4" fill="#A9785A" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="1679" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">второй тон: пустыня, камень</text>
+<text x="826" y="1694" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#A9785A</text>
+<rect x="16" y="1704" width="150" height="56" rx="4" fill="#7C9E55" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1775" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">второй тон: город, газон</text>
+<text x="16" y="1790" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7C9E55</text>
+<rect x="178" y="1704" width="150" height="56" rx="4" fill="#9A9EA6" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1775" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">второй тон: город, тротуар</text>
+<text x="178" y="1790" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9A9EA6</text>
+<rect x="340" y="1704" width="150" height="56" rx="4" fill="#C9AD7A" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="1775" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">второй тон: побережье, мокрый песок</text>
+<text x="340" y="1790" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C9AD7A</text>
+<rect x="502" y="1704" width="150" height="56" rx="4" fill="#B9CBDD" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="1775" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: зима</text>
+<text x="502" y="1790" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B9CBDD</text>
+<rect x="664" y="1704" width="150" height="56" rx="4" fill="#A9CBE6" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="1775" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: умер.</text>
+<text x="664" y="1790" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#A9CBE6</text>
+<rect x="826" y="1704" width="150" height="56" rx="4" fill="#EFDDAA" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="1775" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: пустыня</text>
+<text x="826" y="1790" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#EFDDAA</text>
+<rect x="16" y="1800" width="150" height="56" rx="4" fill="#B6BFCB" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="1871" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: город</text>
+<text x="16" y="1886" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B6BFCB</text>
+<rect x="178" y="1800" width="150" height="56" rx="4" fill="#9ED8F2" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="1871" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">небо: побережье</text>
+<text x="178" y="1886" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9ED8F2</text>
+<text x="16" y="1926" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Игровые сигналы (наш выбор)</text>
+<rect x="16" y="1938" width="150" height="56" rx="4" fill="#7CF59A" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2009" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">движение</text>
+<text x="16" y="2024" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7CF59A</text>
+<rect x="178" y="1938" width="150" height="56" rx="4" fill="#FF4B3E" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2009" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">атака: кольцо</text>
+<text x="178" y="2024" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF4B3E</text>
+<rect x="340" y="1938" width="150" height="56" rx="4" fill="#FFD23F" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2009" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">атака: ядро</text>
+<text x="340" y="2024" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFD23F</text>
+<rect x="502" y="1938" width="150" height="56" rx="4" fill="#FF3B30" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="2009" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">запрещено</text>
+<text x="502" y="2024" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF3B30</text>
+<rect x="664" y="1938" width="150" height="56" rx="4" fill="#D6FFD0" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="2009" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">выделение</text>
+<text x="664" y="2024" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#D6FFD0</text>
+<rect x="826" y="1938" width="150" height="56" rx="4" fill="#F5C518" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="2009" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">руда</text>
+<text x="826" y="2024" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F5C518</text>
+<rect x="16" y="2034" width="150" height="56" rx="4" fill="#3B2A00" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2105" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">обводка руды</text>
+<text x="16" y="2120" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3B2A00</text>
+<rect x="178" y="2034" width="150" height="56" rx="4" fill="#4FC3FF" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2105" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">самоцветы</text>
+<text x="178" y="2120" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4FC3FF</text>
+<rect x="340" y="2034" width="150" height="56" rx="4" fill="#3DBE5A" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2105" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">союзник</text>
+<text x="340" y="2120" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3DBE5A</text>
+<rect x="502" y="2034" width="150" height="56" rx="4" fill="#E0306A" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="2105" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">враг</text>
+<text x="502" y="2120" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E0306A</text>
+<rect x="664" y="2034" width="150" height="56" rx="4" fill="#5BEA7A" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="2105" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ремонт</text>
+<text x="664" y="2120" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5BEA7A</text>
+<rect x="826" y="2034" width="150" height="56" rx="4" fill="#FFD23F" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="2105" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">захват</text>
+<text x="826" y="2120" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFD23F</text>
+<rect x="16" y="2130" width="150" height="56" rx="4" fill="#3DDC62" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2201" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">здоровье: норма</text>
+<text x="16" y="2216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3DDC62</text>
+<rect x="178" y="2130" width="150" height="56" rx="4" fill="#F28A24" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2201" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">здоровье: 1/4–1/2</text>
+<text x="178" y="2216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F28A24</text>
+<rect x="340" y="2130" width="150" height="56" rx="4" fill="#E8382E" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2201" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">здоровье: мало</text>
+<text x="340" y="2216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E8382E</text>
+<rect x="502" y="2130" width="150" height="56" rx="4" fill="#4CC45C" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="2201" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия: норма</text>
+<text x="502" y="2216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4CC45C</text>
+<rect x="664" y="2130" width="150" height="56" rx="4" fill="#F2A516" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="2201" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия: мало</text>
+<text x="664" y="2216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F2A516</text>
+<rect x="826" y="2130" width="150" height="56" rx="4" fill="#E0432E" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="2201" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия: нехватка</text>
+<text x="826" y="2216" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E0432E</text>
+<rect x="16" y="2226" width="150" height="56" rx="4" fill="#46E06A" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2297" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">можно строить</text>
+<text x="16" y="2312" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#46E06A</text>
+<rect x="178" y="2226" width="150" height="56" rx="4" fill="#E8432E" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2297" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нельзя строить</text>
+<text x="178" y="2312" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E8432E</text>
+<rect x="340" y="2226" width="150" height="56" rx="4" fill="#9A9FA8" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2297" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нет денег</text>
+<text x="340" y="2312" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9A9FA8</text>
+<text x="16" y="2352" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Эффекты (наш выбор)</text>
+<rect x="16" y="2364" width="150" height="56" rx="4" fill="#7FD8FF" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2435" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">тесла: дуга</text>
+<text x="16" y="2450" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7FD8FF</text>
+<rect x="178" y="2364" width="150" height="56" rx="4" fill="#4FB8FF" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2435" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">тесла: катушка</text>
+<text x="178" y="2450" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4FB8FF</text>
+<rect x="340" y="2364" width="150" height="56" rx="4" fill="#EAF6FF" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2435" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">шторм: молния</text>
+<text x="340" y="2450" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#EAF6FF</text>
+<rect x="502" y="2364" width="150" height="56" rx="4" fill="#BFE3FF" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="2435" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">шторм: вспышка</text>
+<text x="502" y="2450" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#BFE3FF</text>
+<rect x="664" y="2364" width="150" height="56" rx="4" fill="#FFFFFF" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="2435" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">призма: луч</text>
+<text x="664" y="2450" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFFFFF</text>
+<rect x="826" y="2364" width="150" height="56" rx="4" fill="#FFE14D" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="2435" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">призма: край</text>
+<text x="826" y="2450" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFE14D</text>
+<rect x="16" y="2460" width="150" height="56" rx="4" fill="#8CFF3C" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2531" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ядовитое: луч</text>
+<text x="16" y="2546" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8CFF3C</text>
+<rect x="178" y="2460" width="150" height="56" rx="4" fill="#D4FF9A" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2531" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ядовитое: ядро</text>
+<text x="178" y="2546" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#D4FF9A</text>
+<rect x="340" y="2460" width="150" height="56" rx="4" fill="#C8FF3A" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2531" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">радиация</text>
+<text x="340" y="2546" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C8FF3A</text>
+<rect x="502" y="2460" width="150" height="56" rx="4" fill="#A9DBFF" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="2531" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">хроно-луч</text>
+<text x="502" y="2546" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#A9DBFF</text>
+<rect x="664" y="2460" width="150" height="56" rx="4" fill="#FF8A2A" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="2531" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">огонь</text>
+<text x="664" y="2546" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF8A2A</text>
+<rect x="826" y="2460" width="150" height="56" rx="4" fill="#FFE08A" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="2531" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">огонь: ядро</text>
+<text x="826" y="2546" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFE08A</text>
+<rect x="16" y="2556" width="150" height="56" rx="4" fill="#FFB020" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2627" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">взрыв</text>
+<text x="16" y="2642" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFB020</text>
+<rect x="178" y="2556" width="150" height="56" rx="4" fill="#FF5A1F" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2627" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">взрыв: конец</text>
+<text x="178" y="2642" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF5A1F</text>
+<rect x="340" y="2556" width="150" height="56" rx="4" fill="#6FC3FF" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2627" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">электро</text>
+<text x="340" y="2642" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#6FC3FF</text>
+<rect x="502" y="2556" width="150" height="56" rx="4" fill="#9A9FA8" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="2627" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">смерть: обычный</text>
+<text x="502" y="2642" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9A9FA8</text>
+<rect x="664" y="2556" width="150" height="56" rx="4" fill="#5E636B" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="2627" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">дым</text>
+<text x="664" y="2642" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5E636B</text>
+<rect x="826" y="2556" width="150" height="56" rx="4" fill="#C2B08A" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="2627" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">пыль</text>
+<text x="826" y="2642" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C2B08A</text>
+<rect x="16" y="2652" width="150" height="56" rx="4" fill="#1C1712" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2723" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">копоть</text>
+<text x="16" y="2738" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1C1712</text>
+<rect x="178" y="2652" width="150" height="56" rx="4" fill="#FFF3B0" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2723" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">выстрел: вспышка</text>
+<text x="178" y="2738" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFF3B0</text>
+<rect x="340" y="2652" width="150" height="56" rx="4" fill="#FFD84A" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2723" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">трассер</text>
+<text x="340" y="2738" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFD84A</text>
+<text x="16" y="2778" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Иконки производства: роль (наш выбор)</text>
+<rect x="16" y="2790" width="150" height="56" rx="4" fill="#8FBF7A" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2861" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">пехота</text>
+<text x="16" y="2876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8FBF7A</text>
+<rect x="178" y="2790" width="150" height="56" rx="4" fill="#6F8FBF" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2861" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">техника</text>
+<text x="178" y="2876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#6F8FBF</text>
+<rect x="340" y="2790" width="150" height="56" rx="4" fill="#5FA8A6" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2861" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">флот</text>
+<text x="340" y="2876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5FA8A6</text>
+<rect x="502" y="2790" width="150" height="56" rx="4" fill="#9A7FC0" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="2861" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">авиация</text>
+<text x="502" y="2876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9A7FC0</text>
+<rect x="664" y="2790" width="150" height="56" rx="4" fill="#D9B25A" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="2861" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">энергия</text>
+<text x="664" y="2876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#D9B25A</text>
+<rect x="826" y="2790" width="150" height="56" rx="4" fill="#C9803E" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="2861" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">производство</text>
+<text x="826" y="2876" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C9803E</text>
+<rect x="16" y="2886" width="150" height="56" rx="4" fill="#B5514A" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="2957" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">оборона</text>
+<text x="16" y="2972" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B5514A</text>
+<rect x="178" y="2886" width="150" height="56" rx="4" fill="#C0528E" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="2957" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">супероружие</text>
+<text x="178" y="2972" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#C0528E</text>
+<rect x="340" y="2886" width="150" height="56" rx="4" fill="#7A7F88" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="2957" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">стена</text>
+<text x="340" y="2972" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7A7F88</text>
+<text x="16" y="3012" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Обод эмблемы и запрет (наш выбор)</text>
+<rect x="16" y="3024" width="150" height="56" rx="4" fill="#4DA3FF" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3095" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">обод Альянса</text>
+<text x="16" y="3110" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4DA3FF</text>
+<rect x="178" y="3024" width="150" height="56" rx="4" fill="#FF6B5A" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3095" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">обод Союза</text>
+<text x="178" y="3110" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF6B5A</text>
+<rect x="340" y="3024" width="150" height="56" rx="4" fill="#B070FF" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3095" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">обод Культа</text>
+<text x="340" y="3110" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B070FF</text>
+<rect x="502" y="3024" width="150" height="56" rx="4" fill="#FF00FF" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="3095" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">маска команды (только исходники)</text>
+<text x="502" y="3110" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF00FF</text>
+<line x1="16" y1="3134" x2="976" y2="3134" stroke="#6E747D" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="16" y="3174" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Приложение А: токены темы из кода (не RA2, не утверждено)</text>
+<rect x="16" y="3186" width="150" height="56" rx="4" fill="#2A2D33" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3257" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">panel</text>
+<text x="16" y="3272" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2A2D33</text>
+<rect x="178" y="3186" width="150" height="56" rx="4" fill="#6E747D" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3257" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">frame</text>
+<text x="178" y="3272" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#6E747D</text>
+<rect x="340" y="3186" width="150" height="56" rx="4" fill="#EAE6D8" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3257" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">text</text>
+<text x="340" y="3272" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#EAE6D8</text>
+<rect x="502" y="3186" width="150" height="56" rx="4" fill="#9CA3AD" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="3257" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">text_dim</text>
+<text x="502" y="3272" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#9CA3AD</text>
+<rect x="664" y="3186" width="150" height="56" rx="4" fill="#7D838C" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="3257" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">disabled</text>
+<text x="664" y="3272" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7D838C</text>
+<rect x="826" y="3186" width="150" height="56" rx="4" fill="#8E1416" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="3257" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">кнопка</text>
+<text x="826" y="3272" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#8E1416</text>
+<rect x="16" y="3282" width="150" height="56" rx="4" fill="#B3121C" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3353" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">наведение</text>
+<text x="16" y="3368" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B3121C</text>
+<rect x="178" y="3282" width="150" height="56" rx="4" fill="#5E0C10" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3353" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нажатие</text>
+<text x="178" y="3368" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#5E0C10</text>
+<rect x="340" y="3282" width="150" height="56" rx="4" fill="#F4C843" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3353" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">надпись кнопки</text>
+<text x="340" y="3368" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F4C843</text>
+<rect x="502" y="3282" width="150" height="56" rx="4" fill="#FFE68C" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="3353" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">надпись при наведении</text>
+<text x="502" y="3368" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFE68C</text>
+<text x="16" y="3408" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Приложение А: акценты и тема Альянса из кода</text>
+<rect x="16" y="3420" width="150" height="56" rx="4" fill="#B3121C" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3491" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">акцент Союза</text>
+<text x="16" y="3506" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#B3121C</text>
+<rect x="178" y="3420" width="150" height="56" rx="4" fill="#2A62C8" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3491" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">акцент Альянса</text>
+<text x="178" y="3506" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2A62C8</text>
+<rect x="340" y="3420" width="150" height="56" rx="4" fill="#7D838C" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3491" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">акцент Культа</text>
+<text x="340" y="3506" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#7D838C</text>
+<rect x="502" y="3420" width="150" height="56" rx="4" fill="#2152B8" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="3491" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: кнопка</text>
+<text x="502" y="3506" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#2152B8</text>
+<rect x="664" y="3420" width="150" height="56" rx="4" fill="#3873E6" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="3491" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: наведение</text>
+<text x="664" y="3506" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3873E6</text>
+<rect x="826" y="3420" width="150" height="56" rx="4" fill="#1A2133" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="3491" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">Альянс: панель</text>
+<text x="826" y="3506" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#1A2133</text>
+<text x="16" y="3546" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Приложение А: цвета команд из кода</text>
+<rect x="16" y="3558" width="150" height="56" rx="4" fill="#3373F2" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3629" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">синий</text>
+<text x="16" y="3644" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3373F2</text>
+<rect x="178" y="3558" width="150" height="56" rx="4" fill="#E64033" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3629" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">красный</text>
+<text x="178" y="3644" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E64033</text>
+<rect x="340" y="3558" width="150" height="56" rx="4" fill="#40BF4D" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3629" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">зелёный</text>
+<text x="340" y="3644" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#40BF4D</text>
+<rect x="502" y="3558" width="150" height="56" rx="4" fill="#F2D933" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="3629" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">жёлтый</text>
+<text x="502" y="3644" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F2D933</text>
+<rect x="664" y="3558" width="150" height="56" rx="4" fill="#F28C26" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="3629" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">оранжевый</text>
+<text x="664" y="3644" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F28C26</text>
+<rect x="826" y="3558" width="150" height="56" rx="4" fill="#994DD9" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="3629" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">фиолетовый</text>
+<text x="826" y="3644" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#994DD9</text>
+<rect x="16" y="3654" width="150" height="56" rx="4" fill="#33BFBF" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3725" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">бирюзовый</text>
+<text x="16" y="3740" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#33BFBF</text>
+<rect x="178" y="3654" width="150" height="56" rx="4" fill="#F273B3" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3725" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">розовый</text>
+<text x="178" y="3740" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F273B3</text>
+<rect x="340" y="3654" width="150" height="56" rx="4" fill="#999999" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3725" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">нейтральный</text>
+<text x="340" y="3740" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#999999</text>
+<text x="16" y="3780" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Приложение А: сигналы и эффекты из кода</text>
+<rect x="16" y="3792" width="150" height="56" rx="4" fill="#59FF59" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3863" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">движение</text>
+<text x="16" y="3878" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#59FF59</text>
+<rect x="178" y="3792" width="150" height="56" rx="4" fill="#FF4026" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3863" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">атака</text>
+<text x="178" y="3878" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF4026</text>
+<rect x="340" y="3792" width="150" height="56" rx="4" fill="#F2CC26" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3863" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">руда</text>
+<text x="340" y="3878" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#F2CC26</text>
+<rect x="502" y="3792" width="150" height="56" rx="4" fill="#59CCFF" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="3863" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">самоцветы</text>
+<text x="502" y="3878" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#59CCFF</text>
+<rect x="664" y="3792" width="150" height="56" rx="4" fill="#33B340" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="3863" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">союзник</text>
+<text x="664" y="3878" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#33B340</text>
+<rect x="826" y="3792" width="150" height="56" rx="4" fill="#731414" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="3863" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">враг</text>
+<text x="826" y="3878" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#731414</text>
+<rect x="16" y="3888" width="150" height="56" rx="4" fill="#4DF259" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="3959" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ремонт</text>
+<text x="16" y="3974" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#4DF259</text>
+<rect x="178" y="3888" width="150" height="56" rx="4" fill="#73D9FF" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="3959" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">тесла: катушка</text>
+<text x="178" y="3974" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#73D9FF</text>
+<rect x="340" y="3888" width="150" height="56" rx="4" fill="#E6F2FF" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="3959" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">призма</text>
+<text x="340" y="3974" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E6F2FF</text>
+<rect x="502" y="3888" width="150" height="56" rx="4" fill="#73FF4D" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="3959" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">ядовитый луч</text>
+<text x="502" y="3974" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#73FF4D</text>
+<rect x="664" y="3888" width="150" height="56" rx="4" fill="#66FF33" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="3959" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">радиация</text>
+<text x="664" y="3974" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#66FF33</text>
+<rect x="826" y="3888" width="150" height="56" rx="4" fill="#FF8019" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="3959" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">огонь выстрелов</text>
+<text x="826" y="3974" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF8019</text>
+<rect x="16" y="3984" width="150" height="56" rx="4" fill="#FF731A" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="4055" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">огонь зданий</text>
+<text x="16" y="4070" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FF731A</text>
+<text x="16" y="4110" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#15171B">Приложение А: заглушки объектов из кода</text>
+<rect x="16" y="4122" width="150" height="56" rx="4" fill="#3D6633" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="4193" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">дерево: лиственное</text>
+<text x="16" y="4208" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#3D6633</text>
+<rect x="178" y="4122" width="150" height="56" rx="4" fill="#D9BD85" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="4193" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">дерево: пустыня</text>
+<text x="178" y="4208" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#D9BD85</text>
+<rect x="340" y="4122" width="150" height="56" rx="4" fill="#E6EDF7" stroke="#6E747D" stroke-width="1"/>
+<text x="340" y="4193" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">дерево: снег</text>
+<text x="340" y="4208" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#E6EDF7</text>
+<rect x="502" y="4122" width="150" height="56" rx="4" fill="#73737A" stroke="#6E747D" stroke-width="1"/>
+<text x="502" y="4193" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">камень</text>
+<text x="502" y="4208" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#73737A</text>
+<rect x="664" y="4122" width="150" height="56" rx="4" fill="#808085" stroke="#6E747D" stroke-width="1"/>
+<text x="664" y="4193" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">валун</text>
+<text x="664" y="4208" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#808085</text>
+<rect x="826" y="4122" width="150" height="56" rx="4" fill="#805933" stroke="#6E747D" stroke-width="1"/>
+<text x="826" y="4193" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">забор</text>
+<text x="826" y="4208" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#805933</text>
+<rect x="16" y="4218" width="150" height="56" rx="4" fill="#ADA594" stroke="#6E747D" stroke-width="1"/>
+<text x="16" y="4289" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">стена</text>
+<text x="16" y="4304" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#ADA594</text>
+<rect x="178" y="4218" width="150" height="56" rx="4" fill="#FFD959" stroke="#6E747D" stroke-width="1"/>
+<text x="178" y="4289" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#15171B">фонарь</text>
+<text x="178" y="4304" font-family="Menlo, Consolas, monospace" font-size="12" fill="#5A5F66">#FFD959</text>
 </svg>

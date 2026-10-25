@@ -81,6 +81,12 @@ UI_EDITOR_GENERATE_FAILED,Not generated: {0}
 UI_EDITOR_OPEN_MAP,Open a map
 UI_EDITOR_OPEN,Open
 UI_EDITOR_OPENED,Opened {0}
+UI_EDITOR_DELETE,Delete
+UI_EDITOR_DELETE_TITLE,Delete the map?
+UI_EDITOR_DELETE_CONFIRM,Delete the map «{0}»? The file {1} is removed for good: it cannot be undone here. A map of the game comes back only from git.
+UI_EDITOR_DELETED,Deleted {0}
+UI_EDITOR_DELETE_FAILED,Not deleted: {0} · {1}
+UI_EDITOR_DELETE_READ_ONLY,the maps of an exported game cannot be deleted
 UI_EDITOR_NAME,Name
 UI_EDITOR_LIGHTING,Time of day
 UI_LIGHTING_DAWN,Dawn
@@ -560,6 +566,13 @@ RA2_NAME_LIBYA,Libya
 RA2_NAME_IRAQ,Iraq
 RA2_NAME_CUBA,Cuba
 UI_MAP_LIST_ITEM,{0} ({1})
+UI_MAP_LIST_ITEM_ORIGIN,{0} ({1}) · {2}
+UI_MAP_ORIGIN_ALL,All origins
+UI_MAP_ORIGIN_RA2,From RA2
+UI_MAP_ORIGIN_READY,Hand-made
+UI_MAP_ORIGIN_GENERATED,Generated
+UI_MAP_ORIGIN_TEST,Test
+UI_MAP_ORIGIN_USER,My maps
 UI_EDITOR_CLIMATE,Climate
 UI_CLIMATE_WINTER,Snow
 UI_CLIMATE_TEMPERATE,Temperate

@@ -3,6 +3,7 @@ id: arctic-strip
 name: "Arctic Strip"
 author: "Map generator"
 description: "Generated from seed 1013: 4 players, Rotate90, Hilly, water Rivers, forest Low, resources Medium, drills OreAndGems."
+origin: generated
 size: [182, 182]
 playable: { left: -91, top: 91, right: 91, bottom: 273 }
 climate: winter

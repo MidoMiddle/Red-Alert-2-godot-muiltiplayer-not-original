@@ -173,9 +173,9 @@ public partial class Buildings : Node3D
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
         Color? colour = owner.IsNeutral ? null : OwnerColor(owner);
         var at = new Vector2I(cell.X, cell.Y);
-        // A building hurt, or with soldiers inside, takes the file of that state when the table gives one.
-        var variant = state == DamageState.Critical ? Models.ModelVariant.Damaged
-            : occupied ? Models.ModelVariant.Occupied : Models.ModelVariant.Intact;
+        // The file of the state it is in, by its damage and its soldiers (BuildingStates); a state the table gives no file for is drawn
+        // as the whole one, as before.
+        var variant = Models.BuildingStates.Of(state, occupied);
         var model = Models.ModelLibrary.Instantiate("building/" + type.Id, colour, cell: at, variant: variant)
             ?? (variant == Models.ModelVariant.Intact ? null : Models.ModelLibrary.Instantiate("building/" + type.Id, colour, cell: at));
         if (model is not null)

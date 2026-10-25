@@ -115,9 +115,9 @@ public sealed class ShipWeaponsTests
         var rules = Match().World.Rules;
         var hornet = rules.Unit(UnitType.AllianceHornet);
         Assert.Equal((75, 5), (hornet.Hp, hornet.Ammo));
-        Assert.Equal((80, 3), (rules.Database.Weapons[hornet.Primary].Damage, rules.Unit(UnitType.AllianceAegisCruiser) is var cruiser ? rules.Database.Weapons[cruiser.Primary].Burst : 0));
+        Assert.Equal((40, 3), (rules.Database.Weapons[hornet.Primary].Damage, rules.Unit(UnitType.AllianceAegisCruiser) is var cruiser ? rules.Database.Weapons[cruiser.Primary].Burst : 0));
         var osprey = rules.Unit(UnitType.AllianceOsprey);
-        Assert.Equal((135, 5, 50), (osprey.Hp, osprey.Ammo, rules.Database.Weapons[osprey.Primary].Damage));
+        Assert.Equal((30, 5, 50), (osprey.Hp, osprey.Ammo, rules.Database.Weapons[osprey.Primary].Damage));
         Assert.Equal(60, rules.Database.Weapons[rules.Unit(UnitType.AllianceDestroyer).Primary].Damage);
     }
 

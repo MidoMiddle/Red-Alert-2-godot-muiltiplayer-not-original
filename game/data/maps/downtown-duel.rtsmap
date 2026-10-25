@@ -3,6 +3,7 @@ id: downtown-duel
 name: "Downtown Duel"
 author: "Map generator"
 description: "Generated from seed 2101: 2 players, Mirror, Flat, water Rivers, forest Low, resources Medium, drills OreAndGems."
+origin: generated
 size: [136, 136]
 playable: { left: -68, top: 68, right: 68, bottom: 204 }
 climate: urban

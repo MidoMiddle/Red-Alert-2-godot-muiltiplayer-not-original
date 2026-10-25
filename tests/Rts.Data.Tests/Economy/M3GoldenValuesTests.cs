@@ -55,7 +55,8 @@ public sealed class M3GoldenValuesTests
         // Rules v58 (loose ends, stage 2): the same run and credits; Frozen Crossing has a repair hut by each of its bridges.
         // Rules v60 (loose ends, stage 3): the same run and credits; experience is hashed.
         // Rules v61 (loose ends, stage 4): the same run and credits; the destroyer's Osprey is a type of its own.
-        Assert.Equal((5972, 0xf2ac9870039ce7f8UL), (fifth.Credits, fifth.Checksum));
+        // The check against rules.ini: the same run and credits; the refinery sees 6 cells, as in RA2.
+        Assert.Equal((5972, 0xeecd390311c5c5ffUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

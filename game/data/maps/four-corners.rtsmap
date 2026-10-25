@@ -3,6 +3,7 @@ id: four-corners
 name: "Four Corners"
 author: "Ready maps (M7)"
 description: "Four bases in the corners; the plateau in the middle holds the gems."
+origin: ready
 size: [128, 128]
 climate: winter
 lighting: day

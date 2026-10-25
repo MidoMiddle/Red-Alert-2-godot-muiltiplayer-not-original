@@ -96,7 +96,7 @@ public static class Drills
         return new MapDefinition(
             map.Id, map.Name, map.Author, WithDrills(map.Description, kind), map.Width, map.Height, map.Climate, map.Players, map.Starts,
             map.TextureLegend, map.Heights, map.Land, map.Texture, ore.MoveToImmutable(), [.. map.Objects, .. placements], map.Bridges,
-            map.Structures, map.Lighting);
+            map.Structures, map.Lighting, map.Playable, map.Origin);
     }
 
     /// <summary>The description of a generated map with the drills said: «…, resources Medium, drills OreAndGems.»; none — as it was.</summary>

@@ -14,4 +14,6 @@ public enum LandType : byte
     Deep = 6,
     Rock = 7,
     Ice = 8,
+    Track = 9,
+    Path = 10,
 }

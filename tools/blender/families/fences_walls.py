@@ -146,6 +146,7 @@ def build(name):
 def run(name):
     """Builds, bakes, saves the .blend, exports the GLB and reports what was written."""
     obj, mat, graph = build(name)
+    rc.arrange([obj], name)
     base = os.path.join(rc.SRC_ROOT, "map", name)
     report = [f"{name}: triangles {rc.tri_count(obj)}, "
               f"size {tuple(round(v, 3) for v in obj.dimensions)}"]

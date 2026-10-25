@@ -3,6 +3,7 @@ id: frozen-crossing
 name: "Frozen Crossing"
 author: "Ready maps (M7)"
 description: "A short duel across a frozen river: two bridges, and ice that anyone can cross."
+origin: ready
 size: [90, 90]
 playable: { left: -45, top: 45, right: 45, bottom: 135 }
 climate: winter

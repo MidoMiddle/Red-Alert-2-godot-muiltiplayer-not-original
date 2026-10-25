@@ -19,6 +19,9 @@
 # Its nodes fire_1, fire_2… stand the flames of an abandoned one.
 format: models/1
 models:
+  # The buildings of the players (docs/ra2_buildings). The team_mask nodes take the owner's colour.
+  building/tesla_coil: { file: building/tesla_coil/tesla_coil.glb, height: 3 }
+
   # The civilian houses of the map (docs/map_elements/11_civilian_buildings): whole, damaged, abandoned (critically damaged, its soldiers
   # out) and ruins once it has fallen; with soldiers inside, the whole one (occupied) and the damaged one (damaged_occupied).
   building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 2.5,
@@ -60,3 +63,8 @@ models:
   # The ore fields.
   ore/ore:   { file: map/ore_cluster/ore_cluster.glb }
   ore/gems:  { file: map/gem_cluster/gem_cluster.glb }
+
+  # The units of the players (docs/ra2_units). The turret node turns, the team_mask nodes take the owner's colour.
+  unit/alliance_light_tank:  { file: unit/alliance_light_tank/alliance_light_tank.glb }
+  unit/alliance_harvester:   { file: unit/alliance_harvester/alliance_harvester.glb }
+  unit/harvester:            { file: unit/harvester/harvester.glb }

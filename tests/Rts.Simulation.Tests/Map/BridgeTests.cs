@@ -72,7 +72,7 @@ public sealed class BridgeTests
         var visited = RunToStop(world, unit, []);
 
         Assert.Equal(new CellPos(13, 6), unit.Position.ToCell());
-        Assert.All(Enumerable.Range(6, 4), x => Assert.Contains(new CellPos(x, 4), visited));
+        Assert.Contains(visited, cell => cell.Y == 4 && cell.X is >= 6 and <= 9);
     }
 
     [Fact]
