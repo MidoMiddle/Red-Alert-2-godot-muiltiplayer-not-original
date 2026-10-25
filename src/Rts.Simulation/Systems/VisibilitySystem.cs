@@ -14,7 +14,8 @@ namespace Rts.Simulation.Systems;
 /// <para>
 /// Stage 2d: a ready and online veil generator (<see cref="Rules.BuildingDef.VeilRadius"/>) adds its veil to its owner's grid the same
 /// way, and takes it away when it falls, goes offline or is sold; an orbital uplink (<see cref="Rules.BuildingDef.RevealsMap"/>) keeps
-/// its owner's whole map explored while it stands ready and online.
+/// its owner's whole map explored while it stands ready, with or without power (RA2); when the player has none any more — lost, sold or
+/// taken — what it does not see now is unexplored again (RA2: the shroud comes back).
 /// </para>
 /// </summary>
 public static class VisibilitySystem
@@ -22,6 +23,7 @@ public static class VisibilitySystem
     public static void Update(GameWorld world)
     {
         Detectors(world);
+        Reshroud(world);
 
         foreach (var entity in world.Entities)
         {
@@ -58,7 +60,8 @@ public static class VisibilitySystem
             }
 
             var working = building.IsAlive && building.IsReady && Combat.Defenses.IsOnline(world, building);
-            if (def.RevealsMap && working)
+            // The spy satellite reveals without power (RA2).
+            if (def.RevealsMap && building.IsAlive && building.IsReady)
             {
                 world.VisionOf(building.Owner).ExploreAll();
             }
@@ -116,6 +119,30 @@ public static class VisibilitySystem
                     world.IntentReaders.Add((building.Owner, centre, def.RevealsIntentRadius * WorldPos.LeptonsPerCell));
                 }
             }
+        }
+    }
+
+    // A player that had a spy satellite and has none now: the shroud comes back over what it does not see (RA2).
+    private static void Reshroud(GameWorld world)
+    {
+        foreach (var player in world.Players)
+        {
+            var revealing = false;
+            foreach (var entity in world.Entities)
+            {
+                if (entity is Building { IsAlive: true, IsReady: true, Def.RevealsMap: true } building && building.Owner == player.Id)
+                {
+                    revealing = true;
+                    break;
+                }
+            }
+
+            if (player.MapRevealed && !revealing)
+            {
+                world.VisionOf(player.Id).ForgetExplored();
+            }
+
+            player.MapRevealed = revealing;
         }
     }
 

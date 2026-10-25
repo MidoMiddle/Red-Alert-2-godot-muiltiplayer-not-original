@@ -38,8 +38,11 @@ public static class TechTree
                 {
                     owned.Add(def.Id);
 
-                    // The richer ore of stage 2c: the best building counts, two do not add up.
-                    income = Math.IntMath.Max(income, def.IncomeBonusPercent);
+                    // The richer ore of the ore purifier: +25% for each (RA2 PurifierBonus), only with power (RA2; not so in Yuri's Revenge).
+                    if (def.IncomeBonusPercent > 0 && Combat.Defenses.IsOnline(world, building))
+                    {
+                        income += def.IncomeBonusPercent;
+                    }
                 }
             }
 

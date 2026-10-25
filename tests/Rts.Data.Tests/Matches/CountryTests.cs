@@ -144,4 +144,16 @@ public sealed class CountryTests
         var replay = ReplayFormat.Read(ReplayFormat.Write(new Replay(SimulationVersion.Current, GameDataFiles.Current.Hash, settings, 0, [], [])));
         Assert.Equal(["cuba", "britain"], replay.Settings.Match!.Players.Select(p => p.Country));
     }
+    [Fact]
+    public void A_usa_air_command_taken_by_another_country_keeps_its_paradrop()
+    {
+        var simulation = Match("russia", "usa");
+        var world = Base(simulation);
+        var command = world.Entities.OfType<Building>().Single(b => b.Def?.Id == "alliance_air_force_command");
+
+        // RA2: the American Air Force Command is a building of its own; whoever takes it has the paradrop.
+        EntrySystem.Capture(world, command, Union, null);
+        Assert.Equal(Union, command.Owner);
+        Assert.Equal(Rts.Simulation.Rules.SuperweaponKind.Paradrop, SuperweaponSystem.KindOf(world, command));
+    }
 }

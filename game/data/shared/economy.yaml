@@ -2,11 +2,12 @@
 economy:
   kind: economy
   name: Economy
-  # Production under low power slows to output / drain, but never below this.
-  low_power_min_rate: 25%
-  # Every factory of a category beyond the first adds this to its speed, up to max_factory_rate.
-  multiple_factory_bonus: 50%
-  max_factory_rate: 300%
+  # Production under low power runs at output / drain, never slower than low_power_min_rate nor faster than low_power_max_rate
+  # (RA2 MinLowPowerProductionSpeed=0.5, MaxLowPowerProductionSpeed=0.8).
+  low_power_min_rate: 50%
+  low_power_max_rate: 80%
+  # Every factory of a category beyond the first multiplies the build time by this (RA2 MultipleFactory=0.8): 1, 0.8, 0.64…
+  multiple_factory: 80%
   # Ore (4.12): 12 stages per cell, 0…11; a stage is worth ore_value (gems: gem_value), so a full cell of ore holds 300.
   ore_value: 25
   gem_value: 50

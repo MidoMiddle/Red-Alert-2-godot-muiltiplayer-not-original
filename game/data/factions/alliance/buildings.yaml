@@ -160,7 +160,8 @@ alliance_ore_purifier:  # the ore brings 25% more (stage 2c)
   sight: 5
   footprint: [3, 3]
   power: -200
-  income_bonus: 25%
+  powered: true  # RA2: the purifier works only with power
+  income_bonus: 25%  # RA2 PurifierBonus, for each purifier
   prerequisites: [alliance_battle_lab]
   capturable: false
 

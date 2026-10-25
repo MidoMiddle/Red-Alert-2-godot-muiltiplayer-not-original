@@ -55,6 +55,12 @@ public sealed class PlayerState
     /// <summary>A spy went into its enemy's barracks (loose ends, stage 3): the player's infantry comes out veteran. State: hashed.</summary>
     public bool VeteranInfantry { get; internal set; }
 
+    /// <summary>
+    /// The player had a ready building that reveals the map (RA2 spy satellite) at the last look: when it has none any more, the map it
+    /// does not see now is unexplored again. State: hashed while true.
+    /// </summary>
+    public bool MapRevealed { get; internal set; }
+
     /// <summary>A spy went into its enemy's war factory: the player's vehicles come out veteran. State: hashed.</summary>
     public bool VeteranVehicles { get; internal set; }
 

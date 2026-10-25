@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -101,6 +101,8 @@ public sealed class StateHasherTests
             case "charging": moving.Charging = idle.Id; break;
             case "veteran infantry": world.Player(Player1).VeteranInfantry = true; break;
             case "veteran vehicles": world.Player(Player1).VeteranVehicles = true; break;
+            case "map revealed": world.Player(Player1).MapRevealed = true; break;
+            case "country weapon": world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null).CountryWeapon = true; break;
             case "cash timer": world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null).CashTimer = 5; break;
             case "warp ticks": moving.WarpTicks = 3; break;
             case "blackout": world.Player(Player1).BlackoutUntil = 50; break;
@@ -350,7 +352,7 @@ public sealed class StateHasherTests
     [InlineData(typeof(PlayerState), new[]
     {
         "<Credits>k__BackingField", "_queues", "<LastUnderAttack>k__BackingField", "<DefeatedTick>k__BackingField", "<BlackoutUntil>k__BackingField",
-        "<VeteranInfantry>k__BackingField", "<VeteranVehicles>k__BackingField",
+        "<VeteranInfantry>k__BackingField", "<VeteranVehicles>k__BackingField", "<MapRevealed>k__BackingField",
         "<Modifiers>k__BackingField", "<IncomeCarry>k__BackingField",
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField", "<Country>k__BackingField",
@@ -396,7 +398,7 @@ public sealed class StateHasherTests
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
         "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField",
         "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
-        "<CashTimer>k__BackingField",
+        "<CashTimer>k__BackingField", "<CountryWeapon>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
         // The tesla troopers charging it (RA2), counted every tick from theirs: derived.

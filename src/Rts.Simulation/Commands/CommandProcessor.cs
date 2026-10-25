@@ -89,8 +89,11 @@ public static class CommandProcessor
             return false;
         }
 
+        // RA2 Soylent: a building with a value of sale (the Soviet refinery, 300) gives that, by its hit points; any other its share of the cost.
         var share = IntMath.DivRound(world.Rules.Economy.SellRefund.Raw * 1000, Fixed.OneRaw);
-        var refund = (int)((long)building.Def!.Cost * share * building.Hp / (1000L * building.MaxHp));
+        var refund = building.Def!.SellValue > 0
+            ? (int)((long)building.Def.SellValue * building.Hp / building.MaxHp)
+            : (int)((long)building.Def.Cost * share * building.Hp / (1000L * building.MaxHp));
         world.SellBuilding(building, refund, events);
         GarrisonSystem.Evacuate(world, building, events);
         return true;

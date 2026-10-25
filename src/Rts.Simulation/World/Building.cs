@@ -62,6 +62,12 @@ public sealed class Building : Entity
     /// <summary>The ticks the superweapon still charges (stage 2d); 0 when it is ready to fire. State: hashed.</summary>
     public int ChargeLeft { get; internal set; }
 
+    /// <summary>
+    /// It was built for a country that may have its superweapon (<see cref="Rules.BuildingDef.SuperweaponCountries"/>: the USA's Air Force
+    /// Command and its paradrop): whoever owns it later, by capture, has the superweapon (RA2). State: hashed while true.
+    /// </summary>
+    public bool CountryWeapon { get; internal set; }
+
     /// <summary>The ticks until a taken oil derrick gives its owner credits again; 0 for any other building. State: hashed.</summary>
     public int CashTimer { get; internal set; }
 

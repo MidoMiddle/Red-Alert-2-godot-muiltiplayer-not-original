@@ -228,10 +228,10 @@ public sealed class ProductionTests
 
     [Theory]
     [InlineData(1, false, TankTime)]
-    [InlineData(2, false, 28)]   // 1.5 times faster: 41 000 / 1500, rounded up
-    [InlineData(3, false, 21)]   // twice
-    [InlineData(5, false, 14)]   // 300 %, the most: 41 000 / 3000
-    [InlineData(1, true, 164)]   // no power at all: 25 %
+    [InlineData(2, false, 33)]   // RA2 MultipleFactory: the time × 0.8, 41 000 / 1250, rounded up
+    [InlineData(3, false, 27)]   // × 0.64: 41 000 / 1562
+    [InlineData(5, false, 17)]   // × 0.8⁴: 41 000 / 2441
+    [InlineData(1, true, 82)]    // no power at all: 50 %, the least (RA2 MinLowPowerProductionSpeed)
     public void Factories_and_power_set_the_speed(int factories, bool lowPower, int ticks)
     {
         var simulation = Match();
@@ -245,10 +245,11 @@ public sealed class ProductionTests
 
     [Theory]
     [InlineData(150, 200, 750)]
+    [InlineData(190, 200, 800)]  // RA2 MaxLowPowerProductionSpeed: 80 % at most
     [InlineData(100, 200, 500)]
-    [InlineData(10, 200, 250)]
-    [InlineData(0, 50, 250)]
-    public void Low_power_slows_production_to_output_by_drain_but_not_below_a_quarter(int output, int drain, int rate)
+    [InlineData(10, 200, 500)]   // RA2 MinLowPowerProductionSpeed: 50 % at least
+    [InlineData(0, 50, 500)]
+    public void Low_power_slows_production_to_output_by_drain_between_a_half_and_four_fifths(int output, int drain, int rate)
     {
         var simulation = Match();
         var player = Player(simulation);

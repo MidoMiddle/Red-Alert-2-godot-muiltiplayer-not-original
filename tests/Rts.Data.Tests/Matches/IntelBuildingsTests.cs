@@ -51,26 +51,30 @@ public sealed class IntelBuildingsTests
     }
 
     [Fact]
-    public void The_uplink_explores_the_whole_map_once_it_has_power_and_under_the_fog_shows_the_ground_only()
+    public void The_uplink_explores_the_whole_map_even_without_power_and_under_the_fog_shows_the_ground_only()
     {
         var simulation = Match(fog: true);
         var world = simulation.World;
-        Build(world, Allied, "alliance_spy_satellite_uplink", 14, 6);
+        var uplink = Build(world, Allied, "alliance_spy_satellite_uplink", 14, 6);
         // Placed between ticks: the power is worked out at once, as for a building that grows ready in a tick.
         PowerSystem.Update(world, null);
         var tank = world.SpawnUnit(Union, UnitType.HeavyTank, Far.Center);
         Step(simulation, 2);
 
+        // RA2: the reveal does not ask for power.
         Assert.True(world.Player(Allied).LowPower);
-        Assert.Equal(CellVisibility.Shroud, Vision.StateAt(world, Allied, Far));
-
-        Build(world, Allied, "alliance_power_plant", 17, 6);
-        Step(simulation, 2);
-
         Assert.Equal(CellVisibility.Fog, Vision.StateAt(world, Allied, Far));
         Assert.Equal(CellVisibility.Fog, Vision.StateAt(world, Allied, new CellPos(63, 63)));
         Assert.False(Vision.Sees(world, Allied, tank), "under the fog only what is in sight now");
         Assert.Equal(CellVisibility.Shroud, Vision.StateAt(world, Union, new CellPos(14, 6)));
+
+        // Lost, it takes the map with it (RA2: the shroud comes back over what is not in sight).
+        world.SetHp(uplink, 1, null);
+        var cannon = world.Rules.Database.IndexOfWeapon("alliance_light_cannon");
+        world.Hits.Add(new Rts.Simulation.Combat.Hit(uplink.Id, uplink.Id, Union, cannon, Rts.Simulation.Combat.Aim.CentreOf(uplink), uplink.Id));
+        Step(simulation, 2);
+        Assert.False(uplink.IsAlive);
+        Assert.Equal(CellVisibility.Shroud, Vision.StateAt(world, Allied, Far));
     }
 
     [Fact]

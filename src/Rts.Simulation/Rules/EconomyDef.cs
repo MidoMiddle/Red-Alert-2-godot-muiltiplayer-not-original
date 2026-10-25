@@ -12,14 +12,14 @@ public sealed record EconomyDef : IDefinition
 
     public required string Name { get; init; }
 
-    /// <summary>The slowest production under low power, as a fraction: 0.25 for 25 percent.</summary>
+    /// <summary>The slowest production under low power, as a fraction: 0.5 for 50 percent (RA2 <c>MinLowPowerProductionSpeed</c>).</summary>
     public required Fixed LowPowerMinRate { get; init; }
 
-    /// <summary>What every factory of a category beyond the first adds to its speed, as a fraction: 0.5 for 50 percent.</summary>
-    public required Fixed MultipleFactoryBonus { get; init; }
+    /// <summary>The fastest production under low power, as a fraction: 0.8 (RA2 <c>MaxLowPowerProductionSpeed</c>).</summary>
+    public required Fixed LowPowerMaxRate { get; init; }
 
-    /// <summary>The fastest a category can produce with many factories, as a fraction: 3 for 300 percent.</summary>
-    public required Fixed MaxFactoryRate { get; init; }
+    /// <summary>What every factory of a category beyond the first multiplies the build time by: 0.8 (RA2 <c>MultipleFactory</c>).</summary>
+    public required Fixed MultipleFactory { get; init; }
 
     /// <summary>Credits one stage of ore is worth: a cell of stage s holds (s + 1) × this.</summary>
     public required int OreValue { get; init; }

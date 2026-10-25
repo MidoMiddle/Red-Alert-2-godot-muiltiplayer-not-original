@@ -39,7 +39,8 @@ public static class PowerSystem
                     player.BuildingList.Add(building.Id);
                     if (building.IsReady)
                     {
-                        output += def.Power > 0 ? def.Power : 0;
+                        // A damaged power plant gives less (RA2): its power times its share of hit points.
+                        output += def.Power > 0 ? (int)((long)def.Power * building.Hp / building.MaxHp) : 0;
                         drain += def.Power < 0 ? -def.Power : 0;
                     }
                 }

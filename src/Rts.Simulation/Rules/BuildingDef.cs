@@ -127,6 +127,9 @@ public sealed record BuildingDef : IDefinition
     /// </summary>
     public bool ClonesInfantry { get; init; }
 
+    /// <summary>What a sale gives at full hit points, in credits, instead of the share of the cost (RA2 <c>Soylent</c>); 0 for the share.</summary>
+    public int SellValue { get; init; }
+
     /// <summary>
     /// RA2 psychic sensor, while it stands ready and online: within this many cells disguised spies are shown to its owner's team for
     /// what they are (<c>DetectDisguise</c>); 0 for none.

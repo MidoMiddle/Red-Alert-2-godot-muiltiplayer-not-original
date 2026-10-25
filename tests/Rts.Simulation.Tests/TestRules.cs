@@ -247,9 +247,9 @@ internal static class TestRules
         {
             Id = "economy",
             Name = "Economy",
-            LowPowerMinRate = Percent(25),
-            MultipleFactoryBonus = Percent(50),
-            MaxFactoryRate = Percent(300),
+            LowPowerMinRate = Percent(50),
+            LowPowerMaxRate = Percent(80),
+            MultipleFactory = Percent(80),
             OreValue = 25,
             GemValue = 50,
             OreGrowthInterval = 450,

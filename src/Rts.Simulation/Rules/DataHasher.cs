@@ -172,6 +172,7 @@ public static class DataHasher
             hash.Add(building.RepairsVehicles);
             hash.Add(building.IncomeBonusPercent);
             hash.Add(building.ClonesInfantry);
+            hash.Add(building.SellValue);
             hash.Add(building.DetectsDisguiseRadius);
             hash.Add(building.Sensors);
             hash.Add(building.RevealsIntentRadius);
@@ -311,8 +312,8 @@ public static class DataHasher
         {
             Add(hash, economy.Id);
             hash.Add(economy.LowPowerMinRate.Raw);
-            hash.Add(economy.MultipleFactoryBonus.Raw);
-            hash.Add(economy.MaxFactoryRate.Raw);
+            hash.Add(economy.LowPowerMaxRate.Raw);
+            hash.Add(economy.MultipleFactory.Raw);
             hash.Add(economy.OreValue);
             hash.Add(economy.GemValue);
             hash.Add(economy.OreGrowthInterval);

@@ -443,14 +443,15 @@ internal static class RulesValidator
                 Error(economy.Id, "low_power_min_rate", $"'low_power_min_rate' of '{economy.Id}' must be 0% to 100%");
             }
 
-            if (economy.MultipleFactoryBonus < Fixed.Zero)
+            if (economy.LowPowerMaxRate > Fixed.One
+                || (economy.LowPowerMinRate >= Fixed.Zero && economy.LowPowerMinRate <= Fixed.One && economy.LowPowerMaxRate < economy.LowPowerMinRate))
             {
-                Error(economy.Id, "multiple_factory_bonus", $"'multiple_factory_bonus' of '{economy.Id}' must not be negative");
+                Error(economy.Id, "low_power_max_rate", $"'low_power_max_rate' of '{economy.Id}' must be from 'low_power_min_rate' to 100%");
             }
 
-            if (economy.MaxFactoryRate < Fixed.One)
+            if (economy.MultipleFactory <= Fixed.Zero || economy.MultipleFactory > Fixed.One)
             {
-                Error(economy.Id, "max_factory_rate", $"'max_factory_rate' of '{economy.Id}' must be 100% or more");
+                Error(economy.Id, "multiple_factory", $"'multiple_factory' of '{economy.Id}' must be more than 0% and at most 100%");
             }
 
             Positive(economy.Id, "ore_value", economy.OreValue);

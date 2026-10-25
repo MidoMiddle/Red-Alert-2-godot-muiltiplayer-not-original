@@ -109,6 +109,11 @@ public static class StateHasher
             // Rules v60 (loose ends, stage 3): veterans from a spy.
             hash.Add(player.VeteranInfantry);
             hash.Add(player.VeteranVehicles);
+            if (player.MapRevealed)
+            {
+                // RA2: the spy satellite, whose loss brings the shroud back.
+                hash.Add(5);
+            }
             // Rules v39 (M8 step 2): the bonuses of the player and the hundredths of income it is owed.
             hash.Add(player.Modifiers.IncomeBonusPercent);
             hash.Add(player.Modifiers.BuildSpeedBonusPercent);
@@ -407,6 +412,11 @@ public static class StateHasher
 
                 // Rules v57 (loose ends, stage 1): the income of a taken oil derrick.
                 hash.Add(building.CashTimer);
+                if (building.CountryWeapon)
+                {
+                    // RA2: the USA's Air Force Command keeps its paradrop for whoever takes it.
+                    hash.Add(6);
+                }
 
                 // Rules v48 (stage 2e): the soldiers inside.
                 hash.Add(building.Occupants.Count);

@@ -28,7 +28,7 @@ internal static class DefinitionReader
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
-        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "clones_infantry", "detects_disguise", "sensors", "reveals_intent", "death_weapon", "overcharge_weapon",
+        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "clones_infantry", "sell_value", "detects_disguise", "sensors", "reveals_intent", "death_weapon", "overcharge_weapon",
         "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
         "countries", "forbidden_countries", "superweapon_countries", "paradrop", "paradrop_count",
     ];
@@ -67,7 +67,7 @@ internal static class DefinitionReader
 
     private static readonly string[] EconomyKeys =
     [
-        "name", "low_power_min_rate", "multiple_factory_bonus", "max_factory_rate", "ore_value", "gem_value", "ore_growth_interval",
+        "name", "low_power_min_rate", "low_power_max_rate", "multiple_factory", "ore_value", "gem_value", "ore_growth_interval",
         "ore_growth_chance", "ore_spread_stage", "ore_spread_chance", "source_interval", "source_radius", "sell_refund", "repair_cost",
         "repair_rate", "repair_delay",
     ];
@@ -194,6 +194,7 @@ internal static class DefinitionReader
             RepairsVehicles = fields.Optional("repairs_vehicles", Scalars.Flag, false),
             IncomeBonusPercent = WholePercent(fields.Optional("income_bonus", Scalars.Percent, Fixed.Zero)),
             ClonesInfantry = fields.Optional("clones_infantry", Scalars.Flag, false),
+            SellValue = fields.Optional("sell_value", Scalars.Int, 0),
             DetectsDisguiseRadius = fields.Optional("detects_disguise", Scalars.Int, 0),
             Sensors = fields.Optional("sensors", Scalars.Int, 0),
             RevealsIntentRadius = fields.Optional("reveals_intent", Scalars.Int, 0),
@@ -603,8 +604,8 @@ internal static class DefinitionReader
             Id = definition.Id,
             Name = fields.Required("name", Scalars.Text, ""),
             LowPowerMinRate = fields.Required("low_power_min_rate", Scalars.Percent, Fixed.Zero),
-            MultipleFactoryBonus = fields.Required("multiple_factory_bonus", Scalars.Percent, Fixed.Zero),
-            MaxFactoryRate = fields.Required("max_factory_rate", Scalars.Percent, Fixed.Zero),
+            LowPowerMaxRate = fields.Required("low_power_max_rate", Scalars.Percent, Fixed.Zero),
+            MultipleFactory = fields.Required("multiple_factory", Scalars.Percent, Fixed.Zero),
             OreValue = fields.Required("ore_value", Scalars.Int, 0),
             GemValue = fields.Required("gem_value", Scalars.Int, 0),
             OreGrowthInterval = fields.Required("ore_growth_interval", Scalars.Ticks, 0),

@@ -42,6 +42,7 @@ refinery:  # ore processing; gives a free harvester
   dock_cell: [1, 3]
   prerequisites: [reactor]
   spy_effect: steal_credits
+  sell_value: 300  # RA2 Soylent: sold for 300, the free harvester not counted
 
 barracks:  # infantry production
   kind: building

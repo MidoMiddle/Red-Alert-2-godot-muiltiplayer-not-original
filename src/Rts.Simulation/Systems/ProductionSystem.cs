@@ -10,8 +10,9 @@ namespace Rts.Simulation.Systems;
 
 /// <summary>
 /// The production of every player (docs/implementation/M3_base_economy.md, 4.10). The first item of each queue goes on by
-/// <c>1000 × power × factories</c> per mille of a tick: power is 100 %, or <c>max(low_power_min_rate, output / drain)</c> on low power;
-/// factories are <c>1 + bonus × (N − 1)</c> up to <c>max_factory_rate</c> for N ready factories of its category, and nothing goes on
+/// <c>1000 × power × factories</c> per mille of a tick: power is 100 %, or <c>output / drain</c> on low power, kept between
+/// <c>low_power_min_rate</c> and <c>low_power_max_rate</c> (RA2: 50 % and 80 %); factories are <c>1 / multiple_factory^(N − 1)</c> for N
+/// ready factories of its category (RA2: each more takes the time × 0.8), and nothing goes on
 /// without one. It is paid as it goes: the cost times the share of progress, rounded down, so the payments add up to the cost exactly.
 /// When the player cannot pay a tick, the item waits (<see cref="InsufficientFunds"/> once). A finished building waits to be placed; a
 /// finished unit comes out at the exit of the main factory — the last one built — as soon as the exit is free, and drives to a free place
@@ -75,11 +76,17 @@ public static class ProductionSystem
         var power = 1000;
         if (player.LowPower)
         {
-            var floor = Permille(economy.LowPowerMinRate);
-            power = IntMath.Max(floor, (int)(player.PowerOutput * 1000L / player.PowerDrain));
+            var share = player.PowerDrain > 0 ? (int)(player.PowerOutput * 1000L / player.PowerDrain) : 0;
+            power = IntMath.Clamp(share, Permille(economy.LowPowerMinRate), Permille(economy.LowPowerMaxRate));
         }
 
-        var factory = IntMath.Min(Permille(economy.MaxFactoryRate), 1000 + Permille(economy.MultipleFactoryBonus) * (factories - 1));
+        // Each factory beyond the first shortens the time by multiple_factory, compounded.
+        var factory = 1000;
+        var step = Permille(economy.MultipleFactory);
+        for (var more = 1; more < factories; more++)
+        {
+            factory = (int)(factory * 1000L / step);
+        }
         return (int)((long)power * factory * (100 + player.Modifiers.BuildSpeedBonusPercent) / 100_000);
     }
 

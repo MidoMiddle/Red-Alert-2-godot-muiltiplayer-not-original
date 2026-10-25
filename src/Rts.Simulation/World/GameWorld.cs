@@ -306,6 +306,9 @@ public sealed class GameWorld
     {
         var before = Combat.DamageStates.Of(building.Hp, building.MaxHp);
         building.Hp = hp;
+
+        // The power of a power plant follows its hit points (RA2).
+        PowerDirty |= building.Def is { Power: > 0 };
         var after = Combat.DamageStates.Of(hp, building.MaxHp);
         if (after != before && after != Combat.DamageState.Destroyed)
         {
@@ -455,7 +458,10 @@ public sealed class GameWorld
             }
         }
 
-        var building = new Building(AllocateId(), owner, def, index, cell, ready ? 0 : def.BuildUp);
+        var building = new Building(AllocateId(), owner, def, index, cell, ready ? 0 : def.BuildUp)
+        {
+            CountryWeapon = !def.SuperweaponCountries.IsDefaultOrEmpty && !owner.IsNeutral && def.SuperweaponCountries.Contains(Player(owner).Country),
+        };
         _entities.Add(building);
         ChangeMap([new TakeBuildingEdit(cell, far)], events);
         BuildingsChanged();

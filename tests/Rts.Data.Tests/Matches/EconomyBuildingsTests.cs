@@ -152,4 +152,52 @@ public sealed class EconomyBuildingsTests
         Assert.Equal(missile.Warhead, blast.Warhead);
         Assert.Equal("nuke", blast.Warhead);
     }
+    [Fact]
+    public void Ore_purifiers_add_up_and_work_only_with_power()
+    {
+        var world = Match().World;
+        Build(world, Allied, "alliance_ore_purifier", 40, 40);
+        Build(world, Allied, "alliance_ore_purifier", 44, 40);
+        PowerSystem.Update(world, null);
+        TechTree.Update(world);
+        Assert.True(world.Player(Allied).LowPower);
+        Assert.Equal(0, world.Player(Allied).BuildingIncomeBonusPercent);
+
+        Build(world, Allied, "alliance_power_plant", 40, 46);
+        Build(world, Allied, "alliance_power_plant", 44, 46);
+        PowerSystem.Update(world, null);
+        TechTree.Update(world);
+        // RA2 PurifierBonus: 25% for each.
+        Assert.Equal(50, world.Player(Allied).BuildingIncomeBonusPercent);
+    }
+
+    [Fact]
+    public void A_damaged_power_plant_gives_power_by_its_hit_points()
+    {
+        var world = Match().World;
+        var plant = Build(world, Allied, "alliance_power_plant", 40, 40);
+        PowerSystem.Update(world, null);
+        Assert.Equal(200, world.Player(Allied).PowerOutput);
+
+        world.SetHp(plant, plant.MaxHp / 2, null);
+        PowerSystem.Update(world, null);
+        Assert.Equal(100, world.Player(Allied).PowerOutput);
+    }
+
+    [Fact]
+    public void The_soviet_refinery_is_sold_for_its_soylent_and_the_allied_one_for_half_its_cost()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var soviet = Build(world, Union, "refinery", 20, 20);
+        var allied = Build(world, Allied, "alliance_ore_refinery", 40, 20);
+        var (union, alliance) = (world.Player(Union).Credits, world.Player(Allied).Credits);
+        simulation.Enqueue(new SellCommand(Union, simulation.CurrentTick, 0, soviet.Id));
+        simulation.Enqueue(new SellCommand(Allied, simulation.CurrentTick, 0, allied.Id));
+        Step(simulation, 2);
+
+        // RA2 Soylent=300 for the Soviet refinery; the free harvester stays.
+        Assert.Equal(union + 300, world.Player(Union).Credits);
+        Assert.Equal(alliance + (allied.Def!.Cost / 2), world.Player(Allied).Credits);
+    }
 }

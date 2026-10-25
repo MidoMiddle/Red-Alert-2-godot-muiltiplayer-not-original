@@ -186,7 +186,7 @@ public static class SuperweaponSystem
         building.Owner.IsNeutral ? SuperweaponKind.None
         : building.Def is { } off && IsStrike(off.Superweapon) && world.Match is { Options.Superweapons: false } ? SuperweaponKind.None
         : building.Def is not { } def ? building.Type.Superweapon
-        : def.SuperweaponCountries.IsDefaultOrEmpty || def.SuperweaponCountries.Contains(world.Player(building.Owner).Country) ? def.Superweapon
+        : def.SuperweaponCountries.IsDefaultOrEmpty || building.CountryWeapon ? def.Superweapon
         : SuperweaponKind.None;
 
     /// <summary>The superweapons the match option «Superweapons» turns off: all but the paradrops.</summary>
