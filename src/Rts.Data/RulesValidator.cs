@@ -861,7 +861,8 @@ internal static class RulesValidator
         {
             for (var i = 0; i < prerequisites.Length; i++)
             {
-                if (!rules.TryGetBuilding(prerequisites[i], out _))
+                // A building, or a group of RA2 that a building provides.
+                if (!rules.TryGetBuilding(prerequisites[i], out _) && !rules.Buildings.Any(building => building.Provides.Contains(prerequisites[i])))
                 {
                     ItemError(id, "prerequisites", i, Missing(id, "building", prerequisites[i]));
                 }

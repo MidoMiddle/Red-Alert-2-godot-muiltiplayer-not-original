@@ -59,9 +59,11 @@ public sealed class M3GoldenValuesTests
         // data move.
         // Rules v77: the same run and credits; the cloning vats join the Union's buildings in the data.
         // Rules v78: the same run and credits; so does the psychic sensor.
-        Assert.Equal((5972, 0x1da204d652f4e4cdUL), (fifth.Credits, fifth.Checksum));
-        // The first tank at 4:16 (tick 3851).
-        Assert.Equal(3851, Run.Value.TankTicks[0]);
+        // Rules v85: the war factory of the Union needs barracks too (RA2 prerequisite groups): the run builds them first, 35 credits more
+        // by minute 5.
+        Assert.Equal((6007, 0x1af1e1eee31735aaUL), (fifth.Credits, fifth.Checksum));
+        // The first tank at 4:18 (tick 3873; rules v85: the war factory waits for the barracks).
+        Assert.Equal(3873, Run.Value.TankTicks[0]);
     }
 
     [Fact]

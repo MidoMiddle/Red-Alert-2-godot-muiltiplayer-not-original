@@ -28,7 +28,7 @@ internal static class DefinitionReader
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
-        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "clones_infantry", "sell_value", "detects_disguise", "sensors", "reveals_intent", "death_weapon", "overcharge_weapon",
+        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "clones_infantry", "sell_value", "provides", "detects_disguise", "sensors", "reveals_intent", "death_weapon", "overcharge_weapon",
         "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
         "countries", "forbidden_countries", "superweapon_countries", "paradrop", "paradrop_count",
     ];
@@ -195,6 +195,7 @@ internal static class DefinitionReader
             IncomeBonusPercent = WholePercent(fields.Optional("income_bonus", Scalars.Percent, Fixed.Zero)),
             ClonesInfantry = fields.Optional("clones_infantry", Scalars.Flag, false),
             SellValue = fields.Optional("sell_value", Scalars.Int, 0),
+            Provides = fields.Optional("provides", Scalars.IdList, ImmutableArray<string>.Empty),
             DetectsDisguiseRadius = fields.Optional("detects_disguise", Scalars.Int, 0),
             Sensors = fields.Optional("sensors", Scalars.Int, 0),
             RevealsIntentRadius = fields.Optional("reveals_intent", Scalars.Int, 0),

@@ -364,6 +364,7 @@ public sealed class GoldenValuesTests
         // Rules v82 (the superweapons and the atomic plant of RA2): the version only.
         // Rules v83 (the repairs, shipyards and walls of RA2): the version only.
         // Rules v84 (the economy and power of RA2): the version only.
-        Assert.Equal((22270, 1076911082709399137UL), (bytes.Length, hash.Value));
+        // Rules v85 (the prerequisite groups of RA2): the version only.
+        Assert.Equal((22270, 11677646077179226920UL), (bytes.Length, hash.Value));
     }
 }

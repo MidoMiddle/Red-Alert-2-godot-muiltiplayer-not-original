@@ -257,7 +257,8 @@ public static class SidebarModel
         }
 
         var availableLater = kind == ProductionKind.Unit && rules.Units[index].AvailableLater;
-        var missing = available || availableLater ? "" : Missing(rules, prerequisites, owned, nameOf);
+        var faction = kind == ProductionKind.Building ? rules.Buildings[index].Faction : rules.Units[index].Faction;
+        var missing = available || availableLater ? "" : Missing(rules, prerequisites, owned, nameOf, faction);
         var later = kind == ProductionKind.Building ? rules.Buildings[index].AbilityLater : rules.Units[index].AbilityLater;
         if (first is not null)
         {
@@ -317,15 +318,23 @@ public static class SidebarModel
         : def.Primary.Length > 0 || def.GarrisonCapacity > 0 ? CameoRole.Defense
         : CameoRole.Support;
 
-    private static string Missing(RulesDatabase rules, ImmutableArray<string> prerequisites, HashSet<string> owned, Func<string, string, string>? nameOf)
+    private static string Missing(
+        RulesDatabase rules, ImmutableArray<string> prerequisites, HashSet<string> owned, Func<string, string, string>? nameOf, string faction)
     {
         var names = new List<string>();
         foreach (var id in prerequisites)
         {
             if (!owned.Contains(id))
             {
+                // A group of RA2 (power, proc, radar, barracks, tech) by the first building of the faction in it.
                 var index = rules.IndexOfBuilding(id);
-                names.Add(index >= 0 ? nameOf?.Invoke(id, rules.Buildings[index].Name) ?? rules.Buildings[index].Name : id);
+                if (index < 0 || rules.Buildings[index].Faction != faction)
+                {
+                    var member = Array.FindIndex(rules.Buildings.ToArray(), def => def.Faction == faction && def.Provides.Contains(id));
+                    index = member >= 0 ? member : index;
+                }
+
+                names.Add(index >= 0 ? nameOf?.Invoke(rules.Buildings[index].Id, rules.Buildings[index].Name) ?? rules.Buildings[index].Name : id);
             }
         }
 
@@ -340,6 +349,7 @@ public static class SidebarModel
             if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && building.Owner == player)
             {
                 owned.Add(def.Id);
+                owned.UnionWith(def.Provides);
             }
         }
 

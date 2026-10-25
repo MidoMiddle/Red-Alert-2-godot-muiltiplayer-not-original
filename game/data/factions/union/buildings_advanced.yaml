@@ -20,7 +20,7 @@ naval_shipyard:  # shipyard on deep water; builds the ships (stage 2a)
   water: true
   produces: [naval]
   exit_cell: [1, 4]
-  prerequisites: [refinery]
+  prerequisites: [proc]
   capturable: false
   repairs_vehicles: true  # RA2 UnitRepair: it mends the ships beside it
 
@@ -51,8 +51,9 @@ nuclear_reactor:  # late power, +2000; blows up when a shot brings it down (stag
   footprint: [4, 4]
   power: 2000
   death_weapon: atomic_plant_blast
-  prerequisites: [tech_center]
+  prerequisites: [tech]
   spy_effect: blackout
+  provides: [power]  # RA2 prerequisite group POWER
 
 cloning_vats:  # RA2 Cloning Vats (NACLON): every soldier the barracks train comes out a second time here, free, with or without power; a soldier sent in gives half its price back
   kind: building
@@ -65,7 +66,7 @@ cloning_vats:  # RA2 Cloning Vats (NACLON): every soldier the barracks train com
   sight: 5
   footprint: [2, 2]
   power: -200
-  prerequisites: [tech_center]
+  prerequisites: [tech]
   build_limit: 1
   capturable: false
   clones_infantry: true
@@ -82,7 +83,7 @@ iron_curtain:  # superweapon: 3 x 3 cells cannot be hurt for 50 s, soldiers ther
   armor: concrete
   footprint: [3, 3]
   power: -200
-  prerequisites: [tech_center]
+  prerequisites: [tech]
   capturable: false
   superweapon: curtain
   recharge: 300s
@@ -102,7 +103,7 @@ nuclear_missile_silo:  # superweapon: a missile of 600 over 10 cells, toxin afte
   armor: concrete
   footprint: [3, 3]
   power: -200
-  prerequisites: [tech_center]
+  prerequisites: [tech]
   capturable: false
   superweapon: missile
   recharge: 600s

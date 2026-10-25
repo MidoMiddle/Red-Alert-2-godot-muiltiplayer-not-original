@@ -38,6 +38,12 @@ public static class TechTree
                 {
                     owned.Add(def.Id);
 
+                    // The prerequisite groups of RA2: a building taken from the other faction counts too.
+                    foreach (var group in def.Provides)
+                    {
+                        owned.Add(group);
+                    }
+
                     // The richer ore of the ore purifier: +25% for each (RA2 PurifierBonus), only with power (RA2; not so in Yuri's Revenge).
                     if (def.IncomeBonusPercent > 0 && Combat.Defenses.IsOnline(world, building))
                     {

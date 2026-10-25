@@ -173,6 +173,7 @@ public static class DataHasher
             hash.Add(building.IncomeBonusPercent);
             hash.Add(building.ClonesInfantry);
             hash.Add(building.SellValue);
+            Add(hash, building.Provides);
             hash.Add(building.DetectsDisguiseRadius);
             hash.Add(building.Sensors);
             hash.Add(building.RevealsIntentRadius);

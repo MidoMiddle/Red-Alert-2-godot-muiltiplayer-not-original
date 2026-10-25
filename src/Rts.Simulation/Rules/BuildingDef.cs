@@ -127,6 +127,12 @@ public sealed record BuildingDef : IDefinition
     /// </summary>
     public bool ClonesInfantry { get; init; }
 
+    /// <summary>
+    /// The prerequisite groups of RA2 it stands for (<c>power</c>, <c>proc</c>, <c>radar</c>, <c>barracks</c>, <c>tech</c>): a prerequisite
+    /// may name a group, which any ready building of the player in it — its own or one it took — fulfils.
+    /// </summary>
+    public ImmutableArray<string> Provides { get; init; } = ImmutableArray<string>.Empty;
+
     /// <summary>What a sale gives at full hit points, in credits, instead of the share of the cost (RA2 <c>Soylent</c>); 0 for the share.</summary>
     public int SellValue { get; init; }
 
