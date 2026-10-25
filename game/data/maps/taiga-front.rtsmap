@@ -3,6 +3,7 @@ id: taiga-front
 name: "Taiga Front"
 author: "Ready maps (M7)"
 description: "Two against two through dense taiga; teams: slots 1 and 3 in the west, 2 and 4 in the east."
+origin: ready
 size: [128, 96]
 climate: winter
 lighting: day

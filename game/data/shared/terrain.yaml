@@ -58,3 +58,19 @@ ice:
   code: "i"
   buildable: false
   speed: { foot: 80%, track: 90%, wheel: 90%, amphibious: 100%, naval: 0%, hover: 100% }
+
+unpaved:
+  kind: terrain
+  name: Unpaved Road
+  code: "g"
+  buildable: true
+  # Gravel, dirt and packed-snow roads: wheels are faster on them, the rest as on clear land (docs/map_elements/04_roads).
+  speed: { foot: 100%, track: 100%, wheel: 110%, amphibious: 100%, naval: 0%, hover: 100% }
+
+path:
+  kind: terrain
+  name: Footpath
+  code: "p"
+  buildable: true
+  # Footpaths and trails: the look only for now; a foot bonus is a version step of its own (docs/map_elements/04_roads).
+  speed: { foot: 100%, track: 100%, wheel: 100%, amphibious: 100%, naval: 0%, hover: 100% }

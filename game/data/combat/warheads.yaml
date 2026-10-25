@@ -17,7 +17,7 @@ small_arms_deployed:  # RA2 SSA: the machine gun of a Rifleman dug in, better at
 ap_shell:  # RA2 AP: tank shells, strong against vehicles
   kind: warhead
   name: Armor Piercing
-  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 45%, concrete: 45%, special_1: 100%, special_2: 100% }
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 45%, concrete: 45%, special_1: 60%, special_2: 100% }
   spread: 0.3
   percent_at_max: 50%
   wall_damage: true
@@ -27,7 +27,7 @@ ap_shell:  # RA2 AP: tank shells, strong against vehicles
 electric:  # RA2 Electric: Tesla bolts, good against everything, half against buildings
   kind: warhead
   name: Electric
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 85%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 85%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 200%, special_2: 100% }
   infantry_death: electro
 
 flak_ground:  # RA2 FlakTWH: flak at the ground, in an area, strong against infantry
@@ -49,7 +49,7 @@ flak_air:  # RA2 FlakWH: flak at aircraft, nothing against buildings
 light_mg:  # RA2 20mmRapid: the harvester's machine gun
   kind: warhead
   name: Light Machine Gun
-  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 20%, heavy: 20%, wood: 20%, steel: 10%, concrete: 10%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 20%, heavy: 20%, wood: 20%, steel: 10%, concrete: 10%, special_1: 400%, special_2: 100% }
   infantry_death: normal
 
 missile:  # the anti-tank rocket of the Rocket Trooper (M4 plan, 4.18)
@@ -63,7 +63,7 @@ missile:  # the anti-tank rocket of the Rocket Trooper (M4 plan, 4.18)
 hollow_point:  # RA2 HollowPoint: the pistols of the Elite Commando and the rifle of the Marksman; one shot kills a soldier, vehicles and buildings shrug it off
   kind: warhead
   name: Hollow Point
-  verses: { none: 200%, flak: 100%, plate: 100%, light: 1%, medium: 1%, heavy: 1%, wood: 1%, steel: 1%, concrete: 1%, special_1: 100%, special_2: 100% }
+  verses: { none: 200%, flak: 100%, plate: 100%, light: 1%, medium: 1%, heavy: 1%, wood: 1%, steel: 1%, concrete: 1%, special_1: 1%, special_2: 100% }
   infantry_death: normal
 
 toxin:  # RA2 RadBeamWarhead: melts soldiers, hardly scratches vehicles, nothing to buildings
@@ -78,10 +78,10 @@ bite:  # RA2 ParasiteDog: a dog's bite kills any soldier, does nothing to vehicl
   verses: { none: 100%, flak: 100%, plate: 100%, light: 0%, medium: 0%, heavy: 0%, wood: 0%, steel: 0%, concrete: 0%, special_1: 0%, special_2: 0% }
   infantry_death: normal
 
-jetpack_rounds:  # RA2 SSA: the 20mm guns of the Jetpack Trooper; wood and steel are ours (RA2 gives no number)
+jetpack_rounds:  # RA2 SSA: the 20mm guns of the Jetpack Trooper
   kind: warhead
   name: Jetpack Rounds
-  verses: { none: 100%, flak: 100%, plate: 70%, light: 60%, medium: 40%, heavy: 40%, wood: 25%, steel: 25%, concrete: 25%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 70%, light: 60%, medium: 40%, heavy: 40%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
   infantry_death: normal
 
 chrono:  # RA2 ChronoBeam: hurts nothing, erases the target from time (temporal)
@@ -143,63 +143,65 @@ toxin_site:  # RA2 RadSite: what the toxin on the ground does to what stands on 
 apoc_ap:  # RA2 ApocAP: the Super Heavy Tank's cannons
   kind: warhead
   name: Apocalypse AP
-  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 70%, special_1: 100%, special_2: 100% }
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 70%, special_1: 60%, special_2: 100% }
   spread: 0.3
+  percent_at_max: 50%
   infantry_death: explode
   bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 ultra_ap:  # RA2 UltraAP: the Tank Hunter's sabot, full against light and heavy only
   kind: warhead
   name: Ultra AP
-  verses: { none: 2%, flak: 2%, plate: 2%, light: 100%, medium: 40%, heavy: 100%, wood: 2%, steel: 2%, concrete: 2%, special_1: 100%, special_2: 100% }
+  verses: { none: 2%, flak: 2%, plate: 2%, light: 100%, medium: 40%, heavy: 100%, wood: 2%, steel: 2%, concrete: 2%, special_1: 2%, special_2: 100% }
   infantry_death: explode
 
-v3_blast:  # RA2 V3WH: the rocket going off, a cell round it; the verses are ours
+v3_blast:  # RA2 V3WH: the rocket going off, a cell round it, 25% at the edge
   kind: warhead
   name: V3 Blast
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 90%, plate: 80%, light: 90%, medium: 70%, heavy: 70%, wood: 100%, steel: 100%, concrete: 50%, special_1: 80%, special_2: 0% }
   spread: 1
-  percent_at_max: 50%
+  percent_at_max: 25%
   infantry_death: explode
   bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
-prism:  # the beam tank's beam: buildings take it double (RA2); the rest is ours
+prism:  # RA2 CometWH: the beam tank's beam, buildings take it double
   kind: warhead
   name: Prism
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 200%, steel: 200%, concrete: 200%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 75%, medium: 50%, heavy: 50%, wood: 200%, steel: 200%, concrete: 200%, special_1: 100%, special_2: 100% }
   infantry_death: electro
   bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
-mirage:  # the holo tank's gun; the verses are ours
+mirage:  # RA2 MirageWH: the holo tank's gun
   kind: warhead
   name: Mirage
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 75%, heavy: 50%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 80%, light: 100%, medium: 100%, heavy: 100%, wood: 30%, steel: 20%, concrete: 20%, special_1: 100%, special_2: 100% }
   infantry_death: normal
   bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 drone_parasite:  # RA2 ParasiteDog of the terror drone: into a vehicle, eating it 50 every 60 frames; a soldier dies at once; nothing to buildings
   kind: warhead
   name: Drone
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 0% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 0%, special_2: 0% }
   parasite: true
   parasite_damage: 50
   parasite_delay: 4s
   infantry_death: normal
 
-demolition_blast:  # RA2 Demobomb: the demolition truck going off; the area and verses are ours, RadLevel=100 is RA2's
+demolition_blast:  # RA2 DemobombWH: the demolition truck going off, 8 cells, 10% at the edge; RadLevel=100
   kind: warhead
   name: Demolition Blast
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
-  spread: 3
-  percent_at_max: 50%
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 50%, heavy: 50%, wood: 80%, steel: 150%, concrete: 10%, special_1: 100%, special_2: 100% }
+  spread: 8
+  percent_at_max: 10%
   radiation: 100
   infantry_death: explode
 
 ap_splash:  # RA2 APSplash: the submarine's torpedo
   kind: warhead
   name: AP Splash
-  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 60%, steel: 60%, concrete: 60%, special_1: 100%, special_2: 100% }
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 65%, concrete: 60%, special_1: 25%, special_2: 100% }
   spread: 0.5
+  percent_at_max: 80%
   infantry_death: explode
 
 squid_grip:  # the squid's grip (stage 3e), RA2 SquidGrab: a ship held still and crushed from close, 15 every 99 frames
@@ -212,37 +214,42 @@ squid_grip:  # the squid's grip (stage 3e), RA2 SquidGrab: a ship held still and
   parasite_damage: 15
   parasite_delay: 6.6s
 
-squid_slap:  # the squid's tentacle, RA2 SquidPunch with HE; the verses are ours
+squid_slap:  # the squid's tentacle, RA2 SquidPunch with HE
   kind: warhead
   name: Squid Slap
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 70%, medium: 70%, heavy: 35%, wood: 75%, steel: 40%, concrete: 20%, special_1: 80%, special_2: 100% }
+  spread: 0.5
+  percent_at_max: 50%
 
-dreadnought_blast:  # the dreadnought's missile going off, 1.5 cells (RA2); the verses are ours
+dreadnought_blast:  # RA2 DMISLWH: the dreadnought's missile going off, 1.5 cells, 25% at the edge
   kind: warhead
   name: Dreadnought Blast
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 90%, plate: 80%, light: 100%, medium: 80%, heavy: 80%, wood: 85%, steel: 65%, concrete: 28%, special_1: 80%, special_2: 0% }
   spread: 1.5
-  percent_at_max: 50%
+  percent_at_max: 25%
   infantry_death: explode
   bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
-sonic_wave:  # the dolphin's wave, RA2 SonicWarhead; the verses are ours; on a ship the squid holds it frees it
+sonic_wave:  # the dolphin's wave, RA2 SonicWarhead; on a ship the squid holds it frees it
   kind: warhead
   name: Sonic Wave
   frees_parasite: true
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 80%, heavy: 80%, wood: 100%, steel: 60%, concrete: 60%, special_1: 100%, special_2: 100% }
 
-depth_charge:  # RA2 ASWBomb's warhead: the Osprey's charges, 1.4 cells
+depth_charge:  # RA2 ASWBomb's warhead APSplash: the Osprey's charges, 0.5 cells
   kind: warhead
   name: Depth Charge
-  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 85%, concrete: 60%, special_1: 100%, special_2: 100% }
-  spread: 1.4
+  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 65%, concrete: 60%, special_1: 25%, special_2: 100% }
+  spread: 0.5
+  percent_at_max: 80%
   infantry_death: explode
 
-destroyer_shell:  # RA2 155mm's warhead: the destroyer's gun
+destroyer_shell:  # RA2 ARTYHE, the warhead of 155mm: the destroyer's gun, 1 cell
   kind: warhead
   name: Naval Shell
-  verses: { none: 100%, flak: 80%, plate: 60%, light: 100%, medium: 60%, heavy: 60%, wood: 100%, steel: 80%, concrete: 60%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 80%, plate: 60%, light: 100%, medium: 60%, heavy: 60%, wood: 100%, steel: 100%, concrete: 60%, special_1: 100%, special_2: 100% }
+  spread: 1
+  percent_at_max: 25%
   wall_damage: true
   infantry_death: explode
   bridges: true  # force-fired at a bridge, it hurts it (RA2)
@@ -261,20 +268,20 @@ sam:  # RA2 SAMWH: the missiles of the cruiser and the Patriot at the air, 0.3 c
   spread: 0.3
   affects_air: true
 
-blimp_bomb:  # RA2 BlimpBomb: the airship's bombs, 2 cells, half at the edge; the verses are ours
+blimp_bomb:  # RA2 BlimpHE: the airship's bombs, 2 cells, half at the edge
   kind: warhead
   name: Airship Bomb
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 70%, medium: 35%, heavy: 35%, wood: 85%, steel: 75%, concrete: 50%, special_1: 100%, special_2: 100% }
   spread: 2
   percent_at_max: 50%
   wall_damage: true
   infantry_death: explode
   bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
-orca_ap:  # RA2 ORCAAP: the strike jets' missiles, 0.4 cells; the verses are ours, as an armor-piercing shell
+orca_ap:  # RA2 ORCAAP: the strike jets' missiles, 0.4 cells; concrete 75%
   kind: warhead
   name: Strike Missile
-  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 75%, steel: 75%, concrete: 50%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 75%, special_1: 100%, special_2: 100% }
   spread: 0.4
   infantry_death: explode
 
@@ -333,6 +340,8 @@ grand_cannon:  # RA2 GrandCannonWH: 2 cells round, 20% at the edge; wood and con
   spread: 2
   percent_at_max: 20%
   wall_damage: true
+  infantry_death: explode
+  bridges: true  # force-fired at a bridge, it hurts it (RA2)
 
 
 oil_blast:  # RA2: the oil derrick's blast, buildings double, soldiers 150%, vehicles less

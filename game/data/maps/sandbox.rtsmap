@@ -3,6 +3,7 @@ id: sandbox
 name: "Sandbox"
 author: "M2 test map"
 description: "Converted from the ASCII test map of M2."
+origin: test
 size: [64, 64]
 climate: winter
 lighting: day
@@ -17,6 +18,8 @@ legend:
     i: ice
     k: rock
     s: snow
+    t: path
+    u: track
     w: water
 layers:
   height: |
@@ -136,7 +139,7 @@ layers:
     ................................=...............................
     ................................=...............................
     ................................=...............................
-    ................................=...............................
+    gp..............................=...............................
     ................................=...............................
     .....bbb........................=...............................
     ...bbbbbbb......................=...............................
@@ -201,7 +204,7 @@ layers:
     ssssssssssssssssssssssssssssssssasssssssssssssssssssssssssssssss
     ssssssssssssssssssssssssssssssssasssssssssssssssssssssssssssssss
     ssssssssssssssssssssssssssssssssasssssssssssssssssssssssssssssss
-    ssssssssssssssssssssssssssssssssasssssssssssssssssssssssssssssss
+    utssssssssssssssssssssssssssssssasssssssssssssssssssssssssssssss
     ssssssssssssssssssssssssssssssssasssssssssssssssssssssssssssssss
     sssssbbbssssssssssssssssssssssssasssssssssssssssssssssssssssssss
     sssbbbbbbbssssssssssssssssssssssasssssssssssssssssssssssssssssss

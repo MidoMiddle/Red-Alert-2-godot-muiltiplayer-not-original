@@ -56,7 +56,7 @@ public sealed class MapGridTests
     [Fact]
     public void Speed_follows_the_land_type_of_the_cell()
     {
-        var grid = new MapGrid(9, 1);
+        var grid = new MapGrid(Enum.GetValues<LandType>().Length, 1);
         var lands = Enum.GetValues<LandType>();
         for (var x = 0; x < lands.Length; x++)
         {

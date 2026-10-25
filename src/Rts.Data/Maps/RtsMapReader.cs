@@ -28,7 +28,7 @@ public sealed class RtsMapFormatException(int line, int column, string message) 
 public static class RtsMapReader
 {
     private static readonly string[] RootKeys =
-        ["format", "id", "name", "author", "description", "size", "playable", "climate", "lighting", "players", "starts", "legend", "layers", "objects", "bridges", "structures"];
+        ["format", "id", "name", "author", "description", "origin", "size", "playable", "climate", "lighting", "players", "starts", "legend", "layers", "objects", "bridges", "structures"];
 
     public static MapDefinition Read(string text)
     {
@@ -78,6 +78,7 @@ public static class RtsMapReader
         var playable = Optional(values, "playable") is { } playableNode ? Playable(playableNode, width, height) : null;
         var climate = Optional(values, "climate") is { } climateNode ? Id(climateNode) : "winter";
         var lighting = Optional(values, "lighting") is { } lightingNode ? Lighting(lightingNode) : MapLighting.Default;
+        var origin = Optional(values, "origin") is { } originNode ? Origin(originNode) : MapOrigin.Default;
         var players = Int(Required(values, "players", root), 1, Rts.Simulation.World.PlayerId.MaxPlayers, "players");
 
         var starts = Optional(values, "starts") is { } startsNode ? Starts(startsNode, players, width, height) : [];
@@ -104,7 +105,7 @@ public static class RtsMapReader
         try
         {
             return new MapDefinition(id, name, author, description, width, height, climate, players, starts, legend, heightCodes, land, texture, ore,
-                objects, bridges, structures, lighting, playable);
+                objects, bridges, structures, lighting, playable, origin);
         }
         catch (ArgumentException e)
         {
@@ -333,6 +334,12 @@ public static class RtsMapReader
         var top = Int(Required(fields, "top", node), 1, width + height - 1, "top");
         var bottom = Int(Required(fields, "bottom", node), top, width + height - 1, "bottom");
         return new MapArea(left, top, right, bottom);
+    }
+
+    private static string Origin(YamlNode node)
+    {
+        var text = Text(node);
+        return MapOrigin.IsKnown(text) ? text : throw Error(node, $"origin '{text}' is none of {string.Join(", ", MapOrigin.Ids)}");
     }
 
     private static string Lighting(YamlNode node)

@@ -42,3 +42,11 @@ Thumbs.db
 
 # Original RA2 files must never be committed (see docs/00_concept.md, block 15)
 *.mix
+
+# Files of the original game, kept only on the machine that imports from them (docs/15_legal.md: no original EA assets in the
+# repository): the rules of RA2/YR and the downloaded maps.
+/rules.ini
+/loaded_maps/
+
+# Python caches of the tools
+__pycache__/

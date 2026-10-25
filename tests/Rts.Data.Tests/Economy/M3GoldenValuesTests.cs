@@ -63,7 +63,9 @@ public sealed class M3GoldenValuesTests
         // by minute 5.
         // Rules v86: the same run and credits; the buildings have the footprints of RA2.
         // Rules v89: the same run and credits; four units more in the data.
-        Assert.Equal((6007, 0xaf2a560844842fd6UL), (fifth.Credits, fifth.Checksum));
+        // Rules v91: the same run and credits; the check against rules.ini of the models branch (the refinery of the Union sees 6
+        // cells, the special_1 verses, turn rates) moves the data.
+        Assert.Equal((6007, 0x39c3bbe39fdb8219UL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:18 (tick 3873; rules v85: the war factory waits for the barracks).
         Assert.Equal(3873, Run.Value.TankTicks[0]);
     }

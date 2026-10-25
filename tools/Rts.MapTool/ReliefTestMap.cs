@@ -115,6 +115,7 @@ public static class ReliefTestMap
             [.. new byte[Size * Size]],
             [],
             [],
-            []);
+            [],
+            origin: MapOrigin.Test);
     }
 }

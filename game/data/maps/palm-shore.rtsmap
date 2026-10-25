@@ -3,6 +3,7 @@ id: palm-shore
 name: "Palm Shore"
 author: "Map generator"
 description: "Generated from seed 311: 2 players, Mirror, Hilly, water Sea, forest Medium, resources Medium, drills OreAndGems."
+origin: generated
 size: [136, 136]
 playable: { left: -68, top: 68, right: 68, bottom: 204 }
 climate: coast

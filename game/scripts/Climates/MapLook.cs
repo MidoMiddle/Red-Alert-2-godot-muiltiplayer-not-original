@@ -67,17 +67,27 @@ public sealed class MapLook
     /// </summary>
     public static MapLook FromLand(MapGrid map)
     {
+        var roadKinds = false;
+        for (var y = 0; y < map.Height; y++)
+        {
+            for (var x = 0; x < map.Width; x++)
+            {
+                roadKinds |= map.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path;
+            }
+        }
+
+        var legend = TestMapConverter.LegendFor(roadKinds);
         var texture = ImmutableArray.CreateBuilder<char>(map.Width * map.Height);
         for (var y = 0; y < map.Height; y++)
         {
             for (var x = 0; x < map.Width; x++)
             {
                 var material = TestMapConverter.MaterialOf(map.LandAt(new CellPos(x, y)));
-                texture.Add(TestMapConverter.Legend.First(entry => entry.Material == material).Code);
+                texture.Add(legend.First(entry => entry.Material == material).Code);
             }
         }
 
-        return new MapLook("winter", MapLighting.Default, map.Width, map.Height, TestMapConverter.Legend, texture.MoveToImmutable());
+        return new MapLook("winter", MapLighting.Default, map.Width, map.Height, legend, texture.MoveToImmutable());
     }
 
     /// <summary>The material of a cell by the legend, or null for a code the legend lacks.</summary>

@@ -3,15 +3,6 @@ using Godot;
 
 namespace Rts.Client.Models;
 
-/// <summary>Which file of a building stands for it: the one of the table, or the one of a state it takes (<see cref="ModelEntry.Damaged"/>, <see cref="ModelEntry.Occupied"/>, <see cref="ModelEntry.Ruins"/>).</summary>
-public enum ModelVariant
-{
-    Intact,
-    Damaged,
-    Occupied,
-    Ruins,
-}
-
 /// <summary>
 /// The models of the game by the table <c>res://data/visuals/models.yaml</c> (<see cref="ModelTable"/>, docs/art/model_standards.md),
 /// read once. Every renderer asks here first and draws its placeholder when the answer is null: the object is not in the table, none
@@ -64,8 +55,8 @@ public static class ModelLibrary
     /// The model of <paramref name="key"/> placed as the table says, its pivot at the origin of the node it is added to; of several
     /// files the one of <paramref name="cell"/> (the first without one); its <c>team_mask</c> in <paramref name="team"/> when given.
     /// <paramref name="variant"/> asks for the file of a state of the building (<see cref="ModelEntry.Damaged"/>,
-    /// <see cref="ModelEntry.Occupied"/> or <see cref="ModelEntry.Ruins"/>): null when the table gives that state none.
-    /// Null when there is none — the caller draws its placeholder.
+    /// <see cref="ModelEntry.DamagedOccupied"/>, <see cref="ModelEntry.Occupied"/>, <see cref="ModelEntry.Abandoned"/> or
+    /// <see cref="ModelEntry.Ruins"/>): null when the table gives that state none. Null when there is none — the caller draws its placeholder.
     /// </summary>
     public static Node3D? Instantiate(string key, Color? team = null, string? climate = null, Vector2I? cell = null, ModelVariant variant = ModelVariant.Intact)
     {
@@ -88,7 +79,9 @@ public static class ModelLibrary
             var path = variant switch
             {
                 ModelVariant.Damaged => entry.Damaged,
+                ModelVariant.DamagedOccupied => entry.DamagedOccupied,
                 ModelVariant.Occupied => entry.Occupied,
+                ModelVariant.Abandoned => entry.Abandoned,
                 _ => entry.Ruins,
             };
             if (path is null || Scene(key, Root + path) is not { } state)

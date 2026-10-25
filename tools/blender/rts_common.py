@@ -15,7 +15,7 @@ import os
 import struct
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 REPO = "/Users/elai/store/Other Projects/red_alert_2_godot"
 SRC_ROOT = os.path.join(REPO, "assets_src", "models")
@@ -56,6 +56,31 @@ def add_stick(bm, p1, p2, half):
     add_prism(bm, p1, p2, a, b)
 
 
+def add_sandbag(bm, x, y, z, turn, length, width, height):
+    """A sandbag: a pillow of ten quads, its foot on z at (x, y), its long side along turn (radians about the vertical).
+
+    The middle ring is a little larger than the foot and the top, so the bag bulges as a filled one does.
+    """
+    turned = Matrix.Rotation(turn, 3, 'Z')
+    centre = Vector((x, y, z))
+
+    def ring(size_l, size_w, dz):
+        corners = []
+        for u, v in ((1, 1), (-1, 1), (-1, -1), (1, -1)):
+            corners.append(bm.verts.new(centre + turned @ Vector((u * size_l / 2, v * size_w / 2, dz))))
+        return corners
+
+    foot = ring(length, width, 0.0)
+    belly = ring(length * 1.04, width * 1.08, height * 0.5)
+    top = ring(length * 0.9, width * 0.9, height)
+    for lower, upper in ((foot, belly), (belly, top)):
+        for i in range(4):
+            j = (i + 1) % 4
+            bm.faces.new((lower[i], lower[j], upper[j], upper[i]))
+    bm.faces.new(foot)
+    bm.faces.new(top)
+
+
 def fire_nodes(points):
     """Empty nodes fire_1, fire_2… at the points: the game stands the flames of a damaged building on them."""
     nodes = []
@@ -67,6 +92,11 @@ def fire_nodes(points):
         bpy.context.scene.collection.objects.link(node)
         nodes.append(node)
     return nodes
+
+
+def fire_names(nodes):
+    """The GLB names of the fire nodes, in the order fire_nodes made them."""
+    return [f"fire_{i}" for i in range(1, len(nodes) + 1)]
 
 
 def make_object(name, bm, smooth=False):
@@ -389,17 +419,177 @@ def wire_final(mat, imgs):
     nt.links.new(split.outputs['Blue'], bsdf.inputs['Metallic'])
 
 
+# --- layout: rows and groups in the file ----------------------------------------
+#
+# The rule of the file: the models lie in rows, one row per group, the models of a row one after another along x. A model is a
+# collection named after the model, in its row; an empty root named after the model stands at its place, and every part of the model
+# is a child of the root. So the root moves the whole model, and the outliner shows which roof belongs to which house. The export
+# takes the root to the origin for a while (at_origin), so the GLB keeps the positions the model was built with.
+
+LAYOUT_STEP = 6.5  # along x, from one model of a row to the next
+ROW_STEP = 10.0  # along y, from one row to the next
+
+ROWS = (
+    "1. Жильё",
+    "2. Техздания",
+    "3. Промышленность",
+    "4. Препятствия",
+    "5. Мосты",
+    "6. Заборы и стены",
+    "7. Снег",
+    "8. Руда",
+)
+
+# Where each model stands: (row, place in the row). The key is the name of the model: its collection, its root and its file.
+LAYOUT = {
+    "building_house_small": (0, 0),
+    "building_house_small_occupied": (0, 1),
+    "building_house_small_damaged": (0, 2),
+    "building_house_small_damaged_occupied": (0, 3),
+    "building_house_small_abandoned": (0, 4),
+    "building_house_ruins": (0, 5),
+    "building_apartment_block": (0, 6),
+    "building_apartment_block_occupied": (0, 7),
+    "building_apartment_block_damaged": (0, 8),
+    "building_apartment_block_damaged_occupied": (0, 9),
+    "building_apartment_block_abandoned": (0, 10),
+    "building_apartment_block_ruins": (0, 11),
+    "tech_oil_derrick": (1, 0),
+    "tech_oil_derrick_abandoned": (1, 1),
+    "tech_oil_derrick_ruins": (1, 2),
+    "smokestack": (2, 0),
+    "cooling_tower": (2, 1),
+    "boiler_house": (2, 2),
+    "factory_hall": (2, 3),
+    "fuel_tank": (2, 4),
+    "anti_tank_hedgehog": (3, 0),
+    "prop_supply_crate": (3, 1),
+    "pipeline_straight": (3, 2),
+    "pipeline_corner": (3, 3),
+    "bridge_span": (4, 0),
+    "bridge_span_damaged": (4, 1),
+    "fence_wood_section": (5, 0),
+    "fence_mesh_section": (5, 1),
+    "wall_stone_section": (5, 2),
+    "snowdrift_01": (6, 0),
+    "snowdrift_02": (6, 1),
+    "ore_source": (7, 0),
+    "ore_cluster": (7, 1),
+    "gem_cluster": (7, 2),
+}
+
+
+def _in(parent, coll):
+    return any(child == coll for child in parent.children)
+
+
+def _put_collection(coll, parent):
+    """Links the collection under parent, and takes it out of the collection it was in before."""
+    for owner in [bpy.context.scene.collection, *bpy.data.collections]:
+        if owner != parent and _in(owner, coll):
+            owner.children.unlink(coll)
+    if not _in(parent, coll):
+        parent.children.link(coll)
+    return coll
+
+
+def _put_object(obj, coll):
+    """Links the object into the collection alone: it leaves the collections it was in."""
+    for owner in list(obj.users_collection):
+        owner.objects.unlink(obj)
+    coll.objects.link(obj)
+
+
+def _row_collection(row):
+    coll = bpy.data.collections.get(ROWS[row]) or bpy.data.collections.new(ROWS[row])
+    return _put_collection(coll, bpy.context.scene.collection)
+
+
+def place(key, root):
+    """Moves the root of a model to its place in the file: the y of its row, the x of its place in the row."""
+    row, slot = LAYOUT[key]
+    root.location = (slot * LAYOUT_STEP, row * ROW_STEP, 0.0)
+
+
+def arrange(objs, key):
+    """Puts the parts of one model in their place: the collection key under its row, and an empty root named key at the place of the
+    model, with the parts as its children at their positions relative to it. Parts of an older build of the same model are removed.
+    Returns the root."""
+    row, _ = LAYOUT[key]
+    coll = _put_collection(bpy.data.collections.get(key) or bpy.data.collections.new(key), _row_collection(row))
+    root = bpy.data.objects.get(key)
+    if root is None:
+        root = bpy.data.objects.new(key, None)
+        root.empty_display_type = 'PLAIN_AXES'
+        root.empty_display_size = 0.5
+    _put_object(root, coll)
+    for old in {*coll.objects, *root.children}:
+        if old != root and old not in objs:
+            bpy.data.objects.remove(old, do_unlink=True)
+    for obj in objs:
+        obj.parent = root
+        obj.matrix_parent_inverse = Matrix.Identity(4)
+        _put_object(obj, coll)
+    place(key, root)
+    return root
+
+
+def park(key):
+    """Puts a model made by another script in its place, its parts unchanged: an empty root named key stands at the place of the model
+    and the parts become its children, at the positions they have."""
+    row, _ = LAYOUT[key]
+    coll = _put_collection(bpy.data.collections[key], _row_collection(row))
+    parts = list(coll.objects)
+    clash = bpy.data.objects.get(key)
+    if clash is not None:  # a part named like the model: it keeps its place, the root takes the name
+        clash.name = key + "_part"
+    root = bpy.data.objects.new(key, None)
+    root.empty_display_type = 'PLAIN_AXES'
+    root.empty_display_size = 0.5
+    root.location = (parts[0].location.x, parts[0].location.y, 0.0) if parts else (0.0, 0.0, 0.0)
+    coll.objects.link(root)
+    bpy.context.view_layer.update()
+    for obj in parts:
+        obj.parent = root
+        obj.matrix_parent_inverse = root.matrix_world.inverted()
+    place(key, root)
+    return root
+
+
+def _root_of(objs):
+    """The root of a model: the empty its parts are children of; None for parts that are not arranged."""
+    for obj in objs:
+        if obj.parent is not None:
+            return obj.parent
+    return None
+
+
+@contextlib.contextmanager
+def at_origin(objs):
+    """The root of the model at the origin for a while, so the parts are exported where the model was built."""
+    root = _root_of(objs)
+    saved = tuple(root.location) if root is not None else None
+    if root is not None:
+        root.location = (0.0, 0.0, 0.0)
+    try:
+        yield
+    finally:
+        if root is not None:
+            root.location = saved
+
+
 # --- export and checks ----------------------------------------------------------
 
 def export_glb(objs, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.object.select_all(action='DESELECT')
-    for obj in objs:
-        obj.select_set(True)
-    bpy.context.view_layer.objects.active = objs[0]
-    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True,
-                              export_yup=True, export_apply=True,
-                              export_vertex_color='NONE', export_image_format='AUTO')
+    with at_origin(objs):
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in objs:
+            obj.select_set(True)
+        bpy.context.view_layer.objects.active = objs[0]
+        bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True,
+                                  export_yup=True, export_apply=True,
+                                  export_vertex_color='NONE', export_image_format='AUTO')
 
 
 def glb_report(path):
@@ -418,4 +608,7 @@ def glb_report(path):
 def save_blend(objs, mat, imgs, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     blocks = set(objs) | {o.data for o in objs if o.data is not None} | {mat} | set(imgs.values())
+    root = _root_of(objs)
+    if root is not None:  # the root and the collection of the model: the file keeps its groups
+        blocks |= {root} | set(root.users_collection)
     bpy.data.libraries.write(path, blocks, fake_user=True)

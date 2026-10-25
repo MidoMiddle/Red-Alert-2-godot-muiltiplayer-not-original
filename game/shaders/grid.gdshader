@@ -2,7 +2,8 @@
 // of the map's texture layer (MaterialSlots.cs: the slot of its material and its water, two bytes a cell): the albedo comes from
 // one layer of ground_albedo, tiled, tinted and rough by the material's entry of the arrays below. Neighbouring materials blend
 // over a border that noise bends and the brighter texture wins (a height blend), so the cells never show as squares; water gets a
-// ripple lit by the sun and fades to the deep colour on deep water. The material map covers the skirt too (MapSkirt.cs: the land
+// ripple that drifts and is lit by the sun, foam along the shore, light moving over shallow water, and fades to the deep colour on
+// deep water. The material map covers the skirt too (MapSkirt.cs: the land
 // beyond the edge), from map_origin; the lines and the debug overlay stay on the map. While the textures are off, every cell takes the flat colour
 // of its land type from the simulation map (one texel per cell, cliffs in rock), with a faint line every cell, a stronger line
 // every 8 cells and a line at each height level: the symbolic look of docs/implementation/conventions.md, section 12. M7 step 9:
@@ -31,6 +32,9 @@ uniform float mat_frost[MAX_MATERIALS];
 uniform vec3 frost_color : source_color = vec3(0.88, 0.91, 0.96);
 uniform sampler2D tex_water_normal : filter_linear_mipmap, repeat_enable;
 uniform vec3 deep_water_color : source_color = vec3(0.10, 0.24, 0.56);
+// The foam along the shore, and how much light moves over shallow water.
+uniform vec3 foam_color : source_color = vec3(0.90, 0.94, 0.96);
+uniform float caustic_strength = 0.14;
 // The direction the sunlight goes in (SceneLighting.cs), for the ripple of the water.
 uniform vec3 sun_direction = vec3(0.62, -0.77, 0.15);
 
@@ -56,6 +60,26 @@ float noise(vec2 p) {
 	vec2 f = fract(p);
 	vec2 u = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+
+// Light moving over the bottom of shallow water: a web of bright lines along the borders of cells whose points drift.
+float caustic(vec2 p, float t) {
+	// Slow waves bend the cells, so the lines of light curve the way they do on a real surface.
+	p += 0.35 * vec2(sin(p.y * 1.3 + t * 0.7), cos(p.x * 1.1 - t * 0.5));
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	float d1 = 8.0;
+	float d2 = 8.0;
+	for (int y = -1; y <= 1; y++) {
+		for (int x = -1; x <= 1; x++) {
+			vec2 cell = vec2(float(x), float(y));
+			vec2 site = cell + 0.5 + 0.4 * sin(t * 0.8 + 6.2831 * hash(i + cell) + vec2(0.0, 1.57));
+			float d = length(site - f);
+			d2 = d < d1 ? d1 : min(d2, d);
+			d1 = min(d1, d);
+		}
+	}
+	return 1.0 - smoothstep(0.0, 0.1, d2 - d1);
 }
 
 // The slot (x) and the water (y: 0 none, 1 shallow, 2 deep) of a cell of the material map.
@@ -88,6 +112,8 @@ void fragment() {
 		ivec2 m01 = material_of(base + ivec2(0, 1), materials);
 		ivec2 m11 = material_of(base + ivec2(1, 1), materials);
 		vec4 w = vec4((1.0 - g.x) * (1.0 - g.y), g.x * (1.0 - g.y), (1.0 - g.x) * g.y, g.x * g.y);
+		// The plain blend across the cell edges, before the height blend sharpens it: the shore is soft here.
+		vec4 w_bilinear = w;
 		// Frost lies thicker in some places than in others.
 		float frost_patches = mix(0.55, 1.0, noise(p * 0.9));
 		vec3 a00 = albedo_of(m00.x, p, frost_patches);
@@ -109,11 +135,24 @@ void fragment() {
 		float deep = dot(w, vec4(equal(ivec4(m00.y, m10.y, m01.y, m11.y), ivec4(2))));
 		color = mix(color, deep_water_color, deep * 0.85);
 		if (water > 0.0) {
-			vec3 n = texture(tex_water_normal, p / 12.0).xyz * 2.0 - 1.0;
+			// Two layers of the ripple drift in different directions and scales, so the glints move and do not repeat at once.
+			vec3 n1 = texture(tex_water_normal, p / 12.0 + TIME * vec2(0.02, 0.011)).xyz * 2.0 - 1.0;
+			vec3 n2 = texture(tex_water_normal, p / 7.0 - TIME * vec2(0.014, 0.022) + vec2(0.37, 0.61)).xyz * 2.0 - 1.0;
+			vec2 tilt = 0.5 * (n1.xy + n2.xy);
 			vec3 to_sun = normalize(-sun_direction);
 			// Brightness from how far the ripple tilts towards the sun, against flat water.
-			float facing = dot(normalize(vec3(n.x, 1.0, n.y)), to_sun) - to_sun.y;
+			float facing = dot(normalize(vec3(tilt.x, 1.0, tilt.y)), to_sun) - to_sun.y;
 			color *= mix(1.0, clamp(1.0 + facing * 2.5, 0.8, 1.2), water);
+
+			// Foam along the shore: the water fraction falls from 1 to 0 over the cell edge, so the foam sits where it is near half.
+			float edge = dot(w_bilinear, vec4(mat_water[m00.x], mat_water[m10.x], mat_water[m01.x], mat_water[m11.x]));
+			float shore = smoothstep(0.1, 0.5, edge) * (1.0 - smoothstep(0.5, 0.9, edge));
+			float churn = noise(p * 2.2 + TIME * vec2(0.20, -0.12)) * 0.6 + noise(p * 4.6 - TIME * vec2(0.31, 0.26)) * 0.4;
+			color = mix(color, foam_color, shore * smoothstep(0.45, 0.66, churn) * 0.9);
+
+			// Light moving over the bottom of the shallow part of the water.
+			float shallow = clamp(water - deep, 0.0, 1.0);
+			color += caustic_strength * caustic(p * 1.3, TIME) * shallow * vec3(0.8, 0.95, 1.0);
 		}
 	} else if (size.x > 1) {
 		color = texelFetch(land_map, cell, 0).rgb;

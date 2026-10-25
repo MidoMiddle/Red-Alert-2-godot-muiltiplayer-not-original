@@ -1,4 +1,6 @@
+using System.Linq;
 using Rts.Data.Maps;
+using Rts.Simulation.Map;
 
 namespace Rts.MapGen.Tests;
 
@@ -15,7 +17,7 @@ public sealed class ClimateMapsTests
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 7, Climate = climate });
 
         Assert.Equal(climate, map.Climate);
-        Assert.Equal(ClimateGrounds.Of(climate).Legend, map.TextureLegend);
+        Assert.Equal(ClimateGrounds.Of(climate).Legend.OrderBy(entry => entry.Code), map.TextureLegend);
         Assert.Contains(plain, map.Texture);
         Assert.DoesNotContain(MapValidator.Check(map), problem => problem.Level == ProblemLevel.Error);
         if (climate == "urban")
@@ -175,5 +177,19 @@ public sealed class ClimateMapsTests
     public void An_unknown_climate_is_refused_by_the_generator()
     {
         Assert.Throws<ArgumentException>(() => MapGenerator.Generate(new MapGenSettings { Seed = 7, Climate = "lunar" }));
+    }
+
+    [Theory]
+    [InlineData("urban", LandType.Road, LandType.Track)]
+    [InlineData("winter", LandType.Track, LandType.Road)]
+    [InlineData("temperate", LandType.Track, LandType.Road)]
+    [InlineData("desert", LandType.Track, LandType.Road)]
+    [InlineData("coast", LandType.Track, LandType.Road)]
+    public void The_main_road_is_asphalt_in_a_town_and_the_unpaved_road_elsewhere(string climate, LandType expected, LandType other)
+    {
+        var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 7, Climate = climate });
+
+        Assert.Contains(expected, map.Land);
+        Assert.DoesNotContain(other, map.Land);
     }
 }

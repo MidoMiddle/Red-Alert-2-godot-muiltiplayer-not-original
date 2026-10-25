@@ -53,12 +53,14 @@ public sealed class MapGeneratorTests
         // screen — a 90 x 90 grid with the inscribed square, the starts and rivers in the screen's axes. Loose ends, stage 2: a bridge
         // repair hut by every bridge. Later on 2026-10-24: a base of radius 12, its home field by its edge, the contested field three
         // fifths of the way to the centre. 2026-10-25: the dressing of the climate (a farm and barbed wire in the snow); no building within
-        // two cells of the ore zone, the oil derrick out of it.
+        // two cells of the ore zone, the oil derrick out of it. 2026-10-25 (roads): the main road is asphalt in a town and the unpaved
+        // road of its climate elsewhere (docs/map_elements/04_roads). 2026-10-25 (origin): the header says the map is generated, and
+        // the drills keep the playable area.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("527a6a35b04b92d0875aeb17b6400309ba8ea6d9ecdb98a7bfdfa927f7ca952f", MapHasher.Hash(map));
-        Assert.Equal("b668d92dc451bcccd6176ba02242c5ef7ad208ec1221c2f8d423903be0cd539c", MapHasher.Hash(none));
+        Assert.Equal("1b416971e914a2ef8326845eed59cbbd210eda6f81f9366a62faad5c139f032f", MapHasher.Hash(map));
+        Assert.Equal("871509c48b3e70fd8f6363d406a868315087d918f424df3da5bf251356426979", MapHasher.Hash(none));
     }
 
     [Theory]

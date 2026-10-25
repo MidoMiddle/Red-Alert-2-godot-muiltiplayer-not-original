@@ -3,6 +3,7 @@ id: four-farms
 name: "Four Farms"
 author: "Map generator"
 description: "Generated from seed 2003: 4 players, Rotate90, Flat, water Lakes, forest Medium, resources Medium, drills OreAndGems."
+origin: generated
 size: [182, 182]
 playable: { left: -91, top: 91, right: 91, bottom: 273 }
 climate: temperate

@@ -76,7 +76,7 @@ internal static class Dressing
     private static void Street(GenMap map, Site site)
     {
         var (things, blockers) = (0, 0);
-        foreach (var (order, cell) in Candidates(map, 1, cell => map.LandAt(cell) != LandType.Road && Roads(map, cell, 2)))
+        foreach (var (order, cell) in Candidates(map, 1, cell => !GenMap.IsRoad(map.LandAt(cell)) && Roads(map, cell, 2)))
         {
             if (order % 5 != 0)
             {
@@ -307,7 +307,7 @@ internal static class Dressing
     }
 
     // Whether a road lies within reach cells of the cell (0: the cell is a road).
-    private static bool Roads(GenMap map, CellPos cell, int reach) => Any(map, cell, reach, near => map.LandAt(near) == LandType.Road);
+    private static bool Roads(GenMap map, CellPos cell, int reach) => Any(map, cell, reach, near => GenMap.IsRoad(map.LandAt(near)));
 
     // Whether water lies within reach cells of the cell.
     private static bool Water(GenMap map, CellPos cell, int reach) => Any(map, cell, reach, map.IsWater);

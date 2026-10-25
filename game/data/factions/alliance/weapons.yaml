@@ -18,12 +18,12 @@ alliance_rifle_deployed:  # of the Rifleman behind its sandbags, RA2 Para: 15, R
   projectile: bullet
   warhead: small_arms_deployed
 
-alliance_light_cannon:  # of the Light Tank
+alliance_light_cannon:  # of the Light Tank, RA2 105mm: 65, ROF 60, range 5
   kind: weapon
   name: 105mm Cannon
   damage: 65
-  reload: 3.33s
-  range: 5.75
+  reload: 4s
+  range: 5
   projectile: shell
   warhead: ap_shell
 
@@ -279,10 +279,10 @@ carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: firing it launc
   warhead: missile
   launches_spawns: true
 
-alliance_hornet_bombs:  # of a Hornet, RA2 HornetBomb: 80, range 5, ROF 3
+alliance_hornet_bombs:  # of a Hornet, RA2 HornetBomb: 40, range 5, ROF 3 (80 is the elite HornetBombE)
   kind: weapon
   name: Hornet Bomb
-  damage: 80
+  damage: 40
   reload: 0.2s
   range: 5
   projectile: shell

@@ -192,8 +192,9 @@ terror_drone:  # jumps into a vehicle and eats it from inside, kills a soldier a
   build_time: 21s
   hp: 100
   threat: 15
-  armor: light
+  armor: special_1  # RA2: a machine with the weak points of infantry; the warheads give special_1 their RA2 share
   speed: 60
+  turn_rate: 16384
   sight: 4
   turret: false
   prerequisites: [war_factory]
@@ -234,6 +235,7 @@ kirov_airship:  # a slow bomber: bombs straight down, and falls on what is under
   threat: 50
   armor: light
   speed: 30
+  turn_rate: 4096
   sight: 8
   turret: false
   locomotor: hover
@@ -270,6 +272,7 @@ typhoon_sub:  # under the water, torpedoes at ships and what is under the water 
   hp: 600
   threat: 30
   speed: 24
+  turn_rate: 819
   sight: 4
   turret: false
   locomotor: naval
@@ -289,6 +292,7 @@ sea_scorpion:  # flak at the water and the air (stage 3e)
   hp: 400
   threat: 15
   speed: 48
+  turn_rate: 2458
   sight: 8
   turret: false
   locomotor: naval
@@ -308,6 +312,7 @@ giant_squid:  # under the water; grips a ship, holds it still and crushes it; sl
   threat: 20
   armor: light
   speed: 48
+  turn_rate: 16384
   sight: 5
   turret: false
   locomotor: naval
@@ -328,6 +333,7 @@ dreadnought:  # missiles at 8 to 25 cells, only when ordered; anti-air can bring
   hp: 800
   threat: 45
   speed: 24
+  turn_rate: 410
   sight: 7
   turret: false
   locomotor: naval

@@ -18,6 +18,8 @@ materials:
   rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9 }
   ice:     { albedo: frozen_water.png, tiling: 12, roughness: 0.6 }
   water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.25, water: true }
+  track: { albedo: dirt_snow.png, tiling: 4, roughness: 0.9, tint: "#9aa6b4" }
+  path:  { albedo: snow_powder.png, tiling: 4, roughness: 0.95, tint: "#c4ccd6" }
 cliff: rock
 trees: pine
 water_normal: water_normal.png

@@ -252,7 +252,7 @@ public sealed class MapScript
         var definition = new MapDefinition(
             id, name, "Ready maps (M7)", description, width, height, "winter", players, [], TestMapConverter.Legend,
             ImmutableArray.Create(levels), [.. Enumerable.Repeat(LandType.Clear, cells)], [.. Enumerable.Repeat('s', cells)],
-            ImmutableArray.Create(new byte[cells]), [], [], [], playable: playable);
+            ImmutableArray.Create(new byte[cells]), [], [], [], playable: playable, origin: MapOrigin.Ready);
         _session = new MapEditSession(EditableMap.FromDefinition(definition));
     }
 
@@ -432,7 +432,7 @@ public sealed class MapScript
             for (var dx = -1; dx <= 1; dx++)
             {
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (_session.Map.ContainsCell(next) && _session.Map.LandAt(next) == LandType.Road)
+                if (_session.Map.ContainsCell(next) && _session.Map.LandAt(next) is LandType.Road or LandType.Track or LandType.Path)
                 {
                     return true;
                 }

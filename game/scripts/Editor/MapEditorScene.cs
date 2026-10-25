@@ -74,6 +74,8 @@ public partial class MapEditorScene : Node3D, IMapSource
     private Label _status = null!;
     private LineEdit _name = null!;
     private OptionButton _openList = null!;
+    private OptionButton _openFilter = null!;
+    private List<MapEntry> _openListed = [];
     private OptionButton _lighting = null!;
     private Rts.Client.Climates.MapLook? _look;
     private int _lookVersion = -1;
@@ -440,11 +442,15 @@ public partial class MapEditorScene : Node3D, IMapSource
         stack.AddChild(Caption("UI_EDITOR_RANDOM_MAP"));
         BuildRandomMap(stack);
 
-        // Open: the maps of the game and the player's own.
+        // Open: the maps of the game and the player's own, by where they come from; delete one, after a confirmation.
         stack.AddChild(Caption("UI_EDITOR_OPEN_MAP"));
+        _openFilter = Choice([Tr("UI_MAP_ORIGIN_ALL"), .. MapOrigin.Ids.Select(id => Tr(MapCatalog.OriginKey(id)))], 0, _ => FillOpenList());
+        stack.AddChild(_openFilter);
         _openList = new OptionButton { CustomMinimumSize = new Vector2(0, FieldHeight) };
         stack.AddChild(_openList);
-        stack.AddChild(ActionButton("UI_EDITOR_OPEN", OpenSelected));
+        var openRow = Row(stack);
+        openRow.AddChild(ActionButton("UI_EDITOR_OPEN", OpenSelected, expand: true));
+        openRow.AddChild(ActionButton("UI_EDITOR_DELETE", AskDeleteSelected, expand: true));
         RefreshOpenList();
 
         // Name and save.
@@ -618,11 +624,74 @@ public partial class MapEditorScene : Node3D, IMapSource
         }
 
         _maps = maps;
+        FillOpenList();
+    }
+
+    /// <summary>The maps of the origin the filter shows, each with its origin after the name.</summary>
+    private void FillOpenList()
+    {
+        var origin = _openFilter.Selected > 0 ? MapOrigin.Ids[_openFilter.Selected - 1] : null;
+        _openListed = [.. MapCatalog.OfOrigin(_maps, origin)];
         _openList.Clear();
-        foreach (var entry in _maps)
+        foreach (var entry in _openListed)
         {
-            _openList.AddItem(entry.Map.Name);
+            _openList.AddItem($"{entry.Map.Name} · {Tr(MapCatalog.OriginKey(entry.Map.Origin))}");
         }
+    }
+
+    /// <summary>
+    /// Asks before deleting the map chosen in the list: its name, its file, and that it cannot be undone. Cancel has the focus, so
+    /// Enter does not delete.
+    /// </summary>
+    private void AskDeleteSelected()
+    {
+        if (_openList.Selected < 0 || _openList.Selected >= _openListed.Count)
+        {
+            return;
+        }
+
+        var entry = _openListed[_openList.Selected];
+        if (!MapCatalog.CanDelete(entry.File, fromProject: !OS.HasFeature("template")))
+        {
+            _message = string.Format(Tr("UI_EDITOR_DELETE_FAILED"), entry.File, Tr("UI_EDITOR_DELETE_READ_ONLY"));
+            return;
+        }
+
+        var dialog = new ConfirmationDialog
+        {
+            Title = Tr("UI_EDITOR_DELETE_TITLE"),
+            DialogText = string.Format(Tr("UI_EDITOR_DELETE_CONFIRM"), entry.Map.Name, entry.File),
+            OkButtonText = Tr("UI_EDITOR_DELETE"),
+            CancelButtonText = Tr("UI_BUTTON_CANCEL"),
+            DialogAutowrap = true,
+            MinSize = new Vector2I(560, 0),
+        };
+        dialog.Confirmed += () => Delete(entry);
+        dialog.Canceled += dialog.QueueFree;
+        dialog.Confirmed += dialog.QueueFree;
+        GetNode("EditorUi").AddChild(dialog);
+        dialog.PopupCentered();
+        dialog.GetCancelButton().GrabFocus();
+    }
+
+    /// <summary>Deletes the file of a map and its cached preview; the list is read again.</summary>
+    private void Delete(MapEntry entry)
+    {
+        var error = DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(entry.File));
+        if (error != Error.Ok)
+        {
+            _message = string.Format(Tr("UI_EDITOR_DELETE_FAILED"), entry.File, error.ToString());
+            return;
+        }
+
+        var preview = ProjectSettings.GlobalizePath(MapPreview.CachePath(entry.Hash));
+        if (Godot.FileAccess.FileExists(preview))
+        {
+            DirAccess.RemoveAbsolute(preview);
+        }
+
+        _message = string.Format(Tr("UI_EDITOR_DELETED"), entry.File);
+        RefreshOpenList();
     }
 
     private static MapEditSession? OpenedFromArguments()
@@ -637,12 +706,12 @@ public partial class MapEditorScene : Node3D, IMapSource
 
     private void OpenSelected()
     {
-        if (_openList.Selected < 0 || _openList.Selected >= _maps.Count)
+        if (_openList.Selected < 0 || _openList.Selected >= _openListed.Count)
         {
             return;
         }
 
-        var entry = _maps[_openList.Selected];
+        var entry = _openListed[_openList.Selected];
         Load(new MapEditSession(EditableMap.FromDefinition(entry.Map)));
         _message = string.Format(Tr("UI_EDITOR_OPENED"), entry.File);
     }
@@ -660,6 +729,7 @@ public partial class MapEditorScene : Node3D, IMapSource
         var map = _session.Map;
         map.Name = name;
         map.Id = UserMapPaths.IdFromName(name);
+        map.Origin = MapOrigin.User; // saved here, it is the player's own map
         MapDefinition definition;
         try
         {

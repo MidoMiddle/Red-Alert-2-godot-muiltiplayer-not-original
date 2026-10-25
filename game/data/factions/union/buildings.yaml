@@ -36,7 +36,7 @@ refinery:  # ore processing; gives a free harvester
   cost: 2000
   build_time: 84s
   hp: 1000
-  sight: 4
+  sight: 6
   footprint: [4, 3]  # RA2 Foundation 4x3, a row of it the dock
   power: -50
   # The harvesters unload standing under the middle of the refinery.

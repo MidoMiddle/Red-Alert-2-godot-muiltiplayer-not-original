@@ -141,6 +141,7 @@ def build():
 def run():
     """Builds, bakes, saves the .blend, exports the GLB and reports what was written."""
     tower, drill, mat, graph = build()
+    rc.arrange([tower, drill], "ore_source")
     base = os.path.join(rc.SRC_ROOT, "map", "ore_source")
     report = [f"tower: triangles {rc.tri_count(tower)}, size {tuple(round(v, 3) for v in tower.dimensions)}",
               f"drill: triangles {rc.tri_count(drill)}, size {tuple(round(v, 3) for v in drill.dimensions)}"]

@@ -19,6 +19,11 @@ public static class RtsMapWriter
         Line(text, $"name: {Quote(map.Name)}");
         Line(text, $"author: {Quote(map.Author)}");
         Line(text, $"description: {Quote(map.Description)}");
+        if (map.Origin != MapOrigin.Default)
+        {
+            Line(text, $"origin: {map.Origin}");
+        }
+
         Line(text, $"size: [{map.Width}, {map.Height}]");
         if (map.Playable is { } area)
         {

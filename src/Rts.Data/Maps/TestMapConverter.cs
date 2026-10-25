@@ -33,9 +33,24 @@ public static class TestMapConverter
         new('w', "water"),
     ];
 
+    /// <summary>The legend of a map: the converter's, with the codes of the unpaved road and the footpath when the map has them.</summary>
+    public static ImmutableArray<TextureEntry> LegendFor(bool roadKinds) =>
+        roadKinds ? [.. Legend, new TextureEntry('u', "track"), new TextureEntry('t', "path")] : Legend;
+
     public static MapDefinition Convert(TestMap test, string id, string name)
     {
         var grid = test.Grid;
+        // The unpaved road and the footpath get their codes only in maps that have them, so the other maps keep their legend.
+        var roads = false;
+        for (var y = 0; y < grid.Height; y++)
+        {
+            for (var x = 0; x < grid.Width; x++)
+            {
+                roads |= grid.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path;
+            }
+        }
+
+        var legend = LegendFor(roads);
         var land = ImmutableArray.CreateBuilder<LandType>(grid.Width * grid.Height);
         var texture = ImmutableArray.CreateBuilder<char>(grid.Width * grid.Height);
         var objects = ImmutableArray.CreateBuilder<MapObjectPlacement>();
@@ -45,7 +60,7 @@ public static class TestMapConverter
             {
                 var cell = new CellPos(x, y);
                 land.Add(grid.LandAt(cell));
-                texture.Add(TextureOf(grid.LandAt(cell)));
+                texture.Add(TextureOf(grid.LandAt(cell), legend));
             }
         }
 
@@ -77,14 +92,15 @@ public static class TestMapConverter
             climate: "winter",
             players,
             starts: [],
-            Legend,
+            legend,
             heights: ImmutableArray.Create(new byte[(grid.Width + 1) * (grid.Height + 1)]),
             land.MoveToImmutable(),
             texture.MoveToImmutable(),
             ore: ImmutableArray.Create(new byte[grid.Width * grid.Height]),
             objects.ToImmutable(),
             bridges.ToImmutable(),
-            structures.ToImmutable());
+            structures.ToImmutable(),
+            origin: MapOrigin.Test);
     }
 
     /// <summary>The texture material that goes with a land type: snow on clear land, dirt on rough, asphalt on roads, and so on.</summary>
@@ -96,13 +112,15 @@ public static class TestMapConverter
         LandType.Shallow or LandType.Deep => "water",
         LandType.Rock => "rock",
         LandType.Ice => "ice",
+        LandType.Track => "track",
+        LandType.Path => "path",
         _ => "snow",
     };
 
-    private static char TextureOf(LandType land)
+    private static char TextureOf(LandType land, ImmutableArray<TextureEntry> legend)
     {
         var material = MaterialOf(land);
-        foreach (var entry in Legend)
+        foreach (var entry in legend)
         {
             if (entry.Material == material)
             {

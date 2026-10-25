@@ -10,7 +10,7 @@ alliance_rifleman:  # rifle infantry
   build_time: 8.4s
   hp: 125
   threat: 10
-  armor: flak
+  armor: none  # RA2 GI: none (the Conscript is flak)
   primary: alliance_rifle
   deployed_weapon: alliance_rifle_deployed  # D: behind sandbags, RA2 Deployer; the sandbags give no armor (RA2)
   sight: 5

@@ -1,3 +1,4 @@
+using Rts.Data.Maps;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
@@ -31,6 +32,8 @@ internal static class Roads
             }
         }
 
+        // The main road of a town is asphalt; elsewhere it is the unpaved road of the climate (docs/map_elements/04_roads).
+        var kind = map.Settings.Climate == ClimateGrounds.Urban ? LandType.Road : LandType.Track;
         var grid = map.Grid();
         var path = AStar.FindPath(grid, start, target, Locomotor.Wheel, map.N * map.N);
         foreach (var cell in path.Cells)
@@ -40,7 +43,7 @@ internal static class Roads
                 var image = map.Symmetry.Cell(k, cell);
                 if (!map.IsWater(image))
                 {
-                    map.SetLand(image, LandType.Road);
+                    map.SetLand(image, kind);
                 }
             }
         }

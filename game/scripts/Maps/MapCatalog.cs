@@ -60,6 +60,35 @@ public static class MapCatalog
         return (maps, errors);
     }
 
+    /// <summary>The text key of an origin (<see cref="MapOrigin"/>), for the lists and their filters.</summary>
+    public static string OriginKey(string origin) => origin switch
+    {
+        MapOrigin.Ra2 => "UI_MAP_ORIGIN_RA2",
+        MapOrigin.Ready => "UI_MAP_ORIGIN_READY",
+        MapOrigin.Generated => "UI_MAP_ORIGIN_GENERATED",
+        MapOrigin.Test => "UI_MAP_ORIGIN_TEST",
+        _ => "UI_MAP_ORIGIN_USER",
+    };
+
+    /// <summary>The maps of one origin, or all of them for null, in the order they come.</summary>
+    public static IEnumerable<MapEntry> OfOrigin(IEnumerable<MapEntry> maps, string? origin)
+    {
+        foreach (var entry in maps)
+        {
+            if (origin is null || entry.Map.Origin == origin)
+            {
+                yield return entry;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Whether the editor may delete the file of a map: a player's map always; one of the game only while the game runs from its
+    /// project (<paramref name="fromProject"/>), where its folder can be written — an exported game reads its maps from the pack.
+    /// </summary>
+    public static bool CanDelete(string file, bool fromProject) =>
+        file.StartsWith(UserDirectory + "/", StringComparison.Ordinal) || (fromProject && file.StartsWith(Directory + "/", StringComparison.Ordinal));
+
     /// <summary>True for a file of <see cref="Hidden"/> in the game's own folder (a player's copy is shown).</summary>
     public static bool IsHidden(string file) =>
         file.StartsWith(Directory + "/", StringComparison.Ordinal) && Array.IndexOf(Hidden, System.IO.Path.GetFileNameWithoutExtension(file)) >= 0;

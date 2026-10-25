@@ -29,6 +29,9 @@ internal sealed class GenMap
 
     public MapGenSettings Settings { get; }
 
+    /// <summary>Whether a land type is a road of any kind: the asphalt, the unpaved road and the footpath.</summary>
+    public static bool IsRoad(LandType land) => land is LandType.Road or LandType.Track or LandType.Path;
+
     public uint Seed { get; }
 
     /// <summary>Cells a side of the grid; the playable area is the square <see cref="Area"/> inside it.</summary>
@@ -190,7 +193,7 @@ internal sealed class GenMap
         return new MapDefinition(
             $"random-{Seed}", name, "Map generator", description, N, N, Settings.Climate, Settings.Players,
             [.. Starts], legend, ImmutableArray.Create(heights), [.. Land], [.. texture], ImmutableArray.Create(Ore),
-            [.. Objects], [.. Bridges], [.. Structures], Settings.Lighting, Area);
+            [.. Objects], [.. Bridges], [.. Structures], Settings.Lighting, Area, MapOrigin.Generated);
     }
 
     /// <summary>The ground of the map for the rules: land, heights, objects, bridges and buildings as they are now.</summary>

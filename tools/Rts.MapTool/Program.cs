@@ -28,6 +28,11 @@ if (args.Length == 2 && args[0] == "check")
         var shapes = Cells(map).Select(cell => grid.Heights.ShapeAt(cell)).ToList();
         Console.WriteLine($"cells: flat {shapes.Count(s => s == CellShape.Flat)} · slope {shapes.Count(s => s == CellShape.Slope)} · cliff {shapes.Count(s => s == CellShape.Cliff)}");
         Console.WriteLine($"hash {MapHasher.Hash(map)}");
+        foreach (var problem in MapValidator.Check(map))
+        {
+            Console.WriteLine($"{problem.Level}: {problem.Message}" + (problem.Cell is { } at ? $" at {at.X},{at.Y}" : ""));
+        }
+
         return 0;
     });
 }
@@ -323,7 +328,7 @@ if (args.Length >= 2 && args[0] == "generate")
     {
         map = new MapDefinition(
             id, Option("name", id), map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts, map.TextureLegend,
-            map.Heights, map.Land, map.Texture, map.Ore, map.Objects, map.Bridges, map.Structures, map.Lighting, map.Playable);
+            map.Heights, map.Land, map.Texture, map.Ore, map.Objects, map.Bridges, map.Structures, map.Lighting, map.Playable, map.Origin);
     }
 
     File.WriteAllText(args[1], RtsMapWriter.Write(map));

@@ -52,7 +52,7 @@ public static class MapNames
     /// <summary>The land type of a code of table 4.3, or null for an unknown code.</summary>
     public static LandType? LandOf(char code)
     {
-        for (var land = LandType.Clear; land <= LandType.Ice; land++)
+        for (var land = LandType.Clear; land <= LandType.Path; land++)
         {
             if (TestMapParser.CodeOf(land) == code)
             {

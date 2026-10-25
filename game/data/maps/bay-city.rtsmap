@@ -3,6 +3,7 @@ id: bay-city
 name: "Bay City"
 author: "Map generator"
 description: "Generated from seed 341: 2 players, Mirror, Hilly, water Sea, forest Medium, resources Medium, drills OreAndGems."
+origin: generated
 size: [136, 136]
 climate: urban
 lighting: day

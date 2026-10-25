@@ -165,6 +165,8 @@ public static class TestMapParser
         LandType.Deep => 'W',
         LandType.Rock => '#',
         LandType.Ice => 'i',
+        LandType.Track => 'g',
+        LandType.Path => 'p',
         _ => throw new ArgumentOutOfRangeException(nameof(land), land, "Unknown land type."),
     };
 
@@ -202,6 +204,8 @@ public static class TestMapParser
                 'W' => LandType.Deep,
                 '#' => LandType.Rock,
                 'i' => LandType.Ice,
+                'g' => LandType.Track,
+                'p' => LandType.Path,
                 _ => throw Error(lineNumber, column + 1, $"unknown cell code '{code}'"),
             });
             trees.Add(false);
