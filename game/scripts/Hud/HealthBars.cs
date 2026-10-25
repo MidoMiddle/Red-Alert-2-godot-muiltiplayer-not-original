@@ -96,13 +96,25 @@ public partial class HealthBars : Control
 
             switch (entity)
             {
-                case Unit unit when HealthPips.Shows(mode, selected, unit.Hp, unit.MaxHp) && !Units.Disguises.LooksLikeTree(world, unit):
+                // The bar by the mode; the rank of a veteran or an elite always, as in RA2.
+                case Unit unit when !Units.Disguises.LooksLikeTree(world, unit):
                     {
+                        var bar = HealthPips.Shows(mode, selected, unit.Hp, unit.MaxHp);
+                        var rank = Rts.Simulation.Systems.Veterancy.RankOf(unit);
+                        if (!bar && rank == Rts.Simulation.Systems.Rank.Rookie)
+                        {
+                            break;
+                        }
+
                         var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before.Position : unit.Position;
                         var height = UnitHeight + Units.UnitAltitude.Of(unit);
                         var at = WorldCoords.ToGodotOnGround(previous, height).Lerp(WorldCoords.ToGodotOnGround(unit.Position, height), _host.Alpha);
-                        DrawBar(camera, at, HealthPips.CountOf(unit), unit.Hp, unit.MaxHp);
-                        DrawRank(camera, at, HealthPips.CountOf(unit), Rts.Simulation.Systems.Veterancy.RankOf(unit));
+                        if (bar)
+                        {
+                            DrawBar(camera, at, HealthPips.CountOf(unit), unit.Hp, unit.MaxHp);
+                        }
+
+                        DrawRank(camera, at, HealthPips.CountOf(unit), rank);
                         break;
                     }
 
@@ -305,7 +317,10 @@ public partial class HealthBars : Control
         }
     }
 
-    /// <summary>The rank of a unit left of its bar (loose ends, stage 3): one gold chevron for a veteran, two for an elite.</summary>
+    /// <summary>
+    /// The rank of a unit left of its bar, shown or not (loose ends, stage 3): one gold chevron pointing up for a veteran, three for an
+    /// elite, as in RA2.
+    /// </summary>
     private void DrawRank(Camera3D camera, Vector3 at, int pips, Rts.Simulation.Systems.Rank rank)
     {
         if (rank == Rts.Simulation.Systems.Rank.Rookie || camera.IsPositionBehind(at))
@@ -316,10 +331,11 @@ public partial class HealthBars : Control
         var centre = camera.UnprojectPosition(at);
         var left = centre.X - ((pips * (PipWidth + Gap)) + Gap) / 2f - 4f;
         var gold = new Color(1f, 0.82f, 0.25f);
-        for (var i = 0; i < (int)rank; i++)
+        var chevrons = rank == Rts.Simulation.Systems.Rank.Elite ? 3 : 1;
+        for (var i = 0; i < chevrons; i++)
         {
-            var y = centre.Y - PipHeight - (i * 4f);
-            DrawPolyline([new Vector2(left - 6f, y - 3f), new Vector2(left - 3f, y), new Vector2(left, y - 3f)], gold, 1.5f);
+            var y = centre.Y - PipHeight + 2f - (i * 4f);
+            DrawPolyline([new Vector2(left - 6f, y), new Vector2(left - 3f, y - 3f), new Vector2(left, y)], gold, 1.5f);
         }
     }
 
