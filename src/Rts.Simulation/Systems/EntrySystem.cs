@@ -40,6 +40,9 @@ public enum EntryAction
 
     /// <summary>A tesla trooper stands by its owner's tesla coil and charges it (RA2).</summary>
     Charge,
+
+    /// <summary>The commando puts its C4 on a bridge repair hut: the hut's bridge falls (RA2, <see cref="BridgeDemolition.PlantAtHut"/>).</summary>
+    BlowBridge,
 }
 
 /// <summary>
@@ -86,6 +89,12 @@ public static class EntrySystem
         {
             // A building of the map: an engineer takes a tech building of the neutral side or an enemy, or mends its own; a hurt soldier
             // is healed at its own hospital.
+            // RA2: the commando's C4 on a bridge repair hut brings its bridge down.
+            if (!unit.Archetype.Has(UnitTalents.Engineer) && BridgeDemolition.CanBlowHut(world, unit, building))
+            {
+                return EntryAction.BlowBridge;
+            }
+
             return unit.Archetype.Has(UnitTalents.Engineer)
                 ? building.Kind == BuildingKind.TechBridgeRepairHut ? BridgeRepair.Needed(world, building) ? EntryAction.RepairBridge : EntryAction.None
                     : own && building.Hp < building.MaxHp && building.Type.Capturable ? EntryAction.Mend
@@ -219,6 +228,9 @@ public static class EntrySystem
                     // RA2: in at the door, out whole.
                     world.SetHp(unit, unit.MaxHp, events);
                     events?.Add(new UnitHealed(world.CurrentTick, unit.Id, building!.Id));
+                    break;
+                case EntryAction.BlowBridge:
+                    BridgeDemolition.PlantAtHut(world, unit, building!, events);
                     break;
                 case EntryAction.Charge:
                     UnitOrders.Stop(world, unit);

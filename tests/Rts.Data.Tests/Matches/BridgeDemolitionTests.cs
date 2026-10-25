@@ -169,4 +169,40 @@ public sealed class BridgeDemolitionTests
 
         Assert.All(world.Map.Bridges[0].Segments, standing => Assert.Equal(standing.Bridge.Type.SegmentHp, standing.Hp));
     }
+    [Fact]
+    public void The_commando_sent_into_the_repair_hut_brings_the_whole_bridge_down()
+    {
+        // RA2: C4 on the bridge repair hut brings its bridge down.
+        var simulation = Match();
+        var world = simulation.World;
+        var hut = world.BuildingAt(Hut)!;
+        var tanya = world.SpawnUnit(Allied, UnitType.AllianceTanya, new CellPos(24, 23).Center, snapToSubcell: true);
+        var rifleman = world.SpawnUnit(Allied, UnitType.AllianceRifleman, new CellPos(24, 25).Center, snapToSubcell: true);
+        Assert.Equal(EntryAction.BlowBridge, EntrySystem.ActionOf(world, tanya, hut));
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, rifleman, hut));
+
+        simulation.Enqueue(new EnterCommand(Allied, simulation.CurrentTick, 0, [tanya.Id], hut.Id));
+        var bridge = world.Map.Bridges[0];
+        Run(simulation, 600, () => bridge.Segments.All(segment => !segment.IsIntact));
+
+        Assert.All(bridge.Segments, segment => Assert.False(segment.IsIntact));
+        Assert.True(tanya.IsAlive);
+        Assert.True(hut.IsAlive);
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, tanya, hut));
+
+        // An engineer mends it through the same hut.
+        var engineer = world.SpawnUnit(Allied, UnitType.AllianceEngineer, new CellPos(26, 25).Center, snapToSubcell: true);
+        Assert.Equal(EntryAction.RepairBridge, EntrySystem.ActionOf(world, engineer, hut));
+    }
+
+    [Fact]
+    public void With_destroyable_bridges_off_the_commando_does_nothing_at_the_hut()
+    {
+        var simulation = Match(destroyableBridges: false);
+        var world = simulation.World;
+        var tanya = world.SpawnUnit(Allied, UnitType.AllianceTanya, new CellPos(24, 23).Center, snapToSubcell: true);
+
+        Assert.False(BridgeDemolition.CanBlowHut(world, tanya, world.BuildingAt(Hut)!));
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, tanya, world.BuildingAt(Hut)!));
+    }
 }

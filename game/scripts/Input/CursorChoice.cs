@@ -176,6 +176,7 @@ public static class CursorChoice
                 Rts.Simulation.Systems.EntryAction.Mend or Rts.Simulation.Systems.EntryAction.RepairBridge => CursorKind.EngineerRepair,
                 Rts.Simulation.Systems.EntryAction.Infiltrate => CursorKind.Infiltrate,
                 Rts.Simulation.Systems.EntryAction.Heal => CursorKind.Heal,
+                Rts.Simulation.Systems.EntryAction.BlowBridge => CursorKind.Bomb,
                 _ => CursorKind.Enter,
             };
         }

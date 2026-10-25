@@ -16,7 +16,8 @@ namespace Rts.Simulation.Systems;
 /// <see cref="WarheadDef.BombDelay"/> ticks in <see cref="GameWorld.BridgeBombs"/>, one a segment, and brings the segment down whatever
 /// its strength; the planter forgets the point. A shell of the tanks and the artillery takes hit points off the segment its point
 /// is on, by its share against concrete (<see cref="Shell"/>); a soldier's bullets do nothing. Who fired at a fallen segment forgets
-/// it. An engineer mends the bridge through its repair hut (<see cref="BridgeRepair"/>). With «Destroyable Bridges» off
+/// it. An engineer mends the bridge through its repair hut (<see cref="BridgeRepair"/>); the commando sent into the hut puts its C4 on
+/// every standing segment of that bridge (RA2: C4 on the hut brings the bridge down, <see cref="PlantAtHut"/>). With «Destroyable Bridges» off
 /// (<see cref="Matches.MatchOptions.DestroyableBridges"/>) nothing hurts a bridge.
 /// </summary>
 public static class BridgeDemolition
@@ -41,6 +42,64 @@ public static class BridgeDemolition
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Whether the unit could blow the bridge of the repair hut (RA2: the commando's C4 on the hut): it carries C4 that hurts bridges, and
+    /// the bridge has a standing segment that bridges may lose.
+    /// </summary>
+    public static bool CanBlowHut(GameWorld world, Unit unit, Building hut) =>
+        unit.IsAlive && hut.Kind == BuildingKind.TechBridgeRepairHut && world.Match is not { Options.DestroyableBridges: false }
+        && C4Of(world, unit) >= 0 && BridgeRepair.BridgeOf(world.Map, hut) is { } bridge && AnyStanding(bridge);
+
+    private static bool AnyStanding(Bridge bridge)
+    {
+        foreach (var segment in bridge.Segments)
+        {
+            if (segment.IsIntact)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// The commando at the repair hut (RA2): its C4 goes on every standing segment of the hut's bridge, one a segment, and they fall
+    /// together after the C4's delay. The commando stays.
+    /// </summary>
+    internal static void PlantAtHut(GameWorld world, Unit unit, Building hut, List<SimEvent>? events)
+    {
+        if (!CanBlowHut(world, unit, hut) || BridgeRepair.BridgeOf(world.Map, hut) is not { } bridge)
+        {
+            return;
+        }
+
+        var delay = WarheadOf(world.Rules, C4Of(world, unit)).BombDelay;
+        foreach (var segment in bridge.Segments)
+        {
+            if (segment.IsIntact && !world.BridgeBombs.Exists(bomb => bomb.Bridge == bridge.Id && bomb.Segment == segment.Index))
+            {
+                world.BridgeBombs.Add(new BridgeBomb(unit.Owner, unit.Id, bridge.Id, segment.Index, world.CurrentTick + delay));
+            }
+        }
+
+        events?.Add(new BombPlanted(world.CurrentTick, hut.Id, unit.Id, delay));
+    }
+
+    // The unit's C4 that hurts bridges, by its place in the rules; -1 without one.
+    private static int C4Of(GameWorld world, Unit unit)
+    {
+        foreach (var weapon in world.Rules.WeaponsOf(unit))
+        {
+            if (weapon >= 0 && Blows(world.Rules, weapon) && WarheadOf(world.Rules, weapon).Bomb.Length > 0)
+            {
+                return weapon;
+            }
+        }
+
+        return -1;
     }
 
     /// <summary>
