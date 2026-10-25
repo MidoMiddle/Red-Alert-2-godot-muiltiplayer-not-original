@@ -88,7 +88,7 @@ public static class TreeShapes
         {
             tree.AddChild(new MeshInstance3D
             {
-                Mesh = part.Mesh(),
+                Mesh = LowPoly.Of(part.Mesh()),
                 Position = part.Offset,
                 RotationDegrees = new Vector3(0, part.YawDegrees, 0),
                 MaterialOverride = new StandardMaterial3D { AlbedoColor = part.Color },

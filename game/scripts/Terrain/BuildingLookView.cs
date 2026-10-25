@@ -105,6 +105,7 @@ public static class BuildingLookView
             LookShape.Ring => new TorusMesh { InnerRadius = part.SizeX / 2f - part.SizeY, OuterRadius = part.SizeX / 2f },
             _ => new BoxMesh { Size = new Vector3(part.SizeX, part.SizeY, part.SizeZ) },
         };
+        mesh = LowPoly.Of(mesh);
         mesh.Material = material;
         var yaw = part.Yaw + (part.Shape == LookShape.Pyramid ? 45f : 0f);
         // Godot's order: the tilt about x first, then the yaw.

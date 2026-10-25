@@ -65,6 +65,9 @@ Godot 4.7 по умолчанию встраивает окно игры в ре
 
 Открой `game/scenes/Main.tscn` в редакторе и нажми **F6** (Run Current Scene). Из Терминала: `/Applications/Godot_mono.app/Contents/MacOS/Godot --path game -- --sandbox`.
 
+Замер кадра на настоящей карте без играющего бота: `... --path game -- --sandbox --map downtown-duel --no-bots --input-script FILE`,
+где в FILE строки `wait 600`, `perf` (FPS, время скриптов, сколько треугольников нарисовано) и `heavy` (15 самых тяжёлых мешей сцены).
+
 ### Запуск без редактора (из Терминала)
 
 Из папки проекта:

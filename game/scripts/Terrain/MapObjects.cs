@@ -286,7 +286,7 @@ public partial class MapObjects : Node3D
 
         foreach (var (key, (part, places, objects)) in parts)
         {
-            var mesh = part.Mesh();
+            var mesh = LowPoly.Of(part.Mesh());
             mesh.Material = new StandardMaterial3D { AlbedoColor = part.Color };
             var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = places.Count };
             for (var i = 0; i < places.Count; i++)
@@ -390,6 +390,7 @@ public partial class MapObjects : Node3D
             return true;
         }
 
+        mesh = LowPoly.Of(mesh);
         mesh.Material = new StandardMaterial3D { AlbedoColor = color };
         var multiMesh = new MultiMesh
         {

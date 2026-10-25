@@ -69,6 +69,39 @@ public partial class InputScript : Node
         Execute(_lines.Dequeue());
     }
 
+    // The meshes of the scene with the most triangles (copies of a MultiMesh counted), the heaviest first.
+    private void PrintHeavy()
+    {
+        var found = new List<(long Triangles, string Path)>();
+        var stack = new Stack<Node>();
+        stack.Push(GetTree().Root);
+        while (stack.Count > 0)
+        {
+            var node = stack.Pop();
+            foreach (var child in node.GetChildren())
+            {
+                stack.Push(child);
+            }
+
+            var (mesh, copies) = node switch
+            {
+                MeshInstance3D { Visible: true } single => (single.Mesh, 1L),
+                MultiMeshInstance3D { Visible: true, Multimesh: { } many } => (many.Mesh, many.VisibleInstanceCount < 0 ? many.InstanceCount : many.VisibleInstanceCount),
+                _ => (null, 0L),
+            };
+            if (mesh is not null)
+            {
+                found.Add((mesh.GetFaces().Length / 3 * copies, $"{node.GetPath()} x{copies}"));
+            }
+        }
+
+        found.Sort((a, b) => b.Triangles.CompareTo(a.Triangles));
+        foreach (var (triangles, path) in found.GetRange(0, Math.Min(15, found.Count)))
+        {
+            GD.Print(string.Create(CultureInfo.InvariantCulture, $"[input-script] heavy {triangles,12} {path}"));
+        }
+    }
+
     private void Execute(string line)
     {
         var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -129,6 +162,13 @@ public partial class InputScript : Node
                     GD.Print($"[input-script] saved cursors {parts[1]}: {error}");
                     break;
                 }
+            case "perf":
+                // What a frame costs now: frames a second, the time of the scripts, and what the renderer drew.
+                GD.Print(string.Create(CultureInfo.InvariantCulture, $"[input-script] perf fps {Performance.GetMonitor(Performance.Monitor.TimeFps):0} process {Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000:0.0} ms objects {Performance.GetMonitor(Performance.Monitor.RenderTotalObjectsInFrame):0} draws {Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame):0} primitives {Performance.GetMonitor(Performance.Monitor.RenderTotalPrimitivesInFrame):0} nodes {Performance.GetMonitor(Performance.Monitor.ObjectNodeCount):0}"));
+                break;
+            case "heavy":
+                PrintHeavy();
+                break;
             case "log":
                 GD.Print("[input-script] " + (line.Length > 4 ? line[4..] : string.Empty));
                 break;

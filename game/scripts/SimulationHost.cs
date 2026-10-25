@@ -227,7 +227,8 @@ public partial class SimulationHost : Node
         {
             // A match (M5 step 2): the starting units come with the world, the bots think inside the simulation.
             Simulation = new GameSimulation(SimulationSettings.ForMatch(_match, map.Grid), Data.Rules);
-            Bots = MatchBots.AttachAll(Simulation);
+            // --no-bots: the opponents stand idle (a measure of the frame on a real map without a bot playing).
+            Bots = OS.GetCmdlineUserArgs().Contains("--no-bots") ? [] : MatchBots.AttachAll(Simulation);
             Debug.AiJournalFiles.Attach(Bots, _match);
             LocalPlayer = _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
             CallDeferred(MethodName.LookAtStart);
