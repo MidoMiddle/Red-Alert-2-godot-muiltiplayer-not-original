@@ -13,8 +13,24 @@
 # (0), offset [x, y, z] in cells ([0, 0, 0]), jitter — the share the size of each varies either way, 0…0.5 (0), spin — each turned
 # any way (false), height in cells for the bars over a building (its look's when 0), climates — the climates it is drawn in (all
 # when left out). The pick goes by the cell: the same tree is the same cactus every time, neighbours differ.
+# damaged, occupied, ruins — a building's file in its states: critically damaged (under a quarter of its hit points, its soldiers
+# come out), with soldiers inside, and fallen (the ruins stay on its footprint); without one, the file above is drawn. Its nodes
+# fire_1, fire_2… stand the flames of a damaged one.
 format: models/1
 models:
+  # The civilian houses of the map (docs/map_elements/11_civilian_buildings): the house whole, the same house when it is critically
+  # damaged or holds soldiers, and its ruins once it has fallen.
+  building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 2.5,
+                              damaged: map/building_house_small_damaged/building_house_small_damaged.glb,
+                              occupied: map/building_house_small_occupied/building_house_small_occupied.glb,
+                              ruins: map/building_house_ruins/building_house_ruins.glb }
+
+  # The apartment block of the map (docs/map_elements/11_civilian_buildings): the same four states as the house.
+  building/neutral_apartment: { file: map/building_apartment_block/building_apartment_block.glb, height: 6,
+                                damaged: map/building_apartment_block_damaged/building_apartment_block_damaged.glb,
+                                occupied: map/building_apartment_block_occupied/building_apartment_block_occupied.glb,
+                                ruins: map/building_apartment_block_ruins/building_apartment_block_ruins.glb }
+
   # The industrial buildings of the map (docs/industrial_elements).
   building/neutral_smokestack:     { file: industrial/smokestack/smokestack.glb, height: 6 }
   building/neutral_cooling_tower:  { file: industrial/cooling_tower/cooling_tower.glb, height: 5 }
