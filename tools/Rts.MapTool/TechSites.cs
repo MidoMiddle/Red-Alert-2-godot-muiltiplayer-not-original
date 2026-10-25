@@ -21,6 +21,11 @@ internal static class TechSites
     // The flat ground of a start of the generator (Rts.MapGen Stages.Starts.FlatRadius, internal there).
     private const int StartFlat = 12;
 
+    // The rule of the generator's maps (Rts.MapGen GenMap, internal there; OreClearanceTests): no building within OreClearance cells of
+    // the ore or of the ground a drill throws its ore on, DrillThrow cells round it.
+    private const int OreClearance = 2;
+    private const int DrillThrow = 3;
+
     /// <summary><paramref name="map"/> with the outposts placed, or an error when they find no room.</summary>
     public static MapDefinition AddTo(MapDefinition map, Symmetry symmetry)
     {
@@ -30,6 +35,7 @@ internal static class TechSites
         }
 
         var ground = MapChecks.BaseGrid(map);
+        var ore = OreZone(map);
         var taken = new HashSet<CellPos>();
         foreach (var bridge in map.Bridges)
         {
@@ -41,7 +47,7 @@ internal static class TechSites
             taken.UnionWith(MapChecks.Footprint(structure));
         }
 
-        var corners = Place(map, ground, symmetry, taken)
+        var corners = Place(map, ground, symmetry, taken, ore)
             ?? throw new ArgumentException($"The map '{map.Id}' has no room for an outpost with its images.");
         var placed = corners.Select(corner => new StructurePlacement(Outpost, corner, 0, 0)).ToList();
 
@@ -52,7 +58,7 @@ internal static class TechSites
     }
 
     // The north-west corners of the footprint nearest the middle that fits with all its images, those images; null without one.
-    private static List<CellPos>? Place(MapDefinition map, MapGrid ground, Symmetry symmetry, HashSet<CellPos> taken)
+    private static List<CellPos>? Place(MapDefinition map, MapGrid ground, Symmetry symmetry, HashSet<CellPos> taken, HashSet<CellPos> ore)
     {
         var (middleX, middleY) = ((map.Width - Width) / 2, (map.Height - Height) / 2);
         var order = Enumerable.Range(0, map.Height - Height + 1)
@@ -68,7 +74,7 @@ internal static class TechSites
                 .Distinct()
                 .ToList();
             var claimed = new HashSet<CellPos>();
-            if (images.All(image => Fits(map, ground, image, taken) && Cells(image, Margin).All(claimed.Add)))
+            if (images.All(image => Fits(map, ground, image, taken, ore) && Cells(image, Margin).All(claimed.Add)))
             {
                 return images;
             }
@@ -77,12 +83,45 @@ internal static class TechSites
         return null;
     }
 
-    private static bool Fits(MapDefinition map, MapGrid ground, CellPos corner, HashSet<CellPos> taken) =>
+    private static bool Fits(MapDefinition map, MapGrid ground, CellPos corner, HashSet<CellPos> taken, HashSet<CellPos> ore) =>
         Cells(corner, 0).All(cell => map.Contains(cell) && map.LandAt(cell) is LandType.Clear or LandType.Rough
                                      && ground.CanEnter(cell, Locomotor.Track) && !taken.Contains(cell))
         && Cells(corner, Margin).All(cell => !map.Contains(cell) || (map.Ore[cell.Y * map.Width + cell.X] == 0 && !taken.Contains(cell)))
+        && Cells(corner, OreClearance).All(cell => !ore.Contains(cell))
         && Flat(map, corner)
         && map.Starts.All(start => Distance2(Centre(corner), start.Cell) > (StartFlat + Width) * (StartFlat + Width));
+
+    // The ore of the map and the ground its drills throw ore on.
+    private static HashSet<CellPos> OreZone(MapDefinition map)
+    {
+        var zone = new HashSet<CellPos>();
+        for (var y = 0; y < map.Height; y++)
+        {
+            for (var x = 0; x < map.Width; x++)
+            {
+                if (map.Ore[y * map.Width + x] > 0)
+                {
+                    zone.Add(new CellPos(x, y));
+                }
+            }
+        }
+
+        foreach (var drill in map.Objects.Where(thing => thing.Type is "ore_source" or "gem_source"))
+        {
+            for (var dy = -DrillThrow; dy <= DrillThrow; dy++)
+            {
+                for (var dx = -DrillThrow; dx <= DrillThrow; dx++)
+                {
+                    if (dx * dx + dy * dy <= DrillThrow * DrillThrow)
+                    {
+                        zone.Add(new CellPos(drill.Cell.X + dx, drill.Cell.Y + dy));
+                    }
+                }
+            }
+        }
+
+        return zone;
+    }
 
     // Every corner of the footprint at one height: a building stands on flat ground (MapValidator).
     private static bool Flat(MapDefinition map, CellPos corner)
