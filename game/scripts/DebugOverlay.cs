@@ -78,7 +78,7 @@ public partial class DebugOverlay : CanvasLayer
         _queueGraph.Position = new Vector2(_label.Position.X, _label.Position.Y + _label.Size.Y + 6f);
         var simulation = _host.Simulation;
         var units = simulation.World.Entities.Count(e => e is Unit);
-        var state = _host.Paused ? "PAUSED" : $"x{_host.SpeedMultiplier:0.##}";
+        var state = _host.Paused ? "PAUSED" : $"speed {_host.GameSpeed} x{_host.SpeedMultiplier:0.##}";
         var mode = _host.IsPlayback ? "REPLAY" : "LIVE";
 
         _label.Text =

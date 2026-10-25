@@ -50,8 +50,6 @@ public partial class SimulationHost : Node
     private const int MaxTicksPerFrame = 5;
     private const string ReplayDirectory = "user://replays";
 
-    private static readonly double[] SpeedMultipliers = [0.25, 0.5, 1, 2, 4];
-
     /// <summary>The sandbox map with every land type and its starting units (docs/implementation/M2_unit_control.md, 4.3).</summary>
     public const string SandboxMapPath = "res://maps/test/sandbox.txt";
 
@@ -108,7 +106,7 @@ public partial class SimulationHost : Node
     // The match of this scene, made once: R plays it again from the start with the same seed.
     private MatchSetup? _match;
     private double _accumulator;
-    private int _speedIndex = 2;
+    private int _gameSpeed = Matches.GameSpeeds.Normal;
     private uint _nextSequence;
     private ReplayRecorder? _recorder;
     private Replay? _playback;
@@ -174,7 +172,11 @@ public partial class SimulationHost : Node
     /// <summary>Fraction of the next tick already elapsed, for interpolating positions.</summary>
     public float Alpha { get; private set; }
 
-    public double SpeedMultiplier => SpeedMultipliers[_speedIndex];
+    /// <summary>The game speed of RA2, 1–6, the clock runs at (M6 step 8).</summary>
+    public int GameSpeed => _gameSpeed;
+
+    /// <summary>How much faster than 15 ticks a second the clock runs at <see cref="GameSpeed"/>.</summary>
+    public double SpeedMultiplier => Matches.GameSpeeds.Multiplier(_gameSpeed, SimulationSettings.DefaultTicksPerSecond);
 
     public int MeasuredTicksPerSecond { get; private set; }
 
@@ -682,18 +684,8 @@ public partial class SimulationHost : Node
         GD.Print($"[host] spawn type {UnitTypes.IdOf(SpawnType)}");
     }
 
-    /// <summary>The step of <see cref="SpeedMultipliers"/> for the game speed 1–6 of the skirmish screen.</summary>
-    public static int SpeedIndexOf(int gameSpeed) => gameSpeed switch
-    {
-        <= 1 => 0,
-        2 => 1,
-        3 or 4 => 2,
-        5 => 3,
-        _ => 4,
-    };
-
-    public void ChangeSpeed(int direction) =>
-        _speedIndex = Math.Clamp(_speedIndex + direction, 0, SpeedMultipliers.Length - 1);
+    /// <summary>One step of the game speed up or down (the speed keys), in a match on one computer.</summary>
+    public void ChangeSpeed(int direction) => _gameSpeed = Matches.GameSpeeds.Step(_gameSpeed, direction);
 
     /// <summary>Writes the live session to user://replays and remembers the path for playback.</summary>
     public string? SaveReplay() => SaveReplay(ReplayDirectory, $"replay-{Simulation.CurrentTick}");
@@ -1091,8 +1083,8 @@ public partial class SimulationHost : Node
 
         if (_match is { } chosen)
         {
-            // The speed of the skirmish screen, 1–6 as in RA2: 1 and 2 slow, 3 and 4 normal, 5 fast, 6 fastest.
-            _speedIndex = SpeedIndexOf(chosen.Options.GameSpeed);
+            // The speed of the skirmish screen, 1–6 as in RA2: 8 to 25 ticks a second.
+            _gameSpeed = chosen.Options.GameSpeed;
         }
     }
 

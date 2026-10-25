@@ -207,16 +207,18 @@ public sealed class SkirmishConfigTests
             Superweapons = false,
             DestroyableBridges = false,
             GameSpeed = 6,
+            StartingUnits = 10,
             MapId = "four-corners",
         };
 
         var options = config.ToSetup(FourCorners(), "union", 5).Options;
-        Assert.Equal((false, false, false, 6), (options.McvRepacks, options.Superweapons, options.DestroyableBridges, options.GameSpeed));
+        Assert.Equal((false, false, false, 6, 10), (options.McvRepacks, options.Superweapons, options.DestroyableBridges, options.GameSpeed, options.StartingUnits));
         var loaded = SkirmishConfig.Load(config.Save())!;
-        Assert.Equal((false, false, false, 6, "four-corners"), (loaded.McvRepacks, loaded.Superweapons, loaded.DestroyableBridges, loaded.GameSpeed, loaded.MapId));
+        Assert.Equal((false, false, false, 6, 10, "four-corners"),
+            (loaded.McvRepacks, loaded.Superweapons, loaded.DestroyableBridges, loaded.GameSpeed, loaded.StartingUnits, loaded.MapId));
 
-        // A config of before has them on, at speed 4.
+        // A config of before has them on, at speed 4, with three soldiers.
         var old = SkirmishConfig.Load("slot=human,1,random,0,0,-1\nslot=bot,1,random,1,0,-1\n")!;
-        Assert.Equal((true, true, true, 4), (old.McvRepacks, old.Superweapons, old.DestroyableBridges, old.GameSpeed));
+        Assert.Equal((true, true, true, 4, 3), (old.McvRepacks, old.Superweapons, old.DestroyableBridges, old.GameSpeed, old.StartingUnits));
     }
 }

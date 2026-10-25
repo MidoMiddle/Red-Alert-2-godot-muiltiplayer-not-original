@@ -12,8 +12,8 @@ namespace Rts.Net.Protocol.Messages;
 internal static class MatchFields
 {
     /// <summary>
-    /// <c>i32 startingCredits | u8 shortGame | u8 gameSpeed | u8 fogOfWar | u8 mcvRepacks | u8 superweapons | u8 destroyableBridges</c> (the
-    /// fog since protocol 2, the last three since 6).
+    /// <c>i32 startingCredits | u8 shortGame | u8 gameSpeed | u8 fogOfWar | u8 mcvRepacks | u8 superweapons | u8 destroyableBridges |
+    /// u8 startingUnits</c> (the fog since protocol 2, the next three since 6, the units since 10).
     /// </summary>
     public static void WriteOptions(MessageWriter writer, MatchOptions options)
     {
@@ -24,10 +24,11 @@ internal static class MatchFields
         writer.WriteBool(options.McvRepacks);
         writer.WriteBool(options.Superweapons);
         writer.WriteBool(options.DestroyableBridges);
+        writer.WriteSmall(options.StartingUnits, nameof(options.StartingUnits));
     }
 
     public static MatchOptions ReadOptions(ref MessageReader reader) =>
-        new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool());
+        new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadByte());
 
     /// <summary>
     /// <c>string mapId | u64 seed | options | u8 playerCount | players | u8 startCount | (i32 x | i32 y) × startCount</c>, a player being

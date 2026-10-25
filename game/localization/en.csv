@@ -522,6 +522,7 @@ UI_OPTION_INSTANT_CAPTURE,Instant Capture
 UI_OPTION_NO_DOG_ENGINEER_KILLS,No Dog Engineer Kills
 UI_OPTION_DELAYED_OILS,Delayed Oils
 UI_OPTION_UNIT_COUNT,Unit Count
+UI_OPTION_UNIT_COUNT_HINT,The soldiers every player has beside the MCV at the start.
 UI_OPTION_ALLY_CONYARDS,Build Off Ally ConYards
 UI_RANDOM_SIDE,Random
 UI_RANDOM_SIDE_ALLIANCE,Random Allies

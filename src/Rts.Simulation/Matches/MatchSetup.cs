@@ -38,6 +38,9 @@ public enum AiDifficulty : byte
 /// <param name="Superweapons">The superweapons can be built (RA2 «Superweapons»); off, the Bastion Field Projector, the missile silo, the
 /// Phase Gate and the Storm Generator are not in the tree. The paradrops stay.</param>
 /// <param name="DestroyableBridges">The bridges fall to shots (RA2 «Destroyable Bridges»); off, a shot at a bridge stops at it.</param>
+/// <param name="StartingUnits">
+/// The units every player gets beside its MCV (RA2 «Unit Count», M6 step 8): 0–<see cref="MaxStartingUnits"/> of its starting infantry.
+/// </param>
 public sealed record MatchOptions(
     int StartingCredits = SimulationSettings.DefaultStartingCredits,
     bool ShortGame = false,
@@ -45,7 +48,15 @@ public sealed record MatchOptions(
     bool FogOfWar = true,
     bool McvRepacks = true,
     bool Superweapons = true,
-    bool DestroyableBridges = true);
+    bool DestroyableBridges = true,
+    int StartingUnits = MatchOptions.DefaultStartingUnits)
+{
+    /// <summary>Three soldiers, as every match had before the option (M5, decision 1).</summary>
+    public const int DefaultStartingUnits = 3;
+
+    /// <summary>The most of the slider, as in RA2.</summary>
+    public const int MaxStartingUnits = 10;
+}
 
 /// <summary>
 /// One player of a match (docs/implementation/M5_first_bot.md, 4.11). <see cref="Slot"/> is its <see cref="PlayerId"/>. The start is
@@ -105,7 +116,7 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
     /// <summary>
     /// What is wrong with the match on a map of <paramref name="width"/> × <paramref name="height"/> by <paramref name="rules"/>, or null
     /// when it can be played: 2–8 players in different slots 1–8 — people, bots or both; bots alone are a match of the Arena (M8 step 4) —
-    /// different starts of the map and different colours, known factions, credits not negative, a speed of 1–6.
+    /// different starts of the map and different colours, known factions, credits not negative, a speed of 1–6, 0–10 starting units.
     /// </summary>
     public string? Problem(int width, int height, RulesDatabase rules)
     {
@@ -122,6 +133,11 @@ public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, 
         if (Options.GameSpeed < MinGameSpeed || Options.GameSpeed > MaxGameSpeed)
         {
             return $"the game speed {Options.GameSpeed} is not {MinGameSpeed}–{MaxGameSpeed}";
+        }
+
+        if (Options.StartingUnits < 0 || Options.StartingUnits > MatchOptions.MaxStartingUnits)
+        {
+            return $"the starting units {Options.StartingUnits} are not 0–{MatchOptions.MaxStartingUnits}";
         }
 
         if (MapStarts.IsDefault || MapStarts.Length < Players.Length)

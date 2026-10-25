@@ -90,6 +90,8 @@ public partial class SkirmishSetup : Control
     private CheckBox _fog = null!;
     private HSlider _speed = null!;
     private Label _speedValue = null!;
+    private HSlider _units = null!;
+    private Label _unitsValue = null!;
     private HSlider _credits = null!;
     private Label _creditsValue = null!;
 
@@ -348,7 +350,7 @@ public partial class SkirmishSetup : Control
     /// <summary>
     /// The options of RA2 in its order: on the left Short Game, MCV Repacks, Crates, Superweapons, Destroyable Bridges; in the middle
     /// Multi Engineer, Instant Capture, No Dog Engineer Kills, Delayed Oils and our fog of war; on the right the game speed, the credits,
-    /// the starting units and Build Off Ally ConYards. What has no rules yet is locked with "Coming soon".
+    /// the starting units (M6 step 8) and Build Off Ally ConYards. What has no rules yet is locked with "Coming soon".
     /// </summary>
     private Control BuildOptions()
     {
@@ -377,11 +379,8 @@ public partial class SkirmishSetup : Control
         (_speed, _speedValue) = Slider(right, "UI_OPTION_GAME_SPEED", 1, SkirmishConfig.MaxGameSpeed, value => Apply(_config with { GameSpeed = value }));
         (_credits, _creditsValue) = Slider(right, "UI_OPTION_CREDITS", 0, SkirmishConfig.CreditChoices.Length - 1,
             value => Apply(_config with { Credits = SkirmishConfig.CreditChoices[value] }));
-        var (units, unitsValue) = Slider(right, "UI_OPTION_UNIT_COUNT", 0, 10, _ => { });
-        units.Editable = false;
-        units.Modulate = new Color(1f, 1f, 1f, 0.5f);
-        units.TooltipText = Tr("UI_COMING_SOON");
-        unitsValue.Text = 0.ToString(CultureInfo.InvariantCulture);
+        (_units, _unitsValue) = Slider(right, "UI_OPTION_UNIT_COUNT", 0, MatchOptions.MaxStartingUnits, value => Apply(_config with { StartingUnits = value }));
+        _units.TooltipText = Tr("UI_OPTION_UNIT_COUNT_HINT");
         right.AddChild(new Control());
         Locked(right, "UI_OPTION_ALLY_CONYARDS", false);
         return grid;
@@ -476,6 +475,8 @@ public partial class SkirmishSetup : Control
         _fog.SetPressedNoSignal(_config.FogOfWar);
         _speed.SetValueNoSignal(_config.GameSpeed);
         _speedValue.Text = _config.GameSpeed.ToString(CultureInfo.InvariantCulture);
+        _units.SetValueNoSignal(_config.StartingUnits);
+        _unitsValue.Text = _config.StartingUnits.ToString(CultureInfo.InvariantCulture);
         var credits = Math.Max(0, SkirmishConfig.CreditChoices.IndexOf(_config.Credits));
         _credits.SetValueNoSignal(credits);
         _creditsValue.Text = SkirmishConfig.CreditChoices[credits].ToString(CultureInfo.InvariantCulture);

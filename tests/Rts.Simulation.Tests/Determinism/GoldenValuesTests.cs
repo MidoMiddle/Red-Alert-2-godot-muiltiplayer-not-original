@@ -350,6 +350,7 @@ public sealed class GoldenValuesTests
         // Replay format v25, rules v71 (the repair mode mends a taken tech building): the versions.
         // Replay format v26, rules v72 (M9 step 10: PlayerLeft): the versions; nothing new is hashed.
         // Replay format v27 (M9 step 11): one byte more, the network flag of a match on one computer.
-        Assert.Equal((22270, 5465860886832464451UL), (bytes.Length, hash.Value));
+        // Replay format v28 (M6 step 8: Unit Count in the match setup, which this scenario has not): the version only.
+        Assert.Equal((22270, 18435161094427401548UL), (bytes.Length, hash.Value));
     }
 }

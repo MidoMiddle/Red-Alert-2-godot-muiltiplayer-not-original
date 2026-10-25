@@ -328,6 +328,8 @@ public partial class PauseMenu : CanvasLayer
             Option("UI_OPTION_MCV_REPACKS", options.McvRepacks),
             Option("UI_OPTION_FOG_OF_WAR", options.FogOfWar),
             string.Format(Tr("UI_MATCH_OPTION"), Tr("UI_OPTION_CREDITS"), options.StartingCredits.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            string.Format(Tr("UI_MATCH_OPTION"), Tr("UI_OPTION_UNIT_COUNT"), options.StartingUnits.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            string.Format(Tr("UI_MATCH_OPTION"), Tr("UI_OPTION_GAME_SPEED"), options.GameSpeed.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         };
         _info.Text = string.Format(Tr("UI_MATCH_MAP"), MapName(match.MapId)) + "\n" + string.Join(Tr("UI_MATCH_SEPARATOR"), parts);
     }

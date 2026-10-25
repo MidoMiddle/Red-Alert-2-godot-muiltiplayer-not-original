@@ -8,7 +8,10 @@ using Rts.Simulation.World;
 
 namespace Rts.Simulation.Tests.Matches;
 
-/// <summary>The starting state of a match (docs/implementation/M5_first_bot.md, 4.11, decision 1): an MCV and three conscripts at every start.</summary>
+/// <summary>
+/// The starting state of a match (docs/implementation/M5_first_bot.md, 4.11, decision 1): an MCV and three conscripts at every start —
+/// or as many as the option «Unit Count» says (M6 step 8).
+/// </summary>
 public sealed class MatchStartTests
 {
     private static GameSimulation Start(MatchSetup setup, MapGrid? map = null) =>
@@ -29,7 +32,7 @@ public sealed class MatchStartTests
             var mcv = Assert.Single(units, unit => unit.Type == UnitType.Mcv);
             Assert.Equal(player.Start.Center, mcv.Position);
             var conscripts = units.Where(unit => unit.Type == UnitType.Conscript).ToList();
-            Assert.Equal(MatchStart.StartingInfantry, conscripts.Count);
+            Assert.Equal(MatchOptions.DefaultStartingUnits, conscripts.Count);
             Assert.Equal(4, units.Count);
             // Outside the 3×3 yard the MCV deploys to, within a few cells of it.
             Assert.All(conscripts, conscript =>
@@ -42,6 +45,33 @@ public sealed class MatchStartTests
         }
 
         Assert.Empty(UnitsOf(world, new PlayerId(3)));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(10)]
+    public void Unit_count_gives_that_many_soldiers_beside_the_mcv(int count)
+    {
+        var setup = MatchSetupTests.OneOnOne();
+        var world = Start(setup with { Options = setup.Options with { StartingUnits = count } }).World;
+
+        foreach (var player in setup.Players)
+        {
+            var units = UnitsOf(world, player.Id);
+            Assert.Single(units, unit => unit.Type == UnitType.Mcv);
+            Assert.Equal(count, units.Count(unit => unit.Type == UnitType.Conscript));
+        }
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(11)]
+    public void Unit_count_outside_0_to_10_is_refused(int count)
+    {
+        var setup = MatchSetupTests.OneOnOne();
+
+        Assert.Contains("starting units", (setup with { Options = setup.Options with { StartingUnits = count } }).Problem(64, 64, TestRules.Standard.Database));
     }
 
     [Fact]
@@ -58,7 +88,7 @@ public sealed class MatchStartTests
         var world = Start(MatchSetupTests.OneOnOne(), map).World;
 
         var conscripts = UnitsOf(world, new PlayerId(1)).Where(unit => unit.Type == UnitType.Conscript).ToList();
-        Assert.Equal(MatchStart.StartingInfantry, conscripts.Count);
+        Assert.Equal(MatchOptions.DefaultStartingUnits, conscripts.Count);
         Assert.All(conscripts, conscript => Assert.True(world.Map.CanEnter(conscript.Position.ToCell(), Locomotor.Foot)));
     }
 
