@@ -1166,7 +1166,8 @@ public partial class PlayerInput : Node
                 && !world.AreAllies(soldier.Owner, player) && Selection.Units.Any(id => world.TryGet(id, out var tank) && tank is Unit { Archetype.Crusher: true }),
             Tool == PointerTool.Superweapon && world.TryGet(_superweapon, out var armed) && armed is Building weapon
                 ? weapon.Def?.Superweapon ?? (BuildingTypes.IsKnown(weapon.Kind) ? weapon.Type.Superweapon : Rts.Simulation.Rules.SuperweaponKind.None)
-                : Rts.Simulation.Rules.SuperweaponKind.None);
+                : Rts.Simulation.Rules.SuperweaponKind.None,
+            SelectedFactory is not null && Selection.IsEmpty);
     }
 
     /// <summary>What the first selected unit of the player that can go into <paramref name="target"/> would do there.</summary>

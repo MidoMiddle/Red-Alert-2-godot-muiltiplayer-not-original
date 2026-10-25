@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using Rts.Client.App;
+using Rts.Client.Controls;
 using Rts.Client.Terrain;
 using Rts.Client.Units;
 using Rts.Simulation.Combat;
@@ -51,9 +52,10 @@ public partial class HealthBars : Control
             return;
         }
 
-        var mode = AppSettings.Instance?.Values.HealthBars ?? HealthBarMode.Damaged;
+        var mode = AppSettings.Instance?.Values.HealthBars ?? HealthBarMode.Selected;
         var world = _host.Simulation.World;
         DrawRallyPoint(camera, world);
+        DrawRallyChoice(camera, world);
         DrawNames(camera, world);
         foreach (var entity in world.Entities)
         {
@@ -247,9 +249,43 @@ public partial class HealthBars : Control
 
         var green = new Color(0.35f, 1f, 0.45f);
         var (start, end, pole) = (camera.UnprojectPosition(from), camera.UnprojectPosition(to), camera.UnprojectPosition(top));
-        DrawDashedLine(start, end, green, 2f, 8f);
+        Dashes(start, end, green);
         DrawLine(end, pole, green, 2f);
         DrawColoredPolygon([pole, pole + new Vector2(14f, 5f), pole + new Vector2(0f, 10f)], green);
+    }
+
+    /// <summary>
+    /// While the rally point of the selected building is chosen (the cursor over the ground, no units selected): a dashed line from
+    /// the building to the pointer, fainter than the one to the point set.
+    /// </summary>
+    private void DrawRallyChoice(Camera3D camera, GameWorld world)
+    {
+        if (_input is not { Selection.IsEmpty: true, Tool: PointerTool.None, PointerGround: { } ground, SelectedFactory: { } id }
+            || _input.Hovered is not null || !world.TryGet(id, out var entity) || entity is not Building factory
+            || GetViewport().GuiGetHoveredControl() is not null)
+        {
+            return;
+        }
+
+        var from = WorldCoords.ToGodotOnGround(Aim.CentreOf(factory), 0.3f);
+        var to = WorldCoords.ToGodotOnGround(ground, 0.05f);
+        if (!camera.IsPositionBehind(from) && !camera.IsPositionBehind(to))
+        {
+            Dashes(camera.UnprojectPosition(from), camera.UnprojectPosition(to), new Color(1f, 0.84f, 0.25f, 0.8f));
+        }
+    }
+
+    // A dashed line in long dashes, so it never reads as a solid one: 12 px drawn, 8 px left out.
+    private void Dashes(Vector2 from, Vector2 to, Color color)
+    {
+        const float dash = 12f;
+        const float gap = 8f;
+        var length = from.DistanceTo(to);
+        var step = length > 0f ? (to - from) / length : Vector2.Zero;
+        for (var at = 0f; at < length; at += dash + gap)
+        {
+            DrawLine(from + step * at, from + step * Mathf.Min(length, at + dash), color, 2.5f);
+        }
     }
 
     /// <summary>The rank of a unit left of its bar (loose ends, stage 3): one gold chevron for a veteran, two for an elite.</summary>

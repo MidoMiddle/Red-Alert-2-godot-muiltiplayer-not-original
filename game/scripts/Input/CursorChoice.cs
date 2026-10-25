@@ -72,6 +72,12 @@ public enum CursorKind
 
     /// <summary>An armed paradrop over the ground.</summary>
     Paradrop,
+
+    /// <summary>
+    /// A building that produces selected, over the ground: a click sets its rally point, where its units go (the owner, 2026-10-25:
+    /// the cursor must change while the point is chosen).
+    /// </summary>
+    Rally,
 }
 
 /// <summary>
@@ -89,6 +95,7 @@ public enum CursorKind
 /// <param name="Bomb">A selected unit plants a bomb on the target under the pointer (Ivan, the commando's C4).</param>
 /// <param name="Crush">A selected tank can crush the enemy soldier under the pointer.</param>
 /// <param name="Superweapon">The kind of the superweapon armed, for its sight.</param>
+/// <param name="Rally">A building that produces is selected (no units): an order on the ground sets its rally point.</param>
 public readonly record struct PointerSpot(
     bool OwnBuilding = false,
     bool Damaged = false,
@@ -101,7 +108,8 @@ public readonly record struct PointerSpot(
     Rts.Simulation.Systems.EntryAction Entry = Rts.Simulation.Systems.EntryAction.None,
     bool Bomb = false,
     bool Crush = false,
-    Rts.Simulation.Rules.SuperweaponKind Superweapon = Rts.Simulation.Rules.SuperweaponKind.None);
+    Rts.Simulation.Rules.SuperweaponKind Superweapon = Rts.Simulation.Rules.SuperweaponKind.None,
+    bool Rally = false);
 
 /// <summary>Which cursor to show for what is under the pointer. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CursorChoice
@@ -131,6 +139,15 @@ public static class CursorChoice
                     Rts.Simulation.Rules.SuperweaponKind.Paradrop => CursorKind.Paradrop,
                     _ => CursorKind.Attack,
                 };
+        }
+
+        if (spot.Rally)
+        {
+            // An own unit or another of the buildings that produce is picked by a click; an enemy takes no order of a building.
+            return context.Target.Kind == PointerTargetKind.OwnUnit || context.OwnFactory is not null ? CursorKind.Select
+                : context.Ground is null || context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OtherBuilding
+                    ? CursorKind.Forbidden
+                    : CursorKind.Rally;
         }
 
         var groundOrder = context.WaypointMode || (context.Ctrl && context.Shift);

@@ -191,4 +191,16 @@ public sealed class CursorChoiceTests
     }
 
     private static PointerContext Context(PointerTarget target, bool selected) => new(Spot, target, false, selected);
+
+    [Fact]
+    public void A_selected_factory_shows_the_rally_flag_over_the_ground()
+    {
+        // The owner, 2026-10-25: the cursor must change while the rally point is chosen.
+        var ground = new PointerContext(new WorldPos(1000, 1000), new PointerTarget(PointerTargetKind.Ground), Shift: false, HasSelection: true);
+        var spot = new PointerSpot(Rally: true);
+        Assert.Equal(CursorKind.Rally, CursorChoice.For(ground, anyCanEnter: false, spot: spot));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(ground with { Ground = null }, anyCanEnter: false, spot: spot));
+        Assert.Equal(CursorKind.Select, CursorChoice.For(ground with { Target = new PointerTarget(PointerTargetKind.OwnUnit, new EntityId(3)) }, false, spot: spot));
+        Assert.Equal(CursorKind.Sell, CursorChoice.For(ground, false, PointerTool.Sell, spot with { OwnBuilding = true }));
+    }
 }

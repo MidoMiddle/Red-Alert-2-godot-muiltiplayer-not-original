@@ -71,7 +71,7 @@ public static class CursorSet
     private static Vector2 Hotspot(CursorKind kind) => kind switch
     {
         CursorKind.Normal => Vector2.Zero,
-        CursorKind.Waypoint => new Vector2(8, 28),
+        CursorKind.Waypoint or CursorKind.Rally => new Vector2(8, 28),
         _ => new Vector2(Middle, Middle),
     };
 
@@ -104,6 +104,7 @@ public static class CursorSet
             CursorKind.Chrono => ChronoRing,
             CursorKind.IronCurtain => (x, y) => Outlined(x, y, Shield, Red),
             CursorKind.Paradrop => Parachute,
+            CursorKind.Rally => RallyFlag,
             _ => Flag,
         };
         for (var y = 0; y < Size; y++)
@@ -393,6 +394,24 @@ public static class CursorSet
     }
 
     /// <summary>A dark pole with a green flag; the hotspot is the foot of the pole.</summary>
+    /// <summary>The rally point: a yellow pennant on a pole planted in a white ring on the ground.</summary>
+    private static Color? RallyFlag(float x, float y)
+    {
+        var (dx, dy) = ((x - 8.5f) / 7.5f, (y - 28f) / 3f);
+        var ring = dx * dx + dy * dy;
+        if (ring is > 0.55f and < 1f)
+        {
+            return Color.Color8(255, 255, 255);
+        }
+
+        if (x is > 7 and < 9.5f && y is > 3 and < 28)
+        {
+            return Outline;
+        }
+
+        return x >= 9.5f && y is > 4 and < 16 && x < 9.5f + 14 * (1 - MathF.Abs(y - 10) / 6) ? Color.Color8(255, 214, 64) : null;
+    }
+
     private static Color? Flag(float x, float y)
     {
         if (x is > 7 and < 9.5f && y is > 3 and < 29)
