@@ -9,7 +9,7 @@ namespace Rts.Simulation.Systems;
 /// ready buildings, the drain the sum of the negative ones; the player is low on power when it drains more than it produces. Worked
 /// out only when the buildings changed (<see cref="GameWorld.PowerDirty"/>), at a fixed point of the tick. Reports
 /// <see cref="LowPower"/> and <see cref="PowerRestored"/> when a player crosses the line. Low power slows production (step 8) and
-/// switches the radar off (step 12).
+/// switches the radar off (step 12). A tech power plant of the player adds to the output (M11 a5).
 /// </summary>
 public static class PowerSystem
 {
@@ -44,6 +44,11 @@ public static class PowerSystem
                         drain += def.Power < 0 ? -def.Power : 0;
                         robotControl |= def.ControlsRobots;
                     }
+                }
+                else if (entity is Building { IsAlive: true, Kind: BuildingKind.TechPowerPlant } plant && plant.Owner == player.Id)
+                {
+                    // A tech power plant taken (M11 a5): its power, with nothing to drain.
+                    output += TechBuildingSystem.PowerPlantOutput;
                 }
             }
 

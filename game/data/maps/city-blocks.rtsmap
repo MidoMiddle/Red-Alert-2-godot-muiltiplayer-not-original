@@ -4,7 +4,6 @@ name: "City Blocks"
 author: "Map generator"
 description: "Generated from seed 2103: 4 players, Rotate90, Flat, water Rivers, forest Low, resources Medium, drills OreAndGems."
 size: [182, 182]
-playable: { left: -91, top: 91, right: 91, bottom: 273 }
 climate: urban
 lighting: night
 players: 4
@@ -1568,7 +1567,15 @@ structures:
   - { type: tech_bridge_repair_hut, cell: [65, 69], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [116, 112], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [69, 116], owner: neutral, facing: 0 }
+  - { type: tech_machine_shop, cell: [85, 78], owner: neutral, facing: 0 }
+  - { type: tech_machine_shop, cell: [101, 85], owner: neutral, facing: 0 }
+  - { type: tech_machine_shop, cell: [78, 94], owner: neutral, facing: 0 }
+  - { type: tech_machine_shop, cell: [94, 101], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [89, 78], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [102, 89], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [78, 91], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [91, 102], owner: neutral, facing: 0 }
+  - { type: tech_power_plant, cell: [92, 80], owner: neutral, facing: 0 }
+  - { type: tech_power_plant, cell: [80, 87], owner: neutral, facing: 0 }
+  - { type: tech_power_plant, cell: [99, 92], owner: neutral, facing: 0 }
+  - { type: tech_power_plant, cell: [87, 99], owner: neutral, facing: 0 }

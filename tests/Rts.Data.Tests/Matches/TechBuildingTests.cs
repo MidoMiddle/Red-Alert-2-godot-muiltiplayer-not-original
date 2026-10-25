@@ -11,7 +11,8 @@ namespace Rts.Data.Tests.Matches;
 
 /// <summary>
 /// The tech buildings of the map (loose ends, stage 1): an engineer takes them; the oil derrick pays, the hospital heals, the airfield
-/// sends a paradrop; a tech building keeps nobody in the match. By the game data, without the fog of war; two people play, no bot.
+/// sends a paradrop, the machine shop mends the vehicles, the power plant powers the base (M11 a5); a tech building keeps nobody in the
+/// match. By the game data, without the fog of war; two people play, no bot.
 /// </summary>
 public sealed class TechBuildingTests
 {
@@ -21,6 +22,8 @@ public sealed class TechBuildingTests
     private static readonly CellPos Derrick = new(20, 18);
     private static readonly CellPos Hospital = new(30, 18);
     private static readonly CellPos Airfield = new(10, 40);
+    private static readonly CellPos MachineShop = new(50, 10);
+    private static readonly CellPos PowerPlant = new(50, 22);
 
     private static GameSimulation Match()
     {
@@ -30,6 +33,8 @@ public sealed class TechBuildingTests
             new BuildingState(BuildingKind.TechOilDerrick, Derrick, PlayerId.Neutral, 0),
             new BuildingState(BuildingKind.TechHospital, Hospital, PlayerId.Neutral, 0),
             new BuildingState(BuildingKind.TechAirfield, Airfield, PlayerId.Neutral, 0),
+            new BuildingState(BuildingKind.TechMachineShop, MachineShop, PlayerId.Neutral, 0),
+            new BuildingState(BuildingKind.TechPowerPlant, PowerPlant, PlayerId.Neutral, 0),
         ]);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
@@ -198,5 +203,53 @@ public sealed class TechBuildingTests
         Take(simulation, Union, UnitType.Engineer, Derrick, 0);
         Run(simulation, 30);
         Assert.NotNull(world.Player(Union).DefeatedTick);
+    }
+
+    [Fact]
+    public void A_taken_power_plant_powers_its_owner_and_takes_it_along_when_lost()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        Run(simulation, 2);
+        var before = world.Player(Union).PowerOutput;
+
+        Take(simulation, Union, UnitType.Engineer, PowerPlant, 0);
+        Run(simulation, 1);
+        Assert.Equal(before + TechBuildingSystem.PowerPlantOutput, world.Player(Union).PowerOutput);
+
+        // Taken from it, the power goes over; destroyed, it is nobody's.
+        var allied = world.Player(Allied).PowerOutput;
+        Take(simulation, Allied, UnitType.AllianceEngineer, PowerPlant, 0);
+        Run(simulation, 1);
+        Assert.Equal(before, world.Player(Union).PowerOutput);
+        Assert.Equal(allied + TechBuildingSystem.PowerPlantOutput, world.Player(Allied).PowerOutput);
+        DeathSystem.Fall(world, At(world, PowerPlant), DeathCause.Weapon, null);
+        Run(simulation, 2);
+        Assert.Equal(allied, world.Player(Allied).PowerOutput);
+    }
+
+    [Fact]
+    public void A_taken_machine_shop_mends_its_owner_s_vehicles_anywhere_and_nothing_else()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var tank = Spawn(world, Union, UnitType.HeavyTank, 8, 56);
+        var soldier = Spawn(world, Union, UnitType.Conscript, 10, 56);
+        var enemy = Spawn(world, Allied, UnitType.AllianceLightTank, 56, 56);
+        foreach (var unit in new[] { tank, soldier, enemy })
+        {
+            world.SetHp(unit, unit.MaxHp / 2, null);
+        }
+
+        // Neutral, it mends nobody.
+        Run(simulation, 60);
+        Assert.Equal(tank.MaxHp / 2, tank.Hp);
+
+        Take(simulation, Union, UnitType.Engineer, MachineShop, 0);
+        var tankHp = tank.Hp;
+        Run(simulation, 10 * SimulationSettings.DefaultTicksPerSecond);
+        Assert.InRange(tank.Hp - tankHp, 9 * TechBuildingSystem.MachineShopHeal, 11 * TechBuildingSystem.MachineShopHeal);
+        Assert.Equal(soldier.MaxHp / 2, soldier.Hp);
+        Assert.Equal(enemy.MaxHp / 2, enemy.Hp);
     }
 }

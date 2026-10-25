@@ -209,6 +209,42 @@ if (args.Length >= 2 && args[0] == "add-drills")
     return failed == 0 ? 0 : 1;
 }
 
+// M11 a5: a power plant and a machine shop near the middle of a generated map, copied to every image of its symmetry (TechSites).
+if (args.Length >= 2 && args[0] == "add-tech")
+{
+    var failed = 0;
+    foreach (var path in args.Skip(1))
+    {
+        try
+        {
+            var map = RtsMapReader.Read(File.ReadAllText(path));
+            var symmetry = System.Text.RegularExpressions.Regex.Match(map.Description, @"^Generated from seed \d+: \d players, (\w+),");
+            if (!symmetry.Success || !Enum.TryParse<Rts.MapGen.MapSymmetry>(symmetry.Groups[1].Value, out var kindOfSymmetry))
+            {
+                throw new ArgumentException("its description does not say the symmetry: it was not made by the generator");
+            }
+
+            var teched = TechSites.AddTo(map, new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width));
+            var errors = MapValidator.Check(teched).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            if (errors.Count > 0)
+            {
+                throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
+            }
+
+            File.WriteAllText(path, RtsMapWriter.Write(teched));
+            var added = teched.Structures.Where(s => s.Type is TechSites.PowerPlant or TechSites.MachineShop);
+            Console.WriteLine($"{path}: {string.Join(", ", added.Select(s => $"{s.Type} {s.Cell.X},{s.Cell.Y}"))} · {MapValidator.Check(teched).Count} warnings");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
+        {
+            Console.Error.WriteLine($"{path}: not changed — {e.Message}");
+            failed++;
+        }
+    }
+
+    return failed == 0 ? 0 : 1;
+}
+
 // Loose ends, stage 2: the bridge repair huts on maps the generator made before it had them; the symmetry comes from the description.
 if (args.Length >= 2 && args[0] == "add-huts")
 {
@@ -297,7 +333,7 @@ if (args.Length >= 2 && args[0] == "generate")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | add-drills <map.rtsmap>… [--drills ore|gems] | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | add-drills <map.rtsmap>… [--drills ore|gems] | add-tech <map.rtsmap>… | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

@@ -48,6 +48,10 @@ public enum BuildingKind : byte
     NeutralBarn = 39,
     NeutralSilo = 40,
     NeutralWindmill = 41,
+
+    // The last two tech buildings of M11 a5 (2026-10-25).
+    TechMachineShop = 42,
+    TechPowerPlant = 43,
 }
 
 /// <summary>
@@ -124,6 +128,11 @@ public static class BuildingTypes
         new(BuildingKind.NeutralBarn, "neutral_barn", 3, 2, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralSilo, "neutral_silo", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralWindmill, "neutral_windmill", 2, 2, MaxHp: 700, Garrison: 0, Capturable: false),
+
+        // M11 a5 (docs/map_elements/12_tech_buildings/README.md): the machine shop mends the owner's vehicles, the power plant
+        // powers its base (TechBuildingSystem). The footprint and the hit points of the hospital.
+        new(BuildingKind.TechMachineShop, "tech_machine_shop", 3, 3, MaxHp: 1500, Garrison: 0, Capturable: true),
+        new(BuildingKind.TechPowerPlant, "tech_power_plant", 3, 3, MaxHp: 1500, Garrison: 0, Capturable: true),
     ];
 
     public static IReadOnlyList<BuildingType> All => Types;
