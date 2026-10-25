@@ -3,7 +3,7 @@
   <!--
     The network (docs/implementation/M9_network.md, 3): the protocol, the transports and the lockstep. It drives the simulation from
     outside and is not part of it, so the determinism rules do not apply (docs/implementation/conventions.md, 1); the commands it
-    carries are those of the simulation, byte for byte. Nothing of Godot. LiteNetLib comes with step 8.
+    carries are those of the simulation, byte for byte. Nothing of Godot. The real network is LiteNetLib (MIT, step 8).
   -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -17,6 +17,10 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Rts.Net.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiteNetLib" Version="2.1.4" />
   </ItemGroup>
 
 </Project>
