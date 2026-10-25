@@ -237,7 +237,7 @@ public partial class Settings : Control
         var rows = AddPage("Game");
 
         // M4 step 13: the bars work now, in the order of HealthBarMode.
-        _healthBars = NewDropdown((int)HealthBarMode.Damaged, Tr("UI_HEALTH_BARS_ALWAYS"), Tr("UI_HEALTH_BARS_DAMAGED"), Tr("UI_HEALTH_BARS_SELECTED"));
+        _healthBars = NewDropdown((int)HealthBarMode.Selected, Tr("UI_HEALTH_BARS_ALWAYS"), Tr("UI_HEALTH_BARS_DAMAGED"), Tr("UI_HEALTH_BARS_SELECTED"));
         _healthBars.ItemSelected += index => Store.SetHealthBars((HealthBarMode)(int)index);
         AddRow(rows, "UI_SETTINGS_HEALTH_BARS", _healthBars);
         AddRow(rows, "UI_SETTINGS_CONFIRM_SELL", NewCheckBox(true), locked: true);

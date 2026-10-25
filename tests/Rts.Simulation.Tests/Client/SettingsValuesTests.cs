@@ -21,7 +21,7 @@ public sealed class SettingsValuesTests
         Assert.Equal(5, defaults.ScrollSpeed);
         Assert.True(defaults.EdgeScroll);
         Assert.True(defaults.CameraDrag);
-        Assert.Equal(HealthBarMode.Damaged, defaults.HealthBars);
+        Assert.Equal(HealthBarMode.Selected, defaults.HealthBars);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public sealed class SettingsValuesTests
     public void HealthBarsReadTheirModeAndFallBackOnAnUnknownOne()
     {
         Assert.Equal(HealthBarMode.Always, SettingsValues.Parse(new Dictionary<string, string> { ["interface/health_bars"] = "always" }).HealthBars);
-        Assert.Equal(HealthBarMode.Damaged, SettingsValues.Parse(new Dictionary<string, string> { ["interface/health_bars"] = "never" }).HealthBars);
+        Assert.Equal(HealthBarMode.Selected, SettingsValues.Parse(new Dictionary<string, string> { ["interface/health_bars"] = "never" }).HealthBars);
         Assert.Equal("always", (SettingsValues.Defaults with { HealthBars = HealthBarMode.Always }).ToRaw()["interface/health_bars"]);
     }
 

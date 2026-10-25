@@ -12,10 +12,10 @@ namespace Rts.Client.Hud;
 
 /// <summary>
 /// The health bars of the field (docs/implementation/M4_combat.md, 4.20, step 13): every bar in one <c>_Draw</c> on the screen, a row of
-/// <see cref="HealthPips"/> over each unit and player building, for the selected and the damaged or for all (the setting
-/// <c>interface/health_bars</c>). Units are placed where they are drawn, between the ticks; what the fog hides and the ghosts of
-/// buildings have no bar. Under a building that holds soldiers (stage 2e) a row of boxes shows its room, the soldiers inside filled in,
-/// whatever the setting.
+/// <see cref="HealthPips"/> over each unit and player building — by default only over what is selected or under the cursor, as in RA2
+/// (the owner, 2026-10-25), else as the setting <c>interface/health_bars</c> says. Units are placed where they are drawn, between the
+/// ticks; what the fog hides and the ghosts of buildings have no bar. Under a transport or a building that holds soldiers (stage 2e,
+/// 3d) a row of boxes shows its room, the soldiers inside filled in, also only while it is selected or under the cursor.
 /// </summary>
 public partial class HealthBars : Control
 {
@@ -70,21 +70,23 @@ public partial class HealthBars : Control
                 DrawBomb(camera, entity, world.CurrentTick);
             }
 
-            if (entity is Unit { Archetype.PassengerSlots: > 0 } transport && world.AreAllies(SimulationHost.LocalPlayer, transport.Owner))
+            // Selected, or under the cursor: its bar and its room show.
+            var selected = Focused(world, entity);
+            if (entity is Unit { Archetype.PassengerSlots: > 0 } transport && selected && world.AreAllies(SimulationHost.LocalPlayer, transport.Owner))
             {
                 // The slots of a transport (stage 3d), for its own team.
                 var top = WorldCoords.ToGodotOnGround(transport.Position, UnitHeight + Units.UnitAltitude.Of(transport));
                 DrawGarrison(camera, top, TransportSystem.SlotsTaken(world, transport), transport.Archetype.PassengerSlots);
             }
 
-            if (entity is Building { Def: { GarrisonCapacity: > 0 } bunker } garrisoned)
+            if (entity is Building { Def: { GarrisonCapacity: > 0 } bunker } garrisoned && selected)
             {
                 var top = WorldCoords.ToGodotOnGround(Aim.CentreOf(garrisoned), BuildingShape.Of(bunker).Height + 0.6f);
                 DrawGarrison(camera, top, garrisoned.Occupants.Count, bunker.GarrisonCapacity);
             }
 
             // A civilian building of the map with soldiers inside: how full it is, for everyone (RA2).
-            if (entity is Building { Def: null, Occupants.Count: > 0 } civilian && Rts.Simulation.Systems.GarrisonSystem.Civilian(civilian))
+            if (entity is Building { Def: null, Occupants.Count: > 0 } civilian && selected && Rts.Simulation.Systems.GarrisonSystem.Civilian(civilian))
             {
                 var type = civilian.Type;
                 var height = BuildingLooks.Known(type.Id) ? BuildingLooks.Top(BuildingLooks.Of(type.Id, type.Width, type.Height, false)) : 1f;
@@ -92,7 +94,6 @@ public partial class HealthBars : Control
                 DrawGarrison(camera, top, civilian.Occupants.Count, Rts.Simulation.Systems.GarrisonSystem.Capacity(civilian));
             }
 
-            var selected = _input?.Selection.Contains(entity.Id) == true || _input?.SelectedFactory == entity.Id;
             switch (entity)
             {
                 case Unit unit when HealthPips.Shows(mode, selected, unit.Hp, unit.MaxHp) && !Units.Disguises.LooksLikeTree(world, unit):
@@ -118,6 +119,22 @@ public partial class HealthBars : Control
                     break;
             }
         }
+    }
+
+    // Whether the entity is selected or under the cursor: a unit picked by the pointer, or a building standing on the cell under it.
+    private bool Focused(GameWorld world, Entity entity)
+    {
+        if (_input is null)
+        {
+            return false;
+        }
+
+        if (_input.Selection.Contains(entity.Id) || _input.SelectedFactory == entity.Id || _input.Hovered == entity.Id)
+        {
+            return true;
+        }
+
+        return _input.Hovered is null && entity is Building building && _input.CellUnderPointer is { } cell && building.Covers(cell);
     }
 
     private void DrawBomb(Camera3D camera, Entity entity, int tick)

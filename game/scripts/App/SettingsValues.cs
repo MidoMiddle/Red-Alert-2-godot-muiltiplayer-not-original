@@ -43,7 +43,7 @@ public sealed record SettingsValues(
     int ScrollSpeed,
     bool EdgeScroll,
     bool CameraDrag,
-    HealthBarMode HealthBars = HealthBarMode.Damaged,
+    HealthBarMode HealthBars = HealthBarMode.Selected,
     bool PlaytestSurvey = false,
     bool Ra2Names = true)
 {

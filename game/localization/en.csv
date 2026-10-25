@@ -231,8 +231,8 @@ UI_SETTINGS_CAMERA_DRAG,Drag camera with the mouse
 UI_SETTINGS_KEY_BINDINGS,Key bindings
 UI_SETTINGS_HEALTH_BARS,Health bars
 UI_HEALTH_BARS_ALWAYS,Always
-UI_HEALTH_BARS_DAMAGED,Selected and damaged
-UI_HEALTH_BARS_SELECTED,Selected only
+UI_HEALTH_BARS_DAMAGED,Selected, under the cursor and damaged
+UI_HEALTH_BARS_SELECTED,Selected and under the cursor
 UI_SETTINGS_CONFIRM_SELL,Confirm selling
 UI_SETTINGS_HINTS,Hints
 UI_SETTINGS_PLAYTEST_SURVEY,Playtest survey
