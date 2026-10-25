@@ -3,6 +3,15 @@ using Godot;
 
 namespace Rts.Client.Models;
 
+/// <summary>Which file of a building stands for it: the one of the table, or the one of a state it takes (<see cref="ModelEntry.Damaged"/>, <see cref="ModelEntry.Occupied"/>, <see cref="ModelEntry.Ruins"/>).</summary>
+public enum ModelVariant
+{
+    Intact,
+    Damaged,
+    Occupied,
+    Ruins,
+}
+
 /// <summary>
 /// The models of the game by the table <c>res://data/visuals/models.yaml</c> (<see cref="ModelTable"/>, docs/art/model_standards.md),
 /// read once. Every renderer asks here first and draws its placeholder when the answer is null: the object is not in the table, none
@@ -54,19 +63,45 @@ public static class ModelLibrary
     /// <summary>
     /// The model of <paramref name="key"/> placed as the table says, its pivot at the origin of the node it is added to; of several
     /// files the one of <paramref name="cell"/> (the first without one); its <c>team_mask</c> in <paramref name="team"/> when given.
+    /// <paramref name="variant"/> asks for the file of a state of the building (<see cref="ModelEntry.Damaged"/>,
+    /// <see cref="ModelEntry.Occupied"/> or <see cref="ModelEntry.Ruins"/>): null when the table gives that state none.
     /// Null when there is none — the caller draws its placeholder.
     /// </summary>
-    public static Node3D? Instantiate(string key, Color? team = null, string? climate = null, Vector2I? cell = null)
+    public static Node3D? Instantiate(string key, Color? team = null, string? climate = null, Vector2I? cell = null, ModelVariant variant = ModelVariant.Intact)
     {
         if (Find(key, climate) is not { } entry)
         {
             return null;
         }
 
-        var scenes = ScenesOf(entry);
-        var pick = cell is { } at ? entry.Pick(at.X, at.Y, scenes.Count) : new ModelPick(0, entry.Scale, entry.Yaw);
+        ModelPick pick;
+        PackedScene scene;
+        if (variant == ModelVariant.Intact)
+        {
+            var scenes = ScenesOf(entry);
+            pick = cell is { } at ? entry.Pick(at.X, at.Y, scenes.Count) : new ModelPick(0, entry.Scale, entry.Yaw);
+            scene = scenes[pick.Index];
+        }
+        else
+        {
+            // A state of the building: its own file, placed as the intact one is.
+            var path = variant switch
+            {
+                ModelVariant.Damaged => entry.Damaged,
+                ModelVariant.Occupied => entry.Occupied,
+                _ => entry.Ruins,
+            };
+            if (path is null || Scene(key, Root + path) is not { } state)
+            {
+                return null;
+            }
+
+            pick = new ModelPick(0, entry.Scale, entry.Yaw);
+            scene = state;
+        }
+
         var holder = new Node3D { Name = "Model", Transform = Placement(entry, pick) };
-        var model = scenes[pick.Index].Instantiate<Node3D>();
+        var model = scene.Instantiate<Node3D>();
         holder.AddChild(model);
         if (team is { } colour)
         {
