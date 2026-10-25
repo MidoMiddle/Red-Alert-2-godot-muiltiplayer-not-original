@@ -109,6 +109,20 @@ public static class StateHasher
             // Rules v60 (loose ends, stage 3): veterans from a spy.
             hash.Add(player.VeteranInfantry);
             hash.Add(player.VeteranVehicles);
+            if (player.StolenTech.Count > 0)
+            {
+                // RA2: the technology a spy stole from a battle lab.
+                hash.Add(7);
+                foreach (var faction in player.StolenTech)
+                {
+                    hash.Add(faction.Length);
+                    foreach (var letter in faction)
+                    {
+                        hash.Add(letter);
+                    }
+                }
+            }
+
             if (player.MapRevealed)
             {
                 // RA2: the spy satellite, whose loss brings the shroud back.

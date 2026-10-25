@@ -175,6 +175,10 @@ internal static class RulesValidator
             WeaponOf(unit.Id, "secondary", unit.Secondary);
             WeaponOf(unit.Id, "death_weapon", unit.DeathWeapon);
             WeaponOf(unit.Id, "occupy_weapon", unit.OccupyWeapon);
+            if (unit.RequiresStolen.Length > 0)
+            {
+                FactionOf(unit.Id, unit.RequiresStolen);
+            }
             WeaponOf(unit.Id, "deploy_weapon", unit.DeployWeapon);
             WeaponOf(unit.Id, "deployed_weapon", unit.DeployedWeapon);
             WeaponOf(unit.Id, "ifv_weapon", unit.IfvWeapon);

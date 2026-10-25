@@ -58,7 +58,7 @@ public static class RadiationSystem
                 if (once.UndeployIn == 0)
                 {
                     world.Hits.Add(new Hit(once.Id, once.Id, once.Owner, once.Archetype.DeployWeapon, once.Position, null));
-                    once.UndeployIn = UndeployDelay;
+                    once.UndeployIn = rules.Database.TryGetUnit(once.Archetype.Id, out var def) && def.UndeployDelay > 0 ? def.UndeployDelay : UndeployDelay;
                 }
                 else if (--once.UndeployIn == 0)
                 {

@@ -369,6 +369,7 @@ public sealed class GoldenValuesTests
         // Rules v86 (the building sizes of RA2): the version only.
         // Rules v87 (the tech buildings and the garrisons of RA2): the version only.
         // Rules v88 (the ruins of RA2): the version only.
-        Assert.Equal((22270, 3674200439881120973UL), (bytes.Length, hash.Value));
+        // Rules v89 (the stolen technology of RA2 and its four units): the version only.
+        Assert.Equal((22270, 14954573933129314276UL), (bytes.Length, hash.Value));
     }
 }

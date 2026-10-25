@@ -213,6 +213,26 @@ public partial class UnitView : Node3D
                 AddPart(new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.06f, Height = 0.28f }, new Vector3(0, Height * 0.6f, Radius + 0.05f), ToxinMaterial);
                 AddPart(new BoxMesh { Size = new Vector3(0.05f, 0.05f, 0.22f) }, new Vector3(Radius, Height * 0.55f, -0.1f), DarkMaterial);
                 break;
+            case UnitType.YuriPrime:
+                // Yuri's look, taller collar.
+                AddPart(new SphereMesh { Radius = 0.08f, Height = 0.16f }, new Vector3(0, Height + 0.06f, 0), GlowMaterial);
+                AddPart(new CylinderMesh { TopRadius = Radius + 0.04f, BottomRadius = Radius + 0.04f, Height = 0.08f }, new Vector3(0, Height - 0.03f, 0), RedMaterial);
+                break;
+            case UnitType.AlliancePsiCommando:
+                // A glowing head and a satchel of C4.
+                AddPart(new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Vector3(0, Height + 0.04f, 0), GlowMaterial);
+                AddPart(new BoxMesh { Size = new Vector3(0.12f, 0.12f, 0.06f) }, new Vector3(0, Height * 0.6f, Radius + 0.03f), RedMaterial);
+                break;
+            case UnitType.AllianceChronoCommando:
+                // The time trooper's glow on the back and a gun at the hip.
+                AddPart(new BoxMesh { Size = new Vector3(0.16f, 0.2f, 0.08f) }, new Vector3(0, Height * 0.65f, Radius + 0.04f), GlowMaterial);
+                AddPart(new BoxMesh { Size = new Vector3(0.04f, 0.04f, 0.22f) }, new Vector3(Radius, Height * 0.55f, -0.08f), DarkMaterial);
+                break;
+            case UnitType.ChronoIvan:
+                // Ivan's bomb on the back, the time trooper's glow round it.
+                AddPart(new SphereMesh { Radius = 0.08f, Height = 0.16f }, new Vector3(0, Height * 0.7f, Radius + 0.05f), RedMaterial);
+                AddPart(new SphereMesh { Radius = 0.05f, Height = 0.1f }, new Vector3(0, Height + 0.04f, 0), GlowMaterial);
+                break;
             case UnitType.Yuri:
                 // A shaved head with a glow, and a psychic collar.
                 AddPart(new SphereMesh { Radius = 0.07f, Height = 0.14f }, new Vector3(0, Height + 0.05f, 0), GlowMaterial);

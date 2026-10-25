@@ -135,8 +135,8 @@ public static class SidebarModel
 
         // Infantry (E).
         "alliance_attack_dog", "alliance_rifleman", "alliance_engineer", "alliance_rocketeer", "alliance_spy", "alliance_sniper",
-        "alliance_tanya", "alliance_chrono_legionnaire",
-        "attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator", "yuri",
+        "alliance_tanya", "alliance_chrono_legionnaire", "alliance_chrono_commando", "alliance_psi_commando",
+        "attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator", "yuri", "chrono_ivan", "yuri_prime",
 
         // Vehicles and aircraft (R).
         "alliance_harvester", "alliance_light_tank", "alliance_ifv", "alliance_tank_destroyer", "alliance_mirage_tank", "alliance_prism_tank",

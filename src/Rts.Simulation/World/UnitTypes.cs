@@ -20,7 +20,8 @@ public static class UnitTypes
          "alliance_mirage_tank", "alliance_tank_destroyer", "alliance_nighthawk", "alliance_harrier",
          "alliance_black_eagle", "alliance_amphibious_transport", "alliance_dolphin", "alliance_destroyer",
          "alliance_aegis_cruiser", "alliance_aircraft_carrier", null, "alliance_hornet",
-         "paradrop_plane", "alliance_osprey", "yuri"];
+         "paradrop_plane", "alliance_osprey", "yuri",
+         "alliance_chrono_commando", "chrono_ivan", "alliance_psi_commando", "yuri_prime"];
 
     private static readonly UnitType[] Types =
     [
@@ -36,6 +37,7 @@ public static class UnitTypes
         UnitType.AllianceHarrier, UnitType.AllianceBlackEagle, UnitType.AllianceAmphibiousTransport, UnitType.AllianceDolphin,
         UnitType.AllianceDestroyer, UnitType.AllianceAegisCruiser, UnitType.AllianceAircraftCarrier,
         UnitType.AllianceHornet, UnitType.ParadropPlane, UnitType.AllianceOsprey, UnitType.Yuri,
+        UnitType.AllianceChronoCommando, UnitType.ChronoIvan, UnitType.AlliancePsiCommando, UnitType.YuriPrime,
     ];
 
     /// <summary>Every unit type, in <see cref="UnitType"/> order.</summary>

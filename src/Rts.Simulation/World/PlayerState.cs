@@ -56,6 +56,12 @@ public sealed class PlayerState
     public bool VeteranInfantry { get; internal set; }
 
     /// <summary>
+    /// The factions whose technology the player stole by a spy in their battle lab (RA2), in id order: the units that need it open.
+    /// State: hashed while any.
+    /// </summary>
+    public System.Collections.Generic.SortedSet<string> StolenTech { get; } = new(System.StringComparer.Ordinal);
+
+    /// <summary>
     /// The player had a ready building that reveals the map (RA2 spy satellite) at the last look: when it has none any more, the map it
     /// does not see now is unexplored again. State: hashed while true.
     /// </summary>

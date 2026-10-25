@@ -91,7 +91,7 @@ desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the 
 yuri:  # RA2 Yuri (YURI): takes one enemy unit at a time for his owner; deployed, a psychic wave kills the soldiers round him, friend or foe
   kind: unit
   inherits: base_infantry
-  name: Psi Commando
+  name: Psion
   faction: union
   cost: 1200
   build_time: 50.4s
@@ -105,6 +105,48 @@ yuri:  # RA2 Yuri (YURI): takes one enemy unit at a time for his owner; deployed
   deploy_weapon: yuri_psi_wave
   deploy_once: true  # RA2 UndeployDelay: one wave, then he stands up
   detects_disguise: true
+  psionic_immune: true
+
+chrono_ivan:  # RA2 Chrono Ivan (CIVAN): RequiresStolenAlliedTech at Soviet barracks; a bomber that teleports
+  kind: unit
+  inherits: base_infantry
+  name: Phase Bomber
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 100
+  threat: 15
+  armor: none
+  speed: 36
+  sight: 8
+  crushable: false
+  trainable: false  # RA2 Trainable=no
+  prerequisites: [barracks]
+  requires_stolen: alliance  # RA2 RequiresStolenAlliedTech: a spy in an Allied battle lab
+  primary: ivan_bomber
+  teleports: true
+
+yuri_prime:  # RA2 Yuri Prime (YURIPR): RequiresStolenSovietTech at Soviet barracks, one per player; mind control from 30 cells, only when ordered; the psychic wave
+  kind: unit
+  inherits: base_infantry
+  name: Psion Prime
+  faction: union
+  cost: 2000
+  build_time: 84s
+  hp: 200
+  threat: 40
+  armor: flak
+  speed: 36
+  sight: 8
+  crushable: false
+  build_limit: 1  # RA2 BuildLimit=1
+  prerequisites: [barracks]
+  requires_stolen: union  # RA2 RequiresStolenSovietTech: a spy in a Soviet battle lab
+  primary: yuri_prime_mind_control
+  passive: true  # RA2 CanPassiveAquire=no: he takes only what he is ordered to
+  deploy_weapon: yuri_psi_wave
+  deploy_once: true
+  undeploy_delay: 75  # RA2 UndeployDelay=75 (Yuri's 150)
   psionic_immune: true
 
 rocket_artillery:  # a rocket from afar, only when ordered; anti-air can bring it down (stage 3c)

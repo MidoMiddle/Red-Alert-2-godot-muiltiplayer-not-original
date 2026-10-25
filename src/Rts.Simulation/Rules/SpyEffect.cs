@@ -23,4 +23,10 @@ public enum SpyEffect : byte
 
     /// <summary>The vehicles of the owner of the war factory come out as veterans from now on — for the spy's player.</summary>
     VeteranVehicles = 6,
+
+    /// <summary>
+    /// A battle lab: the spy's player steals the technology of the lab's faction for good (RA2): the units that need it
+    /// (<see cref="UnitDef.RequiresStolen"/>: the Chrono Commando, the Chrono Ivan, the Psi Commando, Yuri Prime) open at its barracks.
+    /// </summary>
+    StealTech = 7,
 }

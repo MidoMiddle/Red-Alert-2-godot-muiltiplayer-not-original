@@ -78,7 +78,9 @@
 | crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | работает: вешает бомбу, через 30 с взрыв 400 по площади; гибель носителя взрывает сразу (этап 3б) |
 | terrorist | Demolition Trooper | blows up with its target | Terrorist | работает: сам целей не ищет; по приказу подбегает и взрывается, взрывается и убитым (этап 3б) |
 | desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); развёрнутый (D) заражает землю ядом, яд ранит всех на земле, кроме него (этап 3б) |
-| yuri | Psi Commando | контроль разума | Yuri | работает: берёт под контроль один вражеский юнит; развёрнутый — пси-волна убивает пехоту вокруг, свою тоже |
+| yuri | Psion | контроль разума | Yuri | работает: берёт под контроль один вражеский юнит; развёрнутый — пси-волна убивает пехоту вокруг, свою тоже |
+| chrono_ivan | Phase Bomber | бомбист с телепортом | Chrono Ivan | работает: открывается шпионом в союзной Боевой лаборатории; прыгает, ставит бомбу |
+| yuri_prime | Psion Prime | контроль разума издалека | Yuri Prime | работает: открывается шпионом в советской Боевой лаборатории, один на игрока; берёт юнит за 30 клеток по приказу, пси-волна |
 | rocket_artillery | Rocket Artillery | long-range rocket (the draft listed it as desolator) | V3 Rocket Launcher | работает: ракета на 5–18 клеток, только по приказу; ПВО может её сбить (этап 3в); от слишком близкой цели отъезжает |
 | apocalypse_tank | Super Heavy Tank | twin cannons and missiles | Apocalypse Tank | работает: две пушки по земле, ракеты только по воздуху (этап 3в); лечится сам, 2 HP в секунду |
 | terror_drone | Combat Drone | climbs into vehicles | Terror Drone | работает: запрыгивает в технику и ест её изнутри по 50 раз в 4 с, пехоту убивает сразу; мастерская его вытаскивает (этап 3г) |
@@ -99,6 +101,8 @@
 | alliance_rocketeer | Jetpack Trooper | flies over the field (M11b) | Rocketeer | работает: летает, бьёт по земле и воздуху; достать его может только ПВО (этап 3а) |
 | alliance_spy | Infiltrator | disguises and enters enemy buildings | Spy | работает: враг видит его своим пехотинцем, узнают только собаки; в электростанции — отключение энергии, в радаре — сброс карты, в ОПЗ — половина денег (этап 3б) |
 | alliance_chrono_legionnaire | Time Trooper | erases targets from time | Chrono Legionnaire | работает: луч замораживает и стирает цель, прерванный — цель цела (этап 3а); прыгает туда, куда послан, и проявляется (этап 3б) |
+| alliance_chrono_commando | Phase Commando | коммандос с телепортом | Chrono Commando | работает: открывается шпионом в союзной Боевой лаборатории; прыгает, убивает пехоту, мгновенно сносит здание |
+| alliance_psi_commando | Psi Saboteur | контроль разума и C4 | Psi Commando | работает: открывается шпионом в советской Боевой лаборатории; берёт юнит под контроль, ставит C4 |
 | alliance_tanya | Elite Commando | hero: kills infantry, bombs buildings | Tanya | работает: пистолеты убивают пехотинца с выстрела (этап 3а); C4 сносит здание целиком за 2 с (этап 3б) |
 | alliance_sniper | Marksman | long-range anti-infantry | Sniper | работает: винтовка на 14 клеток против пехоты (этап 3а) |
 | alliance_ifv | Infantry Fighting Vehicle | weapon by its passenger | IFV | работает: пустой — ракеты по земле и воздуху; с пехотинцем — его оружие по таблице RA2 (этап 3г); с инженером — ремонтный кран: чинит свою технику и вытаскивает дрона |

@@ -327,6 +327,10 @@ public static class EntrySystem
             case SpyEffect.VeteranVehicles:
                 world.Player(spy).VeteranVehicles = true;
                 break;
+            case SpyEffect.StealTech:
+                world.Player(spy).StolenTech.Add(building.Def.Faction);
+                world.TechDirty = true;
+                break;
             case SpyEffect.StealCredits:
                 credits = owner.Credits * StealPercent / 100;
                 owner.Credits -= credits;

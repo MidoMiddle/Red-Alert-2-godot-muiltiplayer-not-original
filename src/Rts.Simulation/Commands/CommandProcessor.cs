@@ -448,7 +448,8 @@ public static class CommandProcessor
 
         var available = command.Kind == ProductionKind.Unit ? player.CanBuildUnit(command.DefIndex) : player.CanBuildBuilding(command.DefIndex);
         if (!available || !ProductionRules.HasFactory(world, command.Player, category)
-            || (command.Kind == ProductionKind.Building && !SuperweaponSystem.UnderLimit(world, command.Player, command.DefIndex)))
+            || (command.Kind == ProductionKind.Building && !SuperweaponSystem.UnderLimit(world, command.Player, command.DefIndex))
+            || (command.Kind == ProductionKind.Unit && !ProductionRules.UnderUnitLimit(world, command.Player, command.DefIndex)))
         {
             return false;
         }

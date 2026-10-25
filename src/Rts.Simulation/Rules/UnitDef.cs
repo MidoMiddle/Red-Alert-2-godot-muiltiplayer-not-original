@@ -122,6 +122,18 @@ public sealed record UnitDef : IDefinition
     /// <summary>The toxin on the ground does not hurt it (RA2: the desolator).</summary>
     public bool RadiationImmune { get; init; }
 
+    /// <summary>How many of it a player may have, alive and in the queue (RA2 <c>BuildLimit</c>: Yuri Prime); 0 for no limit.</summary>
+    public int BuildLimit { get; init; }
+
+    /// <summary>The ticks a unit that deploys once stays down after its shot (RA2 <c>UndeployDelay</c>); 0 for the usual 150.</summary>
+    public int UndeployDelay { get; init; }
+
+    /// <summary>
+    /// The faction whose technology the player must have stolen, by a spy in its battle lab, before this unit opens (RA2
+    /// <c>RequiresStolenAlliedTech</c>, <c>RequiresStolenSovietTech</c>); empty for none.
+    /// </summary>
+    public string RequiresStolen { get; init; } = "";
+
     /// <summary>It may garrison a civilian building (RA2 <c>Occupier</c>: the GI and the conscript).</summary>
     public bool Occupier { get; init; }
 

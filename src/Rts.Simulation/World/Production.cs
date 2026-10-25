@@ -68,6 +68,35 @@ public static class ProductionRules
     public static int CostOf(RulesDatabase rules, ProductionKind kind, int defIndex) =>
         kind == ProductionKind.Unit ? rules.Units[defIndex].Cost : rules.Buildings[defIndex].Cost;
 
+    /// <summary>
+    /// Whether the player may order one more of the unit at <paramref name="defIndex"/>: under its <see cref="UnitDef.BuildLimit"/>, its
+    /// living units and those in the queue counted (RA2: one Yuri Prime).
+    /// </summary>
+    public static bool UnderUnitLimit(GameWorld world, PlayerId player, int defIndex)
+    {
+        var def = world.Rules.Database.Units[defIndex];
+        if (def.BuildLimit <= 0)
+        {
+            return true;
+        }
+
+        var count = 0;
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Unit { IsAlive: true } unit && unit.Owner == player && unit.Archetype.Id == def.Id)
+            {
+                count++;
+            }
+        }
+
+        foreach (var item in world.Player(player).Queue(CategoryOf(world.Rules.Database, ProductionKind.Unit, defIndex)))
+        {
+            count += item.Kind == ProductionKind.Unit && item.DefIndex == defIndex ? 1 : 0;
+        }
+
+        return count < def.BuildLimit;
+    }
+
     /// <summary>The id of the definition, such as <c>reactor</c>.</summary>
     public static string IdOf(RulesDatabase rules, ProductionKind kind, int defIndex) =>
         kind == ProductionKind.Unit ? rules.Units[defIndex].Id : rules.Buildings[defIndex].Id;

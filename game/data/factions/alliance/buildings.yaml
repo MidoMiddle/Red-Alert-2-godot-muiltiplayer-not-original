@@ -153,6 +153,7 @@ alliance_battle_lab:  # high tech: opens the late buildings
   power: -100
   prerequisites: [alliance_war_factory, radar]
   provides: [tech]  # RA2 prerequisite group TECH
+  spy_effect: steal_tech  # RA2: a spy steals its technology: the units of stolen technology open
 
 alliance_ore_purifier:  # the ore brings 25% more (stage 2c)
   kind: building

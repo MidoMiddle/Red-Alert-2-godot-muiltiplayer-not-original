@@ -414,3 +414,42 @@ alliance_osprey:  # the destroyer's anti-submarine plane, RA2 ASW: launched, nev
   passive: true
   spawned: true
   trainable: false
+
+alliance_chrono_commando:  # RA2 Chrono Commando (CCOMAND): RequiresStolenAlliedTech at Allied barracks; teleports, its gun kills soldiers, its charge brings a building down at once
+  kind: unit
+  inherits: base_infantry
+  name: Phase Commando
+  faction: alliance
+  cost: 2000
+  build_time: 84s
+  hp: 100
+  threat: 30
+  armor: none
+  speed: 30
+  sight: 8
+  crushable: false
+  prerequisites: [alliance_barracks]
+  requires_stolen: alliance  # RA2 RequiresStolenAlliedTech: a spy in an Allied battle lab
+  primary: alliance_chrono_mp5
+  secondary: alliance_fake_c4
+  teleports: true
+
+alliance_psi_commando:  # RA2 Psi Commando (PTROOP): RequiresStolenSovietTech at Allied barracks; mind control and C4
+  kind: unit
+  inherits: base_infantry
+  name: Psi Saboteur
+  faction: alliance
+  cost: 1000
+  build_time: 42s
+  hp: 100
+  threat: 30
+  armor: none
+  speed: 30
+  sight: 8
+  crushable: false
+  prerequisites: [alliance_barracks]
+  requires_stolen: union  # RA2 RequiresStolenSovietTech: a spy in a Soviet battle lab
+  primary: yuri_mind_control
+  secondary: alliance_c4
+  detects_disguise: true
+  psionic_immune: true

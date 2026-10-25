@@ -60,7 +60,7 @@ public sealed class SidebarOrderTests
             Tab(world, Allied, BuildGroup.Defense));
         Assert.Equal(
             ["alliance_attack_dog", "alliance_rifleman", "alliance_engineer", "alliance_rocketeer", "alliance_spy", "alliance_sniper", "alliance_tanya",
-             "alliance_chrono_legionnaire"],
+             "alliance_chrono_legionnaire", "alliance_chrono_commando", "alliance_psi_commando"],
             Tab(world, Allied, BuildGroup.Infantry));
         Assert.Equal(
             ["alliance_harvester", "alliance_light_tank", "alliance_ifv", "alliance_tank_destroyer", "alliance_mirage_tank", "alliance_prism_tank",
@@ -79,7 +79,7 @@ public sealed class SidebarOrderTests
             Tab(world, Union, BuildGroup.Buildings));
         Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil", "psychic_sensor"], Tab(world, Union, BuildGroup.Defense));
         Assert.Equal(
-            ["attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator", "yuri"],
+            ["attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator", "yuri", "chrono_ivan", "yuri_prime"],
             Tab(world, Union, BuildGroup.Infantry));
         Assert.Equal(
             ["harvester", "heavy_tank", "support_vehicle", "terror_drone", "demolition_truck", "rocket_artillery", "tesla_tank", "apocalypse_tank",

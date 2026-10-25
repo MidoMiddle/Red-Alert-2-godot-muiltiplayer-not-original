@@ -58,7 +58,9 @@ public static class TechTree
             for (var i = 0; i < units.Length; i++)
             {
                 // A unit available later (ships, aircraft) waits for its mechanic: never in the tree.
+                // A unit of stolen technology (RA2) opens once a spy took it from that faction's battle lab.
                 units[i] = rules.Units[i].Faction == faction && !rules.Units[i].AvailableLater && !rules.Units[i].Spawned && AllOwned(rules.Units[i].Prerequisites, owned)
+                    && (rules.Units[i].RequiresStolen.Length == 0 || player.StolenTech.Contains(rules.Units[i].RequiresStolen))
                     && Allowed(player.Country, rules.Units[i].Countries, rules.Units[i].ForbiddenCountries);
             }
 

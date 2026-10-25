@@ -237,3 +237,12 @@ yuri_psi_wave:  # Yuri deployed, RA2 PsiWave: 250 at every soldier within 3 cell
   range: 1
   projectile: bullet
   warhead: psi_wave
+
+yuri_prime_mind_control:  # of Yuri Prime, RA2 SuperMindControl: range 30, ROF 200
+  kind: weapon
+  name: Super Mind Control
+  damage: 100
+  reload: 13.33s
+  range: 30
+  projectile: psi_link
+  warhead: mind_control

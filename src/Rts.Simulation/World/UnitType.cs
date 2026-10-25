@@ -70,4 +70,10 @@ public enum UnitType : byte
 
     // Yuri of RA2's Soviets (2026-10-25): mind control and the psychic wave.
     Yuri = 51,
+
+    // The units of stolen technology of RA2 (2026-10-25): a spy in a battle lab opens them.
+    AllianceChronoCommando = 52,
+    ChronoIvan = 53,
+    AlliancePsiCommando = 54,
+    YuriPrime = 55,
 }

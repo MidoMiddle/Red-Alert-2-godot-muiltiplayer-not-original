@@ -349,3 +349,14 @@ garrison_fire:  # RA2 SSAB: the soldiers in a civilian building
   name: Garrison Fire
   verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 30%, concrete: 20%, special_1: 100%, special_2: 100% }
   infantry_death: normal
+
+hollow_point_no_building:  # RA2 HollowPointNoBuilding: the Chrono Commando's gun, soldiers only
+  kind: warhead
+  name: Hollow Point
+  verses: { none: 200%, flak: 100%, plate: 75%, light: 1%, medium: 1%, heavy: 1%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  infantry_death: normal
+
+fake_c4:  # RA2 FakeC4WH: the Chrono Commando's charge, buildings only
+  kind: warhead
+  name: Chrono Charge
+  verses: { none: 0%, flak: 0%, plate: 0%, light: 0%, medium: 0%, heavy: 0%, wood: 100%, steel: 100%, concrete: 100%, special_1: 0%, special_2: 0% }

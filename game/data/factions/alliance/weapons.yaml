@@ -336,3 +336,21 @@ lightning_bolt:  # a lightning of the Storm Generator, RA2 LightningDamage
   range: 1
   projectile: bullet
   warhead: ion
+
+alliance_chrono_mp5:  # of the Chrono Commando, RA2 ChronoMP5: 125, ROF 10, range 6; soldiers only
+  kind: weapon
+  name: Chrono MP5
+  damage: 125
+  reload: 0.67s
+  range: 6
+  projectile: bullet
+  warhead: hollow_point_no_building
+
+alliance_fake_c4:  # of the Chrono Commando, RA2 FakeC4: 5000 at hand's reach, at once; buildings only
+  kind: weapon
+  name: Chrono Charge
+  damage: 5000
+  reload: 0.67s
+  range: 1.5
+  projectile: pounce
+  warhead: fake_c4
