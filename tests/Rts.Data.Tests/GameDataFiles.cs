@@ -15,7 +15,8 @@ internal static class GameDataFiles
 
     public static GameRules Rules => Current.Rules;
 
-    private static string RepoRoot()
+    /// <summary>The root of the repository: the first folder above the test binary with <c>RtsGame.sln</c>.</summary>
+    public static string RepoRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "RtsGame.sln")))
