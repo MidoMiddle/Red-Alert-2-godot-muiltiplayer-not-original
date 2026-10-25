@@ -99,6 +99,31 @@ public sealed class MessageCodecTests
     }
 
     [Fact]
+    public void The_relay_carries_a_message_of_the_full_size_and_no_more()
+    {
+        // The largest message: a bundle of 4096 bytes.
+        var units = Enumerable.Range(1, 160).Select(id => new EntityId(id)).ToImmutableArray();
+        var moves = new List<Command>();
+        while (MessageCodec.Write(new TickBundle(Samples.P2, 10, [.. moves])).Length + 4 * 160 + 30 <= NetProtocol.MaxMessageSize)
+        {
+            moves.Add(new MoveCommand(Samples.P2, 10, (uint)moves.Count, units, new Rts.Simulation.Geometry.WorldPos(0, 0)));
+        }
+
+        var padded = MessageCodec.Write(new TickBundle(Samples.P2, 10, [.. moves]));
+        var frame = Relayed.Frame(2, padded);
+        var read = (Relayed)MessageCodec.Read(frame);
+
+        Assert.True(padded.Length > NetProtocol.MaxMessageSize - 200);
+        Assert.Equal(2, read.Member);
+        Assert.Equal(padded, read.Payload);
+        Assert.Equal(frame, MessageCodec.Write(read));
+        Assert.Throws<MessageFormatException>(() => Relayed.Frame(2, new byte[NetProtocol.MaxMessageSize + 1]));
+        var tooLong = new byte[NetProtocol.MaxFrameSize + 1];
+        frame.CopyTo(tooLong, 0);
+        Assert.Equal(MessageError.TooLarge, Error(tooLong));
+    }
+
+    [Fact]
     public void A_message_of_another_protocol_version_is_refused_with_its_version()
     {
         var bytes = MessageCodec.Write(new Ping(1));
@@ -112,7 +137,7 @@ public sealed class MessageCodecTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(21)]
+    [InlineData(25)]
     [InlineData(255)]
     public void An_unknown_type_is_refused(byte type)
     {

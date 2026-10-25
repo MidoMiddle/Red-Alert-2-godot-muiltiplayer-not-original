@@ -14,7 +14,13 @@ public sealed class MessageWriter
 {
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    private readonly byte[] _buffer = new byte[NetProtocol.MaxMessageSize];
+    private readonly byte[] _buffer;
+
+    /// <param name="limit">The largest message: <see cref="NetProtocol.MaxMessageSize"/>, a frame of the relay a little more.</param>
+    public MessageWriter(int limit = NetProtocol.MaxMessageSize)
+    {
+        _buffer = new byte[limit];
+    }
 
     /// <summary>The bytes written so far.</summary>
     public int Length { get; private set; }
@@ -73,6 +79,9 @@ public sealed class MessageWriter
     }
 
     /// <summary>One command in the format of the simulation (<see cref="CommandSerializer"/>), the same bytes as in a replay.</summary>
+    /// <summary>Bytes as they are.</summary>
+    public void WriteBytes(ReadOnlySpan<byte> bytes) => bytes.CopyTo(Take(bytes.Length));
+
     public void WriteCommand(Command command) => CommandSerializer.Write(command, Take(CommandSerializer.GetSize(command)));
 
     private Span<byte> Take(int count)
@@ -80,7 +89,7 @@ public sealed class MessageWriter
         if (Length + count > _buffer.Length)
         {
             throw new MessageFormatException(
-                MessageError.TooLarge, $"The message does not fit into {NetProtocol.MaxMessageSize} bytes: {Length} written, {count} more.");
+                MessageError.TooLarge, $"The message does not fit into {_buffer.Length} bytes: {Length} written, {count} more.");
         }
 
         var span = _buffer.AsSpan(Length, count);

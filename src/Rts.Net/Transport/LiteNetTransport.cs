@@ -79,6 +79,9 @@ public sealed class LiteNetTransport : ITransport, IDisposable
     /// <summary>The round trip LiteNetLib measures to a peer, in milliseconds; for the screen only.</summary>
     public int RoundTripMs(PeerId peer) => _byId.TryGetValue(peer.Value, out var found) ? found.RoundTripTime : 0;
 
+    /// <summary>The address a peer connects from, without the port; for the limits of the relay. Empty for one not connected.</summary>
+    public string AddressOf(PeerId peer) => _byId.TryGetValue(peer.Value, out var found) ? found.Address.ToString() : "";
+
     /// <summary>Opens <paramref name="port"/> (0: any free one) and takes the connections that bring the key.</summary>
     public void Listen(int port)
     {

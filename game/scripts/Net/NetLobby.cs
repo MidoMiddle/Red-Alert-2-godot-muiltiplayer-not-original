@@ -29,6 +29,7 @@ public partial class NetLobby : Control
     private CheckBox _ready = null!;
     private Button _start = null!;
     private LobbyState? _shown;
+    private string? _shownRoom;
     private bool _routed;
     private bool _autoReady;
     private int _autoStart;
@@ -114,9 +115,10 @@ public partial class NetLobby : Control
             return;
         }
 
-        if (!ReferenceEquals(lobby, _shown))
+        if (!ReferenceEquals(lobby, _shown) || game.RoomCode != _shownRoom)
         {
             _shown = lobby;
+            _shownRoom = game.RoomCode;
             Show(game, lobby);
         }
 
@@ -138,6 +140,11 @@ public partial class NetLobby : Control
     {
         var map = game.Map?.Map.Name ?? lobby.MapId;
         _title.Text = string.Format(CultureInfo.InvariantCulture, Tr("UI_NET_LOBBY_TITLE"), map, lobby.Slots.Length, game.Map?.Map.Players ?? lobby.Slots.Length);
+        if (game.Relay is not null)
+        {
+            // Through the relay the others need the code of the room: the host gives it to them.
+            _title.Text += "\n" + (game.RoomCode is { } code ? string.Format(CultureInfo.InvariantCulture, Tr("UI_NET_ROOM"), code) : Tr("UI_NET_ROOM_OPENING"));
+        }
         _slots.Text = string.Join('\n', lobby.Slots.Select(slot =>
             $"{slot.Slot}. {slot.Name}{(slot.Slot == game.LocalPlayer?.Value ? " *" : "")} — {Tr(FactionKey(slot.Faction))}, "
             + $"{string.Format(CultureInfo.InvariantCulture, Tr("UI_NET_TEAM"), slot.Team)} — {(slot.Ready ? Tr("UI_NET_READY") : Tr("UI_NET_NOT_READY"))}"));

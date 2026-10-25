@@ -53,8 +53,14 @@ jobs:
         if: matrix.configuration == 'Release'
         run: dotnet test tests/Rts.AI.Tests -c Release --filter "Category=Arena" --logger "trx;LogFileName=arena.trx" --logger "console;verbosity=detailed" --results-directory test-results
 
+      # The network and the relay run even when a step before them failed: they do not depend on the bots.
       - name: Network tests
+        if: ${{ !cancelled() }}
         run: dotnet test tests/Rts.Net.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=net.trx" --results-directory test-results
+
+      - name: Relay server tests
+        if: ${{ !cancelled() }}
+        run: dotnet test tests/Rts.Server.Tests -c ${{ matrix.configuration }} --logger "trx;LogFileName=server.trx" --results-directory test-results
 
       - name: Arena tests
         run: dotnet test tests/Rts.Arena.Tests -c ${{ matrix.configuration }} --filter "${{ matrix.configuration == 'Debug' && 'Category!=Slow' || 'Category!=None' }}" --logger "trx;LogFileName=arena-tool.trx" --results-directory test-results
@@ -83,3 +89,21 @@ jobs:
       # since CI machines differ. The numbers that count are measured by hand and kept in the M2 journal.
       - name: Benchmark harness smoke run
         run: dotnet run -c Release --project src/Rts.Simulation.Benchmarks -- --load
+
+  relay-image:
+    name: relay server image (Docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The image the relay runs from on a VPS (docs/implementation/M9_network.md, 4.14): it must build, and the server in it start.
+      - name: Build the image of the relay
+        run: docker build -f src/Rts.Server/Dockerfile -t rts-relay .
+
+      - name: The relay starts and listens
+        run: |
+          docker run -d --name relay -p 27020:27020/udp rts-relay
+          sleep 5
+          docker logs relay
+          docker logs relay | grep -q "relay on UDP port 27020"
+          docker stop relay

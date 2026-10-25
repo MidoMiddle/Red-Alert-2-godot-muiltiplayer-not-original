@@ -91,6 +91,9 @@ public ref struct MessageReader
         return command;
     }
 
+    /// <summary><paramref name="count"/> bytes as they are.</summary>
+    public ReadOnlySpan<byte> ReadBytes(int count) => Take(count);
+
     /// <summary>The message must end here.</summary>
     public readonly void ExpectEnd()
     {

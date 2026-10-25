@@ -89,5 +89,9 @@ internal static class Samples
         new DesyncReport(P2, 3000, 42UL),
         new InputDelayChange(4500, 6),
         new KickVote(P2, new PlayerId(3)),
+        new RoomRequest("K7MX2P"),
+        new RoomJoined("K7MX2P", 3),
+        new RoomMember(2, false),
+        new Relayed(3, MessageCodec.Write(new Ping(7))),
     ];
 }

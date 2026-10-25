@@ -12,7 +12,7 @@ public static class MessageCodec
 {
     public static byte[] Write(NetMessage message)
     {
-        var writer = new MessageWriter();
+        var writer = new MessageWriter(LimitOf(message.Type));
         writer.WriteByte((byte)message.Type);
         writer.WriteUInt16(NetProtocol.Version);
         message.WriteBody(writer);
@@ -21,10 +21,10 @@ public static class MessageCodec
 
     public static NetMessage Read(ReadOnlySpan<byte> source)
     {
-        if (source.Length > NetProtocol.MaxMessageSize)
+        var limit = source.Length > 0 ? LimitOf((MessageType)source[0]) : NetProtocol.MaxMessageSize;
+        if (source.Length > limit)
         {
-            throw new MessageFormatException(
-                MessageError.TooLarge, $"A message of {source.Length} bytes, the limit is {NetProtocol.MaxMessageSize}.");
+            throw new MessageFormatException(MessageError.TooLarge, $"A message of {source.Length} bytes, the limit is {limit}.");
         }
 
         var reader = new MessageReader(source);
@@ -61,10 +61,17 @@ public static class MessageCodec
             MessageType.DesyncReport => DesyncReport.ReadBody(ref reader),
             MessageType.InputDelayChange => InputDelayChange.ReadBody(ref reader),
             MessageType.KickVote => KickVote.ReadBody(ref reader),
+            MessageType.RoomRequest => RoomRequest.ReadBody(ref reader),
+            MessageType.RoomJoined => RoomJoined.ReadBody(ref reader),
+            MessageType.RoomMember => RoomMember.ReadBody(ref reader),
+            MessageType.Relayed => Relayed.ReadBody(ref reader),
             _ => throw new MessageFormatException(MessageError.UnknownType, $"Unknown message type {(byte)type}."),
         };
 
         reader.ExpectEnd();
         return message;
     }
+
+    // A frame of the relay carries a whole message: a little more room.
+    private static int LimitOf(MessageType type) => type == MessageType.Relayed ? NetProtocol.MaxFrameSize : NetProtocol.MaxMessageSize;
 }

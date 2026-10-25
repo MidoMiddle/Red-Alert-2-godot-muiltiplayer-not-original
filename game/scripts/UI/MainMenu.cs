@@ -67,7 +67,7 @@ public partial class MainMenu : Control
 
         // The launch options of a network game go straight to its menu (M9 step 9).
         var args = OS.GetCmdlineUserArgs();
-        if (args.Contains("--net-host") || args.Contains("--net-join"))
+        if (args.Contains("--net-host") || args.Contains("--net-join") || args.Contains("--net-relay"))
         {
             // After the router's fade into this screen: it opens nothing while it switches.
             GetTree().CreateTimer(0.5).Timeout += OpenNetwork;

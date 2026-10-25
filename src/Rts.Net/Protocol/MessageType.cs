@@ -26,4 +26,8 @@ public enum MessageType : byte
     DesyncReport = 18,
     InputDelayChange = 19,
     KickVote = 20,
+    RoomRequest = 21,
+    RoomJoined = 22,
+    RoomMember = 23,
+    Relayed = 24,
 }

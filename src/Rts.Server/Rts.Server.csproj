@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The relay server (docs/implementation/M9_network.md, 4.14, step 12): rooms of players who cannot reach each other directly. A
+    console program, in Docker on a VPS; it passes the messages of the protocol on and computes nothing of the match.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer runtime when only .NET 10 is installed. -->
+    <RollForward>Major</RollForward>
+    <RootNamespace>Rts.Server</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Rts.Net/Rts.Net.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rts.Server.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,9 @@
+# The image of the relay (src/Rts.Server/Dockerfile) is built from the sources only: no build output, no game, no art.
+**/bin/
+**/obj/
+.git/
+game/
+assets_src/
+docs/
+tools/
+tests/

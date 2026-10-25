@@ -637,3 +637,11 @@ UI_NET_LEFT_TIMEOUT,Player {0} was silent too long and is out of the match.
 UI_NET_LEFT_KICKED,Player {0} was voted out of the match.
 UI_NET_YOU_WERE_DROPPED,You are out of the match: the others went on without you.
 UI_NET_HOST_LEFT,The host left: the match is over.
+UI_NET_RELAY,Through a relay server
+UI_NET_OPEN_ROOM,Open a room
+UI_NET_ROOM_CODE,Room code
+UI_NET_JOIN_ROOM,Join the room
+UI_NET_BAD_RELAY,Write the address of the relay server and choose a map to open a room or write the code of a room to join it.
+UI_NET_ROOM,Room {0}: give this code to the others.
+UI_NET_ROOM_OPENING,Opening a room on the relay…
+UI_NET_RELAY_LOST,The relay server cannot be reached or closed the room.

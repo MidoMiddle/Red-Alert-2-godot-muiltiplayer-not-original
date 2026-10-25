@@ -51,6 +51,9 @@ public enum RejectReason : byte
     RoomFull = 7,
     GameInProgress = 8,
     LoadTimeout = 9,
+
+    /// <summary>The relay takes no more rooms: of this address, or at all.</summary>
+    ServerBusy = 10,
 }
 
 /// <summary>The host refuses the client: <c>u8 reason | string detail</c>; the connection is closed after it.</summary>
