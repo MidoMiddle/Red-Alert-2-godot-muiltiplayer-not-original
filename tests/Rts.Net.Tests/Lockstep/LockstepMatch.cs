@@ -53,6 +53,15 @@ internal sealed class LockstepClient
     /// <summary>When false, the computer is frozen: no frames, the network still runs.</summary>
     public bool Running { get; set; } = true;
 
+    /// <summary>Pings the others and answers their pings (step 7); null without.</summary>
+    public LatencyMonitor? Monitor { get; set; }
+
+    /// <summary>The host's decision on the input delay (step 7); null on the others.</summary>
+    public InputDelayAuthority? Authority { get; set; }
+
+    /// <summary>The clock of the computer for the pings: the network's.</summary>
+    public Func<long> Clock { get; set; } = () => 0;
+
     /// <summary>One frame: the commands due by the script, then the lockstep.</summary>
     public void Frame(long elapsedMs)
     {
@@ -61,6 +70,8 @@ internal sealed class LockstepClient
             Engine.Issue(_script.Dequeue());
         }
 
+        Monitor?.Update(Clock());
+        Authority?.Update(Clock());
         Engine.Update(elapsedMs);
         LongestWaitMs = Math.Max(LongestWaitMs, Engine.WaitingMs);
         MostTicksInFrame = Math.Max(MostTicksInFrame, Engine.TicksLastFrame);

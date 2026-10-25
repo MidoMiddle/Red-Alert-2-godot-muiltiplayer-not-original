@@ -65,3 +65,27 @@ public sealed record Pong(long Timestamp) : NetMessage
 
     internal static Pong ReadBody(ref MessageReader reader) => new(reader.ReadInt64());
 }
+
+/// <summary>
+/// The host changes the input delay (docs/implementation/M9_network.md, 4.7): from <see cref="Tick"/> on, a command given runs
+/// <see cref="Delay"/> ticks later — <c>i32 tick | u8 delay</c>, 1…10. Every computer switches on that tick.
+/// </summary>
+public sealed record InputDelayChange(int Tick, int Delay) : NetMessage
+{
+    public const int MaxDelay = 10;
+
+    public override MessageType Type => MessageType.InputDelayChange;
+
+    internal override void WriteBody(MessageWriter writer)
+    {
+        writer.WriteInt32(Tick);
+        writer.WriteSmall(Delay, nameof(Delay));
+    }
+
+    internal static InputDelayChange ReadBody(ref MessageReader reader)
+    {
+        var tick = Checksum.ReadTick(ref reader);
+        int delay = reader.ReadByte();
+        return delay is >= 1 and <= MaxDelay ? new InputDelayChange(tick, delay) : throw MessageReader.Invalid($"Input delay {delay}.");
+    }
+}

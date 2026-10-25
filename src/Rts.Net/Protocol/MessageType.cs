@@ -24,4 +24,5 @@ public enum MessageType : byte
     PlayerLeft = 16,
     Surrender = 17,
     DesyncReport = 18,
+    InputDelayChange = 19,
 }

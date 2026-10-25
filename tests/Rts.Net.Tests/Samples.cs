@@ -86,5 +86,6 @@ internal static class Samples
         new PlayerLeft(P2, LeaveReason.Timeout, 4321),
         new Surrender(P2),
         new DesyncReport(P2, 3000, 42UL),
+        new InputDelayChange(4500, 6),
     ];
 }

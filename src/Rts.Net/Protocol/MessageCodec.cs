@@ -59,6 +59,7 @@ public static class MessageCodec
             MessageType.PlayerLeft => PlayerLeft.ReadBody(ref reader),
             MessageType.Surrender => Surrender.ReadBody(ref reader),
             MessageType.DesyncReport => DesyncReport.ReadBody(ref reader),
+            MessageType.InputDelayChange => InputDelayChange.ReadBody(ref reader),
             _ => throw new MessageFormatException(MessageError.UnknownType, $"Unknown message type {(byte)type}."),
         };
 

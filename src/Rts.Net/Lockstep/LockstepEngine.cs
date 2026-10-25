@@ -35,6 +35,10 @@ public sealed class LockstepEngine
     private readonly int[] _received = new int[PlayerId.MaxPlayers + 1];
 
     private readonly List<Command> _pending = new();
+
+    // Our last bundles as sent, for their copies over the unreliable channel; the input delay changes to come, by tick.
+    private readonly Queue<byte[]> _recent = new();
+    private readonly SortedDictionary<int, int> _delayChanges = new();
     private int _nextBundleTick;
     private uint _nextSequence;
     private long _clock;
@@ -62,6 +66,27 @@ public sealed class LockstepEngine
         }
 
         _nextBundleTick = simulation.CurrentTick;
+        InputDelay = Settings.InputDelay;
+    }
+
+    /// <summary>The input delay now: a command given while tick T is next runs on T + D.</summary>
+    public int InputDelay { get; private set; }
+
+    /// <summary>The input delay changed, with the tick it changed on — the same on every computer.</summary>
+    public event Action<int, int>? InputDelayChanged;
+
+    /// <summary>
+    /// From <paramref name="tick"/> on the input delay is <paramref name="delay"/> (step 7, 4.7): the host decides it and every computer
+    /// switches on the same tick. One that hears of it late switches at once. Does not touch the match: the commands carry their ticks.
+    /// </summary>
+    public void ScheduleInputDelay(int tick, int delay)
+    {
+        if (delay < 1 || delay > Protocol.Messages.InputDelayChange.MaxDelay)
+        {
+            throw new ArgumentOutOfRangeException(nameof(delay), delay, "1…10.");
+        }
+
+        _delayChanges[tick] = delay;
     }
 
     /// <summary>After each computed tick, with its number; the replay is recorded here (<c>ReplayRecorder.AfterStep</c>).</summary>
@@ -112,7 +137,7 @@ public sealed class LockstepEngine
         }
 
         _started = true;
-        SendUntil(CurrentTick + Settings.InputDelay - 1);
+        SendUntil(CurrentTick + InputDelay - 1);
     }
 
     /// <summary>
@@ -209,6 +234,11 @@ public sealed class LockstepEngine
             {
                 Receive(bundle);
             }
+            else if (message is Protocol.Messages.InputDelayChange change)
+            {
+                ScheduleInputDelay(change.Tick, change.Delay);
+                MessageReceived?.Invoke(received.Peer, message);
+            }
             else
             {
                 MessageReceived?.Invoke(received.Peer, message);
@@ -252,7 +282,7 @@ public sealed class LockstepEngine
                 continue;
             }
 
-            if (_received[player.Value] <= CurrentTick + Settings.InputDelay)
+            if (_received[player.Value] <= CurrentTick + InputDelay)
             {
                 return false;
             }
@@ -266,7 +296,17 @@ public sealed class LockstepEngine
     private void Step()
     {
         var tick = CurrentTick;
-        SendUntil(tick + Settings.InputDelay);
+        while (_delayChanges.Count > 0 && _delayChanges.First() is var (from, delay) && from <= tick)
+        {
+            _delayChanges.Remove(from);
+            if (delay != InputDelay)
+            {
+                InputDelay = delay;
+                InputDelayChanged?.Invoke(tick, delay);
+            }
+        }
+
+        SendUntil(tick + InputDelay);
         foreach (var player in Players)
         {
             var bundles = _bundles[player.Value]!;
@@ -289,7 +329,23 @@ public sealed class LockstepEngine
         {
             var bundle = new TickBundle(LocalPlayer, _nextBundleTick, _pending.ToImmutableArray());
             _pending.Clear();
-            _transport.SendToAll(MessageCodec.Write(bundle), DeliveryChannel.ReliableOrdered);
+            var bytes = MessageCodec.Write(bundle);
+            _transport.SendToAll(bytes, DeliveryChannel.ReliableOrdered);
+            if (Settings.Redundancy > 0)
+            {
+                // The copies: this bundle and the ones before it, each its own datagram; whichever comes first is taken.
+                _recent.Enqueue(bytes);
+                if (_recent.Count > Settings.Redundancy + 1)
+                {
+                    _recent.Dequeue();
+                }
+
+                foreach (var copy in _recent)
+                {
+                    _transport.SendToAll(copy, DeliveryChannel.Unreliable);
+                }
+            }
+
             Accept(bundle);
             _nextBundleTick++;
         }

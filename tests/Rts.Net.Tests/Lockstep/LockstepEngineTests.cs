@@ -25,8 +25,12 @@ public sealed class LockstepEngineTests
         match[0].Engine.Start();
         match.Network.Advance(0);
 
-        var bundles = Drain(match[1].Transport).Select(e => MessageCodec.Read(e.Data)).Cast<TickBundle>().ToList();
-        Assert.Equal([TickBundle.Empty(P1, 0), TickBundle.Empty(P1, 1), TickBundle.Empty(P1, 2)], bundles);
+        // Over the reliable channel one each; over the unreliable one each again with up to two before it (step 7).
+        var received = Drain(match[1].Transport).ToList();
+        var reliable = received.Where(e => e.Channel == DeliveryChannel.ReliableOrdered).Select(e => MessageCodec.Read(e.Data)).Cast<TickBundle>().ToList();
+        Assert.Equal([TickBundle.Empty(P1, 0), TickBundle.Empty(P1, 1), TickBundle.Empty(P1, 2)], reliable);
+        var copies = received.Where(e => e.Channel == DeliveryChannel.Unreliable).Select(e => ((TickBundle)MessageCodec.Read(e.Data)).Tick).ToList();
+        Assert.Equal([0, 0, 1, 0, 1, 2], copies);
     }
 
     [Fact]
