@@ -40,7 +40,7 @@ internal static class DefinitionReader
 
     private static readonly string[] ArmorKeys = ["name"];
 
-    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "bridges", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "repairs", "frees_parasite", "mind_control", "spares_own_kind", "infantry_death"];
+    private static readonly string[] WarheadKeys = ["name", "verses", "spread", "percent_at_max", "wall_damage", "affects_air", "temporal", "bomb", "bomb_delay", "bridges", "radiation", "parasite", "parasite_damage", "parasite_delay", "parasite_naval", "paralyzes", "repairs", "frees_parasite", "mind_control", "spares_own_kind", "burns_ore", "infantry_death"];
 
     private static readonly string[] ProjectileKeys = ["name", "motion", "speed", "arc", "inaccuracy", "turn_rate", "lifetime", "visual", "hp", "armor"];
 
@@ -275,6 +275,7 @@ internal static class DefinitionReader
             FreesParasite = fields.Optional("frees_parasite", Scalars.Flag, false),
             MindControl = fields.Optional("mind_control", Scalars.Flag, false),
             SparesOwnKind = fields.Optional("spares_own_kind", Scalars.Flag, false),
+            BurnsOre = fields.Optional("burns_ore", Scalars.Flag, false),
             InfantryDeath = fields.Optional("infantry_death", Scalars.Id, ""),
         };
     }

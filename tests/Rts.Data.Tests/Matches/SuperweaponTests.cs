@@ -202,4 +202,84 @@ public sealed class SuperweaponTests
         Assert.False(spy.IsAlive);
         Assert.True(curtain.ChargeLeft > 300 * 15 - 300);
     }
+    [Fact]
+    public void The_phase_gate_takes_the_time_trooper_alive()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var gate = Ready(world, Allied, "alliance_chronosphere", 50, 10, "alliance_power_plant");
+        var trooper = Spawn(world, Allied, UnitType.AllianceChronoLegionnaire, 20, 20);
+        var rifleman = Spawn(world, Allied, UnitType.AllianceRifleman, 21, 20);
+        simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 0, gate.Id, new CellPos(20, 20), new CellPos(40, 40)));
+        Run(simulation, 1);
+
+        Assert.True(trooper.IsAlive);
+        Assert.Equal(new CellPos(40, 40), trooper.Position.ToCell());
+        Assert.False(rifleman.IsAlive);
+    }
+
+    [Fact]
+    public void The_bastion_field_leaves_an_aircraft_in_the_air_uncovered()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var projector = Ready(world, Union, "iron_curtain", 10, 10, "nuclear_reactor");
+        var airship = Spawn(world, Union, UnitType.KirovAirship, 30, 30);
+        var tank = Spawn(world, Union, UnitType.HeavyTank, 31, 30);
+        simulation.Enqueue(new SuperweaponCommand(Union, simulation.CurrentTick, 0, projector.Id, new CellPos(30, 30), new CellPos(30, 30)));
+        Run(simulation, 1);
+
+        Assert.True(tank.IsInvulnerable(world.CurrentTick));
+        Assert.False(airship.IsInvulnerable(world.CurrentTick));
+    }
+
+    [Fact]
+    public void One_storm_at_a_time_and_the_radar_is_out_while_it_rages()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var storm = Ready(world, Allied, "alliance_weather_control_device", 50, 10, "alliance_power_plant");
+        simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 0, storm.Id, new CellPos(30, 30), new CellPos(30, 30)));
+        Run(simulation, 1);
+        Assert.False(SuperweaponSystem.StormRaging(world));
+
+        // A second one, charged at once, is refused while the first is called.
+        storm.ChargeLeft = 0;
+        simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 1, storm.Id, new CellPos(20, 20), new CellPos(20, 20)));
+        Run(simulation, 1);
+        Assert.Contains(simulation.RefusedCommands, command => command is SuperweaponCommand { Sequence: 1 });
+        Assert.Single(world.Storms);
+
+        Run(simulation, SuperweaponSystem.StormDelay);
+        Assert.True(SuperweaponSystem.StormRaging(world));
+        var start = world.Storms[0].Start;
+        // A tick of the target's strike (every StrikeEvery) begins with it; the random strike of that tick comes after.
+        var strikes = Run(simulation, SuperweaponSystem.StormTicks + 2).OfType<LightningStrike>()
+            .GroupBy(strike => strike.Tick)
+            .SelectMany(tick => (tick.Key - start) % SuperweaponSystem.StrikeEvery == 0 ? tick.Skip(1) : tick)
+            .Select(strike => strike.Point.ToCell()).ToList();
+        Assert.False(SuperweaponSystem.StormRaging(world));
+        Assert.NotEmpty(strikes);
+
+        // The random bolts keep 3 cells from the one before.
+        for (var i = 1; i < strikes.Count; i++)
+        {
+            Assert.True(Math.Max(Math.Abs(strikes[i].X - strikes[i - 1].X), Math.Abs(strikes[i].Y - strikes[i - 1].Y)) >= SuperweaponSystem.StormSeparation);
+        }
+    }
+
+    [Fact]
+    public void The_missile_burns_the_ore_round_it()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var silo = Ready(world, Union, "nuclear_missile_silo", 6, 20, "nuclear_reactor");
+        world.Map.SetOre(new CellPos(42, 40), new OreCell(OreKind.Ore, 3));
+        world.Map.SetOre(new CellPos(60, 60), new OreCell(OreKind.Ore, 3));
+        simulation.Enqueue(new SuperweaponCommand(Union, simulation.CurrentTick, 0, silo.Id, new CellPos(40, 40), new CellPos(40, 40)));
+        Run(simulation, 600, () => world.Map.OreAt(new CellPos(42, 40)).IsEmpty);
+
+        Assert.True(world.Map.OreAt(new CellPos(42, 40)).IsEmpty);
+        Assert.False(world.Map.OreAt(new CellPos(60, 60)).IsEmpty);
+    }
 }

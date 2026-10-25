@@ -48,6 +48,11 @@ public static class StateHasher
             hash.Add(storm.Centre.Y);
             hash.Add(storm.Start);
             hash.Add(storm.End);
+            if (storm.Last is { } last)
+            {
+                hash.Add(last.X);
+                hash.Add(last.Y);
+            }
         }
 
         // Rules v65: the C4 on bridges (v66: shells hurt them too, the segments are in the map's digest).

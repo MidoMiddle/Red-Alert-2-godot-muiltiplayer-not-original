@@ -1,12 +1,12 @@
 # The weapons of the late buildings of the Union (stage 2c of filling the game; docs/content/names.md).
-atomic_plant_blast:  # what the atomic plant leaves when a shot brings it down (death_weapon)
+atomic_plant_blast:  # what the atomic plant leaves when a shot brings it down (death_weapon): RA2 NukePayload at half, 300 at the centre, the nuke's warhead
   kind: weapon
   name: Atomic Blast
-  damage: 600
+  damage: 300
   reload: 1s
   range: 1
   projectile: shell
-  warhead: atomic_blast
+  warhead: nuke
 
 shock_bolt:  # of the Shock Infantry, RA2 ElectricBolt
   kind: weapon

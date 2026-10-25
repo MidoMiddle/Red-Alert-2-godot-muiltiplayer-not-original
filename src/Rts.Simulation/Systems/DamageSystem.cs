@@ -164,6 +164,11 @@ public static class DamageSystem
             RadiationSystem.Lay(world, hit.Point, warhead.Spread, warhead.Radiation);
         }
 
+        if (warhead.BurnsOre)
+        {
+            BurnOre(world, hit.Point, warhead.Spread, events);
+        }
+
         var damage = hit.BonusPercent > 0 ? (int)((long)weapon.Damage * (100 + hit.BonusPercent) / 100) : weapon.Damage;
         if (hit.Target is null)
         {
@@ -241,6 +246,26 @@ public static class DamageSystem
 
         player.LastUnderAttack = world.CurrentTick;
         events?.Add(new UnderAttack(world.CurrentTick, building.Owner, Aim.CentreOf(building)));
+    }
+
+    /// <summary>The ore of every cell whose centre lies within <paramref name="spread"/> cells of the point burns away (RA2 nuclear missile).</summary>
+    private static void BurnOre(GameWorld world, WorldPos point, Fixed spread, List<SimEvent>? events)
+    {
+        var radius = Aim.Leptons(spread);
+        var cells = IntMath.Max(1, radius / WorldPos.LeptonsPerCell) + 1;
+        var centre = point.ToCell();
+        for (var y = centre.Y - cells; y <= centre.Y + cells; y++)
+        {
+            for (var x = centre.X - cells; x <= centre.X + cells; x++)
+            {
+                var cell = new CellPos(x, y);
+                if (world.Map.Contains(cell) && !world.Map.OreAt(cell).IsEmpty && DamageCalculator.Distance(point, cell.Center) <= radius)
+                {
+                    world.Map.SetOre(cell, Map.OreCell.Empty);
+                    events?.Add(new OreDepleted(world.CurrentTick, cell));
+                }
+            }
+        }
     }
 
     /// <summary>A wall takes damage only from a warhead that damages walls.</summary>

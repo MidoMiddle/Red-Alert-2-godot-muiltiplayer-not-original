@@ -20,7 +20,7 @@ namespace Rts.Simulation.Systems;
 /// it, a parasite inside dies — and kills the soldiers there;</item>
 /// <item>the Strategic Missile Silo sends its missile from its centre to the target;</item>
 /// <item>the Phase Gate takes the vehicles and ships in 3 x 3 cells round the target to the same places round the second cell; a soldier
-/// dies, as does one that cannot stand where it comes, and a squid holding a ship; the others stand still for
+/// dies — not one that teleports itself (RA2: the time trooper goes with them) —, as does one that cannot stand where it comes, and a squid holding a ship; the others stand still for
 /// <see cref="GateFreeze"/> ticks;</item>
 /// <item>the Storm Generator calls a storm over the target: after <see cref="StormDelay"/> ticks, for <see cref="StormTicks"/> ticks, its
 /// lightning strikes the target every <see cref="StrikeEvery"/> ticks and a random cell within <see cref="StormSpread"/> every
@@ -52,6 +52,26 @@ public static class SuperweaponSystem
 
     /// <summary>The side of the square of the random strikes, in cells (RA2 <c>LightningCellSpread</c>).</summary>
     public const int StormSpread = 10;
+
+    /// <summary>The least distance between two random strikes, in cells (RA2 <c>LightningSeparation</c>).</summary>
+    public const int StormSeparation = 3;
+
+    // How many cells a random strike tries before it gives up for this time.
+    private const int SeparationTries = 4;
+
+    /// <summary>Whether a storm rages now: the radar of every player is out meanwhile (RA2).</summary>
+    public static bool StormRaging(GameWorld world)
+    {
+        foreach (var storm in world.Storms)
+        {
+            if (world.CurrentTick >= storm.Start)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>The charges, and the lightning of the storms; after the damage, so the strikes land in the next tick's.</summary>
     public static void Update(GameWorld world, List<SimEvent>? events)
@@ -88,12 +108,24 @@ public static class SuperweaponSystem
 
             if (since % ScatterEvery == 0)
             {
-                var cell = new CellPos(
-                    storm.Centre.X + world.Random.NextInt(StormSpread) - (StormSpread / 2),
-                    storm.Centre.Y + world.Random.NextInt(StormSpread) - (StormSpread / 2));
-                if (world.Map.Contains(cell))
+                // A bolt lands at least LightningSeparation cells from the last one; a few tries, then none this time.
+                for (var attempt = 0; attempt < SeparationTries; attempt++)
                 {
-                    Strike(world, storm, cell, events);
+                    var cell = new CellPos(
+                        storm.Centre.X + world.Random.NextInt(StormSpread) - (StormSpread / 2),
+                        storm.Centre.Y + world.Random.NextInt(StormSpread) - (StormSpread / 2));
+                    if (storm.Last is { } last && IntMath.Max(IntMath.Abs(cell.X - last.X), IntMath.Abs(cell.Y - last.Y)) < StormSeparation)
+                    {
+                        continue;
+                    }
+
+                    if (world.Map.Contains(cell))
+                    {
+                        Strike(world, storm, cell, events);
+                        world.Storms[i] = storm with { Last = cell };
+                    }
+
+                    break;
                 }
             }
         }
@@ -123,6 +155,12 @@ public static class SuperweaponSystem
                 Gate(world, building, command.Target, command.Second, events);
                 break;
             case SuperweaponKind.Storm:
+                // One storm in the world at a time (RA2).
+                if (world.Storms.Count > 0)
+                {
+                    return false;
+                }
+
                 world.Storms.Add(new Storm(building.Owner, building.Id, weapon, command.Target, world.CurrentTick + StormDelay, world.CurrentTick + StormDelay + StormTicks));
                 break;
             case SuperweaponKind.Paradrop:
@@ -223,6 +261,12 @@ public static class SuperweaponSystem
     {
         foreach (var entity in Within(world, centre))
         {
+            // Aircraft in the air are not covered (RA2).
+            if (entity is Unit { Archetype.Flies: true })
+            {
+                continue;
+            }
+
             if (entity is Unit { Archetype.Category: UnitCategory.Infantry } soldier)
             {
                 DeathSystem.Kill(world, soldier, source.Id, source.Owner, DeathCause.Weapon, -1, events);
@@ -263,7 +307,8 @@ public static class SuperweaponSystem
             }
 
             var cell = new CellPos(to.X + unit.Position.ToCell().X - from.X, to.Y + unit.Position.ToCell().Y - from.Y);
-            if (unit.Archetype.Category == UnitCategory.Infantry || !world.Map.Contains(cell)
+            // A soldier dies (RA2), but one that teleports itself goes with it (the time trooper).
+            if ((unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Has(UnitTalents.Teleports)) || !world.Map.Contains(cell)
                 || !world.Map.CanEnter(cell, unit.Archetype.Locomotor) || !world.Reservations.HasRoomFor(cell, unit))
             {
                 DeathSystem.Kill(world, unit, source.Id, source.Owner, DeathCause.Weapon, -1, events);

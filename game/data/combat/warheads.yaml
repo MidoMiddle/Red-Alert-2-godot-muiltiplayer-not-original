@@ -60,15 +60,6 @@ missile:  # the anti-tank rocket of the Rocket Trooper (M4 plan, 4.18)
   percent_at_max: 50%
   infantry_death: explode
 
-atomic_blast:  # RA2 NUKE of the nuclear reactor when it falls (stage 2c): everything around, buildings and walls too
-  kind: warhead
-  name: Atomic Blast
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
-  spread: 5
-  percent_at_max: 25%
-  wall_damage: true
-  infantry_death: explode
-
 hollow_point:  # RA2 HollowPoint: the pistols of the Elite Commando and the rifle of the Marksman; one shot kills a soldier, vehicles and buildings shrug it off
   kind: warhead
   name: Hollow Point
@@ -293,10 +284,11 @@ repair:  # RA2 RepairWH of the IFV's repair arm: mends vehicles and ships of its
   verses: { none: 0%, flak: 0%, plate: 0%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 0% }
   repairs: true
 
-nuke:  # RA2 NUKE: 600 at the centre, 10 cells, 2% at the edge; concrete holds (8%); toxin after it (RA2 nuclear radiation)
+nuke:  # RA2 NUKE: 10 cells, 2% at the edge; light 200%, wood 60%, concrete holds (8%); toxin after it (RA2 nuclear radiation); burns the ore (Tiberium=yes)
   kind: warhead
   name: Nuclear Blast
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 8%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 200%, medium: 100%, heavy: 100%, wood: 60%, steel: 100%, concrete: 8%, special_1: 100%, special_2: 100% }
+  burns_ore: true
   spread: 10
   percent_at_max: 2%
   wall_damage: true

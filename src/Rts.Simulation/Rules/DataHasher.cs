@@ -362,6 +362,7 @@ public static class DataHasher
             hash.Add(warhead.FreesParasite);
             hash.Add(warhead.MindControl);
             hash.Add(warhead.SparesOwnKind);
+            hash.Add(warhead.BurnsOre);
         }
 
         hash.Add(rules.Projectiles.Length);

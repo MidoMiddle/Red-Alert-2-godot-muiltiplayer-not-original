@@ -61,7 +61,8 @@ public static class MinimapRule
             return true;
         }
 
-        if (world.Player(player).LowPower)
+        // Low power, or a lightning storm raging anywhere (RA2): the radar is out.
+        if (world.Player(player).LowPower || Rts.Simulation.Systems.SuperweaponSystem.StormRaging(world))
         {
             return false;
         }

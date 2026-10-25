@@ -139,4 +139,17 @@ public sealed class EconomyBuildingsTests
             }
         }
     }
+    [Fact]
+    public void The_atomic_plant_blows_up_with_half_the_missile()
+    {
+        // RA2: the nuclear reactor's DeathWeapon is NukePayload at half — 300 at the centre, the nuke's 10 cells, 2% at the edge, toxin.
+        var database = GameDataFiles.Rules.Database;
+        database.TryGetBuilding("nuclear_reactor", out var reactor);
+        var blast = database.Weapons[database.IndexOfWeapon(reactor.DeathWeapon)];
+        var missile = database.Weapons[database.IndexOfWeapon("nuclear_missile")];
+
+        Assert.Equal(missile.Damage / 2, blast.Damage);
+        Assert.Equal(missile.Warhead, blast.Warhead);
+        Assert.Equal("nuke", blast.Warhead);
+    }
 }
