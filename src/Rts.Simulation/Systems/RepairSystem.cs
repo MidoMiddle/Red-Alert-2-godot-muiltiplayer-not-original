@@ -30,8 +30,7 @@ public static class RepairSystem
 
     /// <summary>
     /// A unit that heals itself (the Super Heavy Tank, RA2 <c>SelfHealing</c>) gains its <see cref="Rules.UnitDef.SelfHeal"/> hit points once a
-    /// second, up to whole, for nothing; one held by a temporal beam does not. An elite unit heals so too, and a vehicle of a player with
-    /// a machine shop (M11 a5) — the most of what it has, they do not add up.
+    /// second, up to whole, for nothing; one held by a temporal beam does not.
     /// </summary>
     private static void HealThemselves(GameWorld world, List<SimEvent>? events)
     {
@@ -40,15 +39,10 @@ public static class RepairSystem
             return;
         }
 
-        var shops = TechBuildingSystem.MachineShopOwners(world);
         foreach (var entity in world.Entities)
         {
             if (entity is Unit { IsAlive: true, ErasedBy: null } unit && unit.Hp < unit.MaxHp
-                && IntMath.Max(
-                    unit.Archetype.SelfHeal + (Veterancy.RankOf(unit) == Rank.Elite ? Veterancy.EliteHeal : 0),
-                    unit.Archetype.Category == UnitCategory.Vehicle && !unit.Owner.IsNeutral && (shops & (1 << (unit.Owner.Value - 1))) != 0
-                        ? TechBuildingSystem.MachineShopHeal
-                        : 0) is > 0 and var heal)
+                && unit.Archetype.SelfHeal + (Veterancy.RankOf(unit) == Rank.Elite ? Veterancy.EliteHeal : 0) is > 0 and var heal)
             {
                 // Self-repair, and an elite unit's (loose ends, stage 3).
                 world.SetHp(unit, IntMath.Min(unit.MaxHp, unit.Hp + heal), events);

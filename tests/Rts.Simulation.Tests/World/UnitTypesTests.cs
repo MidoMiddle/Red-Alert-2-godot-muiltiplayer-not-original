@@ -47,6 +47,7 @@ public sealed class UnitTypesTests
 
     [Theory]
     [InlineData(0)]
+    [InlineData(47)] // the robot tank of Yuri's Revenge, taken out
     [InlineData(51)]
     [InlineData(255)]
     public void Unknown_types_are_not_known(int type)

@@ -42,7 +42,7 @@ public static class WeaponSystem
             switch (entity)
             {
                 // Held by a temporal beam (stage 3a), nothing fires.
-                case Unit { IsAlive: true, ErasedBy: null, WarpTicks: 0 } unit when unit.Weapons.Length > 0 && !Defenses.IsAsleep(world, unit):
+                case Unit { IsAlive: true, ErasedBy: null, WarpTicks: 0 } unit when unit.Weapons.Length > 0:
                     Unit(world, rules, unit, shots, events);
                     break;
                 case Building { IsAlive: true, IsReady: true, ErasedBy: null } building when building.Weapons.Length > 0:

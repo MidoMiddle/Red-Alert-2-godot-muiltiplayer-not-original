@@ -42,7 +42,7 @@ public static class TargetingSystem
             }
 
             if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || world.IsDefeated(entity.Owner) || entity.ErasedBy is not null
-                || entity is Unit { WarpTicks: > 0 } || (entity is Unit robot && Defenses.IsAsleep(world, robot)))
+                || entity is Unit { WarpTicks: > 0 })
             {
                 continue;
             }

@@ -179,21 +179,6 @@ alliance_spy_satellite_uplink:  # a radar; while ready and online, the whole map
   reveals_map: true
   prerequisites: [alliance_battle_lab]
 
-alliance_robot_control_center:  # while ready and powered, the robot tanks work (stage 3d)
-  kind: building
-  inherits: base_building
-  name: Drone Control Hub
-  faction: alliance
-  cost: 600
-  build_time: 25.2s
-  hp: 600
-  sight: 6
-  footprint: [2, 2]
-  power: -100
-  prerequisites: [alliance_war_factory]
-  controls_robots: true
-  powered: true
-
 alliance_chronosphere:  # superweapon: moves the vehicles and ships of 3 x 3 cells elsewhere, soldiers die; charges 7 min (stage 2d)
   kind: building
   inherits: base_building

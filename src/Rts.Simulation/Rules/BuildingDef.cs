@@ -118,9 +118,6 @@ public sealed record BuildingDef : IDefinition
     /// <summary>Vehicles and ships of the owner that stand still beside it are repaired, at the price of repairing (stage 2c).</summary>
     public bool RepairsVehicles { get; init; }
 
-    /// <summary>Vehicles, ships and aircraft cost its owner this many percent less while it stands ready (stage 2c); the best counts.</summary>
-    public int VehicleDiscountPercent { get; init; }
-
     /// <summary>The ore unloaded brings its owner this many percent more while it stands ready (stage 2c); the best counts.</summary>
     public int IncomeBonusPercent { get; init; }
 
@@ -153,9 +150,6 @@ public sealed record BuildingDef : IDefinition
 
     /// <summary>What an infiltrator of another player does to it (stage 3b); <see cref="SpyEffect.None"/> takes none.</summary>
     public SpyEffect SpyEffect { get; init; }
-
-    /// <summary>While it stands ready and online, its owner's robots work (stage 3d: the drone control hub).</summary>
-    public bool ControlsRobots { get; init; }
 
     /// <summary>Aircraft out of ammo fly here and load beside it (stage 3f: the air force command, RA2 airport pads).</summary>
     public bool RearmsAircraft { get; init; }

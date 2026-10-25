@@ -105,7 +105,6 @@ public static class DataHasher
             hash.Add(unit.Size);
             hash.Add(unit.PassengerWeapon);
             Add(hash, unit.IfvWeapon);
-            hash.Add(unit.Robotic);
             hash.Add(unit.Submerged);
             hash.Add(unit.Sensors);
             hash.Add(unit.Ammo);
@@ -168,7 +167,6 @@ public static class DataHasher
             hash.Add(building.Sight);
             hash.Add(building.Water);
             hash.Add(building.RepairsVehicles);
-            hash.Add(building.VehicleDiscountPercent);
             hash.Add(building.IncomeBonusPercent);
             Add(hash, building.DeathWeapon);
             hash.Add(building.RevealsMap);
@@ -178,7 +176,6 @@ public static class DataHasher
             hash.Add(building.ChainMax);
             hash.Add(building.Capturable);
             hash.Add((byte)building.SpyEffect);
-            hash.Add(building.ControlsRobots);
             hash.Add(building.RearmsAircraft);
             hash.Add(building.AircraftDocks);
             hash.Add((byte)building.Superweapon);

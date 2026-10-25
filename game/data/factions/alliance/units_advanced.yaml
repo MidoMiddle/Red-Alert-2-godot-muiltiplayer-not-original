@@ -350,24 +350,6 @@ alliance_aircraft_carrier:  # launches its three Hornets at 25 cells when ordere
   spawn_count: 3
   spawn_regen: 27s
 
-alliance_robot_tank:  # works only while a Drone Control Hub stands ready with power (stage 3d); YR Robot Tank: 600 credits, no veterancy; the other numbers are ours (no open source has them)
-  kind: unit
-  inherits: base_vehicle
-  name: Robot Tank
-  faction: alliance
-  cost: 600
-  build_time: 25.2s
-  hp: 200
-  threat: 20
-  armor: light
-  speed: 42
-  sight: 6
-  locomotor: hover
-  prerequisites: [alliance_war_factory, alliance_robot_control_center]
-  primary: alliance_robot_gun
-  robotic: true
-  trainable: false  # RA2 Trainable=no (loose ends, stage 3)
-
 alliance_hornet:  # the aircraft carrier's jet: launched, never built; five bombs, then back aboard (RA2 HORNET: HP 75, 5 bombs)
   kind: unit
   inherits: base_vehicle

@@ -217,15 +217,6 @@ ifv_neutron_rifle:  # what the Time Trooper gives the IFV, RA2 CRNeutronRifle
   projectile: chrono_beam
   warhead: chrono
 
-alliance_robot_gun:  # of the Robot Tank; the numbers are ours
-  kind: weapon
-  name: Robot Gun
-  damage: 40
-  reload: 1.33s
-  range: 5.5
-  projectile: bullet
-  warhead: light_mg
-
 dolphin_sonic:  # of the Sonic Dolphin, RA2 SonicZap (ROF 180, range 6); its wave hurts every frame it passes (AmbientDamage), which one hit cannot be: damage and reload ours
   kind: weapon
   name: Sonic Wave

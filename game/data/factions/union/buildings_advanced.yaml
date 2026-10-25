@@ -92,34 +92,3 @@ nuclear_missile_silo:  # superweapon: a missile of 600 over 10 cells, toxin afte
   powered: true
   build_limit: 1
   spy_effect: reset_charge
-
-industrial_plant:  # vehicles, ships and aircraft 25% cheaper (stage 2c)
-  kind: building
-  inherits: base_building
-  name: Heavy Industry Complex
-  faction: union
-  cost: 2500
-  build_time: 105s
-  hp: 1000
-  sight: 4
-  footprint: [3, 3]
-  power: -200
-  vehicle_discount: 25%
-  prerequisites: [tech_center]
-
-battle_bunker:  # holds 5 soldiers who fire from inside (stage 2e)
-  kind: building
-  inherits: base_building
-  category: defense  # RA2: on the Defenses tab, built by its queue
-  name: Fortified Bunker
-  faction: union
-  cost: 500
-  build_time: 21s
-  hp: 600
-  sight: 6
-  armor: steel
-  footprint: [2, 2]
-  extends_base: false
-  garrison: 5
-  prerequisites: [construction_yard]
-  capturable: false

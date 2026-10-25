@@ -13,7 +13,7 @@ namespace Rts.Client.Units;
 /// <item>infantry is a thin column with what it carries — a rifle, a launcher, a hard hat, coils, a tank on the back, a jet pack; dogs
 /// are low and long;</item>
 /// <item>vehicles are boxes sized by role on tracks or wheels, with their gun: a long barrel, two barrels, a coil, a crystal, a rocket
-/// rail, barrels to the sky for anti-air; a hover disk for the robot, a spider for the drone, a truck for the demolition truck;</item>
+/// rail, barrels to the sky for anti-air; a spider for the drone, a truck for the demolition truck;</item>
 /// <item>ships are long hulls with their deck — a gun, missile cells, a flight deck; the submarine is a low cigar, the dolphin and the
 /// squid are round;</item>
 /// <item>aircraft have wings, the helicopter a rotor, the airship is a big balloon.</item>
@@ -265,12 +265,6 @@ public partial class UnitView : Node3D
                     leg.Rotation = new Vector3(0, Mathf.Atan2(x, z), 0);
                 }
 
-                return;
-            case UnitType.AllianceRobotTank:
-                // A hover disk with a small gun turret.
-                _body = AddPart(new CylinderMesh { TopRadius = 0.32f, BottomRadius = 0.36f, Height = 0.14f }, new Vector3(0, 0.16f, 0));
-                AddPart(new CylinderMesh { TopRadius = 0.3f, BottomRadius = 0.3f, Height = 0.02f }, new Vector3(0, 0.07f, 0), GlowMaterial);
-                AddTurret(new Vector3(0.36f, 0.12f, 0.36f), 0.23f, barrel: 0.3f);
                 return;
         }
 

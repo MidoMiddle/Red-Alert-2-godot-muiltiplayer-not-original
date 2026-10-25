@@ -145,9 +145,6 @@ public sealed record UnitDef : IDefinition
     /// <summary>The weapon an IFV fires with this soldier inside; empty for none (the IFV keeps its own).</summary>
     public string IfvWeapon { get; init; } = "";
 
-    /// <summary>It works only while its owner has a ready, powered building that controls robots (stage 3d: the robot tank).</summary>
-    public bool Robotic { get; init; }
-
     /// <summary>
     /// It keeps under the water (stage 3e: the submarine, the dolphin, the squid): another team sees it only near a unit of theirs with
     /// sensors, and only weapons at the underwater hit it.

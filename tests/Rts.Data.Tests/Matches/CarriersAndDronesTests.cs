@@ -199,25 +199,4 @@ public sealed class CarriersAndDronesTests
         Assert.False(engineer.IsAlive);
     }
 
-    [Fact]
-    public void The_robot_tank_works_only_while_a_powered_hub_stands()
-    {
-        var simulation = Match();
-        var world = simulation.World;
-        var robot = Spawn(world, Allied, UnitType.AllianceRobotTank, 30, 30);
-        var mcv = Spawn(world, Union, UnitType.Mcv, 33, 30);
-        var at = robot.Position;
-        simulation.Enqueue(new MoveCommand(Allied, simulation.CurrentTick, 0, [robot.Id], new CellPos(30, 20).Center));
-        Run(simulation, 60);
-
-        Assert.False(world.Player(Allied).RobotsOnline);
-        Assert.Equal(at, robot.Position);
-        Assert.Equal(mcv.MaxHp, mcv.Hp);
-
-        Build(world, Allied, "alliance_power_plant", 44, 40);
-        Build(world, Allied, "alliance_robot_control_center", 40, 40);
-        Run(simulation, 120);
-        Assert.True(world.Player(Allied).RobotsOnline);
-        Assert.NotEqual(at, robot.Position);
-    }
 }

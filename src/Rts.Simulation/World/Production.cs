@@ -68,17 +68,6 @@ public static class ProductionRules
     public static int CostOf(RulesDatabase rules, ProductionKind kind, int defIndex) =>
         kind == ProductionKind.Unit ? rules.Units[defIndex].Cost : rules.Buildings[defIndex].Cost;
 
-    /// <summary>
-    /// What <paramref name="player"/> pays for the item: its cost, less the player's discount for a vehicle, a ship or an aircraft
-    /// (stage 2c), rounded down to a credit.
-    /// </summary>
-    public static int CostOf(RulesDatabase rules, PlayerState player, ProductionKind kind, int defIndex)
-    {
-        var cost = CostOf(rules, kind, defIndex);
-        var discounted = kind == ProductionKind.Unit && rules.Units[defIndex].Category != UnitCategory.Infantry && player.VehicleDiscountPercent > 0;
-        return discounted ? (int)((long)cost * (100 - player.VehicleDiscountPercent) / 100) : cost;
-    }
-
     /// <summary>The id of the definition, such as <c>reactor</c>.</summary>
     public static string IdOf(RulesDatabase rules, ProductionKind kind, int defIndex) =>
         kind == ProductionKind.Unit ? rules.Units[defIndex].Id : rules.Buildings[defIndex].Id;

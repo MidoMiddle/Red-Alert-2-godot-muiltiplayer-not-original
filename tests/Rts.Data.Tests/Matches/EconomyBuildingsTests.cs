@@ -83,42 +83,6 @@ public sealed class EconomyBuildingsTests
     }
 
     [Fact]
-    public void The_heavy_industry_makes_vehicles_cheaper_and_two_do_not_add_up()
-    {
-        var simulation = Match();
-        var world = simulation.World;
-        var rules = world.Rules.Database;
-        var tank = rules.IndexOfUnit("heavy_tank");
-        var conscript = rules.IndexOfUnit("conscript");
-        Build(world, Union, "industrial_plant", 30, 30);
-        Build(world, Union, "industrial_plant", 34, 30);
-        TechTree.Update(world);
-        var player = world.Player(Union);
-
-        Assert.Equal(25, player.VehicleDiscountPercent);
-        Assert.Equal(675, ProductionRules.CostOf(rules, player, ProductionKind.Unit, tank));
-        Assert.Equal(100, ProductionRules.CostOf(rules, player, ProductionKind.Unit, conscript));
-
-        // A whole tank from the war factory costs the discounted price.
-        Build(world, Union, "construction_yard", 6, 6);
-        Build(world, Union, "nuclear_reactor", 40, 6);
-        Build(world, Union, "refinery", 6, 10);
-        Build(world, Union, "war_factory", 12, 10);
-        TechTree.Update(world);
-        var before = player.Credits;
-        simulation.Enqueue(new ProduceCommand(Union, simulation.CurrentTick, 0, ProductionKind.Unit, tank, 1));
-        var built = false;
-        for (var tick = 0; tick < 1500 && !built; tick++)
-        {
-            simulation.Step();
-            built = world.Entities.OfType<Unit>().Any(unit => unit.Owner == Union && unit.Type == UnitType.HeavyTank);
-        }
-
-        Assert.True(built);
-        Assert.Equal(675, before - player.Credits);
-    }
-
-    [Fact]
     public void The_ore_refining_annex_adds_its_bonus_to_the_ore_on_top_of_the_level()
     {
         var world = Match().World;

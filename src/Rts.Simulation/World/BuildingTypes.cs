@@ -49,9 +49,8 @@ public enum BuildingKind : byte
     NeutralSilo = 40,
     NeutralWindmill = 41,
 
-    // The last two tech buildings of M11 a5 (2026-10-25).
-    TechMachineShop = 42,
-    TechPowerPlant = 43,
+    // 42 and 43 were the machine shop and the power plant of Yuri's Revenge (M11 a5), taken out on 2026-10-25 to keep to RA2: never
+    // reuse the numbers.
 }
 
 /// <summary>
@@ -128,19 +127,17 @@ public static class BuildingTypes
         new(BuildingKind.NeutralBarn, "neutral_barn", 3, 2, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralSilo, "neutral_silo", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralWindmill, "neutral_windmill", 2, 2, MaxHp: 700, Garrison: 0, Capturable: false),
-
-        // M11 a5 (docs/map_elements/12_tech_buildings/README.md): the machine shop mends the owner's vehicles, the power plant
-        // powers its base (TechBuildingSystem). The footprint and the hit points of the hospital.
-        new(BuildingKind.TechMachineShop, "tech_machine_shop", 3, 3, MaxHp: 1500, Garrison: 0, Capturable: true),
-        new(BuildingKind.TechPowerPlant, "tech_power_plant", 3, 3, MaxHp: 1500, Garrison: 0, Capturable: true),
     ];
+
+    // The rows by kind; a number that was taken out has none.
+    private static readonly BuildingType?[] ByKind = Index();
 
     public static IReadOnlyList<BuildingType> All => Types;
 
-    public static bool IsKnown(BuildingKind kind) => kind >= BuildingKind.NeutralShed && (int)kind <= Types.Length;
+    public static bool IsKnown(BuildingKind kind) => kind >= BuildingKind.NeutralShed && (int)kind <= ByKind.Length && ByKind[(int)kind - 1] is not null;
 
     public static BuildingType Get(BuildingKind kind) =>
-        IsKnown(kind) ? Types[(int)kind - 1] : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown building kind.");
+        IsKnown(kind) ? ByKind[(int)kind - 1]! : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown building kind.");
 
     /// <summary>The type of a map file id such as <c>neutral_house_a</c>.</summary>
     public static bool TryGetById(string id, out BuildingType type)
@@ -156,5 +153,22 @@ public static class BuildingTypes
 
         type = null!;
         return false;
+    }
+
+    private static BuildingType?[] Index()
+    {
+        var highest = 0;
+        foreach (var type in Types)
+        {
+            highest = Math.IntMath.Max(highest, (int)type.Kind);
+        }
+
+        var byKind = new BuildingType?[highest];
+        foreach (var type in Types)
+        {
+            byKind[(int)type.Kind - 1] = type;
+        }
+
+        return byKind;
     }
 }

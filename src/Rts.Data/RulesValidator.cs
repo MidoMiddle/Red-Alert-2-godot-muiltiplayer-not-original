@@ -282,10 +282,6 @@ internal static class RulesValidator
             {
                 Error(building.Id, "superweapon_weapon", $"the superweapon '{building.Id}' needs its 'superweapon_weapon'");
             }
-            if (building.VehicleDiscountPercent is < 0 or > 90)
-            {
-                Error(building.Id, "vehicle_discount", $"'vehicle_discount' of '{building.Id}' must be 0% to 90%");
-            }
 
             if (building.IncomeBonusPercent is < 0 or > 100)
             {

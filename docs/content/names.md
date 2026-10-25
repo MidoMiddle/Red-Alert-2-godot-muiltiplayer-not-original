@@ -24,8 +24,6 @@
 | nuclear_reactor | Atomic Plant | энергия +2000 | Nuclear Reactor | работает: энергия; взрывается, если его разрушили выстрелом (этап 2в) |
 | iron_curtain | Bastion Field Projector | неуязвимость группе | Iron Curtain | работает: 3×3 клетки неуязвимы 50 с, пехота там гибнет; заряд 5 мин (этап 2д) |
 | nuclear_missile_silo | Strategic Missile Silo | ракетный удар | Nuclear Missile Silo | работает: ракета 600 на 10 клеток, бетон 8 %, после — яд; заряд 10 мин (этап 2д) |
-| industrial_plant | Heavy Industry Complex | скидка на технику | Industrial Plant | работает: техника, корабли и самолёты на 25 % дешевле (этап 2в) |
-| battle_bunker | Fortified Bunker | гарнизон | Battle Bunker | работает: до 5 пехотинцев внутри стреляют своим оружием, дальность от стены (этап 2е) |
 
 Имена первых одиннадцати пришли из M3 и тоже рабочие: «Tesla Coil», «War Factory», «Flak Cannon» совпадают с RA2 и заменяются вместе с остальными.
 
@@ -44,7 +42,6 @@
 | alliance_battle_lab | Research Lab | высокий тех | Battle Lab | работает |
 | alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | работает: руда приносит на 25 % больше (этап 2в) |
 | alliance_spy_satellite_uplink | Orbital Uplink | открывает карту | Spy Satellite Uplink | работает: радар; пока стоит с энергией, вся карта разведана (этап 2г) |
-| alliance_robot_control_center | Drone Control Hub | управление роботами | Robot Control Center | работает: пока стоит с энергией, Robot Tank работают (этап 3г) |
 | alliance_chronosphere | Phase Gate | переброска группы | Chronosphere | работает: переносит технику и корабли 3×3 в другое место, пехота гибнет; заряд 7 мин (этап 2д) |
 | alliance_weather_control_device | Storm Generator | шторм над областью | Weather Control Device | работает: через ~17 с буря на 12 с, молнии по 250; заряд 10 мин (этап 2д) |
 | alliance_gap_generator | Veil Generator | скрывает базу | Gap Generator | работает: с энергией закрывает 10 клеток вокруг от врага (этап 2г) |
@@ -75,7 +72,7 @@
 | id | Имя | Роль | Аналог RA2 | Сейчас |
 |---|---|---|---|---|
 | attack_dog | War Hound | attack dog: bites infantry, M11 weapon | Attack Dog | работает: укус убивает любого пехотинца, технику не трогает (этап 3а) |
-| tesla_trooper | Shock Infantry | electric infantry | Shock Trooper | работает: электроразряд, дальность 3 (этап 3а) |
+| tesla_trooper | Shock Infantry | electric infantry | Tesla Trooper | работает: электроразряд, дальность 3 (этап 3а) |
 | crazy_ivan | Bomb Specialist | plants bombs | Crazy Ivan | работает: вешает бомбу, через 30 с взрыв 400 по площади; гибель носителя взрывает сразу (этап 3б) |
 | terrorist | Demolition Trooper | blows up with its target | Terrorist | работает: сам целей не ищет; по приказу подбегает и взрывается, взрывается и убитым (этап 3б) |
 | desolator | Toxin Trooper | poisons the ground | Desolator | работает: ядовитый луч против пехоты, здания не трогает (этап 3а); развёрнутый (D) заражает землю ядом, яд ранит всех на земле, кроме него (этап 3б) |
@@ -109,7 +106,6 @@
 | alliance_harrier | Strike Jet | strikes and returns to rearm | Harrier | работает: по приказу залп 2 × 150, затем летит к командованию ВВС и перезаряжается 18 с (этап 3е); не больше 4 штурмовиков на командование |
 | alliance_black_eagle | Heavy Strike Jet | heavier strike jet | Black Eagle | работает: по приказу залп 2 × 200, затем перезарядка у командования ВВС (этап 3е) |
 | alliance_amphibious_transport | Landing Craft | carries units over water | Amphibious Transport | работает: 12 слотов, по воде и суше; высадка — D (этап 3г) |
-| alliance_robot_tank | Robot Tank | works only with the hub | Robot Tank | работает: пушка; без Drone Control Hub с энергией стоит и не стреляет; числа свои (этап 3г) |
 | alliance_hornet | Hornet | the carrier's jet | Hornet | работает: не строится, его выпускает авианосец; один залп и обратно на палубу |
 | alliance_dolphin | Sonar Dolphin | sonic attack | Dolphin | работает: под водой, сенсор 4 клетки; звуковая волна по кораблям и подводным (этап 3д); освобождает свой корабль от кальмара |
 | alliance_destroyer | Destroyer | guns and anti-sub | Destroyer | работает: пушка по воде и берегу, глубинные бомбы под воду, сенсор 8 клеток (этап 3д) |

@@ -317,16 +317,6 @@ public static class BuildingLooks
             Dish(1.2f, 0, 1.2f, 0, 50f),
             Box(0.4f, 0.3f, 0.4f, 0.6f, 0.3f, 0.6f, LookTint.Roof),
         ],
-        ["alliance_robot_control_center"] =
-        [
-            Box(1.8f, 0.35f, 1.8f, 0, 0, 0, LookTint.Body),
-            Box(1.2f, 0.45f, 1.2f, 0, 0.35f, 0, LookTint.Roof),
-            Pyramid(1.1f, 0.55f, 0, 0.8f, 0, LookTint.Glass),
-            Cyl(0.05f, 0.75f, -0.72f, 0.35f, -0.72f, LookTint.Metal),
-            Cyl(0.05f, 0.75f, 0.72f, 0.35f, -0.72f, LookTint.Metal),
-            Ball(0.13f, -0.72f, 1.12f, -0.72f, LookTint.Red),
-            Ball(0.13f, 0.72f, 1.12f, -0.72f, LookTint.Red),
-        ],
         ["alliance_chronosphere"] =
         [
             Box(3.8f, 0.3f, 2.8f, 0, 0, 0, LookTint.Body),
@@ -626,29 +616,6 @@ public static class BuildingLooks
             Box(0.3f, 0.45f, 0.05f, 0, 0, 0.6f, LookTint.Dark),
         ],
 
-
-        // The last tech buildings of M11 a5 (docs/map_elements/12_tech_buildings/appearance.md): a tall hangar with sliding doors and a
-        // crane over the roof; cooling towers, pipes and lights on the roof. The owner's band shows who took it.
-        ["tech_machine_shop"] =
-        [
-            Box(2.6f, 1.3f, 2.2f, 0, 0, -0.2f, LookTint.Concrete),
-            Box(2.7f, 0.12f, 2.3f, 0, 1.3f, -0.2f, LookTint.Roof),
-            Box(1.4f, 1.0f, 0.05f, 0, 0, 0.92f, LookTint.Dark),
-            Box(2.6f, 0.1f, 0.05f, 0, 1.12f, 0.92f, LookTint.Owner),
-            Box(0.15f, 1.0f, 0.15f, 1.1f, 1.42f, -1.1f, LookTint.Accent),
-            Box(1.6f, 0.12f, 0.15f, 0.35f, 2.35f, -1.1f, LookTint.Accent),
-            Box(0.5f, 0.25f, 0.4f, -0.95f, 0, 1.15f, LookTint.Metal),
-        ],
-        ["tech_power_plant"] =
-        [
-            Box(2.6f, 0.4f, 2.6f, 0, 0, 0, LookTint.Concrete),
-            Cyl(1.0f, 1.8f, -0.6f, 0.4f, -0.6f, LookTint.Concrete, 0.75f),
-            Cyl(1.0f, 1.8f, 0.6f, 0.4f, -0.6f, LookTint.Concrete, 0.75f),
-            Box(1.6f, 0.6f, 0.9f, 0, 0.4f, 0.75f, LookTint.Body),
-            Box(1.7f, 0.08f, 0.95f, 0, 1.0f, 0.75f, LookTint.Owner),
-            Cyl(0.2f, 0.9f, 0.6f, 1.0f, 0.75f, LookTint.Metal),
-            Ball(0.18f, -0.5f, 1.15f, 0.75f, LookTint.Glow),
-        ],
         // The Soviets.
         ["construction_yard"] =
         [
@@ -782,22 +749,6 @@ public static class BuildingLooks
             Box(0.8f, 0.08f, 1.5f, -0.42f, 0.5f, 0.1f, LookTint.Trim),
             Box(0.8f, 0.08f, 1.5f, 0.42f, 0.5f, 0.1f, LookTint.Trim),
             Box(0.7f, 0.5f, 0.6f, -1.0f, 0.3f, -1.0f, LookTint.Roof),
-        ],
-        ["industrial_plant"] =
-        [
-            Box(2.8f, 0.35f, 2.8f, 0, 0, 0, LookTint.Body),
-            Box(2.0f, 0.8f, 1.6f, -0.2f, 0.35f, -0.4f, LookTint.Roof),
-            Cyl(0.3f, 1.1f, -0.85f, 1.15f, -0.9f, LookTint.Metal),
-            Cyl(0.3f, 1.1f, -0.25f, 1.15f, -0.9f, LookTint.Metal),
-            Cyl(0.3f, 1.1f, 0.35f, 1.15f, -0.9f, LookTint.Metal),
-            Tube(0.9f, 0.18f, 0.95f, 0.85f, 0.6f, LookTint.Accent, 90f),
-        ],
-        ["battle_bunker"] =
-        [
-            Box(1.8f, 0.45f, 1.8f, 0, 0, 0, LookTint.Concrete),
-            Box(1.4f, 0.15f, 1.4f, 0, 0.45f, 0, LookTint.Body),
-            Box(1.2f, 0.08f, 0.05f, 0, 0.26f, 0.91f, LookTint.Dark),
-            Box(0.05f, 0.08f, 1.2f, 0.91f, 0.26f, 0, LookTint.Dark),
         ],
     };
 }

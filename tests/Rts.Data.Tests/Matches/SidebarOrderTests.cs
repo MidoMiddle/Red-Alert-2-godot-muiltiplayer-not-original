@@ -53,7 +53,7 @@ public sealed class SidebarOrderTests
         Assert.Equal(
             ["alliance_power_plant", "alliance_ore_refinery", "alliance_barracks", "alliance_war_factory", "alliance_air_force_command",
              "alliance_naval_shipyard", "alliance_service_depot", "alliance_battle_lab", "alliance_ore_purifier", "alliance_spy_satellite_uplink",
-             "alliance_robot_control_center", "alliance_chronosphere", "alliance_weather_control_device"],
+             "alliance_chronosphere", "alliance_weather_control_device"],
             Tab(world, Allied, BuildGroup.Buildings));
         Assert.Equal(
             ["alliance_wall", "alliance_pillbox", "alliance_patriot_missile_system", "alliance_prism_tower", "alliance_gap_generator", "alliance_grand_cannon"],
@@ -64,7 +64,7 @@ public sealed class SidebarOrderTests
             Tab(world, Allied, BuildGroup.Infantry));
         Assert.Equal(
             ["alliance_harvester", "alliance_light_tank", "alliance_ifv", "alliance_tank_destroyer", "alliance_mirage_tank", "alliance_prism_tank",
-             "alliance_robot_tank", "alliance_mcv", "alliance_harrier", "alliance_black_eagle", "alliance_nighthawk", "alliance_amphibious_transport",
+             "alliance_mcv", "alliance_harrier", "alliance_black_eagle", "alliance_nighthawk", "alliance_amphibious_transport",
              "alliance_destroyer", "alliance_aegis_cruiser", "alliance_dolphin", "alliance_aircraft_carrier"],
             Tab(world, Allied, BuildGroup.Vehicles));
     }
@@ -75,9 +75,9 @@ public sealed class SidebarOrderTests
         var world = World();
         Assert.Equal(
             ["reactor", "refinery", "barracks", "war_factory", "radar", "naval_shipyard", "service_depot", "tech_center", "nuclear_reactor",
-             "industrial_plant", "iron_curtain", "nuclear_missile_silo"],
+             "iron_curtain", "nuclear_missile_silo"],
             Tab(world, Union, BuildGroup.Buildings));
-        Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil", "battle_bunker"], Tab(world, Union, BuildGroup.Defense));
+        Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil"], Tab(world, Union, BuildGroup.Defense));
         Assert.Equal(
             ["attack_dog", "conscript", "engineer", "rocketeer", "tesla_trooper", "crazy_ivan", "terrorist", "desolator"],
             Tab(world, Union, BuildGroup.Infantry));

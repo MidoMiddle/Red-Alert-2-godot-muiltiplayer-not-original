@@ -22,14 +22,14 @@ internal static class DefinitionReader
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "disguise_when_still",
-        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "robotic", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
+        "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
     ];
 
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
-        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "vehicle_discount", "income_bonus", "death_weapon",
-        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "controls_robots", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
+        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "death_weapon",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
         "countries", "forbidden_countries", "superweapon_countries", "paradrop", "paradrop_count",
     ];
 
@@ -135,7 +135,6 @@ internal static class DefinitionReader
             Size = fields.Optional("size", Scalars.Int, 0),
             PassengerWeapon = fields.Optional("passenger_weapon", Scalars.Flag, false),
             IfvWeapon = fields.Optional("ifv_weapon", Scalars.Id, ""),
-            Robotic = fields.Optional("robotic", Scalars.Flag, false),
             Submerged = fields.Optional("submerged", Scalars.Flag, false),
             Sensors = fields.Optional("sensors", Scalars.Int, 0),
             Ammo = fields.Optional("ammo", Scalars.Int, 0),
@@ -190,7 +189,6 @@ internal static class DefinitionReader
             AbilityLater = fields.Optional("ability_later", Scalars.Flag, false),
             Water = fields.Optional("water", Scalars.Flag, false),
             RepairsVehicles = fields.Optional("repairs_vehicles", Scalars.Flag, false),
-            VehicleDiscountPercent = WholePercent(fields.Optional("vehicle_discount", Scalars.Percent, Fixed.Zero)),
             IncomeBonusPercent = WholePercent(fields.Optional("income_bonus", Scalars.Percent, Fixed.Zero)),
             DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
             RevealsMap = fields.Optional("reveals_map", Scalars.Flag, false),
@@ -200,7 +198,6 @@ internal static class DefinitionReader
             ChainMax = fields.Optional("chain_max", Scalars.Int, 0),
             Capturable = fields.Optional("capturable", Scalars.Flag, true),
             SpyEffect = fields.Optional("spy_effect", SpyEffectOf, SpyEffect.None),
-            ControlsRobots = fields.Optional("controls_robots", Scalars.Flag, false),
             RearmsAircraft = fields.Optional("rearms_aircraft", Scalars.Flag, false),
             AircraftDocks = fields.Optional("aircraft_docks", Scalars.Int, 0),
             Superweapon = fields.Optional("superweapon", SuperweaponOf, SuperweaponKind.None),

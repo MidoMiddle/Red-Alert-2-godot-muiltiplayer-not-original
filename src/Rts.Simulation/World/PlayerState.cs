@@ -58,12 +58,6 @@ public sealed class PlayerState
     /// <summary>A spy went into its enemy's war factory: the player's vehicles come out veteran. State: hashed.</summary>
     public bool VeteranVehicles { get; internal set; }
 
-    /// <summary>
-    /// Whether the player's robots work: it has a ready, online building that controls robots (stage 3d). Derived from the buildings and
-    /// the power by <see cref="Systems.PowerSystem"/>, not hashed.
-    /// </summary>
-    public bool RobotsOnline { get; internal set; }
-
     /// <summary>The bonuses of the player (M8 step 2): those of the level of its bot, set as the match starts. Hashed.</summary>
     public PlayerModifiers Modifiers { get; internal set; }
 
@@ -84,9 +78,6 @@ public sealed class PlayerState
 
     /// <summary>The player drains more than it produces (4.11).</summary>
     public bool LowPower { get; internal set; }
-
-    /// <summary>How many percent less vehicles, ships and aircraft cost: the best of the player's ready buildings (stage 2c).</summary>
-    public int VehicleDiscountPercent { get; internal set; }
 
     /// <summary>How many percent more the ore brings: the best of the player's ready buildings (stage 2c), on top of its level's bonus.</summary>
     public int BuildingIncomeBonusPercent { get; internal set; }

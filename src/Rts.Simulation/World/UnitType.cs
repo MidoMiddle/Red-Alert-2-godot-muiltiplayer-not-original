@@ -57,8 +57,7 @@ public enum UnitType : byte
     AllianceAegisCruiser = 45,
     AllianceAircraftCarrier = 46,
 
-    // Stage 3d of filling the game: the robot of the drone control hub.
-    AllianceRobotTank = 47,
+    // 47 was the robot tank of Yuri's Revenge (stage 3d), taken out on 2026-10-25 to keep to RA2: never reuse the number.
 
     // The aircraft carrier's jet, launched and never built.
     AllianceHornet = 48,

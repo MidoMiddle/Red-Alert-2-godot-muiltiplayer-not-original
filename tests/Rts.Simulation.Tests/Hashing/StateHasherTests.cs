@@ -348,10 +348,10 @@ public sealed class StateHasherTests
         // Fixed by the order of the players and the rules of the match.
         "<Id>k__BackingField", "<Faction>k__BackingField", "<Country>k__BackingField",
         // Derived from the buildings by PowerSystem and TechTree (M3 step 5).
-        "<BuildingList>k__BackingField", "<PowerOutput>k__BackingField", "<PowerDrain>k__BackingField", "<LowPower>k__BackingField", "<RobotsOnline>k__BackingField",
+        "<BuildingList>k__BackingField", "<PowerOutput>k__BackingField", "<PowerDrain>k__BackingField", "<LowPower>k__BackingField",
         "_units", "_buildings",
-        // Derived from the ready buildings by TechTree (stage 2c): the discount on vehicles and the bonus of the ore.
-        "<VehicleDiscountPercent>k__BackingField", "<BuildingIncomeBonusPercent>k__BackingField",
+        // Derived from the ready buildings by TechTree (stage 2c): the bonus of the ore.
+        "<BuildingIncomeBonusPercent>k__BackingField",
     })]
     [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_vehicle", "_infantry", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]

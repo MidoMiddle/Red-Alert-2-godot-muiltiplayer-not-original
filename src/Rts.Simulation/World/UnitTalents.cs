@@ -33,8 +33,7 @@ public enum UnitTalents
     /// <summary>Fires its passenger's weapon (<see cref="Rules.UnitDef.PassengerWeapon"/>: the IFV).</summary>
     PassengerWeapon = 256,
 
-    /// <summary>Works only with a robot control of its owner's (<see cref="Rules.UnitDef.Robotic"/>).</summary>
-    Robotic = 512,
+    // 512 was the robot of Yuri's Revenge, taken out on 2026-10-25.
 
     /// <summary>Keeps under the water (<see cref="Rules.UnitDef.Submerged"/>).</summary>
     Submerged = 1024,

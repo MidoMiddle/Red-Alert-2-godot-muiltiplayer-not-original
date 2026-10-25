@@ -312,7 +312,7 @@ public sealed class AiMemory
     /// <summary>The cost of every unit type, by its value.</summary>
     private static int[] Costs(AiWorldView view)
     {
-        var costs = new int[UnitTypes.All.Count + 1];
+        var costs = new int[UnitTypes.Highest + 1];
         foreach (var type in UnitTypes.All)
         {
             costs[(int)type] = view.Rules.Database.TryGetUnit(UnitTypes.IdOf(type), out var unit) ? unit.Cost : 0;

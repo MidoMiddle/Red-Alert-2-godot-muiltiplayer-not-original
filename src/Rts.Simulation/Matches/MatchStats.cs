@@ -175,7 +175,7 @@ public sealed class MatchStats
     /// <summary>The cost of every unit type, by its value.</summary>
     private static int[] Costs(GameWorld world)
     {
-        var costs = new int[UnitTypes.All.Count + 1];
+        var costs = new int[UnitTypes.Highest + 1];
         foreach (var type in UnitTypes.All)
         {
             costs[(int)type] = world.Rules.Database.TryGetUnit(UnitTypes.IdOf(type), out var unit) ? unit.Cost : 0;

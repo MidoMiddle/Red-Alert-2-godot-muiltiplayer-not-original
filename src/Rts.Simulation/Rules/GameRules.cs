@@ -23,6 +23,9 @@ public readonly record struct RulesProblem(string Id, string Key, string Reason)
 public sealed class GameRules
 {
     private readonly UnitArchetype[] _units;
+
+    // The archetypes of the known types, without the numbers that were taken out.
+    private readonly UnitArchetype[] _known;
     private readonly bool[] _buildable;
     private readonly Fixed[] _verses;
     private readonly int[] _buildingArmor;
@@ -39,13 +42,14 @@ public sealed class GameRules
         _buildingWeapon = buildingWeapon;
         Database = database;
         _units = units;
+        _known = System.Array.FindAll(units, unit => unit is not null);
         Land = land;
         _buildable = buildable;
         _verses = verses;
         _buildingArmor = buildingArmor;
 
         // The weapons of every unit type and building, laid out once (M4 step 15), so a tick builds no arrays for them.
-        _unitWeapons = System.Array.ConvertAll(units, unit => ImmutableArray.Create(unit.Primary, unit.Secondary));
+        _unitWeapons = System.Array.ConvertAll(units, unit => unit is null ? ImmutableArray<int>.Empty : ImmutableArray.Create(unit.Primary, unit.Secondary));
         _single = new ImmutableArray<int>[database.Weapons.Length];
         for (var weapon = 0; weapon < _single.Length; weapon++)
         {
@@ -61,7 +65,7 @@ public sealed class GameRules
     public LandSpeeds Land { get; }
 
     /// <summary>The unit types, in <see cref="UnitType"/> order.</summary>
-    public IReadOnlyList<UnitArchetype> Units => _units;
+    public IReadOnlyList<UnitArchetype> Units => _known;
 
     /// <summary>
     /// The faction a player plays unless the skirmish setup chooses one: the one the data marks <c>default</c>, else the first in id
@@ -152,7 +156,7 @@ public sealed class GameRules
             throw new ArgumentException($"The data cannot be played: {string.Join("; ", reasons)}.", nameof(database));
         }
 
-        var units = new UnitArchetype[UnitTypes.All.Count];
+        var units = new UnitArchetype[UnitTypes.Highest];
         foreach (var type in UnitTypes.All)
         {
             database.TryGetUnit(UnitTypes.IdOf(type), out var unit);
@@ -361,7 +365,7 @@ public sealed class GameRules
         | (unit.Disguised ? UnitTalents.Disguised : 0) | (unit.DetectsDisguise ? UnitTalents.DetectsDisguise : 0)
         | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0)
         | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0)
-        | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0) | (unit.Robotic ? UnitTalents.Robotic : 0)
+        | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0)
         | (unit.Submerged ? UnitTalents.Submerged : 0) | (unit.Spawned ? UnitTalents.Spawned : 0)
         | (unit.Trainable ? 0 : UnitTalents.Untrainable);
 

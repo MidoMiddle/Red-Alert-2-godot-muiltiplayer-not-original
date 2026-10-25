@@ -443,7 +443,6 @@ public sealed class RulesValidatorTests
     [InlineData(Buildings, "exit_cell: [1, 3]", "exit_cell: [1, 6]", "the exit cell [1, 6] of 'war_factory' must be in its footprint or next to it")]
     [InlineData(Locomotors, "slope: 65%", "slope: 120%", "'slope' of 'wheel' must be 0% to 100%")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  adjacent: 11\n", "'adjacent' of 'reactor' must be 0 to 10 cells")]
-    [InlineData(Buildings, "  power: 150\n", "  power: 150\n  vehicle_discount: 95%\n", "'vehicle_discount' of 'reactor' must be 0% to 90%")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  income_bonus: 150%\n", "'income_bonus' of 'reactor' must be 0% to 100%")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  veil_radius: 21\n", "'veil_radius' of 'reactor' must be 0 to 20 cells")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  veil_radius: -1\n", "'veil_radius' of 'reactor' must be 0 to 20 cells")]

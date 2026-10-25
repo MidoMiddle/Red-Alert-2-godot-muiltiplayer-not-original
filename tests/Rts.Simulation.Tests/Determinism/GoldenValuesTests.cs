@@ -353,6 +353,8 @@ public sealed class GoldenValuesTests
         // Replay format v28 (M6 step 8: Unit Count in the match setup, which this scenario has not): the version only.
         // Rules v73 (M11 a5: the machine shop and the power plant): the version only.
         // Replay format v29, rules v74 (M11 a6: the crates; this scenario has no match, so no option byte): the versions only.
-        Assert.Equal((22270, 11563049241394174071UL), (bytes.Length, hash.Value));
+        // Rules v75 (the content of Yuri's Revenge taken out: the robot tank, its control centre, the industrial plant, the battle bunker,
+        // the machine shop and the power plant): the version only.
+        Assert.Equal((22270, 2368509261015726454UL), (bytes.Length, hash.Value));
     }
 }
