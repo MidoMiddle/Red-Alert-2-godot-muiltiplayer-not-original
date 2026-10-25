@@ -110,11 +110,36 @@ public sealed class DesyncTests
             var replay = Rts.Simulation.Replays.ReplayFormat.Read(File.ReadAllBytes(Path.Combine(folder, "p1.rtsreplay")));
             Assert.Equal(expected + ChecksumExchange.StopAfterTicks, replay.TickCount);
             Assert.Equal(match[0].Simulation.ExecutedCommands.Count, replay.Commands.Count);
+
+            // Step 6: the replay computed again tells whose computer went wrong — the second's, at the spoilt hit points.
+            var verdicts = DesyncReplay.Check(replay, Rts.Simulation.Tests.TestRules.Standard,
+                [("p1", File.ReadAllText(Path.Combine(folder, "p1_state.txt"))), ("p2", File.ReadAllText(Path.Combine(folder, "p2_state.txt")))]);
+            Assert.True(verdicts[0].Agrees, verdicts[0].ToString());
+            Assert.False(verdicts[1].Agrees);
+            Assert.Contains(verdicts[1].Differences, difference => difference.Path == $"entity[{unit.Id.Value}].Hp");
+            Assert.All(verdicts[1].Differences, difference => Assert.Equal($"entity[{unit.Id.Value}]", difference.Owner));
         }
         finally
         {
             Directory.Delete(folder, recursive: true);
         }
+    }
+
+    [Fact]
+    public void Two_dumps_compare_field_by_field_and_name_the_owner_of_each_difference()
+    {
+        var first = "tick = 30\nworld.Random = 5\nplayer[1].Credits = 1000\nentity[12].Hp = 300\nentity[12].Position = (1, 2)\nmap.land[3] = 0011\n";
+        var second = "tick = 30\nworld.Random = 5\nplayer[1].Credits = 900\nentity[12].Hp = 299\nentity[12].Position = (1, 2)\nmap.land[3] = 0011\nentity[13].Hp = 5\n";
+
+        var differences = DumpDiff.Compare(first, second);
+        Assert.Equal(["player[1].Credits", "entity[12].Hp", "entity[13].Hp"], differences.Select(difference => difference.Path));
+        Assert.Equal(("player[1]", "Credits", "1000", "900"), (differences[0].Owner, differences[0].Field, differences[0].First, differences[0].Second));
+        Assert.Equal(("entity[13]", null, "5"), (differences[2].Owner, differences[2].First, differences[2].Second));
+        Assert.Equal("map", new DumpDifference("map.land[3]", "0", "1").Owner);
+        Assert.Equal(30, DumpDiff.TickOf(first));
+        Assert.Empty(DumpDiff.Compare(first, first));
+        Assert.Contains("3 fields differ; the first is player[1].Credits: 1000 ≠ 900", DumpDiff.Report(differences));
+        Assert.Contains("entity[12] (1)", DumpDiff.Report(differences));
     }
 
     [Fact]

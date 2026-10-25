@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Console tool to find a desync (docs/implementation/M9_network.md, 4.10, step 6): compares two state dumps, or computes a replay
+       again and tells which of the dumps went wrong. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer runtime when only .NET 10 is installed. -->
+    <RollForward>Major</RollForward>
+    <RootNamespace>Rts.DesyncDiff</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Rts.Data/Rts.Data.csproj" />
+    <ProjectReference Include="../../src/Rts.Net/Rts.Net.csproj" />
+  </ItemGroup>
+
+</Project>
