@@ -22,6 +22,23 @@ public partial class MatchResults : CanvasLayer
 
     private SimulationHost? _host;
     private Control _overlay = null!;
+
+    /// <summary>The theme of the match (the side's colours) for the results.</summary>
+    public Theme? Theme
+    {
+        get => _theme;
+        set
+        {
+            _theme = value;
+            if (_overlay is not null)
+            {
+                _overlay.Theme = value;
+            }
+        }
+    }
+
+    // Given before or after the overlay is built: whichever comes second applies it.
+    private Theme? _theme;
     private Label _title = null!;
     private Label _duration = null!;
     private GridContainer _table = null!;
@@ -52,7 +69,7 @@ public partial class MatchResults : CanvasLayer
         ProcessMode = ProcessModeEnum.Always;
         Layer = 11;
 
-        _overlay = new Control { Visible = false, MouseFilter = Control.MouseFilterEnum.Stop };
+        _overlay = new Control { Visible = false, MouseFilter = Control.MouseFilterEnum.Stop, Theme = _theme };
         _overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         AddChild(_overlay);
         var dimmer = new ColorRect { Color = new Color(0, 0, 0, 0.7f), MouseFilter = Control.MouseFilterEnum.Ignore };

@@ -26,7 +26,7 @@ public partial class PauseMenu : CanvasLayer
         Stats,
     }
 
-    private Control _overlay = null!;
+    private Control? _overlay;
     private FactionEmblem _field = null!;
     private FactionEmblem _logo = null!;
     private Control _menuButtons = null!;
@@ -41,6 +41,32 @@ public partial class PauseMenu : CanvasLayer
     private SimulationHost? _host;
     private bool _open;
     private Screen _screen;
+
+    /// <summary>The theme of the match (the side's colours): the screen and its dialogs take it.</summary>
+    public Theme? Theme
+    {
+        get => _theme;
+        set
+        {
+            _theme = value;
+            ApplyTheme();
+        }
+    }
+
+    private Theme? _theme;
+
+    // Given before or after the screen is built: whichever comes second applies it.
+    private void ApplyTheme()
+    {
+        if (_overlay is null)
+        {
+            return;
+        }
+
+        _overlay.Theme = _theme;
+        _leaveDialog.Theme = _theme;
+        _surrenderDialog.Theme = _theme;
+    }
 
     /// <summary>Whether the screen is up, the menu or the statistics.</summary>
     public bool IsOpen => _open;
@@ -64,7 +90,7 @@ public partial class PauseMenu : CanvasLayer
         _field.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         _field.OffsetRight = -SidebarLayout.Width;
         _field.OffsetBottom = -CommandBarLayout.Height;
-        _overlay.AddChild(_field);
+        _overlay!.AddChild(_field);
         _stats = new VBoxContainer { Name = "Stats", Alignment = BoxContainer.AlignmentMode.Center };
         _stats.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         _stats.AddThemeConstantOverride("separation", 48);
@@ -92,7 +118,7 @@ public partial class PauseMenu : CanvasLayer
         side.SetAnchorsPreset(Control.LayoutPreset.RightWide);
         side.OffsetLeft = -SidebarLayout.Width;
         side.OffsetRight = 0;
-        _overlay.AddChild(side);
+        _overlay!.AddChild(side);
         var column = new VBoxContainer();
         column.AddThemeConstantOverride("separation", 10);
         side.AddChild(column);
@@ -136,6 +162,7 @@ public partial class PauseMenu : CanvasLayer
         _surrenderDialog.Confirmed += Surrender;
         AddChild(_surrenderDialog);
         _surrender.Pressed += () => _surrenderDialog.PopupCentered();
+        ApplyTheme();
     }
 
     /// <summary>The match the screen shows and gives up: without one there is nothing to surrender.</summary>
@@ -202,7 +229,7 @@ public partial class PauseMenu : CanvasLayer
         if (!_open)
         {
             _open = true;
-            _overlay.Show();
+            _overlay!.Show();
             GetTree().Paused = true;
         }
 
@@ -212,12 +239,14 @@ public partial class PauseMenu : CanvasLayer
     private void Close()
     {
         _open = false;
-        _overlay.Hide();
+        _overlay!.Hide();
         GetTree().Paused = false;
     }
 
     private Faction MatchFaction() =>
-        _host?.Simulation.World.Match?.PlayerOf(SimulationHost.LocalPlayer) is { } local ? FactionPalette.Of(local.Faction) : Faction.Union;
+        _host?.Simulation.World.Match?.PlayerOf(SimulationHost.LocalPlayer) is { } local ? FactionPalette.Of(local.Faction)
+        : _host is not null ? FactionPalette.Of(_host.Simulation.World.Player(SimulationHost.LocalPlayer).Faction.Id)
+        : Faction.Union;
 
     /// <summary>The players of the match — flag, name, ally of yours, kills — and the map and the options under them.</summary>
     private void FillStats()

@@ -46,7 +46,24 @@ public partial class MatchHud : CanvasLayer
         {
             PlayerFaction = FactionPalette.Of(local.Faction);
         }
+        else
+        {
+            // A session without a match setup (the sandbox): the faction of the player in the world.
+            PlayerFaction = FactionPalette.Of(host.Simulation.World.Player(SimulationHost.LocalPlayer).Faction.Id);
+        }
 
+        // The screens of the match in the colours of the side taken: blue for the Alliance, red for the Union (RA2).
+        var theme = FactionTheme.Of(PlayerFaction);
+        foreach (var child in GetChildren())
+        {
+            if (child is Control control)
+            {
+                control.Theme = theme;
+            }
+        }
+
+        pause.Theme = theme;
+        results.Theme = theme;
         sidebar.Setup(PlayerFaction, host.Simulation.World.Player(SimulationHost.LocalPlayer).Credits);
         sidebar.Bind(host, player);
         var notices = new Notifications { Name = "Notifications" };

@@ -42,7 +42,17 @@ public partial class UnitGallery : Node3D
             layer.AddChild(row);
             foreach (var faction in new[] { Faction.Alliance, Faction.Union })
             {
-                row.AddChild(new FactionEmblem { Faction = faction, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill });
+                // Each emblem with a panel of buttons in the theme of its side (FactionTheme).
+                var emblem = new FactionEmblem { Faction = faction, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill };
+                row.AddChild(emblem);
+                var panel = new PanelContainer { Theme = FactionTheme.Of(faction), Position = new Vector2(330, 760), Size = new Vector2(300, 0) };
+                emblem.AddChild(panel);
+                var buttons = new VBoxContainer();
+                panel.AddChild(buttons);
+                foreach (var key in new[] { "UI_MATCH_FULLSCREEN", "UI_MATCH_ABORT", "UI_MATCH_RESUME" })
+                {
+                    buttons.AddChild(new Button { Text = Tr(key) });
+                }
             }
 
             ScreenshotCapture.AttachIfRequested(this);
