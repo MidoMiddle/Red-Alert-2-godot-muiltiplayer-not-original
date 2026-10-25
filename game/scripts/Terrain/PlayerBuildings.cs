@@ -231,10 +231,10 @@ public partial class PlayerBuildings : Node3D
 
         // Damage (M4 step 13): dark smoke rises off the roof, flames lick under it once it is critical.
         var top = new Vector3(0, Sink + shape.Height + 0.1f, 0);
-        var smoke = Plume(building.Width, building.Height, new Color(0.25f, 0.25f, 0.25f), 0.12f, 1.6, 0.6f);
+        var smoke = BuildingBlaze.Plume(building.Width, building.Height, new Color(0.25f, 0.25f, 0.25f), 0.12f, 1.6, 0.6f);
         smoke.Position = top;
         root.AddChild(smoke);
-        var fire = Plume(building.Width, building.Height, new Color(1f, 0.45f, 0.1f), 0.09f, 0.6, 0.9f);
+        var fire = BuildingBlaze.Plume(building.Width, building.Height, new Color(1f, 0.45f, 0.1f), 0.09f, 0.6, 0.9f);
         fire.Position = top;
         root.AddChild(fire);
         return new View(building, root, body, dust, repair, unpowered, smoke, fire, Sink / full);
@@ -257,26 +257,6 @@ public partial class PlayerBuildings : Node3D
             ScaleAmountMin = 0.6f,
             ScaleAmountMax = 1.2f,
             Mesh = new BoxMesh { Size = new Vector3(0.2f, 0.2f, 0.2f), Material = Material(new Color(0.78f, 0.75f, 0.7f)) },
-        };
-
-    /// <summary>Particles that rise off a footprint: smoke or fire.</summary>
-    private static CpuParticles3D Plume(int width, int height, Color color, float size, double lifetime, float speed) =>
-        new()
-        {
-            Emitting = false,
-            Amount = 16,
-            Lifetime = lifetime,
-            LocalCoords = false,
-            EmissionShape = CpuParticles3D.EmissionShapeEnum.Box,
-            EmissionBoxExtents = new Vector3(width / 4f, 0.05f, height / 4f),
-            Direction = Vector3.Up,
-            Spread = 15f,
-            InitialVelocityMin = speed * 0.7f,
-            InitialVelocityMax = speed,
-            Gravity = Vector3.Zero,
-            ScaleAmountMin = 0.8f,
-            ScaleAmountMax = 1.6f,
-            Mesh = new SphereMesh { Radius = size, Height = size * 2, Material = Material(color) },
         };
 
     private static void Box(Node3D parent, Vector3 size, Vector3 position, Color color) =>

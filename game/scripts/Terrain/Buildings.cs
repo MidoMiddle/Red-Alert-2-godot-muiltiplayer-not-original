@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using Godot;
+using Rts.Simulation.Combat;
+using Rts.Simulation.Events;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Terrain;
@@ -8,8 +11,9 @@ namespace Rts.Client.Terrain;
 /// civilian houses and grey-teal for tech buildings, with a mark of their own — a tower on the oil derrick, a white cross on
 /// the hospital, a pale runway on the airfield, an orange roof on the bridge repair hut — and a band in the owner's colour on a building of a player. The buildings
 /// players place are drawn by <see cref="PlayerBuildings"/> (M3 step 13), one view each. The footprint sinks a little into the
-/// ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a building is placed or falls) or a tech building
-/// changes hands (loose ends, stage 1), which is rare.
+/// ground so a block on uneven ground leaves no gap. Rebuilt whenever the map changes (a building is placed or falls), a building
+/// changes hands (a tech one taken by loose ends, stage 1; a civilian one with soldiers) or its state (hurt, or with soldiers inside),
+/// which is rare.
 /// </summary>
 public partial class Buildings : Node3D
 {
@@ -22,6 +26,25 @@ public partial class Buildings : Node3D
     private object? _builtMap;
     private int _builtVersion = -1;
     private long _builtOwners = -1;
+    private SimulationHost? _host;
+    private readonly List<Ruin> _ruins = [];
+
+    public override void _Ready()
+    {
+        _host = GetNodeOrNull<SimulationHost>("../../SimulationHost");
+        if (_host is not null)
+        {
+            _host.EventRaised += OnEvent;
+        }
+    }
+
+    public override void _ExitTree()
+    {
+        if (_host is not null)
+        {
+            _host.EventRaised -= OnEvent;
+        }
+    }
 
     public override void _Process(double delta)
     {
@@ -36,7 +59,7 @@ public partial class Buildings : Node3D
         }
     }
 
-    // A digest of who owns the buildings of the map, to see one taken.
+    // A digest of the buildings of the map — who owns them, how hurt they are, who is inside — to see one change.
     private static long Owners(GameWorld? world)
     {
         // The editor has no world. (An empty EntityList made by [] holds no list: enumerating it threw every frame.)
@@ -50,8 +73,9 @@ public partial class Buildings : Node3D
         {
             if (entity is Building { IsAlive: true, Def: null } building)
             {
-                // Who owns it, and whether it is being repaired (its green cross).
-                digest = (digest * 31) + (building.Id.Value * 17) + building.Owner.Value + (building.Repairing ? 7 : 0);
+                // Who owns it, whether it is being repaired (its green cross), how hurt it is and who is inside (its look).
+                digest = (digest * 31) + (building.Id.Value * 17) + building.Owner.Value + (building.Repairing ? 7 : 0)
+                    + ((int)DamageStates.Of(building.Hp, building.MaxHp) * 101) + (building.Occupants.Count * 1009);
             }
         }
 
@@ -81,12 +105,28 @@ public partial class Buildings : Node3D
         {
             if (entity is Building { IsAlive: true, Def: null } building)
             {
-                Add(building.Kind, building.Cell, building.Owner, building.Repairing);
+                Add(building.Kind, building.Cell, building.Owner, building.Repairing,
+                    DamageStates.Of(building.Hp, building.MaxHp), building.Occupants.Count > 0);
             }
+        }
+
+        // The ruins of the fallen stay on their footprints; a building put on them, or a new map, takes them away.
+        for (var i = _ruins.Count - 1; i >= 0; i--)
+        {
+            if (!ReferenceEquals(_ruins[i].World, world) || Covered(world, _ruins[i]))
+            {
+                _ruins.RemoveAt(i);
+            }
+        }
+
+        foreach (var ruin in _ruins)
+        {
+            AddRuin(ruin);
         }
     }
 
-    private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner, bool repairing = false)
+    private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner, bool repairing = false,
+        DamageState state = DamageState.Healthy, bool occupied = false)
     {
         var type = BuildingTypes.Get(kind);
         var tech = type.Capturable;
@@ -117,11 +157,22 @@ public partial class Buildings : Node3D
         }
 
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
-        if (Models.ModelLibrary.Instantiate("building/" + type.Id, owner.IsNeutral ? null : OwnerColor(owner), cell: new Vector2I(cell.X, cell.Y)) is { } model)
+        Color? colour = owner.IsNeutral ? null : OwnerColor(owner);
+        var at = new Vector2I(cell.X, cell.Y);
+        // A building hurt, or with soldiers inside, takes the file of that state when the table gives one.
+        var variant = state == DamageState.Critical ? Models.ModelVariant.Damaged
+            : occupied ? Models.ModelVariant.Occupied : Models.ModelVariant.Intact;
+        var model = Models.ModelLibrary.Instantiate("building/" + type.Id, colour, cell: at, variant: variant)
+            ?? (variant == Models.ModelVariant.Intact ? null : Models.ModelLibrary.Instantiate("building/" + type.Id, colour, cell: at));
+        if (model is not null)
         {
             // The model of the table (docs/art/model_standards.md); a taken tech building shows its owner in its team_mask.
             model.Position += centre + new Vector3(0, ground, 0);
             AddChild(model);
+            // The smoke and the fire stand over the height the bars of the building stand over: the table's, else the placeholder's.
+            var modelHeight = Models.ModelLibrary.Find("building/" + type.Id)?.Height ?? 0f;
+            BuildingBlaze.Add(this, model, new Vector3(centre.X, ground + (modelHeight > 0f ? modelHeight : height) + 0.1f, centre.Z),
+                type.Width, type.Height, state);
             return;
         }
 
@@ -165,6 +216,49 @@ public partial class Buildings : Node3D
 
     /// <summary>The colour of a player's band.</summary>
     internal static Color OwnerColor(PlayerId owner) => Matches.PlayerColors.Of(owner);
+
+    // A civilian building that falls leaves its ruins on the footprint, where the table names a model of them.
+    private void OnEvent(SimEvent simEvent)
+    {
+        if (simEvent is BuildingDestroyed destroyed && _host is not null
+            && Models.ModelLibrary.Find("building/" + BuildingTypes.Get(destroyed.Kind).Id)?.Ruins is not null)
+        {
+            _ruins.Add(new Ruin(_host.Simulation.World, destroyed.Kind, destroyed.Cell));
+            _builtOwners = -1;
+        }
+    }
+
+    private void AddRuin(Ruin ruin)
+    {
+        var type = BuildingTypes.Get(ruin.Kind);
+        var centre = new Vector3(ruin.Cell.X + type.Width / 2f, 0, ruin.Cell.Y + type.Height / 2f);
+        var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
+        if (Models.ModelLibrary.Instantiate("building/" + type.Id, variant: Models.ModelVariant.Ruins) is { } model)
+        {
+            model.Position += centre + new Vector3(0, ground, 0);
+            AddChild(model);
+        }
+    }
+
+    // Whether a building stands on any cell of the footprint of the ruins.
+    private static bool Covered(GameWorld world, Ruin ruin)
+    {
+        var type = BuildingTypes.Get(ruin.Kind);
+        for (var y = ruin.Cell.Y; y < ruin.Cell.Y + type.Height; y++)
+        {
+            for (var x = ruin.Cell.X; x < ruin.Cell.X + type.Width; x++)
+            {
+                if (world.Map.HasBuilding(new Rts.Simulation.Geometry.CellPos(x, y)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private sealed record Ruin(GameWorld World, BuildingKind Kind, Rts.Simulation.Geometry.CellPos Cell);
 
     private void Box(Vector3 size, Vector3 position, Color color) =>
         AddChild(new MeshInstance3D
