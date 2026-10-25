@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using Godot;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
@@ -7,12 +9,19 @@ namespace Rts.Client.Orders;
 
 /// <summary>
 /// Route lines of the selected units (docs/implementation/M2_unit_control.md, 4.14): from each unit through the legs of its
-/// route that are left, green for a move and yellow for an attack-move; a patrol closes the line back to its first point.
-/// Waypoints laid out with Z and not sent yet are a dashed line. The lines follow the hills, cut into short pieces.
+/// route that are left, green for a move and yellow for an attack-move; a patrol closes the line back to its first point. Dashed,
+/// and only for <see cref="ShowSeconds"/> after an order changes the route of a selected unit, the last part fading (the owner,
+/// 2026-10-25: «the line must be dashed, not stay visible all the time, gone after a second»). Waypoints laid out with Z and not
+/// sent yet are a white dashed line while they are laid out. The lines follow the hills, cut into short pieces.
 /// </summary>
 public partial class RouteLines : Node3D
 {
     private const float Lift = 0.08f;
+
+    /// <summary>How long the route shows after an order, in seconds; it fades over the last <see cref="FadeSeconds"/>.</summary>
+    public const float ShowSeconds = 1f;
+
+    private const float FadeSeconds = 0.3f;
 
     /// <summary>Length of a piece of line, in leptons: half a cell keeps the line on the hills.</summary>
     private const int PieceLeptons = WorldPos.LeptonsPerCell / 2;
@@ -25,6 +34,11 @@ public partial class RouteLines : Node3D
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
     private bool _drawn;
+
+    // The route of every selected unit as last seen: a new one (a new order) shows the lines again.
+    private readonly Dictionary<EntityId, ImmutableArray<UnitOrder>> _seen = [];
+    private readonly HashSet<EntityId> _selected = [];
+    private float _left;
 
     public override void _Ready()
     {
@@ -53,6 +67,9 @@ public partial class RouteLines : Node3D
         }
 
         var world = _host.Simulation.World;
+        _left = Mathf.Max(0f, _left - (float)delta);
+        Watch(world);
+        var alpha = Mathf.Min(1f, _left / FadeSeconds);
         var started = false;
         WorldPos? firstUnit = null;
         foreach (var id in _input.Selection.Units)
@@ -64,7 +81,7 @@ public partial class RouteLines : Node3D
 
             firstUnit ??= unit.Position;
             var orders = unit.Orders;
-            if (unit.OrderIndex >= orders.Length)
+            if (unit.OrderIndex >= orders.Length || _left <= 0f)
             {
                 continue;
             }
@@ -73,7 +90,7 @@ public partial class RouteLines : Node3D
             var from = unit.Position;
             for (var i = unit.OrderIndex; i < orders.Length; i++)
             {
-                Line(from, orders[i].Point, orders[i].AttackMove ? AttackColor : MoveColor, dashed: false);
+                Line(from, orders[i].Point, Faded(orders[i].AttackMove ? AttackColor : MoveColor, alpha), dashed: true);
                 from = orders[i].Point;
             }
 
@@ -82,7 +99,7 @@ public partial class RouteLines : Node3D
                 // The patrol goes on from the last point through the first ones back to where the unit is heading now.
                 for (var i = 0; i <= unit.OrderIndex; i++)
                 {
-                    Line(from, orders[i].Point, orders[i].AttackMove ? AttackColor : MoveColor, dashed: false);
+                    Line(from, orders[i].Point, Faded(orders[i].AttackMove ? AttackColor : MoveColor, alpha), dashed: true);
                     from = orders[i].Point;
                 }
             }
@@ -106,6 +123,37 @@ public partial class RouteLines : Node3D
             _drawn = true;
         }
     }
+
+    // A selected unit whose route is not the one seen last got a new order: the lines show again. A unit just selected is only noted.
+    private void Watch(GameWorld world)
+    {
+        _selected.Clear();
+        foreach (var id in _input.Selection.Units)
+        {
+            if (!world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit)
+            {
+                continue;
+            }
+
+            _selected.Add(id);
+            if (_seen.TryGetValue(id, out var before) && before != unit.Orders && unit.OrderIndex < unit.Orders.Length)
+            {
+                _left = ShowSeconds;
+            }
+
+            _seen[id] = unit.Orders;
+        }
+
+        foreach (var id in new List<EntityId>(_seen.Keys))
+        {
+            if (!_selected.Contains(id))
+            {
+                _seen.Remove(id);
+            }
+        }
+    }
+
+    private static Color Faded(Color color, float alpha) => new(color.R, color.G, color.B, color.A * alpha);
 
     private void Begin(ref bool started)
     {
