@@ -100,7 +100,8 @@ public static class ClimateLookReader
         "pine" => TreeKind.Pine,
         "broadleaf" => TreeKind.Broadleaf,
         "desert" => TreeKind.Desert,
-        var other => throw Error(node, $"trees '{other}' is not pine, broadleaf or desert"),
+        "coast" => TreeKind.Coast,
+        var other => throw Error(node, $"trees '{other}' is not pine, broadleaf, desert or coast"),
     };
 
     private static ClimateMaterial Material(string id, YamlNode node)

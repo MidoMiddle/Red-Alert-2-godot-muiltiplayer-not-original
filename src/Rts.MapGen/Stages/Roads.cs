@@ -7,15 +7,15 @@ namespace Rts.MapGen.Stages;
 
 /// <summary>
 /// Stage 7, roads (docs/implementation/M7_maps.md, 4.14): the path of a wheeled unit (A*) from the first start to the shore at
-/// the nearest end of a bridge, or to the centre when there are none; its cells and their images become road. Water and
-/// bridge cells stay as they are.
+/// the nearest end of a bridge, or to the centre when there are none — on a map of islands down to the beach of its first ramp
+/// (<see cref="GenMap.Landing"/>); its cells and their images become road. Water and bridge cells stay as they are.
 /// </summary>
 internal static class Roads
 {
     public static void Place(GenMap map)
     {
         var start = map.Starts[0].Cell;
-        var target = new CellPos(map.N / 2, map.N / 2);
+        var target = map.Landing ?? new CellPos(map.N / 2, map.N / 2);
         var best = long.MaxValue;
         foreach (var bridge in map.Bridges)
         {

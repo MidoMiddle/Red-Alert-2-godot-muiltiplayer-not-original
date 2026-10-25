@@ -267,6 +267,7 @@ if (args.Length >= 2 && args[0] == "generate")
         Players = int.Parse(Option("players", symmetry == Rts.MapGen.MapSymmetry.Rotate90 ? "4" : "2"), System.Globalization.CultureInfo.InvariantCulture),
         Relief = Choice("relief", Rts.MapGen.ReliefKind.Hilly),
         Water = Choice("water", Rts.MapGen.WaterKind.Rivers),
+        SeaPercent = int.Parse(Option("sea-percent", "0"), System.Globalization.CultureInfo.InvariantCulture),
         Forest = Choice("forest", Rts.MapGen.Amount.Medium),
         Resources = Choice("resources", Rts.MapGen.Amount.Medium),
         Drills = Option("drills", "gems") switch

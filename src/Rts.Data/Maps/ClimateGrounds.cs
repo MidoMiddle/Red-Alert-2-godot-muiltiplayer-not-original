@@ -6,7 +6,8 @@ using Rts.Simulation.Map;
 namespace Rts.Data.Maps;
 
 /// <summary>
-/// What the ground of a climate is made of, by role (the climates of RA2: winter — its Snow —, temperate, urban, desert): the plain
+/// What the ground of a climate is made of, by role (the climates of RA2: winter — its Snow —, temperate, urban, desert; and our coast,
+/// a warm summer seaside): the plain
 /// ground, two kinds of patches over it, rough land, the road and the pavement beside it in a town, the shore, the rock, the water and
 /// the ice. The generator paints by these roles, a map takes its climate's legend, the editor carries the texture over to another
 /// climate role by role. The materials are the ids of <c>game/data/climates/&lt;id&gt;/look.yaml</c>. Visual only.
@@ -50,9 +51,10 @@ public static class ClimateGrounds
     public const string Temperate = "temperate";
     public const string Urban = "urban";
     public const string Desert = "desert";
+    public const string Coast = "coast";
 
     /// <summary>The climates there are, winter first.</summary>
-    public static readonly ImmutableArray<string> Ids = [Winter, Temperate, Urban, Desert];
+    public static readonly ImmutableArray<string> Ids = [Winter, Temperate, Urban, Desert, Coast];
 
     private static readonly Dictionary<string, ClimateGround> Grounds = new(StringComparer.Ordinal)
     {
@@ -69,6 +71,12 @@ public static class ClimateGrounds
         [Desert] = new(Desert, "sand", "clay", "gravel", "gravel", "asphalt", "asphalt", "shore", "rock", "water", "water",
         [
             new('a', "asphalt"), new('b', "shore"), new('c', "clay"), new('k', "rock"), new('n', "sand"), new('v', "gravel"), new('w', "water"),
+        ]),
+        // Dry seaside grass with patches of sand and of greener meadow, pebbles for rough land, wet sand at the water.
+        [Coast] = new(Coast, "grass", "sand", "meadow", "pebbles", "asphalt", "asphalt", "shore", "rock", "water", "water",
+        [
+            new('a', "asphalt"), new('b', "shore"), new('g', "grass"), new('k', "rock"), new('m', "meadow"), new('n', "sand"), new('v', "pebbles"),
+            new('w', "water"),
         ]),
     };
 

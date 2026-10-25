@@ -21,6 +21,10 @@ public sealed class ClimateGroundsTests
         Assert.Equal("pavers", ClimateGrounds.Translate("grass", "winter", "urban"));
         Assert.Equal("grass", ClimateGrounds.Translate("pavers", "urban", "winter"));
         Assert.Equal("sand", ClimateGrounds.Translate("unknown", "winter", "desert"));
+        Assert.Equal("grass", ClimateGrounds.MaterialOf("coast", LandType.Clear));
+        Assert.Equal("shore", ClimateGrounds.MaterialOf("coast", LandType.Beach));
+        Assert.Equal("sand", ClimateGrounds.Translate("dirt", "winter", "coast"));
+        Assert.Equal("sand", ClimateGrounds.Translate("clay", "desert", "coast"));
     }
 
     [Fact]

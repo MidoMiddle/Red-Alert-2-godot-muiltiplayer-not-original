@@ -49,12 +49,13 @@ public sealed record LightPreset(
     }
 }
 
-/// <summary>The trees of a climate: pines (winter), broadleaf trees (summer, the town), palms and cacti (the desert).</summary>
+/// <summary>The trees of a climate: pines (winter), broadleaf trees (summer, the town), palms and cacti (the desert), palms among a few small broadleaf trees (the coast).</summary>
 public enum TreeKind
 {
     Pine,
     Broadleaf,
     Desert,
+    Coast,
 }
 
 /// <summary>

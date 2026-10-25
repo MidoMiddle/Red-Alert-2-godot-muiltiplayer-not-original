@@ -33,6 +33,15 @@ public enum WaterKind
     None,
     Rivers,
     Lakes,
+
+    /// <summary>The sea along the edges of the playable area, every base on its coast (the coast climate's maps; any climate may have it).</summary>
+    Sea,
+
+    /// <summary>
+    /// An island for every player, raised over the sea with cliffs round it and two ramps down to a beach: across the water only ships,
+    /// transports and aircraft go (the relief of the settings is not used).
+    /// </summary>
+    Islands,
 }
 
 public enum Amount
@@ -75,6 +84,12 @@ public sealed record MapGenSettings
 
     public WaterKind Water { get; init; } = WaterKind.Rivers;
 
+    /// <summary>
+    /// The share of the playable area the sea takes, in percent (5…50; the owner, 2026-10-25: a map of 80 % land); 0 — the sea's own
+    /// width, about a third of the area. Only for <see cref="WaterKind.Sea"/>.
+    /// </summary>
+    public int SeaPercent { get; init; }
+
     public Amount Forest { get; init; } = Amount.Medium;
 
     public Amount Resources { get; init; } = Amount.Medium;
@@ -110,6 +125,11 @@ public sealed record MapGenSettings
         if (!MapLighting.IsKnown(Lighting))
         {
             throw new ArgumentException($"Lighting '{Lighting}' is none of {string.Join(", ", MapLighting.Ids)}.");
+        }
+
+        if (SeaPercent != 0 && (Water != WaterKind.Sea || SeaPercent < 5 || SeaPercent > 50))
+        {
+            throw new ArgumentException($"A sea of {SeaPercent} % needs the water Sea and 5…50 %.");
         }
     }
 }

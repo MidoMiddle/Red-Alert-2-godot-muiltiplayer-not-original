@@ -18,7 +18,8 @@ public sealed record MapProblem(ProblemLevel Level, string Message, CellPos? Cel
 
 /// <summary>
 /// The checks of the map editor (docs/implementation/M7_maps.md, 4.13): starts — as many as players, where tracks can stand,
-/// at least <see cref="EdgeMargin"/> cells from the edge, reachable from each other; every bridge and building where the
+/// at least <see cref="EdgeMargin"/> cells from the edge, reachable from each other (by tracks, or else over the water by an amphibious
+/// transport — a map of islands: a warning); every bridge and building where the
 /// rules allow it; ore within <see cref="OreRadius"/> cells of every start and about as much at each (within
 /// <see cref="BalancePercent"/> %) and as many drills of each kind (M8 step 10b); with three players or more, about the same distance from every start to its nearest
 /// opponent. Errors keep a map out of play; it can still be saved.
@@ -162,20 +163,25 @@ public static class MapValidator
             return;
         }
 
-        var reached = Reachable(grid, map.Starts[0].Cell);
+        var reached = Reachable(grid, map.Starts[0].Cell, Locomotor.Track);
+        bool[]? sailed = null;
         for (var i = 1; i < map.Starts.Length; i++)
         {
             var cell = map.Starts[i].Cell;
-            if (grid.CanEnter(cell, Locomotor.Track) && !reached[cell.Y * grid.Width + cell.X])
+            if (!grid.CanEnter(cell, Locomotor.Track) || reached[cell.Y * grid.Width + cell.X])
             {
-                problems.Add(new MapProblem(
-                    ProblemLevel.Error, $"Start {map.Starts[i].Slot} at {Text(cell)} cannot be reached from start {map.Starts[0].Slot} by tracks", cell));
+                continue;
             }
+
+            sailed ??= Reachable(grid, map.Starts[0].Cell, Locomotor.Amphibious);
+            problems.Add(sailed[cell.Y * grid.Width + cell.X]
+                ? new MapProblem(ProblemLevel.Warning, $"Start {map.Starts[i].Slot} at {Text(cell)} is reached from start {map.Starts[0].Slot} only over the water", cell)
+                : new MapProblem(ProblemLevel.Error, $"Start {map.Starts[i].Slot} at {Text(cell)} cannot be reached from start {map.Starts[0].Slot} by tracks", cell));
         }
     }
 
-    /// <summary>Every cell tracks reach from <paramref name="from"/>: eight directions, no corner cutting, as the path search moves.</summary>
-    private static bool[] Reachable(MapGrid grid, CellPos from)
+    /// <summary>Every cell <paramref name="locomotor"/> reaches from <paramref name="from"/>: eight directions, no corner cutting, as the path search moves.</summary>
+    private static bool[] Reachable(MapGrid grid, CellPos from, Locomotor locomotor)
     {
         var reached = new bool[grid.Width * grid.Height];
         var queue = new Queue<CellPos>();
@@ -188,13 +194,13 @@ public static class MapValidator
                 for (var dx = -1; dx <= 1; dx++)
                 {
                     var next = new CellPos(cell.X + dx, cell.Y + dy);
-                    if ((dx == 0 && dy == 0) || !grid.CanEnter(next, Locomotor.Track) || reached[next.Y * grid.Width + next.X])
+                    if ((dx == 0 && dy == 0) || !grid.CanEnter(next, locomotor) || reached[next.Y * grid.Width + next.X])
                     {
                         continue;
                     }
 
                     if (dx != 0 && dy != 0
-                        && (!grid.CanEnter(new CellPos(cell.X + dx, cell.Y), Locomotor.Track) || !grid.CanEnter(new CellPos(cell.X, cell.Y + dy), Locomotor.Track)))
+                        && (!grid.CanEnter(new CellPos(cell.X + dx, cell.Y), locomotor) || !grid.CanEnter(new CellPos(cell.X, cell.Y + dy), locomotor)))
                     {
                         continue;
                     }

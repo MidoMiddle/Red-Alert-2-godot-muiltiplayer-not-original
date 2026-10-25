@@ -54,44 +54,55 @@ public static class MapGenerator
         Relief.Build(map);
         Starts.Place(map);
 
-        var soften = settings.Relief == ReliefKind.Mountainous ? Relief.RampMask(map) : null;
-        var riverMask = new bool[map.Levels.Length];
-        if (settings.Water == WaterKind.Rivers)
+        if (settings.Water == WaterKind.Islands)
         {
-            Water.Rivers(map, riverMask);
+            Water.Islands(map);
         }
-
-        if (soften is not null)
+        else
         {
-            // Around every start, and along a corridor from it to the centre: the terraces there get ramps, so no base is walled in.
-            foreach (var start in map.Starts)
+            var soften = settings.Relief == ReliefKind.Mountainous ? Relief.RampMask(map) : null;
+            var riverMask = new bool[map.Levels.Length];
+            if (settings.Water == WaterKind.Rivers)
             {
-                Relief.MarkDisc(map, soften, start.Cell, Starts.FlatRadius + 5);
-                // In doubled coordinates (cell centres 2x + 1, the centre of the map N), where rounding is the same for every image.
-                var (sx, sy) = (2 * start.Cell.X + 1, 2 * start.Cell.Y + 1);
-                for (var step = 0; step <= 8; step++)
+                Water.Rivers(map, riverMask);
+            }
+            else if (settings.Water == WaterKind.Sea)
+            {
+                Water.Sea(map, riverMask);
+            }
+
+            if (soften is not null)
+            {
+                // Around every start, and along a corridor from it to the centre: the terraces there get ramps, so no base is walled in.
+                foreach (var start in map.Starts)
                 {
-                    Relief.MarkDisc2(map, soften, sx + (map.N - sx) * step / 8, sy + (map.N - sy) * step / 8, 3);
+                    Relief.MarkDisc(map, soften, start.Cell, Starts.FlatRadius + 5);
+                    // In doubled coordinates (cell centres 2x + 1, the centre of the map N), where rounding is the same for every image.
+                    var (sx, sy) = (2 * start.Cell.X + 1, 2 * start.Cell.Y + 1);
+                    for (var step = 0; step <= 8; step++)
+                    {
+                        Relief.MarkDisc2(map, soften, sx + (map.N - sx) * step / 8, sy + (map.N - sy) * step / 8, 3);
+                    }
+                }
+
+                for (var i = 0; i < soften.Length; i++)
+                {
+                    soften[i] |= riverMask[i];
                 }
             }
 
-            for (var i = 0; i < soften.Length; i++)
+            if (settings.Relief != ReliefKind.Flat)
             {
-                soften[i] |= riverMask[i];
+                Relief.Soften(map, soften);
+            }
+
+            if (settings.Water == WaterKind.Lakes)
+            {
+                Water.Lakes(map);
             }
         }
 
-        if (settings.Relief != ReliefKind.Flat)
-        {
-            Relief.Soften(map, soften);
-        }
-
-        if (settings.Water == WaterKind.Lakes)
-        {
-            Water.Lakes(map);
-        }
-
-        Water.Shores(map);
+        Water.Shores(map, beachOnCliffs: settings.Water != WaterKind.Islands);
         if (settings.Water == WaterKind.Rivers)
         {
             Bridges.Place(map);
@@ -109,7 +120,8 @@ public static class MapGenerator
         Features.Ground(map);
 
         var name = $"Random {settings.Size} ({seed})";
-        var description = $"Generated from seed {seed}: {settings.Players} players, {settings.Symmetry}, {settings.Relief}, water {settings.Water}, " +
+        var description = $"Generated from seed {seed}: {settings.Players} players, {settings.Symmetry}, {settings.Relief}, " +
+                          $"water {settings.Water}{(settings.SeaPercent > 0 ? $" {settings.SeaPercent}%" : "")}, " +
                           $"forest {settings.Forest}, resources {settings.Resources}.";
         return map.ToDefinition(name, Drills.WithDrills(description, settings.Drills));
     }

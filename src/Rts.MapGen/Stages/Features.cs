@@ -23,6 +23,9 @@ internal static class Features
     // Trodden ground around a base: within this many cells of a start, dirt where the noise of the dirt is above its median.
     private const int TroddenRadius = Starts.FlatRadius - 1;
 
+    // On the coast the sand reaches this many cells inland from the water, past the wet sand of the beach, where the land is low.
+    private const int CoastSand = 3;
+
     public static void Buildings(GenMap map, CellPos contested)
     {
         var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
@@ -183,7 +186,8 @@ internal static class Features
     /// The look of the clear ground, which the rules never see, by the climate (<see cref="ClimateGrounds"/>): patches of its first kind
     /// (dirt in the snow, dry clay in the sand) and of its second (grass under the snow, a meadow, paving, gravel) where their noises are
     /// among the highest <see cref="DirtPercent"/> and <see cref="GrassPercent"/> of the clear cells, and the first kind trodden around
-    /// the bases; in a town the pavement along the roads. Land, heights and everything else stay as they are.
+    /// the bases; in a town the pavement along the roads; on the coast sand along the water too. Land, heights and everything else stay as
+/// they are.
     /// </summary>
     public static void Ground(GenMap map)
     {
@@ -218,7 +222,7 @@ internal static class Features
             {
                 map.Paint[cell.Y * map.N + cell.X] = ground.Sidewalk;
             }
-            else if (trodden || dirt > dirtLine)
+            else if (trodden || dirt > dirtLine || (map.Settings.Climate == ClimateGrounds.Coast && Low(map, cell) && NearWater(map, cell, CoastSand)))
             {
                 map.Paint[cell.Y * map.N + cell.X] = ground.PatchA;
             }
@@ -227,6 +231,28 @@ internal static class Features
                 map.Paint[cell.Y * map.N + cell.X] = ground.PatchB;
             }
         }
+    }
+
+    // Whether the cell lies down by the sea, not on the top of a cliff over it: no corner above level 1.
+    private static bool Low(GenMap map, CellPos cell) =>
+        map.Corner(cell.X, cell.Y) <= 1 && map.Corner(cell.X + 1, cell.Y) <= 1 && map.Corner(cell.X, cell.Y + 1) <= 1 && map.Corner(cell.X + 1, cell.Y + 1) <= 1;
+
+    // Whether water lies within reach cells of the cell.
+    private static bool NearWater(GenMap map, CellPos cell, int reach)
+    {
+        for (var dy = -reach; dy <= reach; dy++)
+        {
+            for (var dx = -reach; dx <= reach; dx++)
+            {
+                var near = new CellPos(cell.X + dx, cell.Y + dy);
+                if (map.Contains(near) && map.IsWater(near))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // The value below which <paramref name="percent"/> of the values lie.
@@ -238,9 +264,9 @@ internal static class Features
 
     public static void Forest(GenMap map)
     {
-        // The desert and the town have fewer trees than the woods of winter and summer.
+        // The desert, the town and the palm groves of the coast have fewer trees than the woods of winter and summer.
         var threshold = (map.Settings.Forest switch { Amount.Low => 74, Amount.Medium => 66, _ => 58 })
-            + (map.Settings.Climate switch { ClimateGrounds.Desert => 12, ClimateGrounds.Urban => 6, _ => 0 });
+            + (map.Settings.Climate switch { ClimateGrounds.Desert => 12, ClimateGrounds.Urban => 6, ClimateGrounds.Coast => 3, _ => 0 });
         var ore = new List<CellPos>();
         for (var i = 0; i < map.Ore.Length; i++)
         {

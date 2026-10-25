@@ -1,0 +1,48 @@
+# The look of the coast climate (ours, after the plan of M11e: a bright warm summer day by the sea), as winter/look.yaml explains: the
+# materials of its ground by the ids the maps' legend uses (src/Rts.Data/Maps/ClimateGrounds.cs), the first the plain ground; its
+# trees; its light. Sunny seaside grass, light sand round the water and in patches, wet sand at the edge, clear turquoise shallows over
+# a deep blue sea. Visual only.
+format: climate/1
+id: coast
+materials:
+  grass:   { albedo: grass_meadow.png, tiling: 6, roughness: 0.95, tint: "#d4e4a0" }
+  sand:    { albedo: coast_sand.png, tiling: 5, roughness: 0.95, tint: "#fff0d2" }
+  meadow:  { albedo: grass_field.png, tiling: 6, roughness: 0.95, tint: "#c0dc98" }
+  pebbles: { albedo: sand_gravel.png, tiling: 5, roughness: 0.9, tint: "#e8e0d0" }
+  asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8, tint: "#d4d0c8" }
+  shore:   { albedo: sand_beach.png, tiling: 5, roughness: 0.6, tint: "#d8c8a8" }
+  rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9, tint: "#e0d8cc" }
+  water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.15, tint: "#3fb0c0", water: true }
+cliff: rock
+trees: coast
+water_normal: water_normal.png
+deep_water: "#0f4f7a"
+lighting:
+  dawn:
+    sun: { azimuth: 4, elevation: 40, color: "#ffcf9a", energy: 1.2 }
+    ambient: { color: "#c8c4c0", energy: 0.8 }
+    background: "#a8a0a0"
+    fog: { color: "#ecd2b8", density: 0.3 }
+    exposure: 1.0
+    saturation: 1.05
+  day:
+    sun: { azimuth: 14.04, elevation: 55, color: "#fff6e0", energy: 1.55 }
+    ambient: { color: "#bcd4e8", energy: 0.75 }
+    background: "#8fc0e0"
+    fog: { color: "#d8ecf6", density: 0.18 }
+    exposure: 1.0
+    saturation: 1.15
+  dusk:
+    sun: { azimuth: 24, elevation: 40, color: "#ffa070", energy: 1.1 }
+    ambient: { color: "#a89cc8", energy: 0.8 }
+    background: "#76608a"
+    fog: { color: "#d09a96", density: 0.35 }
+    exposure: 0.95
+    saturation: 1.1
+  night:
+    sun: { azimuth: 14.04, elevation: 55, color: "#9fb4ff", energy: 0.45 }
+    ambient: { color: "#5b70b8", energy: 0.75 }
+    background: "#18223e"
+    fog: { color: "#364a78", density: 0.35 }
+    exposure: 1.1
+    saturation: 0.85

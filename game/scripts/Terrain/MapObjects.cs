@@ -177,7 +177,7 @@ public partial class MapObjects : Node3D
         // A snowdrift of the map is a bush in summer and in town, a dune in the desert.
         var drift = kind switch
         {
-            Climates.TreeKind.Broadleaf => new Color(0.24f, 0.4f, 0.2f),
+            Climates.TreeKind.Broadleaf or Climates.TreeKind.Coast => new Color(0.24f, 0.4f, 0.2f),
             Climates.TreeKind.Desert => new Color(0.85f, 0.74f, 0.52f),
             _ => new Color(0.9f, 0.93f, 0.97f),
         };

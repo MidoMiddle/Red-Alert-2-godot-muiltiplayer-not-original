@@ -59,6 +59,7 @@ public sealed class ClimateLookTests
         var trees = new Dictionary<string, TreeKind>
         {
             ["winter"] = TreeKind.Pine, ["temperate"] = TreeKind.Broadleaf, ["urban"] = TreeKind.Broadleaf, ["desert"] = TreeKind.Desert,
+            ["coast"] = TreeKind.Coast,
         };
         foreach (var id in ClimateGrounds.Ids)
         {

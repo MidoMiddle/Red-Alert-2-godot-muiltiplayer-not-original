@@ -10,7 +10,8 @@ public sealed record TreePart(string Key, System.Func<PrimitiveMesh> Mesh, Color
 /// <summary>
 /// The trees by the climate of the map (<see cref="ClimateLook.Trees"/>; the rules have one kind of tree): a pine is a dark cone on a
 /// trunk; a broadleaf tree a round crown, small or big by its variant; in the desert a palm with four fronds (variants 0, 1) or a cactus
-/// with two arms (2, 3). The map's trees, the skirt's and the holo tank's disguise use the same shapes.
+/// with two arms (2, 3); by the sea a palm (0…2) or a small broadleaf tree (3). The map's trees, the skirt's and the holo tank's disguise use
+/// the same shapes.
 /// </summary>
 public static class TreeShapes
 {
@@ -63,6 +64,7 @@ public static class TreeShapes
     {
         TreeKind.Broadleaf => (variant & 3) >= 2 ? BigBroadleaf : SmallBroadleaf,
         TreeKind.Desert => (variant & 3) >= 2 ? CactusParts : Palm,
+        TreeKind.Coast => (variant & 3) == 3 ? SmallBroadleaf : Palm,
         _ => Pine,
     };
 
@@ -71,6 +73,7 @@ public static class TreeShapes
     {
         TreeKind.Broadleaf => (variant & 3) >= 2 ? "broadleaf_big" : "broadleaf_small",
         TreeKind.Desert => (variant & 3) >= 2 ? "cactus" : "palm",
+        TreeKind.Coast => (variant & 3) == 3 ? "broadleaf_small" : "palm",
         _ => "pine",
     };
 

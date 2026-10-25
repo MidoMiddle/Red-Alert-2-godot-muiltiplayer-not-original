@@ -19,4 +19,7 @@ internal static class Channels
 
     /// <summary>The dressing of the climate (Dressing): its streams are Dressing × 16 + 1…9.</summary>
     public const int Dressing = 12;
+
+    // The coastline of the sea.
+    public const int Sea = 13;
 }

@@ -46,12 +46,13 @@ public static class MapPreview
     public static byte[] Render(MapDefinition map) =>
         map.Playable is { } area ? RenderArea(map.ToMapGrid(), map.Starts, area, map.Climate) : Render(map.ToMapGrid(), map.Starts, map.Climate);
 
-    /// <summary>The colour of the plain ground in a climate: the grey green of winter, the green of summer, the sand of the desert.</summary>
+    /// <summary>The colour of the plain ground in a climate: the grey green of winter, the green of summer, the sand of the desert, the dry grass of the coast.</summary>
     public static (float R, float G, float B) PlainOf(string climate) => climate switch
     {
         "temperate" => (0.42f, 0.58f, 0.3f),
         "urban" => (0.5f, 0.56f, 0.44f),
         "desert" => (0.82f, 0.7f, 0.5f),
+        "coast" => (0.62f, 0.66f, 0.4f),
         _ => LandColors.Of(LandType.Clear),
     };
 

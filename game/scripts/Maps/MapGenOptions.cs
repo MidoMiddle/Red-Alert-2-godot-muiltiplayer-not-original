@@ -44,7 +44,7 @@ public partial class MapGenOptions : VBoxContainer
             [Tr("UI_EDITOR_SYMMETRY_MIRROR"), Tr("UI_EDITOR_SYMMETRY_ROTATE180"), Tr("UI_EDITOR_SYMMETRY_ROTATE90")], 0,
             i => Chosen = Chosen with { Symmetry = (MapSymmetry)i, Players = i == 2 ? 4 : 2 }));
         grid.AddChild(Choice([Tr("UI_EDITOR_RELIEF_FLAT"), Tr("UI_EDITOR_RELIEF_HILLY"), Tr("UI_EDITOR_RELIEF_MOUNTAINOUS")], 1, i => Chosen = Chosen with { Relief = (ReliefKind)i }));
-        grid.AddChild(Choice([Tr("UI_EDITOR_WATER_NONE"), Tr("UI_EDITOR_WATER_RIVERS"), Tr("UI_EDITOR_WATER_LAKES")], 1, i => Chosen = Chosen with { Water = (WaterKind)i }));
+        grid.AddChild(Choice([Tr("UI_EDITOR_WATER_NONE"), Tr("UI_EDITOR_WATER_RIVERS"), Tr("UI_EDITOR_WATER_LAKES"), Tr("UI_EDITOR_WATER_SEA"), Tr("UI_EDITOR_WATER_ISLANDS")], 1, i => Chosen = Chosen with { Water = (WaterKind)i }));
         grid.AddChild(Choice([Tr("UI_EDITOR_FOREST_LOW"), Tr("UI_EDITOR_FOREST_MEDIUM"), Tr("UI_EDITOR_FOREST_HIGH")], 1, i => Chosen = Chosen with { Forest = (Amount)i }));
         grid.AddChild(Choice([Tr("UI_EDITOR_ORE_LOW"), Tr("UI_EDITOR_ORE_MEDIUM"), Tr("UI_EDITOR_ORE_HIGH")], 1, i => Chosen = Chosen with { Resources = (Amount)i }));
 
@@ -71,6 +71,7 @@ public partial class MapGenOptions : VBoxContainer
         "temperate" => "UI_CLIMATE_TEMPERATE",
         "urban" => "UI_CLIMATE_URBAN",
         "desert" => "UI_CLIMATE_DESERT",
+        "coast" => "UI_CLIMATE_COAST",
         _ => "UI_CLIMATE_WINTER",
     };
 

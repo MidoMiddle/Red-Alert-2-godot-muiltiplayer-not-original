@@ -162,11 +162,11 @@ public sealed class MapPreviewTests
         // The square maps of before the playable area are left out for now (MapCatalog.Hidden).
         Assert.Equal(new[]
         {
-            "Ambush Valley", "Arctic Strip", "Blizzard Basin", "City Blocks", "Crate Glacier", "Dense Taiga",
-            "Downtown Duel", "Dune Sea", "Four Farms", "Frost Arena", "Frost Gate", "Frozen Crossing",
+            "Ambush Valley", "Arctic Strip", "Bay City", "Blizzard Basin", "City Blocks", "Crate Glacier", "Dense Taiga",
+            "Downtown Duel", "Dune Sea", "Four Farms", "Four Isles", "Four Ports", "Frost Arena", "Frost Gate", "Frozen Crossing",
             "Frozen Outpost", "Frozen Plateau", "Glacier Duel", "Green Valley", "Harbor District", "Ice City",
-            "Ice Ridge", "Mesa Pass", "Oasis Crossing", "Pine Haven", "Polar Circle", "River Meadows",
-            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Tundra Lane", "Windswept Pass",
+            "Ice Ridge", "Lagoon Isle", "Mesa Pass", "Oasis Crossing", "Palm Shore", "Pine Haven", "Polar Circle", "Resort Bay", "River Meadows",
+            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Tundra Lane", "Twin Isles", "Windswept Pass",
         }, maps.Select(m => m.Map.Name));
         var relief = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap")));
         var pixels = MapPreview.Render(relief);

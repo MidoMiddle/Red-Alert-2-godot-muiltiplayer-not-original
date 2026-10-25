@@ -56,6 +56,9 @@ internal sealed class GenMap
 
     public List<StructurePlacement> Structures { get; } = new();
 
+    /// <summary>On a map of islands, the foot of the first ramp of the first player's island: its road leads there (Roads).</summary>
+    public CellPos? Landing { get; set; }
+
     public int Corner(int x, int y) => Levels[y * (N + 1) + x];
 
     public void SetCorner(int x, int y, int level) => Levels[y * (N + 1) + x] = level;

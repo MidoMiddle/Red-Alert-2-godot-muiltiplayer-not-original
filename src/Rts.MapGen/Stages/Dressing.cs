@@ -16,7 +16,9 @@ namespace Rts.MapGen.Stages;
 /// tractor and a hedge;</item>
 /// <item>villages (desert): adobe houses round a well; ruins, mesas and an arch; dry shrubs;</item>
 /// <item>beaches (every climate but the snow, by the water): umbrellas, loungers, showers, nets, driftwood, boats, cabins, a bar,
-/// lifeguard towers, a boat shed and a lighthouse;</item>
+/// lifeguard towers, a boat shed and a lighthouse — on the coast twice the buildings and more than twice the things;</item>
+/// <item>a resort on the coast (the owner, 2026-10-25: «a couple of big buildings, the rest small resort houses»): a hotel a little
+/// way in from the sea, with its images, and round it beach cabins, a café and kiosks;</item>
 /// <item>barbed wire across the open ground (snow, desert).</item>
 /// </list>
 /// Every piece goes with its images under the symmetry, or not at all: inside the playable area, on clear ground (or the beach),
@@ -52,7 +54,13 @@ internal static class Dressing
             Villages(map, site);
         }
 
-        if (climate != ClimateGrounds.Winter)
+        if (climate == ClimateGrounds.Coast)
+        {
+            Resort(map, site);
+            // The slopes down to the sea leave few flat cells at the water: the buildings may stand a little further inland.
+            Shore(map, site, BeachBuildings, BeachThings, 10, 64, reach: 4);
+        }
+        else if (climate != ClimateGrounds.Winter)
         {
             Shore(map, site, BeachBuildings, BeachThings, 5, 28);
         }
@@ -85,11 +93,14 @@ internal static class Dressing
         }
     }
 
-    // Buildings by the shore — a cell or two from the water — and things on the beach.
-    private static void Shore(GenMap map, Site site, string[] buildings, string[] things, int buildingCount, int thingCount)
+    // Buildings by the shore — up to reach cells from the water — and things on the beach.
+    private static void Shore(GenMap map, Site site, string[] buildings, string[] things, int buildingCount, int thingCount, int reach = 2)
     {
         var placed = 0;
-        foreach (var (order, cell) in Candidates(map, 2, cell => !map.IsWater(cell) && Water(map, cell, 2) && !Water(map, cell, 0)))
+        // On islands the land at sea level is the landings at the feet of the ramps and the islets: no building there.
+        var islands = map.Settings.Water == WaterKind.Islands;
+        foreach (var (order, cell) in Candidates(map, 2, cell => !map.IsWater(cell) && Water(map, cell, reach) && !Water(map, cell, 0)
+                                                                 && (!islands || map.Corner(cell.X, cell.Y) > 0)))
         {
             if (placed >= buildingCount)
             {
@@ -99,10 +110,13 @@ internal static class Dressing
             placed += site.Structure(buildings[order % buildings.Length], cell, order % 8) ? 1 : 0;
         }
 
-        // A lighthouse a beach has once.
-        if (things.Length > 0)
+        // A lighthouse a beach has once — not the landing of an island; on the coast, where the shore slopes, a cell further up too.
+        if (things.Length > 0 && !islands)
         {
-            foreach (var (_, cell) in Candidates(map, 3, cell => map.LandAt(cell) == LandType.Beach && Water(map, cell, 1)))
+            var coast = map.Settings.Climate == ClimateGrounds.Coast;
+            foreach (var (_, cell) in Candidates(map, 3, cell => coast
+                ? map.LandAt(cell) is LandType.Beach or LandType.Clear && Water(map, cell, 2)
+                : map.LandAt(cell) == LandType.Beach && Water(map, cell, 1)))
             {
                 if (site.Structure("neutral_lighthouse", cell, 0))
                 {
@@ -122,8 +136,47 @@ internal static class Dressing
             if (order % 4 == 0)
             {
                 var id = things[order / 4 % things.Length];
-                count += site.Object(id, cell, order % 4, blocking: id == "beached_boat") ? 1 : 0;
+                // A boat on the sand stops everyone: none on the landing of an island.
+                if (!(islands && id == "beached_boat"))
+                {
+                    count += site.Object(id, cell, order % 4, blocking: id == "beached_boat") ? 1 : 0;
+                }
             }
+        }
+    }
+
+    // A resort: a hotel three to ten cells from the water, and small houses round it.
+    private static void Resort(GenMap map, Site site)
+    {
+        CellPos? hotel = null;
+        foreach (var (_, cell) in Candidates(map, 10, cell => map.LandAt(cell) == LandType.Clear && Water(map, cell, 10) && !Water(map, cell, 3)))
+        {
+            if (site.Structure("neutral_hotel", cell, 0))
+            {
+                hotel = cell;
+                break;
+            }
+        }
+
+        if (hotel is not { } at)
+        {
+            return;
+        }
+
+        var small = new[] { "neutral_beach_cabin", "neutral_beach_cabin", "neutral_kiosk", "neutral_beach_cabin", "neutral_cafe", "neutral_beach_cabin" };
+        var placed = 0;
+        foreach (var (order, cell) in Candidates(map, 11, cell =>
+        {
+            var (dx, dy) = (cell.X - at.X - 1, cell.Y - at.Y);
+            return map.LandAt(cell) is LandType.Clear or LandType.Beach && dx * dx + dy * dy >= 9 && dx * dx + dy * dy <= 64;
+        }))
+        {
+            if (placed >= 12)
+            {
+                break;
+            }
+
+            placed += order % 3 == 0 && site.Structure(small[placed % small.Length], cell, order % 8) ? 1 : 0;
         }
     }
 
@@ -299,6 +352,24 @@ internal static class Dressing
             foreach (var bridge in map.Bridges)
             {
                 _taken.UnionWith(MapChecks.BridgeCells(bridge));
+            }
+
+            // On islands and by the sea an engineer lands by an oil derrick: the cells round it stay free.
+            if (map.Settings.Water is WaterKind.Islands or WaterKind.Sea)
+            {
+                foreach (var structure in map.Structures)
+                {
+                    if (structure.Type == "tech_oil_derrick")
+                    {
+                        for (var dy = -3; dy <= 4; dy++)
+                        {
+                            for (var dx = -3; dx <= 4; dx++)
+                            {
+                                _taken.Add(new CellPos(structure.Cell.X + dx, structure.Cell.Y + dy));
+                            }
+                        }
+                    }
+                }
             }
         }
 
