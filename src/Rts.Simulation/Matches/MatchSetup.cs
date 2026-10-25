@@ -41,6 +41,7 @@ public enum AiDifficulty : byte
 /// <param name="StartingUnits">
 /// The units every player gets beside its MCV (RA2 «Unit Count», M6 step 8): 0–<see cref="MaxStartingUnits"/> of its starting infantry.
 /// </param>
+/// <param name="Crates">Crates lie on the map and a unit that takes one gets a bonus (RA2 «Crates Appear», M11 a6; <c>CrateSystem</c>).</param>
 public sealed record MatchOptions(
     int StartingCredits = SimulationSettings.DefaultStartingCredits,
     bool ShortGame = false,
@@ -49,7 +50,8 @@ public sealed record MatchOptions(
     bool McvRepacks = true,
     bool Superweapons = true,
     bool DestroyableBridges = true,
-    int StartingUnits = MatchOptions.DefaultStartingUnits)
+    int StartingUnits = MatchOptions.DefaultStartingUnits,
+    bool Crates = false)
 {
     /// <summary>Three soldiers, as every match had before the option (M5, decision 1).</summary>
     public const int DefaultStartingUnits = 3;

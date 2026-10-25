@@ -676,3 +676,12 @@ UI_PAUSE_RESTART_TEXT,Start this match over? It begins again from the start.
 UI_SETTINGS_KEYS_FROM_MENU,The keys are changed from the main menu.
 UI_EVA_RADAR_ONLINE,Radar online
 UI_EVA_RADAR_OFFLINE,Radar offline
+UI_OPTION_CRATES_HINT,Crates lie on the map; a unit that drives onto one gets money, healing, a promotion, the map, armor, firepower, speed or a unit.
+UI_EVA_CRATE_MONEY,Money crate
+UI_EVA_CRATE_HEAL,Units repaired
+UI_EVA_CRATE_VETERAN,Units promoted
+UI_EVA_CRATE_REVEAL,Map revealed
+UI_EVA_CRATE_ARMOR,Armor upgrade
+UI_EVA_CRATE_FIREPOWER,Firepower upgrade
+UI_EVA_CRATE_SPEED,Speed upgrade
+UI_EVA_CRATE_UNIT,Reinforcements

@@ -1,0 +1,27 @@
+# The crates of a match with «Crates Appear» (docs/implementation/M11_content.md, a6; the code is src/Rts.Simulation/Systems/CrateSystem.cs).
+# The numbers follow RA2's [Powerups] and its crate rules as a guide; the balance is M11's.
+crates:
+  kind: crates
+  name: Crates
+  # On the map at most: per_player for every player of the match, never fewer than at_least. A crate taken is replaced after regen.
+  per_player: 1
+  at_least: 2
+  regen: 60s
+  # Veteran, Armor, Firepower and Speed reach the picker's units this many cells round the crate.
+  radius: 4
+  money: 2000
+  # How often each falls, out of their sum.
+  weight_money: 20
+  weight_heal: 10
+  weight_veteran: 20
+  weight_reveal: 10
+  weight_armor: 10
+  weight_firepower: 10
+  weight_speed: 10
+  weight_unit: 10
+  # A unit with Armor takes the damage divided by armor; with Firepower deals it times firepower; with Speed moves speed times faster.
+  armor: 150%
+  firepower: 200%
+  speed: 120%
+  # The Unit crate: one of these of the picker's faction.
+  units: [heavy_tank, support_vehicle, tesla_tank, conscript, alliance_light_tank, alliance_rifleman]

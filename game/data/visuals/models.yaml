@@ -9,6 +9,7 @@
 #   tree/<shape>    a tree of a climate: pine (snow), broadleaf_small and broadleaf_big (temperate, urban), palm and cactus (desert);
 #                   the holo tank's disguise too
 #   ore/<kind>      the clusters of a field: ore and gems (the file only: the field scales and turns them)
+#   crate/supply    a crate of a match (M11 a6): pivot at the centre of its cell on the ground
 # Fields: file — or files: [a list of kinds of it], each cell picks one — (one of the two is required), scale (1), yaw in degrees
 # (0), offset [x, y, z] in cells ([0, 0, 0]), jitter — the share the size of each varies either way, 0…0.5 (0), spin — each turned
 # any way (false), height in cells for the bars over a building (its look's when 0), climates — the climates it is drawn in (all
@@ -18,6 +19,9 @@
 # fire_1, fire_2… stand the flames of a damaged one.
 format: models/1
 models:
+  # The crates of a match (M11 a6): the supply crate of the map's props.
+  crate/supply:               { file: map/prop_supply_crate/prop_supply_crate.glb }
+
   # The civilian houses of the map (docs/map_elements/11_civilian_buildings): the house whole, the same house when it is critically
   # damaged or holds soldiers, and its ruins once it has fallen.
   building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 2.5,

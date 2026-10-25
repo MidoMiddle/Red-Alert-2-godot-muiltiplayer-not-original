@@ -22,6 +22,7 @@ public sealed class RulesBuilder
     private readonly List<DifficultyDef> _difficulties = [];
     private readonly List<PersonalityDef> _personalities = [];
     private readonly List<CountryDef> _countries = [];
+    private readonly List<CratesDef> _crates = [];
     private readonly List<EconomyDef> _economies = [];
     private readonly List<ArmorDef> _armors = [];
     private readonly List<WarheadDef> _warheads = [];
@@ -87,6 +88,12 @@ public sealed class RulesBuilder
         return this;
     }
 
+    public RulesBuilder Add(CratesDef definition)
+    {
+        _crates.Add(definition);
+        return this;
+    }
+
     public RulesBuilder Add(BuildOrderDef definition)
     {
         _buildOrders.Add(definition);
@@ -145,7 +152,8 @@ public sealed class RulesBuilder
             Sorted(_armies),
             Sorted(_difficulties),
             Sorted(_personalities),
-            Sorted(_countries));
+            Sorted(_countries),
+            Sorted(_crates));
     }
 
     private IEnumerable<string> AllIds()
@@ -166,6 +174,11 @@ public sealed class RulesBuilder
         }
 
         foreach (var definition in _personalities)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _crates)
         {
             yield return definition.Id;
         }

@@ -61,6 +61,21 @@ public static class StateHasher
             hash.Add(bomb.GoesOff);
         }
 
+        // Rules v74 (M11 a6): the crates, in a match that has them only — the others keep their hashes.
+        if (Systems.CrateSystem.Enabled(world))
+        {
+            hash.Add(world.Crates.Count);
+            foreach (var crate in world.Crates)
+            {
+                hash.Add(crate.Id);
+                hash.Add(crate.Cell.X);
+                hash.Add(crate.Cell.Y);
+            }
+
+            hash.Add(world.CrateTimer);
+            hash.Add(world.NextCrateId);
+        }
+
         // Rules v50 (stage 3b): the toxin on the ground, cell by cell where there is some.
         var radiation = world.Radiation;
         for (var i = 0; i < radiation.Length; i++)
@@ -299,6 +314,11 @@ public static class StateHasher
 
                 // Rules v60 (loose ends, stage 3): experience.
                 hash.Add(unit.Experience);
+                if (unit.Upgrades != CrateUpgrade.None)
+                {
+                    // M11 a6: only a unit a crate upgraded, so the hashes of the matches without crates stay.
+                    hash.Add((byte)unit.Upgrades);
+                }
 
                 // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
                 hash.Add(unit.Drop is not null);

@@ -69,6 +69,11 @@ internal static class RulesValidator
             checker.Country(country);
         }
 
+        foreach (var crates in rules.Crates)
+        {
+            checker.Crates(crates, rules.Crates.Length);
+        }
+
         foreach (var economy in rules.Economies)
         {
             checker.Economy(economy);
@@ -522,6 +527,51 @@ internal static class RulesValidator
 
         /// <summary>A country belongs to a faction of the data (loose ends, stage 5).</summary>
         public void Country(CountryDef country) => FactionOf(country.Id, country.Faction);
+
+        // The crates (M11 a6): one record; sane numbers; units of the ground that exist.
+        public void Crates(CratesDef crates, int records)
+        {
+            if (records > 1)
+            {
+                Error(crates.Id, "kind", $"there is more than one 'crates' record ('{crates.Id}')");
+            }
+
+            Positive(crates.Id, "regen", crates.Regen);
+            if (crates.PerPlayer < 0 || crates.AtLeast < 0 || crates.PerPlayer + crates.AtLeast == 0)
+            {
+                Error(crates.Id, "per_player", $"'per_player' and 'at_least' of '{crates.Id}' must not be negative, nor both 0");
+            }
+
+            if (crates.Radius is < 0 or > 16)
+            {
+                Error(crates.Id, "radius", $"'radius' of '{crates.Id}' must be 0 to 16");
+            }
+
+            if (crates.Money < 0 || crates.Weights.Any(weight => weight < 0) || crates.Weights.Sum() <= 0)
+            {
+                Error(crates.Id, "weight_money", $"the money and the weights of '{crates.Id}' must not be negative, and some weight above 0");
+            }
+
+            foreach (var (key, value) in new[] { ("armor", crates.Armor), ("firepower", crates.Firepower), ("speed", crates.Speed) })
+            {
+                if (value < Fixed.One || value > Fixed.FromInt(4))
+                {
+                    Error(crates.Id, key, $"'{key}' of '{crates.Id}' must be 100% to 400%");
+                }
+            }
+
+            foreach (var id in crates.Units)
+            {
+                if (!rules.TryGetUnit(id, out var unit))
+                {
+                    Error(crates.Id, "units", Missing(crates.Id, "unit", id));
+                }
+                else if (unit.Category is UnitCategory.Naval or UnitCategory.Aircraft)
+                {
+                    Error(crates.Id, "units", $"'{crates.Id}' gives '{id}', which is not a unit of the ground");
+                }
+            }
+        }
 
         /// <summary>The countries a unit or building names are countries of the data.</summary>
         private void CountriesOf(string id, string key, ImmutableArray<string> countries)

@@ -183,6 +183,12 @@ public sealed record BuildingCaptured(int Tick, EntityId Building, PlayerId From
 /// <summary>An engineer of the owner mended <paramref name="Building"/> whole (stage 3b).</summary>
 public sealed record BuildingMended(int Tick, EntityId Building) : SimEvent(Tick);
 
+/// <summary>A crate came onto <paramref name="Cell"/> (M11 a6).</summary>
+public sealed record CrateAppeared(int Tick, int Crate, CellPos Cell) : SimEvent(Tick);
+
+/// <summary><paramref name="Unit"/> of <paramref name="Player"/> took the crate on <paramref name="Cell"/>, which gave <paramref name="Kind"/> (M11 a6).</summary>
+public sealed record CratePicked(int Tick, int Crate, PlayerId Player, EntityId Unit, Rules.CrateKind Kind, CellPos Cell) : SimEvent(Tick);
+
 /// <summary>A unit rose to <paramref name="Rank"/> by its kills, or came out a veteran (loose ends, stage 3).</summary>
 public sealed record UnitPromoted(int Tick, EntityId Unit, PlayerId Owner, Systems.Rank Rank) : SimEvent(Tick);
 

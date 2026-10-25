@@ -239,6 +239,26 @@ public static class DataHasher
             }
         }
 
+        // The crates (M11 a6); data without them keeps its hash.
+        foreach (var crates in rules.Crates)
+        {
+            Add(hash, crates.Id);
+            hash.Add(crates.PerPlayer);
+            hash.Add(crates.AtLeast);
+            hash.Add(crates.Regen);
+            hash.Add(crates.Radius);
+            hash.Add(crates.Money);
+            foreach (var weight in crates.Weights)
+            {
+                hash.Add(weight);
+            }
+
+            hash.Add(crates.Armor.Raw);
+            hash.Add(crates.Firepower.Raw);
+            hash.Add(crates.Speed.Raw);
+            Add(hash, crates.Units);
+        }
+
         // The countries (loose ends, stage 5).
         hash.Add(rules.Countries.Length);
         foreach (var country in rules.Countries)

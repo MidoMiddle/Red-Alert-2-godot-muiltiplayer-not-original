@@ -15,7 +15,7 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty", "personality", "country"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty", "personality", "country", "crates"];
 
     private static readonly string[] UnitKeys =
     [
@@ -70,6 +70,12 @@ internal static class DefinitionReader
         "name", "low_power_min_rate", "multiple_factory_bonus", "max_factory_rate", "ore_value", "gem_value", "ore_growth_interval",
         "ore_growth_chance", "ore_spread_stage", "ore_spread_chance", "source_interval", "source_radius", "sell_refund", "repair_cost",
         "repair_rate",
+    ];
+
+    private static readonly string[] CratesKeys =
+    [
+        "name", "per_player", "at_least", "regen", "radius", "money", "weight_money", "weight_heal", "weight_veteran", "weight_reveal",
+        "weight_armor", "weight_firepower", "weight_speed", "weight_unit", "armor", "firepower", "speed", "units",
     ];
 
     /// <summary>The kind of an entry, one of the known kinds.</summary>
@@ -306,6 +312,36 @@ internal static class DefinitionReader
             Code = fields.Required("code", Scalars.Code, ' '),
             Buildable = fields.Optional("buildable", Scalars.Flag, false),
             Speed = fields.Required("speed", Scalars.Speeds, ImmutableArray<LocomotorSpeed>.Empty),
+        };
+    }
+
+    public static CratesDef Crates(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, CratesKeys);
+        return new CratesDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            PerPlayer = fields.Required("per_player", Scalars.Int, 0),
+            AtLeast = fields.Required("at_least", Scalars.Int, 0),
+            Regen = fields.Required("regen", Scalars.Ticks, 0),
+            Radius = fields.Required("radius", Scalars.Int, 0),
+            Money = fields.Required("money", Scalars.Int, 0),
+            Weights =
+            [
+                fields.Required("weight_money", Scalars.Int, 0),
+                fields.Required("weight_heal", Scalars.Int, 0),
+                fields.Required("weight_veteran", Scalars.Int, 0),
+                fields.Required("weight_reveal", Scalars.Int, 0),
+                fields.Required("weight_armor", Scalars.Int, 0),
+                fields.Required("weight_firepower", Scalars.Int, 0),
+                fields.Required("weight_speed", Scalars.Int, 0),
+                fields.Required("weight_unit", Scalars.Int, 0),
+            ],
+            Armor = fields.Required("armor", Scalars.Percent, Fixed.One),
+            Firepower = fields.Required("firepower", Scalars.Percent, Fixed.One),
+            Speed = fields.Required("speed", Scalars.Percent, Fixed.One),
+            Units = fields.Required("units", Scalars.IdList, ImmutableArray<string>.Empty),
         };
     }
 

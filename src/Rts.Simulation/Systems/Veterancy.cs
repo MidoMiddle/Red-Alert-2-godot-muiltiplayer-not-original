@@ -104,11 +104,15 @@ public static class Veterancy
             amount = IntMath.Max(1, (int)((long)amount * 2 / 3));
         }
 
-        return amount;
+        // The Firepower and the Armor of the crates (M11 a6).
+        return CrateSystem.Damage(world, victim, shooter, amount);
     }
 
     /// <summary>The speed of the unit: a fifth more for a veteran.</summary>
     public static int Speed(Unit unit, int speed) => IsVeteran(unit) ? speed * 6 / 5 : speed;
+
+    /// <summary>The speed of the unit in the match: a veteran's, and the Speed of a crate on top (M11 a6).</summary>
+    internal static int Speed(GameWorld world, Unit unit, int speed) => CrateSystem.Speed(world, unit, Speed(unit, speed));
 
     /// <summary>The reload of a weapon of <paramref name="shooter"/>: shorter for a veteran soldier.</summary>
     internal static int Reload(GameWorld world, EntityId shooter, int reload) =>

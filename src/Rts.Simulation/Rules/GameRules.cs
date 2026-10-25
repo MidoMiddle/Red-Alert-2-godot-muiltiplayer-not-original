@@ -97,6 +97,9 @@ public sealed class GameRules
         return false;
     }
 
+    /// <summary>The crates of a match (M11 a6): the <c>crates</c> record of the data, or the defaults without one.</summary>
+    public CratesDef Crates => Database.Crates.Length > 0 ? Database.Crates[0] : CratesDef.Default;
+
     /// <summary>The general rules of the economy: the one <c>economy</c> record of the data.</summary>
     public EconomyDef Economy => Database.Economies[0];
 

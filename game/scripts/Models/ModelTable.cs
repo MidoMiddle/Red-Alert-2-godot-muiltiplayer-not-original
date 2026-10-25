@@ -82,7 +82,7 @@ public static class ModelTable
     /// <summary>The kinds of keys: what the first part of a key may be.</summary>
     public static readonly ImmutableArray<string> Kinds = ["building", "unit", "object", "tree", "ore"];
 
-    private static readonly Regex KeyPattern = new("^(building|unit|object|tree|ore)/[a-z0-9_]+$", RegexOptions.CultureInvariant);
+    private static readonly Regex KeyPattern = new("^(building|unit|object|tree|ore|crate)/[a-z0-9_]+$", RegexOptions.CultureInvariant);
     private static readonly Regex FilePattern = new("^[a-z0-9_]+(/[a-z0-9_]+)*\\.glb$", RegexOptions.CultureInvariant);
 
     public static IReadOnlyDictionary<string, ModelEntry> Read(string text)
@@ -124,7 +124,7 @@ public static class ModelTable
             var key = Text(pair.Key);
             if (!KeyPattern.IsMatch(key))
             {
-                throw Error(pair.Key, $"'{key}' is not a key such as building/<id>, unit/<id>, object/<id>, tree/<shape> or ore/<kind>");
+                throw Error(pair.Key, $"'{key}' is not a key such as building/<id>, unit/<id>, object/<id>, tree/<shape>, ore/<kind> or crate/supply");
             }
 
             if (table.ContainsKey(key))

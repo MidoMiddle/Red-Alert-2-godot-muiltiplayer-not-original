@@ -150,6 +150,9 @@ public static class RulesLoader
             case "country":
                 AddUnlessTemplate(template, DefinitionReader.Country(entry, !template), definition => builder.Add(definition));
                 break;
+            case "crates":
+                AddUnlessTemplate(template, DefinitionReader.Crates(entry, !template), definition => builder.Add(definition));
+                break;
             case "army":
                 AddUnlessTemplate(template, DefinitionReader.Army(entry, !template), definition => builder.Add(definition));
                 break;

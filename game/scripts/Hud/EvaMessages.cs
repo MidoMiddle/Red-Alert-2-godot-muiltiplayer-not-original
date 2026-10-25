@@ -36,6 +36,18 @@ public sealed class EvaMessages
         MatchEnded ended => ended.Winners.Contains(player) ? "UI_EVA_VICTORY" : "UI_EVA_DEFEAT",
         // Loose ends, stage 3: a unit of the player promoted.
         UnitPromoted promoted when promoted.Owner == player => "UI_EVA_UNIT_PROMOTED",
+        // M11 a6: what a crate gave the player.
+        CratePicked picked when picked.Player == player => picked.Kind switch
+        {
+            Rts.Simulation.Rules.CrateKind.Money => "UI_EVA_CRATE_MONEY",
+            Rts.Simulation.Rules.CrateKind.Heal => "UI_EVA_CRATE_HEAL",
+            Rts.Simulation.Rules.CrateKind.Veteran => "UI_EVA_CRATE_VETERAN",
+            Rts.Simulation.Rules.CrateKind.Reveal => "UI_EVA_CRATE_REVEAL",
+            Rts.Simulation.Rules.CrateKind.Armor => "UI_EVA_CRATE_ARMOR",
+            Rts.Simulation.Rules.CrateKind.Firepower => "UI_EVA_CRATE_FIREPOWER",
+            Rts.Simulation.Rules.CrateKind.Speed => "UI_EVA_CRATE_SPEED",
+            _ => "UI_EVA_CRATE_UNIT",
+        },
         // Loose ends, stage 2: a bridge mended.
         BridgeRepaired => "UI_EVA_BRIDGE_REPAIRED",
         // Loose ends, stage 1: a building taken by the player, or from them.

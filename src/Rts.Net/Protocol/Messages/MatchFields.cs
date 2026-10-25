@@ -13,7 +13,7 @@ internal static class MatchFields
 {
     /// <summary>
     /// <c>i32 startingCredits | u8 shortGame | u8 gameSpeed | u8 fogOfWar | u8 mcvRepacks | u8 superweapons | u8 destroyableBridges |
-    /// u8 startingUnits</c> (the fog since protocol 2, the next three since 6, the units since 10).
+    /// u8 startingUnits | u8 crates</c> (the fog since protocol 2, the next three since 6, the units since 10, the crates since 11).
     /// </summary>
     public static void WriteOptions(MessageWriter writer, MatchOptions options)
     {
@@ -25,10 +25,11 @@ internal static class MatchFields
         writer.WriteBool(options.Superweapons);
         writer.WriteBool(options.DestroyableBridges);
         writer.WriteSmall(options.StartingUnits, nameof(options.StartingUnits));
+        writer.WriteBool(options.Crates);
     }
 
     public static MatchOptions ReadOptions(ref MessageReader reader) =>
-        new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadByte());
+        new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool());
 
     /// <summary>
     /// <c>string mapId | u64 seed | options | u8 playerCount | players | u8 startCount | (i32 x | i32 y) × startCount</c>, a player being

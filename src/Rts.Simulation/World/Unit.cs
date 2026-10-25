@@ -107,6 +107,9 @@ public sealed class Unit : Entity
     /// </summary>
     public int Experience { get; internal set; }
 
+    /// <summary>What crates gave it for good (M11 a6): Armor, Firepower, Speed. State: hashed when it has any.</summary>
+    public CrateUpgrade Upgrades { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 

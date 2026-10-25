@@ -143,6 +143,18 @@ public sealed class GameWorld
     /// <summary>The C4 on bridge segments, in the order planted (<see cref="Systems.BridgeDemolition"/>). State: hashed.</summary>
     internal List<BridgeBomb> BridgeBombs { get; } = [];
 
+    /// <summary>The crates on the map, in the order they came (M11 a6, <see cref="Systems.CrateSystem"/>). State: hashed with crates on.</summary>
+    internal List<Crate> Crates { get; } = [];
+
+    /// <summary>The crates on the map, for the screen.</summary>
+    public IReadOnlyList<Crate> CratesOnMap => Crates;
+
+    /// <summary>Ticks before the next crate, while the map holds fewer than it may (M11 a6). State: hashed with crates on.</summary>
+    internal int CrateTimer { get; set; }
+
+    /// <summary>The number of the next crate (M11 a6). State: hashed with crates on.</summary>
+    internal int NextCrateId { get; set; } = 1;
+
     /// <summary>The level of toxin on every cell, in row order (stage 3b, <see cref="Systems.RadiationSystem"/>). State: hashed.</summary>
     internal ushort[] Radiation { get; }
 

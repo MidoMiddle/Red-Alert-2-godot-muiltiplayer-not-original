@@ -91,6 +91,7 @@ public partial class SkirmishSetup : Control
     private HSlider _speed = null!;
     private Label _speedValue = null!;
     private HSlider _units = null!;
+    private CheckBox _crates = null!;
     private Label _unitsValue = null!;
     private HSlider _credits = null!;
     private Label _creditsValue = null!;
@@ -360,7 +361,8 @@ public partial class SkirmishSetup : Control
         var left = Column(grid);
         _shortGame = Check(left, "UI_OPTION_SHORT_GAME", on => Apply(_config with { ShortGame = on }));
         _repacks = Check(left, "UI_OPTION_MCV_REPACKS", on => Apply(_config with { McvRepacks = on }));
-        Locked(left, "UI_OPTION_CRATES", false);
+        _crates = Check(left, "UI_OPTION_CRATES", on => Apply(_config with { Crates = on }));
+        _crates.TooltipText = Tr("UI_OPTION_CRATES_HINT");
         _superweapons = Check(left, "UI_OPTION_SUPERWEAPONS", on => Apply(_config with { Superweapons = on }));
         _bridges = Check(left, "UI_OPTION_DESTROYABLE_BRIDGES", on => Apply(_config with { DestroyableBridges = on }));
 
@@ -472,6 +474,7 @@ public partial class SkirmishSetup : Control
         _repacks.SetPressedNoSignal(_config.McvRepacks);
         _superweapons.SetPressedNoSignal(_config.Superweapons);
         _bridges.SetPressedNoSignal(_config.DestroyableBridges);
+        _crates.SetPressedNoSignal(_config.Crates);
         _fog.SetPressedNoSignal(_config.FogOfWar);
         _speed.SetValueNoSignal(_config.GameSpeed);
         _speedValue.Text = _config.GameSpeed.ToString(CultureInfo.InvariantCulture);

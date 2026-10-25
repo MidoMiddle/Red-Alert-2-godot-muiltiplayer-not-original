@@ -24,6 +24,7 @@ public partial class Minimap : Control
     private static readonly Color ShutterColor = new("#2A2D33");
     private static readonly Color ShutterEdge = new("#4A4F57");
     private static readonly Color NeutralBuilding = new("#9A9A9A");
+    private static readonly Color CrateColor = new("#F2E6B8");
 
     private SimulationHost? _host;
     private RtsCamera? _camera;
@@ -138,6 +139,17 @@ public partial class Minimap : Control
                     ToMinimap(building.Cell.X + building.Width, building.Cell.Y + building.Height),
                     ToMinimap(building.Cell.X, building.Cell.Y + building.Height),
                 ], color);
+            }
+        }
+
+        // The crates (M11 a6) where the player has been.
+        foreach (var crate in world.CratesOnMap)
+        {
+            if (Terrain.FogOfWar.Current is { Revealed: true }
+                || Rts.Simulation.Visibility.Vision.StateAt(world, SimulationHost.LocalPlayer, crate.Cell) != Rts.Simulation.Visibility.CellVisibility.Shroud)
+            {
+                var at = ToMinimap(crate.Cell.X + 0.5f, crate.Cell.Y + 0.5f);
+                DrawRect(new Rect2(at - new Vector2(1.5f, 1.5f), new Vector2(3f, 3f)), CrateColor);
             }
         }
 

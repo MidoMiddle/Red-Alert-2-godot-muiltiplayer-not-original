@@ -24,7 +24,8 @@ public sealed class RulesDatabase
         ImmutableArray<ArmyDef> armies,
         ImmutableArray<DifficultyDef> difficulties,
         ImmutableArray<PersonalityDef> personalities,
-        ImmutableArray<CountryDef> countries = default)
+        ImmutableArray<CountryDef> countries = default,
+        ImmutableArray<CratesDef> crates = default)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -41,6 +42,7 @@ public sealed class RulesDatabase
         Difficulties = difficulties;
         Personalities = personalities;
         Countries = countries.IsDefault ? ImmutableArray<CountryDef>.Empty : countries;
+        Crates = crates.IsDefault ? ImmutableArray<CratesDef>.Empty : crates;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -79,6 +81,9 @@ public sealed class RulesDatabase
 
     /// <summary>The countries of the factions (loose ends, stage 5).</summary>
     public ImmutableArray<CountryDef> Countries { get; }
+
+    /// <summary>The crates of a match (M11 a6): at most one record; without one the rules take <see cref="CratesDef.Default"/>.</summary>
+    public ImmutableArray<CratesDef> Crates { get; }
 
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
 

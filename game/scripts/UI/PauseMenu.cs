@@ -376,6 +376,7 @@ public partial class PauseMenu : CanvasLayer
             Option("UI_OPTION_SHORT_GAME", options.ShortGame),
             Option("UI_OPTION_SUPERWEAPONS", options.Superweapons),
             Option("UI_OPTION_DESTROYABLE_BRIDGES", options.DestroyableBridges),
+            Option("UI_OPTION_CRATES", options.Crates),
             Option("UI_OPTION_MCV_REPACKS", options.McvRepacks),
             Option("UI_OPTION_FOG_OF_WAR", options.FogOfWar),
             string.Format(Tr("UI_MATCH_OPTION"), Tr("UI_OPTION_CREDITS"), options.StartingCredits.ToString(System.Globalization.CultureInfo.InvariantCulture)),

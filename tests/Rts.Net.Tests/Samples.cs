@@ -55,7 +55,7 @@ internal static class Samples
     public static MatchSetup Setup() => new(
         "frozen_crossing",
         0xDEAD_BEEF_0042UL,
-        new MatchOptions(StartingCredits: 7500, ShortGame: true, GameSpeed: 5, StartingUnits: 7),
+        new MatchOptions(StartingCredits: 7500, ShortGame: true, GameSpeed: 5, StartingUnits: 7, Crates: true),
         [
             new MatchPlayer(1, PlayerKind.Human, AiDifficulty.Medium, "union", 0, 1, 0, new CellPos(10, 10)) { Country = "russia" },
             new MatchPlayer(2, PlayerKind.Ai, AiDifficulty.Medium, "union", 3, 2, 1, new CellPos(50, 50)),

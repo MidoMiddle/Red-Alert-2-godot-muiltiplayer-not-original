@@ -194,7 +194,7 @@ public static class MovementSystem
         }
 
         var delta = target - unit.Position;
-        var speed = Veterancy.Speed(unit, unit.Speed);
+        var speed = Veterancy.Speed(world, unit, unit.Speed);
         if (delta.LengthSquared <= (long)speed * speed)
         {
             Arrive(world, unit, target, events);
@@ -461,7 +461,7 @@ public static class MovementSystem
     private static int LandSpeed(GameWorld world, Unit unit)
     {
         var percent = world.Map.SpeedPercent(unit.Position.ToCell(), unit.Archetype.Locomotor);
-        var speed = Veterancy.Speed(unit, unit.Speed);
+        var speed = Veterancy.Speed(world, unit, unit.Speed);
         return percent == 0 ? speed : (int)IntMath.DivRound((long)speed * percent, 100);
     }
 

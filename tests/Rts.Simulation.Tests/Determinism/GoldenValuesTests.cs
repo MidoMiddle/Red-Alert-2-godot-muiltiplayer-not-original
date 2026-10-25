@@ -352,6 +352,7 @@ public sealed class GoldenValuesTests
         // Replay format v27 (M9 step 11): one byte more, the network flag of a match on one computer.
         // Replay format v28 (M6 step 8: Unit Count in the match setup, which this scenario has not): the version only.
         // Rules v73 (M11 a5: the machine shop and the power plant): the version only.
-        Assert.Equal((22270, 17455470620706506037UL), (bytes.Length, hash.Value));
+        // Replay format v29, rules v74 (M11 a6: the crates; this scenario has no match, so no option byte): the versions only.
+        Assert.Equal((22270, 11563049241394174071UL), (bytes.Length, hash.Value));
     }
 }

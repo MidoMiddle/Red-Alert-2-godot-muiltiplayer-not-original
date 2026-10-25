@@ -153,6 +153,8 @@ public sealed class GameSimulation
         ParadropSystem.Update(World, _events);
         BombSystem.Update(World, _events);
         AmmoSystem.Update(World, _events);
+        // The crates (M11 a6): taken where a unit stands after moving, new ones on the map.
+        CrateSystem.Update(World, _events);
 
         // 5. Ore grows and spreads (by its interval), the sources erupt (M3 step 16), then technologies, when the buildings changed.
         OreGrowthSystem.Update(World);

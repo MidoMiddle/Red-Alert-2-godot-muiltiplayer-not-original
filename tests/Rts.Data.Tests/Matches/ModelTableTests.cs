@@ -38,6 +38,7 @@ public sealed class ModelTableTests
                 "object" => MapObjectTypes.TryGetById(id, out _) && id != "pine_tree",
                 "tree" => TreeShapes.Contains(id),
                 "ore" => OreKinds.Contains(id),
+                "crate" => id == "supply",
                 _ => false,
             };
             Assert.True(known, $"{key} names nothing of the game");

@@ -59,6 +59,9 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
     /// <summary>The game speed 1–6 of RA2 the match starts at; 4 by default.</summary>
     public int GameSpeed { get; init; } = 4;
 
+    /// <summary>RA2 «Crates Appear»: crates on the map that give a bonus (M11 a6). On by default, as in RA2.</summary>
+    public bool Crates { get; init; } = true;
+
     /// <summary>RA2 «Unit Count»: the soldiers every player gets beside its MCV, 0–10; 3 by default.</summary>
     public int StartingUnits { get; init; } = MatchOptions.DefaultStartingUnits;
 
@@ -288,7 +291,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         return new MatchSetup(
             map.Id,
             seed,
-            new MatchOptions(Credits, ShortGame, GameSpeed, FogOfWar, McvRepacks, Superweapons, DestroyableBridges, StartingUnits),
+            new MatchOptions(Credits, ShortGame, GameSpeed, FogOfWar, McvRepacks, Superweapons, DestroyableBridges, StartingUnits, Crates),
             players.MoveToImmutable(),
             [.. map.Starts.Select(start => start.Cell)]);
     }
@@ -305,6 +308,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         text.Append(CultureInfo.InvariantCulture, $"bridges={(DestroyableBridges ? 1 : 0)}\n");
         text.Append(CultureInfo.InvariantCulture, $"speed={GameSpeed}\n");
         text.Append(CultureInfo.InvariantCulture, $"units={StartingUnits}\n");
+        text.Append(CultureInfo.InvariantCulture, $"crates={(Crates ? 1 : 0)}\n");
         text.Append(CultureInfo.InvariantCulture, $"map={MapId}\n");
         foreach (var slot in Slots)
         {
@@ -322,6 +326,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
         var shortGame = false;
         var fog = false;
         var (repacks, superweapons, bridges, speed, units, mapId) = (true, true, true, 4, MatchOptions.DefaultStartingUnits, "");
+        var crates = true;
         var slots = new List<SkirmishSlot>();
         foreach (var line in text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -355,6 +360,9 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
                 case "speed" when int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number) && number is >= 1 and <= MaxGameSpeed:
                     speed = number;
                     break;
+                case "crates":
+                    crates = value != "0";
+                    break;
                 case "units" when int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number) && number <= MatchOptions.MaxStartingUnits:
                     units = number;
                     break;
@@ -375,6 +383,7 @@ public sealed record SkirmishConfig(ImmutableArray<SkirmishSlot> Slots, int Cred
             DestroyableBridges = bridges,
             GameSpeed = speed,
             StartingUnits = units,
+            Crates = crates,
             MapId = mapId,
         };
     }

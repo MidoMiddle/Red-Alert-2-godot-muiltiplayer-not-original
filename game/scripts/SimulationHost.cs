@@ -320,6 +320,12 @@ public partial class SimulationHost : Node
         _match ??= RoutedMatch() ?? (!IsBattle && definition is not null && MatchSetups.IsPlayable(definition)
             ? MatchSetups.OneOnOne(definition, Data.Rules.DefaultFaction.Id, MatchSetups.NewSeed())
             : null);
+        if (_match is not null && RoutedMatch() is null && _net is null && OS.GetCmdlineUserArgs().Contains("--crates"))
+        {
+            // --crates: the quick match of a map with crates on (M11 a6), to look at them with --no-bots.
+            _match = _match with { Options = _match.Options with { Crates = true } };
+        }
+
         if (_match is not null)
         {
             // A match (M5 step 2): the starting units come with the world, the bots think inside the simulation.
