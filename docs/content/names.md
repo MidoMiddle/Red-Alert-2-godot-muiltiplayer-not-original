@@ -18,6 +18,7 @@
 | wall | Wall | стены | Wall | работает |
 | sentry_bunker | Sentry Bunker | пулемёт | Sentry Gun | работает |
 | tesla_coil | Tesla Coil | электрооборона | Tesla Coil | работает |
+| psychic_sensor | Psi Sensor | разведка | Psychic Sensor | работает: с энергией в 15 клетках показывает переодетых шпионов, подводные юниты и линии, куда целятся враги |
 | flak_cannon | Flak Cannon | ПВО | Flak Cannon | работает: бьёт по авиации (этап 2б) |
 | naval_shipyard | Dockyard | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | service_depot | Field Workshop | ремонт техники | Service Depot | работает: чинит технику и корабли рядом, за деньги (этап 2в) |

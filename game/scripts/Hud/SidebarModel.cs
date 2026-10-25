@@ -131,7 +131,7 @@ public static class SidebarModel
         // Defenses (W).
         "alliance_wall", "alliance_pillbox", "alliance_patriot_missile_system", "alliance_prism_tower", "alliance_gap_generator",
         "alliance_grand_cannon",
-        "wall", "sentry_bunker", "flak_cannon", "tesla_coil",
+        "wall", "sentry_bunker", "flak_cannon", "tesla_coil", "psychic_sensor",
 
         // Infantry (E).
         "alliance_attack_dog", "alliance_rifleman", "alliance_engineer", "alliance_rocketeer", "alliance_spy", "alliance_sniper",

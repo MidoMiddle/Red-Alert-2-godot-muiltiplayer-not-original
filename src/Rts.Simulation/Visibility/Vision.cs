@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
 
 namespace Rts.Simulation.Visibility;
@@ -107,9 +109,19 @@ public static class Vision
         IsVisible(world, player, cell) ? CellVisibility.Visible : IsExplored(world, player, cell) ? CellVisibility.Fog : CellVisibility.Shroud;
 
     // Whether a sensor of the team of the player has the unit in reach.
-    private static bool Sensed(GameWorld world, PlayerId player, Unit unit)
+    private static bool Sensed(GameWorld world, PlayerId player, Unit unit) => InReach(world, world.Sensors, player, unit);
+
+    /// <summary>Whether a psychic sensor of the team of the player shows a disguised spy for what it is (RA2 <c>DetectDisguise</c>).</summary>
+    public static bool Unmasked(GameWorld world, PlayerId player, Unit unit) =>
+        !player.IsNeutral && InReach(world, world.DisguiseDetectors, player, unit);
+
+    /// <summary>Whether a psychic sensor of the team of the player shows what the unit aims at (RA2 <c>PsychicDetectionRadius</c>).</summary>
+    public static bool IntentShown(GameWorld world, PlayerId player, Unit unit) =>
+        !player.IsNeutral && InReach(world, world.IntentReaders, player, unit);
+
+    private static bool InReach(GameWorld world, List<(PlayerId Owner, WorldPos Position, int Reach)> detectors, PlayerId player, Unit unit)
     {
-        foreach (var (owner, position, reach) in world.Sensors)
+        foreach (var (owner, position, reach) in detectors)
         {
             if (world.AreAllies(player, owner) && Combat.DamageCalculator.Distance(position, unit.Position) <= reach)
             {

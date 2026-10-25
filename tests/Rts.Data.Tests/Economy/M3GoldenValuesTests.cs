@@ -58,7 +58,8 @@ public sealed class M3GoldenValuesTests
         // Rules v75: the same run and credits; the content of Yuri's Revenge is out, and the numbers of the Alliance's units in the
         // data move.
         // Rules v77: the same run and credits; the cloning vats join the Union's buildings in the data.
-        Assert.Equal((5972, 0xba65535811ef0c88UL), (fifth.Credits, fifth.Checksum));
+        // Rules v78: the same run and credits; so does the psychic sensor.
+        Assert.Equal((5972, 0x1da204d652f4e4cdUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:16 (tick 3851).
         Assert.Equal(3851, Run.Value.TankTicks[0]);
     }

@@ -308,6 +308,8 @@ public sealed class StateHasherTests
         "<DeathBlasts>k__BackingField",
         // The sensors of the moment (stage 3e), rebuilt from the units with the sight: derived.
         "<Sensors>k__BackingField",
+        // The psychic sensors of the moment (RA2), rebuilt with the sight: derived.
+        "<DisguiseDetectors>k__BackingField", "<IntentReaders>k__BackingField",
         // Derived from unit positions and rebuilt from them; not hashed (docs/implementation/M2_unit_control.md, 4.9).
         "<Spatial>k__BackingField",
         // The hits of a tick, emptied in the same tick (M4 step 5): never state.

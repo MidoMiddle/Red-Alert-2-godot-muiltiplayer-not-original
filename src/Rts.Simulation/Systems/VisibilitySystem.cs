@@ -21,15 +21,7 @@ public static class VisibilitySystem
 {
     public static void Update(GameWorld world)
     {
-        // The sensors of the moment (stage 3e).
-        world.Sensors.Clear();
-        foreach (var entity in world.Entities)
-        {
-            if (entity is Unit { IsAlive: true, Archetype.Sensors: > 0 } sensor && !sensor.Owner.IsNeutral)
-            {
-                world.Sensors.Add((sensor.Owner, sensor.Position, sensor.Archetype.Sensors * WorldPos.LeptonsPerCell));
-            }
-        }
+        Detectors(world);
 
         foreach (var entity in world.Entities)
         {
@@ -86,6 +78,43 @@ public static class VisibilitySystem
                     grid.Veil(middle, veil, 1);
                 }
                 building.VeilRadius = veil;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The sensors of the moment (stage 3e), and the psychic sensors that stand ready with power (RA2): rebuilt with the sight, and
+    /// again once the power of the tick is known, so a sensor that just lost its power unmasks nobody in that tick.
+    /// </summary>
+    public static void Detectors(GameWorld world)
+    {
+        world.Sensors.Clear();
+        world.DisguiseDetectors.Clear();
+        world.IntentReaders.Clear();
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Unit { IsAlive: true, Archetype.Sensors: > 0 } sensor && !sensor.Owner.IsNeutral)
+            {
+                world.Sensors.Add((sensor.Owner, sensor.Position, sensor.Archetype.Sensors * WorldPos.LeptonsPerCell));
+            }
+            else if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && !building.Owner.IsNeutral
+                     && (def.Sensors | def.DetectsDisguiseRadius | def.RevealsIntentRadius) > 0 && Combat.Defenses.IsOnline(world, building))
+            {
+                var centre = Combat.Aim.CentreOf(building);
+                if (def.Sensors > 0)
+                {
+                    world.Sensors.Add((building.Owner, centre, def.Sensors * WorldPos.LeptonsPerCell));
+                }
+
+                if (def.DetectsDisguiseRadius > 0)
+                {
+                    world.DisguiseDetectors.Add((building.Owner, centre, def.DetectsDisguiseRadius * WorldPos.LeptonsPerCell));
+                }
+
+                if (def.RevealsIntentRadius > 0)
+                {
+                    world.IntentReaders.Add((building.Owner, centre, def.RevealsIntentRadius * WorldPos.LeptonsPerCell));
+                }
             }
         }
     }

@@ -127,6 +127,18 @@ public sealed record BuildingDef : IDefinition
     /// </summary>
     public bool ClonesInfantry { get; init; }
 
+    /// <summary>
+    /// RA2 psychic sensor, while it stands ready and online: within this many cells disguised spies are shown to its owner's team for
+    /// what they are (<c>DetectDisguise</c>); 0 for none.
+    /// </summary>
+    public int DetectsDisguiseRadius { get; init; }
+
+    /// <summary>The same: within this many cells units under the water are found (<c>SensorArray</c>, <c>SensorsSight</c>); 0 for none.</summary>
+    public int Sensors { get; init; }
+
+    /// <summary>The same: within this many cells the team sees what enemy units aim at (<c>PsychicDetectionRadius</c>); 0 for none.</summary>
+    public int RevealsIntentRadius { get; init; }
+
     /// <summary>The weapon that goes off where it stood when a shot brings it down (stage 2c: the atomic plant); empty for none.</summary>
     public string DeathWeapon { get; init; } = "";
 

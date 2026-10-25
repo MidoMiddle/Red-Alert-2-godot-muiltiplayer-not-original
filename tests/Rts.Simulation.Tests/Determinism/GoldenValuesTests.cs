@@ -357,6 +357,7 @@ public sealed class GoldenValuesTests
         // the machine shop and the power plant): the version only.
         // Rules v76 (the outpost of RA2): the version only.
         // Rules v77 (the cloning vats of RA2): the version only.
-        Assert.Equal((22270, 5076591376660123024UL), (bytes.Length, hash.Value));
+        // Rules v78 (the psychic sensor of RA2): the version only.
+        Assert.Equal((22270, 32727009685317619UL), (bytes.Length, hash.Value));
     }
 }

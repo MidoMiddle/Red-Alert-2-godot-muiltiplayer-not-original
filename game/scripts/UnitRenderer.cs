@@ -143,6 +143,7 @@ public partial class UnitRenderer : Node3D
     {
         var viewer = SimulationHost.LocalPlayer;
         if (!unit.Archetype.Has(UnitTalents.Disguised) || world.AreAllies(viewer, unit.Owner) || viewer.IsNeutral
+            || Rts.Simulation.Visibility.Vision.Unmasked(world, viewer, unit)
             || !UnitTypes.TryGetById(world.Player(viewer).Faction.StartingInfantry, out var soldier))
         {
             return (unit.Archetype, unit.Owner);

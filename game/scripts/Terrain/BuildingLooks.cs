@@ -697,6 +697,15 @@ public static class BuildingLooks
             Box(0.6f, 0.15f, 0.6f, 0, 0.35f, 0, LookTint.Body),
             Tube(0.09f, 0.5f, 0, 0.42f, 0.4f, LookTint.Dark, 90f),
         ],
+        // RA2 psychic sensor: a low block with a dish antenna and a glowing emitter.
+        ["psychic_sensor"] =
+        [
+            Box(1.8f, 0.4f, 1.8f, 0, 0, 0, LookTint.Body),
+            Cyl(0.18f, 0.9f, 0, 0.4f, 0, LookTint.Metal),
+            Cone(1.1f, 0.3f, 0, 1.3f, 0, LookTint.Metal),
+            Ball(0.3f, 0, 1.75f, 0, LookTint.Glow),
+            Box(0.5f, 0.3f, 0.5f, -0.55f, 0.4f, 0.55f, LookTint.Roof),
+        ],
         ["tesla_coil"] =
         [
             Box(1.6f, 0.25f, 1.6f, 0, 0, 0, LookTint.Body),

@@ -208,10 +208,14 @@ public static class TargetingSystem
         return false;
     }
 
-    /// <summary>Whether <paramref name="me"/> takes the candidate, a disguised unit (stage 3b), for one of its own: all but the dogs do.</summary>
-    internal static bool Fooled(Entity me, Entity candidate) =>
+    /// <summary>
+    /// Whether <paramref name="me"/> takes the candidate, a disguised unit (stage 3b), for one of its own: all but the dogs do, unless a
+    /// psychic sensor of its team unmasks the spy (RA2).
+    /// </summary>
+    internal static bool Fooled(GameWorld world, Entity me, Entity candidate) =>
         candidate is Unit disguised
-        && ((disguised.Archetype.Has(UnitTalents.Disguised) && !(me is Unit watcher && watcher.Archetype.Has(UnitTalents.DetectsDisguise)))
+        && ((disguised.Archetype.Has(UnitTalents.Disguised) && !(me is Unit watcher && watcher.Archetype.Has(UnitTalents.DetectsDisguise))
+             && !Vision.Unmasked(world, me.Owner, disguised))
             || IsTree(disguised));
 
     /// <summary>Whether the unit, standing still, passes for a tree now (stage 3c: the holo tank).</summary>
@@ -292,7 +296,7 @@ public static class TargetingSystem
                 || (candidate.ErasedBy is { } holder && holder != me.Id)
                 // A disguised unit (stage 3b: the infiltrator) passes for one of ours, but not before a dog; one with a bomb on it is
                 // left by those that only plant bombs.
-                || Fooled(me, candidate)
+                || Fooled(world, me, candidate)
                 || (candidate.BombTicks > 0 && BombSystem.PlantsOnly(rules, weapons))
                 // A parasite (stage 3d) leaves a vehicle with one inside, a ship and a flier.
                 || (candidate is Unit { Parasite: not 0 } or Unit { Archetype.Category: UnitCategory.Naval or UnitCategory.Aircraft }
@@ -317,8 +321,9 @@ public static class TargetingSystem
             }
         }
 
+        // The target kept, unless it passes for one of ours again (a spy whose psychic sensor went off).
         if (best is null && current is { } kept && world.TryGet(kept, out var target) && target.IsAlive && area.Holds(target)
-            && Vision.Sees(world, me.Owner, target))
+            && Vision.Sees(world, me.Owner, target) && !Fooled(world, me, target))
         {
             return kept;
         }

@@ -122,6 +122,7 @@ public sealed class GameSimulation
 
         // 3. Power, when the buildings changed (docs/implementation/M3_base_economy.md, 4.15), production, new buildings grow, harvesters work, repairs.
         PowerSystem.Update(World, _events);
+        VisibilitySystem.Detectors(World);
         ProductionSystem.Update(World, _events);
         BuildUpSystem.Update(World, _events);
         HarvesterSystem.Update(World, _events);

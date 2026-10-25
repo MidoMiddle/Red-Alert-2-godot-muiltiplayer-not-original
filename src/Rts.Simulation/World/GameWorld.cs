@@ -137,6 +137,14 @@ public sealed class GameWorld
     /// </summary>
     internal List<(PlayerId Owner, WorldPos Position, int Reach)> Sensors { get; } = [];
 
+    /// <summary>
+    /// The psychic sensors that stand ready and online (RA2): those that unmask spies and those that show what enemies aim at, their
+    /// owner, place and reach in leptons; rebuilt by <see cref="Systems.VisibilitySystem"/> with the sight, so derived: not hashed.
+    /// </summary>
+    internal List<(PlayerId Owner, WorldPos Position, int Reach)> DisguiseDetectors { get; } = [];
+
+    internal List<(PlayerId Owner, WorldPos Position, int Reach)> IntentReaders { get; } = [];
+
     /// <summary>The lightning storms called down and not over yet (stage 2d: the Storm Generator). State: hashed.</summary>
     internal List<Storm> Storms { get; } = [];
 

@@ -150,6 +150,24 @@ tesla_coil:  # electric defence
   power: -75
   prerequisites: [radar]
 
+psychic_sensor:  # RA2 Psychic Sensor (NAPSIS): within 15 cells, with power, shows its owner disguised spies, units under the water and what enemy units aim at
+  kind: building
+  inherits: base_defense
+  name: Psi Sensor
+  faction: union
+  cost: 1000
+  build_time: 42s
+  hp: 750
+  sight: 10
+  armor: wood
+  footprint: [2, 2]
+  power: -50
+  prerequisites: [tech_center]
+  capturable: true
+  detects_disguise: 15
+  sensors: 15
+  reveals_intent: 15
+
 flak_cannon:  # anti-air defence
   kind: building
   inherits: base_defense
