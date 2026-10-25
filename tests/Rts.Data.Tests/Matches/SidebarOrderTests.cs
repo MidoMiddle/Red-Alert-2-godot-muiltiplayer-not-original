@@ -102,4 +102,19 @@ public sealed class SidebarOrderTests
             }
         }
     }
+
+    [Fact]
+    public void Every_tab_fits_into_the_squares_of_the_sidebar()
+    {
+        // M6 step 10: the grid has SidebarLayout.Slots squares and does not scroll; an item past them would not be seen.
+        var world = World();
+        foreach (var player in new[] { Union, Allied })
+        {
+            foreach (var group in Enum.GetValues<BuildGroup>())
+            {
+                var count = SidebarModel.Cameos(world, player, group).Count;
+                Assert.True(count <= SidebarLayout.Slots, $"{player} {group}: {count} items for {SidebarLayout.Slots} squares");
+            }
+        }
+    }
 }
