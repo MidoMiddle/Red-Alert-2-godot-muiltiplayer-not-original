@@ -15,6 +15,7 @@ import os
 import struct
 
 import bpy
+from mathutils import Vector
 
 REPO = "/Users/elai/store/Other Projects/red_alert_2_godot"
 SRC_ROOT = os.path.join(REPO, "assets_src", "models")
@@ -42,6 +43,30 @@ def add_prism(bm, p1, p2, a, b):
     for q in ((0, 1, 3, 2), (4, 6, 7, 5), (0, 1, 5, 4),
               (2, 6, 7, 3), (0, 4, 6, 2), (1, 3, 7, 5)):
         bm.faces.new([v[i] for i in q])
+
+
+def add_stick(bm, p1, p2, half):
+    """A thin square bar from p1 to p2, its sides perpendicular to its length (half is the half-size)."""
+    d = (p2 - p1).normalized()
+    a = d.cross(Vector((0.0, 0.0, 1.0)))
+    if a.length < 1e-6:
+        a = d.cross(Vector((1.0, 0.0, 0.0)))
+    a = a.normalized() * half
+    b = d.cross(a).normalized() * half
+    add_prism(bm, p1, p2, a, b)
+
+
+def fire_nodes(points):
+    """Empty nodes fire_1, fire_2… at the points: the game stands the flames of a damaged building on them."""
+    nodes = []
+    for i, point in enumerate(points, start=1):
+        node = bpy.data.objects.new(f"fire_{i}", None)
+        node.empty_display_type = 'PLAIN_AXES'
+        node.empty_display_size = 0.12
+        node.location = Vector(point)
+        bpy.context.scene.collection.objects.link(node)
+        nodes.append(node)
+    return nodes
 
 
 def make_object(name, bm, smooth=False):
@@ -95,6 +120,30 @@ def uv_smart(obj):
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.02)
     bpy.ops.object.mode_set(mode='OBJECT')
+
+
+def place_uv(obj, lo, hi):
+    """Moves the object's UV layout into [lo, hi] of the texture, so the objects of one model do not overlap there."""
+    for item in obj.data.uv_layers.active.data:
+        item.uv = (lo + (hi - lo) * item.uv.x, item.uv.y)
+
+
+def ruins_material(mat_name):
+    """The material of ruins: plaster stumps, sooty at the foot, snow on the upward faces, rough all over."""
+    mat = new_material(mat_name)
+    g = Graph(mat)
+    ao = g.ao(0.25)
+    z = g.axis(g.object_coord(), 'Z')
+    grain = g.noise(12.0, 4.0)
+    plaster = g.mix(grain, (0.42, 0.38, 0.34), (0.52, 0.48, 0.44))
+    soot = g.clamp01(g.math('MULTIPLY_ADD', z, -3.0, 1.0))  # black at the foot, clean above about a third of a metre
+    base = g.mix(soot, plaster, (0.10, 0.09, 0.08))
+    base = g.mix(g.snow_mask(0.2, 0.5), base, (0.92, 0.93, 0.95))
+    rough = g.math('MULTIPLY_ADD', grain, 0.0, 0.9)
+    metal = g.math('MULTIPLY', grain, 0.0)
+    normal = g.bump(g.noise(18.0, 3.0), 0.08, 0.01)
+    g.finish(base, normal, g.combine(ao, rough, metal))
+    return mat, g
 
 
 def tri_count(obj):
@@ -368,5 +417,5 @@ def glb_report(path):
 
 def save_blend(objs, mat, imgs, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    blocks = set(objs) | {o.data for o in objs} | {mat} | set(imgs.values())
+    blocks = set(objs) | {o.data for o in objs if o.data is not None} | {mat} | set(imgs.values())
     bpy.data.libraries.write(path, blocks, fake_user=True)
