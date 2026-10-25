@@ -11,7 +11,7 @@
 
 | Ассет | Футпринт | Высота (ориентир) | Бюджет LOD0 | Узлы | Цвет команды |
 |---|---|---|---|---|---|
-| `building_oil_derrick` | 2x2 | 4 | ≤ 8 000 | `base`, `beam`, `team_mask` | да (флаг на насосной) |
+| `building_oil_derrick` | 2x2 | 2 | ≤ 8 000 | `body`, `beam`, `team_mask` | да (кольцо на силосе) |
 | `building_hospital` | 3x3 | 3 | ≤ 12 000 | `body`, `roof`, `team_mask` | да (полоса у входа) |
 | `building_workshop` | 3x2 | 3,5 | ≤ 12 000 | `body`, `roof`, `team_mask` | да (полоса над воротами) |
 | `building_airport` | 4x4 | 4 | ≤ 20 000 | `body`, `roof`, `team_mask` | да (на башне) |
@@ -93,7 +93,7 @@ A small wooden repair booth with a sloped roof covered in snow, one window, a to
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `building_oil_derrick.glb` | | | |
+| `building_oil_derrick.glb` (в игре `tech_oil_derrick.glb`) | Blender 5.2.3, вручную (скрипт `tools/blender/families/tech_derrick.py`) | 2026-10-25 | сделано: целая (качалка качается), повреждённая с огнём, руины |
 | `building_hospital.glb` | | | |
 | `building_workshop.glb` | | | |
 | `building_airport.glb` | | | |

@@ -19,6 +19,9 @@ public partial class Buildings : Node3D
 {
     private const float Margin = 0.08f;
     private const float Sink = 0.3f;
+    // A working pumpjack nods its beam: how fast, and how far (radians either way).
+    private const float NodSpeed = 1.6f;
+    private const float NodAngle = 0.25f;
 
     private static readonly Color Civilian = new(0.78f, 0.7f, 0.55f);
     private static readonly Color Tech = new(0.45f, 0.58f, 0.6f);
@@ -28,6 +31,9 @@ public partial class Buildings : Node3D
     private long _builtOwners = -1;
     private SimulationHost? _host;
     private readonly List<Ruin> _ruins = [];
+    // The beams of the working pumpjacks, and the clock they nod by.
+    private readonly List<Node3D> _beams = [];
+    private double _clock;
 
     public override void _Ready()
     {
@@ -48,6 +54,13 @@ public partial class Buildings : Node3D
 
     public override void _Process(double delta)
     {
+        _clock += delta;
+        foreach (var beam in _beams)
+        {
+            // Turned about the node's origin, which is the pivot of the beam.
+            beam.Rotation = new Vector3(0f, 0f, Mathf.Sin((float)_clock * NodSpeed) * NodAngle);
+        }
+
         // The map of the terrain: a match's, or the editor's (M7 step 12), which has no world and shows its start buildings.
         var map = GetParent<TerrainBuilder>().Map;
         var world = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World;
@@ -84,6 +97,7 @@ public partial class Buildings : Node3D
 
     private void Rebuild(Rts.Simulation.Map.MapGrid map, GameWorld? world)
     {
+        _beams.Clear();
         foreach (var child in GetChildren())
         {
             child.QueueFree();
@@ -169,6 +183,12 @@ public partial class Buildings : Node3D
             // The model of the table (docs/art/model_standards.md); a taken tech building shows its owner in its team_mask.
             model.Position += centre + new Vector3(0, ground, 0);
             AddChild(model);
+            // A working pumpjack: its beam is the node named beam, and it nods.
+            if (variant == Models.ModelVariant.Intact && FindNode(model, "beam") is { } beam)
+            {
+                _beams.Add(beam);
+            }
+
             // The smoke and the fire stand over the height the bars of the building stand over: the table's, else the placeholder's.
             var modelHeight = Models.ModelLibrary.Find("building/" + type.Id)?.Height ?? 0f;
             BuildingBlaze.Add(this, model, new Vector3(centre.X, ground + (modelHeight > 0f ? modelHeight : height) + 0.1f, centre.Z),
@@ -259,6 +279,25 @@ public partial class Buildings : Node3D
     }
 
     private sealed record Ruin(GameWorld World, BuildingKind Kind, Rts.Simulation.Geometry.CellPos Cell);
+
+    // The node of that name below a node, the first one found.
+    private static Node3D? FindNode(Node node, string name)
+    {
+        if (node is Node3D spatial && node.Name.ToString() == name)
+        {
+            return spatial;
+        }
+
+        foreach (var child in node.GetChildren())
+        {
+            if (FindNode(child, name) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
 
     private void Box(Vector3 size, Vector3 position, Color color) =>
         AddChild(new MeshInstance3D

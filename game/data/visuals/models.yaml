@@ -31,6 +31,12 @@ models:
                                 occupied: map/building_apartment_block_occupied/building_apartment_block_occupied.glb,
                                 ruins: map/building_apartment_block_ruins/building_apartment_block_ruins.glb }
 
+  # The oil pumpjack of the map (docs/map_elements/12_tech_buildings): the beam nods while it works, the ring on the tank takes the
+  # owner's colour, and its ruins stay where it fell.
+  building/tech_oil_derrick: { file: map/tech_oil_derrick/tech_oil_derrick.glb, height: 2.2,
+                               damaged: map/tech_oil_derrick_damaged/tech_oil_derrick_damaged.glb,
+                               ruins: map/tech_oil_derrick_ruins/tech_oil_derrick_ruins.glb }
+
   # The industrial buildings of the map (docs/industrial_elements).
   building/neutral_smokestack:     { file: industrial/smokestack/smokestack.glb, height: 6 }
   building/neutral_cooling_tower:  { file: industrial/cooling_tower/cooling_tower.glb, height: 5 }

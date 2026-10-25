@@ -140,6 +140,7 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 | `object/snowdrift` | сугроб, две разновидности с поворотом и разбросом ±20 % (только в снегу) |
 | `ore/ore`, `ore/gems` | кластеры руды и самоцветов |
 | `building/neutral_house_a`, `building/neutral_apartment` | дом и многоэтажка карты: целые, занятые пехотой, почти разрушенные и руины; огонь и дым у повреждённых ([BuildingBlaze.cs](../../game/scripts/Terrain/BuildingBlaze.cs)) |
+| `building/tech_oil_derrick` | качалка нефтяная: балка `beam` качается около своей оси, пока качалка целая (её качает [Buildings.cs](../../game/scripts/Terrain/Buildings.cs)); кольцо `team_mask` на силосе — цвет владельца |
 
 Здания карты из документов элементов (школа, церковь, маяк, ферма, саманный дом и другие) рисуются заглушками в [BuildingLooks.cs](../../game/scripts/Terrain/BuildingLooks.cs) гражданскими цветами, мелочь — в [PropLooks.cs](../../game/scripts/Terrain/PropLooks.cs); все они видны в галерее `-- --ui-units --props`.
 
