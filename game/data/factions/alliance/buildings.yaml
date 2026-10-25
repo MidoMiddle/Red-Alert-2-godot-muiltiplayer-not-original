@@ -279,7 +279,7 @@ alliance_prism_tower:  # beam defence; idle towers nearby add to its shot (stage
   sight: 8
   threat: 40
   primary: alliance_lens_beam
-  chain_bonus: 50%
+  chain_bonus: 150%  # RA2 PrismSupportModifier
   chain_max: 8
   footprint: [1, 1]
   power: -75

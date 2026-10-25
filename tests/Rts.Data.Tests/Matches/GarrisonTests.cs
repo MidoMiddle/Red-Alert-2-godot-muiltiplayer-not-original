@@ -228,7 +228,8 @@ public sealed class GarrisonTests
 
         Assert.True(alone.Damage > 0);
         Assert.Equal(0, alone.Supported);
-        Assert.Equal((alone.Damage * 2, 2), chained);
+        // RA2 PrismSupportModifier: each supporter adds 150% of the shot, 120 × (1 + 2 × 1.5).
+        Assert.Equal((alone.Damage * 4, 2), chained);
         Assert.Equal(alone, distant);
     }
 }

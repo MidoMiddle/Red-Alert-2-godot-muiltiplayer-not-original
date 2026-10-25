@@ -41,7 +41,7 @@ flak_ground:  # RA2 FlakTWH: flak at the ground, in an area, strong against infa
 flak_air:  # RA2 FlakWH: flak at aircraft, nothing against buildings
   kind: warhead
   name: Flak (air)
-  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 20%, heavy: 20%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  verses: { none: 150%, flak: 80%, plate: 50%, light: 100%, medium: 100%, heavy: 20%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
   spread: 1
   percent_at_max: 10%
   affects_air: true
@@ -263,10 +263,11 @@ hornet_bomb:  # RA2 HornetBomb's warhead: 0.4 cells, concrete 75%
   spread: 0.4
   infantry_death: explode
 
-sam:  # RA2 SAMWH: the cruiser's missiles at the air
+sam:  # RA2 SAMWH: the missiles of the cruiser and the Patriot at the air, 0.3 cells round
   kind: warhead
   name: SAM
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 0%, steel: 0%, concrete: 0%, special_1: 100%, special_2: 100% }
+  spread: 0.3
   affects_air: true
 
 blimp_bomb:  # RA2 BlimpBomb: the airship's bombs, 2 cells, half at the edge; the verses are ours
@@ -324,3 +325,19 @@ psi_wave:  # RA2 PsiPulse: only soldiers, 85% at the edge of 3 cells; the Yuris 
   percent_at_max: 85%
   spares_own_kind: true
   infantry_death: electro
+
+prism_tower:  # RA2 PrismWarhead: the Prism Tower's beam, soldiers double, buildings half; it hurts walls and bridges
+  kind: warhead
+  name: Prism Tower
+  verses: { none: 200%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 50%, concrete: 50%, special_1: 100%, special_2: 100% }
+  wall_damage: true
+  bridges: true
+  infantry_death: electro
+
+grand_cannon:  # RA2 GrandCannonWH: 2 cells round, 20% at the edge; wood and concrete half
+  kind: warhead
+  name: Grand Cannon
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 50%, steel: 100%, concrete: 50%, special_1: 100%, special_2: 100% }
+  spread: 2
+  percent_at_max: 20%
+  wall_damage: true

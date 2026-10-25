@@ -27,42 +27,42 @@ alliance_light_cannon:  # of the Light Tank
   projectile: shell
   warhead: ap_shell
 
-alliance_pillbox_gun:  # of the Gun Nest
+alliance_pillbox_gun:  # of the Gun Nest, RA2 Vulcan of the pillbox: 50, ROF 26
   kind: weapon
   name: Heavy Machine Gun
-  damage: 40
-  reload: 1.33s
+  damage: 50
+  reload: 1.73s
   range: 5.5
   projectile: bullet
   warhead: small_arms
 
-alliance_lens_beam:  # of the Lens Tower
+alliance_lens_beam:  # of the Lens Tower, RA2 PrismShot: 120, ROF 60, range 8
   kind: weapon
   name: Lens Beam
-  damage: 100
+  damage: 120
   reload: 4s
   range: 8
   projectile: bolt
-  warhead: electric
+  warhead: prism_tower
 
-alliance_siege_shell:  # of the Siege Battery
+alliance_siege_shell:  # of the Siege Battery, RA2 GrandCannonWeapon: 150, ROF 120, range 15, min range 3
   kind: weapon
   name: Siege Shell
   damage: 150
-  reload: 4s
-  range: 10
-  min_range: 2
+  reload: 8s
+  range: 15
+  min_range: 3
   projectile: shell
-  warhead: ap_shell
+  warhead: grand_cannon
 
-alliance_sky_guard_missile:  # of the Sky Guard: aircraft only
+alliance_sky_guard_missile:  # of the Sky Guard, RA2 RedEye2: 75, ROF 55, range 12, aircraft only
   kind: weapon
   name: Sky Guard Missile
-  damage: 50
-  reload: 1.33s
-  range: 10
+  damage: 75
+  reload: 3.67s
+  range: 12
   projectile: rocket
-  warhead: flak_air
+  warhead: sam
   targets: [air]
 
 alliance_dog_bite:  # of the Guard Dog, RA2 BadTeeth: 1000 so that the bite kills any soldier

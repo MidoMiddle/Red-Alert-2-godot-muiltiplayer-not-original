@@ -74,11 +74,11 @@ sentry_machine_gun:  # RA2 Vulcan of the Sentry Gun
   projectile: bullet
   warhead: small_arms
 
-tesla_coil_bolt:  # RA2 CoilBolt
+tesla_coil_bolt:  # RA2 CoilBolt: 200, ROF 120 (80 is Yuri's Revenge), range 7
   kind: weapon
   name: Coil Bolt
   damage: 200
-  reload: 5.33s
+  reload: 8s
   range: 7
   projectile: bolt
   warhead: electric
