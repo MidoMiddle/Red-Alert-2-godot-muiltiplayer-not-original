@@ -2,6 +2,7 @@ using Rts.AI.Modules;
 using Rts.AI.Squads;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.Tests;
 using Rts.Simulation.World;
 
@@ -199,6 +200,40 @@ public sealed class SquadManagerTests
         });
         Assert.Equal(factory.Id, squad.TargetBuilding);
         Assert.NotEqual(factory.Cell, yard.Cell);
+    }
+
+    [Fact]
+    public void A_building_of_the_map_an_enemy_holds_is_a_target_the_last_of_all()
+    {
+        // 2026-10-26: a match froze when a squad looked for its target among the enemy buildings it remembered, met a tech building the
+        // person's engineer had taken — a building of the map, DefIndex -1 — and looked it up in the buildings of the data.
+        var land = Enumerable.Repeat((byte)LandType.Clear, 64 * 64).ToArray();
+        var map = MapGrid.FromLayers(64, 64, land, new byte[land.Length], default, null, null,
+            [new BuildingState(BuildingKind.TechOutpost, new CellPos(40, 40), Scene.Enemy, 0)]);
+        var scene = new Scene(map: map);
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 14, 14);
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 15, 14);
+        var refinery = scene.Build(Scene.Enemy, "refinery", 48, 48);
+        var outpost = scene.World.Entities.OfType<Building>().Single(building => building.DefIndex < 0);
+        var vision = scene.World.VisionOf(Scene.Me);
+        vision.Reveal(new CellPos(44, 44), 12);
+        scene.Look(0);
+        vision.Hide(new CellPos(44, 44), 12);
+        var context = scene.Context();
+        var squads = new SquadManager(Small);
+
+        Turn(scene, squads, context, 1);
+        var squad = context.Plan.Squads.Single();
+        Assert.Equal(refinery.Id, squad.TargetBuilding);
+
+        // The refinery seen gone: the outpost is what is left.
+        Turn(scene, squads, context, 15, () =>
+        {
+            refinery.MarkDead();
+            scene.World.RemoveDead();
+            vision.Reveal(new CellPos(49, 49), 3);
+        });
+        Assert.Equal(outpost.Id, squad.TargetBuilding);
     }
 
     [Fact]

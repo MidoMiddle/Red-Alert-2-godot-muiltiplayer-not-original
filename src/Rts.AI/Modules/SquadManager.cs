@@ -804,7 +804,8 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             enemies += enemy switch
             {
                 Unit unit => context.Memory.StrengthOf(unit),
-                Building building when database.Buildings[building.DefIndex].Hp > 0 =>
+                // A building of the map (a taken tech building, a held civilian one) has no definition to weigh.
+                Building building when building.DefIndex >= 0 && database.Buildings[building.DefIndex].Hp > 0 =>
                     (long)database.Buildings[building.DefIndex].Cost * building.Hp / database.Buildings[building.DefIndex].Hp,
                 _ => 0,
             };
@@ -955,7 +956,9 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
                 return true;
             }
 
-            _targets.Add((building, Rank(rules.Buildings[building.DefIndex], _priority), Distance(centre, building.Cell)));
+            // A building of the map an enemy holds (a taken tech building) has no definition: a target all the same, the last of all.
+            var rank = building.DefIndex >= 0 ? Rank(rules.Buildings[building.DefIndex], _priority) : _priority.Length + 1;
+            _targets.Add((building, rank, Distance(centre, building.Cell)));
         }
 
         if (_targets.Count > 0)
@@ -1013,7 +1016,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         var safest = -1;
         foreach (var building in memory.Buildings)
         {
-            if (rules.Buildings[building.DefIndex].DockCell is null || FieldOf(context.View, building.Cell) is not { } ore || squad.Swept.Contains(ore))
+            if (building.DefIndex < 0 || rules.Buildings[building.DefIndex].DockCell is null || FieldOf(context.View, building.Cell) is not { } ore || squad.Swept.Contains(ore))
             {
                 continue;
             }
@@ -1082,7 +1085,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         var rules = context.View.Rules.Database;
         foreach (var building in context.Memory.Buildings)
         {
-            if (rules.Buildings[building.DefIndex].Primary.Length > 0)
+            if (building.DefIndex >= 0 && rules.Buildings[building.DefIndex].Primary.Length > 0)
             {
                 nearest = IntMath.Min(nearest, Distance(cell, building.Cell));
             }

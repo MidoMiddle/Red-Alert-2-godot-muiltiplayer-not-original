@@ -321,12 +321,12 @@ public partial class PauseMenu : CanvasLayer
         }
 
         var match = world.Match;
-        var rows = new List<(PlayerId Id, string Country, string Name)>();
+        var rows = new List<(PlayerId Id, string Country, string Faction, string Name)>();
         if (match is not null)
         {
             foreach (var player in match.Players)
             {
-                rows.Add((player.Id, player.Country, NameOf(match, player)));
+                rows.Add((player.Id, player.Country, player.Faction, NameOf(match, player)));
             }
         }
         else
@@ -334,15 +334,34 @@ public partial class PauseMenu : CanvasLayer
             // A session without a match (the sandbox): the players of the world.
             foreach (var state in world.Players)
             {
-                rows.Add((state.Id, "", state.Id == SimulationHost.LocalPlayer ? Tr("UI_RESULTS_YOU") : string.Format(Tr("UI_MATCH_PLAYER_N"), state.Id.Value)));
+                rows.Add((state.Id, "", state.Faction.Id, state.Id == SimulationHost.LocalPlayer ? Tr("UI_RESULTS_YOU") : string.Format(Tr("UI_MATCH_PLAYER_N"), state.Id.Value)));
             }
         }
 
-        foreach (var (id, country, playerName) in rows)
+        foreach (var (id, country, faction, shown) in rows)
         {
+            var playerName = shown;
             var player = (Id: id, Country: country);
             var colour = Matches.PlayerColors.Of(player.Id);
-            _table.AddChild(new TextureRect { Texture = Flags.Of(player.Country), StretchMode = TextureRect.StretchModeEnum.KeepCentered, CustomMinimumSize = new Vector2(Flags.Width, Flags.Height) });
+            var flag = Flags.Of(player.Country);
+            var side = SideName(faction);
+            if (flag is not null)
+            {
+                _table.AddChild(new TextureRect { Texture = flag, StretchMode = TextureRect.StretchModeEnum.KeepCentered, CustomMinimumSize = new Vector2(Flags.Width, Flags.Height) });
+            }
+            else
+            {
+                // A bot plays the whole faction, no country (MatchPlayer.Country): the emblem of its side stands for the flag, and the
+                // name says the side.
+                _table.AddChild(new FactionEmblem
+                {
+                    Faction = FactionPalette.Of(faction), Small = true, TooltipText = side,
+                    CustomMinimumSize = new Vector2(Flags.Width, Flags.Height),
+                    SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
+                });
+                playerName = string.Format(Tr("UI_MATCH_PLAYER_SIDE"), playerName, side);
+            }
+
             var name = new Label { Text = playerName };
             name.AddThemeColorOverride("font_color", colour);
             _table.AddChild(name);
@@ -385,6 +404,12 @@ public partial class PauseMenu : CanvasLayer
         };
         _info.Text = string.Format(Tr("UI_MATCH_MAP"), MapName(match.MapId)) + "\n" + string.Join(Tr("UI_MATCH_SEPARATOR"), parts);
     }
+
+    // The name of a faction, RA2's (Soviets, Allies) when the names of RA2 are on.
+    private string SideName(string faction) =>
+        DataFiles.Current.Rules.Database.TryGetFaction(faction, out var def)
+            ? DisplayNames.Of(def.Id, def.Name, AppSettings.Instance?.Values.Ra2Names ?? true, key => Tr(key))
+            : faction;
 
     private string NameOf(MatchSetup match, MatchPlayer player)
     {

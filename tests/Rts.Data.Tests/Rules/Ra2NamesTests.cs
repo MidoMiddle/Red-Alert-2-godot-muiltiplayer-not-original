@@ -17,13 +17,15 @@ public sealed class Ra2NamesTests
             .Select(line => line.Split(',', 2))
             .ToDictionary(parts => parts[0], parts => parts[1]);
         var database = GameDataFiles.Current.Database;
-        // The buildings of the map too: the names over the field show them.
+        // The buildings of the map too: the names over the field show them. The factions too: the statistics name a bot's side.
         var ids = database.Units.Select(unit => unit.Id).Concat(database.Buildings.Select(building => building.Id))
-            .Concat(Rts.Simulation.World.BuildingTypes.All.Select(type => type.Id)).Concat(database.Countries.Select(country => country.Id)).ToList();
+            .Concat(Rts.Simulation.World.BuildingTypes.All.Select(type => type.Id)).Concat(database.Countries.Select(country => country.Id))
+            .Concat(database.Factions.Select(faction => faction.Id)).ToList();
 
         Assert.All(ids, id => Assert.True(names.TryGetValue("RA2_NAME_" + id.ToUpperInvariant(), out var name) && name.Length > 0, id));
         Assert.Equal(ids.Count, names.Count);
         Assert.Equal("GI", names["RA2_NAME_ALLIANCE_RIFLEMAN"]);
         Assert.Equal("Iron Curtain", names["RA2_NAME_IRON_CURTAIN"]);
+        Assert.Equal("Soviets", names["RA2_NAME_UNION"]);
     }
 }
