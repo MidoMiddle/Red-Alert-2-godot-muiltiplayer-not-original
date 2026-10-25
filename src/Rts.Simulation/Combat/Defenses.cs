@@ -9,6 +9,22 @@ namespace Rts.Simulation.Combat;
 /// </summary>
 public static class Defenses
 {
+    /// <summary>
+    /// Whether the building works: always, unless it is powered and its owner is low on power — then a tesla coil works while two
+    /// tesla troopers charge it (RA2).
+    /// </summary>
     public static bool IsOnline(GameWorld world, Building building) =>
-        building.Def is not { Powered: true, Power: < 0 } || building.Owner.IsNeutral || !world.Player(building.Owner).LowPower;
+        building.Def is not { Powered: true, Power: < 0 } || building.Owner.IsNeutral || !world.Player(building.Owner).LowPower
+        || building.Chargers >= 2;
+
+    /// <summary>
+    /// Whether a tesla coil fires its charged shot (RA2): with power, one tesla trooper charging it is enough; low on power, three.
+    /// </summary>
+    public static bool Overcharged(GameWorld world, Building building) =>
+        building.Def is { OverchargeWeapon.Length: > 0 } && building.Chargers > 0 && !building.Owner.IsNeutral
+        && building.Chargers >= (world.Player(building.Owner).LowPower && building.Def.Powered ? 3 : 1);
+
+    /// <summary>The weapon a building fires now: its charged one while charged, else its own.</summary>
+    public static System.Collections.Immutable.ImmutableArray<int> WeaponsOf(GameWorld world, Building building) =>
+        Overcharged(world, building) ? world.Rules.OverchargeOf(building) : world.Rules.WeaponsOf(building);
 }

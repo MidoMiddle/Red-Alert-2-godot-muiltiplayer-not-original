@@ -73,7 +73,8 @@ public static class PursuitSystem
                 continue;
             }
 
-            var mayFollow = unit.TargetOrder != TargetOrder.None || unit.IsAttackMoving || unit.Stance != Stance.HoldPosition;
+            // A tesla trooper charging a coil (RA2) holds its place unless ordered.
+            var mayFollow = unit.TargetOrder != TargetOrder.None || unit.IsAttackMoving || (unit.Stance != Stance.HoldPosition && unit.Charging is null);
             if (!mayFollow)
             {
                 continue;

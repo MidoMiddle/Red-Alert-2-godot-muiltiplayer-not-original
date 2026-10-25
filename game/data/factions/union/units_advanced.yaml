@@ -35,6 +35,7 @@ tesla_trooper:  # electric infantry (stage 3a)
   prerequisites: [barracks]
   primary: shock_bolt
   ifv_weapon: ifv_shock_bolt
+  charges_coils: true  # RA2: sent to its own tesla coil, it stands by it and charges it
 
 crazy_ivan:  # plants a bomb that goes off in 30 seconds (stage 3b)
   kind: unit

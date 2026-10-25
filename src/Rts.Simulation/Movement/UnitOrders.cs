@@ -126,6 +126,7 @@ internal static class UnitOrders
         unit.EnterTarget = null;
         unit.Deployed = false;
         unit.UndeployIn = 0;
+        unit.Charging = null;
     }
 
     /// <summary>

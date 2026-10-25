@@ -146,6 +146,7 @@ tesla_coil:  # electric defence
   sight: 8
   threat: 40
   primary: tesla_coil_bolt
+  overcharge_weapon: tesla_coil_overcharge  # RA2 OPCoilBolt, with tesla troopers charging it
   footprint: [2, 2]
   power: -75
   prerequisites: [radar]

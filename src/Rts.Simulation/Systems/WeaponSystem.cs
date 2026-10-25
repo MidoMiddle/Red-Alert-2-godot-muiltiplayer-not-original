@@ -199,7 +199,7 @@ public static class WeaponSystem
         var centre = Aim.CentreOf(building);
         var aimAt = Aim.NearestPoint(target, centre);
         var distance = DamageCalculator.Distance(centre, aimAt);
-        var slots = rules.WeaponsOf(building);
+        var slots = Defenses.WeaponsOf(world, building);
         if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, TargetingSystem.LayerOf(target), events, target) is { } weapon)
         {
             var bonus = building.Def is { ChainBonusPercent: > 0 } def ? Support(world, building, def, events) * def.ChainBonusPercent : 0;

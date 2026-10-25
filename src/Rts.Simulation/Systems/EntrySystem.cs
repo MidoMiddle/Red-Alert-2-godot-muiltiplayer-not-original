@@ -37,6 +37,9 @@ public enum EntryAction
 
     /// <summary>A soldier goes into its owner's cloning vats and leaves for half its price (RA2).</summary>
     Recycle,
+
+    /// <summary>A tesla trooper stands by its owner's tesla coil and charges it (RA2).</summary>
+    Charge,
 }
 
 /// <summary>
@@ -103,6 +106,12 @@ public static class EntrySystem
             return own && building.Hp < building.MaxHp ? EntryAction.Mend
                 : enemy && def.Capturable && def.Wall is false ? EntryAction.Capture
                 : EntryAction.None;
+        }
+
+        // RA2: a tesla trooper charges its owner's tesla coil, standing by it.
+        if (own && def.OverchargeWeapon.Length > 0 && unit.Archetype.Has(UnitTalents.ChargesCoils))
+        {
+            return unit.Charging == building.Id ? EntryAction.None : EntryAction.Charge;
         }
 
         // RA2 cloning vats: any other soldier of the owner's but one that teleports goes in for half its price.
@@ -211,12 +220,49 @@ public static class EntrySystem
                     world.SetHp(unit, unit.MaxHp, events);
                     events?.Add(new UnitHealed(world.CurrentTick, unit.Id, building!.Id));
                     break;
+                case EntryAction.Charge:
+                    UnitOrders.Stop(world, unit);
+                    unit.Charging = building!.Id;
+                    break;
                 case EntryAction.Recycle:
                     var credits = RecycleRefund(unit);
                     world.Player(unit.Owner).Credits += credits;
                     events?.Add(new UnitRecycled(world.CurrentTick, unit.Id, building!.Id, credits));
                     unit.MarkDead();
                     break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The soldiers charging each building (RA2 tesla troopers by a tesla coil), counted anew before the defenses look: one that stands
+    /// within <see cref="DoorReach"/> of its own living building that can be charged still charges it; any other forgets it.
+    /// </summary>
+    public static void CountChargers(GameWorld world)
+    {
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building building)
+            {
+                building.Chargers = 0;
+            }
+        }
+
+        foreach (var entity in world.Entities)
+        {
+            if (entity is not Unit { IsAlive: true, Charging: { } id } unit)
+            {
+                continue;
+            }
+
+            if (world.TryGet(id, out var found) && found is Building { IsAlive: true, Def.OverchargeWeapon.Length: > 0 } coil
+                && coil.Owner == unit.Owner && unit.MoveTarget is null && Outside(coil, unit.Position.ToCell()) <= DoorReach)
+            {
+                coil.Chargers++;
+            }
+            else
+            {
+                unit.Charging = null;
             }
         }
     }

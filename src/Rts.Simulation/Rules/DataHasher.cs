@@ -99,6 +99,7 @@ public static class DataHasher
             hash.Add(unit.Teleports);
             Add(hash, unit.DeployWeapon);
             hash.Add(unit.RadiationImmune);
+            hash.Add(unit.ChargesCoils);
             hash.Add(unit.PsionicImmune);
             hash.Add(unit.DeployOnce);
             hash.Add(unit.DisguiseWhenStill);
@@ -175,6 +176,7 @@ public static class DataHasher
             hash.Add(building.Sensors);
             hash.Add(building.RevealsIntentRadius);
             Add(hash, building.DeathWeapon);
+            Add(hash, building.OverchargeWeapon);
             hash.Add(building.RevealsMap);
             hash.Add(building.VeilRadius);
             hash.Add(building.GarrisonCapacity);

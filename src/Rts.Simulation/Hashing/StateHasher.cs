@@ -340,6 +340,13 @@ public static class StateHasher
                     hash.Add(unit.UndeployIn);
                 }
 
+                if (unit.Charging is { } charged)
+                {
+                    // RA2: a tesla trooper charging a coil.
+                    hash.Add(4);
+                    hash.Add(charged.Value);
+                }
+
                 // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
                 hash.Add(unit.Drop is not null);
                 if (unit.Drop is { } drop)

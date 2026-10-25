@@ -129,6 +129,7 @@ public sealed class GameSimulation
         TechBuildingSystem.Update(World, _events);
         RepairSystem.Update(World, _events);
         Probe?.Invoke("economy");
+        EntrySystem.CountChargers(World);
         TargetingSystem.Update(World);
         Probe?.Invoke("targeting");
         PursuitSystem.Update(World);

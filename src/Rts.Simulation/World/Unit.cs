@@ -125,6 +125,9 @@ public sealed class Unit : Entity
     /// </summary>
     public int UndeployIn { get; internal set; }
 
+    /// <summary>The building of its owner it charges standing by it (RA2: a tesla trooper by a tesla coil); null while none. State: hashed while set.</summary>
+    public EntityId? Charging { get; internal set; }
+
     /// <summary>The state of its weapons: the primary first, then the secondary; empty for a unit that does not fight.</summary>
     public Combat.WeaponInstance[] Weapons { get; }
 

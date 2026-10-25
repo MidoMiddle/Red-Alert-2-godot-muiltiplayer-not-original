@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "veteran infantry", "veteran vehicles", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -98,6 +98,7 @@ public sealed class StateHasherTests
             case "controlled by": moving.ControlledBy = idle.Id; break;
             case "controlling": moving.Controlling = idle.Id; break;
             case "undeploy in": moving.UndeployIn = 5; break;
+            case "charging": moving.Charging = idle.Id; break;
             case "veteran infantry": world.Player(Player1).VeteranInfantry = true; break;
             case "veteran vehicles": world.Player(Player1).VeteranVehicles = true; break;
             case "cash timer": world.CreateBuilding(Player1, TestRules.BuildingDef("reactor"), new CellPos(44, 44), ready: true, null).CashTimer = 5; break;
@@ -288,7 +289,7 @@ public sealed class StateHasherTests
         "<ParasiteWeapon>k__BackingField", "<ParasiteTicks>k__BackingField", "<Ammo>k__BackingField", "<RearmTicks>k__BackingField",
         "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField", "<Experience>k__BackingField",
         "<Upgrades>k__BackingField", "<ControlledBy>k__BackingField", "<ControlledFrom>k__BackingField", "<Controlling>k__BackingField",
-        "<UndeployIn>k__BackingField",
+        "<UndeployIn>k__BackingField", "<Charging>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {
@@ -398,6 +399,8 @@ public sealed class StateHasherTests
         "<CashTimer>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
+        // The tesla troopers charging it (RA2), counted every tick from theirs: derived.
+        "<Chargers>k__BackingField",
         // The veil it added (stage 2d): derived from the building and its owner's power; the grids it went into are hashed.
         "<VeilRadius>k__BackingField",
     })]

@@ -36,6 +36,9 @@ public sealed class GameRules
     private readonly ImmutableArray<int>[] _single;
     private readonly ImmutableArray<int>[] _buildingWeapons;
 
+    // The weapon of each building of the data while charged (the tesla coil), -1 without one.
+    private readonly ImmutableArray<int>[] _overcharge;
+
     // The weapon and armor of the buildings of the map by kind (the outpost): -1 and 0 for those without, and for data that lacks them
     // (the small datasets of the tests); the game data has both (GameDataTests).
     private readonly ImmutableArray<int>[] _kindWeapons;
@@ -61,6 +64,11 @@ public sealed class GameRules
             _single[weapon] = ImmutableArray.Create(weapon, -1);
         }
         _buildingWeapons = System.Array.ConvertAll(buildingWeapon, weapon => ImmutableArray.Create(weapon));
+        _overcharge = new ImmutableArray<int>[database.Buildings.Length];
+        for (var i = 0; i < _overcharge.Length; i++)
+        {
+            _overcharge[i] = ImmutableArray.Create(database.IndexOfWeapon(database.Buildings[i].OverchargeWeapon));
+        }
         var kinds = 0;
         foreach (var type in BuildingTypes.All)
         {
@@ -158,6 +166,10 @@ public sealed class GameRules
     /// <summary>The weapon of a building of the data or of the map (the outpost) as a list of one, -1 without one.</summary>
     public ImmutableArray<int> WeaponsOf(Building building) =>
         building.DefIndex >= 0 ? _buildingWeapons[building.DefIndex] : _kindWeapons[(int)building.Kind];
+
+    /// <summary>The weapon of a building of the data while charged (the tesla coil) as a list of one, -1 without one.</summary>
+    public ImmutableArray<int> OverchargeOf(Building building) =>
+        building.DefIndex >= 0 ? _overcharge[building.DefIndex] : ImmutableArray.Create(-1);
 
     /// <summary>The armor number of a building of the data or of the map; a building of the map without armor counts as the first type.</summary>
     public int ArmorOf(Building building) => building.DefIndex >= 0 ? _buildingArmor[building.DefIndex] : _kindArmor[(int)building.Kind];
@@ -394,7 +406,8 @@ public sealed class GameRules
         | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0)
         | (unit.Submerged ? UnitTalents.Submerged : 0) | (unit.Spawned ? UnitTalents.Spawned : 0)
         | (unit.Trainable ? 0 : UnitTalents.Untrainable)
-        | (unit.PsionicImmune ? UnitTalents.PsionicImmune : 0) | (unit.DeployOnce ? UnitTalents.DeployOnce : 0);
+        | (unit.PsionicImmune ? UnitTalents.PsionicImmune : 0) | (unit.DeployOnce ? UnitTalents.DeployOnce : 0)
+        | (unit.ChargesCoils ? UnitTalents.ChargesCoils : 0);
 
     private static Locomotor? LocomotorOf(string id)
     {

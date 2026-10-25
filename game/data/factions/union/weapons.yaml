@@ -83,6 +83,15 @@ tesla_coil_bolt:  # RA2 CoilBolt: 200, ROF 120 (80 is Yuri's Revenge), range 7
   projectile: bolt
   warhead: electric
 
+tesla_coil_overcharge:  # RA2 OPCoilBolt: the coil charged by tesla troopers, 300, ROF 100 (80 is Yuri's Revenge), range 8
+  kind: weapon
+  name: Charged Coil Bolt
+  damage: 300
+  reload: 6.67s
+  range: 8
+  projectile: bolt
+  warhead: electric
+
 flak_cannon_gun:  # RA2 FlakWeapon: aircraft only
   kind: weapon
   name: Flak Cannon

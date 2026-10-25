@@ -21,14 +21,14 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
-        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "psionic_immune", "deploy_once", "disguise_when_still",
+        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "charges_coils", "psionic_immune", "deploy_once", "disguise_when_still",
         "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
     ];
 
     private static readonly string[] BuildingKeys =
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
-        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "clones_infantry", "detects_disguise", "sensors", "reveals_intent", "death_weapon",
+        "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "clones_infantry", "detects_disguise", "sensors", "reveals_intent", "death_weapon", "overcharge_weapon",
         "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
         "countries", "forbidden_countries", "superweapon_countries", "paradrop", "paradrop_count",
     ];
@@ -129,6 +129,7 @@ internal static class DefinitionReader
             DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
             DeployedWeapon = fields.Optional("deployed_weapon", Scalars.Id, ""),
             RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),
+            ChargesCoils = fields.Optional("charges_coils", Scalars.Flag, false),
             PsionicImmune = fields.Optional("psionic_immune", Scalars.Flag, false),
             DeployOnce = fields.Optional("deploy_once", Scalars.Flag, false),
             DisguiseWhenStill = fields.Optional("disguise_when_still", Scalars.Flag, false),
@@ -197,6 +198,7 @@ internal static class DefinitionReader
             Sensors = fields.Optional("sensors", Scalars.Int, 0),
             RevealsIntentRadius = fields.Optional("reveals_intent", Scalars.Int, 0),
             DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
+            OverchargeWeapon = fields.Optional("overcharge_weapon", Scalars.Id, ""),
             RevealsMap = fields.Optional("reveals_map", Scalars.Flag, false),
             VeilRadius = fields.Optional("veil_radius", Scalars.Int, 0),
             GarrisonCapacity = fields.Optional("garrison", Scalars.Int, 0),

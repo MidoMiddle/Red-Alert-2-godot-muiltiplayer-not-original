@@ -271,6 +271,7 @@ internal static class RulesValidator
             ArmorOf(building.Id, building.Armor);
             WeaponOf(building.Id, "primary", building.Primary);
             WeaponOf(building.Id, "death_weapon", building.DeathWeapon);
+            WeaponOf(building.Id, "overcharge_weapon", building.OverchargeWeapon);
             WeaponOf(building.Id, "superweapon_weapon", building.SuperweaponWeapon);
             NotNegative(building.Id, "build_limit", building.BuildLimit);
             if (building.Superweapon != SuperweaponKind.None && building.Recharge <= 0)

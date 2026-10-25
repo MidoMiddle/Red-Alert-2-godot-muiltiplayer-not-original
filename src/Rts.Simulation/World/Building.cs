@@ -65,6 +65,12 @@ public sealed class Building : Entity
     /// <summary>The ticks until a taken oil derrick gives its owner credits again; 0 for any other building. State: hashed.</summary>
     public int CashTimer { get; internal set; }
 
+    /// <summary>
+    /// The soldiers charging it now (RA2 tesla troopers by a tesla coil): counted every tick from their <see cref="Unit.Charging"/>,
+    /// so derived, not hashed.
+    /// </summary>
+    public int Chargers { get; internal set; }
+
     /// <summary>The kind of a building of the map; 0 for a building of a player.</summary>
     public BuildingKind Kind { get; }
 

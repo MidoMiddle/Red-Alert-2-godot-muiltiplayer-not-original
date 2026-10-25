@@ -55,7 +55,7 @@ public static class TargetingSystem
                     {
                         var weapons = rules.WeaponsOf(unit);
                         var reach = Reach(rules, weapons);
-                        if (!unit.Archetype.Harvests && unit.Stance != Stance.HoldPosition)
+                        if (!unit.Archetype.Harvests && unit.Stance != Stance.HoldPosition && unit.Charging is null)
                         {
                             reach = IntMath.Max(reach, unit.Archetype.Sight * WorldPos.LeptonsPerCell);
                         }
@@ -74,7 +74,7 @@ public static class TargetingSystem
 
                 case Building { IsReady: true } building when building.Weapons.Length > 0:
                     {
-                        var weapons = rules.WeaponsOf(building);
+                        var weapons = Defenses.WeaponsOf(world, building);
                         var centre = Aim.CentreOf(building);
                         building.Target = Best(world, rules, building, new Area(centre, Reach(rules, weapons), centre, -1), weapons, building.Target, nearby);
                         break;

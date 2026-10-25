@@ -122,6 +122,9 @@ public sealed record UnitDef : IDefinition
     /// <summary>The toxin on the ground does not hurt it (RA2: the desolator).</summary>
     public bool RadiationImmune { get; init; }
 
+    /// <summary>Sent to its own building that can be charged (the tesla coil), it stands by it and charges it (RA2 tesla trooper).</summary>
+    public bool ChargesCoils { get; init; }
+
     /// <summary>No mind control takes it (RA2 <c>ImmuneToPsionics</c>: dogs, the terror drone, harvesters, the squid, Yuri).</summary>
     public bool PsionicImmune { get; init; }
 

@@ -360,6 +360,7 @@ public sealed class GoldenValuesTests
         // Rules v78 (the psychic sensor of RA2): the version only.
         // Rules v79 (Yuri of RA2): the version only.
         // Rules v80 (the defenses with the numbers of RA2): the version only.
-        Assert.Equal((22270, 11237327226263162357UL), (bytes.Length, hash.Value));
+        // Rules v81 (the tesla coil charged by tesla troopers): the version only.
+        Assert.Equal((22270, 110141527566686220UL), (bytes.Length, hash.Value));
     }
 }

@@ -49,4 +49,7 @@ public enum UnitTalents
 
     /// <summary>Fires its deploy weapon once and stands up again (<see cref="Rules.UnitDef.DeployOnce"/>).</summary>
     DeployOnce = 16384,
+
+    /// <summary>Charges its own tesla coil standing by it (<see cref="Rules.UnitDef.ChargesCoils"/>).</summary>
+    ChargesCoils = 32768,
 }

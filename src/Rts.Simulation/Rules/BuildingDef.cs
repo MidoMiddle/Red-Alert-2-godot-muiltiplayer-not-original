@@ -142,6 +142,12 @@ public sealed record BuildingDef : IDefinition
     /// <summary>The weapon that goes off where it stood when a shot brings it down (stage 2c: the atomic plant); empty for none.</summary>
     public string DeathWeapon { get; init; } = "";
 
+    /// <summary>
+    /// The weapon it fires while soldiers that charge it stand by it (RA2 tesla coil, <c>Overpowerable</c>: the tesla troopers); empty
+    /// for none. See <see cref="Combat.Defenses"/>.
+    /// </summary>
+    public string OverchargeWeapon { get; init; } = "";
+
     /// <summary>While it stands ready and online, its owner's whole map is explored (stage 2d: the orbital uplink, RA2 spy satellite).</summary>
     public bool RevealsMap { get; init; }
 
