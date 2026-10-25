@@ -85,6 +85,9 @@ public sealed class LockstepEngine
     /// <summary>Long enough without bundles to tell the player (4.11).</summary>
     public bool IsWaitingForPlayers => WaitingMs >= Settings.WaitNoticeMs;
 
+    /// <summary>The tick the lockstep does not compute: it stops there (a desync, 4.10); null to run on.</summary>
+    public int? StopTick { get; private set; }
+
     /// <summary>The ticks computed by the last <see cref="Update"/>.</summary>
     public int TicksLastFrame { get; private set; }
 
@@ -96,6 +99,9 @@ public sealed class LockstepEngine
 
     /// <summary>The players whose bundle for <see cref="CurrentTick"/> has not come.</summary>
     public IReadOnlyList<PlayerId> MissingPlayers() => Players.Where(player => _received[player.Value] <= CurrentTick).ToList();
+
+    /// <summary>Computes no tick from <paramref name="tick"/> on; the network is still read.</summary>
+    public void StopAt(int tick) => StopTick = StopTick is { } stop ? Math.Min(stop, tick) : tick;
 
     /// <summary>Sends the empty bundles of the first D ticks: nobody can have given a command for them.</summary>
     public void Start()
@@ -139,14 +145,15 @@ public sealed class LockstepEngine
         ReceiveAll();
         _clock += elapsedMs * _simulation.Settings.TicksPerSecond;
         var ticks = 0;
-        while (ticks < Settings.MaxTicksPerFrame && (_clock >= UnitsPerTick || IsBehind()) && IsReady(CurrentTick))
+        while (ticks < Settings.MaxTicksPerFrame && (_clock >= UnitsPerTick || IsBehind()) && IsReady(CurrentTick)
+               && (StopTick is not { } stop || CurrentTick < stop))
         {
             Step();
             ticks++;
             _clock = Math.Max(0, _clock - UnitsPerTick);
         }
 
-        var stalled = ticks < Settings.MaxTicksPerFrame && _clock >= UnitsPerTick && !IsReady(CurrentTick);
+        var stalled = ticks < Settings.MaxTicksPerFrame && _clock >= UnitsPerTick && !IsReady(CurrentTick) && StopTick != CurrentTick;
         WaitingMs = stalled ? WaitingMs + elapsedMs : 0;
         // Never more than one tick owed: waiting is not paid back, and a frame that ran out of ticks drops the rest, as the single game
         // does; a computer left behind catches up by the bundles of the others.
