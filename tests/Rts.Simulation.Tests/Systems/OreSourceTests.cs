@@ -206,8 +206,8 @@ public sealed class OreSourceTests(ITestOutputHelper output)
             eruptions += simulation.LastTickEvents.OfType<OreSourceErupted>().Count();
         }
 
-        // 3 minutes of a 4 s interval: 45 eruptions of each source.
-        Assert.Equal(90, eruptions);
+        // 3 minutes of a 6 s interval: 30 eruptions of each source.
+        Assert.Equal(60, eruptions);
         var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
     }

@@ -75,9 +75,10 @@ public sealed class QuickSkirmishMapsTests
 
     [Theory]
     [MemberData(nameof(Maps))]
-    public void Every_ready_map_but_the_relief_test_has_an_ore_drill_by_every_start_and_a_gem_drill_for_each(string id)
+    public void Every_ready_map_but_the_relief_test_has_an_ore_drill_by_every_start_and_gem_drills(string id)
     {
-        // M8 step 10b: the fields grow back. The relief test of M7 is a test of slopes, without them.
+        // M8 step 10b: the fields grow back. The relief test of M7 is a test of slopes, without them. The maps from RA2 have their gem
+        // drills in the middle ground, at most one for two starts (the owner, 2026-10-26; Rts.MapGen.Tests.Ra2GemDrillsTests).
         var map = Read(id);
         var ore = map.Objects.Where(o => o.Type == "ore_source").ToList();
         var gems = map.Objects.Where(o => o.Type == "gem_source").ToList();
@@ -87,7 +88,8 @@ public sealed class QuickSkirmishMapsTests
             return;
         }
 
-        Assert.Equal((map.Starts.Length, map.Starts.Length), (ore.Count, gems.Count));
+        Assert.Equal(map.Starts.Length, ore.Count);
+        Assert.InRange(gems.Count, map.Origin == MapOrigin.Ra2 ? 1 : map.Starts.Length, map.Origin == MapOrigin.Ra2 ? map.Starts.Length / 2 : map.Starts.Length);
         // By the edge of the flat ground of the base (radius 12), not in it.
         Assert.All(map.Starts, start => Assert.Contains(ore, drill => Distance2(drill.Cell, start.Cell) <= 16 * 16));
         Assert.All(ore.Concat(gems), drill => Assert.Equal(0, map.Ore[drill.Cell.Y * map.Width + drill.Cell.X]));

@@ -77,12 +77,13 @@ public sealed class OreTests
     }
 
     [Fact]
-    public void Ten_minutes_of_growth_give_the_reference_field()
+    public void Twenty_rounds_of_growth_give_the_reference_field()
     {
         var simulation = Match();
         Assert.Equal((18, 1600 + 400 + 600), Count(simulation.World));
 
-        for (var i = 0; i < 9000; i++)
+        // 20 rounds: 13 min 20 s of 40 s rounds (10 min of 30 s ones before 2026-10-26, the same field).
+        for (var i = 0; i < 20 * simulation.World.Rules.Economy.OreGrowthInterval; i++)
         {
             simulation.Step();
         }

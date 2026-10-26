@@ -1047,10 +1047,7 @@ objects:
   - { type: fence_wood, cell: [137, 150], variant: 0 }
   - { type: fence_wood, cell: [141, 151], variant: 0 }
   - { type: fence_wood, cell: [139, 152], variant: 0 }
-  - { type: gem_source, cell: [164, 34], variant: 2 }
-  - { type: gem_source, cell: [214, 81], variant: 1 }
-  - { type: gem_source, cell: [35, 167], variant: 2 }
-  - { type: gem_source, cell: [81, 215], variant: 0 }
+  - { type: gem_source, cell: [128, 126], variant: 2 }
   - { type: lamp_post, cell: [112, 109], variant: 0 }
   - { type: lamp_post, cell: [141, 138], variant: 0 }
   - { type: ore_source, cell: [160, 32], variant: 0 }

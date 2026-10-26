@@ -830,10 +830,8 @@ layers:
     ........................................................................................................................................................................................................
 objects:
   - { type: bench, cell: [85, 167], variant: 0 }
-  - { type: gem_source, cell: [63, 84], variant: 3 }
-  - { type: gem_source, cell: [134, 89], variant: 1 }
-  - { type: gem_source, cell: [68, 106], variant: 2 }
-  - { type: gem_source, cell: [152, 116], variant: 0 }
+  - { type: gem_source, cell: [53, 96], variant: 1 }
+  - { type: gem_source, cell: [152, 101], variant: 3 }
   - { type: lamp_post, cell: [77, 39], variant: 0 }
   - { type: lamp_post, cell: [76, 43], variant: 0 }
   - { type: lamp_post, cell: [110, 43], variant: 0 }

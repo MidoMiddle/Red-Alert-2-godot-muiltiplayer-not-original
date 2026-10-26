@@ -628,10 +628,7 @@ layers:
     ......................................................................................................................................................
     ......................................................................................................................................................
 objects:
-  - { type: gem_source, cell: [67, 29], variant: 0 }
-  - { type: gem_source, cell: [36, 64], variant: 0 }
-  - { type: gem_source, cell: [137, 77], variant: 2 }
-  - { type: gem_source, cell: [85, 130], variant: 3 }
+  - { type: gem_source, cell: [78, 80], variant: 2 }
   - { type: ore_source, cell: [74, 29], variant: 1 }
   - { type: ore_source, cell: [31, 70], variant: 1 }
   - { type: ore_source, cell: [132, 74], variant: 2 }

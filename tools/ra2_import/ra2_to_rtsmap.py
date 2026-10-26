@@ -8,8 +8,8 @@ RA2 cells (x, y) are our cells: the same screen axes (x right-down, y left-down)
 - Bridges: low bridges (74-101) over water, ours one cell wide along the middle line of each; high bridges (24-25) are
   bridge_concrete_high, three cells wide about the middle line, over whatever lies below (water or a valley, as in RA2), their ends
   carried on through the cliff cells to the flat shores.
-- [Terrain]: trees (TREE*) become pines (the climate gives their look); the ore trees (TIBTRE*) nearest the starts become the gem
-  drills, one an each start (M8 step 10b), the others are dropped; an ore drill stands by every start.
+- [Terrain]: trees (TREE*) become pines (the climate gives their look); the ore trees (TIBTRE*) are dropped; an ore drill stands by
+  every start (M8 step 10b). No gem drill stands by a start: `Rts.MapTool -- share-gems` puts them in the middle ground afterwards.
 - [Structures]: by the table STRUCTURES (buildings) and OBJECTS (lamps, benches); what has no counterpart is listed and left out.
 - Starts: waypoints 0 to MaxPlayer - 1 of [Basic] (4 when it is missing). The playable area: LocalSize, its top moved up by two of its units (RA2 shows a few rows above it).
 
@@ -221,28 +221,17 @@ objects += [('fence_wood', x, y, 0) for x, y in sandbags if (x, y) not in footpr
 objects += [('wall_stone', x, y, 0) for x, y in walls if (x, y) not in footprints and not is_water((x, y))]
 taken = {(x, y) for _, x, y, _ in objects} | footprints
 
-# One gem drill and one ore drill by every start (M8 step 10b): the ore tree nearest it, and the field cell (or the free ground
-# towards it) nearest it within 15.5 cells.
+# One ore drill by every start (M8 step 10b): the field cell (or the free ground towards it) nearest it within 15.5 cells. The gem
+# drills go to the middle ground later (share-gems of Rts.MapTool), none at home.
 for _, sx, sy in starts:
     def far(p):
         return (p[0] - sx) ** 2 + (p[1] - sy) ** 2
-    tree = None
-    if ore_trees:
-        tree = min(ore_trees, key=far); ore_trees.remove(tree)
-        objects.append(('gem_source', tree[0], tree[1], variant(*tree))); taken.add(tree); ore.pop(tree, None)
-        towards = tree
-    else:
-        towards = min(ore, key=far)
+    towards = min(ore, key=far)
     best = min((p for p, value in ore.items() if value < 10 and p not in taken), key=far, default=towards)
     while far(best) > 15.5 ** 2 or best in taken or is_water(best) or best in footprints:
         best = (best[0] - (best[0] > sx) + (best[0] < sx), best[1] - (best[1] > sy) + (best[1] < sy))
     ore.pop(best, None)
     objects.append(('ore_source', best[0], best[1], variant(*best))); taken.add(best)
-    if tree is None:
-        # No ore tree on the map: the gem drill stands on free dry ground by the ore drill, on the side of the base.
-        ring = sorted(((best[0] + dx, best[1] + dy) for dx in range(-3, 4) for dy in range(-3, 4) if max(abs(dx), abs(dy)) >= 2), key=far)
-        gem = next(q for q in ring if q not in taken and q not in footprints and not is_water(q) and q not in ore)
-        objects.append(('gem_source', gem[0], gem[1], variant(*gem))); taken.add(gem)
 
 ore = {p: value for p, value in ore.items() if plays(*p) and not is_water(p) and p not in taken}
 structures = [s for s in structures if all(plays(s[1] + dx, s[2] + dy) for dx in range(SIZES[s[0]][0]) for dy in range(SIZES[s[0]][1]))]

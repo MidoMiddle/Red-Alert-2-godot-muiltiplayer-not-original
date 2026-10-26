@@ -12,15 +12,16 @@ economy:
   ore_value: 25
   gem_value: 50
   # Every ore_growth_interval each cell of ore grows a stage by ore_growth_chance; from ore_spread_stage on it may also seed a
-  # neighbour of clear or rough land with ore of stage 0, by ore_spread_chance. Gems neither grow nor spread.
-  ore_growth_interval: 30s
+  # neighbour of clear or rough land with ore of stage 0, by ore_spread_chance. Gems neither grow nor spread. 40 s (was 30 s): a
+  # field grows back a quarter slower, so one home field no longer pays for a whole match.
+  ore_growth_interval: 40s
   ore_growth_chance: 20%
   ore_spread_stage: 6
   ore_spread_chance: 5%
   # Sources (step 16): every source_interval an ore or gem source throws one stage of its own resource onto a cell within
-  # source_radius — a stage more on a cell of it, stage 0 on an empty cell that can take ore. Starting numbers: an ore source
-  # brings about 375 credits a minute, a gem source twice that; the balance is M8's.
-  source_interval: 4s
+  # source_radius — a stage more on a cell of it, stage 0 on an empty cell that can take ore. 6 s (was 4 s): an ore source brings
+  # 10 stages, 250 credits a minute (was 375), a gem source 500 (was 750).
+  source_interval: 6s
   source_radius: 3
   # A sold building gives back sell_refund of its cost times its share of hit points. A repair gives repair_rate hit points every
   # repair_delay (RA2 RepairStep=8 every RepairRate/URepairRate=.016 minutes, 14 frames); from nothing to full it costs repair_cost

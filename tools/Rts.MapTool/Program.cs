@@ -250,6 +250,46 @@ if (args.Length >= 2 && args[0] == "add-tech")
     return failed == 0 ? 0 : 1;
 }
 
+// One gem drill in the middle ground of a map from RA2 instead of one by every start (Drills.ShareGems); run after ra2_to_rtsmap.py.
+if (args.Length >= 2 && args[0] == "share-gems")
+{
+    var failed = 0;
+    foreach (var path in args.Skip(1))
+    {
+        try
+        {
+            var map = RtsMapReader.Read(File.ReadAllText(path));
+            if (map.Origin != MapOrigin.Ra2)
+            {
+                throw new ArgumentException($"its origin is {map.Origin}, not {MapOrigin.Ra2}");
+            }
+
+            var shared = Rts.MapGen.Drills.ShareGems(map);
+            var errors = MapValidator.Check(shared).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            if (errors.Count > 0)
+            {
+                throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
+            }
+
+            File.WriteAllText(path, RtsMapWriter.Write(shared));
+            var gems = shared.Objects.Where(o => o.Type is Rts.MapGen.Drills.GemSource);
+            // The tank way from every start to each drill, in cells (on the map before, where the drill's cell is free).
+            var ground = map.ToMapGrid();
+            var ways = gems.Select(g => string.Join("/", shared.Starts.Select(s =>
+                Rts.MapGen.Drills.PathCosts(ground, s.Cell)[g.Cell.Y * shared.Width + g.Cell.X] / 10)));
+            Console.WriteLine($"{path}: {string.Join(", ", gems.Select(g => $"gem_source {g.Cell.X},{g.Cell.Y}"))}, ways from the starts " +
+                              $"{string.Join(", ", ways)} · {MapValidator.Check(shared).Count} warnings");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
+        {
+            Console.Error.WriteLine($"{path}: not changed — {e.Message}");
+            failed++;
+        }
+    }
+
+    return failed == 0 ? 0 : 1;
+}
+
 // Loose ends, stage 2: the bridge repair huts on maps the generator made before it had them; the symmetry comes from the description.
 if (args.Length >= 2 && args[0] == "add-huts")
 {
