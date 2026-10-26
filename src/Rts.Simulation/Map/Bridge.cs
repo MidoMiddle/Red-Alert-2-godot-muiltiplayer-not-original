@@ -8,17 +8,22 @@ namespace Rts.Simulation.Map;
 public enum BridgeKind : byte
 {
     WoodLow = 1,
+
+    /// <summary>A high bridge of concrete, asphalt on top, between two plateaus (2026-10-26): ships and the valley pass under it.</summary>
+    ConcreteHigh = 2,
 }
 
 /// <summary>
 /// What a kind of bridge is (docs/implementation/M7_maps.md, 4.6; map_elements/05_bridges): hit points of each segment and how many
-/// cells wide it is across — three tanks side by side on a low bridge (the owner's wish, 2026-10-24).
+/// cells wide it is across — three tanks side by side on a low bridge (the owner's wish, 2026-10-24). A <paramref name="High"/>
+/// bridge has a deck at the level of the plateaus it joins, over whatever lies below (<see cref="Decks"/>).
 /// </summary>
-public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp, int Width);
+public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp, int Width, bool High = false);
 
 /// <summary>
 /// The bridges, kept in code until the data files of M3 (map_objects.yaml) like the map objects. Hit points are a rough guide
-/// until the balance of M4. Only low bridges for now; high bridges come in M11. An engineer mends a bridge through its repair hut
+/// until the balance of M4. The low bridge of wood over water, and the high bridge of concrete between two plateaus (2026-10-26:
+/// RA2's BridgeStrength of 1500 a segment, three cells wide as RA2 draws them). An engineer mends a bridge through its repair hut
 /// (loose ends, stage 2).
 /// </summary>
 public static class BridgeTypes
@@ -26,11 +31,12 @@ public static class BridgeTypes
     private static readonly BridgeType[] Types =
     [
         new(BridgeKind.WoodLow, "bridge_wood_low", SegmentHp: 600, Width: 3),
+        new(BridgeKind.ConcreteHigh, "bridge_concrete_high", SegmentHp: 1500, Width: 3, High: true),
     ];
 
     public static IReadOnlyList<BridgeType> All => Types;
 
-    public static bool IsKnown(BridgeKind kind) => kind == BridgeKind.WoodLow;
+    public static bool IsKnown(BridgeKind kind) => kind is >= BridgeKind.WoodLow and <= BridgeKind.ConcreteHigh;
 
     public static BridgeType Get(BridgeKind kind) =>
         IsKnown(kind) ? Types[(int)kind - 1] : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown bridge kind.");

@@ -33,7 +33,7 @@ public static class StateHasher
 
         // The map and every path come as digests computed once; places as the taken ones only (M2 step 15, 4.15).
         hash.Add(world.Map.Digest);
-        AddPathRequests(hash, world.PathRequests);
+        AddPathRequests(hash, world.PathRequests, world.Map.DeckCount > 0);
         AddTaken(hash, world.Reservations.VehicleCells);
         AddTaken(hash, world.Reservations.InfantrySpots);
 
@@ -504,7 +504,9 @@ public static class StateHasher
 
     // The search arrays are not hashed: given the map, the request fields and the number of expanded nodes,
     // a deterministic search is always in the same state.
-    private static void AddPathRequests(Fnv1a64 hash, PathRequestQueue queue)
+    // Rules v93: on a map with high bridges, the levels a request starts and ends on (Decks); the places on a deck are the taken ones
+    // past the cells, and a unit's level follows from them.
+    private static void AddPathRequests(Fnv1a64 hash, PathRequestQueue queue, bool decks)
     {
         hash.Add(queue.Budget);
         hash.Add(queue.ExpandedLastTick);
@@ -518,6 +520,11 @@ public static class StateHasher
             hash.Add(request.Goal.X);
             hash.Add(request.Goal.Y);
             hash.Add((byte)request.Locomotor);
+            if (decks)
+            {
+                hash.Add((byte)((request.StartOnDeck ? 1 : 0) | (request.GroundGoal ? 2 : 0)));
+            }
+
             hash.Add(request.Expanded);
             hash.Add(request.Avoid.Length);
             foreach (var cell in request.Avoid)

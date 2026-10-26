@@ -309,7 +309,7 @@ public static class SuperweaponSystem
             var cell = new CellPos(to.X + unit.Position.ToCell().X - from.X, to.Y + unit.Position.ToCell().Y - from.Y);
             // A soldier dies (RA2), but one that teleports itself goes with it (the time trooper).
             if ((unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Has(UnitTalents.Teleports)) || !world.Map.Contains(cell)
-                || !world.Map.CanEnter(cell, unit.Archetype.Locomotor) || !world.Reservations.HasRoomFor(cell, unit))
+                || !world.Map.CanEnter(cell, unit.Archetype.Locomotor) || !world.Reservations.HasRoomFor(cell, unit, onDeck: false))
             {
                 DeathSystem.Kill(world, unit, source.Id, source.Owner, DeathCause.Weapon, -1, events);
                 continue;
@@ -321,7 +321,9 @@ public static class SuperweaponSystem
                 world.Reservations.Leave(was.ToCell(), unit);
             }
 
-            unit.Subcell = IntMath.Max(0, world.Reservations.TryEnter(cell, unit, cell.Center));
+            // Shifted onto the ground, never onto a high bridge's deck.
+            unit.Subcell = IntMath.Max(0, world.Reservations.TryEnter(cell, unit, cell.Center, onDeck: false));
+            unit.OnDeck = false;
             unit.Position = cell.Center;
             UnitOrders.Stop(world, unit);
             UnitOrders.ForgetTarget(unit);

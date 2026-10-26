@@ -183,7 +183,7 @@ public static class EntrySystem
             {
                 unit.EnterTarget = null;
             }
-            else if (Outside(target!, unit.Position.ToCell()) <= DoorReach)
+            else if (Outside(target!, unit.Position.ToCell()) <= DoorReach && unit.OnDeck == target is Unit { OnDeck: true })
             {
                 (entering ??= []).Add((unit, target!, action));
             }
@@ -357,6 +357,7 @@ public static class EntrySystem
     /// How many cells <paramref name="cell"/> lies outside the footprint of a building, or off the cell of a transport: 0 inside, 1 in the
     /// ring around it, and so on.
     /// </summary>
+    // Within reach of the door counts on one level only: a unit on a high bridge's deck does not get into what stands below (Decks).
     private static int Outside(Entity target, CellPos cell)
     {
         var (near, far) = target is Building building ? (building.Cell, building.FarCell) : (((Unit)target).Position.ToCell(), ((Unit)target).Position.ToCell());

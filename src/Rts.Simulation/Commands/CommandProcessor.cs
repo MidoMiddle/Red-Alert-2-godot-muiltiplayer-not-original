@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Movement;
 using Rts.Simulation.Pathfinding;
@@ -733,7 +734,7 @@ public static class CommandProcessor
             foreach (var (dx, dy) in AStar.Directions)
             {
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (AStar.CanStep(world.Map, cell, dx, dy, unit.Archetype.Locomotor) && world.Reservations.HasRoomFor(next, unit))
+                if (Decks.TryStep(world.Map, cell, unit.OnDeck, dx, dy, unit.Archetype.Locomotor, out var onDeck) && world.Reservations.HasRoomFor(next, unit, onDeck))
                 {
                     free.Add(next);
                 }

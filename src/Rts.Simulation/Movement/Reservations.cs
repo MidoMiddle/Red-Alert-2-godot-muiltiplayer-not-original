@@ -20,6 +20,7 @@ public sealed class Reservations
 
     private readonly int[] _vehicle;
     private readonly int[] _infantry;
+    private readonly Map.MapGrid? _map;
 
     internal Reservations(int width, int height)
     {
@@ -29,6 +30,16 @@ public sealed class Reservations
         _infantry = new int[width * height * SubcellsPerCell];
     }
 
+    /// <summary>The places of a map: its cells, then the cells of deck of its high bridges.</summary>
+    internal Reservations(Map.MapGrid map)
+    {
+        Width = map.Width;
+        Height = map.Height;
+        _map = map;
+        _vehicle = new int[map.NodeCount];
+        _infantry = new int[map.NodeCount * SubcellsPerCell];
+    }
+
     public int Width { get; }
 
     public int Height { get; }
@@ -36,13 +47,13 @@ public sealed class Reservations
     /// <summary>Point of a spot in a cell: 0 centre, 1 north-west, 2 north-east, 3 south-west, 4 south-east (±64 leptons).</summary>
     public static WorldPos SubcellPoint(CellPos cell, int subcell) => cell.Center + Offsets[subcell];
 
-    public EntityId VehicleAt(CellPos cell) => new(_vehicle[IndexOf(cell)]);
+    public EntityId VehicleAt(CellPos cell, bool onDeck = false) => new(_vehicle[IndexOf(cell, onDeck)]);
 
-    public EntityId InfantryAt(CellPos cell, int subcell) => new(_infantry[IndexOf(cell) * SubcellsPerCell + subcell]);
+    public EntityId InfantryAt(CellPos cell, int subcell, bool onDeck = false) => new(_infantry[IndexOf(cell, onDeck) * SubcellsPerCell + subcell]);
 
-    public int InfantryCount(CellPos cell)
+    public int InfantryCount(CellPos cell, bool onDeck = false)
     {
-        var start = IndexOf(cell) * SubcellsPerCell;
+        var start = IndexOf(cell, onDeck) * SubcellsPerCell;
         var count = 0;
         for (var i = 0; i < SubcellsPerCell; i++)
         {
@@ -59,9 +70,9 @@ public sealed class Reservations
     /// The unit to deal with when the cell has no room: its vehicle, or the soldier on the lowest spot.
     /// <see cref="EntityId.None"/> when nobody stands there.
     /// </summary>
-    public EntityId Blocker(CellPos cell)
+    public EntityId Blocker(CellPos cell, bool onDeck = false)
     {
-        var index = IndexOf(cell);
+        var index = IndexOf(cell, onDeck);
         if (_vehicle[index] != 0)
         {
             return new EntityId(_vehicle[index]);
@@ -78,16 +89,19 @@ public sealed class Reservations
         return EntityId.None;
     }
 
-    /// <summary>True when <paramref name="unit"/> could stand in the cell (or already does).</summary>
-    public bool HasRoomFor(CellPos cell, Unit unit) => HasRoomFor(cell, unit.Archetype.Placement, unit.Id);
+    /// <summary>
+    /// True when <paramref name="unit"/> could stand in the cell (or already does), on <paramref name="onDeck"/> — by default the level it
+    /// is on now.
+    /// </summary>
+    public bool HasRoomFor(CellPos cell, Unit unit, bool? onDeck = null) => HasRoomFor(cell, unit.Archetype.Placement, unit.Id, onDeck ?? unit.OnDeck);
 
     /// <summary>
     /// Room for a unit with <paramref name="placement"/>: a vehicle needs the cell empty of others, a soldier needs no vehicle
     /// and a free spot (or one it holds already).
     /// </summary>
-    public bool HasRoomFor(CellPos cell, UnitPlacement placement, EntityId self)
+    public bool HasRoomFor(CellPos cell, UnitPlacement placement, EntityId self, bool onDeck = false)
     {
-        var index = IndexOf(cell);
+        var index = IndexOf(cell, onDeck);
         var vehicle = _vehicle[index];
         if (vehicle != 0 && vehicle != self.Value)
         {
@@ -123,14 +137,15 @@ public sealed class Reservations
     /// (ties to the lower spot number), or keeps the spot it holds there. Returns the spot (0 for a vehicle), or -1 when there
     /// is no room.
     /// </summary>
-    internal int TryEnter(CellPos cell, Unit unit, WorldPos preferred)
+    internal int TryEnter(CellPos cell, Unit unit, WorldPos preferred, bool? onDeck = null)
     {
-        if (!HasRoomFor(cell, unit))
+        var deck = onDeck ?? unit.OnDeck;
+        if (!HasRoomFor(cell, unit, deck))
         {
             return -1;
         }
 
-        var index = IndexOf(cell);
+        var index = IndexOf(cell, deck);
         if (unit.Archetype.Placement == UnitPlacement.Cell)
         {
             _vehicle[index] = unit.Id.Value;
@@ -164,10 +179,21 @@ public sealed class Reservations
         return best;
     }
 
-    /// <summary>Frees whatever place <paramref name="unit"/> holds in the cell.</summary>
+    /// <summary>Frees whatever place <paramref name="unit"/> holds in the cell, on the ground and on a deck over it.</summary>
     internal void Leave(CellPos cell, Unit unit)
     {
-        var index = IndexOf(cell);
+        LeaveAt(IndexOf(cell), unit);
+        if (_map is { DeckCount: > 0 } map && map.DeckSlot(cell) is var slot and >= 0)
+        {
+            LeaveAt(Width * Height + slot, unit);
+        }
+    }
+
+    /// <summary>Puts a marker owner into a vehicle place; for tests of the state hash.</summary>
+    internal void SetVehicle(CellPos cell, EntityId owner) => _vehicle[IndexOf(cell)] = owner.Value;
+
+    private void LeaveAt(int index, Unit unit)
+    {
         if (_vehicle[index] == unit.Id.Value)
         {
             _vehicle[index] = 0;
@@ -182,14 +208,18 @@ public sealed class Reservations
         }
     }
 
-    /// <summary>Puts a marker owner into a vehicle place; for tests of the state hash.</summary>
-    internal void SetVehicle(CellPos cell, EntityId owner) => _vehicle[IndexOf(cell)] = owner.Value;
-
-    private int IndexOf(CellPos cell)
+    // The place of a cell on a level: the cell's own, or after the cells the one of the deck over it.
+    private int IndexOf(CellPos cell, bool onDeck = false)
     {
         if (cell.X < 0 || cell.Y < 0 || cell.X >= Width || cell.Y >= Height)
         {
             throw new ArgumentOutOfRangeException(nameof(cell), cell, $"Cell is outside the {Width}x{Height} map.");
+        }
+
+        // On a level a cell has no deck over: the ground (a unit on a deck asked about the shore it drives off to).
+        if (onDeck && _map is { DeckCount: > 0 } map && map.DeckSlot(cell) is var slot and >= 0)
+        {
+            return Width * Height + slot;
         }
 
         return cell.Y * Width + cell.X;

@@ -16,18 +16,21 @@ namespace Rts.Simulation.Systems;
 /// </summary>
 public static class CrushSystem
 {
-    /// <summary>Crushes the soldiers in <paramref name="cell"/> under <paramref name="vehicle"/> if it may; true when it did.</summary>
-    public static bool TryCrush(GameWorld world, Unit vehicle, CellPos cell, List<SimEvent>? events)
+    /// <summary>
+    /// Crushes the soldiers in <paramref name="cell"/> under <paramref name="vehicle"/> if it may; true when it did. Only the soldiers
+    /// on the level the vehicle drives on (<paramref name="onDeck"/>, a high bridge's deck): those under a bridge or on it stay.
+    /// </summary>
+    public static bool TryCrush(GameWorld world, Unit vehicle, CellPos cell, List<SimEvent>? events, bool onDeck = false)
     {
         var reservations = world.Reservations;
-        if (!vehicle.Archetype.Crusher || reservations.VehicleAt(cell) != EntityId.None || reservations.InfantryCount(cell) == 0)
+        if (!vehicle.Archetype.Crusher || reservations.VehicleAt(cell, onDeck) != EntityId.None || reservations.InfantryCount(cell, onDeck) == 0)
         {
             return false;
         }
 
         for (var spot = 0; spot < Reservations.SubcellsPerCell; spot++)
         {
-            var id = reservations.InfantryAt(cell, spot);
+            var id = reservations.InfantryAt(cell, spot, onDeck);
             if (id != EntityId.None && (!world.TryGet(id, out var entity) || entity is not Unit { Archetype.Crushable: true, ErasedBy: null } soldier
                 || world.AreAllies(soldier.Owner, vehicle.Owner)))
             {
@@ -37,7 +40,7 @@ public static class CrushSystem
 
         for (var spot = 0; spot < Reservations.SubcellsPerCell; spot++)
         {
-            var id = reservations.InfantryAt(cell, spot);
+            var id = reservations.InfantryAt(cell, spot, onDeck);
             if (id == EntityId.None || !world.TryGet(id, out var entity))
             {
                 continue;

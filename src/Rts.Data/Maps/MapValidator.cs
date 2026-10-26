@@ -183,6 +183,11 @@ public static class MapValidator
     /// <summary>Every cell <paramref name="locomotor"/> reaches from <paramref name="from"/>: eight directions, no corner cutting, as the path search moves.</summary>
     private static bool[] Reachable(MapGrid grid, CellPos from, Locomotor locomotor)
     {
+        if (grid.DeckCount > 0)
+        {
+            return ReachableOverDecks(grid, from, locomotor);
+        }
+
         var reached = new bool[grid.Width * grid.Height];
         var queue = new Queue<CellPos>();
         reached[from.Y * grid.Width + from.X] = true;
@@ -207,6 +212,39 @@ public static class MapValidator
 
                     reached[next.Y * grid.Width + next.X] = true;
                     queue.Enqueue(next);
+                }
+            }
+        }
+
+        return reached;
+    }
+
+    // As Reachable, over the decks of high bridges too (Decks): the nodes of the path search, cells first, then the deck slots.
+    private static bool[] ReachableOverDecks(MapGrid grid, CellPos from, Locomotor locomotor)
+    {
+        var cells = grid.Width * grid.Height;
+        var reached = new bool[grid.NodeCount];
+        var queue = new Queue<(CellPos Cell, bool OnDeck)>();
+        reached[from.Y * grid.Width + from.X] = true;
+        queue.Enqueue((from, false));
+        while (queue.TryDequeue(out var node))
+        {
+            for (var dy = -1; dy <= 1; dy++)
+            {
+                for (var dx = -1; dx <= 1; dx++)
+                {
+                    if ((dx == 0 && dy == 0) || !Decks.TryStep(grid, node.Cell, node.OnDeck, dx, dy, locomotor, out var onDeck))
+                    {
+                        continue;
+                    }
+
+                    var next = new CellPos(node.Cell.X + dx, node.Cell.Y + dy);
+                    var index = onDeck ? cells + grid.DeckSlot(next) : next.Y * grid.Width + next.X;
+                    if (!reached[index])
+                    {
+                        reached[index] = true;
+                        queue.Enqueue((next, onDeck));
+                    }
                 }
             }
         }

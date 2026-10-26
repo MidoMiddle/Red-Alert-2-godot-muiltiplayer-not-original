@@ -174,6 +174,12 @@ public sealed class Unit : Entity
     /// <summary>Spot of a soldier in its cell (0 centre, 1–4 corners, see <see cref="Movement.Reservations"/>); 0 for vehicles.</summary>
     public int Subcell { get; internal set; }
 
+    /// <summary>
+    /// True while the unit is on the deck of a high bridge over its cell, not on the ground under it (<see cref="Map.Decks"/>). Always
+    /// in step with the place it holds in the deck layer of <see cref="Movement.Reservations"/>, which the state hash covers.
+    /// </summary>
+    public bool OnDeck { get; internal set; }
+
     /// <summary>Where the hull points. A new unit faces north.</summary>
     public BAngle Facing { get; internal set; }
 

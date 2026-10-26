@@ -154,7 +154,8 @@ public static class HarvesterSystem
     private static void Harvest(GameWorld world, Unit unit, Harvester harvester, List<SimEvent>? events)
     {
         var cell = unit.Position.ToCell();
-        var ore = world.Map.OreAt(cell);
+        // From a high bridge's deck the ore below is out of reach (Decks): as from an empty cell, on to the next.
+        var ore = unit.OnDeck ? OreCell.Empty : world.Map.OreAt(cell);
         if (ore.IsEmpty)
         {
             if (FindOre(world, unit, cell, NextCellRadius) is { } next)

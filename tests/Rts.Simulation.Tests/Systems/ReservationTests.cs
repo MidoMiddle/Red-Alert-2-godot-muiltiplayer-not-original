@@ -49,7 +49,8 @@ public sealed class ReservationTests
 
     /// <summary>
     /// Every living unit holds its place where it stands (a vehicle its cell, a soldier its spot), places held = units,
-    /// no cell has a vehicle and soldiers or more than five soldiers, nobody stands on impassable land.
+    /// no cell has a vehicle and soldiers or more than five soldiers, nobody stands on impassable land. On both levels of a high
+    /// bridge (<see cref="Decks"/>): a unit on a deck holds its place there and stands on a standing segment.
     /// </summary>
     internal static void AssertOccupancy(GameWorld world)
     {
@@ -60,14 +61,14 @@ public sealed class ReservationTests
             var cell = unit.Position.ToCell();
             if (unit.Archetype.Placement == UnitPlacement.Cell)
             {
-                Assert.Equal(unit.Id, reservations.VehicleAt(cell));
+                Assert.Equal(unit.Id, reservations.VehicleAt(cell, unit.OnDeck));
             }
             else
             {
-                Assert.Equal(unit.Id, reservations.InfantryAt(cell, unit.Subcell));
+                Assert.Equal(unit.Id, reservations.InfantryAt(cell, unit.Subcell, unit.OnDeck));
             }
 
-            Assert.True(world.Map.CanEnter(cell, unit.Archetype.Locomotor), $"{unit.Id} stands on {cell}.");
+            Assert.True(Decks.CanStand(world.Map, cell, unit.OnDeck, unit.Archetype.Locomotor), $"{unit.Id} stands on {cell}{(unit.OnDeck ? " (deck)" : "")}.");
         }
 
         var held = 0;
@@ -76,10 +77,13 @@ public sealed class ReservationTests
             for (var x = 0; x < world.Map.Width; x++)
             {
                 var cell = new CellPos(x, y);
-                var soldiers = reservations.InfantryCount(cell);
-                var vehicle = reservations.VehicleAt(cell) != EntityId.None;
-                Assert.False(vehicle && soldiers > 0, $"Vehicle and soldiers share {cell}.");
-                held += soldiers + (vehicle ? 1 : 0);
+                foreach (var onDeck in world.Map.IsDeck(cell) ? new[] { false, true } : [false])
+                {
+                    var soldiers = reservations.InfantryCount(cell, onDeck);
+                    var vehicle = reservations.VehicleAt(cell, onDeck) != EntityId.None;
+                    Assert.False(vehicle && soldiers > 0, $"Vehicle and soldiers share {cell}.");
+                    held += soldiers + (vehicle ? 1 : 0);
+                }
             }
         }
 

@@ -26,7 +26,11 @@ public static class SightRules
     public static int SightAt(MapGrid map, CellPos cell, int baseSight) => baseSight + HeightBonus(map.Heights.CellLevel(cell));
 
     /// <summary>The sight radius of <paramref name="unit"/> where it stands now.</summary>
-    public static int SightOf(Unit unit, MapGrid map) => SightAt(map, unit.Position.ToCell(), unit.Archetype.Sight);
+    /// <remarks>On a high bridge's deck (<see cref="Decks"/>) the unit sees from the deck's level.</remarks>
+    public static int SightOf(Unit unit, MapGrid map) =>
+        unit.OnDeck && map.DeckSlot(unit.Position.ToCell()) is var slot and >= 0
+            ? unit.Archetype.Sight + HeightBonus(map.DeckLevel(slot))
+            : SightAt(map, unit.Position.ToCell(), unit.Archetype.Sight);
 
     /// <summary>True when a cell <paramref name="dx"/>, <paramref name="dy"/> cells away lies within <paramref name="radius"/>.</summary>
     public static bool InSight(int dx, int dy, int radius) => (long)dx * dx + (long)dy * dy <= (long)radius * radius;

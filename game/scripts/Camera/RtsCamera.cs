@@ -122,7 +122,10 @@ public partial class RtsCamera : Node3D
     /// <summary>Zooms out as far as the wheel can, for the performance run with all units on screen.</summary>
     public void ZoomOutFully() => _targetSize = DefaultSize * MaxZoom;
 
-    /// <summary>Point on the ground under a screen position: on the terrain when there is one, else on the plane y = 0.</summary>
+    /// <summary>
+    /// Point on the ground under a screen position: on the terrain when there is one, else on the plane y = 0 — or on the deck of a
+    /// high bridge when the ray meets it first (<see cref="Rts.Client.Terrain.DeckPicking"/>).
+    /// </summary>
     public bool TryGroundAt(Vector2 screen, out Vector3 ground)
     {
         ground = default;
@@ -144,6 +147,16 @@ public partial class RtsCamera : Node3D
             }
 
             ground = new Vector3(hit.X, hit.Y, hit.Z);
+            if (WorldCoords.Map is { } map)
+            {
+                var from = new System.Numerics.Vector3(origin.X, origin.Y, origin.Z);
+                var along = System.Numerics.Vector3.Normalize(new System.Numerics.Vector3(direction.X, direction.Y, direction.Z));
+                if (Rts.Client.Terrain.DeckPicking.TryHit(map, from, along, System.Numerics.Vector3.Distance(from, hit), out var deck))
+                {
+                    ground = new Vector3(deck.X, deck.Y, deck.Z);
+                }
+            }
+
             return true;
         }
 

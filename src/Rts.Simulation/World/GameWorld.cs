@@ -57,7 +57,7 @@ public sealed class GameWorld
 
         Random = new DeterministicRandom(seed);
         PathRequests = new PathRequestQueue(map);
-        Reservations = new Reservations(map.Width, map.Height);
+        Reservations = new Reservations(map);
         Radiation = new ushort[map.Width * map.Height];
         Spatial = new SpatialIndex(map.Width, map.Height);
         foreach (var start in map.StartBuildings)
@@ -517,11 +517,6 @@ public sealed class GameWorld
         events?.Add(new Events.MapObjectDestroyed(CurrentTick, mapObject.Id, mapObject.Kind, mapObject.Cell));
     }
 
-    /// <summary>
-    /// A bridge segment falls (docs/implementation/M7_maps.md, 4.6): its cell is water again, paths are rebuilt through
-    /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. The dead keep
-    /// their place in the cell until the end of the tick, like every unit that dies.
-    /// </summary>
     /// <summary>Takes <paramref name="amount"/> hit points off a standing bridge segment; at none it falls.</summary>
     internal void DamageBridgeSegment(BridgeSegment segment, int amount, List<Events.SimEvent>? events)
     {
@@ -536,14 +531,21 @@ public sealed class GameWorld
         }
     }
 
+    /// <summary>
+    /// A bridge segment falls (docs/implementation/M7_maps.md, 4.6): its cell is water again, paths are rebuilt through
+    /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. A high bridge's
+    /// segment kills everyone on its deck, and those under it stay (<see cref="Decks"/>). The dead keep their place in the cell until
+    /// the end of the tick, like every unit that dies.
+    /// </summary>
     internal void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events)
     {
         ChangeMap([new DestroyBridgeSegmentEdit(segment.Bridge.Id, segment.Index)], events);
         events?.Add(new Events.BridgeSegmentDestroyed(CurrentTick, segment.Bridge.Id, segment.Cell));
+        var high = segment.Bridge.Type.High;
         foreach (var entity in _entities)
         {
             if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && segment.Cells.Contains(unit.Position.ToCell())
-                && !Map.CanEnter(unit.Position.ToCell(), unit.Archetype.Locomotor))
+                && (high ? unit.OnDeck : !Map.CanEnter(unit.Position.ToCell(), unit.Archetype.Locomotor)))
             {
                 unit.MarkDead();
                 events?.Add(new Events.UnitKilled(CurrentTick, unit.Id, unit.Position));
@@ -621,15 +623,18 @@ public sealed class GameWorld
         BuildingsChanged();
     }
 
-    /// <summary>True when a cell of the path still ahead of the unit lies in the area and is closed to it now.</summary>
+    /// <summary>True when a cell of the path still ahead of the unit lies in the area and is closed to it now, on its level (<see cref="Decks"/>).</summary>
     private bool CrossesClosedCell(Unit unit, Pathfinding.CellPath path, CellPos from, CellPos to)
     {
         var here = unit.Position.ToCell();
         var start = path.Cells.IndexOf(here);
-        for (var i = start < 0 ? 0 : start; i < path.Cells.Length; i++)
+        start = start < 0 ? 0 : start;
+        var levels = Map.DeckCount > 0 ? Decks.Levels(Map, path.Cells[start..], unit.OnDeck, unit.Archetype.Locomotor) : null;
+        for (var i = start; i < path.Cells.Length; i++)
         {
             var cell = path.Cells[i];
-            if (cell.X >= from.X && cell.X <= to.X && cell.Y >= from.Y && cell.Y <= to.Y && !Map.CanEnter(cell, unit.Archetype.Locomotor))
+            var open = levels is null ? Map.CanEnter(cell, unit.Archetype.Locomotor) : Decks.CanStand(Map, cell, levels[i - start], unit.Archetype.Locomotor);
+            if (cell.X >= from.X && cell.X <= to.X && cell.Y >= from.Y && cell.Y <= to.Y && !open)
             {
                 return true;
             }

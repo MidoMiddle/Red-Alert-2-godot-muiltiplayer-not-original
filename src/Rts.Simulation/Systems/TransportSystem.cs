@@ -43,9 +43,17 @@ public static class TransportSystem
         events?.Add(new UnitBoarded(world.CurrentTick, unit.Id, transport.Id));
     }
 
-    /// <summary>The passengers come out round the transport, in the order they boarded, each on a free cell it can stand on.</summary>
+    /// <summary>
+    /// The passengers come out round the transport, in the order they boarded, each on a free cell it can stand on. Nobody comes out
+    /// on a high bridge's deck: the ground round it is far below (<see cref="Map.Decks"/>).
+    /// </summary>
     internal static bool Unload(GameWorld world, Unit transport, List<SimEvent>? events)
     {
+        if (transport.OnDeck)
+        {
+            return false;
+        }
+
         var centre = transport.Position.ToCell();
         var left = 0;
         var any = false;

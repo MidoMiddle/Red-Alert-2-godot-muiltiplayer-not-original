@@ -31,6 +31,16 @@ public sealed class MapGrid
     private readonly List<MapObject> _sources = new();
     private readonly List<Bridge> _bridges = new();
     private readonly Dictionary<int, BridgeSegment> _segmentsByCell = new();
+
+    // The decks of the high bridges (2026-10-26), derived from the bridges as they are added: a slot per deck cell in the order of
+    // the bridges and their segments; the cell, the segment and the level of every slot; for every end cell the shore it leads to,
+    // and for every shore cell the end cells it leads onto. Empty without high bridges.
+    private readonly List<int> _deckCell = new();
+    private readonly List<BridgeSegment> _deckSegment = new();
+    private readonly List<int> _deckLevel = new();
+    private readonly List<int> _deckExit = new();
+    private readonly Dictionary<int, int> _deckSlotByCell = new();
+    private readonly Dictionary<int, List<int>> _deckEntries = new();
     private readonly List<BuildingState> _startBuildings = new();
     private readonly bool[] _building;
     private readonly byte[] _ore;
@@ -173,12 +183,48 @@ public sealed class MapGrid
     /// <summary>The land layer: under a bridge, the water it spans.</summary>
     public LandType LandAt(CellPos cell) => _land[IndexOf(cell)];
 
-    /// <summary>The land a unit drives on (M7 step 6): a road over a standing bridge segment, the land layer elsewhere.</summary>
+    /// <summary>
+    /// The land a unit on the ground drives on (M7 step 6): a road over a standing low bridge segment, the land layer elsewhere —
+    /// under a high bridge too, whose deck is a level of its own (<see cref="Decks"/>).
+    /// </summary>
     public LandType SurfaceAt(CellPos cell)
     {
         var index = IndexOf(cell);
-        return _segmentsByCell.TryGetValue(index, out var segment) && segment.IsIntact ? LandType.Road : _land[index];
+        return _segmentsByCell.TryGetValue(index, out var segment) && segment.IsIntact && !segment.Bridge.Type.High ? LandType.Road : _land[index];
     }
+
+    /// <summary>Cells of deck of the high bridges: the second level of the map (<see cref="Decks"/>).</summary>
+    public int DeckCount => _deckCell.Count;
+
+    /// <summary>Nodes of the path graph: a node per cell, then one per cell of deck.</summary>
+    public int NodeCount => Width * Height + _deckCell.Count;
+
+    /// <summary>The slot of the deck over the cell, or -1 when no high bridge crosses it.</summary>
+    public int DeckSlot(CellPos cell) => Contains(cell) && _deckSlotByCell.TryGetValue(IndexOf(cell), out var slot) ? slot : -1;
+
+    public bool IsDeck(CellPos cell) => DeckSlot(cell) >= 0;
+
+    /// <summary>The cell of a slot of deck.</summary>
+    public CellPos DeckCell(int slot) => new(_deckCell[slot] % Width, _deckCell[slot] / Width);
+
+    /// <summary>The segment a slot of deck belongs to.</summary>
+    public BridgeSegment DeckSegment(int slot) => _deckSegment[slot];
+
+    /// <summary>The level of the deck of a slot: that of the plateaus its bridge joins.</summary>
+    public int DeckLevel(int slot) => _deckLevel[slot];
+
+    /// <summary>The level of the deck over the cell (the cell must be a deck cell).</summary>
+    public int DeckLevel(CellPos cell) => _deckLevel[DeckSlot(cell)];
+
+    /// <summary>The shore cell an end cell of deck leads off to, as a cell index, or -1 for a slot inside the deck.</summary>
+    public int DeckExit(int slot) => _deckExit[slot];
+
+    /// <summary>The slots of deck a shore cell leads onto (a straight step along its bridge), empty for any other cell.</summary>
+    public IReadOnlyList<int> DeckEntries(int cellIndex) => _deckEntries.TryGetValue(cellIndex, out var slots) ? slots : [];
+
+    /// <summary>Speed on a slot of deck in percent: the road for every ground mover while its segment stands, 0 for ships.</summary>
+    public int DeckSpeedPercent(int slot, Locomotor locomotor) =>
+        _deckSegment[slot].IsIntact && locomotor != Locomotor.Naval ? Speeds.CellPercent(locomotor, LandType.Road, CellShape.Flat) : 0;
 
     /// <summary>The bridge segment on the cell, standing or destroyed; null when no bridge crosses it.</summary>
     public BridgeSegment? BridgeAt(CellPos cell) => _segmentsByCell.GetValueOrDefault(IndexOf(cell));
@@ -439,6 +485,11 @@ public sealed class MapGrid
         }
 
         var (dx, dy) = Bridge.Step(from, to);
+        if (BridgeTypes.Get(state.Kind).High)
+        {
+            return TryAddHighBridge(state, dx, dy, length);
+        }
+
         for (var i = 0; i < length; i++)
         {
             var cell = new CellPos(from.X + dx * i, from.Y + dy * i);
@@ -506,6 +557,155 @@ public sealed class MapGrid
         _digest = null;
         Version++;
         return null;
+    }
+
+    /// <summary>
+    /// A high bridge (2026-10-26; docs/map_elements/05_bridges): straight, three cells or longer, as wide as its type, from a
+    /// shore to a shore — the cells just beyond both ends, one a lane, on the map, flat, dry land without a bridge, all at one
+    /// level L of 2 or more. Under the deck the cells may be anything, water or land, but none rises above L and every one has a
+    /// corner at L − 2 or lower; the end cells are cliffs (or rock), so nobody gets on from the ground. The deck lies at L.
+    /// </summary>
+    private string? TryAddHighBridge(BridgeState state, int dx, int dy, int length)
+    {
+        var (from, to) = (state.From, state.To);
+        var type = BridgeTypes.Get(state.Kind);
+        if (length < 3)
+        {
+            return $"a high bridge spans three cells or more, {Text(from)} to {Text(to)} is {length}";
+        }
+
+        var (acrossX, acrossY) = (dy, dx);
+        var half = (type.Width - 1) / 2;
+        var level = -1;
+        for (var k = -half; k <= half; k++)
+        {
+            foreach (var shore in (ReadOnlySpan<CellPos>)[
+                         new CellPos(from.X - dx + acrossX * k, from.Y - dy + acrossY * k), new CellPos(to.X + dx + acrossX * k, to.Y + dy + acrossY * k)])
+            {
+                if (!Contains(shore) || IsWater(_land[IndexOf(shore)]) || _land[IndexOf(shore)] == LandType.Rock
+                    || _heights.ShapeAt(shore) != CellShape.Flat || _segmentsByCell.ContainsKey(IndexOf(shore)))
+                {
+                    return $"no shore at {Text(shore)}: a high bridge runs from flat dry land to flat dry land";
+                }
+
+                var at = _heights.CellLevel(shore);
+                if (level >= 0 && at != level)
+                {
+                    return $"the shores are at levels {level} and {at}: a high bridge joins two plateaus of one level";
+                }
+
+                level = at;
+            }
+        }
+
+        if (level < 2)
+        {
+            return $"the shores are at level {level}: a high bridge stands at level 2 or higher";
+        }
+
+        var spans = new System.Collections.Immutable.ImmutableArray<CellPos>[length];
+        for (var i = 0; i < length; i++)
+        {
+            var middle = new CellPos(from.X + dx * i, from.Y + dy * i);
+            if (state.SegmentHp[i] < 0 || state.SegmentHp[i] > type.SegmentHp)
+            {
+                return $"segment {i} has {state.SegmentHp[i]} hit points";
+            }
+
+            var cells = System.Collections.Immutable.ImmutableArray.CreateBuilder<CellPos>();
+            foreach (var k in Lanes(half))
+            {
+                var cell = new CellPos(middle.X + acrossX * k, middle.Y + acrossY * k);
+                if (!Contains(cell) || _segmentsByCell.ContainsKey(IndexOf(cell)))
+                {
+                    return Contains(cell) ? $"cell {Text(cell)} already has a bridge" : $"cell {Text(cell)} is outside the {Width}x{Height} map";
+                }
+
+                var (low, high) = CornerRange(cell);
+                if (high > level || low > level - 2)
+                {
+                    return $"cell {Text(cell)} is not low enough under a deck at level {level}";
+                }
+
+                var end = i == 0 || i == length - 1;
+                if (end && _heights.ShapeAt(cell) != CellShape.Cliff && _land[IndexOf(cell)] != LandType.Rock)
+                {
+                    return $"the end cell {Text(cell)} is not a cliff: one could get on the deck from below";
+                }
+
+                cells.Add(cell);
+            }
+
+            spans[i] = cells.ToImmutable();
+        }
+
+        var bridge = new Bridge(_bridges.Count + 1, state.Kind, from, to, state.SegmentHp, spans);
+        _bridges.Add(bridge);
+        foreach (var segment in bridge.Segments)
+        {
+            for (var c = 0; c < segment.Cells.Length; c++)
+            {
+                var cell = segment.Cells[c];
+                var index = IndexOf(cell);
+                var slot = _deckCell.Count;
+                _segmentsByCell.Add(index, segment);
+                _deckCell.Add(index);
+                _deckSegment.Add(segment);
+                _deckLevel.Add(level);
+                _deckSlotByCell.Add(index, slot);
+
+                // An end cell leads off to its shore, straight along the bridge, and the shore leads onto it.
+                var exit = -1;
+                if (segment.Index == 0 || segment.Index == bridge.Segments.Count - 1)
+                {
+                    var outward = segment.Index == 0 ? -1 : 1;
+                    var shore = new CellPos(cell.X + dx * outward, cell.Y + dy * outward);
+                    exit = IndexOf(shore);
+                    if (!_deckEntries.TryGetValue(exit, out var entries))
+                    {
+                        entries = new List<int>();
+                        _deckEntries.Add(exit, entries);
+                    }
+
+                    entries.Add(slot);
+                }
+
+                _deckExit.Add(exit);
+                _passability.Update(this, cell);
+            }
+        }
+
+        _digest = null;
+        Version++;
+        return null;
+    }
+
+    // The lanes across a bridge, the middle one first, then from one side to the other, as the cells of a segment go.
+    private static IEnumerable<int> Lanes(int half)
+    {
+        yield return 0;
+        for (var k = -half; k <= half; k++)
+        {
+            if (k != 0)
+            {
+                yield return k;
+            }
+        }
+    }
+
+    private (int Low, int High) CornerRange(CellPos cell)
+    {
+        var (low, high) = (int.MaxValue, int.MinValue);
+        for (var y = cell.Y; y <= cell.Y + 1; y++)
+        {
+            for (var x = cell.X; x <= cell.X + 1; x++)
+            {
+                var corner = _heights.CornerLevel(x, y);
+                (low, high) = (Math.IntMath.Min(low, corner), Math.IntMath.Max(high, corner));
+            }
+        }
+
+        return (low, high);
     }
 
     /// <summary>

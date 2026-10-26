@@ -34,7 +34,9 @@ public static class MinimapImage
             for (var x = 0; x < map.Width; x++)
             {
                 var cell = new CellPos(x, y);
-                var (r, g, b) = map.HasBuilding(cell) ? Shaded(BuildingColor) : ColorOf(map.SurfaceAt(cell), map.IsBlocked(cell));
+                // The standing deck of a high bridge shows over what lies below it, in the colour of a road.
+                var deck = map.DeckSlot(cell) is var slot and >= 0 && map.DeckSegment(slot).IsIntact;
+                var (r, g, b) = map.HasBuilding(cell) ? Shaded(BuildingColor) : ColorOf(deck ? LandType.Road : map.SurfaceAt(cell), !deck && map.IsBlocked(cell));
                 var index = (y * map.Width + x) * 3;
                 pixels[index] = ToByte(r);
                 pixels[index + 1] = ToByte(g);

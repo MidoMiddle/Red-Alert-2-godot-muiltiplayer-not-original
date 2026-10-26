@@ -11,7 +11,8 @@ namespace Rts.Client.Terrain;
 /// the climate's trees (<see cref="TreeShapes"/>: a pine, a broadleaf tree, a palm or a cactus) and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a low steel
 /// block for an anti-tank hedgehog, a thin dark pipe for a pipeline (ore and gem sources: <see cref="OreSources"/>), a tall
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
-/// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell. One MultiMesh
+/// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell; a high bridge of concrete
+/// with an asphalt deck at its level (<see cref="AddHighBridge"/>). One MultiMesh
 /// per shape (and per direction for bridges). A snowdrift is a bush in summer and a dune in the desert. Rebuilt whenever the map changes
 /// (a bridge blown up, the editor) or its climate does (the editor), which is rare. An object destroyed in a match (a lamp post or a
 /// fence crushed, a tree felled) is not a rebuild — on a big map that took tens of milliseconds every time a tank drove down a street —
@@ -206,6 +207,12 @@ public partial class MapObjects : Node3D
     /// </summary>
     private void AddBridge(Bridge bridge)
     {
+        if (bridge.Type.High)
+        {
+            AddHighBridge(bridge);
+            return;
+        }
+
         // A bridge of one cell runs across the cells beside it.
         var alongX = bridge.From != bridge.To ? bridge.From.Y == bridge.To.Y : !System.Linq.Enumerable.Any(bridge.Segments[0].Cells, cell => cell.X != bridge.From.X);
         var decks = new List<Spot>();
@@ -242,6 +249,110 @@ public partial class MapObjects : Node3D
         AddInstances(name + "Deck", new BoxMesh { Size = deck }, new Color(0.55f, 0.4f, 0.24f), decks, 0.03f);
         AddInstances(name + "Rails", new BoxMesh { Size = rail }, new Color(0.38f, 0.26f, 0.15f), rails, 0.1f);
         AddInstances(name + "Stubs", new BoxMesh { Size = new Vector3(0.12f, 0.12f, 0.12f) }, new Color(0.2f, 0.16f, 0.13f), stubs, 0.02f);
+    }
+
+    // The colours of a high bridge (owner 2026-10-26: "the bridge is concrete, asphalt on top").
+    private static readonly Color Asphalt = new(0.2f, 0.2f, 0.22f);
+    private static readonly Color Marking = new(0.86f, 0.85f, 0.78f);
+    private static readonly Color Concrete = new(0.7f, 0.69f, 0.66f);
+    private static readonly Color Rubble = new(0.55f, 0.54f, 0.52f);
+
+    private const float DeckThickness = 0.1f;
+    private const float BeamDepth = 0.28f;
+
+    /// <summary>
+    /// A high bridge (docs/implementation/M7_maps.md, 4.6): an asphalt deck at its level with a light dashed line along the middle,
+    /// concrete curbs along its outer edges, a concrete beam under every cell and concrete piers from the ground up under every third
+    /// segment. A fallen segment leaves concrete rubble on the ground below and the stumps of its piers.
+    /// </summary>
+    private void AddHighBridge(Bridge bridge)
+    {
+        var alongX = bridge.From.Y == bridge.To.Y;
+        var height = _map.DeckLevel(bridge.Segments[0].Cell) * TerrainHeights.LevelHeight;
+        var side = alongX ? new Vector3(0, 0, 0.46f) : new Vector3(0.46f, 0, 0);
+        var decks = new List<Spot>();
+        var marks = new List<Spot>();
+        var curbs = new List<Spot>();
+        var beams = new List<Spot>();
+        var rubble = new List<Spot>();
+        var piers = new List<Transform3D>();
+        foreach (var segment in bridge.Segments)
+        {
+            var (first, last) = (segment.Cell, segment.Cell);
+            foreach (var cell in segment.Cells)
+            {
+                (first, last) = alongX
+                    ? (cell.Y < first.Y ? cell : first, cell.Y > last.Y ? cell : last)
+                    : (cell.X < first.X ? cell : first, cell.X > last.X ? cell : last);
+            }
+
+            var end = segment.Index == 0 || segment.Index == bridge.Segments.Count - 1;
+            var pier = !end && segment.Index % 3 == 2;
+            if (!segment.IsIntact)
+            {
+                foreach (var cell in segment.Cells)
+                {
+                    rubble.Add(new Spot(Ground(cell.X, cell.Y), 0));
+                }
+
+                if (pier)
+                {
+                    piers.Add(Pier(first, -side, Ground(first.X, first.Y).Y + 0.45f));
+                    piers.Add(Pier(last, side, Ground(last.X, last.Y).Y + 0.45f));
+                }
+
+                continue;
+            }
+
+            foreach (var cell in segment.Cells)
+            {
+                var top = new Vector3(cell.X + 0.5f, height, cell.Y + 0.5f);
+                decks.Add(new Spot(top, 0));
+                beams.Add(new Spot(top, 0));
+            }
+
+            // The middle lane is the first cell of a segment; every other cell of it gets a dash.
+            if (segment.Index % 2 == 0)
+            {
+                marks.Add(new Spot(new Vector3(segment.Cell.X + 0.5f, height, segment.Cell.Y + 0.5f), 0));
+            }
+
+            curbs.Add(new Spot(new Vector3(first.X + 0.5f, height, first.Y + 0.5f) - side, 0));
+            curbs.Add(new Spot(new Vector3(last.X + 0.5f, height, last.Y + 0.5f) + side, 0));
+            if (pier)
+            {
+                piers.Add(Pier(first, -side, height - DeckThickness - BeamDepth));
+                piers.Add(Pier(last, side, height - DeckThickness - BeamDepth));
+            }
+        }
+
+        var name = $"Bridge{bridge.Id}";
+        var across = (Vector3 size) => alongX ? size : new Vector3(size.Z, size.Y, size.X);
+        AddInstances(name + "Deck", new BoxMesh { Size = new Vector3(1f, DeckThickness, 1f) }, Asphalt, decks, -DeckThickness / 2);
+        AddInstances(name + "Marks", new BoxMesh { Size = across(new Vector3(0.5f, 0.01f, 0.07f)) }, Marking, marks, 0.005f);
+        AddInstances(name + "Curbs", new BoxMesh { Size = across(new Vector3(1f, 0.14f, 0.08f)) }, Concrete, curbs, 0.07f);
+        AddInstances(name + "Beams", new BoxMesh { Size = across(new Vector3(1f, BeamDepth, 0.8f)) }, Concrete, beams, -DeckThickness - BeamDepth / 2);
+        AddInstances(name + "Rubble", new BoxMesh { Size = new Vector3(0.55f, 0.16f, 0.45f) }, Rubble, rubble, 0.08f);
+        if (piers.Count > 0)
+        {
+            var mesh = LowPoly.Of(new BoxMesh { Size = Vector3.One });
+            mesh.Material = new StandardMaterial3D { AlbedoColor = Concrete };
+            var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = piers.Count };
+            for (var i = 0; i < piers.Count; i++)
+            {
+                multiMesh.SetInstanceTransform(i, piers[i]);
+            }
+
+            AddChild(new MultiMeshInstance3D { Name = name + "Piers", Multimesh = multiMesh });
+        }
+    }
+
+    // A square concrete pier under the outer edge of a cell, from the ground up to <paramref name="top"/>: a unit box stretched.
+    private static Transform3D Pier(CellPos cell, Vector3 outward, float top)
+    {
+        var foot = Ground(cell.X, cell.Y) + outward * 0.5f;
+        var tall = Mathf.Max(0.05f, top - foot.Y + 0.1f);
+        return new Transform3D(Basis.Identity.Scaled(new Vector3(0.32f, tall, 0.32f)), new Vector3(foot.X, foot.Y - 0.1f + tall / 2, foot.Z));
     }
 
     private static Vector3 Ground(int x, int y) => new(x + 0.5f, WorldCoords.Terrain!.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);

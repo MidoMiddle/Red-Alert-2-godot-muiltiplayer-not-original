@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Movement;
 using Rts.Simulation.Pathfinding;
@@ -215,7 +216,8 @@ public static class MovementSystem
             return MoveResult.Moved;
         }
 
-        if (!world.Map.CanEnter(cell, unit.Archetype.Locomotor))
+        // On a high bridge's deck or under it (Decks): the step decides the level the unit is on in the new cell.
+        if (!Decks.TryEnter(world.Map, current, unit.OnDeck, cell, unit.Archetype.Locomotor, out var onDeck))
         {
             // Off the line its path was planned on (it gave way, came back to its place), the straight way to the next
             // waypoint can clip an obstacle: plan again from where it stands (M2 step 15; it used to stop for good).
@@ -225,29 +227,35 @@ public static class MovementSystem
         }
 
         // A crushing vehicle drives over the enemy infantry of the cell (M4 step 8): their spots are free now.
-        CrushSystem.TryCrush(world, unit, cell, events);
+        CrushSystem.TryCrush(world, unit, cell, events, onDeck);
 
         // A soldier takes the spot nearest to where it stops in its last cell, elsewhere the one nearest to where it comes in.
         var finalPoint = FinalPoint(unit);
-        var subcell = world.Reservations.TryEnter(cell, unit, cell == finalPoint.ToCell() ? finalPoint : next);
+        var subcell = world.Reservations.TryEnter(cell, unit, cell == finalPoint.ToCell() ? finalPoint : next, onDeck);
         if (subcell >= 0)
         {
             world.Reservations.Leave(current, unit);
             unit.Subcell = subcell;
             unit.Position = next;
+            unit.OnDeck = onDeck;
             unit.Replans = 0;
 
             // Driving into a cell flattens what this unit crushes there: a fence under tracks, a lamp post under anyone (M7 step 5).
-            world.CrushMapObjects(cell, unit.Archetype.Locomotor, events);
+            // Nothing of the ground is crushed from a deck.
+            if (!onDeck)
+            {
+                world.CrushMapObjects(cell, unit.Archetype.Locomotor, events);
+            }
+
             return MoveResult.Moved;
         }
 
-        return HandleTakenCell(world, unit, cell, events);
+        return HandleTakenCell(world, unit, cell, events, onDeck);
     }
 
-    private static MoveResult HandleTakenCell(GameWorld world, Unit unit, CellPos cell, List<SimEvent> events)
+    private static MoveResult HandleTakenCell(GameWorld world, Unit unit, CellPos cell, List<SimEvent> events, bool onDeck)
     {
-        world.TryGet(world.Reservations.Blocker(cell), out var entity);
+        world.TryGet(world.Reservations.Blocker(cell, onDeck), out var entity);
         var other = (Unit)entity;
         var otherMoving = other.MoveTarget is not null;
 
@@ -266,7 +274,7 @@ public static class MovementSystem
                 }
             }
 
-            var nearGoal = GivingWay.NearestFreeCell(world, unit, cell);
+            var nearGoal = GivingWay.NearestFreeCell(world, unit, cell, onDeck);
             if (nearGoal is { } free && unit.Replans < MaxReplans)
             {
                 unit.Replans++;
@@ -332,7 +340,7 @@ public static class MovementSystem
             if (!crowdWay.IsDefault)
             {
                 // Hemmed in by our own idle units: the whole line shifts one cell toward the nearest free one.
-                GivingWay.ShiftChain(world, crowdWay);
+                GivingWay.ShiftChain(world, crowdWay, other);
                 return MoveResult.Blocked;
             }
         }
@@ -426,7 +434,7 @@ public static class MovementSystem
             for (var x = center.X - StallAvoidRadius; x <= center.X + StallAvoidRadius; x++)
             {
                 var cell = new CellPos(x, y);
-                if (world.Map.Contains(cell) && cell != center && !world.Reservations.HasRoomFor(cell, unit))
+                if (world.Map.Contains(cell) && cell != center && !world.Reservations.HasRoomFor(cell, unit, unit.OnDeck && world.Map.IsDeck(cell)))
                 {
                     taken.Add(cell);
                 }
@@ -459,7 +467,7 @@ public static class MovementSystem
     /// <summary>Speed this tick: the unit's speed — a veteran's a fifth more — times the land speed of its cell.</summary>
     private static int LandSpeed(GameWorld world, Unit unit)
     {
-        var percent = world.Map.SpeedPercent(unit.Position.ToCell(), unit.Archetype.Locomotor);
+        var percent = Decks.SpeedPercent(world.Map, unit.Position.ToCell(), unit.OnDeck, unit.Archetype.Locomotor);
         var speed = Veterancy.Speed(world, unit, unit.Speed);
         return percent == 0 ? speed : (int)IntMath.DivRound((long)speed * percent, 100);
     }
@@ -543,7 +551,9 @@ public static class MovementSystem
                 world.Reservations.Leave(from.ToCell(), unit);
             }
 
-            var subcell = world.Reservations.TryEnter(cell, unit, target);
+            // A jump lands on the ground, never on a deck.
+            var subcell = world.Reservations.TryEnter(cell, unit, target, onDeck: false);
+            unit.OnDeck = false;
             unit.Subcell = IntMath.Max(0, subcell);
             var landed = unit.Archetype.Placement == UnitPlacement.Subcell && subcell >= 0 ? Reservations.SubcellPoint(cell, subcell) : cell.Center;
             unit.WarpTicks = IntMath.Max(MinWarp, Combat.DamageCalculator.Distance(from, landed) / WarpFactor);
@@ -574,7 +584,7 @@ public static class MovementSystem
                 {
                     var cell = new CellPos(x, y);
                     if (IntMath.Max(IntMath.Abs(x - target.X), IntMath.Abs(y - target.Y)) == ring && world.Map.Contains(cell)
-                        && world.Map.CanEnter(cell, unit.Archetype.Locomotor) && world.Reservations.HasRoomFor(cell, unit))
+                        && world.Map.CanEnter(cell, unit.Archetype.Locomotor) && world.Reservations.HasRoomFor(cell, unit, onDeck: false))
                     {
                         return cell;
                     }

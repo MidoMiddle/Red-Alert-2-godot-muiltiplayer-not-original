@@ -75,7 +75,7 @@ public partial class HealthBars : Control
             if (entity is Unit { Archetype.PassengerSlots: > 0 } transport && selected && world.AreAllies(SimulationHost.LocalPlayer, transport.Owner))
             {
                 // The slots of a transport (stage 3d), for its own team.
-                var top = WorldCoords.ToGodotOnGround(transport.Position, UnitHeight + Units.UnitAltitude.Of(transport));
+                var top = WorldCoords.ToGodotOnUnit(transport, transport.Position, UnitHeight + Units.UnitAltitude.Of(transport));
                 DrawGarrison(camera, top, TransportSystem.SlotsTaken(world, transport), transport.Archetype.PassengerSlots);
             }
 
@@ -108,7 +108,7 @@ public partial class HealthBars : Control
 
                         var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before.Position : unit.Position;
                         var height = UnitHeight + Units.UnitAltitude.Of(unit);
-                        var at = WorldCoords.ToGodotOnGround(previous, height).Lerp(WorldCoords.ToGodotOnGround(unit.Position, height), _host.Alpha);
+                        var at = WorldCoords.ToGodotOnUnit(unit, previous, height).Lerp(WorldCoords.ToGodotOnUnit(unit, unit.Position, height), _host.Alpha);
                         if (bar)
                         {
                             DrawBar(camera, at, HealthPips.CountOf(unit), unit.Hp, unit.MaxHp);
@@ -154,7 +154,7 @@ public partial class HealthBars : Control
         var at = entity switch
         {
             Building { Def: { } def } building => WorldCoords.ToGodotOnGround(Aim.CentreOf(building), BuildingShape.Of(def).Height + 1f),
-            Unit unit => WorldCoords.ToGodotOnGround(unit.Position, UnitHeight + Units.UnitAltitude.Of(unit) + 0.4f),
+            Unit unit => WorldCoords.ToGodotOnUnit(unit, unit.Position, UnitHeight + Units.UnitAltitude.Of(unit) + 0.4f),
             _ => (Vector3?)null,
         };
         var period = entity.BombTicks > 60 ? 15 : 4;
@@ -243,7 +243,7 @@ public partial class HealthBars : Control
                 var shape = UnitRenderer.Disguise(world, unit).Shape;
                 world.Rules.Database.TryGetUnit(shape.Id, out var def);
                 var height = UnitHeight + Units.UnitAltitude.Of(unit);
-                return (DisplayNames.Of(shape.Id, def?.Name ?? shape.Id, ra2, key => Tr(key)), WorldCoords.ToGodotOnGround(unit.Position, height + 0.2f));
+                return (DisplayNames.Of(shape.Id, def?.Name ?? shape.Id, ra2, key => Tr(key)), WorldCoords.ToGodotOnUnit(unit, unit.Position, height + 0.2f));
             case Building { Def: { } building } placed:
                 return (DisplayNames.Of(building.Id, building.Name, ra2, key => Tr(key)),
                     WorldCoords.ToGodotOnGround(Aim.CentreOf(placed), BuildingShape.Of(building).Height + 0.8f));

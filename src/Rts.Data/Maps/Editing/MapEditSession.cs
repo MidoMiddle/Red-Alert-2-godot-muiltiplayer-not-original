@@ -403,7 +403,10 @@ public sealed class MapEditSession
         }
     }
 
-    /// <summary>Press on one shore, let go on the other, in a straight line with only water between: a bridge over that water.</summary>
+    /// <summary>
+    /// Press on one shore, let go on the other, in a straight line with only water between: a bridge over that water. A high bridge
+    /// goes from one plateau to the other over whatever lies between (water or a valley); the load rules check the rest.
+    /// </summary>
     private void PlaceBridge(CellPos from, CellPos to)
     {
         if ((from.X != to.X && from.Y != to.Y) || from == to)
@@ -415,6 +418,18 @@ public sealed class MapEditSession
         var (dx, dy) = (IntMath.Sign(to.X - from.X), IntMath.Sign(to.Y - from.Y));
         var start = new CellPos(from.X + dx, from.Y + dy);
         var end = new CellPos(to.X - dx, to.Y - dy);
+        if (BridgeTypes.TryGetById(_options.BridgeType, out var type) && type.High)
+        {
+            if (start == to)
+            {
+                Message = "press on one plateau and let go on the other";
+                return;
+            }
+
+            AddBridge(new BridgePlacement(_options.BridgeType, start, end));
+            return;
+        }
+
         if (start == to || IsWater(Map.LandAt(from)) || IsWater(Map.LandAt(to)))
         {
             Message = "press on one shore and let go on the other, with water between";
@@ -435,7 +450,11 @@ public sealed class MapEditSession
             }
         }
 
-        var bridge = new BridgePlacement(_options.BridgeType, start, end);
+        AddBridge(new BridgePlacement(_options.BridgeType, start, end));
+    }
+
+    private void AddBridge(BridgePlacement bridge)
+    {
         if (MapChecks.BridgeProblem(MapChecks.BaseGrid(Map.ToDefinition()), bridge, Map.Bridges) is { } problem)
         {
             Message = problem;

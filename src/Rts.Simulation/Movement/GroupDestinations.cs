@@ -38,9 +38,16 @@ internal static class GroupDestinations
             return result;
         }
 
-        if (units.Count == 1)
+        // One unit goes where it was sent; so does a group sent to a high bridge's deck, which the places on the ground do not know
+        // (Decks): each finds a free cell near the target when it gets there.
+        if (units.Count == 1 || world.Map.IsDeck(target.ToCell()))
         {
-            result.Add((units[0], target));
+            foreach (var unit in units)
+            {
+                result.Add((unit, target));
+            }
+
+            result.Sort((a, b) => a.Unit.Id.CompareTo(b.Unit.Id));
             return result;
         }
 

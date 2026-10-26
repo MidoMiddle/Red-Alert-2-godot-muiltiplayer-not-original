@@ -40,11 +40,11 @@ public static class UnitAltitude
     /// <summary>The height the unit is drawn at now: a helicopter on its way down or up, else that of its kind.</summary>
     public static float Of(Unit unit) => DrawnHeights.TryGetValue(unit.Id, out var height) ? height : Of(unit.Archetype);
 
-    /// <summary>How much lower than its kind a unit on the ground is drawn: a soldier on water swims, all else 0.</summary>
+    /// <summary>How much lower than its kind a unit on the ground is drawn: a soldier on water swims (not on a high bridge over it), all else 0.</summary>
     public static float Swim(GameWorld world, Unit unit)
     {
         var cell = unit.Position.ToCell();
-        return unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies && world.Map.Contains(cell)
+        return unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies && !unit.OnDeck && world.Map.Contains(cell)
             && world.Map.SurfaceAt(cell) is LandType.Shallow or LandType.Deep ? Swimming : 0f;
     }
 

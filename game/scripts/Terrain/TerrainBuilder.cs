@@ -60,6 +60,7 @@ public partial class TerrainBuilder : Node3D
         SetLook(look, map, sameSize: false);
         Heights = TerrainHeights.FromRules(map.Heights, _skirt!);
         WorldCoords.Terrain = Heights;
+        WorldCoords.Map = map;
         foreach (var chunk in TerrainMesh.Chunks(Heights))
         {
             BuildChunk(chunk);
@@ -113,6 +114,7 @@ public partial class TerrainBuilder : Node3D
 
         Heights = heights;
         WorldCoords.Terrain = heights;
+        WorldCoords.Map = map;
         foreach (var chunk in changed)
         {
             BuildChunk(chunk);
@@ -126,6 +128,7 @@ public partial class TerrainBuilder : Node3D
         if (WorldCoords.Terrain == Heights)
         {
             WorldCoords.Terrain = null;
+            WorldCoords.Map = null;
         }
     }
 

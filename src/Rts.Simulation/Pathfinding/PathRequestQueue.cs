@@ -12,9 +12,12 @@ namespace Rts.Simulation.Pathfinding;
 public sealed class PathRequest
 {
     internal PathRequest(
-        EntityId unit, int requestTick, CellPos start, CellPos goal, Locomotor locomotor, ImmutableArray<CellPos> avoid, PathSearch search)
+        EntityId unit, int requestTick, CellPos start, CellPos goal, Locomotor locomotor, ImmutableArray<CellPos> avoid, PathSearch search,
+        bool startOnDeck = false, bool groundGoal = false)
     {
         Avoid = avoid.IsDefault ? [] : avoid;
+        StartOnDeck = startOnDeck;
+        GroundGoal = groundGoal;
         Unit = unit;
         RequestTick = requestTick;
         Start = start;
@@ -29,7 +32,13 @@ public sealed class PathRequest
 
     public CellPos Start { get; }
 
+    /// <summary>The unit asked from the deck of a high bridge over <see cref="Start"/> (<see cref="Decks"/>).</summary>
+    public bool StartOnDeck { get; }
+
     public CellPos Goal { get; }
+
+    /// <summary>The goal counts on the ground only, not on a deck over it: a harvester going for ore (<see cref="Decks"/>).</summary>
+    public bool GroundGoal { get; }
 
     public Locomotor Locomotor { get; }
 
@@ -45,7 +54,7 @@ public sealed class PathRequest
     internal void Restart(Pathfinder pathfinder)
     {
         Search.Cancel();
-        Search = pathfinder.StartSearch(Start, Goal, Locomotor, AStar.DefaultMaxExpansions, Avoid);
+        Search = pathfinder.StartSearch(Start, Goal, Locomotor, AStar.DefaultMaxExpansions, Avoid, StartOnDeck, GroundGoal);
     }
 }
 
@@ -87,8 +96,10 @@ public sealed class PathRequestQueue
         Cancel(unit.Id);
         var start = unit.Position.ToCell();
         var locomotor = unit.Archetype.Locomotor;
-        var search = _pathfinder.StartSearch(start, goal, locomotor, AStar.DefaultMaxExpansions, avoid);
-        var request = new PathRequest(unit.Id, tick, start, goal, locomotor, avoid, search);
+        // Ore lies on the ground: a harvester sent to it never stops on a deck over it.
+        var groundGoal = unit.Archetype.Harvests && _pathfinder.Map.DeckCount > 0 && !_pathfinder.Map.OreAt(goal).IsEmpty;
+        var search = _pathfinder.StartSearch(start, goal, locomotor, AStar.DefaultMaxExpansions, avoid, unit.OnDeck, groundGoal);
+        var request = new PathRequest(unit.Id, tick, start, goal, locomotor, avoid, search, unit.OnDeck, groundGoal);
 
         var index = _requests.Count;
         while (index > 0 && Before(request, _requests[index - 1]))
@@ -162,7 +173,7 @@ public sealed class PathRequestQueue
                 continue;
             }
 
-            var path = PathSmoother.Smooth(world.Map, request.Search.Result!, request.Locomotor, request.Avoid);
+            var path = PathSmoother.Smooth(world.Map, request.Search.Result!, request.Locomotor, request.Avoid, request.StartOnDeck);
             unit.Path = path;
             // Segments are checked between cell centres: a unit that stopped off the centre of its cell (say, at the edge,
             // in front of another unit) first goes back to the centre, so its first segment cannot clip a neighbouring cell.

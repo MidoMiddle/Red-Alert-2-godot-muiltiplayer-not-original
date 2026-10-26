@@ -88,9 +88,15 @@ public static class BridgeRepair
         events?.Add(new BridgeRepaired(world.CurrentTick, bridge.Id));
     }
 
-    // A unit on the water of a fallen segment: a ship, or one that floats; the segment waits for it to go.
+    // A unit on the water of a fallen segment: a ship, or one that floats; the segment waits for it to go. Under a high bridge
+    // nobody is in the way: its deck goes up over them.
     private static bool Taken(GameWorld world, BridgeSegment segment)
     {
+        if (segment.Bridge.Type.High)
+        {
+            return false;
+        }
+
         foreach (var entity in world.Entities)
         {
             if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && segment.Cells.Contains(unit.Position.ToCell()))

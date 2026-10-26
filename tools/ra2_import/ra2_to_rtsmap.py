@@ -4,8 +4,10 @@ RA2 cells (x, y) are our cells: the same screen axes (x right-down, y left-down)
 - Heights: the levels of the IsoMapPack5 tiles; a corner takes the highest of its cells, a corner by water is 0.
 - Ground: every tile index takes the colour its cells have most often on the map's own preview (overlays and trees drawn over it
   left out): water, road, sand, dirt track, dark field or grass.
-- Resources: ore (overlay 102-166) and gems (27-38) with their densities. Low bridges (74-101) and high bridges (24-25) over water:
-  ours are one cell wide, along the middle line of each.
+- Resources: ore (overlay 102-166) and gems (27-38) with their densities.
+- Bridges: low bridges (74-101) over water, ours one cell wide along the middle line of each; high bridges (24-25) are
+  bridge_concrete_high, three cells wide about the middle line, over whatever lies below (water or a valley, as in RA2), their ends
+  carried on through the cliff cells to the flat shores.
 - [Terrain]: trees (TREE*) become pines (the climate gives their look); the ore trees (TIBTRE*) nearest the starts become the gem
   drills, one an each start (M8 step 10b), the others are dropped; an ore drill stands by every start.
 - [Structures]: by the table STRUCTURES (buildings) and OBJECTS (lamps, benches); what has no counterpart is listed and left out.
@@ -86,7 +88,8 @@ for i, b in enumerate(ov):
     p = (i % 512, i // 512)
     if b in LOW_BRIDGE or b in HIGH_BRIDGE:
         bridge_cells[p] = b
-        kind[p] = 'water'
+        if b in LOW_BRIDGE:
+            kind[p] = 'water'
     elif 102 <= b <= 166:
         ore[p] = 1 + round(od[i] * 8 / 11)
     elif 27 <= b <= 38:
@@ -138,6 +141,7 @@ while queue:
             level[q] = level[p]; kind[q] = 'grass' if kind.get(p, 'grass') == 'water' else kind.get(p, 'grass'); queue.append(q)
 for p in bridge_cells:
     level.setdefault(p, 0)
+high_cells = {p for p, b in bridge_cells.items() if b in HIGH_BRIDGE}
 
 water = {p for p, k in kind.items() if k == 'water' and 0 <= p[0] < N and 0 <= p[1] < N}
 for p in water:
@@ -232,6 +236,14 @@ structures = [s for s in structures if all(plays(s[1] + dx, s[2] + dy) for dx in
 objects = [o for o in objects if 0 <= o[1] < N and 0 <= o[2] < N and not is_water((o[1], o[2]))]
 
 # ---- Bridges: the middle line of every run of bridge overlay.
+def rise(x, y):
+    corners = [heights[y][x], heights[y][x + 1], heights[y + 1][x], heights[y + 1][x + 1]]
+    return max(corners) - min(corners)
+
+def flat_shore(p, lanes):
+    # Flat dry land on every lane: where a high bridge's deck ends.
+    return all(0 <= q[0] < N and 0 <= q[1] < N and rise(*q) == 0 and not is_water(q) for q in lanes(p))
+
 runs, seen = [], set()
 for p in sorted(bridge_cells):
     if p in seen:
@@ -246,10 +258,23 @@ for p in sorted(bridge_cells):
     xs, ys = sorted({q[0] for q in group}), sorted({q[1] for q in group})
     if len(xs) >= len(ys):
         row = ys[len(ys) // 2]; cells = sorted(q[0] for q in group if q[1] == row)
-        runs.append(((cells[0], row), (cells[-1], row)))
+        a, b, step, lanes = (cells[0], row), (cells[-1], row), (1, 0), lambda c: [(c[0], c[1] + k) for k in (-1, 0, 1)]
     else:
         col = xs[len(xs) // 2]; cells = sorted(q[1] for q in group if q[0] == col)
-        runs.append(((col, cells[0]), (col, cells[-1])))
+        a, b, step, lanes = (col, cells[0]), (col, cells[-1]), (0, 1), lambda c: [(c[0] + k, c[1]) for k in (-1, 0, 1)]
+    high = p in high_cells
+    if high:
+        # The deck runs on until the cell beyond each end is a flat shore on all three lanes (RA2 marks the cells over the low
+        # ground only; the cliffs it rests on are ours to cross).
+        for _ in range(4):
+            if flat_shore((a[0] - step[0], a[1] - step[1]), lanes):
+                break
+            a = (a[0] - step[0], a[1] - step[1])
+        for _ in range(4):
+            if flat_shore((b[0] + step[0], b[1] + step[1]), lanes):
+                break
+            b = (b[0] + step[0], b[1] + step[1])
+    runs.append((a, b, 'bridge_concrete_high' if high else 'bridge_wood_low'))
 runs = [r for r in runs if plays(*r[0]) and plays(*r[1])]
 
 # ---- The file.
@@ -268,7 +293,7 @@ lines += ['  land: |'] + ['    ' + ''.join(land[(x, y)] for x in range(N)) for y
 lines += ['  texture: |'] + ['    ' + ''.join(texture[(x, y)] for x in range(N)) for y in range(N)]
 lines += ['  ore: |'] + ['    ' + ''.join(O[ore.get((x, y), 0)] for x in range(N)) for y in range(N)]
 lines += ['objects:'] + [f'  - {{ type: {t}, cell: [{x}, {y}], variant: {v} }}' for t, x, y, v in objects]
-lines += ['bridges:'] + [f'  - {{ type: bridge_wood_low, from: [{a[0]}, {a[1]}], to: [{b[0]}, {b[1]}] }}' for a, b in runs]
+lines += ['bridges:'] + [f'  - {{ type: {t}, from: [{a[0]}, {a[1]}], to: [{b[0]}, {b[1]}] }}' for a, b, t in runs]
 lines += ['structures:'] + [f'  - {{ type: {t}, cell: [{x}, {y}], owner: neutral, facing: {f} }}' for t, x, y, f in structures]
 open(args.out, 'w').write('\n'.join(lines) + '\n')
 print(f'{N}x{N}, area {area}, starts {starts}, objects {len(objects)}, bridges {len(runs)}, structures {len(structures)}, '

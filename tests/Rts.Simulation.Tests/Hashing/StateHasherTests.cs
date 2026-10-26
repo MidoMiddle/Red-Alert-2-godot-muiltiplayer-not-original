@@ -293,6 +293,8 @@ public sealed class StateHasherTests
         "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField", "<Experience>k__BackingField",
         "<Upgrades>k__BackingField", "<ControlledBy>k__BackingField", "<ControlledFrom>k__BackingField", "<Controlling>k__BackingField",
         "<UndeployIn>k__BackingField", "<Charging>k__BackingField",
+        // On a high bridge's deck (rules v93): follows from the place it holds, the deck's places are hashed with the others.
+        "<OnDeck>k__BackingField",
     })]
     [InlineData(typeof(Projectile), new[]
     {
@@ -363,12 +365,14 @@ public sealed class StateHasherTests
         // Derived from the ready buildings by TechTree (stage 2c): the bonus of the ore.
         "<BuildingIncomeBonusPercent>k__BackingField",
     })]
-    [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_vehicle", "_infantry", "<Width>k__BackingField", "<Height>k__BackingField" })]
+    // The map gives the deck slots past the cells (rules v93); it is hashed on its own.
+    [InlineData(typeof(Rts.Simulation.Movement.Reservations), new[] { "_vehicle", "_infantry", "<Width>k__BackingField", "<Height>k__BackingField", "_map" })]
     [InlineData(typeof(PathRequestQueue), new[] { "_pathfinder", "_requests", "<Budget>k__BackingField", "<ExpandedLastTick>k__BackingField" })]
     [InlineData(typeof(PathRequest), new[]
     {
         "<Unit>k__BackingField", "<RequestTick>k__BackingField", "<Start>k__BackingField", "<Goal>k__BackingField",
         "<Locomotor>k__BackingField", "<Search>k__BackingField", "<Avoid>k__BackingField",
+        "<StartOnDeck>k__BackingField", "<GroundGoal>k__BackingField",
     })]
     [InlineData(typeof(MapGrid), new[]
     {
@@ -384,6 +388,8 @@ public sealed class StateHasherTests
         "<OreVersion>k__BackingField",
         // A counter of destroyed objects, for the client to hide them without rebuilding the map.
         "<ObjectDeaths>k__BackingField",
+        // The decks of the high bridges (rules v93), built from the bridges and the heights.
+        "_deckCell", "_deckSegment", "_deckLevel", "_deckExit", "_deckSlotByCell", "_deckEntries",
     })]
     [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(MapObject), new[]

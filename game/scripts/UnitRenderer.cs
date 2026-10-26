@@ -78,7 +78,7 @@ public partial class UnitRenderer : Node3D
                 ? Units.UnitAltitude.Step(unit.Id, Units.UnitAltitude.Of(unit.Archetype), Units.UnitAltitude.Target(world, unit), (float)delta)
                 : Units.UnitAltitude.Of(unit.Archetype) + Units.UnitAltitude.Swim(world, unit);
             view.SetPose(
-                WorldCoords.ToGodotOnGround(previous.Position, altitude).Lerp(WorldCoords.ToGodotOnGround(current.Position, altitude), alpha),
+                WorldCoords.ToGodotOnUnit(unit, previous.Position, altitude).Lerp(WorldCoords.ToGodotOnUnit(unit, current.Position, altitude), alpha),
                 UnitFacing.InterpolatedYaw(previous.Facing, current.Facing, alpha),
                 UnitFacing.InterpolatedYaw(previous.TurretFacing, current.TurretFacing, alpha));
             _alive.Add(unit.Id);
@@ -135,7 +135,7 @@ public partial class UnitRenderer : Node3D
         }
 
         tree.Visible = true;
-        tree.Position = WorldCoords.ToGodotOnGround(unit.Position, 0f);
+        tree.Position = WorldCoords.ToGodotOnUnit(unit, unit.Position, 0f);
     }
 
     /// <summary>How the unit looks to the local player: as itself, or a disguised infiltrator of another team as the player's soldier.</summary>

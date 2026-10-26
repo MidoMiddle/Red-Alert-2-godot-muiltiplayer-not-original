@@ -160,7 +160,7 @@ public partial class CombatEffects : Node3D
             {
                 case Unit { IsAlive: true } unit:
                     var infantry = unit.Archetype.Category == UnitCategory.Infantry;
-                    _known[unit.Id] = new Known(unit.Position, WorldCoords.ToGodotOnGround(unit.Position, infantry ? 0.45f : 0.6f), infantry, false, infantry ? 0.4f : 0.9f);
+                    _known[unit.Id] = new Known(unit.Position, WorldCoords.ToGodotOnUnit(unit, unit.Position, infantry ? 0.45f : 0.6f), infantry, false, infantry ? 0.4f : 0.9f);
                     break;
                 case Building { IsAlive: true } building:
                     var centre = Aim.CentreOf(building);

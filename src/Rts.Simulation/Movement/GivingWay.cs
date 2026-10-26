@@ -10,7 +10,9 @@ namespace Rts.Simulation.Movement;
 
 /// <summary>
 /// Making room for another unit (docs/implementation/M2_unit_control.md, 4.7): a breadth-first search for the nearest free cell
-/// that is not on the other unit's way ("a pocket"), and the cells a unit is still going to drive through.
+/// that is not on the other unit's way ("a pocket"), and the cells a unit is still going to drive through. The searches go over
+/// the nodes of the path search: the cells, then the cells of high bridges' decks (<see cref="Decks"/>), so a unit on a deck looks for
+/// room along the deck and off its ends, and one under it never on it.
 /// </summary>
 internal static class GivingWay
 {
@@ -38,11 +40,12 @@ internal static class GivingWay
     /// in effect: each only drives once the cell ahead is free. The first cell is the unit that was asked to make room.
     /// Each comes back to its place after the pocket wait.
     /// </summary>
-    public static void ShiftChain(GameWorld world, ImmutableArray<CellPos> way)
+    public static void ShiftChain(GameWorld world, ImmutableArray<CellPos> way, Unit asked)
     {
+        var levels = world.Map.DeckCount > 0 ? Decks.Levels(world.Map, way, asked.OnDeck, asked.Archetype.Locomotor) : null;
         for (var i = way.Length - 2; i >= 0; i--)
         {
-            if (world.TryGet(world.Reservations.Blocker(way[i]), out var entity) && entity is Unit unit)
+            if (world.TryGet(world.Reservations.Blocker(way[i], levels is not null && levels[i]), out var entity) && entity is Unit unit)
             {
                 UnitOrders.MakeRoom(world, unit, [way[i], way[i + 1]]);
             }
@@ -54,7 +57,7 @@ internal static class GivingWay
         var map = world.Map;
         var locomotor = unit.Archetype.Locomotor;
         var start = unit.Position.ToCell();
-        var startIndex = start.Y * map.Width + start.X;
+        var startIndex = unit.OnDeck && map.DeckSlot(start) is var startSlot and >= 0 ? map.Width * map.Height + startSlot : start.Y * map.Width + start.X;
         var parent = new Dictionary<int, int> { [startIndex] = -1 };
         var queue = new List<(int Index, int Depth)> { (startIndex, 0) };
 
@@ -69,11 +72,11 @@ internal static class GivingWay
                 break;
             }
 
-            var cell = new CellPos(index % map.Width, index / map.Width);
-            if (index != startIndex && !keepClear.Contains(index) && world.Reservations.HasRoomFor(cell, unit))
+            var (cell, onDeck) = NodeOf(map, index);
+            if (index != startIndex && !keepClear.Contains(cell.Y * map.Width + cell.X) && world.Reservations.HasRoomFor(cell, unit, onDeck))
             {
                 // Among the nearest pockets, the most open one: stepping aside into a narrow pass would plug it.
-                var openness = Openness(map, cell, locomotor);
+                var openness = Openness(map, cell, onDeck, locomotor);
                 if (openness > bestOpenness || (openness == bestOpenness && index < best))
                 {
                     best = index;
@@ -92,14 +95,14 @@ internal static class GivingWay
             foreach (var (dx, dy) in AStar.Directions)
             {
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (!AStar.CanStep(map, cell, dx, dy, locomotor))
+                if (!Decks.TryStep(map, cell, onDeck, dx, dy, locomotor, out var nextOnDeck))
                 {
                     continue;
                 }
 
-                var nextIndex = next.Y * map.Width + next.X;
+                var nextIndex = NodeIndex(map, next, nextOnDeck);
                 if (parent.ContainsKey(nextIndex)
-                    || (!world.Reservations.HasRoomFor(next, unit) && !(throughOwnIdle && IsSingleOwnIdle(world, next, unit.Owner))))
+                    || (!world.Reservations.HasRoomFor(next, unit, nextOnDeck) && !(throughOwnIdle && IsSingleOwnIdle(world, next, nextOnDeck, unit.Owner))))
                 {
                     continue;
                 }
@@ -109,35 +112,44 @@ internal static class GivingWay
             }
         }
 
-        return best >= 0 ? BuildWay(parent, best, map.Width) : default;
+        return best >= 0 ? BuildWay(map, parent, best) : default;
     }
 
-    /// <summary>How many of the 8 neighbours of the cell the locomotor can step to.</summary>
-    private static int Openness(MapGrid map, CellPos cell, Locomotor locomotor)
+    /// <summary>How many of the 8 neighbours of the cell the locomotor can step to from its level.</summary>
+    private static int Openness(MapGrid map, CellPos cell, bool onDeck, Locomotor locomotor)
     {
         var open = 0;
         foreach (var (dx, dy) in AStar.Directions)
         {
-            open += AStar.CanStep(map, cell, dx, dy, locomotor) ? 1 : 0;
+            open += Decks.TryStep(map, cell, onDeck, dx, dy, locomotor, out _) ? 1 : 0;
         }
 
         return open;
     }
 
+    // A node of the search: a cell (y * width + x) or, past them, a cell of a deck by its slot.
+    private static int NodeIndex(MapGrid map, CellPos cell, bool onDeck) =>
+        onDeck ? map.Width * map.Height + map.DeckSlot(cell) : cell.Y * map.Width + cell.X;
+
+    private static (CellPos Cell, bool OnDeck) NodeOf(MapGrid map, int index) =>
+        index < map.Width * map.Height ? (new CellPos(index % map.Width, index / map.Width), false) : (map.DeckCell(index - map.Width * map.Height), true);
+
     /// <summary>
     /// The free cell nearest to <paramref name="goal"/> that the unit could stand on, found by a breadth-first search from the
     /// goal over enterable cells (no corner cutting), within <see cref="PocketRadius"/>; null when there is none.
     /// </summary>
-    public static CellPos? NearestFreeCell(GameWorld world, Unit unit, CellPos goal)
+    /// <remarks>The search starts on the level of the goal (<paramref name="goalOnDeck"/>) and keeps to the step rule of <see cref="Decks"/>.</remarks>
+    public static CellPos? NearestFreeCell(GameWorld world, Unit unit, CellPos goal, bool goalOnDeck = false)
     {
         var map = world.Map;
         var locomotor = unit.Archetype.Locomotor;
-        var seen = new HashSet<CellPos> { goal };
-        var queue = new List<(CellPos Cell, int Depth)> { (goal, 0) };
+        goalOnDeck &= map.IsDeck(goal);
+        var seen = new HashSet<int> { NodeIndex(map, goal, goalOnDeck) };
+        var queue = new List<(CellPos Cell, bool OnDeck, int Depth)> { (goal, goalOnDeck, 0) };
         for (var head = 0; head < queue.Count; head++)
         {
-            var (cell, depth) = queue[head];
-            if (cell != goal && map.CanEnter(cell, locomotor) && world.Reservations.HasRoomFor(cell, unit))
+            var (cell, onDeck, depth) = queue[head];
+            if (cell != goal && Decks.CanStand(map, cell, onDeck, locomotor) && world.Reservations.HasRoomFor(cell, unit, onDeck))
             {
                 return cell;
             }
@@ -150,9 +162,9 @@ internal static class GivingWay
             foreach (var (dx, dy) in AStar.Directions)
             {
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (AStar.CanStep(map, cell, dx, dy, locomotor) && seen.Add(next))
+                if (Decks.TryStep(map, cell, onDeck, dx, dy, locomotor, out var nextOnDeck) && seen.Add(NodeIndex(map, next, nextOnDeck)))
                 {
-                    queue.Add((next, depth + 1));
+                    queue.Add((next, nextOnDeck, depth + 1));
                 }
             }
         }
@@ -193,21 +205,21 @@ internal static class GivingWay
     }
 
     /// <summary>One idle unit of <paramref name="owner"/> stands in the cell, nobody else: the crowd can shift it along.</summary>
-    private static bool IsSingleOwnIdle(GameWorld world, CellPos cell, PlayerId owner)
+    private static bool IsSingleOwnIdle(GameWorld world, CellPos cell, bool onDeck, PlayerId owner)
     {
         var reservations = world.Reservations;
-        var single = reservations.VehicleAt(cell) != EntityId.None
-            ? reservations.InfantryCount(cell) == 0
-            : reservations.InfantryCount(cell) == 1;
-        return single && world.TryGet(reservations.Blocker(cell), out var entity) && entity is Unit { MoveTarget: null } other && other.Owner == owner;
+        var single = reservations.VehicleAt(cell, onDeck) != EntityId.None
+            ? reservations.InfantryCount(cell, onDeck) == 0
+            : reservations.InfantryCount(cell, onDeck) == 1;
+        return single && world.TryGet(reservations.Blocker(cell, onDeck), out var entity) && entity is Unit { MoveTarget: null } other && other.Owner == owner;
     }
 
-    private static ImmutableArray<CellPos> BuildWay(Dictionary<int, int> parent, int end, int width)
+    private static ImmutableArray<CellPos> BuildWay(MapGrid map, Dictionary<int, int> parent, int end)
     {
         var cells = new List<CellPos>();
         for (var index = end; index != -1; index = parent[index])
         {
-            cells.Add(new CellPos(index % width, index / width));
+            cells.Add(NodeOf(map, index).Cell);
         }
 
         cells.Reverse();

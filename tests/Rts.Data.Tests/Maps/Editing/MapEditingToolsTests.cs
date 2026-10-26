@@ -170,6 +170,37 @@ public sealed class MapEditingToolsTests
         Assert.Empty(session.Map.Bridges);
     }
 
+    /// <summary>A new 20 x 12 map with plateaus at level 4 west of corner column 6 and east of 14, a dry valley between them.</summary>
+    private static MapEditSession WithGorge()
+    {
+        var text = RtsMapWriter.Write(EditableMap.New(20, 12, 2).ToDefinition());
+        var flat = string.Concat(Enumerable.Repeat("    " + new string('0', 21) + "\n", 13));
+        var gorge = string.Concat(Enumerable.Repeat("    " + new string('4', 7) + new string('0', 7) + new string('4', 7) + "\n", 13));
+        Assert.Contains(flat, text);
+        return new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(text.Replace(flat, gorge))));
+    }
+
+    [Fact]
+    public void A_high_bridge_goes_from_plateau_to_plateau_over_the_valley()
+    {
+        var session = WithGorge();
+        var high = new EditOptions { BridgeType = "bridge_concrete_high" };
+
+        // Not straight, and not from a plateau: the load rules tell why.
+        Assert.NotNull(Stroke(session, EditTool.Bridge, Dot, high, (5, 5), (14, 6)));
+        Assert.Contains("shore", Stroke(session, EditTool.Bridge, Dot, high, (7, 5), (14, 5)) ?? "");
+        Assert.Empty(session.Map.Bridges);
+
+        Assert.Null(Stroke(session, EditTool.Bridge, Dot, high, (5, 5), (14, 5)));
+
+        var bridge = Assert.Single(session.Map.Bridges);
+        Assert.Equal(("bridge_concrete_high", new CellPos(6, 5), new CellPos(13, 5)), (bridge.Type, bridge.From, bridge.To));
+        var grid = session.Map.ToDefinition().ToMapGrid();
+        Assert.Equal(24, grid.DeckCount);
+        Assert.True(session.Undo());
+        Assert.Empty(session.Map.Bridges);
+    }
+
     [Fact]
     public void A_building_stands_on_flat_free_dry_ground_only()
     {

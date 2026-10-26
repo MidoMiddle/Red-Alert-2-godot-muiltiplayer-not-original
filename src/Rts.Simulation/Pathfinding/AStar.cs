@@ -53,8 +53,9 @@ public static class AStar
     }
 
     /// <summary>Runs a whole search at once. For a search spread over several ticks, use <see cref="Pathfinder.StartSearch"/>.</summary>
-    public static CellPath FindPath(MapGrid map, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = DefaultMaxExpansions) =>
-        new Pathfinder(map).FindPath(start, goal, locomotor, maxExpansions);
+    public static CellPath FindPath(
+        MapGrid map, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = DefaultMaxExpansions, bool startOnDeck = false) =>
+        new Pathfinder(map).FindPath(start, goal, locomotor, maxExpansions, startOnDeck);
 }
 
 /// <summary>
@@ -73,9 +74,9 @@ public sealed class Pathfinder
 
     public MapGrid Map { get; }
 
-    public CellPath FindPath(CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = AStar.DefaultMaxExpansions)
+    public CellPath FindPath(CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = AStar.DefaultMaxExpansions, bool startOnDeck = false)
     {
-        var search = StartSearch(start, goal, locomotor, maxExpansions);
+        var search = StartSearch(start, goal, locomotor, maxExpansions, default, startOnDeck);
         while (!search.Advance(int.MaxValue))
         {
         }
@@ -86,11 +87,14 @@ public sealed class Pathfinder
     /// <summary>
     /// A search that runs only when <see cref="PathSearch.Advance"/> is called, as many nodes as allowed each time.
     /// <paramref name="avoid"/> are cells treated as impassable for this search only, e.g. cells taken by other units.
+    /// <paramref name="startOnDeck"/>: the unit stands on the deck of a high bridge over the start (<see cref="Decks"/>). The goal is
+    /// reached on either level, whichever the search gets to first, or with <paramref name="groundGoal"/> on the ground only.
     /// </summary>
     public PathSearch StartSearch(
-        CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = AStar.DefaultMaxExpansions, ImmutableArray<CellPos> avoid = default)
+        CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions = AStar.DefaultMaxExpansions, ImmutableArray<CellPos> avoid = default,
+        bool startOnDeck = false, bool groundGoal = false)
     {
-        return new PathSearch(this, start, goal, locomotor, maxExpansions, avoid);
+        return new PathSearch(this, start, goal, locomotor, maxExpansions, avoid, startOnDeck, groundGoal);
     }
 
     /// <summary>The step costs of every cell for <paramref name="locomotor"/>, built once and again after the map changes.</summary>
@@ -121,7 +125,7 @@ public sealed class Pathfinder
         }
     }
 
-    internal SearchBuffers Rent() => _pool.Count > 0 ? _pool.Pop() : new SearchBuffers(Map.Width * Map.Height);
+    internal SearchBuffers Rent() => _pool.Count > 0 ? _pool.Pop() : new SearchBuffers(Map.NodeCount);
 
     internal void Return(SearchBuffers buffers) => _pool.Push(buffers);
 }
@@ -138,6 +142,8 @@ internal sealed class StepCostLayer
     {
         Straight = new int[map.Width * map.Height];
         Diagonal = new int[map.Width * map.Height];
+        DeckStraight = new int[map.DeckCount];
+        DeckDiagonal = new int[map.DeckCount];
         Patch(map, locomotor, new CellPos(0, 0), new CellPos(map.Width - 1, map.Height - 1));
     }
 
@@ -158,12 +164,25 @@ internal sealed class StepCostLayer
             }
         }
 
+        // The decks of the high bridges are few: worked out again whole, whatever changed (a segment fell or was mended).
+        for (var slot = 0; slot < DeckStraight.Length; slot++)
+        {
+            var percent = map.DeckSpeedPercent(slot, locomotor);
+            DeckStraight[slot] = percent > 0 ? (int)IntMath.DivRound(AStar.StraightCost * 100L, percent) : 0;
+            DeckDiagonal[slot] = percent > 0 ? (int)IntMath.DivRound(AStar.DiagonalCost * 100L, percent) : 0;
+        }
+
         MapVersion = map.Version;
     }
 
     public int[] Straight { get; }
 
     public int[] Diagonal { get; }
+
+    /// <summary>The step costs onto each slot of deck (<see cref="MapGrid.DeckSlot"/>), 0 where the segment fell or for ships.</summary>
+    public int[] DeckStraight { get; }
+
+    public int[] DeckDiagonal { get; }
 }
 
 /// <summary>Map-sized arrays of one search. A generation stamp marks valid entries, so a new search needs no clearing.</summary>
@@ -208,6 +227,9 @@ internal sealed class SearchBuffers
 /// One A* search (docs/implementation/M2_unit_control.md, 4.4) that can be advanced a few nodes at a time.
 /// Unreachable goal: the path ends on the expanded cell with the lowest heuristic (then lowest cost, then lowest index),
 /// so a click into a lake leads to its shore. The start may be any cell inside the map: the unit already stands there.
+/// The nodes are the cells, then the slots of deck of the high bridges (<see cref="Decks"/>): a cell node steps to its 8
+/// neighbours on the ground as it always did and onto the deck its shore leads to; a deck node steps along its deck and off an
+/// end onto the shore. A goal under a deck is reached on either level, whichever comes first.
 /// </summary>
 public sealed class PathSearch
 {
@@ -218,6 +240,7 @@ public sealed class PathSearch
     private readonly int _maxExpansions;
     private readonly int _startIndex;
     private readonly int _goalIndex;
+    private readonly int _goalDeckIndex;
     private readonly int[] _avoid;
     private SearchBuffers? _buffers;
     private bool _started;
@@ -226,7 +249,8 @@ public sealed class PathSearch
     private int _bestH;
 
     internal PathSearch(
-        Pathfinder owner, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions, ImmutableArray<CellPos> avoid)
+        Pathfinder owner, CellPos start, CellPos goal, Locomotor locomotor, int maxExpansions, ImmutableArray<CellPos> avoid, bool startOnDeck = false,
+        bool groundGoal = false)
     {
         var map = owner.Map;
         if (!map.Contains(start))
@@ -249,8 +273,10 @@ public sealed class PathSearch
         _goal = goal;
         _locomotor = locomotor;
         _maxExpansions = maxExpansions;
-        _startIndex = start.Y * map.Width + start.X;
+        var cells = map.Width * map.Height;
+        _startIndex = startOnDeck && map.DeckSlot(start) is var startSlot and >= 0 ? cells + startSlot : start.Y * map.Width + start.X;
         _goalIndex = goal.Y * map.Width + goal.X;
+        _goalDeckIndex = !groundGoal && map.DeckSlot(goal) is var goalSlot and >= 0 ? cells + goalSlot : -1;
         _avoid = avoid.IsDefaultOrEmpty ? [] : avoid.Where(map.Contains).Select(cell => cell.Y * map.Width + cell.X).Order().ToArray();
         _bestIndex = _startIndex;
         _bestH = AStar.Heuristic(map.Speeds, locomotor, start, goal);
@@ -322,7 +348,7 @@ public sealed class PathSearch
                 _bestH = node.H;
             }
 
-            if (node.Index == _goalIndex)
+            if (node.Index == _goalIndex || node.Index == _goalDeckIndex)
             {
                 return Finish(PathStatus.Found, node.Index);
             }
@@ -330,6 +356,12 @@ public sealed class PathSearch
             if (Expanded >= _maxExpansions)
             {
                 return Finish(PathStatus.LimitReached, _bestIndex);
+            }
+
+            if (node.Index >= width * height)
+            {
+                ExpandDeck(node.Index, cost, costs, b);
+                continue;
             }
 
             var x = node.Index % width;
@@ -373,9 +405,79 @@ public sealed class PathSearch
                 var h = hStraight * (hx + hy) + (hDiagonal - 2 * hStraight) * (hx < hy ? hx : hy);
                 open.PushOrDecrease(new PathNode(nextCost + h, h, nextIndex));
             }
+
+            // Onto the decks this shore leads to (straight along their bridges).
+            if (_map.DeckCount > 0)
+            {
+                var entries = _map.DeckEntries(node.Index);
+                for (var e = 0; e < entries.Count; e++)
+                {
+                    var slot = entries[e];
+                    if (costs.DeckStraight[slot] > 0)
+                    {
+                        Relax(width * height + slot, node.Index, cost + costs.DeckStraight[slot], b);
+                    }
+                }
+            }
         }
 
         return false;
+    }
+
+    // A node of deck: along its deck to the neighbouring cells of the same deck (a diagonal with both cells beside the corner on it
+    // too), and off an end cell onto its shore — the step rule of Decks.TryStep.
+    private void ExpandDeck(int nodeIndex, int cost, StepCostLayer costs, SearchBuffers b)
+    {
+        var cells = _map.Width * _map.Height;
+        var slot = nodeIndex - cells;
+        var cell = _map.DeckCell(slot);
+        var directions = AStar.Directions;
+        for (var d = 0; d < directions.Length; d++)
+        {
+            var (dx, dy) = directions[d];
+            if (!Decks.TryStep(_map, cell, true, dx, dy, _locomotor, out var toDeck))
+            {
+                continue;
+            }
+
+            var next = new CellPos(cell.X + dx, cell.Y + dy);
+            var isDiagonal = dx != 0 && dy != 0;
+            if (toDeck)
+            {
+                var nextSlot = _map.DeckSlot(next);
+                Relax(cells + nextSlot, nodeIndex, cost + (isDiagonal ? costs.DeckDiagonal[nextSlot] : costs.DeckStraight[nextSlot]), b);
+            }
+            else
+            {
+                var index = next.Y * _map.Width + next.X;
+                Relax(index, nodeIndex, cost + costs.Straight[index], b);
+            }
+        }
+    }
+
+    // Opens a node at a cost if it is better than what it has; the heuristic from the node's cell.
+    private void Relax(int nextIndex, int parentIndex, int nextCost, SearchBuffers b)
+    {
+        var cell = CellOf(nextIndex);
+        if (b.Closed[nextIndex] == b.Generation
+            || (_avoid.Length > 0 && Array.BinarySearch(_avoid, cell.Y * _map.Width + cell.X) >= 0)
+            || (b.Seen[nextIndex] == b.Generation && nextCost >= b.Cost[nextIndex]))
+        {
+            return;
+        }
+
+        b.Seen[nextIndex] = b.Generation;
+        b.Cost[nextIndex] = nextCost;
+        b.Parent[nextIndex] = parentIndex;
+        var h = AStar.Heuristic(_map.Speeds, _locomotor, cell, _goal);
+        b.Open.PushOrDecrease(new PathNode(nextCost + h, h, nextIndex));
+    }
+
+    // The cell of a node: itself, or the cell under a slot of deck.
+    private CellPos CellOf(int nodeIndex)
+    {
+        var cells = _map.Width * _map.Height;
+        return nodeIndex < cells ? new CellPos(nodeIndex % _map.Width, nodeIndex / _map.Width) : _map.DeckCell(nodeIndex - cells);
     }
 
     /// <summary>Stops an unfinished search and gives its buffers back; the search never finishes after this.</summary>
@@ -409,7 +511,7 @@ public sealed class PathSearch
         var cells = new List<CellPos>();
         for (var index = endIndex; index != -1; index = b.Parent[index])
         {
-            cells.Add(new CellPos(index % width, index / width));
+            cells.Add(CellOf(index));
         }
 
         cells.Reverse();

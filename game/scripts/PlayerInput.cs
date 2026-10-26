@@ -838,7 +838,8 @@ public partial class PlayerInput : Node
         foreach (var id in Selection.Units)
         {
             if (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit
-                && (unit.Archetype.Flies || world.Map.CanEnter(cell, unit.Archetype.Locomotor)))
+                && (unit.Archetype.Flies || world.Map.CanEnter(cell, unit.Archetype.Locomotor)
+                    || Rts.Simulation.Map.Decks.CanStand(world.Map, cell, onDeck: true, unit.Archetype.Locomotor)))
             {
                 return true;
             }
@@ -958,7 +959,7 @@ public partial class PlayerInput : Node
         {
             if (entity is Unit { IsAlive: true } unit && unit.Owner == SimulationHost.LocalPlayer)
             {
-                var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight + Units.UnitAltitude.Of(unit)));
+                var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnUnit(unit, unit.Position, UnitHeight + Units.UnitAltitude.Of(unit)));
                 yield return (unit.Id, unit.Type, new ScreenPoint(screen.X, screen.Y));
             }
         }
@@ -1277,7 +1278,7 @@ public partial class PlayerInput : Node
                 continue;
             }
 
-            var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnGround(unit.Position, UnitHeight + Units.UnitAltitude.Of(unit)));
+            var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnUnit(unit, unit.Position, UnitHeight + Units.UnitAltitude.Of(unit)));
             var distance = at.DistanceTo(new ScreenPoint(screen.X, screen.Y));
             if (distance <= nearestDistance)
             {
