@@ -109,7 +109,8 @@ public partial class HealthBars : Control
 
                         var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before.Position : unit.Position;
                         var height = UnitHeight + Units.UnitAltitude.Of(unit);
-                        var at = WorldCoords.ToGodotOnUnit(unit, previous, height).Lerp(WorldCoords.ToGodotOnUnit(unit, unit.Position, height), _host.Alpha);
+                        var at = WorldCoords.ToGodotOnUnit(unit, Units.SoldierSpots.Drawn(unit, previous), height)
+                            .Lerp(WorldCoords.ToGodotOnUnit(unit, Units.SoldierSpots.Drawn(unit, unit.Position), height), _host.Alpha);
                         if (bar)
                         {
                             DrawBar(camera, at, HealthPips.CountOf(unit), unit.Hp, unit.MaxHp);

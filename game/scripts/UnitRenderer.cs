@@ -78,8 +78,11 @@ public partial class UnitRenderer : Node3D
             var altitude = Units.UnitAltitude.Lands(unit.Archetype)
                 ? Units.UnitAltitude.Step(unit.Id, Units.UnitAltitude.Of(unit.Archetype), Units.UnitAltitude.Target(world, unit), (float)delta)
                 : Units.UnitAltitude.Of(unit.Archetype) + Units.UnitAltitude.Swim(world, unit);
+            // A soldier standing on his spot is drawn in a row across the screen, not behind another (SoldierSpots).
+            Units.SoldierSpots.Step(unit, (float)delta);
             view.SetPose(
-                WorldCoords.ToGodotOnUnit(unit, previous.Position, altitude).Lerp(WorldCoords.ToGodotOnUnit(unit, current.Position, altitude), alpha),
+                WorldCoords.ToGodotOnUnit(unit, Units.SoldierSpots.Drawn(unit, previous.Position), altitude)
+                    .Lerp(WorldCoords.ToGodotOnUnit(unit, Units.SoldierSpots.Drawn(unit, current.Position), altitude), alpha),
                 UnitFacing.InterpolatedYaw(previous.Facing, current.Facing, alpha),
                 UnitFacing.InterpolatedYaw(previous.TurretFacing, current.TurretFacing, alpha));
             _alive.Add(unit.Id);
@@ -98,6 +101,7 @@ public partial class UnitRenderer : Node3D
         {
             ReturnView(_views[id]);
             Units.UnitAltitude.Forget(id);
+            Units.SoldierSpots.Forget(id);
             _views.Remove(id);
         }
 

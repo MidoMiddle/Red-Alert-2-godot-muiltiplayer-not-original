@@ -982,7 +982,7 @@ public partial class PlayerInput : Node
         {
             if (entity is Unit { IsAlive: true } unit && unit.Owner == SimulationHost.LocalPlayer)
             {
-                var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnUnit(unit, unit.Position, UnitHeight + Units.UnitAltitude.Of(unit)));
+                var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnUnit(unit, Units.SoldierSpots.Drawn(unit, unit.Position), UnitHeight + Units.UnitAltitude.Of(unit)));
                 yield return (unit.Id, unit.Type, new ScreenPoint(screen.X, screen.Y));
             }
         }
@@ -1301,7 +1301,7 @@ public partial class PlayerInput : Node
                 continue;
             }
 
-            var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnUnit(unit, unit.Position, UnitHeight + Units.UnitAltitude.Of(unit)));
+            var screen = _camera.UnprojectPosition(WorldCoords.ToGodotOnUnit(unit, Units.SoldierSpots.Drawn(unit, unit.Position), UnitHeight + Units.UnitAltitude.Of(unit)));
             var distance = at.DistanceTo(new ScreenPoint(screen.X, screen.Y));
             if (distance <= nearestDistance)
             {
