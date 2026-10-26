@@ -30,6 +30,28 @@ public static class DeathSystem
             // Its death weapon (stage 3b: the demolition trooper) goes off where it fell, after the movement of the tick.
             world.DeathBlasts.Add((unit.Owner, unit.Id, unit.Archetype.DeathWeapon, unit.Position));
         }
+
+        // The bombs its passengers carried in go off where it fell (RA2).
+        foreach (var passenger in unit.Passengers)
+        {
+            if (passenger.BombWeapon >= 0 && cause != DeathCause.Defeat)
+            {
+                world.DeathBlasts.Add((passenger.BombOwner, passenger.BombShooter, passenger.BombWeapon, unit.Position));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The unit is erased from time by <paramref name="killer"/>'s temporal beam (stage 3a): it dies as to a shot, but nothing of it is
+    /// left to blow up — not its death weapon (RA2: the demolition truck goes without a blast), nor a bomb on it or its passengers.
+    /// </summary>
+    public static void Erase(GameWorld world, Unit unit, EntityId killer, PlayerId killerOwner, int weapon, List<SimEvent>? events)
+    {
+        (unit.BombTicks, unit.BombWeapon, unit.BombShooter, unit.BombOwner) = (0, -1, EntityId.None, PlayerId.Neutral);
+        world.SetHp(unit, 0, events);
+        unit.MarkDead();
+        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, DeathCause.Weapon, weapon, killerOwner));
+        Veterancy.Credit(world, killer, unit, events);
     }
 
     /// <summary>

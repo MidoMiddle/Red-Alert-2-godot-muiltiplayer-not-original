@@ -157,6 +157,8 @@ internal static class TestRules
             Primary = "harvester_machine_gun",
             Threat = 5,
             PsionicImmune = true,
+            RadiationImmune = true,
+            SelfHeal = 1,
         });
         builder.Add(VehicleDef(UnitType.SupportVehicle, Locomotor.Wheel, speed: 48, turret: true, sight: 8) with
         {

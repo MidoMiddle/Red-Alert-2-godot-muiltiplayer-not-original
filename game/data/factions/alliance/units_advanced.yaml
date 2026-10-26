@@ -84,6 +84,7 @@ alliance_chrono_legionnaire:  # erases its target from time (stage 3a); jumps wh
   primary: alliance_neutron_rifle
   teleports: true
   ifv_weapon: ifv_neutron_rifle
+  crushable: false  # RA2 Crushable=no
 
 alliance_tanya:  # hero: one shot kills a soldier (stage 3a), C4 brings a building down (stage 3b)
   kind: unit
@@ -272,6 +273,8 @@ alliance_amphibious_transport:  # carries 12 slots of units over water and land 
   prerequisites: [alliance_naval_shipyard]
   passengers: 12
   passenger_size: 6
+  crusher: false  # RA2 Crusher=no: it does not run soldiers over
+  trainable: false  # RA2 Trainable=no
 
 alliance_dolphin:  # under the water, a sonic wave at ships and what is under the water (stage 3e)
   kind: unit

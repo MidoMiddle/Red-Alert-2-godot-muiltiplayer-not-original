@@ -34,6 +34,9 @@ public partial class PlayerInput : Node
     private SimulationHost _host = null!;
     private RtsCamera _camera = null!;
     private InputInterpreter _interpreter = null!;
+
+    // macOS gives Ctrl + left click as a right click: in the classic scheme it is the left button's forced attack again.
+    private MacCtrlClick _ctrlClick = null!;
     private PauseMenu _pauseMenu = null!;
     private OrderMarkers? _markers;
 
@@ -155,6 +158,7 @@ public partial class PlayerInput : Node
         _pauseMenu = GetNode<PauseMenu>("../PauseMenu");
         var settings = AppSettings.Instance?.Values ?? SettingsValues.Defaults;
         _interpreter = new InputInterpreter(settings.Scheme, settings.CameraDrag);
+        _ctrlClick = new MacCtrlClick(OS.GetName() == "macOS", settings.Scheme);
         AddChild(new PlacementGhost { Name = "PlacementGhost" });
         var boxLayer = new CanvasLayer { Name = "SelectionBox", Layer = 5 };
         boxLayer.AddChild(_box);
@@ -177,10 +181,8 @@ public partial class PlayerInput : Node
             WaypointArmed = false;
         }
         // A gesture whose release never arrived (a control took it) ends here, as the release would have ended it.
-        Apply(_interpreter.SyncButtons(
-            Input.IsMouseButtonPressed(MouseButton.Left),
-            Input.IsMouseButtonPressed(MouseButton.Right),
-            Input.IsMouseButtonPressed(MouseButton.Middle)));
+        var (left, right) = _ctrlClick.Held(Input.IsMouseButtonPressed(MouseButton.Left), Input.IsMouseButtonPressed(MouseButton.Right));
+        Apply(_interpreter.SyncButtons(left, right, Input.IsMouseButtonPressed(MouseButton.Middle)));
         // Every frame, not on mouse motion: the camera can move under a still pointer.
         var at = ToScreen(GetViewport().GetMousePosition());
         var context = Context(
@@ -206,7 +208,7 @@ public partial class PlayerInput : Node
         switch (inputEvent)
         {
             case InputEventMouseButton { Pressed: false, ButtonIndex: MouseButton.Left or MouseButton.Right or MouseButton.Middle } release:
-                Apply(_interpreter.Release(ToPointerButton(release.ButtonIndex)));
+                Apply(_interpreter.Release(_ctrlClick.Release(ToPointerButton(release.ButtonIndex))));
                 break;
             case InputEventMouseMotion motion:
                 Apply(_interpreter.Move(ToScreen(motion.Position)));
@@ -231,7 +233,7 @@ public partial class PlayerInput : Node
     {
         var at = ToScreen(mouse.Position);
         var context = Context(at, mouse.ShiftPressed, mouse.AltPressed, mouse.CtrlPressed || mouse.MetaPressed) with { DoubleClick = mouse.DoubleClick };
-        Apply(_interpreter.Press(ToPointerButton(mouse.ButtonIndex), at, context));
+        Apply(_interpreter.Press(_ctrlClick.Press(ToPointerButton(mouse.ButtonIndex), mouse.CtrlPressed), at, context));
     }
 
     // In a network match the game goes at the pace of everyone: no step, speed, new session or replay by one, and no debug orders. The

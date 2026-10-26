@@ -52,7 +52,7 @@ public static class ErasureSystem
             switch (target)
             {
                 case Unit unit:
-                    DeathSystem.Kill(world, unit, shooter.Id, shooter.Owner, DeathCause.Weapon, weapon, events);
+                    DeathSystem.Erase(world, unit, shooter.Id, shooter.Owner, weapon, events);
                     break;
                 case Building building:
                     DeathSystem.Erase(world, building, shooter.Id, shooter.Owner, weapon, events);

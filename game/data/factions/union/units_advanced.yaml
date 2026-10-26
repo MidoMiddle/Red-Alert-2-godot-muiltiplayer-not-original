@@ -36,6 +36,7 @@ tesla_trooper:  # electric infantry (stage 3a)
   primary: shock_bolt
   ifv_weapon: ifv_shock_bolt
   charges_coils: true  # RA2: sent to its own tesla coil, it stands by it and charges it
+  crushable: false  # RA2 Crushable=no: a tank does not run it over
 
 crazy_ivan:  # plants a bomb that goes off in 30 seconds (stage 3b)
   kind: unit
@@ -50,6 +51,7 @@ crazy_ivan:  # plants a bomb that goes off in 30 seconds (stage 3b)
   sight: 6
   prerequisites: [barracks, radar]
   primary: ivan_bomber
+  death_weapon: ivan_bomb_blast  # RA2 Explodes=yes: killed, he goes off with the blast of his bomb (400)
 
 terrorist:  # runs into its target and blows up, and blows up when killed (stage 3b)
   kind: unit
@@ -87,6 +89,8 @@ desolator:  # melts soldiers with its beam (stage 3a); deployed, it poisons the 
   radiation_immune: true
   ifv_weapon: ifv_toxin_beam
   countries: [iraq]  # RA2 RequiredHouses (loose ends, stage 5)
+  crushable: false  # RA2 Crushable=no
+  self_heal: 1  # RA2 SelfHealing=yes from the base rank
 
 yuri:  # RA2 Yuri (YURI): takes one enemy unit at a time for his owner; deployed, a psychic wave kills the soldiers round him, friend or foe
   kind: unit
@@ -242,6 +246,7 @@ kirov_airship:  # a slow bomber: bombs straight down, and falls on what is under
   prerequisites: [war_factory, tech_center]
   primary: kirov_bombs
   death_weapon: kirov_crash
+  self_heal: 1  # RA2 SelfHealing=yes
 
 hover_transport:  # carries 12 slots of units over water and land (stage 3d)
   kind: unit
@@ -260,6 +265,7 @@ hover_transport:  # carries 12 slots of units over water and land (stage 3d)
   prerequisites: [naval_shipyard]
   passengers: 12
   passenger_size: 6
+  trainable: false  # RA2 Trainable=no
 
 typhoon_sub:  # under the water, torpedoes at ships and what is under the water (stage 3e)
   kind: unit
@@ -321,6 +327,8 @@ giant_squid:  # under the water; grips a ship, holds it still and crushes it; sl
   secondary: squid_punch
   submerged: true
   psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
+  self_heal: 1  # RA2 SelfHealing=yes
+  sensors: 8  # RA2 Sensors=yes, SensorsSight=8: it finds what is under the water
 
 dreadnought:  # missiles at 8 to 25 cells, only when ordered; anti-air can bring them down (stage 3e)
   kind: unit

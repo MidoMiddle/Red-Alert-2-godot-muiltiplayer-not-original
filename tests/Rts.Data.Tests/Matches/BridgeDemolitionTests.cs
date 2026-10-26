@@ -93,6 +93,24 @@ public sealed class BridgeDemolitionTests
     }
 
     [Fact]
+    public void Ivan_bombs_a_bridge_segment()
+    {
+        // RA2: Ivan's bomb goes on bridges too (docs/ra2_units/soviets/crazy_ivan).
+        var simulation = Match();
+        var world = simulation.World;
+        world.VisionOf(Union).ExploreAll();
+        var ivan = world.SpawnUnit(Union, UnitType.CrazyIvan, new CellPos(24, 23).Center, snapToSubcell: true);
+        var segment = SegmentAt(world, Middle);
+        Assert.True(BridgeDemolition.CanBlow(world, ivan, Middle));
+
+        simulation.Enqueue(new ForceAttackCommand(Union, simulation.CurrentTick, 0, [ivan.Id], null, Middle.Center));
+        Run(simulation, 900, () => !segment.IsIntact);
+
+        Assert.False(segment.IsIntact);
+        Assert.True(ivan.IsAlive);
+    }
+
+    [Fact]
     public void The_commando_plants_her_c4_from_its_range_not_her_pistols()
     {
         var simulation = Match();
@@ -138,6 +156,7 @@ public sealed class BridgeDemolitionTests
 
     [Theory]
     [InlineData(UnitType.HeavyTank, 24)]
+    [InlineData(UnitType.AllianceLightTank, 24)]
     [InlineData(UnitType.RocketArtillery, 16)]
     public void Tanks_and_artillery_forced_at_a_bridge_bring_a_segment_down(UnitType type, int x)
     {

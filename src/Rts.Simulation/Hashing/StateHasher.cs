@@ -318,6 +318,11 @@ public static class StateHasher
                     hash.Add((byte)passenger.Type);
                     hash.Add(passenger.Hp);
                     AddWeapons(hash, null, passenger.Weapons);
+
+                    // Rules v93: the bomb a passenger carried in.
+                    hash.Add(passenger.BombWeapon);
+                    hash.Add(passenger.BombShooter.Value);
+                    hash.Add(passenger.BombOwner.Value);
                 }
 
                 hash.Add((byte)unit.Parasite);

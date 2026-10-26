@@ -43,6 +43,9 @@ public enum EntryAction
 
     /// <summary>The commando puts its C4 on a bridge repair hut: the hut's bridge falls (RA2, <see cref="BridgeDemolition.PlantAtHut"/>).</summary>
     BlowBridge,
+
+    /// <summary>An engineer takes the bomb off its own or an ally's unit or building, and is not spent (RA2).</summary>
+    Defuse,
 }
 
 /// <summary>
@@ -54,7 +57,7 @@ public enum EntryAction
 /// building of a player outside its team and blacks out its owner's power for <see cref="BlackoutTicks"/> ticks, makes it forget its map,
 /// or takes half its credits. The engineer and the infiltrator are spent (they leave the map without a death). The tech buildings of the
 /// map (loose ends, stage 1): an engineer takes one of the neutral side or an enemy, or mends its own; a hurt soldier is healed whole
-/// at its own hospital and stays outside. An engineer going into a bridge repair hut mends its bridge and is spent (stage 2). A soldier
+/// at its own hospital and stays outside. An engineer going into a bridge repair hut mends its bridge and is spent (stage 2). An engineer sent to its own or an ally's unit or building with a bomb on it takes the bomb off and is not spent (RA2). A soldier
 /// going into its owner's cloning vats leaves for half its price (RA2). One that stopped farther off, or can no longer do it, forgets the order; so does one given
 /// another order.
 /// </summary>
@@ -72,6 +75,13 @@ public static class EntrySystem
     /// <summary>What <paramref name="unit"/> would do going into <paramref name="target"/>, a building or a transport, now.</summary>
     public static EntryAction ActionOf(GameWorld world, Unit unit, Entity target)
     {
+        // RA2: an engineer takes a bomb off its own or an ally's unit or building with a touch, and goes on.
+        if (unit.Archetype.Has(UnitTalents.Engineer) && target is { IsAlive: true, BombTicks: > 0 } and (Unit or Building) && target != unit
+            && (target.Owner == unit.Owner || world.AreAllies(unit.Owner, target.Owner)))
+        {
+            return EntryAction.Defuse;
+        }
+
         if (target is Unit transport)
         {
             return TransportSystem.CanBoard(world, unit, transport) ? EntryAction.Board : EntryAction.None;
@@ -231,6 +241,10 @@ public static class EntrySystem
                     break;
                 case EntryAction.BlowBridge:
                     BridgeDemolition.PlantAtHut(world, unit, building!, events);
+                    break;
+                case EntryAction.Defuse:
+                    (target.BombTicks, target.BombWeapon, target.BombShooter, target.BombOwner) = (0, -1, EntityId.None, PlayerId.Neutral);
+                    events?.Add(new BombDefused(world.CurrentTick, target.Id, unit.Id));
                     break;
                 case EntryAction.Charge:
                     UnitOrders.Stop(world, unit);
