@@ -46,8 +46,9 @@ public partial class UnitRenderer : Node3D
                 continue;
             }
 
-            // An enemy holo tank standing still (stage 3c) is drawn as a tree; its own view waits hidden.
-            var tree = Disguises.LooksLikeTree(world, unit);
+            // An enemy holo tank standing still (stage 3c) is drawn as a tree; its own view waits hidden. One of the player's side shows
+            // its tree a second in four (RA2).
+            var tree = Disguises.LooksLikeTree(world, unit) || Disguises.FlickersAsTree(world, unit);
             TreeFor(unit, tree);
 
             // A disguised infiltrator (stage 3b) looks to another team like a soldier of its own, in its own colour.
