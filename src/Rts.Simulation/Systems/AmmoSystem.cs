@@ -44,24 +44,34 @@ public static class AmmoSystem
                 continue;
             }
 
-            if (unit.Archetype.Ammo <= 0 || unit.Ammo >= unit.Archetype.Ammo || unit.Weapons is [{ BurstLeft: > 0 }, ..]
-                || PadOf(world, unit) is not { } pad)
+            if (unit.Archetype.Ammo <= 0 || unit.Weapons is [{ BurstLeft: > 0 }, ..] || PadOf(world, unit) is not { } airfield)
             {
                 continue;
             }
 
-            if (Beside(pad.Cell, pad.FarCell, unit.Position.ToCell()))
+            if (OnPad(world, unit))
             {
-                if (++unit.RearmTicks >= RearmTicks)
+                // On its pad (RA2: four to an air force command), it loads a volley now and then up to its type's ammo.
+                if (unit.Ammo < unit.Archetype.Ammo && ++unit.RearmTicks >= RearmTicks)
                 {
                     unit.Ammo++;
                     unit.RearmTicks = 0;
                 }
+
+                continue;
             }
-            else if (unit.Ammo == 0 && unit.MoveTarget != Aim.CentreOf(pad))
+
+            // Spent, or with nothing to do, it flies back and lands on a free pad (RA2): over the airfield when none is free.
+            var spent = unit.Ammo == 0;
+            var idle = unit.Target is null && unit.MoveTarget is null && !unit.PathPending && unit.TargetPoint is null;
+            if ((spent || idle) && !HeadingHome(world, unit, airfield))
             {
-                UnitOrders.ForgetTarget(unit);
-                UnitOrders.MoveTo(world, unit, Aim.CentreOf(pad));
+                if (spent)
+                {
+                    UnitOrders.ForgetTarget(unit);
+                }
+
+                UnitOrders.MoveTo(world, unit, FreePad(world, airfield, unit) ?? Aim.CentreOf(airfield));
             }
         }
     }
@@ -169,6 +179,85 @@ public static class AmmoSystem
             carrier.SpawnsDocked++;
             carrier.SpawnRegenTicks = 0;
         }
+    }
+
+    /// <summary>
+    /// The cell of pad <paramref name="index"/> of a building that rearms aircraft (RA2 <c>NumberOfDocks</c>): its east columns, the
+    /// eastmost first, north to south in a column; the tower stands west of them.
+    /// </summary>
+    public static CellPos PadCell(Building airfield, int index) =>
+        new(airfield.Cell.X + airfield.Width - 1 - (index / airfield.Height), airfield.Cell.Y + (index % airfield.Height));
+
+    /// <summary>
+    /// The middle of a pad of <paramref name="airfield"/> no other jet of its owner stands on or flies to; null when they all are taken.
+    /// </summary>
+    public static WorldPos? FreePad(GameWorld world, Building airfield, Unit? jet)
+    {
+        for (var index = 0; index < (airfield.Def?.AircraftDocks ?? 0); index++)
+        {
+            var spot = PadCell(airfield, index).Center;
+            var taken = false;
+            foreach (var entity in world.Entities)
+            {
+                if (entity is Unit { IsAlive: true, Archetype.Ammo: > 0, Mother: null } other && other != jet && other.Owner == airfield.Owner
+                    && (other.MoveTarget == spot || (other.MoveTarget is null && other.Position == spot)))
+                {
+                    taken = true;
+                    break;
+                }
+            }
+
+            if (!taken)
+            {
+                return spot;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Whether the jet stands on a pad of a ready airfield of its owner, landed: no order to go anywhere.</summary>
+    public static bool OnPad(GameWorld world, Unit jet)
+    {
+        if (jet.MoveTarget is not null || jet.PathPending || world.BuildingAt(jet.Position.ToCell()) is not { IsAlive: true, IsReady: true, Def: { RearmsAircraft: true } def } airfield
+            || airfield.Owner != jet.Owner)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < def.AircraftDocks; index++)
+        {
+            if (jet.Position == PadCell(airfield, index).Center)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Whether the jet already flies to a pad of the airfield, or over it.
+    private static bool HeadingHome(GameWorld world, Unit jet, Building airfield)
+    {
+        if (jet.MoveTarget is not { } target)
+        {
+            return false;
+        }
+
+        if (target == Aim.CentreOf(airfield))
+        {
+            return true;
+        }
+
+        for (var index = 0; index < (airfield.Def?.AircraftDocks ?? 0); index++)
+        {
+            if (target == PadCell(airfield, index).Center)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // The nearest ready building of the owner that rearms aircraft, by its centre, then by id.

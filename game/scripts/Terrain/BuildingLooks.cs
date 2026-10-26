@@ -309,14 +309,21 @@ public static class BuildingLooks
             Cyl(0.22f, 0.8f, 1.05f, 0.3f, -1.55f, LookTint.Metal),
             Box(0.3f, 0.3f, 0.3f, -1.1f, 0.3f, 1.55f, LookTint.Accent),
         ],
+        // RA2's Airforce Command: the radar tower on the west column, four pads on the two east ones (AmmoSystem.PadCell).
         ["alliance_air_force_command"] =
         [
-            Box(2.8f, 0.35f, 1.8f, 0, 0, 0, LookTint.Body),
-            Box(1.3f, 0.45f, 1.3f, -0.65f, 0.35f, 0, LookTint.Roof),
-            Cyl(0.45f, 1.1f, 0.85f, 0.35f, -0.4f, LookTint.Body),
-            Cyl(0.75f, 0.3f, 0.85f, 1.45f, -0.4f, LookTint.Glass),
-            Cyl(0.8f, 0.04f, 0.65f, 0.35f, 0.45f, LookTint.Accent),
-            Dish(0.75f, -0.65f, 1.0f, 0),
+            Box(0.95f, 0.35f, 1.8f, -1.0f, 0, 0, LookTint.Body),
+            Box(0.8f, 0.4f, 0.8f, -1.0f, 0.35f, 0.4f, LookTint.Roof),
+            Cyl(0.45f, 1.1f, -1.0f, 0.35f, -0.35f, LookTint.Body),
+            Cyl(0.7f, 0.3f, -1.0f, 1.45f, -0.35f, LookTint.Glass),
+            Dish(0.7f, -1.0f, 1.95f, -0.35f),
+            Box(1.96f, 0.08f, 1.96f, 0.5f, 0, 0, LookTint.Concrete),
+            Box(0.8f, 0.02f, 0.8f, 0, 0.08f, -0.5f, LookTint.Roof),
+            Box(0.8f, 0.02f, 0.8f, 1.0f, 0.08f, -0.5f, LookTint.Roof),
+            Box(0.8f, 0.02f, 0.8f, 0, 0.08f, 0.5f, LookTint.Roof),
+            Box(0.8f, 0.02f, 0.8f, 1.0f, 0.08f, 0.5f, LookTint.Roof),
+            Box(1.9f, 0.01f, 0.08f, 0.5f, 0.1f, 0, LookTint.Accent),
+            Box(0.08f, 0.01f, 1.9f, 0.5f, 0.1f, 0, LookTint.Accent),
         ],
         ["alliance_naval_shipyard"] =
         [

@@ -48,8 +48,12 @@ public static class UnitAltitude
             && world.Map.SurfaceAt(cell) is LandType.Shallow or LandType.Deep ? Swimming : 0f;
     }
 
-    /// <summary>Whether the unit is a helicopter, which lands when idle.</summary>
-    public static bool Lands(UnitArchetype archetype) => archetype.Type == UnitType.AllianceNighthawk;
+    /// <summary>Whether the unit lands: the helicopter when idle, a jet of an air force command on its pad (RA2).</summary>
+    public static bool Lands(UnitArchetype archetype) =>
+        archetype.Type == UnitType.AllianceNighthawk || (archetype.Flies && archetype.Ammo > 0 && !archetype.Has(UnitTalents.Spawned));
+
+    /// <summary>How high a jet stands on its pad: on the pad's plate.</summary>
+    public const float OnPad = 0.1f;
 
     /// <summary>
     /// The height a helicopter goes to now: the ground when it is idle over a cell it can set down on, else its flying height. Any
@@ -58,6 +62,12 @@ public static class UnitAltitude
     public static float Target(GameWorld world, Unit unit)
     {
         var flying = Of(unit.Archetype);
+        if (Lands(unit.Archetype) && unit.Archetype.Type != UnitType.AllianceNighthawk)
+        {
+            // A jet sets down on its pad and takes off from it (RA2).
+            return unit.Target is null && Rts.Simulation.Systems.AmmoSystem.OnPad(world, unit) ? OnPad : flying;
+        }
+
         if (!Lands(unit.Archetype) || unit.MoveTarget is not null || unit.Path is not null || unit.Target is not null || unit.EnterTarget is not null)
         {
             return flying;

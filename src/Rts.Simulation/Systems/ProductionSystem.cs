@@ -131,6 +131,15 @@ public static class ProductionSystem
         }
 
         var archetype = world.Rules.Unit(type);
+        if (archetype.Flies && archetype.Ammo > 0 && factory.Def!.RearmsAircraft && AmmoSystem.FreePad(world, factory, null) is { } pad)
+        {
+            // A jet stands on a free pad of its air force command (RA2), landed, until it is sent.
+            var jet = world.SpawnUnit(player.Id, type, pad);
+            events?.Add(new UnitProduced(world.CurrentTick, player.Id, jet.Id, factory.Id));
+            Veterancy.Produced(world, jet, events);
+            return true;
+        }
+
         if (archetype.Flies)
         {
             // A flier takes off from the middle of its factory, in no cell, and flies to the rally point or a little ahead (stage 2b).

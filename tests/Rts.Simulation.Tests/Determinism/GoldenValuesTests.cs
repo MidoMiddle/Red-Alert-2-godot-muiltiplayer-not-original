@@ -378,6 +378,7 @@ public sealed class GoldenValuesTests
         // Rules v94 (the two merged): the version only.
         // Rules v95 (the Chrono Miner jumps home, RA2): the version only.
         // Rules v96 (the Night Hawk built in the war factory's queue, RA2): the version only.
-        Assert.Equal((22270, 2188413711607606788UL), (bytes.Length, hash.Value));
+        // Rules v97 (the jets on the pads of the air force command, RA2): the version only.
+        Assert.Equal((22270, 11150419214113917809UL), (bytes.Length, hash.Value));
     }
 }
