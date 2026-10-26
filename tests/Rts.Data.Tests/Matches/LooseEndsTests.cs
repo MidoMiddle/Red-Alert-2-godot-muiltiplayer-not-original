@@ -178,7 +178,10 @@ public sealed class LooseEndsTests
         Assert.Equal(2, carrier.SpawnsDocked);
         Assert.DoesNotContain(world.Entities.OfType<Unit>(), unit => unit.IsAlive && unit.Mother == carrier.Id);
 
-        Run(simulation, 27 * 15 + 1);
+        // RA2 SpawnRegenRate=600 frames: back in 40 s from its loss, not in the 27 s of before.
+        Run(simulation, 25 * 15);
+        Assert.Equal(2, carrier.SpawnsDocked);
+        Run(simulation, 16 * 15);
         Assert.Equal(3, carrier.SpawnsDocked);
     }
 }

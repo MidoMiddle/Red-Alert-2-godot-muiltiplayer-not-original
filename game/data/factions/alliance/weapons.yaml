@@ -279,13 +279,13 @@ carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: firing it launc
   warhead: missile
   launches_spawns: true
 
-alliance_hornet_bombs:  # of a Hornet, RA2 HornetBomb: 40, range 5, ROF 3 (80 is the elite HornetBombE)
+alliance_hornet_bombs:  # of a Hornet: five missiles a sortie (the owner, 2026-10-26), 8 each, so its strike is RA2's HornetBomb of 40 (Ammo=1); range 5, ROF 3
   kind: weapon
-  name: Hornet Bomb
-  damage: 40
+  name: Hornet Missile
+  damage: 8
   reload: 0.2s
   range: 5
-  projectile: shell
+  projectile: rocket
   warhead: hornet_bomb
 
 ifv_repair_arm:  # what an engineer gives the IFV, RA2 RepairBullet: mends a vehicle of its team by 50, ROF 80

@@ -110,12 +110,14 @@ public sealed class ShipWeaponsTests
     }
 
     [Fact]
-    public void The_numbers_of_ra2_the_hornet_s_five_bombs_and_the_cruiser_s_volley_of_three()
+    public void The_numbers_of_ra2_the_hornet_s_five_missiles_and_the_cruiser_s_volley_of_three()
     {
         var rules = Match().World.Rules;
         var hornet = rules.Unit(UnitType.AllianceHornet);
         Assert.Equal((75, 5), (hornet.Hp, hornet.Ammo));
-        Assert.Equal((40, 3), (rules.Database.Weapons[hornet.Primary].Damage, rules.Unit(UnitType.AllianceAegisCruiser) is var cruiser ? rules.Database.Weapons[cruiser.Primary].Burst : 0));
+        // Five missiles of 8 (the owner, 2026-10-26): a Hornet strikes with RA2's one HornetBomb of 40 between them.
+        Assert.Equal(40, rules.Database.Weapons[hornet.Primary].Damage * hornet.Ammo);
+        Assert.Equal((8, 3), (rules.Database.Weapons[hornet.Primary].Damage, rules.Unit(UnitType.AllianceAegisCruiser) is var cruiser ? rules.Database.Weapons[cruiser.Primary].Burst : 0));
         var osprey = rules.Unit(UnitType.AllianceOsprey);
         Assert.Equal((30, 5, 50), (osprey.Hp, osprey.Ammo, rules.Database.Weapons[osprey.Primary].Damage));
         Assert.Equal(60, rules.Database.Weapons[rules.Unit(UnitType.AllianceDestroyer).Primary].Damage);

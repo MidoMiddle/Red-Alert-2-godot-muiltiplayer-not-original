@@ -359,9 +359,9 @@ alliance_aircraft_carrier:  # launches its three Hornets at 25 cells when ordere
   passive: true
   spawns: alliance_hornet
   spawn_count: 3
-  spawn_regen: 27s
+  spawn_regen: 40s  # RA2 SpawnRegenRate=600 frames: one lost Hornet comes back after 40 s
 
-alliance_hornet:  # the aircraft carrier's jet: launched, never built; five bombs, then back aboard (RA2 HORNET: HP 75, 5 bombs)
+alliance_hornet:  # the aircraft carrier's jet: launched, never built; five missiles, then back aboard (RA2 HORNET: HP 75; the owner: 5 missiles of RA2's one bomb between them)
   kind: unit
   inherits: base_vehicle
   category: aircraft

@@ -385,6 +385,7 @@ public sealed class GoldenValuesTests
         // Rules v97 (the jets on the pads of the air force command, RA2): the version only.
         // Rules v98 (the primary factory, RA2): the version and the replay format (command format v14) only.
         // Rules v99 (the refinery's pad in its footprint, RA2): the version only.
-        Assert.Equal((22270, 3602952567812530594UL), (bytes.Length, hash.Value));
+        // Rules v100 (the carrier's Hornets: five missiles of 8, back in 40 s): the version only.
+        Assert.Equal((22270, 1763004377996989241UL), (bytes.Length, hash.Value));
     }
 }
