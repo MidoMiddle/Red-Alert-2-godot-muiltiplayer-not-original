@@ -140,6 +140,10 @@ public sealed class SidebarModelTests
         Assert.Equal(CameoState.Ready, ready.State);
         Assert.Equal(1f, ready.Progress);
         Assert.Equal(new CameoAction(CameoActionKind.Place, ProductionKind.Building, ready.DefIndex), SidebarModel.LeftClick(ready, false));
+
+        // The tab's key takes the ready building up for placing; the other tab has none.
+        Assert.Equal(ready.DefIndex, SidebarModel.ReadyToPlace(Tab(simulation, BuildGroup.Buildings)));
+        Assert.Null(SidebarModel.ReadyToPlace(Tab(simulation, BuildGroup.Defense)));
     }
 
     [Fact]

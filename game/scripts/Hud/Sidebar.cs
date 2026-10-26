@@ -124,9 +124,18 @@ public partial class Sidebar : Control
         input.TabRequested += tab =>
         {
             // A tab without a factory stays shut.
-            if (tab >= 0 && tab < _tabs.Length && !_tabs[tab].Disabled)
+            if (tab < 0 || tab >= _tabs.Length || _tabs[tab].Disabled)
             {
-                _tabs[tab].ButtonPressed = true;
+                return;
+            }
+
+            _tabs[tab].ButtonPressed = true;
+
+            // With a building of the tab ready, its key takes it up for placing, as a click on its square does.
+            if (_host is { IsPlayback: false } match && _input is { } placing
+                && SidebarModel.ReadyToPlace(SidebarModel.Cameos(match.Simulation.World, SimulationHost.LocalPlayer, (BuildGroup)tab, NameOf)) is { } ready)
+            {
+                placing.ArmPlacement(ready);
             }
         };
         _host = host;

@@ -223,6 +223,23 @@ public static class SidebarModel
     };
 
     /// <summary>
+    /// The building of a tab ready to place, its place in the rules; null with none. The tab's key takes it up as a click on its square
+    /// would (the owner, 2026-10-26: Q with a power plant ready shows where it can stand).
+    /// </summary>
+    public static int? ReadyToPlace(IReadOnlyList<Cameo> cameos)
+    {
+        foreach (var cameo in cameos)
+        {
+            if (cameo is { State: CameoState.Ready, Kind: ProductionKind.Building })
+            {
+                return cameo.DefIndex;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// A right click, as in RA2: an item in work is put on hold; one on hold or ready is cancelled, the last of its kind, with the
     /// credits back.
     /// </summary>
