@@ -14,7 +14,7 @@ namespace Rts.AI.View;
 /// <list type="bullet">
 /// <item>its own units and buildings and those of its allies in full;</item>
 /// <item>enemies only while its player sees them (<see cref="Vision.Sees"/>), and only once the bot has noticed them — the
-/// <see cref="Perception"/> of M8 step 3;</item>
+/// <see cref="Perception"/> of M8 step 3; not those that pass for something else (a holo tank standing still, a spy);</item>
 /// <item>land and ore only in explored cells; in the shroud a cell counts as enterable, as the units of a person take it;</item>
 /// <item>in the fog a foreign building does not block a cell: what the bot knows of it is in its <see cref="AiMemory"/>.</item>
 /// <item>with the open map of «Brutal» (<see cref="Rts.Simulation.Matches.PlayerModifiers.RevealMap"/>, M8 step 2) every cell is in sight
@@ -276,7 +276,7 @@ public sealed class AiWorldView
             {
                 _allied.Add(entity);
             }
-            else if (IsEnemy(entity.Owner) && Vision.Sees(world, Me, entity) && Perception.Sight(entity.Id.Value, tick))
+            else if (IsEnemy(entity.Owner) && Vision.Sees(world, Me, entity) && !PassesForAnother(world, entity) && Perception.Sight(entity.Id.Value, tick))
             {
                 _enemies.Add(entity);
             }
@@ -284,6 +284,15 @@ public sealed class AiWorldView
 
         Perception.EndTick(tick, Player.LastUnderAttack);
     }
+
+    /// <summary>
+    /// Whether an enemy passes for something else to the bot's player, as it does on the screen of a person: a holo tank standing still is
+    /// a tree (<see cref="TargetingSystem.IsTree"/>), a spy one of its own soldiers unless a psychic sensor of the team unmasks it. The
+    /// rules drop an order to attack either at once — a bot that saw a tank there ordered its rockets at it 69 times in a match
+    /// (the journal, 2026-10-26).
+    /// </summary>
+    private bool PassesForAnother(GameWorld world, Entity entity) =>
+        entity is Unit unit && (TargetingSystem.IsTree(unit) || (unit.Archetype.Has(UnitTalents.Disguised) && !Vision.Unmasked(world, Me, unit)));
 
     private static int Bit(PlayerId player) => player.Value is >= 1 and <= PlayerId.MaxPlayers ? 1 << (player.Value - 1) : 0;
 }

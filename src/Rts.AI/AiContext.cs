@@ -74,7 +74,18 @@ public sealed class AiContext
     /// Gives a command of the bot's player: it waits in the <see cref="Budget"/> and goes out at the end of the turn, or later, with its
     /// tick and number then (M8 step 3).
     /// </summary>
-    public void Issue(Command command) => Budget.Add(command, Module, Tick);
+    public void Issue(Command command)
+    {
+        // Every order of production goes into the journal (2026-10-26): what the bot built is read there.
+        if (Log is not null && command is ProduceCommand produce)
+        {
+            var database = View.Rules.Database;
+            var id = produce.Kind == Rts.Simulation.World.ProductionKind.Unit ? database.Units[produce.DefIndex].Id : database.Buildings[produce.DefIndex].Id;
+            Log.Add(Tick, Module, $"orders {id}{(produce.Count > 1 ? $" ×{produce.Count}" : "")}");
+        }
+
+        Budget.Add(command, Module, Tick);
+    }
 
     /// <summary>
     /// The choice of a module among <paramref name="ranked"/>, the best first (M8, 4.3): the best, or — as often as

@@ -103,4 +103,31 @@ public sealed class AiWorldViewTests
         Assert.True(scene.View.CanEnter(new CellPos(40, 40), Locomotor.Track));
         Assert.Empty(scene.Memory.Buildings);
     }
+
+    [Fact]
+    public void An_enemy_that_passes_for_something_else_is_not_seen_and_its_production_orders_go_into_the_journal()
+    {
+        // A holo tank standing still is a tree, a spy one of the bot's own soldiers: a person sees neither for an enemy (2026-10-26).
+        var scene = new Scene(rules: Rts.Data.Tests.GameDataFiles.Rules);
+        scene.Spawn(Scene.Me, UnitType.HeavyTank, 20, 20);
+        var mirage = scene.Spawn(Scene.Enemy, UnitType.AllianceMirageTank, 22, 20);
+        var spy = scene.Spawn(Scene.Enemy, UnitType.AllianceSpy, 20, 22);
+        var tank = scene.Spawn(Scene.Enemy, UnitType.AllianceLightTank, 22, 22);
+        scene.Look();
+
+        Assert.Contains(tank, scene.View.VisibleEnemies);
+        Assert.DoesNotContain(mirage, scene.View.VisibleEnemies);
+        Assert.DoesNotContain(spy, scene.View.VisibleEnemies);
+
+        // On its way it is a tank again.
+        mirage.MoveTarget = new CellPos(30, 20).Center;
+        scene.Look(1);
+        Assert.Contains(mirage, scene.View.VisibleEnemies);
+
+        var context = scene.Context();
+        context.Log = new Rts.AI.Debug.AiDecisionLog();
+        var conscript = Rts.Data.Tests.GameDataFiles.Rules.Database.IndexOfUnit("conscript");
+        context.Issue(new Rts.Simulation.Commands.ProduceCommand(Scene.Me, context.ExecuteTick, context.NextSequence(), ProductionKind.Unit, conscript, 5));
+        Assert.Contains(context.Log.Recent, decision => decision.Text == "orders conscript ×5");
+    }
 }

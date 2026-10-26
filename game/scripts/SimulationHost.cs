@@ -161,6 +161,9 @@ public partial class SimulationHost : Node
     private Debug.PerfLog? _perf;
     private GameSimulation? _perfOf;
 
+    // The journals of the bots of the match (a developer build, --ai-debug): they count what the bots build.
+    private Debug.AiJournals? _journals;
+
     /// <summary>The look of the map being played (climate, time of day, texture layer): the simulation map has none of it.</summary>
     public Climates.MapLook Look { get; private set; } = null!;
 
@@ -343,7 +346,8 @@ public partial class SimulationHost : Node
             Simulation = new GameSimulation(SimulationSettings.ForMatch(_match, map.Grid) with { HashInterval = HashInterval }, Data.Rules);
             // --no-bots: the opponents stand idle (a measure of the frame on a real map without a bot playing).
             Bots = OS.GetCmdlineUserArgs().Contains("--no-bots") ? [] : MatchBots.AttachAll(Simulation);
-            Debug.AiJournalFiles.Attach(Bots, _match);
+            _journals?.Finish("a new match");
+            _journals = Debug.AiJournalFiles.Attach(Bots, _match);
             LocalPlayer = _net?.LocalPlayer ?? _match.Players.First(player => player.Kind == PlayerKind.Human).Id;
             CallDeferred(MethodName.LookAtStart);
             GD.Print($"[host] match on {_match.MapId}, seed {_match.Seed}: " +
@@ -426,6 +430,8 @@ public partial class SimulationHost : Node
             Look = Climates.MapLook.FromLand(Simulation.World.Map);
         }
 
+        _journals?.Finish("the game left the match for a replay");
+        _journals = null;
         Bots = [];
         PlayerColors.Match = replay.Settings.Match;
         _recorder = null;
@@ -1206,6 +1212,8 @@ public partial class SimulationHost : Node
         _net = null;
         _perf?.Dispose();
         _perf = null;
+        _journals?.Finish("the game left the match");
+        _journals = null;
     }
 
     /// <summary>A match opens with the camera over the start of the person at the keyboard.</summary>
@@ -1303,6 +1311,14 @@ public partial class SimulationHost : Node
         {
             GD.Print($"[sim] {simEvent}");
             EventRaised?.Invoke(simEvent);
+            if (_playback is null && _journals is not null)
+            {
+                _journals.Record(simEvent, Simulation.World);
+                if (simEvent is MatchEnded ended)
+                {
+                    _journals.Finish("the match ended");
+                }
+            }
             if (NoticeOf(simEvent) is { } notice)
             {
                 Notice = notice;

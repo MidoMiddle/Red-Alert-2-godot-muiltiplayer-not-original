@@ -4,7 +4,9 @@ using System.IO;
 using Godot;
 using Rts.AI;
 using Rts.AI.Debug;
+using Rts.Simulation.Events;
 using Rts.Simulation.Matches;
+using Rts.Simulation.World;
 
 namespace Rts.Client.Debug;
 
@@ -18,14 +20,15 @@ public static class AiJournalFiles
     /// <summary>Whether the bots keep journals and the debug window and overlay open: a developer build, or <c>--ai-debug</c>.</summary>
     public static bool Enabled => OS.IsDebugBuild() || Array.IndexOf(OS.GetCmdlineUserArgs(), "--ai-debug") >= 0;
 
-    /// <summary>Gives every bot of <paramref name="match"/> its journal and its file.</summary>
-    public static void Attach(IReadOnlyList<AiPlayer> bots, MatchSetup match)
+    /// <summary>Gives every bot of <paramref name="match"/> its journal and its file; null when they keep none.</summary>
+    public static AiJournals? Attach(IReadOnlyList<AiPlayer> bots, MatchSetup match)
     {
         if (!Enabled || bots.Count == 0)
         {
-            return;
+            return null;
         }
 
+        var files = new SortedDictionary<int, string>();
         var folder = ProjectSettings.GlobalizePath("user://logs/ai");
         Directory.CreateDirectory(folder);
         var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
@@ -36,8 +39,10 @@ public static class AiJournalFiles
             var log = new AiDecisionLog();
             log.Recorded += decision => File.AppendAllText(path, decision + "\n");
             bot.Log = log;
+            files[bot.Player.Value] = path;
         }
 
         GD.Print($"[ai] journals of the bots in {folder}");
+        return new AiJournals(files);
     }
 }
