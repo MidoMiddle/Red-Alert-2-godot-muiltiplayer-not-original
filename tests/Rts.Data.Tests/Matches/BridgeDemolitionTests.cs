@@ -156,6 +156,7 @@ public sealed class BridgeDemolitionTests
 
     [Theory]
     [InlineData(UnitType.HeavyTank, 24)]
+    [InlineData(UnitType.AllianceLightTank, 24)]
     [InlineData(UnitType.RocketArtillery, 16)]
     public void Tanks_and_artillery_forced_at_a_bridge_bring_a_segment_down(UnitType type, int x)
     {
