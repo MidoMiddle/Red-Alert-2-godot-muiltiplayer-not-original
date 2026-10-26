@@ -26,6 +26,8 @@ public sealed class SettingsValuesTests
         // The 3D at the full size of the window, with the 4× multisampling the project had (2026-10-26).
         Assert.Equal(100, defaults.RenderScale);
         Assert.Equal(AntiAliasing.Msaa4, defaults.AntiAliasing);
+        Assert.Equal(ShadowQuality.High, defaults.Shadows);
+        Assert.True(defaults.Ssao);
     }
 
     [Fact]
@@ -105,6 +107,8 @@ public sealed class SettingsValuesTests
             CameraDrag = false,
             RenderScale = 67,
             AntiAliasing = AntiAliasing.Fxaa,
+            Shadows = ShadowQuality.Low,
+            Ssao = false,
         };
 
         Assert.Equal(values, SettingsValues.Parse(values.ToRaw()));
@@ -182,6 +186,15 @@ public sealed class SettingsValuesTests
     public void AntiAliasingIsReadByNameOrFallsBackToFourSamples(string text, AntiAliasing expected)
     {
         Assert.Equal(expected, ParseOne("graphics/anti_aliasing", text).AntiAliasing);
+    }
+
+    [Theory]
+    [InlineData("off", ShadowQuality.Off)]
+    [InlineData("Medium", ShadowQuality.Medium)]
+    [InlineData("ultra", ShadowQuality.High)]
+    public void ShadowsAreReadByNameOrFallBackToHigh(string text, ShadowQuality expected)
+    {
+        Assert.Equal(expected, ParseOne("graphics/shadows", text).Shadows);
     }
 
     [Theory]

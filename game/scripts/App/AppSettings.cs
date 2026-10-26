@@ -17,6 +17,9 @@ public partial class AppSettings : Node
     private const int MasterBus = 0;
     private const float SilenceDb = -80f;
 
+    // A sun that casts shadows in its scene; marked the first time it is seen, a light made without them is left as it is.
+    private const string CastsShadows = "casts_shadows";
+
     /// <summary>The running settings. Set when the autoload is ready.</summary>
     public static AppSettings? Instance { get; private set; }
 
@@ -43,6 +46,9 @@ public partial class AppSettings : Node
         ApplyFpsLimit(Values.FpsLimit);
         ApplyRenderScale(Values.RenderScale);
         ApplyAntiAliasing(Values.AntiAliasing);
+        ApplyShadowAtlas(Values.Shadows);
+        // The suns and the environments of the scenes to come get the shadows and the SSAO of the settings as they appear.
+        GetTree().NodeAdded += ApplyToNode;
         ApplyInterfaceScale(Values.InterfaceScale);
         ApplyMasterVolume(Values.MasterVolume);
         InputMapper.Apply(Keys);
@@ -83,6 +89,23 @@ public partial class AppSettings : Node
     {
         Values = Values with { AntiAliasing = mode };
         ApplyAntiAliasing(mode);
+        Save();
+    }
+
+    /// <summary>The shadows of the sun (<see cref="ShadowQuality"/>), in the scene now and those to come.</summary>
+    public void SetShadows(ShadowQuality quality)
+    {
+        Values = Values with { Shadows = quality };
+        ApplyShadowAtlas(quality);
+        ApplyToScene();
+        Save();
+    }
+
+    /// <summary>The ambient occlusion of the 3D (SSAO), in the scene now and those to come.</summary>
+    public void SetSsao(bool enabled)
+    {
+        Values = Values with { Ssao = enabled };
+        ApplyToScene();
         Save();
     }
 
@@ -234,6 +257,68 @@ public partial class AppSettings : Node
             _ => Viewport.Msaa.Disabled,
         };
         root.ScreenSpaceAA = mode == AntiAliasing.Fxaa ? Viewport.ScreenSpaceAAEnum.Fxaa : Viewport.ScreenSpaceAAEnum.Disabled;
+    }
+
+    /// <summary>The shadows and the SSAO of the settings on every sun and environment of the scene running now.</summary>
+    private void ApplyToScene()
+    {
+        foreach (var node in GetTree().Root.FindChildren("*", "", true, false))
+        {
+            ApplyToNode(node);
+        }
+    }
+
+    private void ApplyToNode(Node node)
+    {
+        switch (node)
+        {
+            case DirectionalLight3D sun:
+                ApplyShadows(sun, Values.Shadows);
+                break;
+            case WorldEnvironment { Environment: { } environment }:
+                environment.SsaoEnabled = Values.Ssao;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// The shadows of a sun: none; low — one map of the whole view, hard; medium — two splits, a little soft; high — two splits and the
+    /// blur of the scenes (Main.tscn), as the game had them.
+    /// </summary>
+    private static void ApplyShadows(DirectionalLight3D sun, ShadowQuality quality)
+    {
+        if (!sun.HasMeta(CastsShadows))
+        {
+            sun.SetMeta(CastsShadows, sun.ShadowEnabled);
+        }
+
+        if (!sun.GetMeta(CastsShadows).AsBool())
+        {
+            return;
+        }
+
+        sun.ShadowEnabled = quality != ShadowQuality.Off;
+        sun.DirectionalShadowMode = quality == ShadowQuality.Low
+            ? DirectionalLight3D.ShadowMode.Orthogonal
+            : DirectionalLight3D.ShadowMode.Parallel2Splits;
+        sun.ShadowBlur = quality switch
+        {
+            ShadowQuality.Low => 0f,
+            ShadowQuality.Medium => 1f,
+            _ => 1.5f,
+        };
+    }
+
+    /// <summary>The size of the sun's shadow map and how its edges are filtered: smaller and harder below high.</summary>
+    private static void ApplyShadowAtlas(ShadowQuality quality)
+    {
+        RenderingServer.DirectionalShadowAtlasSetSize(quality == ShadowQuality.High ? 4096 : 2048, true);
+        RenderingServer.DirectionalSoftShadowFilterSetQuality(quality switch
+        {
+            ShadowQuality.Low => RenderingServer.ShadowQuality.Hard,
+            ShadowQuality.Medium => RenderingServer.ShadowQuality.SoftVeryLow,
+            _ => RenderingServer.ShadowQuality.SoftLow,
+        });
     }
 
     private void ApplyInterfaceScale(int percent)

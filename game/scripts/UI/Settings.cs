@@ -51,6 +51,8 @@ public partial class Settings : Control
     private OptionButton _fps = null!;
     private OptionButton _renderScale = null!;
     private OptionButton _antiAliasing = null!;
+    private OptionButton _shadows = null!;
+    private CheckBox _ssao = null!;
     private HSlider _interfaceScale = null!;
     private Label _interfaceScaleValue = null!;
     private HSlider _masterVolume = null!;
@@ -186,8 +188,15 @@ public partial class Settings : Control
         _antiAliasing.ItemSelected += index => Store.SetAntiAliasing((AntiAliasing)index);
         AddRow(rows, "UI_SETTINGS_ANTI_ALIASING", _antiAliasing);
 
-        AddRow(rows, "UI_SETTINGS_SHADOWS", NewDropdown(2, Tr("UI_QUALITY_LOW"), Tr("UI_QUALITY_MEDIUM"), Tr("UI_QUALITY_HIGH")), locked: true);
-        AddRow(rows, "UI_SETTINGS_SSAO", NewCheckBox(true), locked: true);
+        _shadows = NewDropdown((int)SettingsValues.Defaults.Shadows,
+            Tr("UI_QUALITY_OFF"), Tr("UI_QUALITY_LOW"), Tr("UI_QUALITY_MEDIUM"), Tr("UI_QUALITY_HIGH"));
+        _shadows.ItemSelected += index => Store.SetShadows((ShadowQuality)index);
+        AddRow(rows, "UI_SETTINGS_SHADOWS", _shadows);
+
+        _ssao = NewCheckBox(SettingsValues.Defaults.Ssao);
+        _ssao.Toggled += enabled => Store.SetSsao(enabled);
+        _ssao.TooltipText = Tr("UI_SETTINGS_SSAO_HINT");
+        AddRow(rows, "UI_SETTINGS_SSAO", _ssao);
         AddRow(rows, "UI_SETTINGS_EFFECTS", NewDropdown(2, Tr("UI_QUALITY_LOW"), Tr("UI_QUALITY_MEDIUM"), Tr("UI_QUALITY_HIGH")), locked: true);
 
         _interfaceScale = NewSlider(SettingsValues.MinInterfaceScale, SettingsValues.MaxInterfaceScale,
@@ -418,6 +427,8 @@ public partial class Settings : Control
                 Store.SetFpsLimit(defaults.FpsLimit);
                 Store.SetRenderScale(defaults.RenderScale);
                 Store.SetAntiAliasing(defaults.AntiAliasing);
+                Store.SetShadows(defaults.Shadows);
+                Store.SetSsao(defaults.Ssao);
                 Store.SetInterfaceScale(defaults.InterfaceScale);
                 RequestResolution(defaults.Resolution);
                 break;
@@ -458,6 +469,8 @@ public partial class Settings : Control
         _fps.Selected = Array.IndexOf(SettingsValues.FpsChoices, values.FpsLimit);
         _renderScale.Selected = Array.IndexOf(SettingsValues.RenderScaleChoices, values.RenderScale);
         _antiAliasing.Selected = (int)values.AntiAliasing;
+        _shadows.Selected = (int)values.Shadows;
+        _ssao.SetPressedNoSignal(values.Ssao);
         _interfaceScale.SetValueNoSignal(values.InterfaceScale);
         _interfaceScaleValue.Text = PercentText(values.InterfaceScale);
         _masterVolume.SetValueNoSignal(values.MasterVolume);

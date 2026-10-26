@@ -36,6 +36,18 @@ public enum AntiAliasing
     Msaa4,
 }
 
+/// <summary>
+/// The shadows of the sun, in the order of the dropdown (the owner, 2026-10-26: lighter on the graphics card): none; low — one hard
+/// shadow map; medium — two, a little soft; high — two, soft, as the game had them (the default).
+/// </summary>
+public enum ShadowQuality
+{
+    Off,
+    Low,
+    Medium,
+    High,
+}
+
 /// <summary>A window size in pixels.</summary>
 public readonly record struct WindowSize(int Width, int Height);
 
@@ -59,7 +71,9 @@ public sealed record SettingsValues(
     bool PlaytestSurvey = false,
     bool Ra2Names = true,
     int RenderScale = SettingsValues.FullRenderScale,
-    AntiAliasing AntiAliasing = AntiAliasing.Msaa4)
+    AntiAliasing AntiAliasing = AntiAliasing.Msaa4,
+    ShadowQuality Shadows = ShadowQuality.High,
+    bool Ssao = true)
 {
     /// <summary>
     /// Layout version of the file, written as <c>meta/format</c>. 2 (2026-10-26): the frame limit's default is 60; a file of format 1
@@ -93,6 +107,8 @@ public sealed record SettingsValues(
     private const string InterfaceScaleKey = "graphics/interface_scale";
     private const string RenderScaleKey = "graphics/render_scale";
     private const string AntiAliasingKey = "graphics/anti_aliasing";
+    private const string ShadowsKey = "graphics/shadows";
+    private const string SsaoKey = "graphics/ssao";
     private const string MasterVolumeKey = "audio/master_volume";
     private const string SchemeKey = "controls/scheme";
     private const string ScrollSpeedKey = "controls/scroll_speed";
@@ -155,7 +171,9 @@ public sealed record SettingsValues(
             ParseBool(raw, PlaytestSurveyKey, fallback.PlaytestSurvey),
             ParseBool(raw, Ra2NamesKey, fallback.Ra2Names),
             ParseRenderScale(raw, fallback.RenderScale),
-            ParseAntiAliasing(raw, fallback.AntiAliasing));
+            ParseAntiAliasing(raw, fallback.AntiAliasing),
+            ParseShadows(raw, fallback.Shadows),
+            ParseBool(raw, SsaoKey, fallback.Ssao));
     }
 
     /// <summary>The values as file contents, keyed by <c>section/key</c>. Every known key is written.</summary>
@@ -180,6 +198,8 @@ public sealed record SettingsValues(
             [Ra2NamesKey] = Ra2Names ? "true" : "false",
             [RenderScaleKey] = RenderScale.ToString(CultureInfo.InvariantCulture),
             [AntiAliasingKey] = AntiAliasing.ToString().ToLowerInvariant(),
+            [ShadowsKey] = Shadows.ToString().ToLowerInvariant(),
+            [SsaoKey] = Ssao ? "true" : "false",
         };
     }
 
@@ -201,6 +221,13 @@ public sealed record SettingsValues(
     {
         return Enum.TryParse(Text(raw, AntiAliasingKey), ignoreCase: true, out AntiAliasing mode) && Enum.IsDefined(mode)
             ? mode
+            : fallback;
+    }
+
+    private static ShadowQuality ParseShadows(IReadOnlyDictionary<string, string> raw, ShadowQuality fallback)
+    {
+        return Enum.TryParse(Text(raw, ShadowsKey), ignoreCase: true, out ShadowQuality quality) && Enum.IsDefined(quality)
+            ? quality
             : fallback;
     }
 
