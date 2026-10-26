@@ -18,6 +18,21 @@ public sealed record UnitDef : IDefinition
 
     public required UnitCategory Category { get; init; }
 
+    /// <summary>
+    /// The production queue it is built in when not that of its category: RA2's Night Hawk, an aircraft, is built in the war factory's
+    /// queue with the tanks and takes off from it. Null for its category's.
+    /// </summary>
+    public ProductionCategory? Queue { get; init; }
+
+    /// <summary>The production queue it is built in: <see cref="Queue"/>, else that of its category.</summary>
+    public ProductionCategory ProducedIn => Queue ?? Category switch
+    {
+        UnitCategory.Infantry => ProductionCategory.Infantry,
+        UnitCategory.Naval => ProductionCategory.Naval,
+        UnitCategory.Aircraft => ProductionCategory.Aircraft,
+        _ => ProductionCategory.Vehicle,
+    };
+
     public required int Cost { get; init; }
 
     /// <summary>Production time in ticks.</summary>

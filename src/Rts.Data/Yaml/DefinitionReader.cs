@@ -19,7 +19,7 @@ internal static class DefinitionReader
 
     private static readonly string[] UnitKeys =
     [
-        "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
+        "name", "faction", "category", "queue", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "teleports_home", "deploy_weapon", "radiation_immune", "build_limit", "undeploy_delay", "requires_stolen", "occupier", "occupy_weapon", "charges_coils", "psionic_immune", "deploy_once", "disguise_when_still",
         "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
@@ -98,6 +98,7 @@ internal static class DefinitionReader
             Name = fields.Required("name", Scalars.Text, ""),
             Faction = fields.Required("faction", Scalars.Id, ""),
             Category = fields.Required("category", UnitCategoryOf, UnitCategory.Infantry),
+            Queue = fields.Maybe("queue", UnitQueueOf),
             Cost = fields.Required("cost", Scalars.Int, 0),
             BuildTime = fields.Required("build_time", Scalars.Ticks, 0),
             Hp = fields.Required("hp", Scalars.Int, 0),
@@ -666,6 +667,15 @@ internal static class DefinitionReader
             "naval" => UnitCategory.Naval,
             "aircraft" => UnitCategory.Aircraft,
             _ => UnitCategory.Vehicle,
+        };
+
+    private static ProductionCategory UnitQueueOf(string fileName, YamlNode node) =>
+        Scalars.Choice(fileName, node, "infantry", "vehicle", "naval", "aircraft") switch
+        {
+            "infantry" => ProductionCategory.Infantry,
+            "vehicle" => ProductionCategory.Vehicle,
+            "naval" => ProductionCategory.Naval,
+            _ => ProductionCategory.Aircraft,
         };
 
     private static ProductionCategory BuildingCategoryOf(string fileName, YamlNode node) =>

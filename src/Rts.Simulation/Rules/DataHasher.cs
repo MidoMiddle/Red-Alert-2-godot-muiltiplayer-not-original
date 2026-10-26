@@ -65,6 +65,7 @@ public static class DataHasher
             Add(hash, unit.Id);
             Add(hash, unit.Faction);
             hash.Add((byte)unit.Category);
+            hash.Add((byte)unit.ProducedIn);
             hash.Add(unit.Cost);
             hash.Add(unit.BuildTime);
             hash.Add(unit.Hp);

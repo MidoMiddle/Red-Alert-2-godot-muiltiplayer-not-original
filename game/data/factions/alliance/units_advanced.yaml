@@ -193,6 +193,7 @@ alliance_nighthawk:  # carries five soldiers, a machine gun at the ground when o
   category: aircraft
   crusher: false
   name: Transport Helicopter
+  queue: vehicle  # RA2: built at the war factory with the tanks, it takes off from it
   faction: alliance
   cost: 1000
   build_time: 42s
@@ -203,7 +204,7 @@ alliance_nighthawk:  # carries five soldiers, a machine gun at the ground when o
   sight: 7
   turret: false
   locomotor: hover
-  prerequisites: [alliance_air_force_command]
+  prerequisites: [alliance_war_factory]  # RA2 SHAD: the war factory alone
   primary: alliance_nighthawk_gun
   passengers: 5
   passenger_size: 2

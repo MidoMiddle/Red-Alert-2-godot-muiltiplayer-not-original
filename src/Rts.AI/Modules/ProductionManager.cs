@@ -235,8 +235,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         return army;
     }
 
-    private static ProductionCategory CategoryOf(UnitDef unit) =>
-        unit.Category == UnitCategory.Infantry ? ProductionCategory.Infantry : ProductionCategory.Vehicle;
+    private static ProductionCategory CategoryOf(UnitDef unit) => unit.ProducedIn;
 
     /// <summary>What the queues still have to pay.</summary>
     private static int Promised(AiWorldView view)
