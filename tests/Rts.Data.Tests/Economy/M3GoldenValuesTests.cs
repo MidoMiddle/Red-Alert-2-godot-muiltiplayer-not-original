@@ -67,9 +67,11 @@ public sealed class M3GoldenValuesTests
         // cells, the special_1 verses, turn rates) moves the data.
         // Rules v98: the same run and credits; the hash takes the primary flag of every building (RA2's primary factory).
         // Rules v99: the same credits; the refinery's pad is in its footprint, on its east side (RA2), and the map's hash takes it.
-        // Rules v106: the fields grow back slower (ore every 40 s, drills every 6 s): the refinery stands a cell over and an unload
+        // Rules v106: the same run and credits; the hash takes the target order of every building (RA2: a defense fires where the
+        // player tells it).
+        // Rules v107: the fields grow back slower (ore every 40 s, drills every 6 s): the refinery stands a cell over and an unload
         // comes just before minute 5 rather than after — 1000 credits more then, 350 fewer of income by minute 8.
-        Assert.Equal((7007, 0xcac6c080bf2e3f37UL), (fifth.Credits, fifth.Checksum));
+        Assert.Equal((7007, 0x6fc205e62d9475d1UL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:18 (tick 3873; rules v85: the war factory waits for the barracks).
         Assert.Equal(3873, Run.Value.TankTicks[0]);
     }

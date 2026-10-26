@@ -260,11 +260,13 @@ public sealed class GoldenValuesTests
         // Rules v98: the hash takes the primary flag of every building (RA2's primary factory); the states are the same.
         // Rules v99: the map's hash takes the docks open in the footprints of refineries (RA2's pad), and the base's refinery has its
         // dock in its footprint.
+        // Rules v106: the hash takes the target order of every building (RA2: a defense fires where the player tells it); the states
+        // are the same.
         StateChecksum[] expected =
         [
-            new(1000, 0xf603053d426008e1UL),
-            new(2000, 0xdb3f143b5e25340eUL),
-            new(3000, 0xc08c67407e3fc982UL),
+            new(1000, 0x76899abef7371f87UL),
+            new(2000, 0x21721c20c2756948UL),
+            new(3000, 0xf348cad39562e97cUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -390,7 +392,9 @@ public sealed class GoldenValuesTests
         // Rules v102 (a flier climbs to its flying height before it sets out, the owner's wish): the version only.
         // Rules v103 (the hovering fliers keep apart, FlightSystem.KeepApart): the version only.
         // Rules v105 (a civilian building holds 3 to 12 soldiers by its size, the owner's wish): the version only.
-        // Rules v106 (the fields grow back slower and the maps from RA2 share their gem drills, the owner's wish): the version only.
-        Assert.Equal((22270, 1336586678817897591UL), (bytes.Length, hash.Value));
+        // Rules v106 (a defense fires at the target the player orders, RA2): the version and the recorded checksums, which take the
+        // order of every building.
+        // Rules v107 (the fields grow back slower and the maps from RA2 share their gem drills, the owner's wish): the version only.
+        Assert.Equal((22270, 1562524252216111194UL), (bytes.Length, hash.Value));
     }
 }
