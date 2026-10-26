@@ -311,11 +311,13 @@ public sealed class ProductionTests
     }
 
     [Fact]
-    public void A_queue_of_units_holds_fifteen_and_a_building_queue_one()
+    public void A_queue_of_units_holds_thirty_and_a_building_queue_one()
     {
         var simulation = Match();
         Base(simulation, 1);
-        for (var i = 0; i < 4; i++)
+
+        // One order more than fills it: the last is refused.
+        for (var i = 0; i <= ProductionRules.MaxUnitQueue / ProductionRules.MaxOrder; i++)
         {
             Tanks(simulation, count: 5);
         }

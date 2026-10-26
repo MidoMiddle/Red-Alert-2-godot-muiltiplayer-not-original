@@ -97,7 +97,8 @@ public partial class BuildIcon : Control
             DrawRect(rect, Greyed);
         }
 
-        if (cameo.Count > 1)
+        // How many are queued: for a unit from the first on (the owner's wish, 2026-10-26); a building is queued one at a time.
+        if (cameo.Kind == Rts.Simulation.World.ProductionKind.Unit && cameo.Count >= 1)
         {
             DrawString(font, new Vector2(0f, 16f), cameo.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 HorizontalAlignment.Right, Size.X - 5f, 14, StateColor);

@@ -206,7 +206,8 @@ public sealed class SidebarModelTests
         Build(simulation, "reactor", 6, 2);
         Build(simulation, "barracks", 9, 2);
         simulation.Step();
-        for (var i = 0; i < 3; i++)
+        // Shift orders five a click: six clicks fill the 30.
+        for (var i = 0; i < ProductionRules.MaxUnitQueue / ProductionRules.MaxOrder; i++)
         {
             Left(simulation, BuildGroup.Infantry, "conscript", shift: true);
         }

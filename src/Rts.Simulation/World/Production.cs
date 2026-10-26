@@ -45,8 +45,8 @@ public sealed class ProductionItem
 /// <summary>The rules of production that follow from the data: build time, cost and category of an item.</summary>
 public static class ProductionRules
 {
-    /// <summary>The most units a queue of infantry or vehicles holds (decision 1 of the M3 plan).</summary>
-    public const int MaxUnitQueue = 15;
+    /// <summary>The most units a queue of infantry or vehicles holds (decision 1 of the M3 plan; 30 since the owner's wish of 2026-10-26).</summary>
+    public const int MaxUnitQueue = 30;
 
     /// <summary>The most items one command orders at once (Shift + click in RA2).</summary>
     public const int MaxOrder = 5;
