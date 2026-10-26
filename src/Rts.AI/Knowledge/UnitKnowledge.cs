@@ -224,6 +224,18 @@ public sealed class UnitKnowledge
         return best;
     }
 
+    /// <summary>
+    /// The damage the defense at <paramref name="building"/> of <see cref="RulesDatabase.Buildings"/> does in a minute to a unit of index
+    /// <paramref name="target"/>, by its weapon, as a unit's (the defenses of the bot, before the tuning); 0 when it fires not there.
+    /// </summary>
+    public long DefenseDamagePerMinute(int building, int target)
+    {
+        var database = _rules.Database;
+        return database.IndexOfWeapon(database.Buildings[building].Primary) is >= 0 and var weapon
+            ? WeaponDamagePerMinute(database.Weapons[weapon], target, building: false)
+            : 0;
+    }
+
     /// <summary>How long a jet flies to its target and back, in ticks: 20 s, a guess.</summary>
     public const int FlightTicks = 300;
 

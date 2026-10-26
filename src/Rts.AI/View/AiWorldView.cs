@@ -203,6 +203,18 @@ public sealed class AiWorldView
     /// <summary>Whether a storm rages in the match: a second is not let loose (RA2).</summary>
     public bool StormRaging() => SuperweaponSystem.StormRaging(_world);
 
+    /// <summary>The cells of the crates on the map the bot's player sees now (M11, a6): one of its units may go for them.</summary>
+    public IEnumerable<CellPos> CratesInSight()
+    {
+        foreach (var crate in _world.CratesOnMap)
+        {
+            if (IsVisible(crate.Cell))
+            {
+                yield return crate.Cell;
+            }
+        }
+    }
+
     /// <summary>The credits of the bot's player less what its queues still have to pay.</summary>
     public int SpareCredits()
     {

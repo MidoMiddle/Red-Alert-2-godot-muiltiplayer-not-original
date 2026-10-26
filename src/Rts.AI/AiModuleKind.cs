@@ -40,4 +40,10 @@ public enum AiModuleKind
 
     /// <summary>The superweapons of the bot (M11 step 3).</summary>
     Superweapons,
+
+    /// <summary>The repairs of the bot: its buildings, and its vehicles and ships at the workshops.</summary>
+    Repairs,
+
+    /// <summary>The crates the bot's units take (M11 a6).</summary>
+    Crates,
 }

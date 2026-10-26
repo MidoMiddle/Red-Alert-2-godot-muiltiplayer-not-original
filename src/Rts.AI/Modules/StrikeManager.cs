@@ -51,7 +51,7 @@ public sealed class StrikeManager : IAiModule
 
         foreach (var unit in view.OwnUnits)
         {
-            if (!context.Units.InStrikes(unit)
+            if (!context.Units.InStrikes(unit) || context.Plan.Errands.Contains(unit.Id.Value)
                 || (unit.Target is { } busy && unit.TargetOrder == TargetOrder.Attack && _visible.Contains(busy.Value)))
             {
                 continue;

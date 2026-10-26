@@ -46,7 +46,7 @@ public sealed class FleetManager(AiSettings settings) : IAiModule
         var strength = 0;
         foreach (var unit in view.OwnUnits)
         {
-            if (context.Units.InFleet(unit))
+            if (context.Units.InFleet(unit) && !context.Plan.Errands.Contains(unit.Id.Value))
             {
                 _ships.Add(unit);
                 strength += context.Memory.StrengthOf(unit);

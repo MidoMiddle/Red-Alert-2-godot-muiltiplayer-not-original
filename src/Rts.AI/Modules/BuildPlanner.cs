@@ -28,7 +28,10 @@ namespace Rts.AI.Modules;
 /// <item>M11: the shipyard of the faction on a map whose water leads to an enemy (<see cref="MapReading.NavalRoute"/>), at its harbour once
 /// that has been seen — till then the nearest unit of the army goes to look, and a shipyard with no room on the water after all is
 /// cancelled; and, but for the simple build orders, with the army as big as a squad that may set out and the money there, the building
-/// that opens the most units of the army (<see cref="Opener"/>), then one of each superweapon it may build (<see cref="Superweapon"/>).</item>
+/// that opens the most units of the army (<see cref="Opener"/>), then one of each superweapon it may build (<see cref="Superweapon"/>);</item>
+/// <item>before the tuning: the purifier of the ore once a refinery stands (<see cref="Purifier"/>); toward the side attacked, the
+/// defense that fights best what the enemy fields (<see cref="Against"/>); against its fliers, defenses that fire at the air — one, and
+/// one more for every three seen, <see cref="MaxAirDefenses"/> at most (not for «Easy», which picks nothing against the enemy).</item>
 /// </list>
 /// A building is ordered only when the credits, less what the queues still have to pay, cover it; one order a queue a turn. The bot
 /// gives no command it knows to be refused.
@@ -265,6 +268,13 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 }
             }
 
+            // The purifier of the ore (before the tuning): with a refinery standing and the money there, one.
+            if (settings.Quality != Profiles.BuildOrderQuality.Simple && Purifier(context, refinery) is >= 0 and var purifier
+                && view.Player.Credits - Promised(view) >= rules.Buildings[purifier].Cost)
+            {
+                _choices.Add(purifier);
+            }
+
             // Up the technology (M11): with the army big enough to set out and the money there, the building that opens the most units.
             if (settings.Quality != Profiles.BuildOrderQuality.Simple && Opener(context) is >= 0 and var opener
                 && view.Player.Credits - Promised(view) >= rules.Buildings[opener].Cost)
@@ -279,10 +289,20 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 _choices.Add(superweapon);
             }
 
-            if (context.Plan.AttackedFrom is { } from && order is not null && order.Faction == faction.Id && DefenseOf(rules, order) is >= 0 and var defense
+            // Against the side attacked, the defense that fights best what the enemy fields (before the tuning), else that of the order.
+            if (context.Plan.AttackedFrom is { } from && order is not null && order.Faction == faction.Id
+                && (Against(context, air: false) is >= 0 and var fitted ? fitted : DefenseOf(rules, order)) is >= 0 and var defense
                 && Defenses(rules) < settings.MaxDefenses && !Covered(view, yard, from))
             {
                 _choices.Add(defense);
+            }
+
+            // Against the air the enemy fields, defenses that fire at it: one, and one more for every three fliers seen.
+            if (settings.CounterPickPercent > 0 && Fliers(context) is var fliers && fliers >= MinFliers
+                && AirDefenses(rules) < IntMath.Min(MaxAirDefenses, 1 + fliers / 300) && Against(context, air: true) is >= 0 and var antiAir
+                && view.Player.Queue(ProductionCategory.Defense).Count == 0)
+            {
+                _choices.Add(antiAir);
             }
         }
     }
@@ -505,6 +525,107 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
     }
 
     private static int Distance(CellPos a, CellPos b) => IntMath.Max(IntMath.Abs(a.X - b.X), IntMath.Abs(a.Y - b.Y));
+
+    /// <summary>The fewest fliers seen, in hundredths of a unit fresh (<see cref="EnemyEstimate.Weight"/>), the bot builds a defense against the air for.</summary>
+    public const int MinFliers = 200;
+
+    /// <summary>The most defenses against the air the bot builds.</summary>
+    public const int MaxAirDefenses = 3;
+
+    /// <summary>The fliers of the enemy the bot knows of, in hundredths of a unit: aircraft and soldiers with jet packs.</summary>
+    private static int Fliers(AiContext context)
+    {
+        var rules = context.View.Rules.Database;
+        var fliers = 0;
+        foreach (var (type, weight) in context.Memory.Estimate.Total.Composition)
+        {
+            if (rules.IndexOfUnit(UnitTypes.IdOf(type)) is >= 0 and var index && Knowledge.UnitKnowledge.RoleAgainst(rules.Units[index]) == ArmyRole.AntiAir)
+            {
+                fliers += weight;
+            }
+        }
+
+        return fliers;
+    }
+
+    /// <summary>The defenses that fire at the air the base has: standing, growing, or in a queue.</summary>
+    private int AirDefenses(RulesDatabase rules)
+    {
+        var count = 0;
+        for (var i = 0; i < _have.Length; i++)
+        {
+            count += IsDefense(rules, i, air: true) ? _have[i] : 0;
+        }
+
+        return count;
+    }
+
+    /// <summary>Whether the building at <paramref name="index"/> is a defense with a weapon that fires at the air, or at the ground.</summary>
+    private static bool IsDefense(RulesDatabase rules, int index, bool air)
+    {
+        var def = rules.Buildings[index];
+        return def.Category == ProductionCategory.Defense && !def.Wall && def.Superweapon == SuperweaponKind.None
+            && rules.IndexOfWeapon(def.Primary) is >= 0 and var weapon
+            && (rules.Weapons[weapon].Targets & (air ? WeaponTargets.Air : WeaponTargets.Ground)) != 0;
+    }
+
+    /// <summary>
+    /// The defense the bot may build now that fights best, for its cost, what the enemy fields — its fliers with <paramref name="air"/>,
+    /// else the rest — by the damage of its weapon (<see cref="Knowledge.UnitKnowledge.DefenseDamagePerMinute"/>) × its hit points over
+    /// its cost to the power 1.5, as the worth of a unit; -1 for none, or nothing of that seen.
+    /// </summary>
+    private static int Against(AiContext context, bool air)
+    {
+        var view = context.View;
+        var rules = view.Rules.Database;
+        var (best, bestWorth) = (-1, 0L);
+        for (var i = 0; i < rules.Buildings.Length; i++)
+        {
+            if (!IsDefense(rules, i, air) || !view.Player.CanBuildBuilding(i) || rules.Buildings[i].Cost <= 0)
+            {
+                continue;
+            }
+
+            long damage = 0;
+            foreach (var (type, weight) in context.Memory.Estimate.Total.Composition)
+            {
+                if (rules.IndexOfUnit(UnitTypes.IdOf(type)) is >= 0 and var target
+                    && (Knowledge.UnitKnowledge.RoleAgainst(rules.Units[target]) == ArmyRole.AntiAir) == air)
+                {
+                    damage += context.Units.DefenseDamagePerMinute(i, target) * weight;
+                }
+            }
+
+            var def = rules.Buildings[i];
+            var worth = damage * def.Hp / ((long)def.Cost * IntMath.Sqrt((long)def.Cost * 256) / 16 + 1);
+            if (worth > bestWorth)
+            {
+                (best, bestWorth) = (i, worth);
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>The purifier of the ore of the faction the bot may build now and has none of, with a refinery of its own; -1 for none.</summary>
+    private int Purifier(AiContext context, int refinery)
+    {
+        var rules = context.View.Rules.Database;
+        if (refinery < 0 || _have[refinery] == 0)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < rules.Buildings.Length; i++)
+        {
+            if (rules.Buildings[i].IncomeBonusPercent > 0 && _have[i] == 0 && context.View.Player.CanBuildBuilding(i))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 
     /// <summary>The defense of the build order — its last step with a weapon — or -1 for none.</summary>
     private static int DefenseOf(RulesDatabase rules, BuildOrderDef order)

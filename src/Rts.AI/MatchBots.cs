@@ -137,6 +137,7 @@ public static class MatchBots
                 new SquadManager(settings, board), new DefenseManager(settings, board), new TeamCoordinator(board, humans, settings),
                 new FleetManager(settings), new EngineerManager(settings), new GarrisonManager(settings), new StrikeManager(),
                 new SpyManager(settings), new FerryManager(), new DeployManager(), new SuperweaponManager(),
+                new RepairManager(), new CrateManager(),
             ],
             player.Start,
             setup.MapStarts.IsDefault ? setup.MapStarts : [.. setup.MapStarts.Where(start => !allied.Contains(start))],
