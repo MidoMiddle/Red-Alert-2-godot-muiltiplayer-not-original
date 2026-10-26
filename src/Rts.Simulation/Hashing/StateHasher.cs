@@ -376,6 +376,14 @@ public static class StateHasher
                     hash.Add(charged.Value);
                 }
 
+                // Rules v102: a flier on the ground or its pad, one climbing to its flying height.
+                if (unit.Grounded || unit.ClimbTicks > 0)
+                {
+                    hash.Add(5);
+                    hash.Add(unit.Grounded);
+                    hash.Add(unit.ClimbTicks);
+                }
+
                 // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
                 hash.Add(unit.Drop is not null);
                 if (unit.Drop is { } drop)

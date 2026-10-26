@@ -82,6 +82,13 @@ public static class MovementSystem
                 continue;
             }
 
+            // A flier climbing to its flying height goes nowhere yet (rules v102).
+            if (unit.ClimbTicks > 0)
+            {
+                unit.ClimbTicks--;
+                continue;
+            }
+
             if (unit.MoveTarget is { } target)
             {
                 Update(world, unit, target, events);

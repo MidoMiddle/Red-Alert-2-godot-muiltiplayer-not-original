@@ -91,6 +91,8 @@ public static class AmmoSystem
         {
             var jet = world.SpawnUnit(carrier.Owner, carrier.Archetype.Spawn, carrier.Position);
             jet.Mother = carrier.Id;
+            // It rises off the deck before it flies (rules v102).
+            jet.ClimbTicks = FlightSystem.ClimbTicks;
             jet.Target = target;
             jet.TargetOrder = TargetOrder.Attack;
             events?.Add(new SpawnLaunched(world.CurrentTick, jet.Id, carrier.Id));

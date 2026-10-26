@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "primary", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "primary", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "grounded", "climb ticks", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -100,6 +100,8 @@ public sealed class StateHasherTests
             case "controlling": moving.Controlling = idle.Id; break;
             case "undeploy in": moving.UndeployIn = 5; break;
             case "charging": moving.Charging = idle.Id; break;
+            case "grounded": moving.Grounded = true; break;
+            case "climb ticks": moving.ClimbTicks = 4; break;
             case "veteran infantry": world.Player(Player1).VeteranInfantry = true; break;
             case "veteran vehicles": world.Player(Player1).VeteranVehicles = true; break;
             case "map revealed": world.Player(Player1).MapRevealed = true; break;
@@ -299,7 +301,7 @@ public sealed class StateHasherTests
         "<ParasiteWeapon>k__BackingField", "<ParasiteTicks>k__BackingField", "<Ammo>k__BackingField", "<RearmTicks>k__BackingField",
         "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField", "<Experience>k__BackingField",
         "<Upgrades>k__BackingField", "<ControlledBy>k__BackingField", "<ControlledFrom>k__BackingField", "<Controlling>k__BackingField",
-        "<UndeployIn>k__BackingField", "<Charging>k__BackingField",
+        "<UndeployIn>k__BackingField", "<Charging>k__BackingField", "<Grounded>k__BackingField", "<ClimbTicks>k__BackingField",
         // On a high bridge's deck (rules v93): follows from the place it holds, the deck's places are hashed with the others.
         "<OnDeck>k__BackingField",
     })]

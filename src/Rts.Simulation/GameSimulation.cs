@@ -147,6 +147,7 @@ public sealed class GameSimulation
         Probe?.Invoke("damage");
 
         // 4. Movement.
+        FlightSystem.Update(World);
         MovementSystem.Update(World, _events);
         Probe?.Invoke("movement");
         World.Spatial.Sync(World);

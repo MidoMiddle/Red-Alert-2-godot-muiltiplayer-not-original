@@ -62,6 +62,15 @@ public sealed class Unit : Entity
     /// <summary>The ticks the unit still phases in after a jump (stage 3b: the time trooper): it neither moves nor fires. State: hashed.</summary>
     public int WarpTicks { get; internal set; }
 
+    /// <summary>
+    /// A flier that lands sits on the ground or its pad (<see cref="Systems.FlightSystem"/>: the helicopter set down, a jet on its pad).
+    /// State: hashed (rules v102).
+    /// </summary>
+    public bool Grounded { get; internal set; }
+
+    /// <summary>The ticks a flier still climbs to its flying height before it moves (<see cref="Systems.FlightSystem"/>). State: hashed.</summary>
+    public int ClimbTicks { get; internal set; }
+
     /// <summary>The units it carries, in the order they boarded (stage 3d: the transports, the IFV). State: hashed.</summary>
     public System.Collections.Generic.List<Occupant> Passengers { get; } = [];
 

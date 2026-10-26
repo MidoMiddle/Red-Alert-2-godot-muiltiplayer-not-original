@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Units;
@@ -12,8 +13,9 @@ namespace Rts.Client.Units;
 /// <para>
 /// The helicopter (the Transport Helicopter, RA2's Night Hawk) sets down when it has nothing to do over open flat ground, and hangs
 /// in the air over water, a building, a slope, a bridge, a tree or anything else on its cell, or another unit (the owner,
-/// 2026-10-25). <c>UnitRenderer</c> brings it down and up at <see cref="ClimbRate"/> and keeps the height it is drawn at in
-/// <see cref="Drawn"/>, so its bars and its click box go down with it.
+/// 2026-10-25); a jet sets down on its pad. Since rules v102 the simulation decides it (<see cref="FlightSystem"/>) and makes a flier
+/// climb before it moves, a carrier's jet too (the owner, 2026-10-26). <c>UnitRenderer</c> brings it down and up at
+/// <see cref="ClimbRate"/> and keeps the height it is drawn at in <see cref="Drawn"/>, so its bars and its click box go with it.
 /// </para>
 /// </summary>
 public static class UnitAltitude
@@ -48,78 +50,43 @@ public static class UnitAltitude
             && world.Map.SurfaceAt(cell) is LandType.Shallow or LandType.Deep ? Swimming : 0f;
     }
 
-    /// <summary>Whether the unit lands: the helicopter when idle, a jet of an air force command on its pad (RA2).</summary>
-    public static bool Lands(UnitArchetype archetype) =>
-        archetype.Type == UnitType.AllianceNighthawk || (archetype.Flies && archetype.Ammo > 0 && !archetype.Has(UnitTalents.Spawned));
+    /// <summary>
+    /// Whether the unit's height changes in flight: one that lands (<see cref="FlightSystem.Lands"/>: the helicopter, a jet of an air force
+    /// command) or a carrier's jet, which rises off the deck.
+    /// </summary>
+    public static bool Changes(UnitArchetype archetype) =>
+        FlightSystem.Lands(archetype) || (archetype.Flies && archetype.Has(UnitTalents.Spawned));
 
     /// <summary>How high a jet stands on its pad: on the pad's plate.</summary>
     public const float OnPad = 0.1f;
 
+    /// <summary>How high a carrier's jet starts its climb: on the deck.</summary>
+    public const float Deck = 0.3f;
+
     /// <summary>
-    /// The height a helicopter goes to now: the ground when it is idle over a cell it can set down on, else its flying height. Any
-    /// other unit: the height of its kind.
+    /// The height the unit goes to now, by the simulation (<see cref="FlightSystem"/>, rules v102): climbing, the share of the way up from
+    /// the ground — the pad, the deck — its <see cref="Unit.ClimbTicks"/> say; set down, the ground or its pad; else its flying height.
     /// </summary>
     public static float Target(GameWorld world, Unit unit)
     {
         var flying = Of(unit.Archetype);
-        if (Lands(unit.Archetype) && unit.Archetype.Type != UnitType.AllianceNighthawk)
+        var ground = unit.Archetype.Type == UnitType.AllianceNighthawk ? 0f : unit.Archetype.Has(UnitTalents.Spawned) ? Deck : OnPad;
+        if (unit.ClimbTicks > 0)
         {
-            // A jet sets down on its pad and takes off from it (RA2).
-            return unit.Target is null && Rts.Simulation.Systems.AmmoSystem.OnPad(world, unit) ? OnPad : flying;
+            return ground + (flying - ground) * (FlightSystem.ClimbTicks - unit.ClimbTicks) / FlightSystem.ClimbTicks;
         }
 
-        if (!Lands(unit.Archetype) || unit.MoveTarget is not null || unit.Path is not null || unit.Target is not null || unit.EnterTarget is not null)
-        {
-            return flying;
-        }
-
-        return CanLand(world, unit.Position.ToCell(), unit.Id) ? 0f : flying;
+        return unit.Grounded ? ground : flying;
     }
 
     /// <summary>
-    /// Whether a helicopter can set down on <paramref name="cell"/>: open land — not water, rock or a bridge — on one level, with no
-    /// building, no standing map object and no other unit on it.
+    /// The height a flier that lands is drawn at, moved towards <paramref name="target"/> by <see cref="ClimbRate"/> over
+    /// <paramref name="delta"/> seconds; a unit new to the screen starts at its target — a jet launched on the deck, a helicopter out of
+    /// the factory where it is.
     /// </summary>
-    public static bool CanLand(GameWorld world, CellPos cell, EntityId self)
+    public static float Step(EntityId id, float target, float delta)
     {
-        var map = world.Map;
-        if (!map.Contains(cell) || map.LandAt(cell) is not (LandType.Clear or LandType.Rough or LandType.Road or LandType.Beach or LandType.Track or LandType.Path)
-            || map.BridgeAt(cell) is not null || world.BuildingAt(cell) is not null)
-        {
-            return false;
-        }
-
-        var heights = map.Heights;
-        var level = heights.CornerLevel(cell.X, cell.Y);
-        if (heights.CornerLevel(cell.X + 1, cell.Y) != level || heights.CornerLevel(cell.X, cell.Y + 1) != level
-            || heights.CornerLevel(cell.X + 1, cell.Y + 1) != level)
-        {
-            return false;
-        }
-
-        foreach (var mapObject in map.ObjectsAt(cell))
-        {
-            if (mapObject.IsAlive)
-            {
-                return false;
-            }
-        }
-
-        foreach (var entity in world.Entities)
-        {
-            if (entity is Unit { IsAlive: true } other && other.Id != self && !other.Archetype.Flies && other.Position.ToCell() == cell)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /// <summary>The height a helicopter is drawn at, moved towards <paramref name="target"/> by <see cref="ClimbRate"/> over <paramref name="delta"/> seconds.</summary>
-    public static float Step(EntityId id, float flying, float target, float delta)
-    {
-        var height = DrawnHeights.TryGetValue(id, out var now) ? now : flying;
+        var height = DrawnHeights.TryGetValue(id, out var now) ? now : target;
         var step = ClimbRate * delta;
         height = height < target ? System.MathF.Min(target, height + step) : System.MathF.Max(target, height - step);
         DrawnHeights[id] = height;

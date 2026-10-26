@@ -74,9 +74,9 @@ public partial class UnitRenderer : Node3D
             var current = new UnitPose(unit.Position, unit.Facing, unit.TurretFacing);
             var previous = _host.TryGetPreviousPose(unit.Id, out var before) ? before : current;
             var alpha = _host.Alpha;
-            // A helicopter idle over open ground sets down, and rises again when it has to go.
-            var altitude = Units.UnitAltitude.Lands(unit.Archetype)
-                ? Units.UnitAltitude.Step(unit.Id, Units.UnitAltitude.Of(unit.Archetype), Units.UnitAltitude.Target(world, unit), (float)delta)
+            // A helicopter idle over open ground sets down, a jet on its pad; it climbs before it goes, a carrier's jet off the deck.
+            var altitude = Units.UnitAltitude.Changes(unit.Archetype)
+                ? Units.UnitAltitude.Step(unit.Id, Units.UnitAltitude.Target(world, unit), (float)delta)
                 : Units.UnitAltitude.Of(unit.Archetype) + Units.UnitAltitude.Swim(world, unit);
             // A soldier standing on his spot is drawn in a row across the screen, not behind another (SoldierSpots).
             Units.SoldierSpots.Step(unit, (float)delta);

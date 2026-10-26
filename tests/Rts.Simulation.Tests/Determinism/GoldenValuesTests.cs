@@ -387,6 +387,7 @@ public sealed class GoldenValuesTests
         // Rules v99 (the refinery's pad in its footprint, RA2): the version only.
         // Rules v100 (the carrier's Hornets: five missiles of 8, back in 40 s): the version only.
         // Rules v101 (a queue of infantry or vehicles holds 30, the owner's wish): the version only.
-        Assert.Equal((22270, 12987625668974642196UL), (bytes.Length, hash.Value));
+        // Rules v102 (a flier climbs to its flying height before it sets out, the owner's wish): the version only.
+        Assert.Equal((22270, 14528657688201886635UL), (bytes.Length, hash.Value));
     }
 }
