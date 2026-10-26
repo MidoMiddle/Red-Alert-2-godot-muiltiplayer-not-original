@@ -17,6 +17,7 @@ public partial class ArmyGraph : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("ArmyGraph.draw");
         var size = Size;
         DrawRect(new Rect2(Vector2.Zero, size), new Color(0, 0, 0, 0.35f));
         DrawLine(new Vector2(0, size.Y), new Vector2(size.X, size.Y), new Color(1, 1, 1, 0.5f), 1);

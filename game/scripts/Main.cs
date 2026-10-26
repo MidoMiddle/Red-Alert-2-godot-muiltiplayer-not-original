@@ -92,6 +92,7 @@ public partial class Main : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("Main.process");
         TrackPerf(delta);
         if (_screenshotPath is null || ++_frame < _screenshotFrame)
         {

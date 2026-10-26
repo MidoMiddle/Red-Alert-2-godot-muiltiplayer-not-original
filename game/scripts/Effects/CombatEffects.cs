@@ -98,6 +98,7 @@ public partial class CombatEffects : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("CombatEffects.process");
         if (_host is null)
         {
             return;

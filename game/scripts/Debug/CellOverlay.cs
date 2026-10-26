@@ -62,6 +62,7 @@ public partial class CellOverlay : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("CellOverlay.process");
         _ground ??= GetNodeOrNull<TerrainBuilder>("../Terrain")?.GroundMaterial;
         if (_ground is null)
         {

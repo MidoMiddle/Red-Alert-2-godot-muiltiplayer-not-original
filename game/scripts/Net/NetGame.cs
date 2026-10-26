@@ -180,6 +180,7 @@ public partial class NetGame : Node
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("NetGame.process");
         // Until the match runs the session reads the network; then the lockstep does.
         if (Phase is not SessionPhase.Running)
         {

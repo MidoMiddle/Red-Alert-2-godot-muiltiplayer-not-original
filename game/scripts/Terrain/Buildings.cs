@@ -55,6 +55,7 @@ public partial class Buildings : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("Buildings.process");
         _clock += delta;
         foreach (var beam in _beams)
         {

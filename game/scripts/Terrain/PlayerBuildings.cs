@@ -57,6 +57,7 @@ public partial class PlayerBuildings : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("PlayerBuildings.process");
         if (_host is null || WorldCoords.Terrain is null)
         {
             return;

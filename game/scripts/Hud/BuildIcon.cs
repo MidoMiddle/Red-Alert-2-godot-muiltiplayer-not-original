@@ -72,6 +72,7 @@ public partial class BuildIcon : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("BuildIcon.draw");
         var rect = new Rect2(Vector2.Zero, Size);
         DrawRect(rect, Plate);
         if (_cameo is not { } cameo)

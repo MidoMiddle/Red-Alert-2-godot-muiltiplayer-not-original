@@ -69,6 +69,7 @@ public partial class PathPreview : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("PathPreview.process");
         var world = _host.Simulation.World;
         if (Enabled && _input.Selection.Units.Count > 1)
         {

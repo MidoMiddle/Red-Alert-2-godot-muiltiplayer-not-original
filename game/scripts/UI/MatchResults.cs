@@ -156,6 +156,7 @@ public partial class MatchResults : CanvasLayer
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("MatchResults.process");
         if (_countdown < 0)
         {
             return;

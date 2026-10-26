@@ -120,6 +120,7 @@ public partial class Settings : Control
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("Settings.process");
         if (!_change.IsPending)
         {
             return;

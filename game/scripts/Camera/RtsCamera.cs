@@ -72,6 +72,7 @@ public partial class RtsCamera : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("RtsCamera.process");
         var dt = (float)delta;
         var settings = AppSettings.Instance?.Values ?? SettingsValues.Defaults;
         var screenVelocity = KeyboardScroll(dt) + (settings.EdgeScroll ? EdgeScroll() : Vector2.Zero);

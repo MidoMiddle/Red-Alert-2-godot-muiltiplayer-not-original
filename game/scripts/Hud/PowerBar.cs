@@ -39,6 +39,7 @@ public partial class PowerBar : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("PowerBar.draw");
         var height = Size.Y;
         DrawRect(new Rect2(Vector2.Zero, Size), Empty);
         var filled = height * Mathf.Min(1f, _gauge.Output);

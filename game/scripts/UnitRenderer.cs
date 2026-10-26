@@ -37,6 +37,7 @@ public partial class UnitRenderer : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("UnitRenderer.process");
         _alive.Clear();
         var world = _host.Simulation.World;
         foreach (var entity in world.Entities)

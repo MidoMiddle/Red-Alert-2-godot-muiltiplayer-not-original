@@ -150,6 +150,13 @@ public partial class SimulationHost : Node
 
     public GameSimulation Simulation { get; private set; } = null!;
 
+    /// <summary>
+    /// How often the simulation of a game hashes its state, in ticks: once a second at 15 ticks a second, as the network game was meant
+    /// to (<c>ChecksumExchange</c>) and the replay records it (<see cref="ReplayRecorder.DefaultChecksumInterval"/>). Every tick it took
+    /// nine tenths of the simulation on a map of 250 × 250 (the performance log, 2026-10-26).
+    /// </summary>
+    public const int HashInterval = ReplayRecorder.DefaultChecksumInterval;
+
     // The performance log of the simulation running now (the owner, 2026-10-26); a new one with a new simulation.
     private Debug.PerfLog? _perf;
     private GameSimulation? _perfOf;
@@ -333,7 +340,7 @@ public partial class SimulationHost : Node
         if (_match is not null)
         {
             // A match (M5 step 2): the starting units come with the world, the bots think inside the simulation.
-            Simulation = new GameSimulation(SimulationSettings.ForMatch(_match, map.Grid), Data.Rules);
+            Simulation = new GameSimulation(SimulationSettings.ForMatch(_match, map.Grid) with { HashInterval = HashInterval }, Data.Rules);
             // --no-bots: the opponents stand idle (a measure of the frame on a real map without a bot playing).
             Bots = OS.GetCmdlineUserArgs().Contains("--no-bots") ? [] : MatchBots.AttachAll(Simulation);
             Debug.AiJournalFiles.Attach(Bots, _match);
@@ -347,7 +354,7 @@ public partial class SimulationHost : Node
             Bots = [];
             Simulation = IsBattle
                 ? BattleScenario.Create(map.Grid, Data.Rules)
-                : new GameSimulation(new SimulationSettings(MatchSeed, map.Grid), Data.Rules);
+                : new GameSimulation(new SimulationSettings(MatchSeed, map.Grid) { HashInterval = HashInterval }, Data.Rules);
         }
 
         PlayerColors.Match = _match;
@@ -441,6 +448,7 @@ public partial class SimulationHost : Node
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("SimulationHost.process");
         MeasureTicksPerSecond(delta);
         if (_perfOf != Simulation)
         {

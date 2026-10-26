@@ -113,6 +113,7 @@ public partial class AiDebugOverlay : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("AiDebugOverlay.process");
         _panel.Visible = Enabled && !_windowOpen;
         _window.Visible = _windowOpen;
         if (!Enabled && !_windowOpen)

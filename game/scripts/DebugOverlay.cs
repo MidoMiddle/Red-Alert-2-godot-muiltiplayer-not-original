@@ -64,6 +64,7 @@ public partial class DebugOverlay : CanvasLayer
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("DebugOverlay.process");
         // Hidden, it costs nothing: the text is not made.
         Visible = _shown;
         if (!Visible)

@@ -12,7 +12,8 @@ namespace Rts.Client.Debug;
 /// The performance log (the owner, 2026-10-26): while a simulation runs, a line a second goes into
 /// <c>user://logs/perf/&lt;time&gt;-&lt;what&gt;.csv</c> — the frames and the time the scripts took, the ticks of the simulation and the
 /// time of each of its phases and of each bot (<see cref="GameSimulation.Probe"/>), the nodes the pathfinder looked at and the paths
-/// waiting, the units, shots and buildings, what the renderer drew, the memory. The sums are <see cref="PerfMeter"/>'s. On by default;
+/// waiting, the units, shots and buildings, what the renderer drew, the memory, the time of each node's <c>_Process</c> and <c>_Draw</c>
+/// that times itself (<see cref="Time"/>). The sums are <see cref="PerfMeter"/>'s. On by default;
 /// <c>--no-perf-log</c> turns it off. The newest <see cref="KeptFiles"/> files are kept. Measuring only: nothing in the match changes.
 /// </summary>
 public sealed class PerfLog : IDisposable
@@ -61,8 +62,33 @@ public sealed class PerfLog : IDisposable
 
         var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
         var log = new PerfLog(simulation, System.IO.Path.Combine(folder, $"{stamp}-{what}.csv"));
+        Current = log;
         GD.Print($"[perf] the performance log in {log.Path}; frames a second at most {(Engine.MaxFps == 0 ? "unlimited" : Engine.MaxFps)}, vsync {DisplayServer.WindowGetVsyncMode()}");
         return log;
+    }
+
+    /// <summary>The log of the game running now, for <see cref="Time"/>; null without one.</summary>
+    public static PerfLog? Current { get; private set; }
+
+    /// <summary>
+    /// Times the part <paramref name="part"/> of the client's frame till the scope ends: <c>using var perf = PerfLog.Time("…")</c> at
+    /// the top of a <c>_Process</c> or <c>_Draw</c>. Nothing without a log.
+    /// </summary>
+    public static Scope Time(string part) => new(Current, part);
+
+    /// <summary>The time of a part of the frame, from its start to its end.</summary>
+    public readonly struct Scope : IDisposable
+    {
+        private readonly PerfLog? _log;
+        private readonly string _part;
+        private readonly long _start;
+
+        internal Scope(PerfLog? log, string part)
+        {
+            (_log, _part, _start) = (log, part, log is null ? 0 : Stopwatch.GetTimestamp());
+        }
+
+        public void Dispose() => _log?._meter.Part(_part, Stopwatch.GetElapsedTime(_start).TotalMilliseconds);
     }
 
     /// <summary>A tick starts: its first phase is timed from now.</summary>
@@ -97,6 +123,11 @@ public sealed class PerfLog : IDisposable
         if (Simulation.Probe == Phase)
         {
             Simulation.Probe = null;
+        }
+
+        if (Current == this)
+        {
+            Current = null;
         }
 
         _file.Dispose();

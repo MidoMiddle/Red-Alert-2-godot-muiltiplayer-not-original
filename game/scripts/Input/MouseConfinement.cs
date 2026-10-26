@@ -27,6 +27,7 @@ public partial class MouseConfinement : Node
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("MouseConfinement.process");
         // The window of a headless run (the tests, the smoke) has no mouse to hold.
         var confine = DisplayServer.GetName() != "headless" && DisplayServer.WindowIsFocused() && !Released();
         if (confine && OwnHold)

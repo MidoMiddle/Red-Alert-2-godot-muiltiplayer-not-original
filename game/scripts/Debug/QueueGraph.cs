@@ -43,6 +43,7 @@ public partial class QueueGraph : Control
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("QueueGraph.process");
         if (Visible)
         {
             QueueRedraw();
@@ -51,6 +52,7 @@ public partial class QueueGraph : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("QueueGraph.draw");
         DrawRect(new Rect2(0, 0, Width, Height + TextHeight), Background);
         if (_host is null)
         {

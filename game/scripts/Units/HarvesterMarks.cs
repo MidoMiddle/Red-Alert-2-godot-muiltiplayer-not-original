@@ -24,6 +24,7 @@ public partial class HarvesterMarks : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("HarvesterMarks.process");
         _alive.Clear();
         foreach (var entity in _host.Simulation.World.Entities)
         {

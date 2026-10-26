@@ -68,6 +68,7 @@ public partial class CommandIcon : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("CommandIcon.draw");
         var side = Size;
         var lit = _enabled ? LitColor : DimColor;
         DrawRect(new Rect2(Vector2.Zero, side), _active ? ModeColor : BackgroundColor);

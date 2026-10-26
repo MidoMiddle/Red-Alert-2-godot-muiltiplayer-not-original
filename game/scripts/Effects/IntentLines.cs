@@ -40,6 +40,7 @@ public partial class IntentLines : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("IntentLines.process");
         _mesh.ClearSurfaces();
         if (_host is null || SimulationHost.LocalPlayer.IsNeutral)
         {

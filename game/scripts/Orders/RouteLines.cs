@@ -60,6 +60,7 @@ public partial class RouteLines : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("RouteLines.process");
         if (_drawn)
         {
             _mesh.ClearSurfaces();

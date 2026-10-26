@@ -86,6 +86,7 @@ public partial class ReplayBar : PanelContainer
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("ReplayBar.process");
         Visible = _host?.Playback is not null;
         if (_host?.Playback is not { } replay)
         {

@@ -82,6 +82,7 @@ public partial class Boot : Control
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("Boot.process");
         if (_finished)
         {
             return;

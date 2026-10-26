@@ -79,6 +79,7 @@ public partial class NetLobby : Control
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("NetLobby.process");
         if (NetGame.Current is not { } game)
         {
             SceneRouter.Instance?.Replace(NetMenu.Scene);

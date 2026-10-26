@@ -19,6 +19,9 @@ public sealed class PerfMeterTests
 
         meter.Frame(0.010);
         meter.Frame(0.030);
+        meter.Part("FogOfWar.process", 2.5);
+        meter.Part("FogOfWar.process", 1.5);
+        meter.Part("HealthBars.draw", 1);
 
         var header = meter.Header().Split(',');
         var line = meter.Line(new PerfSample(1, 30, 5, 12, 3, 4, 2, 50, 20, 900, 64, 32, 7, 1, 0)).Split(',');
@@ -37,6 +40,8 @@ public sealed class PerfMeterTests
         Assert.Equal("7.00", Column("ms_movement"));
         Assert.Equal("8.00", Column("ms_bot_2"));
         Assert.Equal("12", Column("units"));
+        Assert.Equal("4.00", Column("client_FogOfWar.process"));
+        Assert.Equal("1.00", Column("client_HealthBars.draw"));
 
         // The next second starts from nothing.
         var next = meter.Line(new PerfSample(2, 45, 5, 12, 3, 4, 2, 50, 20, 900, 64, 32, 7, 1, 0)).Split(',');

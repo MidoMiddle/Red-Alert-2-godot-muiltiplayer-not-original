@@ -37,6 +37,7 @@ public partial class RadiationView : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("RadiationView.process");
         if (_host is null || (_wait -= delta) > 0)
         {
             return;

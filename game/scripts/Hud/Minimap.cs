@@ -79,6 +79,7 @@ public partial class Minimap : Control
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("Minimap.process");
         var target = Online ? 1.0 : 0.0;
         _shutter = _shutter is { } shutter ? Mathf.MoveToward(shutter, target, delta / ShutterSeconds) : target;
         _oreAge += delta;
@@ -87,6 +88,7 @@ public partial class Minimap : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("Minimap.draw");
         var side = SidebarLayout.MinimapSize;
         DrawRect(new Rect2(Vector2.Zero, new Vector2(side, side)), GroundColor);
         if (_host is null || _camera is null)

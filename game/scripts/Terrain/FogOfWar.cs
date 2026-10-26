@@ -87,6 +87,7 @@ public partial class FogOfWar : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("FogOfWar.process");
         if (_host is null || _material is null)
         {
             return;

@@ -36,6 +36,7 @@ public partial class CommandBar : PanelContainer
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("CommandBar.process");
         var hasSelection = _player is { Selection.IsEmpty: false };
         foreach (var icon in _icons)
         {

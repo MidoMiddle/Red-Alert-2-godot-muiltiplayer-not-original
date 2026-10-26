@@ -32,6 +32,7 @@ public partial class FactionEmblem : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("FactionEmblem.draw");
         var (deep, light) = Faction switch
         {
             Faction.Alliance => (new Color(0.02f, 0.05f, 0.22f), new Color(0.07f, 0.13f, 0.38f)),

@@ -34,6 +34,7 @@ public partial class OreField : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("OreField.process");
         var map = GetParent<TerrainBuilder>().Map;
         _sinceBuilt += delta;
         // The editor draws its own ore (EditorMarks), from the map it edits.

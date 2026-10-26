@@ -26,6 +26,7 @@ public partial class MapPreviewView : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("MapPreviewView.draw");
         if (_texture is null || _mapSize.X == 0)
         {
             return;

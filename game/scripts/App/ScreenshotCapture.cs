@@ -47,6 +47,7 @@ public partial class ScreenshotCapture : Node
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("ScreenshotCapture.process");
         _frame++;
         if (_pressName is not null && _frame == _captureFrame / 2)
         {

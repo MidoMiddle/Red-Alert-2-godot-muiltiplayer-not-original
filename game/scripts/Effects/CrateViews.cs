@@ -22,6 +22,7 @@ public partial class CrateViews : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("CrateViews.process");
         if (_host is null)
         {
             return;

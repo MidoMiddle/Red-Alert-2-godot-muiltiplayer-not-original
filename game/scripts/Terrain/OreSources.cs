@@ -63,6 +63,7 @@ public partial class OreSources : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("OreSources.process");
         var map = GetParent<TerrainBuilder>().Map;
         var key = KeyOf(map);
         if (key != _builtKey)

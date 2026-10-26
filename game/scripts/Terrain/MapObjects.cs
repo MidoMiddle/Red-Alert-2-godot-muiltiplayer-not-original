@@ -43,6 +43,7 @@ public partial class MapObjects : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("MapObjects.process");
         // A new match or a new map in the editor (another map object), or a change of this one.
         var map = GetParent<TerrainBuilder>().Map;
         var climate = GetParent<TerrainBuilder>().Climate;

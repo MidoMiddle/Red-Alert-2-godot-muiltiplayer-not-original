@@ -47,6 +47,7 @@ public partial class HealthBars : Control
 
     public override void _Draw()
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("HealthBars.draw");
         if (_host is null || GetViewport().GetCamera3D() is not { } camera)
         {
             return;

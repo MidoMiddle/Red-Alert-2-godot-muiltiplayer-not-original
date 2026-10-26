@@ -170,6 +170,7 @@ public partial class PlayerInput : Node
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("PlayerInput.process");
         // The placement mode of the sidebar ends with its ready building: placed, cancelled or lost.
         if (BuildArmed && !_host.DebugBuild && !_host.PlacementReady)
         {

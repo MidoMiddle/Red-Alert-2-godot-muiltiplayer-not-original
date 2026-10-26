@@ -14,7 +14,8 @@ public readonly record struct PerfSample(
 /// The sums of the performance log (the owner, 2026-10-26: a line a second into a file, to see what grows while a match heats the
 /// computer): the frames — how many, their average and longest time; the ticks of the simulation — how many, their average and longest
 /// time; the time of every phase of a tick (<c>GameSimulation.Probe</c>), the turn of every bot among them (<c>bot 1</c> …); the nodes
-/// the pathfinder looked at. No Godot here: the client feeds it, a test checks the sums and the lines. The columns of the phases are
+/// the pathfinder looked at; the time of every part of the client's frames (<c>client_&lt;node&gt;.process</c>, <c>.draw</c>) in the
+/// second. No Godot here: the client feeds it, a test checks the sums and the lines. The columns of the phases are
 /// those seen before the first line, in the order they came.
 /// </summary>
 public sealed class PerfMeter
@@ -26,6 +27,9 @@ public sealed class PerfMeter
         "static_mb", "managed_mb", "gc0", "gc1", "gc2",
     ];
 
+    private readonly List<string> _parts = new();
+    private readonly Dictionary<string, int> _partIndex = new(StringComparer.Ordinal);
+    private double[] _partMs = new double[32];
     private readonly List<string> _phases = new();
     private readonly Dictionary<string, int> _index = new(StringComparer.Ordinal);
     private double[] _phaseMs = new double[16];
@@ -73,6 +77,31 @@ public sealed class PerfMeter
         _thisTickMs += ms;
     }
 
+    /// <summary>
+    /// A part of the client's frame that took <paramref name="ms"/>: the work of a node in its <c>_Process</c> or <c>_Draw</c>. A part
+    /// first seen after the header has no column.
+    /// </summary>
+    public void Part(string name, double ms)
+    {
+        if (!_partIndex.TryGetValue(name, out var index))
+        {
+            if (_headed)
+            {
+                return;
+            }
+
+            index = _parts.Count;
+            _partIndex[name] = index;
+            _parts.Add(name);
+            if (index >= _partMs.Length)
+            {
+                Array.Resize(ref _partMs, _partMs.Length * 2);
+            }
+        }
+
+        _partMs[index] += ms;
+    }
+
     /// <summary>The end of a tick: its phases add up to its time; the pathfinder looked at <paramref name="expanded"/> nodes in it.</summary>
     public void EndTick(int expanded)
     {
@@ -91,6 +120,11 @@ public sealed class PerfMeter
         foreach (var phase in _phases)
         {
             header.Append(",ms_").Append(phase.Replace(' ', '_'));
+        }
+
+        foreach (var part in _parts)
+        {
+            header.Append(",client_").Append(part);
         }
 
         return header.ToString();
@@ -116,7 +150,13 @@ public sealed class PerfMeter
             line.Append(c, $",{_phaseMs[i]:0.00}");
         }
 
+        for (var i = 0; i < _parts.Count; i++)
+        {
+            line.Append(c, $",{_partMs[i]:0.00}");
+        }
+
         Array.Clear(_phaseMs);
+        Array.Clear(_partMs);
         (_frames, _frameMs, _frameMaxMs, _ticks, _tickMs, _tickMaxMs, _expanded) = (0, 0, 0, 0, 0, 0, 0);
         return line.ToString();
     }

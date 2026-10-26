@@ -45,6 +45,7 @@ public partial class PlacementGhost : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("PlacementGhost.process");
         var world = _host.Simulation.World;
         var armed = _input.BuildArmed && _host.BuildIndex >= 0 && _input.PointerGround is not null && WorldCoords.Terrain is not null;
         var def = armed ? _host.Data.Database.Buildings[_host.BuildIndex] : null;

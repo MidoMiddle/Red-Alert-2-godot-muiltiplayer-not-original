@@ -55,6 +55,7 @@ public partial class OrderMarkers : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("OrderMarkers.process");
         if (_markers.Count == 0)
         {
             return;

@@ -48,6 +48,7 @@ public partial class Notifications : VBoxContainer
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("Notifications.process");
         _now += delta;
         for (var i = _lines.Count - 1; i >= 0; i--)
         {

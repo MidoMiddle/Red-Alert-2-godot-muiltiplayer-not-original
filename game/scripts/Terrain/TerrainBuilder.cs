@@ -76,6 +76,7 @@ public partial class TerrainBuilder : Node3D
 
     public override void _Process(double delta)
     {
+        using var frameTimer = Rts.Client.Debug.PerfLog.Time("TerrainBuilder.process");
         // Runs before the children: map objects and buildings rebuilt on the same change read the new heights.
         var map = _source();
         var look = _lookSource();
