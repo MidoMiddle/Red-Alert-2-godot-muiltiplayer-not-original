@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.World;
@@ -107,6 +108,91 @@ public static class Vision
     /// <summary>What the team of the player knows of <paramref name="cell"/> (M6, A6); a player alone, its own grid's state.</summary>
     public static CellVisibility StateAt(GameWorld world, PlayerId player, Geometry.CellPos cell) =>
         IsVisible(world, player, cell) ? CellVisibility.Visible : IsExplored(world, player, cell) ? CellVisibility.Fog : CellVisibility.Shroud;
+
+    /// <summary>
+    /// A number that changes whenever a grid of the match changes (<see cref="VisibilityGrid.Version"/>): while it stays the same,
+    /// <see cref="States"/> would give the same again.
+    /// </summary>
+    public static long Version(GameWorld world)
+    {
+        long version = 0;
+        for (var i = 0; i < PlayerId.MaxPlayers; i++)
+        {
+            version = version * 31 + world.VisionOf(new PlayerId(i + 1)).Version;
+        }
+
+        return version;
+    }
+
+    /// <summary>
+    /// What the team of the player knows of every cell of the map, in row order, into <paramref name="into"/> (of the map's size): the
+    /// same as <see cref="StateAt"/> cell by cell, in one pass over the grids — for the fog on screen, which needs them all after every
+    /// tick (the performance log, 2026-10-26: cell by cell it took 6.7 ms a frame on a map of 250 × 250).
+    /// </summary>
+    public static void States(GameWorld world, PlayerId player, Span<CellVisibility> into)
+    {
+        // A pass over each grid's own arrays, marking the cells in the span itself — 1 in sight of the team, 2 explored by it, 4 veiled
+        // by another — then a last pass turns the marks into the states.
+        const byte InSight = 1, Explored = 2, Veiled = 4;
+        var cells = world.Map.Width * world.Map.Height;
+        var marks = into[..cells];
+        marks.Clear();
+        var allies = world.AlliesOf(player);
+        for (var i = 0; i < PlayerId.MaxPlayers; i++)
+        {
+            var grid = world.VisionOf(new PlayerId(i + 1));
+            if ((allies & (1 << i)) == 0)
+            {
+                // A player with no veil generator veils nothing: its grid is not gone through.
+                if (grid.VeilSources == 0)
+                {
+                    continue;
+                }
+
+                var veils = grid.Veils;
+                for (var index = 0; index < cells; index++)
+                {
+                    if (veils[index] > 0)
+                    {
+                        marks[index] = (CellVisibility)((byte)marks[index] | Veiled);
+                    }
+                }
+
+                continue;
+            }
+
+            var counts = grid.Counts;
+            for (var index = 0; index < cells; index++)
+            {
+                if (counts[index] > 0)
+                {
+                    marks[index] = (CellVisibility)((byte)marks[index] | InSight);
+                }
+            }
+
+            var explored = grid.Explored;
+            for (var word = 0; word < explored.Length; word++)
+            {
+                var bits = explored[word];
+                for (var index = word << 6; bits != 0 && index < cells; index++, bits >>= 1)
+                {
+                    if ((bits & 1) != 0)
+                    {
+                        marks[index] = (CellVisibility)((byte)marks[index] | Explored);
+                    }
+                }
+            }
+        }
+
+        var noFog = NoFog(world);
+        for (var index = 0; index < cells; index++)
+        {
+            var mark = (byte)marks[index];
+            var inSight = (mark & InSight) != 0;
+            var known = (mark & Explored) != 0 && ((mark & Veiled) == 0 || inSight);
+            marks[index] = (noFog ? known : inSight) ? CellVisibility.Visible : known ? CellVisibility.Fog : CellVisibility.Shroud;
+        }
+    }
 
     // Whether a sensor of the team of the player has the unit in reach.
     private static bool Sensed(GameWorld world, PlayerId player, Unit unit) => InReach(world, world.Sensors, player, unit);

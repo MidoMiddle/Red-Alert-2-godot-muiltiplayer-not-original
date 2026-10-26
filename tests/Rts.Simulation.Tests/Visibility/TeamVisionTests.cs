@@ -108,4 +108,52 @@ public sealed class TeamVisionTests
 
         Assert.Equal(CellVisibility.Shroud, Vision.StateAt(world, PlayerId.Neutral, new CellPos(10, 10)));
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void All_the_cells_at_once_are_what_the_cells_one_by_one_are(bool fog)
+    {
+        // Vision.States, the fog on screen (2026-10-26): seen, explored and left, veiled by the enemy, with the fog of war and without.
+        var world = Teams();
+        if (!fog)
+        {
+            world = new GameSimulation(
+                SimulationSettings.ForMatch(
+                    MatchSetupTests.OneOnOne() with
+                    {
+                        Options = MatchSetupTests.OneOnOne().Options with { FogOfWar = false },
+                        Players =
+                        [
+                            MatchSetupTests.Player(1, PlayerKind.Human, 10, 10) with { Team = 1 },
+                            MatchSetupTests.Player(2, PlayerKind.Ai, 50, 50) with { Team = 1 },
+                            MatchSetupTests.Player(3, PlayerKind.Human, 50, 10) with { Team = 2 },
+                        ],
+                    },
+                    new MapGrid(64, 64)),
+                TestRules.Standard).World;
+        }
+
+        var tank = world.SpawnUnit(Ally, UnitType.HeavyTank, Middle.Center);
+        world.SpawnUnit(First, UnitType.HeavyTank, new CellPos(20, 40).Center);
+        world.SpawnUnit(Enemy, UnitType.HeavyTank, new CellPos(40, 20).Center);
+        VisibilitySystem.Update(world);
+        tank.Position = new CellPos(50, 40).Center;
+        VisibilitySystem.Update(world);
+        world.VisionOf(Enemy).Veil(new CellPos(28, 30), 4, 1);
+        world.VisionOf(Enemy).Veil(new CellPos(20, 40), 3, 1);
+
+        foreach (var player in new[] { First, Ally, Enemy })
+        {
+            var states = new CellVisibility[64 * 64];
+            Vision.States(world, player, states);
+            for (var y = 0; y < 64; y++)
+            {
+                for (var x = 0; x < 64; x++)
+                {
+                    Assert.Equal(Vision.StateAt(world, player, new CellPos(x, y)), states[y * 64 + x]);
+                }
+            }
+        }
+    }
 }

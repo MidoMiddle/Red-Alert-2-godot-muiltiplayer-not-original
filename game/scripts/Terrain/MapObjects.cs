@@ -13,7 +13,8 @@ namespace Rts.Client.Terrain;
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
 /// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell; a high bridge of concrete
 /// with an asphalt deck at its level (<see cref="AddHighBridge"/>). One MultiMesh
-/// per shape (and per direction for bridges). A snowdrift is a bush in summer and a dune in the desert. Rebuilt whenever the map changes
+/// per shape (and per direction for bridges) — since 2026-10-26 one for every piece of the map holding copies of it
+/// (<see cref="ChunkedInstances"/>), so the pieces off the screen are not drawn. A snowdrift is a bush in summer and a dune in the desert. Rebuilt whenever the map changes
 /// (a bridge blown up, the editor) or its climate does (the editor), which is rare. An object destroyed in a match (a lamp post or a
 /// fence crushed, a tree felled) is not a rebuild — on a big map that took tens of milliseconds every time a tank drove down a street —
 /// but its copies hide and a felled tree's stump shows (<see cref="MapGrid.ObjectDeaths"/>).
@@ -400,14 +401,8 @@ public partial class MapObjects : Node3D
         {
             var mesh = LowPoly.Of(part.Mesh());
             mesh.Material = new StandardMaterial3D { AlbedoColor = part.Color };
-            var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = places.Count };
-            for (var i = 0; i < places.Count; i++)
-            {
-                multiMesh.SetInstanceTransform(i, places[i]);
-                Remember(_copies, objects[i], multiMesh, i, places[i]);
-            }
-
-            AddChild(new MultiMeshInstance3D { Name = "Trees" + part.Key + parts.Keys.ToList().IndexOf(key), Multimesh = multiMesh });
+            ChunkedInstances.Add(this, "Trees" + part.Key + parts.Keys.ToList().IndexOf(key), mesh, places,
+                (i, multiMesh, index) => Remember(_copies, objects[i], multiMesh, index, places[i]));
         }
 
         foreach (var (shape, points) in modelled)
@@ -443,15 +438,8 @@ public partial class MapObjects : Node3D
         for (var p = 0; p < parts.Count; p++)
         {
             var (mesh, place) = BuildingLookView.MeshOf(parts[p], BuildingLookView.ColorOf(parts[p].Tint, LookFaction.Civilian));
-            var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = points.Count };
-            for (var i = 0; i < points.Count; i++)
-            {
-                var placed = new Transform3D(Basis.Identity, points[i].At) * place;
-                multiMesh.SetInstanceTransform(i, placed);
-                Remember(_copies, points[i].Object, multiMesh, i, placed);
-            }
-
-            AddChild(new MultiMeshInstance3D { Name = "Prop" + id + p, Multimesh = multiMesh });
+            var placed = points.ConvertAll(point => new Transform3D(Basis.Identity, point.At) * place);
+            ChunkedInstances.Add(this, "Prop" + id + p, mesh, placed, (i, multiMesh, index) => Remember(_copies, points[i].Object, multiMesh, index, placed[i]));
         }
     }
 
@@ -465,14 +453,7 @@ public partial class MapObjects : Node3D
         for (var g = 0; g < groups.Count; g++)
         {
             var (mesh, places, points) = groups[g];
-            var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = places.Count };
-            for (var i = 0; i < places.Count; i++)
-            {
-                multiMesh.SetInstanceTransform(i, places[i]);
-                Remember(slots, spots[points[i]].Object, multiMesh, i, places[i]);
-            }
-
-            AddChild(new MultiMeshInstance3D { Name = name + g, Multimesh = multiMesh });
+            ChunkedInstances.Add(this, name + g, mesh, places, (i, multiMesh, index) => Remember(slots, spots[points[i]].Object, multiMesh, index, places[i]));
         }
     }
 
@@ -504,20 +485,8 @@ public partial class MapObjects : Node3D
 
         mesh = LowPoly.Of(mesh);
         mesh.Material = new StandardMaterial3D { AlbedoColor = color };
-        var multiMesh = new MultiMesh
-        {
-            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-            Mesh = mesh,
-            InstanceCount = positions.Count,
-        };
-        for (var i = 0; i < positions.Count; i++)
-        {
-            var place = new Transform3D(Basis.Identity, positions[i].At + new Vector3(0, lift, 0));
-            multiMesh.SetInstanceTransform(i, place);
-            Remember(slots, positions[i].Object, multiMesh, i, place);
-        }
-
-        AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
+        var places = positions.ConvertAll(spot => new Transform3D(Basis.Identity, spot.At + new Vector3(0, lift, 0)));
+        ChunkedInstances.Add(this, name, mesh, places, (i, multiMesh, index) => Remember(slots, positions[i].Object, multiMesh, index, places[i]));
         return false;
     }
 

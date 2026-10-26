@@ -27,6 +27,15 @@ public sealed class VisibilityGrid
 
     public int Width { get; }
 
+    /// <summary>
+    /// How many times the grid changed — a circle seen or let go, a veil, the map explored or forgotten: the fog on screen works its
+    /// cells out again only when a grid of the match changed (2026-10-26). Derived, not hashed: the grid's cells are.
+    /// </summary>
+    public int Version { get; private set; }
+
+    /// <summary>How many veil generators veil cells from this grid's players' enemies now (stage 2d); none, no cell is veiled.</summary>
+    public int VeilSources { get; private set; }
+
     public int Height { get; }
 
     public CellVisibility StateAt(CellPos cell) =>
@@ -65,6 +74,7 @@ public sealed class VisibilityGrid
     /// <summary>Every cell of the map is explored (the orbital uplink, stage 2d); what is in sight does not change.</summary>
     internal void ExploreAll()
     {
+        Version++;
         Array.Fill(_explored, ulong.MaxValue);
         var extra = _explored.Length * 64 - Width * Height;
         if (extra > 0)
@@ -76,6 +86,7 @@ public sealed class VisibilityGrid
     /// <summary>The player forgets the map it explored (stage 3b: an infiltrator in its radar): only what it sees now stays explored.</summary>
     internal void ForgetExplored()
     {
+        Version++;
         Array.Clear(_explored);
         for (var index = 0; index < _counts.Length; index++)
         {
@@ -89,6 +100,8 @@ public sealed class VisibilityGrid
     /// <summary>A veil generator starts (<paramref name="by"/> 1) or stops (−1) veiling the cells within <paramref name="radius"/>.</summary>
     internal void Veil(CellPos centre, int radius, int by)
     {
+        Version++;
+        VeilSources += by;
         foreach (var offset in SightCircles.Of(radius))
         {
             var cell = new CellPos(centre.X + offset.X, centre.Y + offset.Y);
@@ -102,6 +115,7 @@ public sealed class VisibilityGrid
     /// <summary>A source starts to see the cells within <paramref name="radius"/> of <paramref name="centre"/>; they are explored.</summary>
     internal void Reveal(CellPos centre, int radius)
     {
+        Version++;
         foreach (var offset in SightCircles.Of(radius))
         {
             var cell = new CellPos(centre.X + offset.X, centre.Y + offset.Y);
@@ -117,6 +131,7 @@ public sealed class VisibilityGrid
     /// <summary>A source no longer sees the cells within <paramref name="radius"/> of <paramref name="centre"/>.</summary>
     internal void Hide(CellPos centre, int radius)
     {
+        Version++;
         foreach (var offset in SightCircles.Of(radius))
         {
             var cell = new CellPos(centre.X + offset.X, centre.Y + offset.Y);

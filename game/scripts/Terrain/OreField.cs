@@ -130,18 +130,8 @@ public partial class OreField : Node3D
 
     internal static void AddInstances(Node3D parent, string name, List<Transform3D> transforms, Mesh mesh)
     {
-        if (transforms.Count == 0)
-        {
-            return;
-        }
-
-        var multiMesh = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = transforms.Count };
-        for (var i = 0; i < transforms.Count; i++)
-        {
-            multiMesh.SetInstanceTransform(i, transforms[i]);
-        }
-
-        parent.AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
+        // In pieces of the map: those off the screen are not drawn.
+        ChunkedInstances.Add(parent, name, mesh, transforms);
     }
 
     /// <summary>A diamond of <paramref name="size"/> standing on the middle of the cell (<paramref name="x"/>, <paramref name="y"/>).</summary>
@@ -151,25 +141,9 @@ public partial class OreField : Node3D
         return new Transform3D(new Basis(Vector3.Forward, Mathf.Pi / 4f).Scaled(new Vector3(size, size, size)), at);
     }
 
-    /// <summary>Adds the diamonds under <paramref name="parent"/> as one multi-mesh.</summary>
+    /// <summary>Adds the diamonds under <paramref name="parent"/>, in pieces of the map (<see cref="ChunkedInstances"/>).</summary>
     public static void AddDiamonds(Node3D parent, string name, List<Transform3D> transforms, Color color)
     {
-        if (transforms.Count == 0)
-        {
-            return;
-        }
-
-        var multiMesh = new MultiMesh
-        {
-            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-            Mesh = new BoxMesh { Size = Vector3.One, Material = new StandardMaterial3D { AlbedoColor = color } },
-            InstanceCount = transforms.Count,
-        };
-        for (var i = 0; i < transforms.Count; i++)
-        {
-            multiMesh.SetInstanceTransform(i, transforms[i]);
-        }
-
-        parent.AddChild(new MultiMeshInstance3D { Name = name, Multimesh = multiMesh });
+        ChunkedInstances.Add(parent, name, new BoxMesh { Size = Vector3.One, Material = new StandardMaterial3D { AlbedoColor = color } }, transforms);
     }
 }

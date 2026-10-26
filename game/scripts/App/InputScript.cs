@@ -72,6 +72,8 @@ public partial class InputScript : Node
     // The meshes of the scene with the most triangles (copies of a MultiMesh counted), the heaviest first.
     private void PrintHeavy()
     {
+        // The pieces of one kind (Terrain.ChunkedInstances, <name>_<x>_<z>) together: their triangles, copies and pieces.
+        var kinds = new SortedDictionary<string, (long Triangles, long Copies, int Pieces)>(StringComparer.Ordinal);
         var found = new List<(long Triangles, string Path)>();
         var stack = new Stack<Node>();
         stack.Push(GetTree().Root);
@@ -91,8 +93,24 @@ public partial class InputScript : Node
             };
             if (mesh is not null)
             {
-                found.Add((mesh.GetFaces().Length / 3 * copies, $"{node.GetPath()} x{copies}"));
+                var triangles = mesh.GetFaces().Length / 3 * copies;
+                var path = node.GetPath().ToString();
+                var piece = System.Text.RegularExpressions.Regex.Match(path, "^(.*)_-?[0-9]+_-?[0-9]+$");
+                if (piece.Success)
+                {
+                    var key = piece.Groups[1].Value;
+                    var (sum, many, pieces) = kinds.GetValueOrDefault(key);
+                    kinds[key] = (sum + triangles, many + copies, pieces + 1);
+                    continue;
+                }
+
+                found.Add((triangles, $"{path} x{copies}"));
             }
+        }
+
+        foreach (var (key, (triangles, copies, pieces)) in kinds)
+        {
+            found.Add((triangles, $"{key} x{copies} in {pieces} pieces"));
         }
 
         found.Sort((a, b) => b.Triangles.CompareTo(a.Triangles));

@@ -285,7 +285,12 @@ public sealed class StateHasherTests
         // The Bastion Field Projector's cover (stage 2d).
         "<InvulnerableUntil>k__BackingField",
     })]
-    [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[] { "_counts", "_explored", "_veils", "<Width>k__BackingField", "<Height>k__BackingField" })]
+    [InlineData(typeof(Rts.Simulation.Visibility.VisibilityGrid), new[]
+    {
+        "_counts", "_explored", "_veils", "<Width>k__BackingField", "<Height>k__BackingField",
+        // How often it changed and how many veils it has (2026-10-26): derived from the changes of the cells, which are hashed.
+        "<Version>k__BackingField", "<VeilSources>k__BackingField",
+    })]
     [InlineData(typeof(Unit), new[]
     {
         "<Archetype>k__BackingField", "<Harvester>k__BackingField", "<Position>k__BackingField", "<MoveTarget>k__BackingField", "<Speed>k__BackingField",
