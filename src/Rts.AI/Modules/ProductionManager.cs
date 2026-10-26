@@ -204,6 +204,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         var map = context.Map;
         var navy = !map.NavalRoute ? 0L : map.LandRoute ? Part(army.Navy) : 10_000L;
         var weights = RoleWeights(context, army);
+        var pads = view.FreePads();
         _byUnit.Clear();
         foreach (var (use, pool) in new[] { (Knowledge.UnitUse.Army, 10_000L - navy), (Knowledge.UnitUse.Fleet, navy) })
         {
@@ -217,8 +218,10 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
                 _candidates.Clear();
                 foreach (var card in context.Units.Cards)
                 {
-                    if (card.Use == use && card.Worth[role - 1] > 0 && view.Player.CanBuildUnit(card.Index)
-                        && view.HasFactory(CategoryOf(view.Rules.Database.Units[card.Index])))
+                    // A jet only while a pad is free for it: no more are built than the pads (M11 step 3).
+                    var unit = view.Rules.Database.Units[card.Index];
+                    if (context.Units.PoolOf(card) == use && card.Worth[role - 1] > 0 && view.Player.CanBuildUnit(card.Index)
+                        && view.HasFactory(CategoryOf(unit)) && !(IsJet(unit) && pads <= 0))
                     {
                         _candidates.Add(card);
                     }
@@ -298,6 +301,9 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
 
         return weights;
     }
+
+    /// <summary>Whether <paramref name="unit"/> is a jet that lands on a pad to load its ammo.</summary>
+    private static bool IsJet(UnitDef unit) => unit.Category == UnitCategory.Aircraft && unit.Ammo > 0;
 
     /// <summary>A fraction as hundredths of a percent, rounded: 40 % is not exact in fixed point.</summary>
     private static long Part(Fixed fraction) => (fraction.Raw * 10_000 + (1L << 15)) >> 16;
@@ -385,7 +391,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         var knowledge = Knowledge.UnitKnowledge.Of(view.Rules);
         foreach (var unit in view.OwnUnits)
         {
-            if ((knowledge.InArmy(unit) && knowledge.Of(unit).Use != Knowledge.UnitUse.Hero) || knowledge.InFleet(unit))
+            if (knowledge.PoolOf(knowledge.Of(unit)) is not null && unit.Harvester is null)
             {
                 var index = rules.IndexOfUnit(unit.Archetype.Id);
                 _have[index]++;
@@ -397,7 +403,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         {
             foreach (var item in view.Player.Queue(category))
             {
-                if (item.Kind == ProductionKind.Unit && knowledge[item.DefIndex].Use is Knowledge.UnitUse.Army or Knowledge.UnitUse.Fleet)
+                if (item.Kind == ProductionKind.Unit && knowledge.PoolOf(knowledge[item.DefIndex]) is not null)
                 {
                     _have[item.DefIndex]++;
                     army++;

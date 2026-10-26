@@ -186,7 +186,7 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
                 return unit;
             }
 
-            if (!context.Units.InArmy(unit))
+            if (!context.Units.InArmy(unit) || context.Plan.Errands.Contains(unit.Id.Value))
             {
                 continue;
             }

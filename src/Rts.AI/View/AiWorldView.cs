@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Systems;
 using Rts.Simulation.Visibility;
 using Rts.Simulation.World;
 
@@ -28,6 +29,7 @@ public sealed class AiWorldView
     private readonly List<Building> _ownBuildings = new();
     private readonly List<Entity> _allied = new();
     private readonly List<Entity> _enemies = new();
+    private readonly List<Building> _mapBuildings = new();
     private GameWorld _world;
 
     internal AiWorldView(GameWorld world, PlayerId me, CellPos? start, ImmutableArray<CellPos> mapStarts, int perceptionDelay = 0)
@@ -73,6 +75,12 @@ public sealed class AiWorldView
 
     /// <summary>The living units and buildings of the enemies that the bot's player sees now and the bot has noticed.</summary>
     public IReadOnlyList<Entity> VisibleEnemies => _enemies;
+
+    /// <summary>
+    /// The living buildings of the map the bot's player sees now (M11 step 3): the tech buildings and the civilian ones, whoever holds
+    /// them — for the engineers and the garrisons. The memory keeps them when they are out of sight.
+    /// </summary>
+    public IReadOnlyList<Building> MapBuildingsInSight => _mapBuildings;
 
     /// <summary>Whether <paramref name="player"/> is the bot's player or an ally of it.</summary>
     public bool IsAlly(PlayerId player) => (_world.AlliesOf(Me) & Bit(player)) != 0;
@@ -184,6 +192,24 @@ public sealed class AiWorldView
         return PlacementRules.Check(_world, Me, def, corner, needsBase, ignoreUnit) == PlacementProblem.None;
     }
 
+    /// <summary>The credits of the bot's player less what its queues still have to pay.</summary>
+    public int SpareCredits()
+    {
+        var promised = 0;
+        for (var category = ProductionCategories.First; category <= ProductionCategories.Last; category++)
+        {
+            foreach (var item in Player.Queue(category))
+            {
+                promised += ProductionRules.CostOf(Rules.Database, item.Kind, item.DefIndex) - item.Paid;
+            }
+        }
+
+        return Player.Credits - promised;
+    }
+
+    /// <summary>The pads of the bot's player no jet holds yet, those in the queues counted (<see cref="AmmoSystem.FreePads"/>).</summary>
+    public int FreePads() => AmmoSystem.FreePads(_world, Me);
+
     /// <summary>Whether the bot's player has a ready factory of <paramref name="category"/>.</summary>
     public bool HasFactory(ProductionCategory category) => ProductionRules.HasFactory(_world, Me, category);
 
@@ -199,11 +225,17 @@ public sealed class AiWorldView
         _ownBuildings.Clear();
         _allied.Clear();
         _enemies.Clear();
+        _mapBuildings.Clear();
         foreach (var entity in world.Entities)
         {
             if (!entity.IsAlive || entity is not (Unit or Building))
             {
                 continue;
+            }
+
+            if (entity is Building { Def: null } mapBuilding && Vision.Sees(world, Me, mapBuilding))
+            {
+                _mapBuildings.Add(mapBuilding);
             }
 
             if (entity.Owner == Me)

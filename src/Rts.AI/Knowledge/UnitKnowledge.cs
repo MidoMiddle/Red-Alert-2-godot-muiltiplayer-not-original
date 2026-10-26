@@ -17,6 +17,15 @@ public enum UnitUse : byte
     /// <summary>A hero, of whom a player may have only so many (<see cref="UnitDef.BuildLimit"/>): fights in the army, built apart from the roles.</summary>
     Hero = 7,
 
+    /// <summary>
+    /// It fires only when ordered (<see cref="UnitDef.Passive"/>: the jets, the artillery, the bombers on foot and on wheels, the ships that
+    /// launch): bought by the roles as the army or the fleet is, sent at its targets by the strikes of the bot (<c>StrikeManager</c>).
+    /// </summary>
+    Striker = 8,
+
+    /// <summary>It takes and mends buildings: the bot builds one when there is a building to take (<c>EngineerManager</c>).</summary>
+    Engineer = 9,
+
     /// <summary>A ship that fights: it sails with the fleet.</summary>
     Fleet = 2,
 
@@ -43,8 +52,9 @@ public sealed record UnitCard(int Index, string Id, UnitUse Use, string Reason)
     /// The worth of the unit in each <see cref="ArmyRole"/> (by its value − 1): the damage a minute it does to that enemy on average, times
     /// its hit points, times the reach of its longest weapon over 5 cells, over its cost to the power 1.5. By Lanchester's square law the
     /// strength of an army bought with the same money goes with the cost squared; but a crowd of cheap soldiers does not all fight at
-    /// once, splash and tracks thin it, and the power of 2 made conscripts the best buy against tanks — 1.5 lies between.
-    /// Zero for a role it cannot fight, and for a unit that does not fight: not of the army, the fleet or a hero.
+    /// once, splash and tracks thin it, and the power of 2 made conscripts the best buy against tanks — 1.5 lies between. The hit points
+    /// of what flies count more: only what fires at the air hits it.
+    /// Zero for a role it cannot fight, and for a unit that does not fight: not of the army, the fleet, a hero or a striker.
     /// </summary>
     public long[] Worth { get; init; } = new long[RoleCount];
 
@@ -58,16 +68,18 @@ public sealed record UnitCard(int Index, string Id, UnitUse Use, string Reason)
 /// What a bot knows of every unit of the rules (M11): read from the data, never written by hand, so that a new unit or weapon is known
 /// to the bots as soon as it is in the data.
 /// <list type="bullet">
-/// <item><b>The use</b> (<see cref="UnitUse"/>): what launches or brings it is never built; a harvester, an MCV; an engineer, a spy, a
-/// transport with no gun, a unit that fires only when ordered or one with no weapon wait for the mechanics of their own (step 3 of the
-/// bot that knows every weapon, <see cref="UnitCard.Reason"/> says which); an armed ship is of the fleet; a unit a player may have only
-/// so many of is a hero; the rest fight in the army.</item>
+/// <item><b>The use</b> (<see cref="UnitUse"/>): what launches or brings it is never built; a harvester, an MCV; an engineer; a spy, a
+/// transport and a unit with no weapon wait for mechanics of their own (<see cref="UnitCard.Reason"/> says which); a unit that fires only
+/// when ordered is a striker; an armed ship is of the fleet; a unit a player may have only so many of is a hero; the rest fight in the
+/// army.</item>
 /// <item><b>The damage</b> a unit does to another or to a building in a minute (<see cref="DamagePerMinute"/>): of its primary and
 /// secondary weapons the best that fires at the layer of the target — the air for what flies, under the water for a submarine, the water
 /// and the ground for a ship, the ground for the rest — by the warhead against the target's armor, every shot of the volley, once a
 /// reload. A warhead that takes the unit (mind control) does its hit points; one that erases (temporal) a tenth of the damage of the beam
 /// a tick (<see cref="ErasureSystem.HitPointsTimes"/>); one that plants a bomb the damage of the bomb; a parasite the damage it does
-/// inside a vehicle or a ship a second. The splash, the splinters, the range and the speed are left out.</item>
+/// inside a vehicle or a ship a second. A jet fires its ammo and flies home to load it again (<see cref="AmmoSystem.RearmTicks"/> a
+/// volley, <see cref="FlightTicks"/> the flight); a carrier does what all its jets do; a weapon that is its shooter's end hits once in
+/// a minute. The splash, the splinters and the speed are left out.</item>
 /// <item><b>The worth</b> in each role (<see cref="UnitCard.Worth"/>), against every kind of enemy of the role in the rules alike:
 /// soldiers on foot; vehicles — for the fleet, ships and submarines; what flies; buildings. The reach of the unit counts too: of two
 /// alike, the one that shoots from farther is shot at less.</item>
@@ -81,6 +93,9 @@ public sealed class UnitKnowledge
     private readonly GameRules _rules;
     private readonly UnitCard[] _cards;
 
+    /// <summary>How many times the hit points of a flier count, in 256ths: the armed kinds of units over those that fire at the air, 4 at most.</summary>
+    private readonly long _flierCover;
+
     private UnitKnowledge(GameRules rules)
     {
         _rules = rules;
@@ -92,6 +107,16 @@ public sealed class UnitKnowledge
             mcvs.Add(faction.Mcv);
         }
 
+        var (armed, againstAir) = (0L, 0L);
+        foreach (var unit in database.Units)
+        {
+            var weapons = new[] { database.IndexOfWeapon(unit.Primary), database.IndexOfWeapon(unit.Secondary) };
+            armed += weapons[0] >= 0 ? 1 : 0;
+            againstAir += (weapons[0] >= 0 && (database.Weapons[weapons[0]].Targets & WeaponTargets.Air) != 0)
+                || (weapons[1] >= 0 && (database.Weapons[weapons[1]].Targets & WeaponTargets.Air) != 0) ? 1 : 0;
+        }
+
+        _flierCover = againstAir == 0 ? 4 * 256 : IntMath.Clamp(armed * 256 / againstAir, 256, 4 * 256);
         for (var i = 0; i < _cards.Length; i++)
         {
             var (use, reason) = UseOf(database.Units[i], mcvs);
@@ -100,11 +125,11 @@ public sealed class UnitKnowledge
 
         foreach (var card in _cards)
         {
-            if (card.Use is UnitUse.Army or UnitUse.Fleet or UnitUse.Hero)
+            if (card.Use is UnitUse.Army or UnitUse.Fleet or UnitUse.Hero or UnitUse.Striker)
             {
                 for (var role = 1; role <= UnitCard.RoleCount; role++)
                 {
-                    card.Worth[role - 1] = WorthIn(card.Index, (ArmyRole)role, card.Use == UnitUse.Fleet);
+                    card.Worth[role - 1] = WorthIn(card.Index, (ArmyRole)role, database.Units[card.Index].Category == UnitCategory.Naval);
                 }
             }
         }
@@ -125,8 +150,23 @@ public sealed class UnitKnowledge
     /// <summary>Whether <paramref name="unit"/> fights with the squads of the army.</summary>
     public bool InArmy(Unit unit) => unit.Harvester is null && Of(unit).Use is UnitUse.Army or UnitUse.Hero;
 
-    /// <summary>Whether <paramref name="unit"/> sails with the fleet.</summary>
-    public bool InFleet(Unit unit) => Of(unit).Use == UnitUse.Fleet;
+    /// <summary>Whether <paramref name="unit"/> sails with the fleet: a ship that fights, or one that fires when ordered.</summary>
+    public bool InFleet(Unit unit) => Of(unit).Use == UnitUse.Fleet || (Of(unit).Use == UnitUse.Striker && unit.Archetype.Category == UnitCategory.Naval);
+
+    /// <summary>Whether <paramref name="unit"/> fires only when ordered: the strikes of the bot send it.</summary>
+    public bool InStrikes(Unit unit) => Of(unit).Use == UnitUse.Striker;
+
+    /// <summary>
+    /// The part of the army a kind of unit is bought in by the roles: <see cref="UnitUse.Army"/> for the ground and the air,
+    /// <see cref="UnitUse.Fleet"/> for the water — a unit that fires when ordered in the one of its category; null for one not bought so.
+    /// </summary>
+    public UnitUse? PoolOf(UnitCard card) => card.Use switch
+    {
+        UnitUse.Army => UnitUse.Army,
+        UnitUse.Fleet => UnitUse.Fleet,
+        UnitUse.Striker => _rules.Database.Units[card.Index].Category == UnitCategory.Naval ? UnitUse.Fleet : UnitUse.Army,
+        _ => null,
+    };
 
     /// <summary>The role an enemy of <paramref name="unit"/>'s kind is fought by: soldiers, vehicles and ships, or what flies.</summary>
     public static ArmyRole RoleAgainst(UnitDef unit) =>
@@ -146,14 +186,40 @@ public sealed class UnitKnowledge
         foreach (var id in new[] { unit.Primary, unit.Secondary })
         {
             var index = database.IndexOfWeapon(id);
-            if (index >= 0)
+            if (index < 0)
             {
-                best = IntMath.Max(best, WeaponDamagePerMinute(database.Weapons[index], target, building));
+                continue;
             }
+
+            var weapon = database.Weapons[index];
+            if (weapon.LaunchesSpawns && database.IndexOfUnit(unit.Spawns) is >= 0 and var spawn)
+            {
+                // The carrier: what its jets do, all of them.
+                best = IntMath.Max(best, DamagePerMinute(spawn, target, building) * IntMath.Max(1, unit.SpawnCount));
+                continue;
+            }
+
+            var damage = WeaponDamagePerMinute(weapon, target, building);
+            if (unit.Ammo > 0)
+            {
+                // A jet fires its ammo, flies home and loads a volley every RearmTicks: its volleys over the whole round.
+                damage = damage * IntMath.Max(1, weapon.Reload) * unit.Ammo / (unit.Ammo * (IntMath.Max(1, weapon.Reload) + AmmoSystem.RearmTicks) + FlightTicks);
+            }
+
+            if (weapon.Suicide)
+            {
+                // It fires once and is gone: one hit in a minute of its life.
+                damage = damage * IntMath.Max(1, weapon.Reload) / 900;
+            }
+
+            best = IntMath.Max(best, damage);
         }
 
         return best;
     }
+
+    /// <summary>How long a jet flies to its target and back, in ticks: 20 s, a guess.</summary>
+    public const int FlightTicks = 300;
 
     private long WeaponDamagePerMinute(WeaponDef weapon, int target, bool building)
     {
@@ -275,8 +341,10 @@ public sealed class UnitKnowledge
         }
 
         // Kept whole: the damage a minute on average × the hit points × 10⁶ over the cost to the power 1.5, × the reach over 5 cells.
+        // What flies is hit only by what fires at the air: its hit points count as many times more as the units that cannot, 4 at most.
         var costPower = (long)unit.Cost * IntMath.Sqrt((long)unit.Cost * 256) / 16;
-        return damage * unit.Hp * 1_000_000 / targets / costPower * Reach(unit) / (5 * 256);
+        var hp = unit.Category == UnitCategory.Aircraft || unit.Jumpjet ? (long)unit.Hp * _flierCover / 256 : unit.Hp;
+        return damage * hp * 1_000_000 / targets / costPower * Reach(unit) / (5 * 256);
     }
 
     /// <summary>
@@ -303,10 +371,10 @@ public sealed class UnitKnowledge
         { Spawned: true } => (UnitUse.NeverBuilt, "launched by another unit or brought by a paradrop"),
         { HarvestCapacity: > 0 } => (UnitUse.Harvester, ""),
         _ when mcvs.Contains(unit.Id) => (UnitUse.Mcv, ""),
-        { Engineer: true } => (UnitUse.Special, "takes and mends buildings"),
+        { Engineer: true } => (UnitUse.Engineer, ""),
         { Infiltrator: true } => (UnitUse.Special, "goes into the enemy's buildings"),
-        { PassengerSlots: > 0, Primary.Length: 0 } => (UnitUse.Special, "carries units"),
-        { Passive: true } => (UnitUse.Special, "fires only when ordered"),
+        { PassengerSlots: > 0, Primary.Length: 0 } or { PassengerSlots: > 0, Passive: true } => (UnitUse.Special, "carries units"),
+        { Passive: true } => (UnitUse.Striker, ""),
         { Primary.Length: 0 } => (UnitUse.Special, "has no weapon"),
         { Category: UnitCategory.Naval } => (UnitUse.Fleet, ""),
         { BuildLimit: > 0 } => (UnitUse.Hero, ""),

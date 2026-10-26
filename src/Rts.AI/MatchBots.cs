@@ -135,7 +135,7 @@ public static class MatchBots
             [
                 new Strategist(), new EconomyManager(settings), new BuildPlanner(settings), new ProductionManager(settings), new ScoutManager(settings),
                 new SquadManager(settings, board), new DefenseManager(settings, board), new TeamCoordinator(board, humans, settings),
-                new FleetManager(settings),
+                new FleetManager(settings), new EngineerManager(settings), new GarrisonManager(settings), new StrikeManager(),
             ],
             player.Start,
             setup.MapStarts.IsDefault ? setup.MapStarts : [.. setup.MapStarts.Where(start => !allied.Contains(start))],

@@ -24,20 +24,10 @@ public sealed class UnitKnowledgeTests
     /// </summary>
     private static readonly SortedDictionary<string, string> NotUsedYet = new(System.StringComparer.Ordinal)
     {
-        ["alliance_aircraft_carrier"] = "fires only when ordered",
         ["alliance_amphibious_transport"] = "carries units",
-        ["alliance_black_eagle"] = "fires only when ordered",
-        ["alliance_engineer"] = "takes and mends buildings",
-        ["alliance_harrier"] = "fires only when ordered",
-        ["alliance_nighthawk"] = "fires only when ordered",
+        ["alliance_nighthawk"] = "carries units",
         ["alliance_spy"] = "goes into the enemy's buildings",
-        ["demolition_truck"] = "fires only when ordered",
-        ["dreadnought"] = "fires only when ordered",
-        ["engineer"] = "takes and mends buildings",
         ["hover_transport"] = "carries units",
-        ["rocket_artillery"] = "fires only when ordered",
-        ["terrorist"] = "fires only when ordered",
-        ["yuri_prime"] = "fires only when ordered",
     };
 
     [Fact]
@@ -59,6 +49,11 @@ public sealed class UnitKnowledgeTests
         Assert.Equal(UnitUse.Harvester, Card("harvester").Use);
         Assert.Equal(UnitUse.Mcv, Card("alliance_mcv").Use);
         Assert.Equal(UnitUse.NeverBuilt, Card("alliance_hornet").Use);
+        Assert.Equal(UnitUse.Engineer, Card("engineer").Use);
+        Assert.Equal(UnitUse.Striker, Card("rocket_artillery").Use);
+        Assert.Equal(UnitUse.Striker, Card("alliance_harrier").Use);
+        Assert.Equal(UnitUse.Fleet, Knowledge.PoolOf(Card("dreadnought")));
+        Assert.Equal(UnitUse.Army, Knowledge.PoolOf(Card("alliance_harrier")));
     }
 
     [Fact]
@@ -100,13 +95,21 @@ public sealed class UnitKnowledgeTests
     private static readonly SortedSet<string> Outclassed = new(System.StringComparer.Ordinal)
     {
         "alliance_chrono_legionnaire", // erases slowly by our numbers; its jumps are not counted
+        "alliance_harrier", // the Black Eagle does it better for the money
         "alliance_mirage_tank", // its disguise is not counted
+        "alliance_prism_tank", // its splinters are not counted
+        "alliance_rifleman", // the soldier of the start: outclassed once the battle lab stands; digging in is not counted
         "alliance_sniper", // its reach from a garrison is not counted
+        "attack_dog", // the Union's: the flak track, the airship and the conscript do better against soldiers
         "crazy_ivan", // its bomb goes off late: the worth counts one blast in the delay, not bombs on many targets
+        "demolition_truck", // the splash of its blast is not counted
         "desolator", // its poison when deployed is not counted
-        "rocketeer", // the rocket trooper: the rhino and the apocalypse do it better for the money
+        "giant_squid", // its hold of a ship is not counted
+        "heavy_tank", // the tank of the start: the apocalypse, the airship and the rockets do better with every unit open
+        "rocketeer", // the rocket trooper: the apocalypse, the airship and the rockets do it better for the money
         "terror_drone", // the damage inside a vehicle is slow, the vehicle lost to it is not counted
-        "tesla_tank", // the rhino does it better for the money
+        "terrorist", // the splash of its blast is not counted
+        "tesla_tank", // the apocalypse does it better for the money
         "tesla_trooper", // charging the tesla coils is not counted
         "yuri", // mind control takes one unit at a time; the psychic wave is not counted
     };
@@ -123,7 +126,7 @@ public sealed class UnitKnowledgeTests
                 {
                     var r = role - 1;
                     picked.UnionWith(Knowledge.Cards
-                        .Where(card => card.Use == use && Data.Units[card.Index].Faction == faction.Id && card.Worth[r] > 0
+                        .Where(card => Knowledge.PoolOf(card) == use && Data.Units[card.Index].Faction == faction.Id && card.Worth[r] > 0
                             && Data.Units[card.Index].RequiresStolen.Length == 0)
                         .OrderByDescending(card => card.Worth[r]).ThenBy(card => card.Index)
                         .Take(ProductionManager.RoleParts.Length).Select(card => card.Id));
@@ -132,7 +135,7 @@ public sealed class UnitKnowledgeTests
         }
 
         var never = Knowledge.Cards
-            .Where(card => card.Use is UnitUse.Army or UnitUse.Fleet && Data.Units[card.Index].RequiresStolen.Length == 0 && !picked.Contains(card.Id))
+            .Where(card => Knowledge.PoolOf(card) is not null && Data.Units[card.Index].RequiresStolen.Length == 0 && !picked.Contains(card.Id))
             .Select(card => card.Id);
 
         Assert.Equal(Outclassed, new SortedSet<string>(never, System.StringComparer.Ordinal));
@@ -151,17 +154,17 @@ public sealed class UnitKnowledgeTests
         ["Placement"] = "no need: movement", ["Prerequisites"] = "used", ["Countries"] = "used", ["ForbiddenCountries"] = "used",
         ["HarvestCapacity"] = "used", ["HarvestTime"] = "no need: the economy counts harvesters", ["UnloadRate"] = "no need: the economy counts harvesters",
         ["Threat"] = "no need: targeting", ["Stance"] = "no need: targeting", ["Crusher"] = "used", ["Crushable"] = "used",
-        ["Jumpjet"] = "used", ["Engineer"] = "later: capture and repair", ["Infiltrator"] = "later: the spy",
-        ["Disguised"] = "later: the spy", ["DetectsDisguise"] = "later: the spy", ["Passive"] = "later: orders to fire",
+        ["Jumpjet"] = "used", ["Engineer"] = "used", ["Infiltrator"] = "later: the spy",
+        ["Disguised"] = "later: the spy", ["DetectsDisguise"] = "later: the spy", ["Passive"] = "used",
         ["DeathWeapon"] = "later: units that blow up", ["Teleports"] = "later: chrono jumps", ["TeleportsHome"] = "no need: the miner jumps by itself",
         ["DeployWeapon"] = "later: deploying", ["DeployedWeapon"] = "later: deploying", ["DeployOnce"] = "later: deploying",
         ["UndeployDelay"] = "later: deploying", ["RadiationImmune"] = "later: radiation", ["BuildLimit"] = "used: the tech tree stops it",
-        ["RequiresStolen"] = "used: the tech-up leaves it out", ["Occupier"] = "later: garrisons", ["OccupyWeapon"] = "later: garrisons",
+        ["RequiresStolen"] = "used: the tech-up leaves it out", ["Occupier"] = "used", ["OccupyWeapon"] = "no need: the garrison fires it",
         ["ChargesCoils"] = "later: charging tesla coils", ["PsionicImmune"] = "later: mind control", ["DisguiseWhenStill"] = "later: the mirage",
         ["PassengerSlots"] = "later: transports", ["PassengerSizeLimit"] = "later: transports", ["Size"] = "later: transports",
         ["PassengerWeapon"] = "later: transports", ["IfvWeapon"] = "later: transports", ["Submerged"] = "used", ["Sensors"] = "later: submarines",
-        ["Ammo"] = "later: aircraft", ["SelfHeal"] = "no need: it heals by itself", ["Trainable"] = "no need: veterancy",
-        ["Spawns"] = "later: the carrier", ["SpawnCount"] = "later: the carrier", ["SpawnRegen"] = "later: the carrier", ["Spawned"] = "used",
+        ["Ammo"] = "used", ["SelfHeal"] = "no need: it heals by itself", ["Trainable"] = "no need: veterancy",
+        ["Spawns"] = "used", ["SpawnCount"] = "used", ["SpawnRegen"] = "no need: the carrier replaces them", ["Spawned"] = "used",
         ["Primary"] = "used", ["Secondary"] = "used", ["Model"] = "no need: the client", ["Icon"] = "no need: the client",
         ["AvailableLater"] = "used", ["AbilityLater"] = "no need: no unit has it",
     };
@@ -183,9 +186,9 @@ public sealed class UnitKnowledgeTests
         ["Id"] = "used", ["Name"] = "no need: shown to people", ["Damage"] = "used", ["Reload"] = "used", ["Range"] = "used: by the squads",
         ["MinRange"] = "later: artillery", ["Projectile"] = "no need: flight", ["Warhead"] = "used", ["Burst"] = "used",
         ["BurstDelay"] = "no need: inside the reload", ["Targets"] = "used", ["Report"] = "no need: the client",
-        ["Suicide"] = "later: units that blow up", ["Fragments"] = "later: the worth leaves the splinters out",
+        ["Suicide"] = "used", ["Fragments"] = "later: the worth leaves the splinters out",
         ["FragmentWeapon"] = "later: the worth leaves the splinters out", ["FragmentRange"] = "later: the worth leaves the splinters out",
-        ["LaunchesSpawns"] = "later: the carrier",
+        ["LaunchesSpawns"] = "used",
     };
 
     public static TheoryData<string> Kinds => new() { nameof(UnitDef), nameof(WarheadDef), nameof(WeaponDef) };

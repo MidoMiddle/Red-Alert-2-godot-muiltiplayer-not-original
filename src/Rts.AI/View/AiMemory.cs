@@ -12,6 +12,13 @@ namespace Rts.AI.View;
 public sealed record RememberedBuilding(EntityId Id, PlayerId Owner, int DefIndex, CellPos Cell, CellPos FarCell, int Hp, int SeenTick);
 
 /// <summary>
+/// A building of the map as the bot saw it last (M11 step 3): a tech building an engineer may take, a civilian one soldiers may hold —
+/// whose it was, how hurt, how many soldiers in it.
+/// </summary>
+public sealed record RememberedMapBuilding(EntityId Id, BuildingKind Kind, PlayerId Owner, CellPos Cell, CellPos FarCell, int Hp, int MaxHp,
+    int Occupants, int SeenTick);
+
+/// <summary>
 /// Enemy units seen together in one block of <see cref="AiMemory.BlockCells"/> × <see cref="AiMemory.BlockCells"/> cells: where they stood on
 /// average, how strong they were (cost × the share of hit points left, as the strength of a squad in 4.6), how many and how many of them
 /// infantry (step 6), when.
@@ -141,9 +148,15 @@ public sealed class AiMemory
     /// <summary>The strength of a unit as of a squad (4.6): its cost × the share of its hit points left.</summary>
     public int StrengthOf(Unit unit) => unit.MaxHp > 0 && _costs is { } costs ? costs[(int)unit.Type] * unit.Hp / unit.MaxHp : 0;
 
+    /// <summary>The buildings of the map the bot has seen, by id (M11 step 3); one seen gone where it stood is forgotten.</summary>
+    public IReadOnlyCollection<RememberedMapBuilding> MapBuildings => _mapBuildings.Values;
+
+    private readonly SortedDictionary<int, RememberedMapBuilding> _mapBuildings = new();
+
     internal void Update(AiWorldView view)
     {
         RememberBuildings(view);
+        RememberMapBuildings(view);
         RememberArmies(view);
         RememberHarvesters(view);
         RememberStarts(view);
@@ -196,6 +209,31 @@ public sealed class AiMemory
         foreach (var id in _forgotten)
         {
             _buildings.Remove(id);
+        }
+    }
+
+    private void RememberMapBuildings(AiWorldView view)
+    {
+        _seen.Clear();
+        foreach (var building in view.MapBuildingsInSight)
+        {
+            _seen.Add(building.Id.Value);
+            _mapBuildings[building.Id.Value] = new RememberedMapBuilding(
+                building.Id, building.Kind, building.Owner, building.Cell, building.FarCell, building.Hp, building.MaxHp, building.Occupants.Count, view.Tick);
+        }
+
+        _forgotten.Clear();
+        foreach (var remembered in _mapBuildings.Values)
+        {
+            if (!_seen.Contains(remembered.Id.Value) && AnyVisible(view, remembered.Cell, remembered.FarCell))
+            {
+                _forgotten.Add(remembered.Id.Value);
+            }
+        }
+
+        foreach (var id in _forgotten)
+        {
+            _mapBuildings.Remove(id);
         }
     }
 

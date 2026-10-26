@@ -292,7 +292,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         {
             squad.RemoveAll(id =>
             {
-                if (_units.ContainsKey(id.Value) && id != scout)
+                if (_units.ContainsKey(id.Value) && id != scout && !context.Plan.Errands.Contains(id.Value))
                 {
                     _inSquads.Add(id.Value);
                     return false;
@@ -309,7 +309,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         foreach (var unit in context.View.OwnUnits)
         {
             // The army only (M11): the ships sail with the fleet, a unit whose use the bot does not know yet stays where it is.
-            if (context.Units.InArmy(unit) && unit.Id != scout && !_inSquads.Contains(unit.Id.Value))
+            if (context.Units.InArmy(unit) && unit.Id != scout && !_inSquads.Contains(unit.Id.Value) && !context.Plan.Errands.Contains(unit.Id.Value))
             {
                 gathering = Gathering(gathering);
                 gathering.Add(unit.Id);

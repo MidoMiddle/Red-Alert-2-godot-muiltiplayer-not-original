@@ -46,6 +46,12 @@ public sealed class AiPlan
     /// <summary>The unit that scouts (step 7); the squads of step 8 leave it alone. Null without one.</summary>
     public EntityId? Scout { get; internal set; }
 
+    /// <summary>
+    /// The units on an errand of their own (M11 step 3: soldiers on their way into a building to hold it), by id: the squads and the scout
+    /// leave them alone. The module that sent them takes them off.
+    /// </summary>
+    public SortedSet<int> Errands { get; } = new();
+
     /// <summary>Whether the economy wants a harvester now: the army leaves the war factory to it.</summary>
     public bool HarvestersWanted { get; internal set; }
 
