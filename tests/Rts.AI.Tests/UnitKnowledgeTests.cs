@@ -157,8 +157,8 @@ public sealed class UnitKnowledgeTests
         ["Jumpjet"] = "used", ["Engineer"] = "used", ["Infiltrator"] = "used",
         ["Disguised"] = "no need: the disguise fools the enemy by itself", ["DetectsDisguise"] = "later: the spy keeps away from what sees through it", ["Passive"] = "used",
         ["DeathWeapon"] = "later: units that blow up", ["Teleports"] = "later: chrono jumps", ["TeleportsHome"] = "no need: the miner jumps by itself",
-        ["DeployWeapon"] = "later: deploying", ["DeployedWeapon"] = "later: deploying", ["DeployOnce"] = "later: deploying",
-        ["UndeployDelay"] = "later: deploying", ["RadiationImmune"] = "later: radiation", ["BuildLimit"] = "used: the tech tree stops it",
+        ["DeployWeapon"] = "used", ["DeployedWeapon"] = "used", ["DeployOnce"] = "no need: the unit stands up by itself",
+        ["UndeployDelay"] = "no need: the unit stands up by itself", ["RadiationImmune"] = "later: radiation", ["BuildLimit"] = "used: the tech tree stops it",
         ["RequiresStolen"] = "used: the tech-up leaves it out", ["Occupier"] = "used", ["OccupyWeapon"] = "no need: the garrison fires it",
         ["ChargesCoils"] = "later: charging tesla coils", ["PsionicImmune"] = "later: mind control", ["DisguiseWhenStill"] = "later: the mirage",
         ["PassengerSlots"] = "used", ["PassengerSizeLimit"] = "used", ["Size"] = "used",
@@ -172,12 +172,12 @@ public sealed class UnitKnowledgeTests
     /// <summary>Every field of a warhead and what the bots do with it, as for <see cref="UnitFields"/>.</summary>
     private static readonly SortedDictionary<string, string> WarheadFields = new(System.StringComparer.Ordinal)
     {
-        ["Id"] = "used", ["Name"] = "no need: shown to people", ["Verses"] = "used", ["Spread"] = "later: the worth leaves the splash out",
+        ["Id"] = "used", ["Name"] = "no need: shown to people", ["Verses"] = "used", ["Spread"] = "used: the reach of a blast when deployed or of a superweapon; the worth leaves the splash out",
         ["PercentAtMax"] = "later: the worth leaves the splash out", ["WallDamage"] = "no need: walls", ["AffectsAir"] = "later: the splash",
         ["Temporal"] = "used", ["Bomb"] = "used", ["BombDelay"] = "used", ["Bridges"] = "later: bridges", ["Radiation"] = "later: radiation",
         ["Parasite"] = "used", ["ParasiteDamage"] = "used", ["ParasiteDelay"] = "used", ["ParasiteNaval"] = "used",
         ["Paralyzes"] = "later: the squid", ["Repairs"] = "later: repair", ["FreesParasite"] = "later: parasites", ["MindControl"] = "used",
-        ["BurnsOre"] = "no need: ore", ["SparesOwnKind"] = "no need: targeting", ["InfantryDeath"] = "no need: the client",
+        ["BurnsOre"] = "no need: ore", ["SparesOwnKind"] = "used", ["InfantryDeath"] = "no need: the client",
     };
 
     /// <summary>Every field of a weapon and what the bots do with it, as for <see cref="UnitFields"/>.</summary>

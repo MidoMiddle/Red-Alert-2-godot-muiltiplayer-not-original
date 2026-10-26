@@ -34,4 +34,10 @@ public enum AiModuleKind
 
     /// <summary>The transports of the bot (M11 step 3): its squads over the water where no tank drives to the enemy.</summary>
     Ferry,
+
+    /// <summary>The soldiers of the bot that deploy (M11 step 3): dig in, poison, the psychic wave.</summary>
+    Deploys,
+
+    /// <summary>The superweapons of the bot (M11 step 3).</summary>
+    Superweapons,
 }

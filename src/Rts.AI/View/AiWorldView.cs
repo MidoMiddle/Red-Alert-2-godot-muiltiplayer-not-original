@@ -192,6 +192,17 @@ public sealed class AiWorldView
         return PlacementRules.Check(_world, Me, def, corner, needsBase, ignoreUnit) == PlacementProblem.None;
     }
 
+    /// <summary>
+    /// The superweapon of a building of the bot's player that may fire now — standing ready, charged, online — or
+    /// <see cref="SuperweaponKind.None"/> (M11 step 3).
+    /// </summary>
+    public SuperweaponKind ReadySuperweapon(Building building) =>
+        building.Owner == Me && building is { IsAlive: true, IsReady: true, ChargeLeft: 0 } && Rts.Simulation.Combat.Defenses.IsOnline(_world, building)
+            ? SuperweaponSystem.KindOf(_world, building) : SuperweaponKind.None;
+
+    /// <summary>Whether a storm rages in the match: a second is not let loose (RA2).</summary>
+    public bool StormRaging() => SuperweaponSystem.StormRaging(_world);
+
     /// <summary>The credits of the bot's player less what its queues still have to pay.</summary>
     public int SpareCredits()
     {

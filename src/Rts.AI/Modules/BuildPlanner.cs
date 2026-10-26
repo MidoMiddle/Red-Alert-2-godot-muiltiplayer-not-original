@@ -27,7 +27,7 @@ namespace Rts.AI.Modules;
 /// <item>M11: the shipyard of the faction on a map whose water leads to an enemy (<see cref="MapReading.NavalRoute"/>), at its harbour once
 /// that has been seen — till then the nearest unit of the army goes to look, and a shipyard with no room on the water after all is
 /// cancelled; and, but for the simple build orders, with the army as big as a squad that may set out and the money there, the building
-/// that opens the most units of the army (<see cref="Opener"/>).</item>
+/// that opens the most units of the army (<see cref="Opener"/>), then one of each superweapon it may build (<see cref="Superweapon"/>).</item>
 /// </list>
 /// A building is ordered only when the credits, less what the queues still have to pay, cover it; one order a queue a turn. The bot
 /// gives no command it knows to be refused.
@@ -259,6 +259,13 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 _choices.Add(opener);
             }
 
+            // A superweapon (M11 step 3), one of each the faction may build, on the same terms.
+            if (settings.Quality != Profiles.BuildOrderQuality.Simple && Superweapon(context) is >= 0 and var superweapon
+                && view.Player.Credits - Promised(view) >= rules.Buildings[superweapon].Cost)
+            {
+                _choices.Add(superweapon);
+            }
+
             if (context.Plan.AttackedFrom is { } from && order is not null && order.Faction == faction.Id && DefenseOf(rules, order) is >= 0 and var defense
                 && Defenses(rules) < settings.MaxDefenses && !Covered(view, yard, from))
             {
@@ -398,6 +405,36 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
         }
 
         return best;
+    }
+
+    /// <summary>
+    /// The first superweapon of the rules the bot may build now and has none of — standing, growing or queued — once the army is as big
+    /// as a squad that may set out; -1 for none.
+    /// </summary>
+    private int Superweapon(AiContext context)
+    {
+        var view = context.View;
+        var army = 0;
+        foreach (var unit in view.OwnUnits)
+        {
+            army += context.Units.InArmy(unit) ? 1 : 0;
+        }
+
+        if (army < settings.MinAttackArmy)
+        {
+            return -1;
+        }
+
+        var rules = view.Rules.Database;
+        for (var i = 0; i < rules.Buildings.Length; i++)
+        {
+            if (rules.Buildings[i].Superweapon != SuperweaponKind.None && _have[i] == 0 && view.Player.CanBuildBuilding(i))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /// <summary>How many units of the army, not open now, <paramref name="owned"/> opens — with a factory for them, or <paramref name="built"/> one.</summary>
