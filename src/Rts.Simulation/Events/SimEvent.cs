@@ -216,6 +216,9 @@ public sealed record BuildingInfiltrated(int Tick, EntityId Building, PlayerId P
 /// <summary>A bomb was planted on <paramref name="Target"/>; it goes off in <paramref name="Ticks"/> (stage 3b).</summary>
 public sealed record BombPlanted(int Tick, EntityId Target, EntityId Shooter, int Ticks) : SimEvent(Tick);
 
+/// <summary><paramref name="Engineer"/> took the bomb off <paramref name="Target"/> (RA2: an engineer defuses Ivan's bomb).</summary>
+public sealed record BombDefused(int Tick, EntityId Target, EntityId Engineer) : SimEvent(Tick);
+
 /// <summary><paramref name="Unit"/> jumped from <paramref name="From"/> to <paramref name="To"/> and phases in for a while (stage 3b).</summary>
 public sealed record UnitTeleported(int Tick, EntityId Unit, WorldPos From, WorldPos To) : SimEvent(Tick);
 

@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -82,6 +82,7 @@ public sealed class StateHasherTests
             case "bomb owner": moving.BombOwner = new PlayerId(2); break;
             case "deployed": moving.Deployed = true; break;
             case "passenger": moving.Passengers.Add(new Occupant(world.Rules.Unit(UnitType.Conscript), 125)); break;
+            case "passenger bomb": moving.Passengers.Add(new Occupant(world.Rules.Unit(UnitType.Conscript), 125) { BombWeapon = 0 }); break;
             case "parasite": moving.Parasite = UnitType.Conscript; break;
             case "parasite ticks": moving.ParasiteTicks = 7; break;
             case "ammo": moving.Ammo = 2; break;
@@ -407,7 +408,7 @@ public sealed class StateHasherTests
         // The veil it added (stage 2d): derived from the building and its owner's power; the grids it went into are hashed.
         "<VeilRadius>k__BackingField",
     })]
-    [InlineData(typeof(Occupant), new[] { "<Type>k__BackingField", "<Hp>k__BackingField", "<Weapons>k__BackingField" })]
+    [InlineData(typeof(Occupant), new[] { "<Type>k__BackingField", "<Hp>k__BackingField", "<Weapons>k__BackingField", "<BombWeapon>k__BackingField", "<BombShooter>k__BackingField", "<BombOwner>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {

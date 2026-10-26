@@ -97,6 +97,7 @@ ivan_bomb_plant:  # RA2 IvanBomb: Ivan's bomb is put on the target, not into it 
   verses: { none: 100%, flak: 100%, plate: 100%, light: 100%, medium: 100%, heavy: 100%, wood: 100%, steel: 100%, concrete: 100%, special_1: 100%, special_2: 100% }
   bomb: ivan_bomb_blast
   bomb_delay: 30s
+  bridges: true  # RA2: Ivan bombs bridges too; forced at a bridge, his bomb goes on the segment and brings it down
 
 ivan_blast:  # RA2 IvanWH: the blast of Ivan's bomb
   kind: warhead

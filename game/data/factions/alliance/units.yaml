@@ -53,6 +53,9 @@ alliance_harvester:  # the refinery's free harvester
   unload_rate: 50
   prerequisites: [alliance_war_factory, alliance_ore_refinery]
   psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
+  self_heal: 1  # RA2 SelfHealing=yes
+  radiation_immune: true  # RA2 ImmuneToRadiation=yes
+  trainable: false  # RA2 Trainable=no
 
 alliance_light_tank:  # battle tank: quicker and lighter than the Union's heavy tank
   kind: unit

@@ -219,11 +219,12 @@ public sealed class GoldenValuesTests
         // Rules v56 (stage 2d): the charges, the cover and the storms in the hash (none); the states are the same.
         // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash (none); the states are the same.
         // Rules v60 (loose ends, stage 3): the experience of every unit and the veterans of a spy in the hash (none); the states are the same.
+        // Rules v93: the harvester heals itself (RA2 SelfHealing): from tick 500 a harvester that was hit has its hit points back.
         StateChecksum[] expected =
         [
             new(100, 0xf972d5216d8ab4d5UL),
-            new(500, 0x80f7cc1b0404861aUL),
-            new(1000, 0x3b2267761c666311UL),
+            new(500, 0xeba9303d04896a9dUL),
+            new(1000, 0xc50f62d70bd3fe0fUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -373,6 +374,7 @@ public sealed class GoldenValuesTests
         // Rules v90 (the commando's C4 on a bridge repair hut, RA2): the version only.
         // Rules v91 (the models branch merged: its check against rules.ini moves the game data): the version only.
         // Rules v92 (Tanya swims, RA2 SpeedType=Amphibious): the version only.
-        Assert.Equal((22270, 2962473439659788537UL), (bytes.Length, hash.Value));
+        // Rules v93 (the units' mechanics of RA2, packages 1 and 2): the version only.
+        Assert.Equal((22270, 8539334350128883829UL), (bytes.Length, hash.Value));
     }
 }

@@ -13,7 +13,8 @@ namespace Rts.Simulation.Systems;
 /// larger than the transport takes; a flier, a transport with passengers of its own and the transport itself do not. It leaves the map
 /// and rides as an <see cref="Occupant"/> with its hit points. A <see cref="Commands.DeployCommand"/> on the transport lets them out on
 /// the free cells round it, ring by ring up to 4 out, each where it can stand; those with no room stay in. Passengers fall with their
-/// transport. An IFV fires the weapon its first passenger gives it (<see cref="Rules.GameRules.WeaponsOf(Unit)"/>).
+/// transport. An IFV fires the weapon its first passenger gives it (<see cref="Rules.GameRules.WeaponsOf(Unit)"/>). A bomb on a unit
+/// that boards waits inside and goes off as soon as it comes out, or where the transport falls (RA2).
 /// </summary>
 public static class TransportSystem
 {
@@ -35,10 +36,17 @@ public static class TransportSystem
         && !unit.Archetype.Flies && unit.Passengers.Count == 0 && unit.Archetype.Size <= transport.Archetype.PassengerSizeLimit
         && SlotsTaken(world, transport) + unit.Archetype.Size <= transport.Archetype.PassengerSlots;
 
-    /// <summary>The unit boards: it leaves the map without a death and rides with its hit points.</summary>
+    /// <summary>The unit boards: it leaves the map without a death and rides with its hit points, and its bomb with it.</summary>
     internal static void Board(GameWorld world, Unit unit, Unit transport, List<SimEvent>? events)
     {
-        transport.Passengers.Add(new Occupant(unit.Archetype, unit.Hp));
+        var passenger = new Occupant(unit.Archetype, unit.Hp);
+        if (unit.BombTicks > 0)
+        {
+            (passenger.BombWeapon, passenger.BombShooter, passenger.BombOwner) = (unit.BombWeapon, unit.BombShooter, unit.BombOwner);
+            (unit.BombTicks, unit.BombWeapon, unit.BombShooter, unit.BombOwner) = (0, -1, EntityId.None, PlayerId.Neutral);
+        }
+
+        transport.Passengers.Add(passenger);
         unit.MarkDead();
         events?.Add(new UnitBoarded(world.CurrentTick, unit.Id, transport.Id));
     }
@@ -62,6 +70,12 @@ public static class TransportSystem
             transport.Passengers.RemoveAt(left);
             var unit = world.SpawnUnit(transport.Owner, passenger.Type, cell.Center, snapToSubcell: true);
             world.SetHp(unit, passenger.Hp, events);
+            if (passenger.BombWeapon >= 0)
+            {
+                // Its bomb goes off on the next tick, out of the transport.
+                (unit.BombTicks, unit.BombWeapon, unit.BombShooter, unit.BombOwner) = (1, passenger.BombWeapon, passenger.BombShooter, passenger.BombOwner);
+            }
+
             events?.Add(new UnitUnloaded(world.CurrentTick, unit.Id, transport.Id));
             any = true;
         }

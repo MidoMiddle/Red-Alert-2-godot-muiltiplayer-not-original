@@ -577,8 +577,10 @@ public static class CommandProcessor
         }
 
         if (!world.TryGet(command.Unit, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Owner != command.Player
-            || unit.Archetype.Id != faction.Mcv || !world.Rules.Database.TryGetBuilding(faction.ConstructionYard, out var yard))
+            || unit.Archetype.Id != faction.Mcv || !world.Rules.Database.TryGetBuilding(faction.ConstructionYard, out var yard)
+            || unit.Parasite != 0)
         {
+            // RA2: a terror drone inside keeps the MCV from deploying.
             return false;
         }
 

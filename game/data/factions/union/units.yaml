@@ -75,6 +75,8 @@ harvester:  # War Miner
   unload_rate: 50
   prerequisites: [war_factory, refinery]
   psionic_immune: true  # RA2 ImmuneToPsionics: no mind control takes it
+  self_heal: 1  # RA2 SelfHealing=yes
+  radiation_immune: true  # RA2 ImmuneToRadiation=yes
 
 support_vehicle:  # Flak Track
   kind: unit
