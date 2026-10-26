@@ -23,11 +23,11 @@ public sealed class SettingsValuesTests
         Assert.True(defaults.EdgeScroll);
         Assert.True(defaults.CameraDrag);
         Assert.Equal(HealthBarMode.Selected, defaults.HealthBars);
-        // The 3D at the full size of the window, with the 4× multisampling the project had (2026-10-26).
-        Assert.Equal(100, defaults.RenderScale);
-        Assert.Equal(AntiAliasing.Msaa4, defaults.AntiAliasing);
-        Assert.Equal(ShadowQuality.High, defaults.Shadows);
-        Assert.True(defaults.Ssao);
+        // Light on the graphics card (the owner, 2026-10-26): the 3D at 85 % with MSAA 2×, low shadows, no SSAO.
+        Assert.Equal(85, defaults.RenderScale);
+        Assert.Equal(AntiAliasing.Msaa2, defaults.AntiAliasing);
+        Assert.Equal(ShadowQuality.Low, defaults.Shadows);
+        Assert.False(defaults.Ssao);
     }
 
     [Fact]
@@ -107,8 +107,8 @@ public sealed class SettingsValuesTests
             CameraDrag = false,
             RenderScale = 67,
             AntiAliasing = AntiAliasing.Fxaa,
-            Shadows = ShadowQuality.Low,
-            Ssao = false,
+            Shadows = ShadowQuality.High,
+            Ssao = true,
         };
 
         Assert.Equal(values, SettingsValues.Parse(values.ToRaw()));
@@ -172,8 +172,9 @@ public sealed class SettingsValuesTests
 
     [Theory]
     [InlineData("75", 75)]
-    [InlineData("60", 100)]
-    [InlineData("half", 100)]
+    [InlineData("100", 100)]
+    [InlineData("60", 85)]
+    [InlineData("half", 85)]
     public void RenderScaleMustBeAChoice(string text, int expected)
     {
         Assert.Equal(expected, ParseOne("graphics/render_scale", text).RenderScale);
@@ -182,8 +183,9 @@ public sealed class SettingsValuesTests
     [Theory]
     [InlineData("msaa2", AntiAliasing.Msaa2)]
     [InlineData("OFF", AntiAliasing.Off)]
-    [InlineData("taa", AntiAliasing.Msaa4)]
-    public void AntiAliasingIsReadByNameOrFallsBackToFourSamples(string text, AntiAliasing expected)
+    [InlineData("msaa4", AntiAliasing.Msaa4)]
+    [InlineData("taa", AntiAliasing.Msaa2)]
+    public void AntiAliasingIsReadByNameOrFallsBackToTwoSamples(string text, AntiAliasing expected)
     {
         Assert.Equal(expected, ParseOne("graphics/anti_aliasing", text).AntiAliasing);
     }
@@ -191,8 +193,9 @@ public sealed class SettingsValuesTests
     [Theory]
     [InlineData("off", ShadowQuality.Off)]
     [InlineData("Medium", ShadowQuality.Medium)]
-    [InlineData("ultra", ShadowQuality.High)]
-    public void ShadowsAreReadByNameOrFallBackToHigh(string text, ShadowQuality expected)
+    [InlineData("high", ShadowQuality.High)]
+    [InlineData("ultra", ShadowQuality.Low)]
+    public void ShadowsAreReadByNameOrFallBackToLow(string text, ShadowQuality expected)
     {
         Assert.Equal(expected, ParseOne("graphics/shadows", text).Shadows);
     }

@@ -26,7 +26,7 @@ public enum HealthBarMode
 
 /// <summary>
 /// The smoothing of the edges of the 3D, in the order of the dropdown (the owner, 2026-10-26): none, FXAA — a pass over the picture,
-/// cheap and a little blurred — or multisampling of 2 or 4 samples a pixel, the default as before.
+/// cheap and a little blurred — or multisampling of 2 or 4 samples a pixel; 2 by default.
 /// </summary>
 public enum AntiAliasing
 {
@@ -38,7 +38,7 @@ public enum AntiAliasing
 
 /// <summary>
 /// The shadows of the sun, in the order of the dropdown (the owner, 2026-10-26: lighter on the graphics card): none; low — one hard
-/// shadow map; medium — two, a little soft; high — two, soft, as the game had them (the default).
+/// shadow map, the default; medium — two, a little soft; high — two, soft, as the game had them before.
 /// </summary>
 public enum ShadowQuality
 {
@@ -70,10 +70,10 @@ public sealed record SettingsValues(
     HealthBarMode HealthBars = HealthBarMode.Selected,
     bool PlaytestSurvey = false,
     bool Ra2Names = true,
-    int RenderScale = SettingsValues.FullRenderScale,
-    AntiAliasing AntiAliasing = AntiAliasing.Msaa4,
-    ShadowQuality Shadows = ShadowQuality.High,
-    bool Ssao = true)
+    int RenderScale = SettingsValues.DefaultRenderScale,
+    AntiAliasing AntiAliasing = AntiAliasing.Msaa2,
+    ShadowQuality Shadows = ShadowQuality.Low,
+    bool Ssao = false)
 {
     /// <summary>
     /// Layout version of the file, written as <c>meta/format</c>. 2 (2026-10-26): the frame limit's default is 60; a file of format 1
@@ -86,6 +86,12 @@ public sealed record SettingsValues(
 
     /// <summary>The 3D drawn at the size of the window: 100 %.</summary>
     public const int FullRenderScale = 100;
+
+    /// <summary>
+    /// The scale of the 3D of a new game: 85 % (the owner, 2026-10-26: with MSAA 2×, low shadows and no SSAO the graphics card of a
+    /// MacBook took 17.5 ms a frame instead of 35, the picture as good to the eye).
+    /// </summary>
+    public const int DefaultRenderScale = 85;
 
     /// <summary>Frame limit that means no limit.</summary>
     public const int Unlimited = 0;
@@ -136,7 +142,8 @@ public sealed record SettingsValues(
     public static int[] RenderScaleChoices { get; } = { FullRenderScale, 85, 75, 67, 50 };
 
     /// <summary>
-    /// What the game uses without a settings file: windowed 1280 × 720, VSync, 60 frames a second at most, 100 % and full volume, Classic
+    /// What the game uses without a settings file: windowed 1280 × 720, VSync, 60 frames a second at most, the 3D at 85 % with MSAA 2×, low
+/// shadows and no SSAO (light on the graphics card, the owner's choice of 2026-10-26), 100 % and full volume, Classic
     /// scheme, scroll speed 5, edge scrolling and camera drag on, health bars of the selected and the damaged, no playtest survey (M8 step 14),
     /// the names of RA2 on screen (while there are no models).
     /// </summary>
