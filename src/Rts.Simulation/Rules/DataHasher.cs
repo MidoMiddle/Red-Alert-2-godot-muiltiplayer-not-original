@@ -97,6 +97,7 @@ public static class DataHasher
             hash.Add(unit.Passive);
             Add(hash, unit.DeathWeapon);
             hash.Add(unit.Teleports);
+            hash.Add(unit.TeleportsHome);
             Add(hash, unit.DeployWeapon);
             hash.Add(unit.RadiationImmune);
             Add(hash, unit.RequiresStolen);

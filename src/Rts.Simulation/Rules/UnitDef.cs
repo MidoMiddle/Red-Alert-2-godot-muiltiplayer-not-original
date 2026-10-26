@@ -108,6 +108,12 @@ public sealed record UnitDef : IDefinition
     public bool Teleports { get; init; }
 
     /// <summary>
+    /// A harvester that jumps to its refinery instead of driving there, and then phases in as a time trooper does (RA2 Chrono Miner,
+    /// <c>Teleporter=yes</c>); it drives out to the ore.
+    /// </summary>
+    public bool TeleportsHome { get; init; }
+
+    /// <summary>
     /// The weapon it fires at its own cell, as often as it reloads, while deployed (stage 3b: the toxin trooper's eruption); empty for
     /// a unit that does not deploy so.
     /// </summary>

@@ -55,6 +55,12 @@ public static class HarvesterSystem
 
     private static void Step(GameWorld world, Unit unit, Harvester harvester, List<SimEvent>? events)
     {
+        if (unit.WarpTicks > 0)
+        {
+            // Phasing in after a jump home (RA2 Chrono Miner): nothing yet.
+            return;
+        }
+
         switch (harvester.Mode)
         {
             case HarvesterMode.Manual:

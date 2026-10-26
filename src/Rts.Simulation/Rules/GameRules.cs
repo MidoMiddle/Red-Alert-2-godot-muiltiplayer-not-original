@@ -410,7 +410,7 @@ public sealed class GameRules
     private static UnitTalents TalentsOf(UnitDef unit) =>
         (unit.Engineer ? UnitTalents.Engineer : 0) | (unit.Infiltrator ? UnitTalents.Infiltrator : 0)
         | (unit.Disguised ? UnitTalents.Disguised : 0) | (unit.DetectsDisguise ? UnitTalents.DetectsDisguise : 0)
-        | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0)
+        | (unit.Passive ? UnitTalents.Passive : 0) | (unit.Teleports ? UnitTalents.Teleports : 0) | (unit.TeleportsHome ? UnitTalents.TeleportsHome : 0)
         | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0)
         | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0)
         | (unit.Submerged ? UnitTalents.Submerged : 0) | (unit.Spawned ? UnitTalents.Spawned : 0)

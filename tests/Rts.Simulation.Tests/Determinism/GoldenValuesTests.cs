@@ -376,6 +376,7 @@ public sealed class GoldenValuesTests
         // Rules v92 (Tanya swims, RA2 SpeedType=Amphibious): the version only.
         // Rules v93 (the high bridges of RA2, two levels; and, apart, the units' mechanics of RA2, packages 1 and 2): the version only.
         // Rules v94 (the two merged): the version only.
-        Assert.Equal((22270, 11565981149814149562UL), (bytes.Length, hash.Value));
+        // Rules v95 (the Chrono Miner jumps home, RA2): the version only.
+        Assert.Equal((22270, 16711669791927929407UL), (bytes.Length, hash.Value));
     }
 }

@@ -103,7 +103,9 @@ public static class MovementSystem
             return;
         }
 
-        if (unit.Archetype.Has(UnitTalents.Teleports))
+        // RA2 Chrono Miner: on its way to the refinery it jumps there.
+        if (unit.Archetype.Has(UnitTalents.Teleports)
+            || (unit.Archetype.Has(UnitTalents.TeleportsHome) && unit.Harvester is { Mode: HarvesterMode.MovingToRefinery }))
         {
             Teleport(world, unit, target, events);
             return;

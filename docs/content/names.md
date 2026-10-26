@@ -58,7 +58,7 @@
 | id | Имя | Роль | Аналог RA2 |
 |---|---|---|---|
 | alliance_mcv | Mobile Command Unit | MCV | Allied MCV |
-| alliance_harvester | Ore Hauler | харвестер, без оружия | Chrono Miner (без телепорта) |
+| alliance_harvester | Ore Hauler | харвестер, без оружия; полный — прыгает к ОПЗ | Chrono Miner |
 | alliance_rifleman | Rifleman | пехота, стартовая | GI |
 | alliance_light_tank | Light Tank | основной танк | Grizzly Battle Tank |
 

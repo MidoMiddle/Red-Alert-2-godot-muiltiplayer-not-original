@@ -188,6 +188,7 @@ internal static class TestRules
             Armor = "medium",
             Threat = 5,
             PsionicImmune = true,
+            TeleportsHome = true,
         });
         builder.Add(InfantryDef(UnitType.AllianceRifleman, sight: 5) with
         {

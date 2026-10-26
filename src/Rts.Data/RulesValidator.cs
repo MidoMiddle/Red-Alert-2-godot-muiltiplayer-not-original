@@ -207,6 +207,11 @@ internal static class RulesValidator
             {
                 Error(unit.Id, "passenger_size", $"'{unit.Id}' carries passengers but takes none: 'passenger_size' must be above zero");
             }
+            if (unit.TeleportsHome && unit.HarvestCapacity <= 0)
+            {
+                Error(unit.Id, "teleports_home", $"'{unit.Id}' jumps home to a refinery but harvests nothing: 'teleports_home' is for harvesters");
+            }
+
             foreach (var (key, has) in new[] { ("engineer", unit.Engineer), ("infiltrator", unit.Infiltrator), ("teleports", unit.Teleports) })
             {
                 if (has && unit.Category != UnitCategory.Infantry)

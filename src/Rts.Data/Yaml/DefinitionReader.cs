@@ -21,7 +21,7 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "armor", "speed", "turn_rate", "sight", "locomotor",
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
-        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "deploy_weapon", "radiation_immune", "build_limit", "undeploy_delay", "requires_stolen", "occupier", "occupy_weapon", "charges_coils", "psionic_immune", "deploy_once", "disguise_when_still",
+        "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "teleports_home", "deploy_weapon", "radiation_immune", "build_limit", "undeploy_delay", "requires_stolen", "occupier", "occupy_weapon", "charges_coils", "psionic_immune", "deploy_once", "disguise_when_still",
         "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
     ];
 
@@ -126,6 +126,7 @@ internal static class DefinitionReader
             Passive = fields.Optional("passive", Scalars.Flag, false),
             DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
             Teleports = fields.Optional("teleports", Scalars.Flag, false),
+            TeleportsHome = fields.Optional("teleports_home", Scalars.Flag, false),
             DeployWeapon = fields.Optional("deploy_weapon", Scalars.Id, ""),
             DeployedWeapon = fields.Optional("deployed_weapon", Scalars.Id, ""),
             RadiationImmune = fields.Optional("radiation_immune", Scalars.Flag, false),

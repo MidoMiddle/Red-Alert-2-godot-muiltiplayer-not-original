@@ -55,4 +55,7 @@ public enum UnitTalents
 
     /// <summary>It may garrison a civilian building (<see cref="Rules.UnitDef.Occupier"/>).</summary>
     Occupier = 65536,
+
+    /// <summary>A harvester that jumps home to its refinery (<see cref="Rules.UnitDef.TeleportsHome"/>).</summary>
+    TeleportsHome = 131072,
 }
