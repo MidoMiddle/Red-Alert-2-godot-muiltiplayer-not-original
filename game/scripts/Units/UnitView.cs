@@ -46,6 +46,15 @@ public partial class UnitView : Node3D
 
     public UnitType Type { get; private set; }
 
+    /// <summary>
+    /// How much bigger than they were drawn the placeholder shapes are shown (the owner, 2026-10-26, measured against RA2's buildings):
+    /// vehicles, ships and aircraft ×1.4, soldiers ×1.25. A model of the table is made at the size of the standard and shown as it is.
+    /// </summary>
+    public const float VehicleGrowth = 1.4f;
+
+    /// <summary>See <see cref="VehicleGrowth"/>.</summary>
+    public const float InfantryGrowth = 1.25f;
+
     /// <summary>Builds the shapes for <paramref name="archetype"/>. Called once; pooled views keep their type.</summary>
     public void Build(UnitArchetype archetype)
     {
@@ -61,6 +70,8 @@ public partial class UnitView : Node3D
             return;
         }
 
+        // The placeholder shapes were drawn small: they grow to the proportions of RA2 (docs/art/model_standards.md, 2026-10-26).
+        Scale = Vector3.One * (archetype.Category == UnitCategory.Infantry ? InfantryGrowth : VehicleGrowth);
         if (archetype.Category == UnitCategory.Infantry)
         {
             BuildInfantry(archetype.Type);

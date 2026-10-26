@@ -26,10 +26,10 @@ public partial class PlayerInput : Node
     private const int DebugDamage = 200;
 
     /// <summary>Screen distance in pixels within which a click picks a unit.</summary>
-    private const float PickRadius = 22f;
+    private const float PickRadius = 28f;
 
     /// <summary>Height of the unit cubes: a click picks them at their middle.</summary>
-    private const float UnitHeight = 0.25f;
+    private const float UnitHeight = 0.32f;
 
     private SimulationHost _host = null!;
     private RtsCamera _camera = null!;

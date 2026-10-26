@@ -22,7 +22,7 @@ public partial class HealthBars : Control
     private const float PipWidth = 4f;
     private const float PipHeight = 5f;
     private const float Gap = 1f;
-    private const float UnitHeight = 0.9f;
+    private const float UnitHeight = 1.1f;
 
     // The names over the field: their size, and how many selected units are named at most (more would hide the field).
     private const int NameSize = 13;

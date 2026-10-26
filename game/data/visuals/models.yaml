@@ -69,6 +69,7 @@ models:
   ore/gems:  { file: map/gem_cluster/gem_cluster.glb }
 
   # The units of the players (docs/ra2_units). The turret node turns, the team_mask nodes take the owner's colour.
-  unit/alliance_light_tank:  { file: unit/alliance_light_tank/alliance_light_tank.glb }
-  unit/alliance_harvester:   { file: unit/alliance_harvester/alliance_harvester.glb }
-  unit/harvester:            { file: unit/harvester/harvester.glb }
+  # Made at the standard before 2026-10-26 (a tank 0.8 cells long): shown 1.4 times bigger, as RA2's.
+  unit/alliance_light_tank:  { file: unit/alliance_light_tank/alliance_light_tank.glb, scale: 1.4 }
+  unit/alliance_harvester:   { file: unit/alliance_harvester/alliance_harvester.glb, scale: 1.4 }
+  unit/harvester:            { file: unit/harvester/harvester.glb, scale: 1.4 }
