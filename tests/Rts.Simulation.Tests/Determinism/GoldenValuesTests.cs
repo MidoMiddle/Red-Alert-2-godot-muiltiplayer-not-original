@@ -388,6 +388,7 @@ public sealed class GoldenValuesTests
         // Rules v100 (the carrier's Hornets: five missiles of 8, back in 40 s): the version only.
         // Rules v101 (a queue of infantry or vehicles holds 30, the owner's wish): the version only.
         // Rules v102 (a flier climbs to its flying height before it sets out, the owner's wish): the version only.
-        Assert.Equal((22270, 14528657688201886635UL), (bytes.Length, hash.Value));
+        // Rules v103 (the hovering fliers keep apart, FlightSystem.KeepApart): the version only.
+        Assert.Equal((22270, 7618159987342728366UL), (bytes.Length, hash.Value));
     }
 }

@@ -152,6 +152,7 @@ public sealed class GameSimulation
         // 4. Movement.
         FlightSystem.Update(World);
         MovementSystem.Update(World, _events);
+        FlightSystem.KeepApart(World);
         Probe?.Invoke("movement");
         World.Spatial.Sync(World);
         Probe?.Invoke("index");
