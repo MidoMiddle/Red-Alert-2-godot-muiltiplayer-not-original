@@ -205,6 +205,19 @@ public sealed class CursorChoiceTests
     }
 
     [Fact]
+    public void Over_the_construction_yard_already_selected_the_cursor_packs_it_up()
+    {
+        var ground = new PointerContext(new WorldPos(1000, 1000), new PointerTarget(PointerTargetKind.Ground), Shift: false, HasSelection: true)
+        {
+            OwnFactory = new EntityId(31),
+            YardPacks = true,
+        };
+
+        Assert.Equal(CursorKind.Deploy, CursorChoice.For(ground, anyCanEnter: false, spot: new PointerSpot(Rally: true)));
+        Assert.Equal(CursorKind.Select, CursorChoice.For(ground with { YardPacks = false }, anyCanEnter: false, spot: new PointerSpot(Rally: true)));
+    }
+
+    [Fact]
     public void A_selected_defense_aims_at_what_it_can_fire_at_and_never_moves()
     {
         var ground = new PointerContext(new WorldPos(1000, 1000), new PointerTarget(PointerTargetKind.Ground), Shift: false, HasSelection: true);

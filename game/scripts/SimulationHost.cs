@@ -635,12 +635,13 @@ public partial class SimulationHost : Node
 
             // An MCV, a unit with a deploy weapon (stage 3b: the toxin trooper), one that digs in (the Rifleman), a transport with
             // passengers; or the construction yard, which packs up (RA2).
-            var faction = Simulation.World.Player(LocalPlayer).Faction;
+            // Of either faction: a yard taken from the other packs up into its MCV, which deploys again.
+            var rules = Simulation.World.Rules;
             if (Simulation.World.TryGet(unit, out var entity) && entity.IsAlive && entity.Owner == LocalPlayer
                 && entity switch
                 {
-                    Unit mcv => mcv.Archetype.Id == faction.Mcv || mcv.Archetype.DeployWeapon >= 0 || mcv.Archetype.DeployedWeapon >= 0 || mcv.Passengers.Count > 0,
-                    Building yard => yard.Def?.Id == faction.ConstructionYard,
+                    Unit mcv => rules.IsMcv(mcv.Type) || mcv.Archetype.DeployWeapon >= 0 || mcv.Archetype.DeployedWeapon >= 0 || mcv.Passengers.Count > 0,
+                    Building yard => yard.Def is { } def && rules.IsConstructionYard(def.Id),
                     _ => false,
                 })
             {

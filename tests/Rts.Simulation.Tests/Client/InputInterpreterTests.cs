@@ -94,6 +94,19 @@ public sealed class InputInterpreterTests
     [Theory]
     [InlineData(ControlScheme.Classic)]
     [InlineData(ControlScheme.Modern)]
+    public void A_left_click_on_the_construction_yard_already_selected_packs_it_up(ControlScheme scheme)
+    {
+        // RA2: the yard selected, a click on it packs it into its MCV, as D does; with Shift it is a pick.
+        var input = new InputInterpreter(scheme, cameraDrag: true);
+        var yard = new EntityId(31);
+
+        Assert.Equal(new Intent[] { new DeployUnit(yard) }, LeftClick(input, Context(Ground, hasSelection: true) with { OwnFactory = yard, YardPacks = true }));
+        Assert.Equal(new Intent[] { new SelectBuilding(yard) }, LeftClick(input, Context(Ground) with { OwnFactory = yard }));
+    }
+
+    [Theory]
+    [InlineData(ControlScheme.Classic)]
+    [InlineData(ControlScheme.Modern)]
     public void A_left_click_on_an_own_building_that_produces_selects_it_and_an_order_on_the_ground_follows(ControlScheme scheme)
     {
         var input = new InputInterpreter(scheme, cameraDrag: true);

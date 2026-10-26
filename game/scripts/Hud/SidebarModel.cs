@@ -186,7 +186,7 @@ public static class SidebarModel
             for (var i = 0; i < rules.Buildings.Length; i++)
             {
                 var def = rules.Buildings[i];
-                if ((everyFaction || def.Faction == state.Faction.Id) && def.Category == category && !IsYard(rules, def.Id))
+                if ((everyFaction || def.Faction == state.Faction.Id) && def.Category == category && !world.Rules.IsConstructionYard(def.Id))
                 {
                     var name = Name(def.Id, def.Name);
                     cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, name, def.Cost, state.CanBuildBuilding(i), def.Prerequisites, owned, nameOf)
@@ -216,19 +216,6 @@ public static class SidebarModel
 
         // A stable sort: the items not named keep the order of the data.
         return [.. cameos.OrderBy(cameo => Ra2Place(IdOf(rules, cameo)))];
-    }
-
-    private static bool IsYard(RulesDatabase rules, string id)
-    {
-        foreach (var faction in rules.Factions)
-        {
-            if (faction.ConstructionYard == id)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static string IdOf(RulesDatabase rules, Cameo cameo) =>

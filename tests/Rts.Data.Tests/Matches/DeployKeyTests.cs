@@ -4,6 +4,7 @@ using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Matches;
+using Rts.Simulation.Rules;
 using Rts.Simulation.World;
 
 namespace Rts.Data.Tests.Matches;
@@ -94,6 +95,63 @@ public sealed class DeployKeyTests
         simulation.Enqueue(new DeployCommand(Allied, simulation.CurrentTick, 2, packed.Id));
         Run(simulation, 2);
         Assert.Contains(world.Entities.OfType<Building>(), building => building.IsAlive && building.Owner == Allied && building.Cell == yard.Cell);
+    }
+
+    [Fact]
+    public void Packed_up_the_yard_builds_nothing_its_building_in_work_is_paid_back_and_deployed_again_it_builds()
+    {
+        // The owner, 2026-10-27: while the yard is packed into its MCV, no new building.
+        var simulation = Match();
+        var world = simulation.World;
+        var mcv = world.Entities.OfType<Unit>().Single(unit => unit.Owner == Allied && unit.Type == UnitType.AllianceMcv);
+        simulation.Enqueue(new DeployCommand(Allied, simulation.CurrentTick, 0, mcv.Id));
+        Run(simulation, 200);
+        var yard = world.Entities.OfType<Building>().Single(building => building.IsAlive && building.Owner == Allied);
+        var plant = world.Rules.Database.IndexOfBuilding("alliance_power_plant");
+        var player = world.Player(Allied);
+        simulation.Enqueue(new ProduceCommand(Allied, simulation.CurrentTick, 1, ProductionKind.Building, plant, 1));
+        Run(simulation, 30);
+        Assert.Single(player.Queue(ProductionCategory.Building));
+        var credits = player.Credits;
+
+        simulation.Enqueue(new DeployCommand(Allied, simulation.CurrentTick, 2, yard.Id));
+        Run(simulation, 2);
+        // The building in work is cancelled with what was paid for it, and no new one is taken.
+        Assert.Empty(player.Queue(ProductionCategory.Building));
+        Assert.True(player.Credits > credits);
+        simulation.Enqueue(new ProduceCommand(Allied, simulation.CurrentTick, 3, ProductionKind.Building, plant, 1));
+        Run(simulation, 2);
+        Assert.Empty(player.Queue(ProductionCategory.Building));
+
+        // Driven off and deployed again elsewhere, it builds again.
+        var packed = world.Entities.OfType<Unit>().Single(unit => unit.IsAlive && unit.Owner == Allied && unit.Type == UnitType.AllianceMcv);
+        simulation.Enqueue(new MoveCommand(Allied, simulation.CurrentTick, 4, [packed.Id], new CellPos(20, 12).Center));
+        Run(simulation, 300);
+        simulation.Enqueue(new DeployCommand(Allied, simulation.CurrentTick, 5, packed.Id));
+        Run(simulation, 200);
+        Assert.Contains(world.Entities.OfType<Building>(), building => building.IsAlive && building.Owner == Allied && building.IsReady && building.Cell != yard.Cell);
+        simulation.Enqueue(new ProduceCommand(Allied, simulation.CurrentTick, 6, ProductionKind.Building, plant, 1));
+        Run(simulation, 2);
+        Assert.Single(player.Queue(ProductionCategory.Building));
+    }
+
+    [Fact]
+    public void A_yard_taken_from_the_other_faction_packs_up_into_its_mcv_and_deploys_again_into_its_yard()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        world.Rules.Database.TryGetBuilding("construction_yard", out var def);
+        var yard = world.CreateBuilding(Union, def, new CellPos(30, 30), true, null);
+        Rts.Simulation.Systems.EntrySystem.Capture(world, yard, Allied, null);
+
+        simulation.Enqueue(new DeployCommand(Allied, simulation.CurrentTick, 0, yard.Id));
+        Run(simulation, 2);
+        Assert.False(yard.IsAlive);
+        var mcv = world.Entities.OfType<Unit>().Single(unit => unit.IsAlive && unit.Owner == Allied && unit.Type == UnitType.Mcv);
+
+        simulation.Enqueue(new DeployCommand(Allied, simulation.CurrentTick, 1, mcv.Id));
+        Run(simulation, 2);
+        Assert.Contains(world.Entities.OfType<Building>(), building => building.IsAlive && building.Owner == Allied && building.Def!.Id == "construction_yard");
     }
 
     [Fact]

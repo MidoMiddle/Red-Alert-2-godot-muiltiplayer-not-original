@@ -396,6 +396,7 @@ public sealed class GoldenValuesTests
         // order of every building.
         // Rules v107 (the fields grow back slower and the maps from RA2 share their gem drills, the owner's wish): the version only.
         // Rules v108 (a building taken from the other faction opens its units and buildings, the owner's wish): the version only.
-        Assert.Equal((22270, 6407303327816887953UL), (bytes.Length, hash.Value));
+        // Rules v109 (a yard taken from the other faction packs up into its MCV, which deploys again): the version only.
+        Assert.Equal((22270, 8722656138791675884UL), (bytes.Length, hash.Value));
     }
 }

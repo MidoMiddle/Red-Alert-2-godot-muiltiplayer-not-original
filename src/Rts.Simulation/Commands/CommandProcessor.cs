@@ -635,16 +635,17 @@ public static class CommandProcessor
             return true;
         }
 
-        var faction = world.Player(command.Player).Faction;
+        // A construction yard and an MCV of either faction (RA2): one taken by an engineer packs up into the MCV of its faction, and
+        // that MCV deploys into its yard.
         if (world.TryGet(command.Unit, out var packing) && packing is Building { IsAlive: true, IsReady: true, Def: { } packed } yardBuilding
-            && yardBuilding.Owner == command.Player && packed.Id == faction.ConstructionYard)
+            && yardBuilding.Owner == command.Player && FactionOfYard(world, packed.Id) is { } yardFaction)
         {
             // Unless the match turned «MCV Repacks» off.
-            return world.Match is not { Options.McvRepacks: false } && Undeploy(world, yardBuilding, faction, events);
+            return world.Match is not { Options.McvRepacks: false } && Undeploy(world, yardBuilding, yardFaction, events);
         }
 
         if (!world.TryGet(command.Unit, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Owner != command.Player
-            || unit.Archetype.Id != faction.Mcv || !world.Rules.Database.TryGetBuilding(faction.ConstructionYard, out var yard)
+            || FactionOfMcv(world, unit.Archetype.Id) is not { } faction || !world.Rules.Database.TryGetBuilding(faction.ConstructionYard, out var yard)
             || unit.Parasite != 0)
         {
             // RA2: a terror drone inside keeps the MCV from deploying.
@@ -666,6 +667,34 @@ public static class CommandProcessor
         events?.Add(new BuildingPlaced(world.CurrentTick, building.Id, command.Player, building.DefIndex, cell));
         events?.Add(new Deployed(world.CurrentTick, unit.Id, building.Id));
         return true;
+    }
+
+    /// <summary>The faction whose construction yard <paramref name="id"/> is; null for any other building.</summary>
+    private static FactionDef? FactionOfYard(GameWorld world, string id)
+    {
+        foreach (var faction in world.Rules.Database.Factions)
+        {
+            if (faction.ConstructionYard == id)
+            {
+                return faction;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>The faction whose MCV the unit <paramref name="id"/> is; null for any other unit.</summary>
+    private static FactionDef? FactionOfMcv(GameWorld world, string id)
+    {
+        foreach (var faction in world.Rules.Database.Factions)
+        {
+            if (faction.Mcv == id)
+            {
+                return faction;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

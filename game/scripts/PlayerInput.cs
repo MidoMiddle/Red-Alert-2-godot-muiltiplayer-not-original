@@ -1030,7 +1030,9 @@ public partial class PlayerInput : Node
             TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && Deploys(target.Unit),
             OwnFactory: ground is { } point ? FactoryAt(point) : null,
             TargetBoards: target.Kind == PointerTargetKind.OwnUnit && !Selection.Contains(target.Unit) && EnterAt(target.Unit) is not null,
-            OwnDefense: ground is { } spot ? DefenseAt(spot) : null);
+            OwnDefense: ground is { } spot ? DefenseAt(spot) : null,
+            YardPacks: ground is { } over && FactoryAt(over) is { } yard && yard == SelectedFactory && IsYard(yard)
+                && _host.Simulation.World.Match is not { Options.McvRepacks: false });
     }
 
     // The building selected instead of units: one that produces (an order on the ground sets its rally point) or a defense.
@@ -1051,10 +1053,9 @@ public partial class PlayerInput : Node
         : key.IsActionPressed("tab_vehicles", false, true) ? 3
         : null;
 
-    /// <summary>Whether the building is the player's construction yard.</summary>
+    /// <summary>Whether the building is a construction yard, of either faction: one taken from the other packs up into its MCV too.</summary>
     private bool IsYard(EntityId id) =>
-        _host.Simulation.World.TryGet(id, out var entity) && entity is Building { Def: { } def }
-        && def.Id == _host.Simulation.World.Player(SimulationHost.LocalPlayer).Faction.ConstructionYard;
+        _host.Simulation.World.TryGet(id, out var entity) && entity is Building { Def: { } def } && _host.Simulation.World.Rules.IsConstructionYard(def.Id);
 
     /// <summary>
     /// P (RA2): the player's combat units — armed, not a harvester nor an engineer, nor a plane that is not the player's to order — on
@@ -1192,7 +1193,6 @@ public partial class PlayerInput : Node
         _host.IssueRallyPoint(factory, point);
     }
 
-    /// <summary>Whether the unit is an MCV of the local player's faction.</summary>
     /// <summary>
     /// Whether a click on this selected unit of the player deploys it, as D does: an MCV, a unit with a deploy weapon (the toxin
     /// trooper), one that digs in (the GI), a transport with passengers.
@@ -1204,11 +1204,11 @@ public partial class PlayerInput : Node
             && (unit.Archetype.DeployWeapon >= 0 || unit.Archetype.DeployedWeapon >= 0 || unit.Passengers.Count > 0));
     }
 
+    /// <summary>Whether the unit is an MCV, of either faction: one of the other comes from a war factory taken from it.</summary>
     private bool IsMcv(EntityId id, out Unit mcv)
     {
         var world = _host.Simulation.World;
-        if (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit
-            && unit.Archetype.Id == world.Player(SimulationHost.LocalPlayer).Faction.Mcv)
+        if (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit && world.Rules.IsMcv(unit.Type))
         {
             mcv = unit;
             return true;
@@ -1229,8 +1229,10 @@ public partial class PlayerInput : Node
         var tech = building is { IsAlive: true } && building.Owner == player && Rts.Simulation.Systems.RepairSystem.Repairable(building);
         // An MCV deploys where its yard fits; any other unit that deploys (a GI digging in, a toxin trooper, a full transport) always.
         var fits = context.TargetDeploys;
+        // An MCV of either faction deploys into the yard of its own.
         if (context.TargetDeploys && IsMcv(context.Target.Unit, out var mcv)
-            && world.Rules.Database.TryGetBuilding(world.Player(player).Faction.ConstructionYard, out var yard))
+            && world.Rules.Database.Factions.FirstOrDefault(faction => faction.Mcv == mcv.Archetype.Id) is { } its
+            && world.Rules.Database.TryGetBuilding(its.ConstructionYard, out var yard))
         {
             var corner = PlacementPreview.CornerOf(yard.Footprint, mcv.Position);
             fits = PlacementRules.Check(world, player, yard, corner, needsBase: false, ignoreUnit: mcv.Id) == PlacementProblem.None;

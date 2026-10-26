@@ -80,7 +80,7 @@ public static class TechTree
                 var building = rules.Buildings[i];
                 var own = building.Faction == faction;
                 buildings[i] = (own || Taken(building.Faction, building.Category, building.Countries, special: false, factories))
-                    && !IsYard(rules, building)
+                    && !world.Rules.IsConstructionYard(building.Id)
                     && AllOwned(building.Prerequisites, owned)
                     && (!own || Allowed(player.Country, building.Countries, building.ForbiddenCountries))
                     && (world.Match is not { Options.Superweapons: false } || !SuperweaponSystem.IsStrike(building.Superweapon));
@@ -142,20 +142,6 @@ public static class TechTree
     private static bool Taken(
         string faction, ProductionCategory category, ImmutableArray<string> countries, bool special, SortedSet<(string, ProductionCategory)> factories) =>
         faction.Length > 0 && !special && countries.IsDefaultOrEmpty && factories.Contains((faction, category));
-
-    /// <summary>A construction yard, of any faction: it comes from an MCV, never from a sidebar.</summary>
-    private static bool IsYard(RulesDatabase rules, BuildingDef building)
-    {
-        foreach (var faction in rules.Factions)
-        {
-            if (faction.ConstructionYard == building.Id)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     private static bool AllOwned(ImmutableArray<string> prerequisites, SortedSet<string> owned)
     {

@@ -145,6 +145,12 @@ public static class CursorChoice
                 };
         }
 
+        if (context.YardPacks && context.Target.Kind == PointerTargetKind.Ground && !context.Shift)
+        {
+            // Over the construction yard already selected: a click packs it up into its MCV (RA2).
+            return CursorKind.Deploy;
+        }
+
         if (spot.Rally)
         {
             // An own unit or another of the buildings that produce is picked by a click; an enemy takes no order of a building.

@@ -119,6 +119,20 @@ public sealed class GameRules
         }
     }
 
+    /// <summary>Whether the building <paramref name="id"/> is the construction yard of a faction of the data: it comes from an MCV.</summary>
+    public bool IsConstructionYard(string id)
+    {
+        foreach (var faction in Database.Factions)
+        {
+            if (faction.ConstructionYard == id)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>Whether <paramref name="type"/> is the MCV of a faction of the data: the core of a base that is still on its wheels.</summary>
     public bool IsMcv(UnitType type)
     {

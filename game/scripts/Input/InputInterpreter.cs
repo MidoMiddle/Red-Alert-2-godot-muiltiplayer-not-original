@@ -78,6 +78,10 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// The player's own ready building that fires under the pointer (a defense, a garrison): a click selects it, to show its range and order
 /// its target (RA2).
 /// </param>
+/// <param name="YardPacks">
+/// Whether the pointer is over the player's construction yard already selected, and the match lets it pack up: a click packs it into its
+/// MCV, as D does (RA2).
+/// </param>
 /// <param name="TargetBoards">
 /// Whether the unit under the pointer is an own transport one of the selection can board (a helicopter, a landing craft, an IFV): a
 /// click is an order to board it, not a pick (the owner, 2026-10-25: «engineers sent into the helicopter did nothing»).
@@ -95,7 +99,8 @@ public readonly record struct PointerContext(
     bool TargetDeploys = false,
     EntityId? OwnFactory = null,
     bool TargetBoards = false,
-    EntityId? OwnDefense = null);
+    EntityId? OwnDefense = null,
+    bool YardPacks = false);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
@@ -111,7 +116,10 @@ public sealed record SelectBuilding(EntityId Building) : Intent;
 /// <summary>Add the unit to the selection, or take it out if it is selected (Shift + click).</summary>
 public sealed record ToggleUnit(EntityId Unit) : Intent;
 
-/// <summary>Deploy the MCV: a click on an own MCV that is already selected, as in RA2 (M3 step 13).</summary>
+/// <summary>
+/// Deploy the MCV: a click on an own MCV that is already selected, as in RA2 (M3 step 13); or pack up the construction yard: a click on
+/// it already selected.
+/// </summary>
 public sealed record DeployUnit(EntityId Unit) : Intent;
 
 /// <summary>A selection box started at <paramref name="From"/>: the left button was dragged past <see cref="InputInterpreter.ClickSlop"/>.</summary>
@@ -504,6 +512,12 @@ public sealed class InputInterpreter
         if (_scheme == ControlScheme.Classic && AttackOf(context) is { } attack)
         {
             return new Intent[] { attack };
+        }
+
+        if (context.Target.Kind == PointerTargetKind.Ground && context.YardPacks && context.OwnFactory is { } yard && !context.Shift)
+        {
+            // A click on the construction yard already selected packs it up into its MCV (RA2), as D does.
+            return new Intent[] { new DeployUnit(yard) };
         }
 
         if (context.Target.Kind == PointerTargetKind.Ground && context.OwnFactory is { } factory && !context.Shift)
