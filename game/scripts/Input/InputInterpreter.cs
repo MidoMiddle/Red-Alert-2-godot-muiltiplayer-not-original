@@ -125,6 +125,9 @@ public sealed record ClearSelection : Intent;
 /// </summary>
 public sealed record InspectEnemy(EntityId Target) : Intent;
 
+/// <summary>Make the player's factory its primary one (a double click on it, RA2): its units come out of it.</summary>
+public sealed record MakePrimary(EntityId Building) : Intent;
+
 /// <summary>Select every own unit of the clicked unit's type on screen (double click); add them when <paramref name="Add"/> (Shift).</summary>
 public sealed record SelectSameType(EntityId Unit, bool Add) : Intent;
 
@@ -496,8 +499,9 @@ public sealed class InputInterpreter
 
         if (context.Target.Kind == PointerTargetKind.Ground && context.OwnFactory is { } factory && !context.Shift)
         {
-            // The barracks, the war factory, a shipyard, the air command: selected, for its rally point.
-            return new Intent[] { new SelectBuilding(factory) };
+            // The barracks, the war factory, a shipyard, the air command: selected, for its rally point; a double click makes it the
+            // primary one (RA2).
+            return context.DoubleClick ? new Intent[] { new SelectBuilding(factory), new MakePrimary(factory) } : new Intent[] { new SelectBuilding(factory) };
         }
 
         switch (context.Target.Kind)

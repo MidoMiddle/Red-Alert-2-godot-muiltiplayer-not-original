@@ -365,6 +365,11 @@ public partial class PlayerInput : Node
             _host.IssueDeploy([yard]);
             ChangeSelection(Selection.Clear);
         }
+        else if (key.IsActionPressed("deploy", false, true) && SelectedFactory is { } factory && !_host.IsPlayback)
+        {
+            // D on another selected factory: its primary one (RA2), where its units come out.
+            _host.IssueSetPrimary(factory);
+        }
         else if (TabKey(key) is { } tab)
         {
             // Q / W / E / R: the tabs of the sidebar (RA2).
@@ -644,6 +649,9 @@ public partial class PlayerInput : Node
                     break;
                 case ClearSelection:
                     ChangeSelection(Selection.Clear);
+                    break;
+                case MakePrimary primary when !_host.IsPlayback:
+                    _host.IssueSetPrimary(primary.Building);
                     break;
                 case InspectEnemy inspect:
                     ChangeSelection(Selection.Clear);

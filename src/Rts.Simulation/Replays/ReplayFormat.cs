@@ -42,11 +42,11 @@ namespace Rts.Simulation.Replays;
 /// faction: u16 length + UTF-8 id, empty for the whole faction; v25 (the skirmish screen of RA2) adds u8 mcvRepacks | u8 superweapons |
 /// u8 destroyableBridges after the fog of war; v26 (M9 step 10) command format v13 (PlayerLeft); v27 (M9 step 11) adds the network
 /// of the match after its setup: u8 0, or u8 1 | u16 length + UTF-8 game version | u64 mapHash | u8 count, then u8 player | u16 length +
-/// UTF-8 name each; v28 (M6 step 8) adds u8 startingUnits after destroyableBridges; v29 (M11 a6) u8 crates after it.
+/// UTF-8 name each; v28 (M6 step 8) adds u8 startingUnits after destroyableBridges; v29 (M11 a6) u8 crates after it; v30 command format v14 (SetPrimary).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 29;
+    public const ushort FormatVersion = 30;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

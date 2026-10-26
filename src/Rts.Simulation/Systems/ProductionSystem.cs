@@ -15,7 +15,7 @@ namespace Rts.Simulation.Systems;
 /// ready factories of its category (RA2: each more takes the time × 0.8), and nothing goes on
 /// without one. It is paid as it goes: the cost times the share of progress, rounded down, so the payments add up to the cost exactly.
 /// When the player cannot pay a tick, the item waits (<see cref="InsufficientFunds"/> once). A finished building waits to be placed; a
-/// finished unit comes out at the exit of the main factory — the last one built — as soon as the exit is free, and drives to a free place
+/// finished unit comes out at the exit of the main factory — the primary one (RA2), else the last one built — as soon as the exit is free, and drives to a free place
 /// at the rally point or one cell on. Runs after power and before build-up (4.15).
 /// </summary>
 public static class ProductionSystem
@@ -278,13 +278,39 @@ public static class ProductionSystem
                 foreach (var category in def.Produces)
                 {
                     counts[building.Owner.Value - 1, (int)category - 1]++;
-                    // Entities go in id order: the last one seen is the last built.
-                    mains[building.Owner.Value - 1, (int)category - 1] = building;
+                    // Entities go in id order: the last one seen is the last built; the primary one (RA2) before it.
+                    if (mains[building.Owner.Value - 1, (int)category - 1] is not { Primary: true })
+                    {
+                        mains[building.Owner.Value - 1, (int)category - 1] = building;
+                    }
                 }
             }
         }
 
         return (counts, mains);
+    }
+
+    /// <summary>
+    /// The player's main factory of <paramref name="category"/>, where what it finishes comes out — its primary one (RA2), else the last
+    /// built — and how many ready factories of it the player has; for the screen.
+    /// </summary>
+    public static Building? MainFactory(GameWorld world, PlayerId player, ProductionCategory category, out int count)
+    {
+        Building? main = null;
+        count = 0;
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && building.Owner == player && def.Produces.Contains(category))
+            {
+                count++;
+                if (main is not { Primary: true })
+                {
+                    main = building;
+                }
+            }
+        }
+
+        return main;
     }
 
     private static int Permille(Fixed fraction) => (int)IntMath.DivRound(fraction.Raw * 1000, Fixed.OneRaw);

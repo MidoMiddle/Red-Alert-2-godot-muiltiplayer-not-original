@@ -303,6 +303,8 @@ public static class EntrySystem
     internal static void Capture(GameWorld world, Building building, PlayerId to, List<SimEvent>? events)
     {
         var from = building.Owner;
+        // The primary factory of its owner it was; of the taker it is not.
+        building.Primary = false;
         GarrisonSystem.Evacuate(world, building, events);
         if (building.SightCell is { } cell)
         {

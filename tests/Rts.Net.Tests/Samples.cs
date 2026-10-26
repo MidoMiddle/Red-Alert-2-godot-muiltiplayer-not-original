@@ -40,6 +40,7 @@ internal static class Samples
             new HarvestCommand(player, tick, sequence++, Units(10, 11), cell),
             new SellCommand(player, tick, sequence++, new EntityId(12)),
             new ToggleRepairCommand(player, tick, sequence++, new EntityId(13)),
+            new SetPrimaryCommand(player, tick, sequence++, new EntityId(13)),
             new PlaceWallsCommand(player, tick, sequence++, 6, [cell, new CellPos(13, 34)]),
             new AttackCommand(player, tick, sequence++, Units(14), new EntityId(15)),
             new ForceAttackCommand(player, tick, sequence++, Units(16), null, point),

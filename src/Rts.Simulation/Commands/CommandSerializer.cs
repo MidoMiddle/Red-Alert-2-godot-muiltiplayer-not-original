@@ -26,7 +26,7 @@ namespace Rts.Simulation.Commands;
 /// PauseProduction, CancelProduction: u8 kind | u16 defIndex
 /// SetRallyPoint: i32 building | i32 x | i32 y
 /// Harvest:       units | i32 cellX | i32 cellY
-/// Sell, ToggleRepair: i32 building
+/// Sell, ToggleRepair, SetPrimary: i32 building
 /// PlaceWalls:    u16 defIndex | u8 count | (i32 x | i32 y) × count
 /// Attack:        units | i32 target
 /// ForceAttack:   u8 hasTarget | units | i32 target | i32 x | i32 y
@@ -40,11 +40,11 @@ namespace Rts.Simulation.Commands;
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
 /// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy; v6 (M3 step 8) added Produce, PauseProduction,
-/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender; v11 (stage 2e of filling the game) added Enter (then named Garrison) and Evacuate; v12 (stage 2d) added Superweapon; v13 (M9 step 10) added PlayerLeft.
+/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender; v11 (stage 2e of filling the game) added Enter (then named Garrison) and Evacuate; v12 (stage 2d) added Superweapon; v13 (M9 step 10) added PlayerLeft; v14 added SetPrimary (the primary factory, RA2).
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 13;
+    public const int FormatVersion = 14;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -68,7 +68,7 @@ public static class CommandSerializer
         PauseProductionCommand or CancelProductionCommand => HeaderSize + ProductSize,
         SetRallyPointCommand => HeaderSize + 4 + PositionSize,
         HarvestCommand harvest => HeaderSize + UnitsSize(harvest) + PositionSize,
-        SellCommand or ToggleRepairCommand => HeaderSize + 4,
+        SellCommand or ToggleRepairCommand or SetPrimaryCommand => HeaderSize + 4,
         PlaceWallsCommand walls => HeaderSize + 2 + 1 + PositionSize * walls.Cells.Length,
         AttackCommand attack => HeaderSize + UnitsSize(attack) + 4,
         ForceAttackCommand force => HeaderSize + 1 + UnitsSize(force) + 4 + PositionSize,
@@ -165,6 +165,9 @@ public static class CommandSerializer
                 break;
             case ToggleRepairCommand repair:
                 BinaryPrimitives.WriteInt32LittleEndian(payload, repair.Building.Value);
+                break;
+            case SetPrimaryCommand primary:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, primary.Building.Value);
                 break;
             case PlaceWallsCommand walls:
                 if (walls.DefIndex is < 0 or > ushort.MaxValue || walls.Cells.Length > PlaceWallsCommand.MaxCells)
@@ -332,13 +335,17 @@ public static class CommandSerializer
 
             case CommandType.Sell:
             case CommandType.ToggleRepair:
+            case CommandType.SetPrimary:
             {
                 Require(payload, 4);
                 bytesRead = HeaderSize + 4;
                 var building = new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload));
-                return type == CommandType.Sell
-                    ? new SellCommand(player, tick, sequence, building)
-                    : new ToggleRepairCommand(player, tick, sequence, building);
+                return type switch
+                {
+                    CommandType.Sell => new SellCommand(player, tick, sequence, building),
+                    CommandType.ToggleRepair => new ToggleRepairCommand(player, tick, sequence, building),
+                    _ => new SetPrimaryCommand(player, tick, sequence, building),
+                };
             }
 
             case CommandType.PlaceWalls:

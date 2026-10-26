@@ -415,6 +415,9 @@ public static class StateHasher
                 hash.Add(building.Repairing);
                 hash.Add(building.RepairCarry);
 
+                // Rules v98: the primary factory (RA2).
+                hash.Add(building.Primary);
+
                 // Rules v21 (step 8): the rally point of a factory.
                 hash.Add(building.RallyPoint.HasValue);
                 if (building.RallyPoint is { } rally)

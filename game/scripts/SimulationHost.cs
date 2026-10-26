@@ -560,6 +560,10 @@ public partial class SimulationHost : Node
     public void IssueEvacuate(EntityId building) =>
         Issue(new EvacuateCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building));
 
+    /// <summary>D or a double click on the player's factory: its primary one (RA2), where its units come out.</summary>
+    public void IssueSetPrimary(EntityId building) =>
+        Issue(new SetPrimaryCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, building));
+
     /// <summary>The stance of the units (M4 step 7).</summary>
     public void IssueStance(IReadOnlyList<EntityId> units, Stance stance) =>
         IssueTo(units, ordered => new SetStanceCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, stance));

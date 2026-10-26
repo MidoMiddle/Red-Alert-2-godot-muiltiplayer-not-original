@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "primary", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
         "building hp", "building target", "building reload",
     };
 
@@ -187,6 +187,12 @@ public sealed class StateHasherTests
                 var off = StateHasher.Compute(world);
                 damaged.Repairing = true;
                 Assert.NotEqual(off, StateHasher.Compute(world));
+                break;
+            case "primary":
+                var primaryFactory = world.CreateBuilding(Player1, TestRules.BuildingDef("barracks"), new CellPos(44, 44), ready: true, null);
+                var plainFactory = StateHasher.Compute(world);
+                primaryFactory.Primary = true;
+                Assert.NotEqual(plainFactory, StateHasher.Compute(world));
                 break;
             case "harvester load":
                 var carrier = world.SpawnForTest(Player1, new WorldPos(2000, 2000), speed: 0, UnitType.Harvester);
@@ -404,7 +410,7 @@ public sealed class StateHasherTests
     [InlineData(typeof(Building), new[]
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
-        "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField",
+        "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField", "<Primary>k__BackingField",
         "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
         "<CashTimer>k__BackingField", "<CountryWeapon>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.

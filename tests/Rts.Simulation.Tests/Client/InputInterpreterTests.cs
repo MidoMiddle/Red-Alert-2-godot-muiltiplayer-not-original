@@ -101,6 +101,9 @@ public sealed class InputInterpreterTests
 
         Assert.Equal(new Intent[] { new SelectBuilding(barracks) }, LeftClick(input, Context(Ground) with { OwnFactory = barracks }));
         Assert.Equal(new Intent[] { new SelectBuilding(barracks) }, LeftClick(input, Context(Ground, hasSelection: true) with { OwnFactory = barracks }));
+        // A double click on it makes it the primary one too (RA2).
+        Assert.Equal(new Intent[] { new SelectBuilding(barracks), new MakePrimary(barracks) },
+            LeftClick(input, Context(Ground) with { OwnFactory = barracks, DoubleClick = true }));
 
         // The rally point: an order on the ground with the building selected, by the scheme's order button.
         var order = scheme == ControlScheme.Modern

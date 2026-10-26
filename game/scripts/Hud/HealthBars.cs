@@ -57,6 +57,7 @@ public partial class HealthBars : Control
         DrawRallyPoint(camera, world);
         DrawRallyChoice(camera, world);
         DrawNames(camera, world);
+        DrawPrimaries(camera, world);
         foreach (var entity in world.Entities)
         {
             if (!entity.IsAlive || !FogOfWar.Shows(world, entity))
@@ -230,6 +231,36 @@ public partial class HealthBars : Control
             var point = camera.UnprojectPosition(at) - new Vector2(width / 2f, PipHeight + 8f);
             DrawStringOutline(font, point, name, HorizontalAlignment.Left, -1f, NameSize, 4, new Color(0f, 0f, 0f, 0.85f));
             DrawString(font, point, name, HorizontalAlignment.Left, -1f, NameSize, new Color(0.97f, 0.95f, 0.86f));
+        }
+    }
+
+    /// <summary>
+    /// «Primary» over the player's main factory of a kind it has more than one of (RA2): what that kind finishes comes out there.
+    /// </summary>
+    private void DrawPrimaries(Camera3D camera, GameWorld world)
+    {
+        var shown = new HashSet<EntityId>();
+        foreach (var category in new[] { Rts.Simulation.Rules.ProductionCategory.Infantry, Rts.Simulation.Rules.ProductionCategory.Vehicle,
+                     Rts.Simulation.Rules.ProductionCategory.Naval, Rts.Simulation.Rules.ProductionCategory.Aircraft })
+        {
+            if (ProductionSystem.MainFactory(world, SimulationHost.LocalPlayer, category, out var count) is not { Def: { } def } main || count < 2
+                || !shown.Add(main.Id))
+            {
+                continue;
+            }
+
+            var at = WorldCoords.ToGodotOnGround(Aim.CentreOf(main), BuildingShape.Of(def).Height + 0.3f);
+            if (camera.IsPositionBehind(at))
+            {
+                continue;
+            }
+
+            var text = Tr("UI_PRIMARY");
+            var font = GetThemeDefaultFont();
+            var width = font.GetStringSize(text, HorizontalAlignment.Left, -1f, NameSize).X;
+            var point = camera.UnprojectPosition(at) - new Vector2(width / 2f, 0f);
+            DrawStringOutline(font, point, text, HorizontalAlignment.Left, -1f, NameSize, 4, new Color(0f, 0f, 0f, 0.85f));
+            DrawString(font, point, text, HorizontalAlignment.Left, -1f, NameSize, new Color(1f, 0.85f, 0.25f));
         }
     }
 

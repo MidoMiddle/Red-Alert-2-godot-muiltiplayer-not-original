@@ -52,6 +52,7 @@ public static class CommandProcessor
             HarvestCommand harvest => ApplyHarvest(world, harvest),
             SellCommand sell => ApplySell(world, sell, events),
             ToggleRepairCommand repair => ApplyToggleRepair(world, repair, events),
+            SetPrimaryCommand primary => ApplySetPrimary(world, primary),
             PlaceWallsCommand walls => ApplyPlaceWalls(world, walls, events),
             AttackCommand attack => ApplyAttack(world, attack),
             ForceAttackCommand force => ApplyForceAttack(world, force),
@@ -115,6 +116,57 @@ public static class CommandProcessor
     }
 
     /// <summary>Turns the repair of the player's ready building — or of a tech building of the map he took — on or off (4.8).</summary>
+    /// <summary>
+    /// The player's ready factory of units becomes its primary one (RA2); the player's other factories of a kind it builds are no longer.
+    /// </summary>
+    private static bool ApplySetPrimary(GameWorld world, SetPrimaryCommand command)
+    {
+        if (OwnReady(world, command.Player, command.Building) is not { Def: { } def } factory || !BuildsUnits(def))
+        {
+            return false;
+        }
+
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, Primary: true, Def: { } other } building && building.Owner == command.Player
+                && SharesKind(other, def))
+            {
+                building.Primary = false;
+            }
+        }
+
+        factory.Primary = true;
+        return true;
+    }
+
+    // Whether the building turns out units: infantry, vehicles, ships or aircraft.
+    private static bool BuildsUnits(BuildingDef def)
+    {
+        foreach (var category in def.Produces)
+        {
+            if (category is ProductionCategory.Infantry or ProductionCategory.Vehicle or ProductionCategory.Naval or ProductionCategory.Aircraft)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Whether the two buildings build a kind in common.
+    private static bool SharesKind(BuildingDef a, BuildingDef b)
+    {
+        foreach (var category in a.Produces)
+        {
+            if (b.Produces.Contains(category))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool ApplyToggleRepair(GameWorld world, ToggleRepairCommand command, List<SimEvent>? events)
     {
         // A wall is not repaired (RA2 Repairable=no).

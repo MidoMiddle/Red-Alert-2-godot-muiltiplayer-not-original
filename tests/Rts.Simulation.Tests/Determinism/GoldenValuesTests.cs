@@ -256,11 +256,12 @@ public sealed class GoldenValuesTests
         // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash; the battle is the same.
         // Rules v60 (loose ends, stage 3): experience in the hash; the killers gain it, the veterans fight harder.
         // Rules v86 (the sizes of RA2): the battle's base has the buildings of RA2's footprints; the battle runs otherwise.
+        // Rules v98: the hash takes the primary flag of every building (RA2's primary factory); the states are the same.
         StateChecksum[] expected =
         [
-            new(1000, 0x54f33b4c4bab9429UL),
-            new(2000, 0x6f01ac331877c77eUL),
-            new(3000, 0x3631bf4b20fd17eaUL),
+            new(1000, 0xb59d751cdbeab363UL),
+            new(2000, 0x48416449c39f2fb4UL),
+            new(3000, 0x84eff4e7e7e786b0UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -379,6 +380,7 @@ public sealed class GoldenValuesTests
         // Rules v95 (the Chrono Miner jumps home, RA2): the version only.
         // Rules v96 (the Night Hawk built in the war factory's queue, RA2): the version only.
         // Rules v97 (the jets on the pads of the air force command, RA2): the version only.
-        Assert.Equal((22270, 11150419214113917809UL), (bytes.Length, hash.Value));
+        // Rules v98 (the primary factory, RA2): the version and the replay format (command format v14) only.
+        Assert.Equal((22270, 1332825256528512473UL), (bytes.Length, hash.Value));
     }
 }

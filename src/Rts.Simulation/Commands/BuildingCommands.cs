@@ -32,6 +32,16 @@ public sealed record EvacuateCommand(PlayerId Player, int ExecuteTick, uint Sequ
     public override CommandType Type => CommandType.Evacuate;
 }
 
+/// <summary>
+/// Makes the player's ready factory its primary one (RA2: D or a double click on it): what its kinds of factories finish comes out of
+/// it; the player's other factories of those kinds are primary no longer.
+/// </summary>
+public sealed record SetPrimaryCommand(PlayerId Player, int ExecuteTick, uint Sequence, EntityId Building)
+    : Command(Player, ExecuteTick, Sequence)
+{
+    public override CommandType Type => CommandType.SetPrimary;
+}
+
 /// <summary>Turns the repair of the player's ready building on or off.</summary>
 public sealed record ToggleRepairCommand(PlayerId Player, int ExecuteTick, uint Sequence, EntityId Building)
     : Command(Player, ExecuteTick, Sequence)
