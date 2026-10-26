@@ -52,6 +52,15 @@ public sealed class AiPlan
     /// </summary>
     public SortedSet<int> Errands { get; } = new();
 
+    /// <summary>
+    /// The squad ready to set out on a map where no tank drives to the enemy (M11 step 3): the ferry carries it over the water instead
+    /// (<see cref="Modules.FerryManager"/>). Null when none is ready.
+    /// </summary>
+    public Squads.Squad? FerryReady { get; internal set; }
+
+    /// <summary>The units the ferry has put ashore at the enemy, by id: the squads make them a squad that is out, on their next turn.</summary>
+    public SortedSet<int> Landed { get; } = new();
+
     /// <summary>Whether the economy wants a harvester now: the army leaves the war factory to it.</summary>
     public bool HarvestersWanted { get; internal set; }
 

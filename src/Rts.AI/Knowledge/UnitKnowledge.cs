@@ -26,6 +26,12 @@ public enum UnitUse : byte
     /// <summary>It takes and mends buildings: the bot builds one when there is a building to take (<c>EngineerManager</c>).</summary>
     Engineer = 9,
 
+    /// <summary>It carries units and fights not by itself: the ferry of the bot over the water (<c>FerryManager</c>).</summary>
+    Transport = 10,
+
+    /// <summary>It goes into the enemy's buildings for what they give (<c>SpyManager</c>).</summary>
+    Spy = 11,
+
     /// <summary>A ship that fights: it sails with the fleet.</summary>
     Fleet = 2,
 
@@ -68,9 +74,9 @@ public sealed record UnitCard(int Index, string Id, UnitUse Use, string Reason)
 /// What a bot knows of every unit of the rules (M11): read from the data, never written by hand, so that a new unit or weapon is known
 /// to the bots as soon as it is in the data.
 /// <list type="bullet">
-/// <item><b>The use</b> (<see cref="UnitUse"/>): what launches or brings it is never built; a harvester, an MCV; an engineer; a spy, a
-/// transport and a unit with no weapon wait for mechanics of their own (<see cref="UnitCard.Reason"/> says which); a unit that fires only
-/// when ordered is a striker; an armed ship is of the fleet; a unit a player may have only so many of is a hero; the rest fight in the
+/// <item><b>The use</b> (<see cref="UnitUse"/>): what launches or brings it is never built; a harvester, an MCV; an engineer; a spy; a
+/// transport — with no gun of its own, or one that fires only when ordered; a unit with no weapon waits for a mechanic of its own
+/// (<see cref="UnitCard.Reason"/> says which); a unit that fires only when ordered is a striker; an armed ship is of the fleet; a unit a player may have only so many of is a hero; the rest fight in the
 /// army.</item>
 /// <item><b>The damage</b> a unit does to another or to a building in a minute (<see cref="DamagePerMinute"/>): of its primary and
 /// secondary weapons the best that fires at the layer of the target — the air for what flies, under the water for a submarine, the water
@@ -372,8 +378,8 @@ public sealed class UnitKnowledge
         { HarvestCapacity: > 0 } => (UnitUse.Harvester, ""),
         _ when mcvs.Contains(unit.Id) => (UnitUse.Mcv, ""),
         { Engineer: true } => (UnitUse.Engineer, ""),
-        { Infiltrator: true } => (UnitUse.Special, "goes into the enemy's buildings"),
-        { PassengerSlots: > 0, Primary.Length: 0 } or { PassengerSlots: > 0, Passive: true } => (UnitUse.Special, "carries units"),
+        { Infiltrator: true } => (UnitUse.Spy, ""),
+        { PassengerSlots: > 0, Primary.Length: 0 } or { PassengerSlots: > 0, Passive: true } => (UnitUse.Transport, ""),
         { Passive: true } => (UnitUse.Striker, ""),
         { Primary.Length: 0 } => (UnitUse.Special, "has no weapon"),
         { Category: UnitCategory.Naval } => (UnitUse.Fleet, ""),

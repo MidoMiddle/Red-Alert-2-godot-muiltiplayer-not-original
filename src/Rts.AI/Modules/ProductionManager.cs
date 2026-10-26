@@ -202,7 +202,8 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
     {
         var view = context.View;
         var map = context.Map;
-        var navy = !map.NavalRoute ? 0L : map.LandRoute ? Part(army.Navy) : 10_000L;
+        // With no way by land, all of it ships — but where the ferry can carry the army over (M11 step 3), the army as on any map.
+        var navy = !map.NavalRoute ? 0L : map.LandRoute || Ferries(context) ? Part(army.Navy) : 10_000L;
         var weights = RoleWeights(context, army);
         var pads = view.FreePads();
         _byUnit.Clear();
@@ -300,6 +301,25 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         }
 
         return weights;
+    }
+
+    /// <summary>Whether a ferry can take the army over the water: a landing at an enemy, and a transport of the faction.</summary>
+    private static bool Ferries(AiContext context)
+    {
+        if (context.Map.Landings.Length == 0)
+        {
+            return false;
+        }
+
+        foreach (var card in context.Units.Cards)
+        {
+            if (card.Use == Knowledge.UnitUse.Transport && context.View.Rules.Database.Units[card.Index].Faction == context.View.Player.Faction.Id)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Whether <paramref name="unit"/> is a jet that lands on a pad to load its ammo.</summary>

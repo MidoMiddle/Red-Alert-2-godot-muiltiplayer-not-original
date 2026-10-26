@@ -94,14 +94,15 @@ public sealed class NavalScenarioTests
     }
 
     [Fact]
-    public void On_islands_the_army_is_all_ships()
+    public void On_islands_with_a_ferry_the_army_keeps_its_land_units_and_its_fleet()
     {
+        // The Union has the hovercraft (M11 step 3): the ferry takes the land army over, so the army is as on any map with water.
         var scene = Islands();
         Base(scene, harbour: new CellPos(16, 2));
         var shares = Shares(scene);
 
-        Assert.NotEmpty(shares);
-        Assert.All(shares, share => Assert.Equal(UnitCategory.Naval, Game.Database.Units[share.Unit].Category));
+        Assert.Contains(shares, share => Game.Database.Units[share.Unit].Category == UnitCategory.Naval);
+        Assert.Contains(shares, share => Game.Database.Units[share.Unit].Category != UnitCategory.Naval);
     }
 
     [Fact]

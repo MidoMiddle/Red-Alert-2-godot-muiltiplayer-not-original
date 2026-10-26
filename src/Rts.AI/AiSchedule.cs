@@ -25,6 +25,8 @@ public static class AiSchedule
         AiModuleKind.Engineers => settings.BuildPeriod,
         AiModuleKind.Garrisons => settings.BuildPeriod,
         AiModuleKind.Strikes => settings.TacticsPeriod,
+        AiModuleKind.Spies => settings.BuildPeriod,
+        AiModuleKind.Ferry => settings.TacticsPeriod,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 
@@ -43,6 +45,8 @@ public static class AiSchedule
         AiModuleKind.Engineers => 6,
         AiModuleKind.Garrisons => 7,
         AiModuleKind.Strikes => 1,
+        AiModuleKind.Spies => 8,
+        AiModuleKind.Ferry => 4,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 

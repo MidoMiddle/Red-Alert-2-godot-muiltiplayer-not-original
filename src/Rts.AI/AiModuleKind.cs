@@ -28,4 +28,10 @@ public enum AiModuleKind
 
     /// <summary>The units that fire only when ordered (M11 step 3): the bot sends them at their targets.</summary>
     Strikes,
+
+    /// <summary>The spies of the bot (M11 step 3): into the enemy's buildings.</summary>
+    Spies,
+
+    /// <summary>The transports of the bot (M11 step 3): its squads over the water where no tank drives to the enemy.</summary>
+    Ferry,
 }

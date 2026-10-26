@@ -15,6 +15,8 @@ namespace Rts.AI.Knowledge;
 /// <list type="bullet">
 /// <item>The enemies are at the starts of the map but the bot's own and those an ally stands near (<see cref="AllyCells"/>).</item>
 /// <item><b>By land</b>: a flood fill of the cells a tank enters from the start reaches the cells round an enemy start.</item>
+/// <item><b>The landings</b>: for every enemy start no tank drives to, the cell of its land nearest the bot's start that a hovercraft
+/// reaches from it — where the ferry of the bot puts its squads ashore (<see cref="Landings"/>).</item>
 /// <item><b>By water</b>: the deep water is cut into seas, each the cells a ship reaches from any other. The harbour is the place of
 /// the shipyard of the faction nearest the start, within <see cref="HarbourReach"/>, whose footprint is all deep water of one sea that
 /// comes within <see cref="ShoreCells"/> of an enemy start; the enemy shores are the cells of that sea nearest each such start.</item>
@@ -34,15 +36,35 @@ public sealed class MapReading
 
     private static readonly (int X, int Y)[] Neighbours = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)];
 
-    private MapReading(bool landRoute, CellPos? harbour, ImmutableArray<CellPos> enemyShores)
+    private MapReading(bool landRoute, CellPos? harbour, ImmutableArray<CellPos> enemyShores, ImmutableArray<CellPos> landings)
     {
         LandRoute = landRoute;
         Harbour = harbour;
         EnemyShores = enemyShores;
+        Landings = landings;
     }
 
     /// <summary>The reading of a bot that knows no start: the land leads everywhere, the water nowhere.</summary>
-    public static readonly MapReading None = new(true, null, []);
+    public static readonly MapReading None = new(true, null, [], []);
+
+    /// <summary>For every enemy start no tank drives to, the cell of its land where a hovercraft from the bot's start comes ashore.</summary>
+    public ImmutableArray<CellPos> Landings { get; }
+
+    /// <summary>The landing nearest <paramref name="cell"/>; null for none.</summary>
+    public CellPos? LandingNear(CellPos cell)
+    {
+        CellPos? best = null;
+        var bestDistance = int.MaxValue;
+        foreach (var landing in Landings)
+        {
+            if (Distance(landing, cell) < bestDistance)
+            {
+                (best, bestDistance) = (landing, Distance(landing, cell));
+            }
+        }
+
+        return best;
+    }
 
     /// <summary>Whether a tank can drive from the start to an enemy start; true when no enemy start is known.</summary>
     public bool LandRoute { get; }
@@ -97,14 +119,26 @@ public sealed class MapReading
 
         var land = Fill(view, start, Locomotor.Track);
         var landRoute = false;
+        var landings = ImmutableArray.CreateBuilder<CellPos>();
+        bool[]? hover = null;
         foreach (var enemy in enemies)
         {
-            landRoute |= Near(view, land, enemy, 2);
+            if (Near(view, land, enemy, 2))
+            {
+                landRoute = true;
+                continue;
+            }
+
+            hover ??= Fill(view, start, Locomotor.Hover);
+            if (Landing(view, hover, enemy, start) is { } landing)
+            {
+                landings.Add(landing);
+            }
         }
 
         if (shipyard is null)
         {
-            return new MapReading(landRoute, null, []);
+            return new MapReading(landRoute, null, [], landings.ToImmutable());
         }
 
         var seas = Seas(view);
@@ -144,11 +178,32 @@ public sealed class MapReading
 
             if (shores.Length > 0)
             {
-                return new MapReading(landRoute, corner, shores);
+                return new MapReading(landRoute, corner, shores, landings.ToImmutable());
             }
         }
 
-        return new MapReading(landRoute, null, []);
+        return new MapReading(landRoute, null, [], landings.ToImmutable());
+    }
+
+    /// <summary>The cell of the land of <paramref name="enemy"/> a hovercraft reaches nearest <paramref name="from"/>; null for none.</summary>
+    private static CellPos? Landing(AiWorldView view, bool[] hover, CellPos enemy, CellPos from)
+    {
+        var island = Fill(view, enemy, Locomotor.Track);
+        CellPos? best = null;
+        var bestDistance = int.MaxValue;
+        for (var y = 0; y < view.Height; y++)
+        {
+            for (var x = 0; x < view.Width; x++)
+            {
+                var cell = new CellPos(x, y);
+                if (island[y * view.Width + x] && hover[y * view.Width + x] && Distance(cell, from) < bestDistance)
+                {
+                    (best, bestDistance) = (cell, Distance(cell, from));
+                }
+            }
+        }
+
+        return best;
     }
 
     private static bool AllyNear(AiWorldView view, CellPos start)

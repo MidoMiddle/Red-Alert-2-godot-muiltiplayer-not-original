@@ -146,6 +146,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         }
 
         context.Plan.LookAtTheEnemy = false;
+        context.Plan.FerryReady = null;
         var gathering = Account(context);
         var gather = GatherPoint(view, context.Memory);
         context.Plan.GatherPoint = gather;
@@ -305,6 +306,31 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         }
 
         _squads.RemoveAll(squad => squad.Units.Count == 0);
+
+        // Put ashore at the enemy by the ferry (M11 step 3): a squad that is out from there.
+        if (context.Plan.Landed.Count > 0)
+        {
+            var landed = new Squad(++_formed) { State = SquadState.Moving };
+            foreach (var unit in context.View.OwnUnits)
+            {
+                if (context.Plan.Landed.Contains(unit.Id.Value) && !_inSquads.Contains(unit.Id.Value))
+                {
+                    landed.Add(unit.Id);
+                    landed.StartStrength += context.Memory.StrengthOf(unit);
+                    _inSquads.Add(unit.Id.Value);
+                }
+            }
+
+            context.Plan.Landed.Clear();
+            if (landed.Units.Count > 0)
+            {
+                _squads.Add(landed);
+                _waves++;
+                _lastWave = context.Tick;
+                context.Log?.Add(context.Tick, context.Module, $"squad {landed.Number} of {landed.Units.Count} is ashore at the enemy");
+            }
+        }
+
         Squad? gathering = null;
         foreach (var unit in context.View.OwnUnits)
         {
@@ -399,6 +425,13 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         }
         else if (!strong || Early(context) || !context.Plan.AttackAllowed || !Retarget(context, squad, squad.Centre) || WaitsForAllies(context, squad))
         {
+            return;
+        }
+
+        // No tank drives to the enemy (M11 step 3): the ferry takes the squad over, when there is a landing; none, and it waits.
+        if (!context.Map.LandRoute)
+        {
+            context.Plan.FerryReady = context.Map.Landings.Length > 0 ? squad : null;
             return;
         }
 

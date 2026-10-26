@@ -19,15 +19,12 @@ public sealed class UnitKnowledgeTests
     private static RulesDatabase Data => GameDataFiles.Rules.Database;
 
     /// <summary>
-    /// The units of the game the bots do not use yet and why — the work of the next steps (docs/implementation/M11_content.md). A new unit
-    /// of the data that fits none of the uses the bots know lands here and fails the test: decide what the bots do with it.
+    /// The units of the game the bots do not use yet and why. Empty since the spy and the transports (M11 step 3): every unit has a use. A
+    /// new unit of the data that fits none of the uses the bots know lands here and fails the test: decide what the bots do with it.
     /// </summary>
     private static readonly SortedDictionary<string, string> NotUsedYet = new(System.StringComparer.Ordinal)
     {
-        ["alliance_amphibious_transport"] = "carries units",
-        ["alliance_nighthawk"] = "carries units",
-        ["alliance_spy"] = "goes into the enemy's buildings",
-        ["hover_transport"] = "carries units",
+
     };
 
     [Fact]
@@ -50,6 +47,9 @@ public sealed class UnitKnowledgeTests
         Assert.Equal(UnitUse.Mcv, Card("alliance_mcv").Use);
         Assert.Equal(UnitUse.NeverBuilt, Card("alliance_hornet").Use);
         Assert.Equal(UnitUse.Engineer, Card("engineer").Use);
+        Assert.Equal(UnitUse.Spy, Card("alliance_spy").Use);
+        Assert.Equal(UnitUse.Transport, Card("hover_transport").Use);
+        Assert.Equal(UnitUse.Transport, Card("alliance_nighthawk").Use);
         Assert.Equal(UnitUse.Striker, Card("rocket_artillery").Use);
         Assert.Equal(UnitUse.Striker, Card("alliance_harrier").Use);
         Assert.Equal(UnitUse.Fleet, Knowledge.PoolOf(Card("dreadnought")));
@@ -154,15 +154,15 @@ public sealed class UnitKnowledgeTests
         ["Placement"] = "no need: movement", ["Prerequisites"] = "used", ["Countries"] = "used", ["ForbiddenCountries"] = "used",
         ["HarvestCapacity"] = "used", ["HarvestTime"] = "no need: the economy counts harvesters", ["UnloadRate"] = "no need: the economy counts harvesters",
         ["Threat"] = "no need: targeting", ["Stance"] = "no need: targeting", ["Crusher"] = "used", ["Crushable"] = "used",
-        ["Jumpjet"] = "used", ["Engineer"] = "used", ["Infiltrator"] = "later: the spy",
-        ["Disguised"] = "later: the spy", ["DetectsDisguise"] = "later: the spy", ["Passive"] = "used",
+        ["Jumpjet"] = "used", ["Engineer"] = "used", ["Infiltrator"] = "used",
+        ["Disguised"] = "no need: the disguise fools the enemy by itself", ["DetectsDisguise"] = "later: the spy keeps away from what sees through it", ["Passive"] = "used",
         ["DeathWeapon"] = "later: units that blow up", ["Teleports"] = "later: chrono jumps", ["TeleportsHome"] = "no need: the miner jumps by itself",
         ["DeployWeapon"] = "later: deploying", ["DeployedWeapon"] = "later: deploying", ["DeployOnce"] = "later: deploying",
         ["UndeployDelay"] = "later: deploying", ["RadiationImmune"] = "later: radiation", ["BuildLimit"] = "used: the tech tree stops it",
         ["RequiresStolen"] = "used: the tech-up leaves it out", ["Occupier"] = "used", ["OccupyWeapon"] = "no need: the garrison fires it",
         ["ChargesCoils"] = "later: charging tesla coils", ["PsionicImmune"] = "later: mind control", ["DisguiseWhenStill"] = "later: the mirage",
-        ["PassengerSlots"] = "later: transports", ["PassengerSizeLimit"] = "later: transports", ["Size"] = "later: transports",
-        ["PassengerWeapon"] = "later: transports", ["IfvWeapon"] = "later: transports", ["Submerged"] = "used", ["Sensors"] = "later: submarines",
+        ["PassengerSlots"] = "used", ["PassengerSizeLimit"] = "used", ["Size"] = "used",
+        ["PassengerWeapon"] = "later: whom the IFV carries", ["IfvWeapon"] = "later: whom the IFV carries", ["Submerged"] = "used", ["Sensors"] = "later: submarines",
         ["Ammo"] = "used", ["SelfHeal"] = "no need: it heals by itself", ["Trainable"] = "no need: veterancy",
         ["Spawns"] = "used", ["SpawnCount"] = "used", ["SpawnRegen"] = "no need: the carrier replaces them", ["Spawned"] = "used",
         ["Primary"] = "used", ["Secondary"] = "used", ["Model"] = "no need: the client", ["Icon"] = "no need: the client",
