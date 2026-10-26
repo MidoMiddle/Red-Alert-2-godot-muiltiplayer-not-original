@@ -54,7 +54,8 @@ public sealed class AiDebugSnapshotTests
 
         var text = snapshot.ToText();
         Assert.Contains("Attacking", text);
-        Assert.Contains("squad 1 Moving", text);
+        // The number of the squad that is out: the first may have been the start's soldiers, gone into a house (M11 step 3).
+        Assert.Contains($"squad {plan.Squads.First(squad => squad.State == SquadState.Moving).Number} Moving", text);
         Assert.Contains("credits ", text);
     }
 

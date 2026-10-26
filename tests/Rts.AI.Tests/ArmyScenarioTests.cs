@@ -18,7 +18,7 @@ public sealed class ArmyScenarioTests
 
     private static readonly ArmyDef Army = GameDataFiles.Rules.Database.Armies.Single(army => army.Id == "standard_army");
 
-    private sealed record Run(BotMatch Match, int Checks, int IdleWithMoney);
+    private sealed record Run(BotMatch Match, int Checks, int IdleWithMoney, SortedSet<string> Targeted);
 
     private static readonly Lazy<Run> Once = new(Play);
 
@@ -27,9 +27,19 @@ public sealed class ArmyScenarioTests
     {
         var match = new BotMatch();
         var (checks, idle) = (0, 0);
+        var targeted = new SortedSet<string>(StringComparer.Ordinal);
         while (match.Simulation.CurrentTick < Minutes * 900)
         {
             match.Step();
+
+            // The target of the army once a minute (M11): the units the bot means to have as its technology grows.
+            if (match.Simulation.CurrentTick % 900 == 0 && match.Brain?.Context is { } context)
+            {
+                var production = new ProductionManager(match.Brain.Settings);
+                production.Target(context);
+                targeted.UnionWith(production.Shares.Select(share => GameDataFiles.Rules.Database.Units[share.Unit].Id));
+            }
+
             if (match.Simulation.CurrentTick % 15 != 0)
             {
                 continue;
@@ -52,7 +62,7 @@ public sealed class ArmyScenarioTests
             }
         }
 
-        return new Run(match, checks, idle);
+        return new Run(match, checks, idle, targeted);
     }
 
     [Fact]
@@ -66,23 +76,20 @@ public sealed class ArmyScenarioTests
     }
 
     [Fact]
-    public void The_army_keeps_near_the_shares_the_bot_works_out()
+    public void The_army_is_of_the_units_the_bot_means_to_have_and_of_many_kinds()
     {
-        // M11: the army of the data is one of roles; the shares of the units are what the bot works out from them at the end.
-        var match = Once.Value.Match;
-        var army = match.UnitsOfBot(unit => unit.Archetype.Armed && unit.Harvester is null);
-        var production = new ProductionManager(match.Brain!.Settings);
-        production.Target(match.Brain.Context!);
+        // M11: the army of the data is one of roles, and the units of a role change as the technology grows — the shares at the end
+        // are not those the army was built by. Every kind of the army was in the target of some minute; no kind is most of it.
+        var run = Once.Value;
+        var army = run.Match.UnitsOfBot(unit => unit.Archetype.Armed && unit.Harvester is null);
+        var kinds = army.GroupBy(unit => unit.Archetype.Id).ToDictionary(group => group.Key, group => group.Count());
+        var report = string.Join(", ", kinds.Select(kind => $"{kind.Key} {kind.Value}")) + "; targeted " + string.Join(", ", run.Targeted);
 
         Assert.True(army.Count >= 10, $"{army.Count} units");
         Assert.NotEmpty(Army.Roles);
-        foreach (var (unit, share) in production.Shares)
-        {
-            var id = GameDataFiles.Rules.Database.Units[unit].Id;
-            var percent = army.Count(own => own.Archetype.Id == id) * 100 / army.Count;
-            Assert.True(Math.Abs(percent - share / 100) <= 15, $"{id}: {percent}% against {share / 100}%; " +
-                string.Join(", ", army.GroupBy(own => own.Archetype.Id).Select(group => $"{group.Key} {group.Count()}")));
-        }
+        Assert.True(kinds.Count >= 4, report);
+        Assert.All(kinds.Keys, kind => Assert.True(run.Targeted.Contains(kind), $"{kind} was never in the target; {report}"));
+        Assert.All(kinds.Values, count => Assert.True(count * 100 <= army.Count * 60, report));
     }
 
     [Fact]

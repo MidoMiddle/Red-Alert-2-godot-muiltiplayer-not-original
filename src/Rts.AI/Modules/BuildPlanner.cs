@@ -12,8 +12,9 @@ namespace Rts.AI.Modules;
 
 /// <summary>
 /// The base of a bot (docs/implementation/M5_first_bot.md, 4.6–4.7, steps 4–5). First the MCV deploys — where it stands, or on the nearest
-/// cell within <see cref="DeployReach"/> where the yard fits as far as the bot has seen; with none seen it drives <see cref="ScoutStep"/>
-/// cells toward the middle of the map to see more. Then, on every turn, a ready building is placed where <see cref="BasePlacement"/>
+/// cell within <see cref="FarReach"/> where the yard fits as far as the bot has seen; with none seen it drives to the nearest ground not
+/// explored yet, with all explored <see cref="ScoutStep"/> cells toward the middle of the map; a move that has not got it anywhere for
+/// <see cref="StuckTicks"/> is given up for a new one. Then, on every turn, a ready building is placed where <see cref="BasePlacement"/>
 /// finds room, and with a queue empty the next building is ordered, the most important first:
 /// <list type="number">
 /// <item>what the economy needs at once — a reactor, a refinery (<see cref="AiPlan.Wants"/>);</item>
@@ -37,8 +38,20 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
     /// <summary>How far, in cells, the MCV may go to find flat ground for its yard.</summary>
     public const int DeployReach = 6;
 
+    /// <summary>
+    /// How far, in cells, the MCV looks over explored ground for its yard when nothing within <see cref="DeployReach"/> will do: on hills
+    /// the yard of RA2, 4 × 4, may find flat ground only farther (the relief test map).
+    /// </summary>
+    public const int FarReach = 24;
+
     /// <summary>How far the MCV drives to see more ground when it found none for its yard.</summary>
     public const int ScoutStep = 4;
+
+    /// <summary>An MCV on its way that has not moved for this many ticks is stuck: it is given a new way (6 s).</summary>
+    public const int StuckTicks = 90;
+
+    private Rts.Simulation.Geometry.WorldPos _mcvAt;
+    private int _mcvStillSince;
 
     private static readonly ProductionCategory[] Categories =
         [ProductionCategory.Infantry, ProductionCategory.Vehicle, ProductionCategory.Building, ProductionCategory.Defense];
@@ -591,7 +604,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
     }
 
     /// <summary>The MCV deploys where its yard fits, or drives to the nearest cell where it does; it waits while it drives.</summary>
-    private static void Deploy(AiContext context, BuildingDef yard)
+    private void Deploy(AiContext context, BuildingDef yard)
     {
         var view = context.View;
         Unit? mcv = null;
@@ -604,7 +617,18 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             }
         }
 
-        if (mcv is null || mcv.MoveTarget is not null)
+        if (mcv is null)
+        {
+            return;
+        }
+
+        // On its way it is waited for — unless it has not moved for StuckTicks: on a slope a move may never end.
+        if (mcv.Position != _mcvAt)
+        {
+            (_mcvAt, _mcvStillSince) = (mcv.Position, context.Tick);
+        }
+
+        if (mcv.MoveTarget is not null && context.Tick - _mcvStillSince < StuckTicks)
         {
             return;
         }
@@ -616,7 +640,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             return;
         }
 
-        for (var ring = 1; ring <= DeployReach; ring++)
+        for (var ring = 1; ring <= FarReach; ring++)
         {
             for (var dy = -ring; dy <= ring; dy++)
             {
@@ -633,7 +657,25 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             }
         }
 
-        // Nothing seen will do: a few cells toward the middle of the map, to the nearest cell it can enter there, to see more ground.
+        // Nothing seen will do: to the nearest ground not explored yet, to see it.
+        for (var ring = 1; ring <= FarReach; ring++)
+        {
+            for (var dy = -ring; dy <= ring; dy++)
+            {
+                for (var dx = -ring; dx <= ring; dx++)
+                {
+                    var cell = new CellPos(here.X + dx, here.Y + dy);
+                    if (IntMath.Max(IntMath.Abs(dx), IntMath.Abs(dy)) == ring && view.Contains(cell) && !view.IsExplored(cell)
+                        && view.CanEnterOnPreview(cell, mcv.Archetype.Locomotor))
+                    {
+                        context.Issue(new MoveCommand(view.Me, context.ExecuteTick, context.NextSequence(), [mcv.Id], cell.Center));
+                        return;
+                    }
+                }
+            }
+        }
+
+        // All of it explored: a few cells toward the middle of the map, to the nearest cell it can enter there.
         var middle = new CellPos(view.Width / 2, view.Height / 2);
         var ahead = new CellPos(
             here.X + IntMath.Max(-ScoutStep, IntMath.Min(ScoutStep, middle.X - here.X)),

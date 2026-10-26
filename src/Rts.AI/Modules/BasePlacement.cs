@@ -304,7 +304,7 @@ public sealed class BasePlacement
     }
 
     /// <summary>The cells where a building on <paramref name="corner"/> releases its units or takes ore in.</summary>
-    private static IEnumerable<CellPos> Openings(BuildingDef def, CellPos corner)
+    internal static IEnumerable<CellPos> Openings(BuildingDef def, CellPos corner)
     {
         if (def.ExitCell is { } exit)
         {

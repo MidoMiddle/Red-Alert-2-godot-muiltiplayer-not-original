@@ -83,8 +83,11 @@ public sealed class SquadScenarioTests
 
         Assert.InRange(run.SetOut, 1, 11 * 900);
         Assert.True(run.Units >= AiSettings.Medium.MinAttackArmy, $"{run.Units} units set out");
-        // Until then the army kept at home, on its own half of the map: no unit went to the person alone.
-        Assert.True(run.NearestBefore > 30, $"{run.NearestBefore} cells from the person's start");
+        // Until then the army kept at home, on its own half of the map: no unit went to the person alone. The half by the starts: on
+        // Frozen Crossing they are 29 cells apart, and the base of RA2's buildings (the yard 4 × 4) reaches 27 from the person's start.
+        var starts = match.Setup.Players.Select(player => player.Start).ToList();
+        var half = IntMath.Max(IntMath.Abs(starts[0].X - starts[1].X), IntMath.Abs(starts[0].Y - starts[1].Y)) / 2;
+        Assert.True(run.NearestBefore > half, $"{run.NearestBefore} cells from the person's start, the half {half}");
         Assert.DoesNotContain(match.World.Entities.OfType<Unit>(), unit => unit.IsAlive && unit.Owner == Person);
         Assert.Empty(match.RefusedBotCommands);
     }

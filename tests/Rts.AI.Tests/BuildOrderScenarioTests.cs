@@ -1,3 +1,4 @@
+using Rts.AI.Modules;
 using Rts.Data.Tests;
 using Rts.Simulation.Pathfinding;
 using Rts.Simulation.Geometry;
@@ -38,17 +39,13 @@ public sealed class BuildOrderScenarioTests
         var person = match.Setup.Players[0].Start;
         foreach (var building in match.World.Entities.OfType<Building>().Where(b => b.IsAlive && b.Owner == BotMatch.Bot && b.Def is not null))
         {
-            foreach (var opening in new[] { building.Def!.ExitCell, building.Def.DockCell })
+            // The cells beside the exit and the pad, as the placement keeps them: the refinery's pad of RA2 is in its footprint, and is
+            // driven onto from the cell beside it outside.
+            foreach (var cell in BasePlacement.Openings(building.Def!, building.Cell))
             {
-                if (opening is not { } relative)
-                {
-                    continue;
-                }
-
-                var cell = new CellPos(building.Cell.X + relative.X, building.Cell.Y + relative.Y);
-                Assert.False(map.HasBuilding(cell), $"{building.Def.Id} at {building.Cell}: its opening {cell} is built over");
+                Assert.False(map.HasBuilding(cell), $"{building.Def!.Id} at {building.Cell}: its opening {cell} is built over");
                 var path = AStar.FindPath(map, cell, person, Locomotor.Track, maxExpansions: 200_000);
-                Assert.True(path.Status == PathStatus.Found, $"{building.Def.Id} at {building.Cell}: no way from {cell} to {person}");
+                Assert.True(path.Status == PathStatus.Found, $"{building.Def!.Id} at {building.Cell}: no way from {cell} to {person}");
             }
         }
     }
