@@ -19,12 +19,13 @@ namespace Rts.Client.Models;
 /// stands for the bars over it; <see cref="Climates"/>, when not empty, the climates it is drawn in (a snowdrift only in the snow).
 /// <see cref="Damaged"/>, <see cref="DamagedOccupied"/>, <see cref="Occupied"/>, <see cref="Abandoned"/> and <see cref="Ruins"/>, when
 /// set, are the one file of a building in that state (<see cref="ModelVariant"/>): damaged, damaged with soldiers inside, with soldiers
-/// inside, abandoned (critically damaged, its soldiers out), and its ruins once it has fallen.
+/// inside, abandoned (critically damaged, its soldiers out), and its ruins once it has fallen. <see cref="HeightScale"/> squashes it
+/// upright only, its footprint the same: the civilian buildings of RA2 are low, a storey about 0.25 cells (2026-10-26).
 /// </summary>
 public sealed record ModelEntry(
     string Key, ImmutableArray<string> Files, float Scale, float Yaw, (float X, float Y, float Z) Offset, float Height, ImmutableArray<string> Climates,
     float Jitter = 0f, bool Spin = false, string? Damaged = null, string? Occupied = null, string? Ruins = null, string? DamagedOccupied = null,
-    string? Abandoned = null)
+    string? Abandoned = null, float HeightScale = 1f)
 {
     /// <summary>The first file: the one there is when there is one.</summary>
     public string File => Files[0];
@@ -147,7 +148,7 @@ public static class ModelTable
             throw Error(node, $"the model of '{key}' must be a mapping with a file");
         }
 
-        var values = Entries(map, ["file", "files", "scale", "yaw", "offset", "height", "climates", "jitter", "spin", "damaged", "occupied", "ruins", "damaged_occupied", "abandoned"], $"the model of '{key}'");
+        var values = Entries(map, ["file", "files", "scale", "yaw", "offset", "height", "climates", "jitter", "spin", "damaged", "occupied", "ruins", "damaged_occupied", "abandoned", "height_scale"], $"the model of '{key}'");
         var files = ImmutableArray.CreateBuilder<YamlNode>();
         if (values.TryGetValue("file", out var fileNode) == values.TryGetValue("files", out var filesNode))
         {
@@ -176,6 +177,12 @@ public static class ModelTable
         if (scale is < 0.01f or > 100f)
         {
             throw Error(scaleNode!, "scale must be 0.01…100");
+        }
+
+        var heightScale = values.TryGetValue("height_scale", out var heightScaleNode) ? Number(heightScaleNode) : 1f;
+        if (heightScale is < 0.1f or > 10f)
+        {
+            throw Error(heightScaleNode!, "height_scale must be 0.1…10: how much lower or higher it stands, its footprint the same");
         }
 
         var yaw = values.TryGetValue("yaw", out var yawNode) ? Number(yawNode) : 0f;
@@ -230,7 +237,7 @@ public static class ModelTable
         var ruins = StateFile(values, "ruins");
         var damagedOccupied = StateFile(values, "damaged_occupied");
         var abandoned = StateFile(values, "abandoned");
-        return new ModelEntry(key, [.. files.Select(Text)], scale, yaw, offset, height, climates, jitter, spin, damaged, occupied, ruins, damagedOccupied, abandoned);
+        return new ModelEntry(key, [.. files.Select(Text)], scale, yaw, offset, height, climates, jitter, spin, damaged, occupied, ruins, damagedOccupied, abandoned, heightScale);
     }
 
     // The file of a state of a building: one .glb path, checked as the files are; none gives null.

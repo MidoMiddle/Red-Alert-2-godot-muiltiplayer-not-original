@@ -140,9 +140,10 @@ public static class ModelLibrary
         return [.. groups.Values];
     }
 
-    /// <summary>How a model of the entry sits in its holder: moved, turned and scaled as the pick says.</summary>
+    /// <summary>How a model of the entry sits in its holder: moved, turned and scaled as the pick says, its height by the entry's.</summary>
     private static Transform3D Placement(ModelEntry entry, ModelPick pick) =>
-        new(new Basis(Vector3.Up, Mathf.DegToRad(pick.Yaw)).Scaled(Vector3.One * pick.Scale), new Vector3(entry.Offset.X, entry.Offset.Y, entry.Offset.Z));
+        new(new Basis(Vector3.Up, Mathf.DegToRad(pick.Yaw)).Scaled(new Vector3(pick.Scale, pick.Scale * entry.HeightScale, pick.Scale)),
+            new Vector3(entry.Offset.X, entry.Offset.Y, entry.Offset.Z));
 
     // The scenes of the files of the entry that are there, in the order of the table.
     private static List<PackedScene> ScenesOf(ModelEntry entry)

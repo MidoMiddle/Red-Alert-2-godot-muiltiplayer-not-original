@@ -26,9 +26,11 @@ models:
   # The buildings of the players (docs/ra2_buildings). The team_mask nodes take the owner's colour.
   building/tesla_coil: { file: building/tesla_coil/tesla_coil.glb, height: 3 }
 
+  # The civilian and industrial buildings of the map are low, as RA2's: a storey about 0.25 cells, a soldier 0.6 (measured against RA2,
+  # 2026-10-26). Their models were made a storey to a cell: height_scale 0.35 squashes them upright, their footprints the same.
   # The civilian houses of the map (docs/map_elements/11_civilian_buildings): whole, damaged, abandoned (critically damaged, its soldiers
   # out) and ruins once it has fallen; with soldiers inside, the whole one (occupied) and the damaged one (damaged_occupied).
-  building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 2.5,
+  building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 0.88, height_scale: 0.35,
                               damaged: map/building_house_small_damaged/building_house_small_damaged.glb,
                               damaged_occupied: map/building_house_small_damaged_occupied/building_house_small_damaged_occupied.glb,
                               occupied: map/building_house_small_occupied/building_house_small_occupied.glb,
@@ -36,7 +38,7 @@ models:
                               ruins: map/building_house_ruins/building_house_ruins.glb }
 
   # The apartment block of the map (docs/map_elements/11_civilian_buildings): the same states as the house.
-  building/neutral_apartment: { file: map/building_apartment_block/building_apartment_block.glb, height: 6,
+  building/neutral_apartment: { file: map/building_apartment_block/building_apartment_block.glb, height: 2.1, height_scale: 0.35,
                                 damaged: map/building_apartment_block_damaged/building_apartment_block_damaged.glb,
                                 damaged_occupied: map/building_apartment_block_damaged_occupied/building_apartment_block_damaged_occupied.glb,
                                 occupied: map/building_apartment_block_occupied/building_apartment_block_occupied.glb,
@@ -50,11 +52,11 @@ models:
                                ruins: map/tech_oil_derrick_ruins/tech_oil_derrick_ruins.glb }
 
   # The industrial buildings of the map (docs/industrial_elements).
-  building/neutral_smokestack:     { file: industrial/smokestack/smokestack.glb, height: 6 }
-  building/neutral_cooling_tower:  { file: industrial/cooling_tower/cooling_tower.glb, height: 5 }
-  building/neutral_factory_hall:   { file: industrial/factory_hall/factory_hall.glb, height: 5 }
-  building/neutral_boiler_house:   { file: industrial/boiler_house/boiler_house.glb, height: 3.5 }
-  building/neutral_fuel_tank:      { file: industrial/fuel_tank/fuel_tank.glb, height: 2.5 }
+  building/neutral_smokestack:     { file: industrial/smokestack/smokestack.glb, height: 2.1, height_scale: 0.35 }
+  building/neutral_cooling_tower:  { file: industrial/cooling_tower/cooling_tower.glb, height: 1.75, height_scale: 0.35 }
+  building/neutral_factory_hall:   { file: industrial/factory_hall/factory_hall.glb, height: 1.75, height_scale: 0.35 }
+  building/neutral_boiler_house:   { file: industrial/boiler_house/boiler_house.glb, height: 1.22, height_scale: 0.35 }
+  building/neutral_fuel_tank:      { file: industrial/fuel_tank/fuel_tank.glb, height: 0.88, height_scale: 0.35 }
 
   # Map objects (docs/map_elements, docs/obstacle_elements). A fence and a pipe run along x, as their placeholders.
   object/ore_source:          { file: map/ore_source/ore_source.glb }

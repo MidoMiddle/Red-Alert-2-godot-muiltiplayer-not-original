@@ -130,6 +130,19 @@ public partial class UnitGallery : Node3D
         ScreenshotCapture.AttachIfRequested(this);
     }
 
+    /// <summary>
+    /// A soldier as the game draws him (a conscript, RA2's proportions) by the front corner of a building's footprint, to see its height
+    /// against him (2026-10-26).
+    /// </summary>
+    private void AddSoldier(Vector3 at, int width, int height)
+    {
+        var soldier = new UnitView();
+        soldier.Build(DataFiles.Current.Rules.Unit(UnitType.Conscript));
+        AddChild(soldier);
+        soldier.SetMaterial(new StandardMaterial3D { AlbedoColor = Matches.PlayerColors.Of(new PlayerId(1)) });
+        soldier.SetPose(at + new Vector3(width / 2f + 0.3f, 0f, height / 2f + 0.1f), Mathf.DegToRad(-30f), Mathf.DegToRad(-30f));
+    }
+
     /// <summary>The buildings of the map with a look of the element documents, then the props, each on its plate with its id.</summary>
     private void ShowProps()
     {
@@ -174,6 +187,10 @@ public partial class UnitGallery : Node3D
             AddChild(body);
             var parts = building ? Terrain.BuildingLooks.Of(id, width, height, false) : Terrain.PropLooks.Of(id);
             Terrain.BuildingLookView.AddParts(body, parts, Terrain.LookFaction.Civilian, null, 0f, band: false);
+            if (building)
+            {
+                AddSoldier(at, width, height);
+            }
             AddChild(new Label3D
             {
                 // A building by its name on screen; a prop by its id (the props have no names yet).
@@ -240,6 +257,11 @@ public partial class UnitGallery : Node3D
                     model.Position += at + (single ? Vector3.Zero : new Vector3(copy % 3 - 1, 0, copy / 3 - 1));
                     AddChild(model);
                 }
+            }
+
+            if (key.StartsWith("building/", System.StringComparison.Ordinal))
+            {
+                AddSoldier(at, width, height);
             }
 
             AddChild(new Label3D

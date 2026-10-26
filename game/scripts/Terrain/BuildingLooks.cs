@@ -175,7 +175,20 @@ public static class BuildingLooks
     }
 
     public static IReadOnlyList<LookPart> Of(string id, int width, int height, bool wall) =>
-        Looks.TryGetValue(id, out var parts) ? parts : Block(width, height, wall);
+        Looks.TryGetValue(id, out var parts) ? Low(id, parts) : Block(width, height, wall);
+
+    /// <summary>
+    /// How much lower than drawn the civilian buildings of the map stand: RA2's are low, a storey about 0.25 cells by a soldier of 0.6
+    /// (measured against RA2, 2026-10-26); the skyscraper less so, RA2's high-rises staying tall.
+    /// </summary>
+    public static float CivilianHeight(string id) =>
+        !id.StartsWith("neutral_", StringComparison.Ordinal) ? 1f : id == "neutral_skyscraper" ? 0.75f : 0.55f;
+
+    private static IReadOnlyList<LookPart> Low(string id, IReadOnlyList<LookPart> parts)
+    {
+        var factor = CivilianHeight(id);
+        return factor == 1f ? parts : [.. parts.Select(part => part with { SizeY = part.SizeY * factor, Y = part.Y * factor })];
+    }
 
     /// <summary>
     /// The parts stretched over the footprint when they were drawn for another (the sizes of RA2 came after the looks, 2026-10-25): the

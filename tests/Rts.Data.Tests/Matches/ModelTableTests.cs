@@ -53,6 +53,7 @@ public sealed class ModelTableTests
             models:
               tree/palm: { file: desert/palm/palm_01.glb, scale: 1.5, yaw: 90, offset: [0, -0.1, 0.25], climates: [desert] }
               building/reactor: { file: soviet/reactor/reactor.glb, height: 2.5 }
+              building/neutral_house_a: { file: map/house/house.glb, height_scale: 0.35 }
             """);
 
         var palm = table["tree/palm"];
@@ -61,6 +62,8 @@ public sealed class ModelTableTests
         Assert.False(palm.DrawnIn("winter"));
         Assert.Equal((1f, 0f, 2.5f), (table["building/reactor"].Scale, table["building/reactor"].Yaw, table["building/reactor"].Height));
         Assert.True(table["building/reactor"].DrawnIn("winter"));
+        // RA2's civilian buildings are low: squashed upright, the footprint the same; 1 when unsaid.
+        Assert.Equal((0.35f, 1f), (table["building/neutral_house_a"].HeightScale, table["building/reactor"].HeightScale));
     }
 
     [Fact]
@@ -128,6 +131,7 @@ public sealed class ModelTableTests
     [InlineData("format: models/1\nmodels:\n  tree/palm: { files: [a/b.glb, a/c.obj] }\n", "is not a .glb path")]
     [InlineData("format: models/1\nmodels:\n  tree/palm: { file: a/b.glb, jitter: 0.6 }\n", "jitter must be")]
     [InlineData("format: models/1\nmodels:\n  tree/palm: { file: a/b.glb, spin: yes }\n", "spin must be")]
+    [InlineData("format: models/1\nmodels:\n  tree/palm: { file: a/b.glb, height_scale: 0 }\n", "height_scale must be")]
     [InlineData("format: models/2\nmodels:\n", "the format")]
     [InlineData("format: models/1\nmodels:\n  tank/heavy: { file: a/b.glb }\n", "is not a key")]
     [InlineData("format: models/1\nmodels:\n  unit/heavy_tank: { file: a/b.fbx }\n", "is not a .glb path")]
