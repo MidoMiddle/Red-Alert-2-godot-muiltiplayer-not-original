@@ -7,7 +7,8 @@ namespace Rts.Client.Hud;
 
 /// <summary>
 /// The health bar of RA2 as small squares — pips (docs/implementation/M4_combat.md, 4.20, step 13): 4 for a soldier, 8 for a vehicle,
-/// 2 per cell of width for a building up to 12; as many filled as the share of hit points, rounded up, in the colour of the
+/// for a building <see cref="PerCell"/> per cell of its longer side, from <see cref="MinBuilding"/> to <see cref="MaxBuilding"/> — about as
+/// long as the building, and fine enough that a few hits show (the owner, 2026-10-26: 2 a cell up to 12 was too short); as many filled as the share of hit points, rounded up, in the colour of the
 /// <see cref="DamageState"/>. Shown for everybody, for the selected and the damaged, or — the default, as in RA2 (the owner, 2026-10-25) —
 /// for the selected only; "selected" takes in what is under the cursor. Pure, tested in Rts.Simulation.Tests.
 /// </summary>
@@ -15,14 +16,16 @@ public static class HealthPips
 {
     public const int Infantry = 4;
     public const int Vehicle = 8;
-    public const int MaxBuilding = 12;
+    public const int PerCell = 6;
+    public const int MinBuilding = 10;
+    public const int MaxBuilding = 30;
 
     /// <summary>The number of pips of a unit or a building.</summary>
     public static int CountOf(Entity entity) => entity switch
     {
         Unit { Archetype.Category: UnitCategory.Infantry } => Infantry,
         Unit => Vehicle,
-        Building building => Math.Min(MaxBuilding, 2 * building.Width),
+        Building building => Math.Clamp(PerCell * Math.Max(building.Width, building.Height), MinBuilding, MaxBuilding),
         _ => 0,
     };
 

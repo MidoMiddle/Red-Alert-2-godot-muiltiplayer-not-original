@@ -8,13 +8,16 @@ namespace Rts.Simulation.Tests.Client;
 public sealed class HealthPipsTests
 {
     [Fact]
-    public void A_soldier_has_four_pips_a_vehicle_eight_and_a_building_two_per_cell_of_width_up_to_twelve()
+    public void A_soldier_has_four_pips_a_vehicle_eight_and_a_building_six_per_cell_from_ten_to_thirty()
     {
         var world = new GameWorld(seed: 1, widthCells: 20, heightCells: 20, TestRules.Standard);
 
         Assert.Equal(4, HealthPips.CountOf(world.SpawnUnit(new PlayerId(1), UnitType.Conscript, new CellPos(2, 2).Center)));
         Assert.Equal(8, HealthPips.CountOf(world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(4, 4).Center)));
-        Assert.Equal(8, HealthPips.CountOf(world.CreateBuilding(new PlayerId(1), TestRules.BuildingDef("construction_yard"), new CellPos(10, 10), true, null)));
+        // A building: 6 a cell of its longer side, from 10 to 30 (the owner, 2026-10-26).
+        Assert.Equal(24, HealthPips.CountOf(world.CreateBuilding(new PlayerId(1), TestRules.BuildingDef("construction_yard"), new CellPos(10, 10), true, null)));
+        Assert.Equal(30, HealthPips.CountOf(world.CreateBuilding(new PlayerId(1), TestRules.BuildingDef("war_factory"), new CellPos(2, 6), true, null)));
+        Assert.Equal(10, HealthPips.CountOf(world.CreateBuilding(new PlayerId(1), TestRules.BuildingDef("wall"), new CellPos(8, 2), true, null)));
     }
 
     [Fact]
