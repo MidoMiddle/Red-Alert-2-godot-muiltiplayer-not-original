@@ -146,6 +146,24 @@ public sealed class AiWorldView
     }
 
     /// <summary>
+    /// Whether <paramref name="locomotor"/> can enter the cell as the map shows it before the match, in the preview of the lobby: its land,
+    /// its cliffs, its water, the scenery and the buildings of the map — the shroud aside, as every player knows the map of the match. A
+    /// building of a player is not on the preview: its cell counts by its land and its slope (<see cref="Knowledge.MapReading"/>).
+    /// </summary>
+    public bool CanEnterOnPreview(CellPos cell, Locomotor locomotor)
+    {
+        var map = _world.Map;
+        if (!map.Contains(cell))
+        {
+            return false;
+        }
+
+        return map.HasBuilding(cell) && _world.BuildingAt(cell) is { Owner.IsNeutral: false }
+            ? map.Speeds.CellPercent(locomotor, map.SurfaceAt(cell), map.Heights.ShapeAt(cell)) > 0
+            : map.CanEnter(cell, locomotor);
+    }
+
+    /// <summary>
     /// Whether <paramref name="def"/> can be placed with its north-west cell on <paramref name="corner"/> by the rules of the game
     /// (<see cref="PlacementRules.Check"/>) — asked only of explored cells: a footprint that reaches into the shroud is no. With
     /// <paramref name="needsBase"/> false and the MCV as <paramref name="ignoreUnit"/> it tells where the MCV can deploy.

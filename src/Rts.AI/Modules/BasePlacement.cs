@@ -52,6 +52,9 @@ public sealed class BasePlacement
     /// <summary>Where a defense faces, when it is not the likely enemy: the side the base was attacked from (step 9).</summary>
     public CellPos? Toward { get; set; }
 
+    /// <summary>The place of the shipyard the map reading found (M11): a shipyard goes as near it as it can.</summary>
+    public CellPos? Harbour { get; set; }
+
     public bool TryFind(AiWorldView view, AiMemory memory, Building yard, int defIndex, out CellPos? corner)
     {
         if (defIndex != _defIndex)
@@ -129,9 +132,10 @@ public sealed class BasePlacement
             }
         }
 
+        // A shipyard releases its ships onto the water (M11).
         foreach (var opening in Openings(def, corner))
         {
-            if (!view.CanEnter(opening, Locomotor.Track))
+            if (!view.CanEnter(opening, def.Water ? Locomotor.Naval : Locomotor.Track))
             {
                 return false;
             }
@@ -155,7 +159,9 @@ public sealed class BasePlacement
             return best;
         }
 
-        var to = def.Category == ProductionCategory.Defense && target is { } point ? point : centre;
+        // A shipyard goes nearest the harbour of the map reading (M11), which is on the sea that leads to an enemy.
+        var to = def.Water && Harbour is { } harbour ? new CellPos(harbour.X + def.Footprint.Width / 2, harbour.Y + def.Footprint.Height / 2)
+            : def.Category == ProductionCategory.Defense && target is { } point ? point : centre;
         return Square(middle.X - to.X) + Square(middle.Y - to.Y);
     }
 
@@ -187,6 +193,12 @@ public sealed class BasePlacement
     /// </summary>
     internal static bool KeepsPassages(AiWorldView view, BuildingDef def, CellPos corner)
     {
+        // A shipyard stands on the water, its exit on it too: no tank drives there (M11).
+        if (def.Water)
+        {
+            return true;
+        }
+
         var far = new CellPos(corner.X + def.Footprint.Width - 1, corner.Y + def.Footprint.Height - 1);
         var (left, top, right, bottom) = (corner.X, corner.Y, far.X, far.Y);
         foreach (var building in view.OwnBuildings)
@@ -218,7 +230,7 @@ public sealed class BasePlacement
         foreach (var building in view.OwnBuildings)
         {
             Close(building.Cell, building.FarCell);
-            if (building.Def is { } own)
+            if (building.Def is { Water: false } own)
             {
                 openings.AddRange(Openings(own, building.Cell));
             }

@@ -1,3 +1,4 @@
+using Rts.AI.Modules;
 using Rts.Data.Tests;
 using Rts.Simulation.Hashing;
 using Rts.Simulation.Replays;
@@ -65,24 +66,22 @@ public sealed class ArmyScenarioTests
     }
 
     [Fact]
-    public void The_army_keeps_near_the_shares_of_the_data()
+    public void The_army_keeps_near_the_shares_the_bot_works_out()
     {
+        // M11: the army of the data is one of roles; the shares of the units are what the bot works out from them at the end.
         var match = Once.Value.Match;
         var army = match.UnitsOfBot(unit => unit.Archetype.Armed && unit.Harvester is null);
-        var techCenter = match.BuildingsOfBot("tech_center").Any();
+        var production = new ProductionManager(match.Brain!.Settings);
+        production.Target(match.Brain.Context!);
 
         Assert.True(army.Count >= 10, $"{army.Count} units");
-        foreach (var share in Army.Shares)
+        Assert.NotEmpty(Army.Roles);
+        foreach (var (unit, share) in production.Shares)
         {
-            if (share.Unit == "tesla_tank" && !techCenter)
-            {
-                continue;
-            }
-
-            var percent = army.Count(unit => unit.Archetype.Id == share.Unit) * 100 / army.Count;
-            var target = (int)((share.Share * Rts.Simulation.Math.Fixed.FromInt(100)).Raw >> 16);
-            Assert.True(Math.Abs(percent - target) <= 15, $"{share.Unit}: {percent}% against {target}%; " +
-                string.Join(", ", army.GroupBy(unit => unit.Archetype.Id).Select(group => $"{group.Key} {group.Count()}")));
+            var id = GameDataFiles.Rules.Database.Units[unit].Id;
+            var percent = army.Count(own => own.Archetype.Id == id) * 100 / army.Count;
+            Assert.True(Math.Abs(percent - share / 100) <= 15, $"{id}: {percent}% against {share / 100}%; " +
+                string.Join(", ", army.GroupBy(own => own.Archetype.Id).Select(group => $"{group.Key} {group.Count()}")));
         }
     }
 

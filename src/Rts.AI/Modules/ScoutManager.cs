@@ -173,7 +173,7 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
         Order(context, scout, _errand ?? home);
     }
 
-    /// <summary>The scout of the bot: the one it has while it lives, else the cheapest fighting unit that is no harvester; null for none.</summary>
+    /// <summary>The scout of the bot: the one it has while it lives, else the cheapest unit of the army (M11: no ship); null for none.</summary>
     private static Unit? Scout(AiContext context)
     {
         var view = context.View;
@@ -186,7 +186,7 @@ public sealed class ScoutManager(AiSettings settings) : IAiModule
                 return unit;
             }
 
-            if (!unit.Archetype.Armed || unit.Harvester is not null)
+            if (!context.Units.InArmy(unit))
             {
                 continue;
             }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Rts.AI.Knowledge;
 using Rts.AI.View;
+using Rts.Simulation.Map;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Math;
@@ -21,7 +23,11 @@ namespace Rts.AI.Modules;
 /// <item>the rest of the economy's needs — a war factory for the harvesters;</item>
 /// <item>after the order — refineries up to <see cref="AiSettings.MaxRefineries"/>, a second war factory once the credits reach
 /// <see cref="AiSettings.SecondFactoryCredits"/>, and the defense of the order once more when the base was attacked from a side no
-/// defense covers (<see cref="AiPlan.AttackedFrom"/>, step 9), up to <see cref="AiSettings.MaxDefenses"/>; it faces that side.</item>
+/// defense covers (<see cref="AiPlan.AttackedFrom"/>, step 9), up to <see cref="AiSettings.MaxDefenses"/>; it faces that side;</item>
+/// <item>M11: the shipyard of the faction on a map whose water leads to an enemy (<see cref="MapReading.NavalRoute"/>), at its harbour once
+/// that has been seen — till then the nearest unit of the army goes to look, and a shipyard with no room on the water after all is
+/// cancelled; and, but for the simple build orders, with the army as big as a squad that may set out and the money there, the building
+/// that opens the most units of the army (<see cref="Opener"/>).</item>
 /// </list>
 /// A building is ordered only when the credits, less what the queues still have to pay, cover it; one order a queue a turn. The bot
 /// gives no command it knows to be refused.
@@ -84,7 +90,20 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             }
 
             _placement.Toward = context.Plan.AttackedFrom;
-            if (_placement.TryFind(view, context.Memory, yard, ready.DefIndex, out var corner) && corner is { } place)
+            _placement.Harbour = context.Map.Harbour;
+            if (!_placement.TryFind(view, context.Memory, yard, ready.DefIndex, out var corner))
+            {
+                return;
+            }
+
+            if (corner is null && view.Rules.Database.Buildings[ready.DefIndex].Water)
+            {
+                // No room on the water for the shipyard after all (M11): its money back, rather than a queue held for ever.
+                context.Issue(new CancelProductionCommand(view.Me, context.ExecuteTick, context.NextSequence(), ProductionKind.Building, ready.DefIndex));
+                context.Log?.Add(context.Tick, context.Module, $"finds no water for {view.Rules.Database.Buildings[ready.DefIndex].Id}, cancels it");
+            }
+
+            if (corner is { } place)
             {
                 context.Issue(new PlaceBuildingCommand(view.Me, context.ExecuteTick, context.NextSequence(), ready.DefIndex, place));
                 context.Plan.LastPlacement = (ready.DefIndex, place);
@@ -219,6 +238,27 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 _choices.Add(factory);
             }
 
+            // The shipyard on a map whose water leads to an enemy (M11), once its place has been seen; till then a unit goes to look.
+            var shipyard = EconomyManager.Factory(rules, faction.Id, ProductionCategory.Naval);
+            if (shipyard >= 0 && _have[shipyard] == 0 && context.Map.NavalRoute && !context.Plan.OreGone && view.Player.CanBuildBuilding(shipyard))
+            {
+                if (Seen(view, rules.Buildings[shipyard], context.Map.Harbour!.Value))
+                {
+                    _choices.Add(shipyard);
+                }
+                else
+                {
+                    LookAtHarbour(context, rules.Buildings[shipyard], context.Map.Harbour.Value);
+                }
+            }
+
+            // Up the technology (M11): with the army big enough to set out and the money there, the building that opens the most units.
+            if (settings.Quality != Profiles.BuildOrderQuality.Simple && Opener(context) is >= 0 and var opener
+                && view.Player.Credits - Promised(view) >= rules.Buildings[opener].Cost)
+            {
+                _choices.Add(opener);
+            }
+
             if (context.Plan.AttackedFrom is { } from && order is not null && order.Faction == faction.Id && DefenseOf(rules, order) is >= 0 and var defense
                 && Defenses(rules) < settings.MaxDefenses && !Covered(view, yard, from))
             {
@@ -226,6 +266,195 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             }
         }
     }
+
+    /// <summary>Whether every cell of <paramref name="def"/> on <paramref name="corner"/> has been explored.</summary>
+    private static bool Seen(AiWorldView view, BuildingDef def, CellPos corner)
+    {
+        for (var y = corner.Y; y < corner.Y + def.Footprint.Height; y++)
+        {
+            for (var x = corner.X; x < corner.X + def.Footprint.Width; x++)
+            {
+                if (!view.IsExplored(new CellPos(x, y)))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The unit of the army nearest the harbour, not the scout, goes to the land nearest its middle to see it (M11) — once, while it is not
+    /// on its way there already; the squads take it back once it stands.
+    /// </summary>
+    private static void LookAtHarbour(AiContext context, BuildingDef shipyard, CellPos harbour)
+    {
+        var view = context.View;
+        var middle = new CellPos(harbour.X + shipyard.Footprint.Width / 2, harbour.Y + shipyard.Footprint.Height / 2);
+        CellPos? shore = null;
+        for (var ring = 0; ring <= MapReading.HarbourReach && shore is null; ring++)
+        {
+            for (var dy = -ring; dy <= ring && shore is null; dy++)
+            {
+                for (var dx = -ring; dx <= ring; dx++)
+                {
+                    var cell = new CellPos(middle.X + dx, middle.Y + dy);
+                    // By the map as it was before the match: in the shroud every cell is enterable to the bot.
+                    if (IntMath.Max(IntMath.Abs(dx), IntMath.Abs(dy)) == ring && view.CanEnterOnPreview(cell, Locomotor.Track))
+                    {
+                        shore = cell;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (shore is not { } look)
+        {
+            return;
+        }
+
+        Unit? nearest = null;
+        var best = int.MaxValue;
+        foreach (var unit in view.OwnUnits)
+        {
+            if (!context.Units.InArmy(unit) || unit.Id == context.Plan.Scout)
+            {
+                continue;
+            }
+
+            // One goes, and once there stays till the squads take it back.
+            var distance = Distance(unit.Position.ToCell(), look);
+            if (distance <= 1 || (unit.MoveTarget is { } going && Distance(going.ToCell(), look) == 0))
+            {
+                return;
+            }
+
+            if (distance < best)
+            {
+                (nearest, best) = (unit, distance);
+            }
+        }
+
+        if (nearest is not null)
+        {
+            context.Issue(new MoveCommand(view.Me, context.ExecuteTick, context.NextSequence(), [nearest.Id], look.Center));
+            context.Log?.Add(context.Tick, context.Module, $"sends {nearest.Archetype.Id} to look at the water for the shipyard at {look.X},{look.Y}");
+        }
+    }
+
+    /// <summary>
+    /// The building that opens the most units of the army not yet open (M11), by the prerequisites — of a faction, its own country's, no
+    /// stolen technology — or, when none opens one at once, the one that opens the way to such a building; of as many the cheaper, then the
+    /// first. Only one the bot does not have yet, may build now, and that is no defense, no shipyard and no superweapon; -1 for none, and
+    /// none while the army is smaller than a squad that may set out (<see cref="AiSettings.MinAttackArmy"/>).
+    /// </summary>
+    private int Opener(AiContext context)
+    {
+        var view = context.View;
+        var rules = view.Rules.Database;
+        var army = 0;
+        foreach (var unit in view.OwnUnits)
+        {
+            army += context.Units.InArmy(unit) ? 1 : 0;
+        }
+
+        if (army < settings.MinAttackArmy)
+        {
+            return -1;
+        }
+
+        var owned = new SortedSet<string>(System.StringComparer.Ordinal);
+        foreach (var building in view.OwnBuildings)
+        {
+            if (building is { IsReady: true, Def: { } def })
+            {
+                owned.Add(def.Id);
+                owned.UnionWith(def.Provides);
+            }
+        }
+
+        var (best, bestOpened, bestCost) = (-1, 0, int.MaxValue);
+        for (var deep = 0; deep < 2 && best < 0; deep++)
+        {
+            for (var i = 0; i < rules.Buildings.Length; i++)
+            {
+                var def = rules.Buildings[i];
+                if (_have[i] > 0 || !view.Player.CanBuildBuilding(i) || def.Category == ProductionCategory.Defense || def.Water
+                    || def.Superweapon != SuperweaponKind.None)
+                {
+                    continue;
+                }
+
+                var with = new SortedSet<string>(owned, System.StringComparer.Ordinal) { def.Id };
+                with.UnionWith(def.Provides);
+                var opened = deep == 0 ? Opened(context, with, def) : Unlocked(context, with);
+                if (opened > bestOpened || (opened == bestOpened && opened > 0 && def.Cost < bestCost))
+                {
+                    (best, bestOpened, bestCost) = (i, opened, def.Cost);
+                }
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>How many units of the army, not open now, <paramref name="owned"/> opens — with a factory for them, or <paramref name="built"/> one.</summary>
+    private static int Opened(AiContext context, SortedSet<string> owned, BuildingDef? built)
+    {
+        var view = context.View;
+        var rules = view.Rules.Database;
+        var opened = 0;
+        foreach (var card in context.Units.Cards)
+        {
+            var unit = rules.Units[card.Index];
+            if (card.Use == Knowledge.UnitUse.Army && unit.Faction == view.Player.Faction.Id && !view.Player.CanBuildUnit(card.Index)
+                && !unit.AvailableLater && unit.RequiresStolen.Length == 0
+                && Rts.Simulation.Systems.TechTree.Allowed(view.Player.Country, unit.Countries, unit.ForbiddenCountries)
+                && All(unit.Prerequisites, owned)
+                && (view.HasFactory(unit.ProducedIn) || (built is not null && built.Produces.Contains(unit.ProducedIn))))
+            {
+                opened++;
+            }
+        }
+
+        return opened;
+    }
+
+    /// <summary>The most units of the army one more building of the faction opens on top of <paramref name="owned"/>.</summary>
+    private static int Unlocked(AiContext context, SortedSet<string> owned)
+    {
+        var rules = context.View.Rules.Database;
+        var best = 0;
+        foreach (var def in rules.Buildings)
+        {
+            if (def.Faction == context.View.Player.Faction.Id && !owned.Contains(def.Id) && !def.Water && def.Category != ProductionCategory.Defense
+                && def.Superweapon == SuperweaponKind.None && All(def.Prerequisites, owned))
+            {
+                var with = new SortedSet<string>(owned, System.StringComparer.Ordinal) { def.Id };
+                with.UnionWith(def.Provides);
+                best = IntMath.Max(best, Opened(context, with, def));
+            }
+        }
+
+        return best;
+    }
+
+    private static bool All(System.Collections.Immutable.ImmutableArray<string> prerequisites, SortedSet<string> owned)
+    {
+        foreach (var prerequisite in prerequisites)
+        {
+            if (!owned.Contains(prerequisite))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static int Distance(CellPos a, CellPos b) => IntMath.Max(IntMath.Abs(a.X - b.X), IntMath.Abs(a.Y - b.Y));
 
     /// <summary>The defense of the build order — its last step with a weapon — or -1 for none.</summary>
     private static int DefenseOf(RulesDatabase rules, BuildOrderDef order)

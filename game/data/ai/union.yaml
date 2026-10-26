@@ -63,38 +63,34 @@ saboteur_optimized:
   faction: union
   steps: [reactor, refinery, war_factory, barracks, reactor, radar]
 
-# The armies of the bots of the Union (step 6): the share of every kind of unit; a kind that cannot be built yet leaves its share
-# empty. against_infantry and against_vehicles are the counter table (M8 step 7): the share of the army a level picks against the enemy
-# goes to them by the infantry and the vehicles it fields. The shares are rounded to fixed point one by one and must still make 100%
-# exactly: 35%, 25%, 20%, 10% and 10% do not, 35%, 20%, 20%, 15% and 10% do.
+# The armies of the bots of the Union (step 6; M11, the bot that knows every weapon): the share of every role — against soldiers,
+# armour (for the fleet, ships), what flies and buildings — and of the fleet on a map whose water leads to the enemy. The bot picks the
+# units of a role itself, the three that fight that enemy best for their cost among those it can build (Rts.AI UnitKnowledge); a role
+# nothing fights yet leaves its share empty. The share a level picks against the enemy goes to the roles by what it fields. The shares
+# are rounded to fixed point one by one and must still make 100% exactly.
 standard_army:
   kind: army
   faction: union
-  shares: { heavy_tank: 40%, conscript: 25%, rocketeer: 20%, support_vehicle: 10%, tesla_tank: 5% }
-  against_infantry: [heavy_tank, support_vehicle]
-  against_vehicles: [rocketeer, tesla_tank]
+  roles: { anti_armor: 45%, anti_infantry: 30%, anti_air: 10%, anti_building: 15% }
+  navy: 30%
 
-# «Aggressor»: tanks first.
+# «Aggressor»: armour first.
 aggressor_army:
   kind: army
   faction: union
-  shares: { heavy_tank: 50%, conscript: 20%, rocketeer: 15%, support_vehicle: 10%, tesla_tank: 5% }
-  against_infantry: [heavy_tank, support_vehicle]
-  against_vehicles: [rocketeer, tesla_tank]
+  roles: { anti_armor: 55%, anti_infantry: 25%, anti_air: 5%, anti_building: 15% }
+  navy: 25%
 
-# «Builder»: a heavier mix, more tesla tanks once the battle lab stands.
+# «Builder»: more against the air, a fleet of its own.
 builder_army:
   kind: army
   faction: union
-  shares: { heavy_tank: 35%, rocketeer: 20%, conscript: 20%, support_vehicle: 15%, tesla_tank: 10% }
-  against_infantry: [heavy_tank, support_vehicle]
-  against_vehicles: [rocketeer, tesla_tank]
+  roles: { anti_armor: 40%, anti_infantry: 35%, anti_air: 15%, anti_building: 10% }
+  navy: 30%
 
-# «Saboteur»: tanks for its raids — a harvester is armoured, and the flak of the flak track does a fifth of its damage to it (M8 step 10a);
-# the flak track, the fastest of the Union, a quarter.
+# «Saboteur»: armour for its raids — a harvester is armoured (M8 step 10a).
 saboteur_army:
   kind: army
   faction: union
-  shares: { heavy_tank: 40%, support_vehicle: 25%, rocketeer: 20%, conscript: 10%, tesla_tank: 5% }
-  against_infantry: [heavy_tank, support_vehicle]
-  against_vehicles: [rocketeer, tesla_tank]
+  roles: { anti_armor: 50%, anti_infantry: 30%, anti_air: 5%, anti_building: 15% }
+  navy: 20%

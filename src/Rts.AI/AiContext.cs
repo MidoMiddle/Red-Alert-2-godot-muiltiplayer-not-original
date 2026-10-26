@@ -3,6 +3,7 @@ using Rts.AI.View;
 using Rts.Simulation.Ai;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Random;
+using Rts.Simulation.Rules;
 
 namespace Rts.AI;
 
@@ -34,6 +35,16 @@ public sealed class AiContext
     public AiMemory Memory { get; }
 
     public AiSettings Settings { get; }
+
+    /// <summary>What the bot knows of every unit of the rules (M11): worked out from the data, shared by the bots of the rules.</summary>
+    public Knowledge.UnitKnowledge Units => _units ??= Knowledge.UnitKnowledge.Of(View.Rules);
+
+    /// <summary>What the bot read from the map on its first look at it (M11): the ways by land and by water to the enemy.</summary>
+    public Knowledge.MapReading Map => _map ??= Knowledge.MapReading.Of(View, Modules.EconomyManager.Factory(View.Rules.Database, View.Player.Faction.Id, ProductionCategory.Naval) is >= 0 and var yard
+        ? View.Rules.Database.Buildings[yard] : null);
+
+    private Knowledge.UnitKnowledge? _units;
+    private Knowledge.MapReading? _map;
 
     /// <summary>What the modules agree on: the buildings wanted now.</summary>
     public AiPlan Plan { get; } = new();

@@ -78,8 +78,9 @@ public sealed class BasePlacementTests
         scene.Look();
         var (corner, _) = Find(scene, yard, "refinery");
 
-        // East of the yard, as near the ore as the base allows (within 2 cells of it, a cell free between).
-        Assert.InRange(Assert.NotNull(corner).X, 34, 35);
+        // East of the yard, as near the ore as the base allows: the refinery of RA2 is 4 cells wide, its pad on its east side, and it
+        // may stand right by the ore (36–39, the ore from 40).
+        Assert.InRange(Assert.NotNull(corner).X, 34, 36);
     }
 
     [Fact]
@@ -99,17 +100,17 @@ public sealed class BasePlacementTests
     {
         var (scene, yard) = Base();
         var factory = scene.Build(Scene.Me, "war_factory", 20, 20);
-        // The exit of the factory is (21, 24): rock on both sides of it, so only the cell below leads out.
-        scene.World.Map.SetLand(new CellPos(20, 24), LandType.Rock);
-        scene.World.Map.SetLand(new CellPos(22, 24), LandType.Rock);
+        // The factory of RA2 is 5 × 3, its exit (22, 23): rock on both sides of it, so only the cell below leads out.
+        scene.World.Map.SetLand(new CellPos(21, 23), LandType.Rock);
+        scene.World.Map.SetLand(new CellPos(23, 23), LandType.Rock);
         scene.Look();
         var reactor = TestRules.Standard.Database.Buildings[Index("reactor")];
 
-        Assert.False(BasePlacement.KeepsPassages(scene.View, reactor, new CellPos(21, 25)));
+        Assert.False(BasePlacement.KeepsPassages(scene.View, reactor, new CellPos(21, 24)));
         Assert.True(BasePlacement.KeepsPassages(scene.View, reactor, new CellPos(36, 36)));
         var (corner, _) = Find(scene, yard, "reactor");
         Assert.True(BasePlacement.KeepsPassages(scene.View, reactor, Assert.NotNull(corner)));
-        Assert.NotEqual(new CellPos(21, 25), corner);
+        Assert.NotEqual(new CellPos(21, 24), corner);
         Assert.Equal(factory.Owner, Scene.Me);
     }
 

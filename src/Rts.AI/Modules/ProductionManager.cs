@@ -24,15 +24,23 @@ namespace Rts.AI.Modules;
 /// all when the strategist holds the army back. A factory none of whose kinds is short waits: the mix of the data holds, and money that
 /// piles up goes to the second war factory of the planner, which makes the tanks — the slowest part of the army — come faster. While the
 /// economy wants a harvester (<see cref="AiPlan.HarvestersWanted"/>) the war factory is left to it.
+/// Since M11 (the bot that knows every weapon) the army of the data may be one of roles: the bot then picks the units itself, by what
+/// their weapons do (<see cref="Roles"/>), builds a hero apart from them, and the shipyard and the air command are factories too.
 /// </summary>
 public sealed class ProductionManager(AiSettings settings) : IAiModule
 {
-    private static readonly ProductionCategory[] Factories = [ProductionCategory.Infantry, ProductionCategory.Vehicle];
+    private static readonly ProductionCategory[] Factories =
+        [ProductionCategory.Infantry, ProductionCategory.Vehicle, ProductionCategory.Naval, ProductionCategory.Aircraft];
+
+    /// <summary>The units of a role that share it, the best first, and their parts of it: 3 : 2 : 1 (M11).</summary>
+    public static readonly int[] RoleParts = [3, 2, 1];
 
     private static readonly ProductionCategory[] Queues =
         [ProductionCategory.Infantry, ProductionCategory.Vehicle, ProductionCategory.Building, ProductionCategory.Defense];
 
     private readonly List<(int Unit, long Share)> _target = new();
+    private readonly SortedDictionary<int, long> _byUnit = new();
+    private readonly List<Knowledge.UnitCard> _candidates = new();
     private readonly List<(int Unit, long Shortfall, int Order)> _short = new();
     private int[] _have = [];
 
@@ -54,12 +62,19 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         foreach (var category in Factories)
         {
             // While the economy wants a harvester the war factory is left to it: a queue runs first come, first served.
+            // The shipyard and the air command keep as many as the war factory.
             var queued = category == ProductionCategory.Infantry ? settings.InfantryQueued : settings.VehiclesQueued;
             if (view.Player.Queue(category).Count < queued && view.HasFactory(category)
                 && !(category == ProductionCategory.Vehicle && context.Plan.HarvestersWanted))
             {
                 open |= 1 << (int)category;
             }
+        }
+
+        // A hero first (M11), one at a time, with an army of roles.
+        if (rules.TryGetArmy(settings.Army, out var def) && !def.Roles.IsEmpty)
+        {
+            Hero(context, ref open, ref money);
         }
 
         // The kind that falls shortest of its share comes first, whichever factory makes it; when it cannot be paid for yet, the money
@@ -86,6 +101,46 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         }
     }
 
+    /// <summary>
+    /// A hero the bot can build now (<see cref="Knowledge.UnitUse.Hero"/>), with fewer of its kind than the limit of the data living and
+    /// queued, its factory open and the money there, is ordered (M11): one a turn, the first of the rules.
+    /// </summary>
+    private void Hero(AiContext context, ref int open, ref int money)
+    {
+        var view = context.View;
+        var rules = view.Rules.Database;
+        foreach (var card in context.Units.Cards)
+        {
+            var unit = rules.Units[card.Index];
+            var category = CategoryOf(unit);
+            if (card.Use != Knowledge.UnitUse.Hero || (open & (1 << (int)category)) == 0 || !view.Player.CanBuildUnit(card.Index)
+                || unit.Cost > money)
+            {
+                continue;
+            }
+
+            var have = 0;
+            foreach (var own in view.OwnUnits)
+            {
+                have += own.Archetype.Id == unit.Id ? 1 : 0;
+            }
+
+            foreach (var item in view.Player.Queue(category))
+            {
+                have += item.Kind == ProductionKind.Unit && item.DefIndex == card.Index ? 1 : 0;
+            }
+
+            if (have < unit.BuildLimit)
+            {
+                context.Issue(new ProduceCommand(view.Me, context.ExecuteTick, context.NextSequence(), ProductionKind.Unit, card.Index, 1));
+                context.Log?.Add(context.Tick, context.Module, $"orders the hero {unit.Id}");
+                money -= unit.Cost;
+                open &= ~(1 << (int)category);
+                return;
+            }
+        }
+    }
+
     /// <summary>The share of every unit that can be built now, in hundredths of a percent of the army (10 000 the whole), sorted by index.</summary>
     internal IReadOnlyList<(int Unit, long Share)> Shares => _target;
 
@@ -98,6 +153,11 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         if (!rules.TryGetArmy(settings.Army, out var army) || army.Faction != view.Player.Faction.Id)
         {
             return 0;
+        }
+
+        if (!army.Roles.IsEmpty)
+        {
+            return Roles(context, army);
         }
 
         long whole = 0;
@@ -129,6 +189,118 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
 
         return _target.Count;
     }
+
+    /// <summary>
+    /// The target of an army of roles (M11), into <see cref="Shares"/>: the fleet gets <see cref="ArmyDef.Navy"/> of it on a map whose
+    /// water leads to an enemy (<see cref="Knowledge.MapReading.NavalRoute"/>) — all of it when no land does — and the army on the
+    /// ground and in the air the rest. Each share of a role (<see cref="RoleWeights"/>) goes to the units of that use the bot can build
+    /// now, a factory for them standing, that are worth the most in it (<see cref="Knowledge.UnitCard.Worth"/>): the best three, by
+    /// <see cref="RoleParts"/>, equal ones to the smaller index. A role no such unit fights keeps its share empty, as a kind not yet open
+    /// does. Returns how many kinds there are.
+    /// </summary>
+    private int Roles(AiContext context, ArmyDef army)
+    {
+        var view = context.View;
+        var map = context.Map;
+        var navy = !map.NavalRoute ? 0L : map.LandRoute ? Part(army.Navy) : 10_000L;
+        var weights = RoleWeights(context, army);
+        _byUnit.Clear();
+        foreach (var (use, pool) in new[] { (Knowledge.UnitUse.Army, 10_000L - navy), (Knowledge.UnitUse.Fleet, navy) })
+        {
+            if (pool == 0)
+            {
+                continue;
+            }
+
+            for (var role = 1; role <= Knowledge.UnitCard.RoleCount; role++)
+            {
+                _candidates.Clear();
+                foreach (var card in context.Units.Cards)
+                {
+                    if (card.Use == use && card.Worth[role - 1] > 0 && view.Player.CanBuildUnit(card.Index)
+                        && view.HasFactory(CategoryOf(view.Rules.Database.Units[card.Index])))
+                    {
+                        _candidates.Add(card);
+                    }
+                }
+
+                var r = role - 1;
+                _candidates.Sort((a, b) => a.Worth[r] != b.Worth[r] ? b.Worth[r].CompareTo(a.Worth[r]) : a.Index.CompareTo(b.Index));
+                var taken = IntMath.Min(_candidates.Count, RoleParts.Length);
+                var parts = 0;
+                for (var i = 0; i < taken; i++)
+                {
+                    parts += RoleParts[i];
+                }
+
+                for (var i = 0; i < taken; i++)
+                {
+                    var share = pool * weights[r] / 10_000 * RoleParts[i] / parts;
+                    _byUnit[_candidates[i].Index] = _byUnit.GetValueOrDefault(_candidates[i].Index) + share;
+                }
+            }
+        }
+
+        _target.Clear();
+        foreach (var (unit, share) in _byUnit)
+        {
+            if (share > 0)
+            {
+                _target.Add((unit, share));
+            }
+        }
+
+        if (context.Log is not null)
+        {
+            context.Plan.ArmyTarget = [.. _target.Select(share => (view.Rules.Database.Units[share.Unit].Id, share.Share))];
+        }
+
+        return _target.Count;
+    }
+
+    /// <summary>
+    /// The shares of the roles of <paramref name="army"/>, in hundredths of a percent, by role (M11): <see cref="AiSettings.CounterPickPercent"/>
+    /// of the shares against soldiers, vehicles and what flies goes to them as the enemy fields them (<see cref="EnemyPicture.Composition"/>:
+    /// a ship counts as a vehicle); the share against buildings stays as it is. As they are with no enemy seen.
+    /// </summary>
+    private long[] RoleWeights(AiContext context, ArmyDef army)
+    {
+        var weights = new long[Knowledge.UnitCard.RoleCount];
+        foreach (var role in army.Roles)
+        {
+            weights[(int)role.Role - 1] = Part(role.Share);
+        }
+
+        var rules = context.View.Rules.Database;
+        var seen = new long[Knowledge.UnitCard.RoleCount];
+        long total = 0;
+        foreach (var (type, weight) in context.Memory.Estimate.Total.Composition)
+        {
+            var index = rules.IndexOfUnit(UnitTypes.IdOf(type));
+            if (index >= 0)
+            {
+                seen[(int)Knowledge.UnitKnowledge.RoleAgainst(rules.Units[index]) - 1] += weight;
+                total += weight;
+            }
+        }
+
+        var pick = settings.CounterPickPercent;
+        if (total == 0 || pick == 0)
+        {
+            return weights;
+        }
+
+        var fighting = weights[0] + weights[1] + weights[2];
+        for (var r = 0; r < 3; r++)
+        {
+            weights[r] = (weights[r] * (100 - pick) + fighting * seen[r] / total * pick) / 100;
+        }
+
+        return weights;
+    }
+
+    /// <summary>A fraction as hundredths of a percent, rounded: 40 % is not exact in fixed point.</summary>
+    private static long Part(Fixed fraction) => (fraction.Raw * 10_000 + (1L << 15)) >> 16;
 
     /// <summary>
     /// Picks <see cref="AiSettings.CounterPickPercent"/> of the army against <paramref name="enemy"/> (M8 step 7): of the whole of the
@@ -199,7 +371,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         return context.Choose(_short).Unit;
     }
 
-    /// <summary>Counts the fighting units of the bot — those with a weapon, not the harvesters — and those queued, by kind; returns the sum.</summary>
+    /// <summary>Counts the fighting units of the bot — those of the army and of the fleet (M11) — and those queued, by kind; returns the sum.</summary>
     private int CountArmy(AiWorldView view)
     {
         var rules = view.Rules.Database;
@@ -210,9 +382,10 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
 
         System.Array.Clear(_have);
         var army = 0;
+        var knowledge = Knowledge.UnitKnowledge.Of(view.Rules);
         foreach (var unit in view.OwnUnits)
         {
-            if (unit.Archetype.Armed && unit.Harvester is null)
+            if ((knowledge.InArmy(unit) && knowledge.Of(unit).Use != Knowledge.UnitUse.Hero) || knowledge.InFleet(unit))
             {
                 var index = rules.IndexOfUnit(unit.Archetype.Id);
                 _have[index]++;
@@ -224,7 +397,7 @@ public sealed class ProductionManager(AiSettings settings) : IAiModule
         {
             foreach (var item in view.Player.Queue(category))
             {
-                if (item.Kind == ProductionKind.Unit && rules.Units[item.DefIndex].Primary.Length > 0 && rules.Units[item.DefIndex].HarvestCapacity == 0)
+                if (item.Kind == ProductionKind.Unit && knowledge[item.DefIndex].Use is Knowledge.UnitUse.Army or Knowledge.UnitUse.Fleet)
                 {
                     _have[item.DefIndex]++;
                     army++;

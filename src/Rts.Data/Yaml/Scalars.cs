@@ -209,6 +209,30 @@ internal static class Scalars
         return ImmutableArray.CreateRange(shares.Values);
     }
 
+    /// <summary>The words of the roles of an army (<see cref="ArmyRole"/>), in the order of their values.</summary>
+    public static readonly string[] RoleWords = ["anti_infantry", "anti_armor", "anti_air", "anti_building"];
+
+    /// <summary>A mapping from the roles of an army to percentages, such as <c>{ anti_armor: 50%, anti_infantry: 30% }</c>; sorted by role.</summary>
+    public static ImmutableArray<RoleShare> RoleShares(string fileName, YamlNode node)
+    {
+        if (node is not YamlMappingNode mapping)
+        {
+            throw RulesFormatException.At(fileName, node, "expected a mapping from roles to percentages such as anti_armor: 50%");
+        }
+
+        var shares = new SortedDictionary<ArmyRole, RoleShare>();
+        foreach (var entry in mapping)
+        {
+            var role = (ArmyRole)(Array.IndexOf(RoleWords, Choice(fileName, entry.Key, RoleWords)) + 1);
+            if (!shares.TryAdd(role, new RoleShare(role, Percent(fileName, entry.Value))))
+            {
+                throw RulesFormatException.At(fileName, entry.Key, $"role '{RoleWords[(int)role - 1]}' repeats");
+            }
+        }
+
+        return ImmutableArray.CreateRange(shares.Values);
+    }
+
     /// <summary>One of the given words, such as <c>infantry</c> or <c>vehicle</c>.</summary>
     public static string Choice(string fileName, YamlNode node, params string[] options)
     {

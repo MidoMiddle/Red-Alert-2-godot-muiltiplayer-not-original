@@ -757,9 +757,30 @@ internal static class RulesValidator
                 }
             }
 
-            if (total != Fixed.One)
+            // An army of units or of roles (M11): one of the two.
+            if (army.Shares.IsEmpty == army.Roles.IsEmpty)
+            {
+                Error(army.Id, army.Shares.IsEmpty ? "shares" : "roles", $"army '{army.Id}' needs its shares of units or of roles, not both");
+            }
+            else if (!army.Shares.IsEmpty && total != Fixed.One)
             {
                 Error(army.Id, "shares", $"the shares of army '{army.Id}' do not make 100%");
+            }
+
+            var roles = Fixed.Zero;
+            foreach (var role in army.Roles)
+            {
+                roles += role.Share;
+            }
+
+            if (!army.Roles.IsEmpty && roles != Fixed.One)
+            {
+                Error(army.Id, "roles", $"the roles of army '{army.Id}' do not make 100%");
+            }
+
+            if (army.Navy < Fixed.Zero || army.Navy > Fixed.One || (army.Navy > Fixed.Zero && army.Roles.IsEmpty))
+            {
+                Error(army.Id, "navy", $"the fleet of army '{army.Id}' is a share from 0% to 100% of an army of roles");
             }
 
             foreach (var (key, units) in new[] { ("against_infantry", army.AgainstInfantry), ("against_vehicles", army.AgainstVehicles) })

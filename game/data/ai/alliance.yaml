@@ -1,5 +1,5 @@
-# The build orders and armies of the bots of the Alliance, as those of the Union in union.yaml with the Alliance's buildings and its
-# two fighting units (docs/content/names.md). Not tuned: the Arena has not played them (owner's decision); the balance comes with M11c.
+# The build orders and armies of the bots of the Alliance, as those of the Union in union.yaml with the Alliance's buildings
+# (docs/content/names.md). Not tuned: the Arena has not played them (owner's decision); the balance comes with M11c.
 
 # «Balanced».
 alliance_balanced_simple:
@@ -60,31 +60,27 @@ alliance_saboteur_optimized:
   faction: alliance
   steps: [alliance_power_plant, alliance_ore_refinery, alliance_barracks, alliance_war_factory, alliance_power_plant, alliance_air_force_command]
 
-# The armies: the light tank and the rifleman are all the Alliance fields until M11c.
+# The armies, by roles as those of the Union in union.yaml (M11): the bot picks the units of each role itself.
 alliance_standard_army:
   kind: army
   faction: alliance
-  shares: { alliance_light_tank: 60%, alliance_rifleman: 40% }
-  against_infantry: [alliance_light_tank]
-  against_vehicles: [alliance_light_tank]
+  roles: { anti_armor: 45%, anti_infantry: 30%, anti_air: 10%, anti_building: 15% }
+  navy: 30%
 
 alliance_aggressor_army:
   kind: army
   faction: alliance
-  shares: { alliance_light_tank: 70%, alliance_rifleman: 30% }
-  against_infantry: [alliance_light_tank]
-  against_vehicles: [alliance_light_tank]
+  roles: { anti_armor: 55%, anti_infantry: 25%, anti_air: 5%, anti_building: 15% }
+  navy: 25%
 
 alliance_builder_army:
   kind: army
   faction: alliance
-  shares: { alliance_light_tank: 55%, alliance_rifleman: 45% }
-  against_infantry: [alliance_light_tank]
-  against_vehicles: [alliance_light_tank]
+  roles: { anti_armor: 40%, anti_infantry: 35%, anti_air: 15%, anti_building: 10% }
+  navy: 30%
 
 alliance_saboteur_army:
   kind: army
   faction: alliance
-  shares: { alliance_light_tank: 75%, alliance_rifleman: 25% }
-  against_infantry: [alliance_light_tank]
-  against_vehicles: [alliance_light_tank]
+  roles: { anti_armor: 50%, anti_infantry: 30%, anti_air: 5%, anti_building: 15% }
+  navy: 20%

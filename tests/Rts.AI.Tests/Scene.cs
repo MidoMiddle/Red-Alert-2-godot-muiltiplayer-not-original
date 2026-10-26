@@ -32,7 +32,8 @@ internal sealed class Scene
     /// <param name="perceptionDelay">How late the bot notices an enemy (M8 step 3): none unless a test is about it.</param>
     /// <param name="rules">The rules of the scene: those of the simulation tests unless a scene needs the game's — its costs, its weapons.</param>
     /// <param name="match">A match of the scene, for its teams (M8 step 11): its players start with their vehicles on the starts.</param>
-    /// <param name="map">The map of the scene, with its buildings: an empty 64 × 64 one unless a test needs another.</param>
+    /// <param name="map">The map of the scene, with its buildings: an empty 64 × 64 one unless a test needs another — of the land speeds of
+    /// <paramref name="rules"/> with those.</param>
     public Scene(
         ImmutableArray<CellPos> mapStarts = default, int perceptionDelay = 0, Rts.Simulation.Rules.GameRules? rules = null,
         Rts.Simulation.Matches.MatchSetup? match = null, MapGrid? map = null)
@@ -41,7 +42,7 @@ internal sealed class Scene
             ? new GameSimulation(SimulationSettings.ForMatch(match, new MapGrid(64, 64)), TestRules.Standard)
             : rules is null
             ? new GameSimulation(new SimulationSettings(1, map ?? new MapGrid(64, 64)), TestRules.Standard)
-            : new GameSimulation(new SimulationSettings(1, new MapGrid(64, 64, rules.Land)), rules);
+            : new GameSimulation(new SimulationSettings(1, map ?? new MapGrid(64, 64, rules.Land)), rules);
         var starts = mapStarts.IsDefault ? Corners : mapStarts;
         View = new AiWorldView(World, Me, starts[0], starts, perceptionDelay);
         Memory = new AiMemory();

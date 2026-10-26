@@ -14,8 +14,9 @@ using Rts.Simulation.World;
 namespace Rts.AI.Modules;
 
 /// <summary>
-/// The squads of a bot (docs/implementation/M5_first_bot.md, 4.6, step 8). Every fighting unit but the scout and the harvesters is in a
-/// squad; a squad goes through <see cref="SquadState"/>:
+/// The squads of a bot (docs/implementation/M5_first_bot.md, 4.6, step 8). Every unit of the army but the scout is in a squad — since
+/// M11 a unit of <see cref="Knowledge.UnitUse.Army"/>: the ships sail with the <see cref="FleetManager"/>; a squad goes through
+/// <see cref="SquadState"/>:
 /// <list type="bullet">
 /// <item><b>gathering</b> — new units come to the gathering point, <see cref="AiSettings.GatherCells"/> from the start toward the
 /// enemy; <b>ready</b> once it has <see cref="AiSettings.MinAttackArmy"/> units (more by <see cref="AiSettings.AttackGrowthPercent"/>
@@ -307,7 +308,8 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         Squad? gathering = null;
         foreach (var unit in context.View.OwnUnits)
         {
-            if (unit.Archetype.Armed && unit.Harvester is null && unit.Id != scout && !_inSquads.Contains(unit.Id.Value))
+            // The army only (M11): the ships sail with the fleet, a unit whose use the bot does not know yet stays where it is.
+            if (context.Units.InArmy(unit) && unit.Id != scout && !_inSquads.Contains(unit.Id.Value))
             {
                 gathering = Gathering(gathering);
                 gathering.Add(unit.Id);
@@ -496,7 +498,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
         var own = 0;
         foreach (var unit in context.View.OwnUnits)
         {
-            if (unit.Archetype.Armed && unit.Harvester is null)
+            if (context.Units.InArmy(unit))
             {
                 own += context.Memory.StrengthOf(unit);
             }

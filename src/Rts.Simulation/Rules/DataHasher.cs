@@ -239,6 +239,19 @@ public static class DataHasher
 
             Add(hash, army.AgainstInfantry);
             Add(hash, army.AgainstVehicles);
+
+            // The roles and the fleet (M11): an army of units hashes as before.
+            if (!army.Roles.IsEmpty)
+            {
+                hash.Add(army.Roles.Length);
+                foreach (var role in army.Roles)
+                {
+                    hash.Add((int)role.Role);
+                    hash.Add(role.Share.Raw);
+                }
+
+                hash.Add(army.Navy.Raw);
+            }
         }
 
         // The levels of the bots (M5 step 14; M8 step 1), every number in the order of the keys, a choice by the place of its word.

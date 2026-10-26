@@ -94,13 +94,13 @@ public sealed class DefenseManager(AiSettings settings, Team.TeamBlackboard? tea
         Recall(plan, known, defense);
     }
 
-    /// <summary>The strength of the bot's own army: its armed units but the harvesters.</summary>
+    /// <summary>The strength of the bot's own army: the units of its squads (M11: not the fleet, not those it does not use yet).</summary>
     private static int Army(AiContext context)
     {
         var strength = 0;
         foreach (var unit in context.View.OwnUnits)
         {
-            if (unit.Archetype.Armed && unit.Harvester is null)
+            if (context.Units.InArmy(unit))
             {
                 strength += context.Memory.StrengthOf(unit);
             }

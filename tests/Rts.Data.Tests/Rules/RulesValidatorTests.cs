@@ -140,11 +140,26 @@ public sealed class RulesValidatorTests
     [InlineData("heavy_tank: 60%", "heavy_tank: 50%", "the shares of army 'standard_army' do not make 100%")]
     [InlineData("conscript: 40%", "reactor: 40%", "'standard_army' refers to unit 'reactor', but 'reactor' is building")]
     [InlineData("kind: army\n  faction: union", "kind: army\n  faction: allies", "'standard_army' refers to faction 'allies', which is not defined")]
+    [InlineData("conscript: 40% }", "conscript: 40% }\n  roles: { anti_armor: 100% }", "army 'standard_army' needs its shares of units or of roles, not both")]
+    [InlineData("shares: { heavy_tank: 60%, conscript: 40% }\n  against_infantry: [heavy_tank]\n  against_vehicles: [conscript]",
+        "roles: { anti_armor: 60%, anti_infantry: 30% }", "the roles of army 'standard_army' do not make 100%")]
+    [InlineData("against_vehicles: [conscript]", "against_vehicles: [conscript]\n  navy: 30%",
+        "the fleet of army 'standard_army' is a share from 0% to 100% of an army of roles")]
+    [InlineData("shares: { heavy_tank: 60%, conscript: 40% }\n  against_infantry: [heavy_tank]\n  against_vehicles: [conscript]",
+        "roles: { anti_armor: 60%, anti_infantry: 40% }\n  navy: 120%", "the fleet of army 'standard_army' is a share from 0% to 100% of an army of roles")]
     public void An_army_of_the_bots_is_checked_like_the_rest(string text, string replacement, string reason)
     {
         var errors = Errors(Edited(Dataset(), BuildOrders, text, replacement));
 
         Assert.Contains(errors, error => error.FileName == BuildOrders && error.Reason.Contains(reason, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_role_of_an_army_is_one_of_the_four()
+    {
+        var error = Fails(BuildOrders, "shares: { heavy_tank: 60%, conscript: 40% }", "roles: { anti_tank: 100% }");
+
+        Assert.Contains("'anti_tank' must be one of anti_infantry, anti_armor, anti_air, anti_building", error.Reason);
     }
 
     [Theory]

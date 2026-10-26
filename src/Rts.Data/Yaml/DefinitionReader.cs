@@ -54,7 +54,7 @@ internal static class DefinitionReader
 
     private static readonly string[] BuildOrderKeys = ["faction", "steps"];
 
-    private static readonly string[] ArmyKeys = ["faction", "shares", "against_infantry", "against_vehicles"];
+    private static readonly string[] ArmyKeys = ["faction", "shares", "roles", "navy", "against_infantry", "against_vehicles"];
 
     private static readonly string[] PersonalityKeys =
     [
@@ -398,7 +398,9 @@ internal static class DefinitionReader
         {
             Id = definition.Id,
             Faction = fields.Required("faction", Scalars.Id, ""),
-            Shares = fields.Required("shares", Scalars.UnitShares, ImmutableArray<UnitShare>.Empty),
+            Shares = fields.Optional("shares", Scalars.UnitShares, ImmutableArray<UnitShare>.Empty),
+            Roles = fields.Optional("roles", Scalars.RoleShares, ImmutableArray<RoleShare>.Empty),
+            Navy = fields.Optional("navy", Scalars.Percent, Fixed.Zero),
             AgainstInfantry = fields.Optional("against_infantry", Scalars.IdList, ImmutableArray<string>.Empty),
             AgainstVehicles = fields.Optional("against_vehicles", Scalars.IdList, ImmutableArray<string>.Empty),
         };
