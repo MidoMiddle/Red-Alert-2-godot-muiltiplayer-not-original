@@ -292,14 +292,31 @@ public static class BuildingLooks
             Box(0.45f, 0.4f, 0.1f, 0.1f, 0.25f, 0.8f, LookTint.Trim),
             .. Flag(-0.75f, 0.25f, -0.75f, LookTint.Owner),
         ],
+        // RA2's Ore Refinery (the owner's screenshot, 2026-10-26): a dark plate, two tall chimneys at the back, a blue hall with an
+        // arched roof and domes in the middle, and on the east side the pad the harvesters unload on (dock_cell [3, 1]), open to drive on.
         ["alliance_ore_refinery"] =
         [
-            Box(2.8f, 0.35f, 2.8f, 0, 0, 0, LookTint.Body),
-            Box(1.6f, 0.8f, 1.2f, -0.5f, 0.35f, -0.6f, LookTint.Roof),
-            Cyl(0.7f, 1.2f, 0.9f, 0.35f, -0.8f, LookTint.Metal),
-            Dome(0.7f, 0.9f, 1.55f, -0.8f, LookTint.Metal),
-            Cyl(0.5f, 0.9f, 0.9f, 0.35f, 0.1f, LookTint.Metal),
-            Box(0.35f, 0.12f, 1.0f, 0, 0.5f, 0.75f, LookTint.Accent),
+            Box(2.9f, 0.12f, 2.9f, -0.5f, 0, 0, LookTint.Concrete),
+            Box(0.95f, 0.12f, 0.95f, 1.5f, 0, -1.0f, LookTint.Concrete),
+            Box(0.95f, 0.12f, 0.95f, 1.5f, 0, 1.0f, LookTint.Concrete),
+            Box(0.9f, 0.03f, 0.9f, 1.5f, 0, 0, LookTint.Dark),
+            Box(0.06f, 0.01f, 0.8f, 1.12f, 0.03f, 0, LookTint.Accent),
+            Box(0.06f, 0.01f, 0.8f, 1.88f, 0.03f, 0, LookTint.Accent),
+            Cyl(0.62f, 0.5f, -1.45f, 0.12f, -0.75f, LookTint.Metal),
+            Cyl(0.42f, 1.9f, -1.45f, 0.12f, -0.75f, LookTint.Metal),
+            Cyl(0.46f, 0.08f, -1.45f, 0.8f, -0.75f, LookTint.Roof),
+            Cyl(0.52f, 0.15f, -1.45f, 2.02f, -0.75f, LookTint.Trim),
+            Cyl(0.42f, 1.9f, -0.55f, 0.12f, -1.05f, LookTint.Metal),
+            Cyl(0.46f, 0.08f, -0.55f, 0.8f, -1.05f, LookTint.Roof),
+            Cyl(0.52f, 0.15f, -0.55f, 2.02f, -1.05f, LookTint.Trim),
+            Box(1.6f, 0.45f, 1.5f, -0.2f, 0.12f, 0.2f, LookTint.Roof),
+            Tube(1.0f, 1.5f, -0.2f, 0.57f, 0.2f, LookTint.Body, 90f, 90f),
+            Dome(0.26f, -0.75f, 0.98f, -0.25f, LookTint.Roof),
+            Dome(0.26f, -0.2f, 1.07f, -0.25f, LookTint.Roof),
+            Dome(0.26f, 0.35f, 0.98f, -0.25f, LookTint.Roof),
+            Box(0.45f, 0.08f, 0.35f, 0.75f, 0.12f, 0, LookTint.Trim),
+            Box(0.5f, 0.35f, 0.5f, 0.85f, 0.12f, -1.0f, LookTint.Metal),
+            Cyl(0.3f, 0.3f, 0.85f, 0.12f, 1.05f, LookTint.Trim),
         ],
         ["alliance_war_factory"] =
         [
@@ -700,14 +717,20 @@ public static class BuildingLooks
             Cyl(0.35f, 0.5f, 0, 1.05f, 0, LookTint.Trim),
             Ball(0.45f, 0, 1.7f, 0, LookTint.Glow),
         ],
+        // The pad the harvesters unload on is on the east side (dock_cell [3, 1]), open to drive on (RA2).
         ["refinery"] =
         [
-            Box(2.8f, 0.35f, 2.8f, 0, 0, 0, LookTint.Body),
-            Box(1.5f, 0.7f, 1.3f, -0.6f, 0.35f, -0.6f, LookTint.Roof),
-            Cyl(0.8f, 1.1f, 0.8f, 0.35f, -0.8f, LookTint.Metal),
-            Cone(0.8f, 0.3f, 0.8f, 1.45f, -0.8f, LookTint.Metal),
-            Cyl(0.25f, 1.5f, -1.1f, 0.35f, 0.7f, LookTint.Trim),
-            Box(0.35f, 0.12f, 1.0f, 0, 0.5f, 0.75f, LookTint.Accent),
+            Box(2.9f, 0.35f, 2.9f, -0.5f, 0, 0, LookTint.Body),
+            Box(0.95f, 0.35f, 0.95f, 1.5f, 0, -1.0f, LookTint.Body),
+            Box(0.95f, 0.35f, 0.95f, 1.5f, 0, 1.0f, LookTint.Body),
+            Box(0.9f, 0.03f, 0.9f, 1.5f, 0, 0, LookTint.Dark),
+            Box(0.06f, 0.01f, 0.8f, 1.12f, 0.03f, 0, LookTint.Accent),
+            Box(0.06f, 0.01f, 0.8f, 1.88f, 0.03f, 0, LookTint.Accent),
+            Box(1.8f, 0.7f, 1.4f, -0.8f, 0.35f, -0.5f, LookTint.Roof),
+            Cyl(0.8f, 1.1f, 0.45f, 0.35f, -0.9f, LookTint.Metal),
+            Cone(0.8f, 0.3f, 0.45f, 1.45f, -0.9f, LookTint.Metal),
+            Cyl(0.25f, 1.5f, -1.5f, 0.35f, 0.9f, LookTint.Trim),
+            Box(0.45f, 0.1f, 0.35f, 0.75f, 0.35f, 0, LookTint.Trim),
         ],
         ["barracks"] =
         [

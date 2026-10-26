@@ -59,7 +59,8 @@ alliance_ore_refinery:  # ore processing; gives a free harvester
   sight: 6
   footprint: [4, 3]  # RA2 Foundation 4x3 (OpenRA port; not confirmed)
   power: -50
-  dock_cell: [1, 3]
+  # RA2: the pad the harvesters unload on is in the footprint, on its east side; it stays open to drive on.
+  dock_cell: [3, 1]
   prerequisites: [power]
   spy_effect: steal_credits
   provides: [proc]  # RA2 prerequisite group PROC

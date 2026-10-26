@@ -463,7 +463,11 @@ public sealed class GameWorld
             CountryWeapon = !def.SuperweaponCountries.IsDefaultOrEmpty && !owner.IsNeutral && def.SuperweaponCountries.Contains(Player(owner).Country),
         };
         _entities.Add(building);
-        ChangeMap([new TakeBuildingEdit(cell, far)], events);
+        // A dock in the footprint (RA2: the refinery's pad) stays open to drive on.
+        CellPos? dock = def.DockCell is { X: >= 0, Y: >= 0 } offset && offset.X < def.Footprint.Width && offset.Y < def.Footprint.Height
+            ? new CellPos(cell.X + offset.X, cell.Y + offset.Y)
+            : null;
+        ChangeMap([new TakeBuildingEdit(cell, far, dock)], events);
         BuildingsChanged();
         return building;
     }

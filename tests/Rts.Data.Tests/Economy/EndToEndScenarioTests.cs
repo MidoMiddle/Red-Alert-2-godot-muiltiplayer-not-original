@@ -18,10 +18,11 @@ public sealed class EndToEndScenarioTests
     // Twin Rivers has a small field by the base that runs out in the fifth minute: the harvester then drives to far fields and brings
     // in less. That is the map, not the data (step 14 does not change maps). Frozen Crossing redrawn on a 90x90 grid with a playable
     // area (M7) brings in 845 a minute, a hair under the old 850; with buildings three cells from the base (2026-10-24) the refinery
-    // stands elsewhere by the ore and the harvester drives a little farther: 809.
+    // stands elsewhere by the ore and the harvester drives a little farther: 809. With the refinery's pad in its footprint on its east
+    // side (RA2, 2026-10-26) the harvester comes round to it: 782.
     public static readonly TheoryData<string, int, int> Maps = new()
     {
-        { "frozen-crossing", 800, 1150 },
+        { "frozen-crossing", 760, 1150 },
         { "twin-rivers", 500, 1150 },
     };
 

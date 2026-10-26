@@ -68,11 +68,14 @@ public sealed record RepairBridgeSegmentEdit(int BridgeId, int Segment) : MapEdi
     internal override void Apply(MapGrid map) => map.RepairSegment(map.Bridges[BridgeId - 1].Segments[Segment]);
 }
 
-/// <summary>A building is placed: the cells from <paramref name="From"/> to <paramref name="To"/> (its footprint) close to every mover.</summary>
-public sealed record TakeBuildingEdit(CellPos From, CellPos To) : MapEdit
+/// <summary>
+/// A building is placed: the cells from <paramref name="From"/> to <paramref name="To"/> (its footprint) close to every mover, but for its
+/// <paramref name="Dock"/> (RA2: the pad of a refinery), open to drive on.
+/// </summary>
+public sealed record TakeBuildingEdit(CellPos From, CellPos To, CellPos? Dock = null) : MapEdit
 {
     internal override (CellPos From, CellPos To) Area(MapGrid map) => (From, To);
-    internal override void Apply(MapGrid map) => map.TakeBuilding(From, To);
+    internal override void Apply(MapGrid map) => map.TakeBuilding(From, To, Dock);
 }
 
 /// <summary>A building fell: the cells from <paramref name="From"/> to <paramref name="To"/> (its footprint) open; no ruins in M7.</summary>

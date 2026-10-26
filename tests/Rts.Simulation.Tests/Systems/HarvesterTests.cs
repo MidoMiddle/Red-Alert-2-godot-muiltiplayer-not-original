@@ -86,6 +86,23 @@ public sealed class HarvesterTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void The_dock_is_in_the_footprint_open_to_drive_on_and_closed_to_build_on()
+    {
+        // RA2: the pad the harvesters unload on is the refinery's own, on its east side.
+        var simulation = Match((18, 18, 8));
+        var refinery = Refinery(simulation, 10, 10);
+        var dock = Rts.Simulation.Systems.HarvesterSystem.DockOf(refinery);
+        var map = simulation.World.Map;
+
+        Assert.True(refinery.Covers(dock));
+        Assert.True(map.IsDock(dock));
+        Assert.True(map.CanEnter(dock, Locomotor.Track));
+        Assert.False(map.CanEnter(new CellPos(dock.X - 1, dock.Y), Locomotor.Track));
+        Assert.NotEqual(PlacementProblem.None, PlacementRules.CellProblem(simulation.World, dock, map.Heights.CornerLevel(dock.X, dock.Y)));
+        Assert.Equal(new CellPos(dock.X + 1, dock.Y), Rts.Simulation.Systems.HarvesterSystem.EntranceOf(refinery));
+    }
+
+    [Fact]
     public void Five_harvesters_at_one_refinery_all_work_and_the_dock_limits_the_income()
     {
         var simulation = Match((18, 18, 8));
@@ -243,7 +260,7 @@ public sealed class HarvesterTests(ITestOutputHelper output)
 
         var harvester = simulation.World.Entities.OfType<Unit>().Single();
         Assert.Equal(UnitType.Harvester, harvester.Type);
-        Assert.Equal(new CellPos(11, 13), Rts.Simulation.Systems.HarvesterSystem.DockOf(refinery));
+        Assert.Equal(new CellPos(13, 11), Rts.Simulation.Systems.HarvesterSystem.DockOf(refinery));
         Assert.Contains(harvester.Harvester!.Mode, new[] { HarvesterMode.MovingToOre, HarvesterMode.Harvesting });
     }
 

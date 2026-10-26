@@ -43,6 +43,9 @@ public sealed class MapGrid
     private readonly Dictionary<int, List<int>> _deckEntries = new();
     private readonly List<BuildingState> _startBuildings = new();
     private readonly bool[] _building;
+
+    // The cells of buildings left open to drive on (RA2: a refinery's dock is in its footprint): taken for building, open for movers.
+    private readonly SortedSet<int> _docks = [];
     private readonly byte[] _ore;
     private CornerHeightGrid _heights;
     private Passability _passability;
@@ -263,7 +266,7 @@ public sealed class MapGrid
     public byte ObstacleMask(CellPos cell)
     {
         var index = IndexOf(cell);
-        var mask = _blocked[index] || _building[index] ? MapObjectTypes.AllMovers : (byte)0;
+        var mask = _blocked[index] || (_building[index] && !_docks.Contains(index)) ? MapObjectTypes.AllMovers : (byte)0;
         if (_objectsByCell.TryGetValue(index, out var inCell))
         {
             foreach (var mapObject in inCell)
@@ -762,10 +765,28 @@ public sealed class MapGrid
     }
 
     /// <summary>A building fell: its cells open (no ruins in M7).</summary>
-    internal void ClearBuilding(CellPos from, CellPos to) => SetBuildingCells(from, to, false);
+    internal void ClearBuilding(CellPos from, CellPos to)
+    {
+        _docks.RemoveWhere(index => index % Width >= from.X && index % Width <= to.X && index / Width >= from.Y && index / Width <= to.Y);
+        SetBuildingCells(from, to, false);
+    }
 
-    /// <summary>A building of a player is placed (M3): its cells close. Where it may stand is checked before.</summary>
-    internal void TakeBuilding(CellPos from, CellPos to) => SetBuildingCells(from, to, true);
+    /// <summary>
+    /// A building of a player is placed (M3): its cells close, but for its <paramref name="dock"/> (RA2: the pad of a refinery), which
+    /// stays the building's and open to drive on. Where it may stand is checked before.
+    /// </summary>
+    internal void TakeBuilding(CellPos from, CellPos to, CellPos? dock = null)
+    {
+        if (dock is { } open)
+        {
+            _docks.Add(IndexOf(open));
+        }
+
+        SetBuildingCells(from, to, true);
+    }
+
+    /// <summary>Whether the cell is the dock of a building: the building's, and open to drive on.</summary>
+    public bool IsDock(CellPos cell) => Contains(cell) && _docks.Contains(IndexOf(cell));
 
     /// <summary>Takes hit points off a bridge segment without destroying it (the hash sees it; nothing else changes).</summary>
     internal void SetSegmentHp(BridgeSegment segment, int hp)
@@ -894,6 +915,13 @@ public sealed class MapGrid
             hash.Add(building.Cell.Y);
             hash.Add(building.Owner.Value);
             hash.Add(building.Facing);
+        }
+
+        // Rules v99: the docks open in the footprints of buildings.
+        hash.Add(_docks.Count);
+        foreach (var dock in _docks)
+        {
+            hash.Add(dock);
         }
 
         foreach (var taken in _building)

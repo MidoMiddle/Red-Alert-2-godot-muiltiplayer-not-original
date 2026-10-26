@@ -88,7 +88,8 @@ public sealed class OreTests
         }
 
         // 20 rounds of growth. Changes only when the rules of growth, the random generator or the map digest change.
-        Assert.Equal((20, 4075, 0x8efa578b06d0e0bfUL), (Count(simulation.World).Cells, Count(simulation.World).Credits, simulation.World.Map.Digest));
+        // Rules v99: the map's digest takes the docks open in buildings (none here); the field is the same.
+        Assert.Equal((20, 4075, 0xc659f737b237789fUL), (Count(simulation.World).Cells, Count(simulation.World).Credits, simulation.World.Map.Digest));
     }
 
     [Fact]

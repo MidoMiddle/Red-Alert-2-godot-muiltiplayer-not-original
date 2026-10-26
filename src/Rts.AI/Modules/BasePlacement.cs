@@ -301,7 +301,14 @@ public sealed class BasePlacement
 
         if (def.DockCell is { } dock)
         {
-            yield return new CellPos(corner.X + dock.X, corner.Y + dock.Y);
+            // A dock in the footprint (RA2: the refinery's pad) is driven onto from the cell beside it outside.
+            var inside = dock.X >= 0 && dock.Y >= 0 && dock.X < def.Footprint.Width && dock.Y < def.Footprint.Height;
+            var opening = !inside ? dock
+                : dock.X == def.Footprint.Width - 1 ? dock with { X = dock.X + 1 }
+                : dock.X == 0 ? dock with { X = -1 }
+                : dock.Y == 0 ? dock with { Y = -1 }
+                : dock with { Y = dock.Y + 1 };
+            yield return new CellPos(corner.X + opening.X, corner.Y + opening.Y);
         }
     }
 

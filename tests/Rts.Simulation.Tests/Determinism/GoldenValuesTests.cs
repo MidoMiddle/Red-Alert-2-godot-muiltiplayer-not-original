@@ -220,11 +220,12 @@ public sealed class GoldenValuesTests
         // Rules v57 (loose ends, stage 1): the load of a paradrop plane and the income of a derrick in the hash (none); the states are the same.
         // Rules v60 (loose ends, stage 3): the experience of every unit and the veterans of a spy in the hash (none); the states are the same.
         // Rules v93: the harvester heals itself (RA2 SelfHealing): from tick 500 a harvester that was hit has its hit points back.
+        // Rules v99: the map's hash takes the docks open in buildings (none here); the states are the same.
         StateChecksum[] expected =
         [
-            new(100, 0xf972d5216d8ab4d5UL),
-            new(500, 0xeba9303d04896a9dUL),
-            new(1000, 0xc50f62d70bd3fe0fUL),
+            new(100, 0x74b8e6db244234ccUL),
+            new(500, 0x1e3ba4f1e7fbd71eUL),
+            new(1000, 0xa861e8cac13ff334UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -257,11 +258,13 @@ public sealed class GoldenValuesTests
         // Rules v60 (loose ends, stage 3): experience in the hash; the killers gain it, the veterans fight harder.
         // Rules v86 (the sizes of RA2): the battle's base has the buildings of RA2's footprints; the battle runs otherwise.
         // Rules v98: the hash takes the primary flag of every building (RA2's primary factory); the states are the same.
+        // Rules v99: the map's hash takes the docks open in the footprints of refineries (RA2's pad), and the base's refinery has its
+        // dock in its footprint.
         StateChecksum[] expected =
         [
-            new(1000, 0xb59d751cdbeab363UL),
-            new(2000, 0x48416449c39f2fb4UL),
-            new(3000, 0x84eff4e7e7e786b0UL),
+            new(1000, 0xf603053d426008e1UL),
+            new(2000, 0xdb3f143b5e25340eUL),
+            new(3000, 0xc08c67407e3fc982UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -381,6 +384,7 @@ public sealed class GoldenValuesTests
         // Rules v96 (the Night Hawk built in the war factory's queue, RA2): the version only.
         // Rules v97 (the jets on the pads of the air force command, RA2): the version only.
         // Rules v98 (the primary factory, RA2): the version and the replay format (command format v14) only.
-        Assert.Equal((22270, 1332825256528512473UL), (bytes.Length, hash.Value));
+        // Rules v99 (the refinery's pad in its footprint, RA2): the version only.
+        Assert.Equal((22270, 3602952567812530594UL), (bytes.Length, hash.Value));
     }
 }

@@ -224,7 +224,7 @@ internal static class TestRules
         });
         // The prerequisite groups of RA2 (power, proc, radar, barracks, tech), as game/data names them.
         builder.Add(Def("reactor", 3, 2, power: 150, "construction_yard") with { Provides = ["power"] });
-        builder.Add(Def("refinery", 4, 3, power: -50, "power") with { DockCell = new CellPos(1, 3), Provides = ["proc"] });
+        builder.Add(Def("refinery", 4, 3, power: -50, "power") with { DockCell = new CellPos(3, 1), Provides = ["proc"] });
         builder.Add(Def("barracks", 2, 2, power: -10, "power") with
         {
             Provides = ["barracks"],

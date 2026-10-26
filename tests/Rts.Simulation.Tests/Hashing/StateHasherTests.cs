@@ -383,7 +383,7 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(MapGrid), new[]
     {
-        "_land", "_blocked", "_heights", "_objects", "_bridges", "_startBuildings", "_building", "_ore", "<Width>k__BackingField", "<Height>k__BackingField",
+        "_land", "_blocked", "_heights", "_objects", "_bridges", "_startBuildings", "_building", "_docks", "_ore", "<Width>k__BackingField", "<Height>k__BackingField",
         // Indexes of the objects and the bridge segments by cell, and of the ore and gem sources (M3 step 16), built from the lists above.
         "_objectsByCell", "_segmentsByCell", "_sources",
         // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of

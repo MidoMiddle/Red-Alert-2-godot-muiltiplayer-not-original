@@ -123,7 +123,7 @@ public static class HarvesterSystem
         foreach (var entity in world.Entities)
         {
             if (entity is Building { IsAlive: true, Def.DockCell: not null } refinery && DockOf(refinery) == here
-                && ProductionSystem.FreeCellNear(world, here, here, unit.Archetype) is { } place)
+                && WaitingPlace(world, refinery, unit.Archetype) is { } place)
             {
                 UnitOrders.MoveTo(world, unit, place.Center);
                 return;
@@ -264,7 +264,7 @@ public static class HarvesterSystem
                 {
                     harvester.Mode = HarvesterMode.Queued;
                     harvester.QueueTick = world.CurrentTick;
-                    if (ProductionSystem.FreeCellNear(world, dock, dock, unit.Archetype) is { } place)
+                    if (WaitingPlace(world, refinery, unit.Archetype) is { } place)
                     {
                         UnitOrders.MoveTo(world, unit, place.Center);
                     }
@@ -431,6 +431,50 @@ public static class HarvesterSystem
     }
 
     /// <summary>The cell of the dock of a refinery.</summary>
+    /// <summary>
+    /// The cell a harvester drives onto the dock from: the dock itself when it is outside the footprint, else the cell beside it outside
+    /// (RA2: the refinery's pad is in its footprint, open on one side).
+    /// </summary>
+    public static CellPos EntranceOf(Building refinery)
+    {
+        var dock = DockOf(refinery);
+        var (x, y) = (dock.X - refinery.Cell.X, dock.Y - refinery.Cell.Y);
+        if (x < 0 || y < 0 || x >= refinery.Width || y >= refinery.Height)
+        {
+            return dock;
+        }
+
+        return x == refinery.Width - 1 ? dock with { X = dock.X + 1 }
+            : x == 0 ? dock with { X = dock.X - 1 }
+            : y == 0 ? dock with { Y = dock.Y - 1 }
+            : dock with { Y = dock.Y + 1 };
+    }
+
+    // Where a harvester waits for the dock, or one leaving it waits: the free cell nearest the dock two cells or more from its entrance,
+    // so the way in and out stays free.
+    private static CellPos? WaitingPlace(GameWorld world, Building refinery, UnitArchetype archetype)
+    {
+        var dock = DockOf(refinery);
+        var entrance = EntranceOf(refinery);
+        for (var ring = 1; ring <= 8; ring++)
+        {
+            for (var y = dock.Y - ring; y <= dock.Y + ring; y++)
+            {
+                for (var x = dock.X - ring; x <= dock.X + ring; x++)
+                {
+                    var cell = new CellPos(x, y);
+                    if (Chebyshev(cell, dock) == ring && Chebyshev(cell, entrance) >= 2 && !refinery.Covers(cell)
+                        && world.Map.CanEnter(cell, archetype.Locomotor) && world.Reservations.HasRoomFor(cell, archetype.Placement, EntityId.None))
+                    {
+                        return cell;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static CellPos DockOf(Building refinery)
     {
         var offset = refinery.Def!.DockCell!.Value;
