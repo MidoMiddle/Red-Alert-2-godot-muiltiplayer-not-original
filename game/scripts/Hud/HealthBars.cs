@@ -15,7 +15,8 @@ namespace Rts.Client.Hud;
 /// <see cref="HealthPips"/> over each unit and player building — by default only over what is selected or under the cursor, as in RA2
 /// (the owner, 2026-10-25), else as the setting <c>interface/health_bars</c> says. Units are placed where they are drawn, between the
 /// ticks; what the fog hides and the ghosts of buildings have no bar. Under a transport or a building that holds soldiers (stage 2e,
-/// 3d) a row of boxes shows its room, the soldiers inside filled in, also only while it is selected or under the cursor.
+/// 3d) a row of boxes shows its room, the soldiers inside filled in, also only while it is selected or under the cursor. The cursor held
+/// over a unit or a building brings up its name by the pointer (<see cref="HoverTooltip"/>).
 /// </summary>
 public partial class HealthBars : Control
 {
@@ -32,8 +33,17 @@ public partial class HealthBars : Control
     private static readonly Color Empty = new(0.25f, 0.25f, 0.25f, 0.9f);
     private static readonly Color Soldier = new(0.95f, 0.85f, 0.3f);
 
+    // The tooltip by the pointer: how far from its tip, and the room around the text.
+    private static readonly Vector2 TooltipOffset = new(14f, 22f);
+    private static readonly Vector2 TooltipPadding = new(6f, 3f);
+
+    private readonly HoverTooltip _tooltip = new();
     private SimulationHost? _host;
     private PlayerInput? _input;
+
+    // What is under the cursor this frame, and the entity whose tooltip shows.
+    private Entity? _pointed;
+    private Entity? _tooltipShown;
 
     public override void _Ready()
     {
@@ -43,7 +53,26 @@ public partial class HealthBars : Control
         _input = GetNodeOrNull<PlayerInput>("../../PlayerInput");
     }
 
-    public override void _Process(double delta) => QueueRedraw();
+    public override void _Process(double delta)
+    {
+        _pointed = null;
+        _tooltipShown = null;
+        if (_host is not null && _input is not null)
+        {
+            var world = _host.Simulation.World;
+            _pointed = HoverTooltip.Under(world, _input.Hovered, _input.CellUnderPointer, entity => FogOfWar.Shows(world, entity));
+            // Over the sidebar and the menus, while a building is placed and during a drag, no tooltip of the field.
+            var named = _pointed is not null && GetViewport().GuiGetHoveredControl() is null && _input.Tool != PointerTool.Build
+                && !Input.IsMouseButtonPressed(MouseButton.Left)
+                && !Input.IsMouseButtonPressed(MouseButton.Right) && TooltipName(world, _pointed) is not null;
+            if (_tooltip.Update(named ? _pointed!.Id : null, delta) is not null)
+            {
+                _tooltipShown = _pointed;
+            }
+        }
+
+        QueueRedraw();
+    }
 
     public override void _Draw()
     {
@@ -73,7 +102,7 @@ public partial class HealthBars : Control
             }
 
             // Selected, or under the cursor: its bar and its room show.
-            var selected = Focused(world, entity);
+            var selected = Focused(entity);
             if (entity is Unit { Archetype.PassengerSlots: > 0 } transport && selected && world.AreAllies(SimulationHost.LocalPlayer, transport.Owner))
             {
                 // The slots of a transport (stage 3d), for its own team.
@@ -134,22 +163,47 @@ public partial class HealthBars : Control
                     break;
             }
         }
+
+        // Last, over the bars.
+        DrawTooltip(world);
     }
 
     // Whether the entity is selected or under the cursor: a unit picked by the pointer, or a building standing on the cell under it.
-    private bool Focused(GameWorld world, Entity entity)
+    private bool Focused(Entity entity) =>
+        _input is not null && (_input.Selection.Contains(entity.Id) || _input.SelectedFactory == entity.Id || _input.Inspected == entity.Id
+            || _pointed == entity);
+
+    private string? TooltipName(GameWorld world, Entity entity) =>
+        HoverTooltip.NameOf(world, SimulationHost.LocalPlayer, entity, AppSettings.Instance?.Values.Ra2Names ?? true, key => Tr(key));
+
+    /// <summary>The tooltip by the pointer: the name of what it has stood on for a moment, on the panel of the interface's tooltips.</summary>
+    private void DrawTooltip(GameWorld world)
     {
-        if (_input is null)
+        if (_tooltipShown is not { IsAlive: true } entity || TooltipName(world, entity) is not { } name)
         {
-            return false;
+            return;
         }
 
-        if (_input.Selection.Contains(entity.Id) || _input.SelectedFactory == entity.Id || _input.Hovered == entity.Id || _input.Inspected == entity.Id)
+        var font = GetThemeFont("font", "TooltipLabel") ?? GetThemeDefaultFont();
+        var size = GetThemeFontSize("font_size", "TooltipLabel") is > 0 and var themed ? themed : NameSize;
+        var text = font.GetStringSize(name, HorizontalAlignment.Left, -1f, size);
+        var box = new Vector2(text.X, font.GetHeight(size)) + 2 * TooltipPadding;
+        // By the pointer, kept on the screen.
+        var screen = GetViewportRect().Size;
+        var corner = GetViewport().GetMousePosition() + TooltipOffset;
+        corner = new Vector2(Mathf.Clamp(corner.X, 0f, Mathf.Max(0f, screen.X - box.X)), Mathf.Clamp(corner.Y, 0f, Mathf.Max(0f, screen.Y - box.Y)));
+        var rect = new Rect2(corner, box);
+        if (GetThemeStylebox("panel", "TooltipPanel") is { } panel)
         {
-            return true;
+            DrawStyleBox(panel, rect);
+        }
+        else
+        {
+            DrawRect(rect, Frame);
         }
 
-        return _input.Hovered is null && entity is Building building && _input.CellUnderPointer is { } cell && building.Covers(cell);
+        var colour = HasThemeColor("font_color", "TooltipLabel") ? GetThemeColor("font_color", "TooltipLabel") : new Color(0.97f, 0.95f, 0.86f);
+        DrawString(font, corner + new Vector2(TooltipPadding.X, TooltipPadding.Y + font.GetAscent(size)), name, HorizontalAlignment.Left, -1f, size, colour);
     }
 
     private void DrawBomb(Camera3D camera, Entity entity, int tick)
@@ -189,8 +243,8 @@ public partial class HealthBars : Control
     }
 
     /// <summary>
-    /// The names over the field (the owner's wish, 2026-10-24: there are no models yet): over the unit or building under the cursor,
-    /// over the selected units while they are few, and over the selected building — RA2's names for now (<see cref="DisplayNames"/>).
+    /// The names over the field (the owner's wish, 2026-10-24: there are no models yet): over the selected units while they are few, and
+    /// over the selected building — RA2's names for now (<see cref="DisplayNames"/>).
     /// A disguised infiltrator is named as what it looks like, a holo tank that passes for a tree not at all.
     /// </summary>
     private void DrawNames(Camera3D camera, GameWorld world)
@@ -200,16 +254,8 @@ public partial class HealthBars : Control
             return;
         }
 
+        // What is under the cursor is named by the tooltip, after a moment.
         var named = new HashSet<EntityId>();
-        if (_input.Hovered is { } hovered)
-        {
-            named.Add(hovered);
-        }
-        else if (_input.CellUnderPointer is { } cell && world.BuildingAt(cell) is { } underCursor)
-        {
-            named.Add(underCursor.Id);
-        }
-
         if (_input.Selection.Units.Count <= MaxNamedSelection)
         {
             named.UnionWith(_input.Selection.Units);

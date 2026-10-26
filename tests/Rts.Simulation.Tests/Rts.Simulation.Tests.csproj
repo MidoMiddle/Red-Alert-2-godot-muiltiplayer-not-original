@@ -81,6 +81,8 @@
     <Compile Include="../../game/scripts/Hud/MinimapMath.cs" Link="Client/Hud/MinimapMath.cs" />
     <Compile Include="../../game/scripts/Hud/HudFormat.cs" Link="Client/Hud/HudFormat.cs" />
     <Compile Include="../../game/scripts/Hud/DisplayNames.cs" Link="Client/Hud/DisplayNames.cs" />
+    <Compile Include="../../game/scripts/Hud/HoverTooltip.cs" Link="Client/Hud/HoverTooltip.cs" />
+    <Compile Include="../../game/scripts/Units/DisguiseLooks.cs" Link="Client/Units/DisguiseLooks.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarModel.cs" Link="Client/Hud/SidebarModel.cs" />
     <Compile Include="../../game/scripts/Hud/SidebarGauges.cs" Link="Client/Hud/SidebarGauges.cs" />
     <Compile Include="../../game/scripts/Hud/EvaMessages.cs" Link="Client/Hud/EvaMessages.cs" />

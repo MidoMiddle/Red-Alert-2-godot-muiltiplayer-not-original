@@ -148,14 +148,7 @@ public partial class UnitRenderer : Node3D
     internal static (UnitArchetype Shape, PlayerId Colour) Disguise(GameWorld world, Unit unit)
     {
         var viewer = SimulationHost.LocalPlayer;
-        if (!unit.Archetype.Has(UnitTalents.Disguised) || world.AreAllies(viewer, unit.Owner) || viewer.IsNeutral
-            || Rts.Simulation.Visibility.Vision.Unmasked(world, viewer, unit)
-            || !UnitTypes.TryGetById(world.Player(viewer).Faction.StartingInfantry, out var soldier))
-        {
-            return (unit.Archetype, unit.Owner);
-        }
-
-        return (world.Rules.Unit(soldier), viewer);
+        return DisguiseLooks.PassesFor(world, viewer, unit) is { } soldier ? (soldier, viewer) : (unit.Archetype, unit.Owner);
     }
 
     private UnitView TakeView(UnitArchetype archetype)
