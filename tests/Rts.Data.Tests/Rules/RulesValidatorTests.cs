@@ -461,7 +461,7 @@ public sealed class RulesValidatorTests
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  income_bonus: 150%\n", "'income_bonus' of 'reactor' must be 0% to 100%")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  veil_radius: 21\n", "'veil_radius' of 'reactor' must be 0 to 20 cells")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  veil_radius: -1\n", "'veil_radius' of 'reactor' must be 0 to 20 cells")]
-    [InlineData(Buildings, "  power: 150\n", "  power: 150\n  garrison: 11\n", "'garrison' of 'reactor' must be 0 to 10 soldiers")]
+    [InlineData(Buildings, "  power: 150\n", "  power: 150\n  garrison: 13\n", "'garrison' of 'reactor' must be 0 to 12 soldiers")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  chain_max: 17\n", "'chain_max' of 'reactor' must be 0 to 16 towers")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  chain_bonus: 250%\n", "'chain_bonus' of 'reactor' must be 0% to 200%")]
     [InlineData(Buildings, "  power: 150\n", "  power: 150\n  chain_bonus: 50%\n", "'reactor' supports the shots of its kind but has no 'primary' weapon")]

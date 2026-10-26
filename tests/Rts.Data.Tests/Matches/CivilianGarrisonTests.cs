@@ -21,6 +21,7 @@ public sealed class CivilianGarrisonTests
     private static readonly PlayerId Allied = new(2);
     private static readonly CellPos House = new(30, 30);
     private static readonly CellPos Derrick = new(40, 30);
+    private static readonly CellPos Apartment = new(30, 44);
 
     private static GameSimulation Match()
     {
@@ -30,6 +31,7 @@ public sealed class CivilianGarrisonTests
             [
                 new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0),
                 new BuildingState(BuildingKind.TechOilDerrick, Derrick, PlayerId.Neutral, 0),
+                new BuildingState(BuildingKind.NeutralApartment, Apartment, PlayerId.Neutral, 0),
             ]);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
@@ -86,6 +88,41 @@ public sealed class CivilianGarrisonTests
         Assert.Equal(3, house.Occupants.Count);
         Assert.True(gis[3].IsAlive);
         Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, gis[3], house));
+    }
+
+    [Fact]
+    public void The_apartment_block_takes_twelve_and_the_full_one_turns_the_thirteenth_away()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var block = world.BuildingAt(Apartment)!;
+        Assert.Equal(12, GarrisonSystem.Capacity(block));
+        var gis = Enumerable.Range(0, 13).Select(i => Spawn(world, Allied, UnitType.AllianceRifleman, 26 + i % 7, 48 + i / 7)).ToList();
+
+        simulation.Enqueue(new EnterCommand(Allied, simulation.CurrentTick, 0, [.. gis.Select(gi => gi.Id)], block.Id));
+        Run(simulation, 600, () => block.Occupants.Count == 12);
+        Run(simulation, 30);
+        Assert.Equal(12, block.Occupants.Count);
+        var left = Assert.Single(gis, gi => gi.IsAlive);
+        Assert.False(GarrisonSystem.HasRoom(block));
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, left, block));
+        // Each of the twelve fires his own weapon, as in RA2: more soldiers, more shots.
+        Assert.All(block.Occupants, occupant => Assert.NotEmpty(occupant.Weapons));
+    }
+
+    [Fact]
+    public void Every_civilian_building_that_holds_soldiers_holds_three_to_twelve_by_its_size()
+    {
+        var held = BuildingTypes.All.Where(type => type.Garrison > 0).ToList();
+        Assert.NotEmpty(held);
+        Assert.All(held, type => Assert.False(type.Capturable));
+        Assert.All(held, type => Assert.InRange(type.Garrison, 3, 12));
+        // The smallest hut 3, the biggest buildings 12; a bigger footprint never holds fewer.
+        Assert.Equal(3, BuildingTypes.Get(BuildingKind.NeutralHouseA).Garrison);
+        Assert.Equal(12, BuildingTypes.Get(BuildingKind.NeutralApartment).Garrison);
+        Assert.Equal(12, BuildingTypes.Get(BuildingKind.NeutralSkyscraper).Garrison);
+        Assert.All(held, small => Assert.All(held.Where(big => big.Width * big.Height > small.Width * small.Height && big.MaxHp >= small.MaxHp),
+            big => Assert.True(big.Garrison >= small.Garrison, $"{big.Id} holds fewer than {small.Id}")));
     }
 
     [Fact]

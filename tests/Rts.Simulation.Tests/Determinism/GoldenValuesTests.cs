@@ -389,6 +389,7 @@ public sealed class GoldenValuesTests
         // Rules v101 (a queue of infantry or vehicles holds 30, the owner's wish): the version only.
         // Rules v102 (a flier climbs to its flying height before it sets out, the owner's wish): the version only.
         // Rules v103 (the hovering fliers keep apart, FlightSystem.KeepApart): the version only.
-        Assert.Equal((22270, 7618159987342728366UL), (bytes.Length, hash.Value));
+        // Rules v105 (a civilian building holds 3 to 12 soldiers by its size, the owner's wish): the version only.
+        Assert.Equal((22270, 12879253836284733456UL), (bytes.Length, hash.Value));
     }
 }

@@ -29,7 +29,7 @@ internal static class RulesValidator
     public const int MaxVeilRadius = 20;
 
     /// <summary>The most soldiers a building holds.</summary>
-    public const int MaxGarrison = 10;
+    public const int MaxGarrison = 12;
 
     /// <summary>The most towers that support one shot.</summary>
     public const int MaxChain = 16;

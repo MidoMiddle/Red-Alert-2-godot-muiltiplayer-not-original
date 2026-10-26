@@ -249,8 +249,8 @@ public sealed class BuildingTests
     [InlineData(BuildingKind.NeutralFuelTank, 1, 1, 800, 0)]
     [InlineData(BuildingKind.NeutralSmokestack, 1, 1, 1500, 0)]
     [InlineData(BuildingKind.NeutralCoolingTower, 2, 2, 1500, 0)]
-    [InlineData(BuildingKind.NeutralFactoryHall, 4, 3, 800, 6)]
-    [InlineData(BuildingKind.NeutralBoilerHouse, 2, 2, 800, 2)]
+    [InlineData(BuildingKind.NeutralFactoryHall, 4, 3, 800, 12)]
+    [InlineData(BuildingKind.NeutralBoilerHouse, 2, 2, 800, 3)]
     public void An_industrial_building_has_its_footprint_and_closes_it_to_every_ground_mover(
         BuildingKind kind, int width, int height, int hp, int garrison)
     {

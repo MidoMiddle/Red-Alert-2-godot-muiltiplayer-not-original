@@ -89,11 +89,14 @@ public sealed record BuildingType(
 /// </summary>
 public static class BuildingTypes
 {
+    // The soldiers a civilian building holds go by its size, from 3 in a hut to 12 in the biggest (the owner's wish, 2026-10-26; RA2's
+    // MaxNumberOccupants runs about so): a 2 x 2 footprint holds 3, a 2 x 3 or 3 x 2 one 6, 3 x 3 and more 12; a stone building of
+    // several storeys (1500 hit points and more) one step of 3 up, the skyscraper (2500) the most.
     private static readonly BuildingType[] Types =
     [
         new(BuildingKind.NeutralShed, "neutral_shed", 1, 1, MaxHp: 300, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralHouseA, "neutral_house_a", 2, 2, MaxHp: 800, Garrison: 3, Capturable: false),
-        new(BuildingKind.NeutralApartment, "neutral_apartment", 3, 3, MaxHp: 1500, Garrison: 10, Capturable: false),
+        new(BuildingKind.NeutralApartment, "neutral_apartment", 3, 3, MaxHp: 1500, Garrison: 12, Capturable: false),
         new(BuildingKind.TechOilDerrick, "tech_oil_derrick", 2, 2, MaxHp: 1000, Garrison: 0, Capturable: true, ExtendsBase: true, DeathWeapon: "oil_explosion"),
         new(BuildingKind.TechHospital, "tech_hospital", 6, 4, MaxHp: 800, Garrison: 0, Capturable: true, ExtendsBase: true), // RA2: 6 x 4, 800
         // RA2 ParaDropSpecial: a paradrop every 4 minutes.
@@ -101,37 +104,37 @@ public static class BuildingTypes
         new(BuildingKind.NeutralFuelTank, "neutral_fuel_tank", 1, 1, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralSmokestack, "neutral_smokestack", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralCoolingTower, "neutral_cooling_tower", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralFactoryHall, "neutral_factory_hall", 4, 3, MaxHp: 800, Garrison: 6, Capturable: false),
-        new(BuildingKind.NeutralBoilerHouse, "neutral_boiler_house", 2, 2, MaxHp: 800, Garrison: 2, Capturable: false),
+        new(BuildingKind.NeutralFactoryHall, "neutral_factory_hall", 4, 3, MaxHp: 800, Garrison: 12, Capturable: false),
+        new(BuildingKind.NeutralBoilerHouse, "neutral_boiler_house", 2, 2, MaxHp: 800, Garrison: 3, Capturable: false),
         // RA2 bridge repair hut: cannot be hurt (Immune) nor taken; an engineer going in mends its bridge.
         new(BuildingKind.TechBridgeRepairHut, "tech_bridge_repair_hut", 1, 1, MaxHp: 2000, Garrison: 0, Capturable: false),
 
         // The element documents (2026-10-25): footprints, hit points by the class of the document (low ≈ 300, medium ≈ 800, high
         // ≈ 1500 and more), garrisons where the document has one; nothing is taken by an engineer.
-        new(BuildingKind.NeutralSchool, "neutral_school", 3, 2, MaxHp: 1500, Garrison: 8, Capturable: false),
+        new(BuildingKind.NeutralSchool, "neutral_school", 3, 2, MaxHp: 1500, Garrison: 9, Capturable: false),
         new(BuildingKind.NeutralOffice, "neutral_office", 2, 2, MaxHp: 1500, Garrison: 6, Capturable: false),
-        new(BuildingKind.NeutralChurch, "neutral_church", 2, 3, MaxHp: 1000, Garrison: 5, Capturable: false),
+        new(BuildingKind.NeutralChurch, "neutral_church", 2, 3, MaxHp: 1000, Garrison: 6, Capturable: false),
         new(BuildingKind.NeutralShop, "neutral_shop", 2, 2, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralKiosk, "neutral_kiosk", 1, 1, MaxHp: 200, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralSkyscraper, "neutral_skyscraper", 2, 2, MaxHp: 2500, Garrison: 10, Capturable: false),
+        new(BuildingKind.NeutralSkyscraper, "neutral_skyscraper", 2, 2, MaxHp: 2500, Garrison: 12, Capturable: false),
         new(BuildingKind.NeutralCafe, "neutral_cafe", 2, 1, MaxHp: 600, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralBank, "neutral_bank", 3, 2, MaxHp: 2000, Garrison: 6, Capturable: false),
-        new(BuildingKind.NeutralHotel, "neutral_hotel", 3, 2, MaxHp: 1800, Garrison: 8, Capturable: false),
-        new(BuildingKind.NeutralFireStation, "neutral_fire_station", 3, 2, MaxHp: 1500, Garrison: 6, Capturable: false),
+        new(BuildingKind.NeutralBank, "neutral_bank", 3, 2, MaxHp: 2000, Garrison: 9, Capturable: false),
+        new(BuildingKind.NeutralHotel, "neutral_hotel", 3, 2, MaxHp: 1800, Garrison: 9, Capturable: false),
+        new(BuildingKind.NeutralFireStation, "neutral_fire_station", 3, 2, MaxHp: 1500, Garrison: 9, Capturable: false),
         new(BuildingKind.NeutralAutoRepair, "neutral_auto_repair", 2, 2, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralFountain, "neutral_fountain", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralBeachCabin, "neutral_beach_cabin", 1, 1, MaxHp: 300, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralBeachBar, "neutral_beach_bar", 3, 2, MaxHp: 600, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralLifeguardTower, "neutral_lifeguard_tower", 2, 2, MaxHp: 500, Garrison: 2, Capturable: false),
-        new(BuildingKind.NeutralLighthouse, "neutral_lighthouse", 2, 2, MaxHp: 2000, Garrison: 4, Capturable: false),
+        new(BuildingKind.NeutralLifeguardTower, "neutral_lifeguard_tower", 2, 2, MaxHp: 500, Garrison: 3, Capturable: false),
+        new(BuildingKind.NeutralLighthouse, "neutral_lighthouse", 2, 2, MaxHp: 2000, Garrison: 6, Capturable: false),
         new(BuildingKind.NeutralBoatShed, "neutral_boat_shed", 2, 2, MaxHp: 600, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralAdobeHouse, "neutral_adobe_house", 2, 2, MaxHp: 600, Garrison: 2, Capturable: false),
+        new(BuildingKind.NeutralAdobeHouse, "neutral_adobe_house", 2, 2, MaxHp: 600, Garrison: 3, Capturable: false),
         new(BuildingKind.NeutralAncientRuins, "neutral_ancient_ruins", 2, 2, MaxHp: 2500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralRockMesa, "neutral_rock_mesa", 2, 2, MaxHp: 4000, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralRockArch, "neutral_rock_arch", 2, 1, MaxHp: 3000, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralPortCrane, "neutral_port_crane", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralContainerStack, "neutral_container_stack", 2, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralPortWarehouse, "neutral_port_warehouse", 3, 3, MaxHp: 1200, Garrison: 4, Capturable: false),
+        new(BuildingKind.NeutralPortWarehouse, "neutral_port_warehouse", 3, 3, MaxHp: 1200, Garrison: 12, Capturable: false),
         new(BuildingKind.NeutralWaterTower, "neutral_water_tower", 1, 1, MaxHp: 800, Garrison: 0, Capturable: false),
         new(BuildingKind.NeutralFarmhouse, "neutral_farmhouse", 2, 2, MaxHp: 700, Garrison: 3, Capturable: false),
         new(BuildingKind.NeutralBarn, "neutral_barn", 3, 2, MaxHp: 800, Garrison: 0, Capturable: false),
