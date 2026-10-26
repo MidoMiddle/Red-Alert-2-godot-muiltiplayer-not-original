@@ -141,7 +141,7 @@ public partial class HealthBars : Control
             return false;
         }
 
-        if (_input.Selection.Contains(entity.Id) || _input.SelectedFactory == entity.Id || _input.Hovered == entity.Id)
+        if (_input.Selection.Contains(entity.Id) || _input.SelectedFactory == entity.Id || _input.Hovered == entity.Id || _input.Inspected == entity.Id)
         {
             return true;
         }

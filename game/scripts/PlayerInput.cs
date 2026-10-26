@@ -84,6 +84,9 @@ public partial class PlayerInput : Node
     /// <summary>The unit under the pointer, if any. The unit renderer makes it glow faintly.</summary>
     public EntityId? Hovered { get; private set; }
 
+    /// <summary>The enemy unit or building the player looks at (a click on it with nothing selected, RA2): its health shows.</summary>
+    public EntityId? Inspected { get; private set; }
+
     /// <summary>Map cell under the mouse pointer, or null off the map. Shown on the debug panel.</summary>
     public CellPos? CellUnderPointer { get; private set; }
 
@@ -173,8 +176,13 @@ public partial class PlayerInput : Node
             _interpreter.Disarm();
         }
 
-        // A unit that died leaves the selection.
+        // A unit that died leaves the selection; an enemy looked at that fell or went into the fog is no longer looked at.
         Selection.RemoveWhere(unit => !_host.Simulation.World.TryGet(unit, out var entity) || !entity.IsAlive);
+        if (Inspected is { } looked
+            && (!_host.Simulation.World.TryGet(looked, out var inspected) || !inspected.IsAlive || !Terrain.FogOfWar.Shows(_host.Simulation.World, inspected)))
+        {
+            Inspected = null;
+        }
         // The waypoints mode lays out orders for units: with none selected it ends.
         if (Selection.IsEmpty)
         {
@@ -637,6 +645,10 @@ public partial class PlayerInput : Node
                 case ClearSelection:
                     ChangeSelection(Selection.Clear);
                     break;
+                case InspectEnemy inspect:
+                    ChangeSelection(Selection.Clear);
+                    Inspected = inspect.Target;
+                    break;
                 case OrderMove order when !_host.IsPlayback && EnterAt(order.Target) is { } bunker:
                     Voice("entering");
                     _host.IssueEnter(Selection.Units, bunker);
@@ -854,6 +866,7 @@ public partial class PlayerInput : Node
     private void ChangeSelection(Action change)
     {
         _factory = null;
+        Inspected = null;
         change();
         Waypoints.Clear();
     }

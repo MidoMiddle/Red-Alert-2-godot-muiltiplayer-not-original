@@ -119,6 +119,12 @@ public sealed record BoxCancelled : Intent;
 
 public sealed record ClearSelection : Intent;
 
+/// <summary>
+/// Look at an enemy unit or building (a click on it with nothing selected, RA2): its health shows while it is looked at; it takes no
+/// orders, and the player's selection is cleared.
+/// </summary>
+public sealed record InspectEnemy(EntityId Target) : Intent;
+
 /// <summary>Select every own unit of the clicked unit's type on screen (double click); add them when <paramref name="Add"/> (Shift).</summary>
 public sealed record SelectSameType(EntityId Unit, bool Add) : Intent;
 
@@ -506,6 +512,10 @@ public sealed class InputInterpreter
                 return Order(context);
             case PointerTargetKind.OwnUnit:
                 return new Intent[] { new SelectUnit(context.Target.Unit) };
+            case PointerTargetKind.OtherUnit when !context.HasSelection:
+                return new Intent[] { new InspectEnemy(context.Target.Unit) };
+            case PointerTargetKind.OtherBuilding when !context.HasSelection && context.Target.Building is { } building:
+                return new Intent[] { new InspectEnemy(building) };
             case PointerTargetKind.Ground when _scheme == ControlScheme.Modern:
                 return context.Ground is null ? Array.Empty<Intent>() : new Intent[] { new ClearSelection() };
             case PointerTargetKind.Ground:

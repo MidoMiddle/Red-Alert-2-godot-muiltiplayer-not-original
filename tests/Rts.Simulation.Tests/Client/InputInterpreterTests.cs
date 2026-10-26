@@ -174,11 +174,16 @@ public sealed class InputInterpreterTests
     }
 
     [Fact]
-    public void ClickingAnotherUnitDoesNotSelectIt()
+    public void ClickingAnEnemyWithNothingSelectedLooksAtIt()
     {
-        var input = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        // RA2: an enemy clicked with nothing selected shows its health; it is not taken into the selection, so no order reaches it.
+        var classic = new InputInterpreter(ControlScheme.Classic, cameraDrag: true);
+        var modern = new InputInterpreter(ControlScheme.Modern, cameraDrag: true);
+        var building = Context(new PointerTarget(PointerTargetKind.OtherBuilding, Building: new EntityId(40)));
 
-        Assert.Empty(LeftClick(input, Context(OtherUnit, hasSelection: false)));
+        Assert.Equal(new Intent[] { new InspectEnemy(OtherUnit.Unit) }, LeftClick(classic, Context(OtherUnit, hasSelection: false)));
+        Assert.Equal(new Intent[] { new InspectEnemy(new EntityId(40)) }, LeftClick(classic, building));
+        Assert.Equal(new Intent[] { new InspectEnemy(OtherUnit.Unit) }, LeftClick(modern, Context(OtherUnit, hasSelection: false)));
     }
 
     [Fact]
