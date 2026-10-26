@@ -7,14 +7,17 @@
    - `OverlayPack` и `OverlayDataPack` (формат 80 Westwood): руда, самоцветы, мосты → `overlay.bin`, `overlaydata.bin`;
    - `PreviewPack`: превью → `preview.ppm`;
    - обычные секции → `sections.json`.
-2. `ra2_to_rtsmap.py <папка> <out.rtsmap> --id … --name … --author … --description … [--climate temperate] [--lighting day]` собирает карту. Как именно — в начале скрипта:
-   - **Земля:** каждый номер тайла получает вид по тому цвету, который его клетки чаще всего имеют на превью этой карты: вода, дорога, песок, грунт, тёмная или светлая трава.
+2. `ra2_to_rtsmap.py <папка> <out.rtsmap> --id … --name … --author … --description … [--climate temperate] [--lighting day] [--players N] [--raised-land]` собирает карту. Как именно — в начале скрипта:
+   - **Земля:** каждый номер тайла получает вид по тому цвету, который его клетки чаще всего имеют на превью этой карты: вода, дорога, песок, грунт, тёмная или светлая трава. Превью, нарисованное вдвое уже карты, читается с масштабом. Плоские цвета редактора (Route 66) тоже узнаются: оранжевый — грунтовая дорога, жёлтый — песок. В городе (`--climate urban`) красно-коричневые тротуары RA2 становятся брусчаткой (`pavers`, проходимы как дорога), а тёмная трава — обычной: поля в городском климате нет.
    - **Высоты:** угол клетки — наибольший уровень соседних клеток. Под зданиями земля выровнена.
    - **Ресурсы:** руда и самоцветы.
-   - **Мосты:** низкий мост RA2 — `bridge_wood_low` над водой по средней линии. Высокий мост — `bridge_concrete_high` шириной 3 над тем, что под ним в RA2 (долина, речка). Его концы продлеваются через обрывы до ровных берегов.
+   - **Мосты:** низкий мост RA2 — `bridge_wood_low` над водой по средней линии. Высокий мост — `bridge_concrete_high` шириной 3 над тем, что под ним в RA2 (долина, речка). Его концы продлеваются через обрывы до ровных берегов. Мост RA2 шириной в клетку часто упирается в «язык» плато такой же ширины: клетки берега на боковых полосах поднимаются до его уровня, получается площадка перед мостом. Одиночная клетка опоры между двумя пролётами RA2 входит в мост и опускается до земли рядом: опоры рисует сам мост (эстакады The Light of Night).
    - **Деревья и бурильщики:** обычные деревья переносятся, рудные деревья пропускаются. У каждого старта ставится бурильщик руды. Бурильщиков самоцветов у стартов нет: их ставит `share-gems` (ниже).
    - **Стены** (оверлей 240) — каменные стены `wall_stone`.
-   - **Старты** — путевые точки от 0 до `MaxPlayer` − 1 из `[Basic]`.
+   - **Старты** — путевые точки от 0 до `MaxPlayer` − 1 из `[Basic]`; если `MaxPlayer` нет — до `--players` − 1 (по умолчанию 4).
+   - **`--raised-land`:** приподнятая клетка не бывает водой (вода в RA2 всегда на уровне 0), она берёт самый частый не-водный вид своего тайла. Нужен Route 66, где прибрежные обрывы на превью синие. Прежние карты собраны без него: с ним у них часть береговых обрывов станет сушей.
+   - **Игровое поле** — `LocalSize`, верх поднят на две его единицы. Если старт ближе 4 клеток к краю, поле расширяется, чтобы база помещалась.
+   - **Фонари** — деревья карты `LT_GEN*` становятся фонарными столбами.
    - **Здания** — по таблицам `STRUCTURES` и `OBJECTS`. Чему нет пары или что стоит на мосту, то пропускается, и скрипт это перечисляет.
 
    Собраны так:
@@ -32,6 +35,12 @@
    python3 tools/ra2_import/ra2_to_rtsmap.py <папка warpro> game/data/maps/war-pro.rtsmap --id war-pro --name "WAR Pro" \
      --author "Bdizzle18 (Red Alert 2, 2005); converted" \
      --description "Eight bases round a great field of gems that spells WAR PRO, rivers between them, and in the middle a walled island with an airfield and bridge repair huts, reached by four bridges; oil derricks and tech outposts to take. From WARPRO2.mpr."
+   python3 tools/ra2_import/ra2_to_rtsmap.py <папка lon> game/data/maps/light-of-night.rtsmap --id light-of-night --name "The Light of Night" \
+     --author "tankcmdr6 (Red Alert 2, 2001); converted" --climate urban --lighting night \
+     --description "A town at night for eight: two elevated highways on concrete spans run across it over the streets, lit roads and brick pavements between the blocks, a seaport on the bay, gold by every base and many oil derricks to take. From The Light Of Night II (#2lightonight.mpr)."
+   python3 tools/ra2_import/ra2_to_rtsmap.py <папка r66> game/data/maps/route-66.rtsmap --id route-66 --name "Route 66" \
+     --author "Ejah (Red Alert 2, 2001); converted" --players 8 --raised-land \
+     --description "Eight island bases strung on one long dirt road: high concrete bridges carry it from island to island, and between every two starts lies a neutral island with oil derricks, a tech airfield or a power plant. Ore and gem fields on every island. From Route 66 by Ejah.mpr."
    ```
 3. `render_rtsmap.py <карта.rtsmap> <out.ppm>` рисует карту в осях экрана, как превью RA2: так её удобно сравнить с оригиналом.
 

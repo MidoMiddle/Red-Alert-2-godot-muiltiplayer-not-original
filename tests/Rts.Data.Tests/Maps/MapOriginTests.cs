@@ -53,7 +53,7 @@ public sealed class MapOriginTests
             .Select(path => ($"{MapCatalog.Directory}/{Path.GetFileName(path)}", File.ReadAllText(path)));
         var (maps, _) = MapCatalog.Load(files);
 
-        Assert.Equal(["Facing Corners", "Heaven", "Steph's High Ground", "WAR Pro"], MapCatalog.OfOrigin(maps, MapOrigin.Ra2).Select(m => m.Map.Name));
+        Assert.Equal(["Facing Corners", "Heaven", "Route 66", "Steph's High Ground", "The Light of Night", "WAR Pro"], MapCatalog.OfOrigin(maps, MapOrigin.Ra2).Select(m => m.Map.Name));
         Assert.All(MapCatalog.OfOrigin(maps, MapOrigin.Generated), m => Assert.Equal("Map generator", m.Map.Author));
         Assert.Equal(maps.Count, MapCatalog.OfOrigin(maps, null).Count());
 

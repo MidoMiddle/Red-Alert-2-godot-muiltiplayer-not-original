@@ -76,6 +76,42 @@ public sealed class BridgeMapTests
     }
 
     [Fact]
+    public void The_highways_of_the_light_of_night_run_on_high_bridges_the_bases_can_drive_onto()
+    {
+        var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "light-of-night.rtsmap")));
+        var grid = map.ToMapGrid();
+
+        // Two highways at level 9 over the town at level 5, their spans of RA2 joined across the piers.
+        Assert.Equal(12, grid.Bridges.Count(b => b.Type.High));
+        Assert.All(grid.Bridges.Where(b => b.Type.High), b => Assert.Equal(9, grid.DeckLevel(b.Segments[0].Cell)));
+        var deck = grid.Bridges.First(b => b.Type.High).Segments[5].Cell;
+        // Under the highway runs a street.
+        Assert.True(grid.CanEnter(deck, Locomotor.Track));
+
+        // From the deck a tank gets off the highway and down to a base: the ramps of RA2 lead up to it.
+        var path = AStar.FindPath(grid, deck, map.Starts[0].Cell, Locomotor.Track, AStar.DefaultMaxExpansions * 20, startOnDeck: true);
+        Assert.Equal(PathStatus.Found, path.Status);
+        Assert.Contains(false, Decks.Levels(grid, path.Cells, true, Locomotor.Track));
+    }
+
+    [Fact]
+    public void On_route_66_every_base_reaches_every_other_over_the_high_bridges()
+    {
+        var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "route-66.rtsmap")));
+        var grid = map.ToMapGrid();
+
+        Assert.Equal(8, map.Starts.Length);
+        Assert.Equal(28, grid.Bridges.Count(b => b.Type.High));
+        foreach (var start in map.Starts.Skip(1))
+        {
+            var path = AStar.FindPath(grid, map.Starts[0].Cell, start.Cell, Locomotor.Track, AStar.DefaultMaxExpansions * 40);
+            Assert.Equal(PathStatus.Found, path.Status);
+            // The islands lie apart: the road crosses the water on a deck.
+            Assert.Contains(true, Decks.Levels(grid, path.Cells, false, Locomotor.Track));
+        }
+    }
+
+    [Fact]
     public void A_bridge_without_a_shore_at_both_ends_is_an_error()
     {
         // One segment on the shallows: deep water on the east, shallows north and south, so no shore along X or along Y.

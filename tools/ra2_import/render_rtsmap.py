@@ -20,7 +20,7 @@ area = tuple(map(int, re.search(r'playable: \{ left: (-?\d+), top: (\d+), right:
 left, top, right, bottom = area
 W, Hh = right - left + 1, (bottom - top) // 2 + 1
 H2 = '0123456789abcde'
-base = {'g': (150, 170, 80), 'f': (120, 135, 50), 'b': (220, 190, 120), 'u': (170, 140, 90), 'w': (60, 90, 160), 'k': (120, 120, 120), 'a': (90, 92, 96)}
+base = {'g': (150, 170, 80), 'f': (120, 135, 50), 'b': (220, 190, 120), 'u': (170, 140, 90), 'w': (60, 90, 160), 'k': (120, 120, 120), 'a': (90, 92, 96), 'p': (160, 100, 80)}
 img = bytearray()
 for py in range(Hh):
     for px in range(W):
