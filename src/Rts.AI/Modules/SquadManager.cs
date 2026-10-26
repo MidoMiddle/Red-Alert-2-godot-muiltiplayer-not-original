@@ -22,7 +22,8 @@ namespace Rts.AI.Modules;
 /// enemy; <b>ready</b> once it has <see cref="AiSettings.MinAttackArmy"/> units (more by <see cref="AiSettings.AttackGrowthPercent"/>
 /// for every wave sent) and <see cref="AiSettings.AttackThresholdPercent"/> of the enemy strength the bot knows of — or, with
 /// <see cref="AiSettings.AllInUnits"/> at least, once it has not grown for <see cref="AiSettings.AllInTicks"/> since the ore ran out
-/// (<see cref="AiPlan.OreGone"/>): an army that stopped growing for want of money goes with what it has; it sets out when the plan lets it (<see cref="AiPlan.AttackAllowed"/>), and a new
+/// (<see cref="AiPlan.OreGone"/>): an army that stopped growing for want of money goes with what it has — or, held only by an enemy it
+/// has not seen, after <see cref="KnowledgeWaitTicks"/> if it is stronger than what it saw; it sets out when the plan lets it (<see cref="AiPlan.AttackAllowed"/>), and a new
 /// squad gathers. By the personality (M8, 4.7, step 8): the first wave not before a tick of the window of the first attack, drawn once
 /// (<see cref="AiSettings.FirstAttackFrom"/>), and by its end (<see cref="AiSettings.FirstAttackBy"/>) with what it has, if that is
 /// <see cref="AiSettings.AllInUnits"/> or more; every next one <see cref="AiSettings.WaveInterval"/> after the last at the soonest;</item>
@@ -67,6 +68,13 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
 
     /// <summary>How long a squad that announced its attack waits for the answers of its allies, in ticks: 30 s (M8, 4.8).</summary>
     public const int WaitForAllies = 450;
+
+    /// <summary>
+    /// How long a squad held only by not knowing the enemy waits, in ticks: 3 min (the owner's decision of 2026-10-26). With the units it
+    /// needs and stronger than what it saw, it then sets out: on War Pro the scouts of «Balanced» were killed on their way, and its squad
+    /// waited half an hour for a look that never came.
+    /// </summary>
+    public const int KnowledgeWaitTicks = 2700;
 
     /// <summary>A harvester seen within this many ticks is a target of a raid: 30 s (M8 step 10a).</summary>
     public const int RaidFreshTicks = 450;
@@ -129,6 +137,9 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     private int _gathered;
     private int _grewAt;
     private int? _oreGoneAt;
+
+    // Since when the gathering squad has been held only by not knowing the enemy (KnowledgeWaitTicks).
+    private int? _heldSince;
 
     public AiModuleKind Kind => AiModuleKind.Squads;
 
@@ -414,6 +425,10 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             && squad.Strength >= enemy;
         var strong = due || stalled
             || (squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)enemy * settings.AttackThresholdPercent);
+        var held = !strong && squad.Units.Count >= Needed() && (long)squad.Strength * 100 >= (long)known * settings.AttackThresholdPercent;
+        _heldSince = held ? _heldSince ?? context.Tick : null;
+        var waited = held && context.Tick - _heldSince!.Value >= KnowledgeWaitTicks;
+        strong |= waited;
         squad.State = strong ? SquadState.Ready : SquadState.Gathering;
         // Half ready by its own count, to be held by not knowing the enemy: the scout goes to look meanwhile (step 10).
         context.Plan.LookAtTheEnemy |= !strong && squad.Units.Count * 2 >= Needed()
@@ -440,6 +455,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             var why = context.Plan.JoinAttack is not null && squad.TargetCell == context.Plan.JoinAttack ? "the attack of the team"
                 : due ? "the end of the window of the personality"
                 : stalled ? "the ore gone, the army no longer growing"
+                : waited ? $"waited {KnowledgeWaitTicks / 900} min to know the enemy, stronger than what it saw"
                 : context.Tick < context.Plan.CounterUntil ? "hitting back after an attack beaten at the base"
                 : $"stronger: {settings.AttackThresholdPercent} % of the enemy";
             var assumed = Assumed(context);
@@ -450,6 +466,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
 
         squad.State = SquadState.Moving;
         (_gathered, _grewAt) = (0, context.Tick);
+        _heldSince = null;
         squad.StartStrength = squad.Strength;
         squad.Beaten = false;
         squad.Regroup = null;

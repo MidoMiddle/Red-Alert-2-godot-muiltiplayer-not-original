@@ -188,6 +188,34 @@ public sealed class AttackTimingTests
     }
 
     [Fact]
+    public void A_squad_held_by_not_knowing_the_enemy_sets_out_after_three_minutes()
+    {
+        // The owner's decision of 2026-10-26: on War Pro the scouts of «Balanced» were killed, and its squad waited half an hour to know.
+        var (scene, context) = Gathered(4);
+        var squads = new SquadManager(Out with { AssumedEnemyPercent = 150 });
+        context.Log = new Rts.AI.Debug.AiDecisionLog();
+
+        Turn(scene, squads, context, 0);
+        Turn(scene, squads, context, SquadManager.KnowledgeWaitTicks - 15);
+        Assert.Equal(SquadState.Gathering, context.Plan.Squads.Single().State);
+
+        Turn(scene, squads, context, SquadManager.KnowledgeWaitTicks);
+        Assert.Contains(context.Plan.Squads.Single().State, new[] { SquadState.Moving, SquadState.Fighting });
+        Assert.Contains(context.Log!.Recent, line => line.Text.Contains("waited 3 min to know the enemy"));
+    }
+
+    [Fact]
+    public void A_squad_short_of_the_units_it_needs_does_not_set_out_however_long_it_waits_to_know()
+    {
+        var (scene, context) = Gathered(3);
+        var squads = new SquadManager(Out with { MinAttackArmy = 4, AssumedEnemyPercent = 150 });
+
+        Turn(scene, squads, context, 0);
+        Turn(scene, squads, context, SquadManager.KnowledgeWaitTicks + 15);
+        Assert.Equal(SquadState.Gathering, context.Plan.Squads.Single().State);
+    }
+
+    [Fact]
     public void A_bot_that_must_see_the_army_does_not_trust_a_look_into_a_base_without_it()
     {
         // M8 step 10a, attack_knowledge: army — «Hard» saw the yard of «Medium», not its army beside it, and lost its own attacking.
