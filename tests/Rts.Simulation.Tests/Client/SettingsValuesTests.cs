@@ -14,7 +14,8 @@ public sealed class SettingsValuesTests
         Assert.Equal(WindowMode.Windowed, defaults.WindowMode);
         Assert.Equal(new WindowSize(1280, 720), defaults.Resolution);
         Assert.True(defaults.VSync);
-        Assert.Equal(SettingsValues.Unlimited, defaults.FpsLimit);
+        // 60 since 2026-10-26: no limit heated the computer.
+        Assert.Equal(60, defaults.FpsLimit);
         Assert.Equal(100, defaults.InterfaceScale);
         Assert.Equal(100, defaults.MasterVolume);
         Assert.Equal(ControlScheme.Classic, defaults.Scheme);
@@ -22,6 +23,17 @@ public sealed class SettingsValuesTests
         Assert.True(defaults.EdgeScroll);
         Assert.True(defaults.CameraDrag);
         Assert.Equal(HealthBarMode.Selected, defaults.HealthBars);
+    }
+
+    [Fact]
+    public void A_file_of_format_one_with_no_frame_limit_gets_sixty_and_a_new_one_keeps_its_choice()
+    {
+        var old = new Dictionary<string, string> { ["meta/format"] = "1", ["graphics/fps_limit"] = "0" };
+        Assert.Equal(60, SettingsValues.Parse(old).FpsLimit);
+
+        var unlimited = SettingsValues.Defaults with { FpsLimit = SettingsValues.Unlimited };
+        Assert.Equal(SettingsValues.Unlimited, SettingsValues.Parse(unlimited.ToRaw()).FpsLimit);
+        Assert.Equal(120, SettingsValues.Parse(new Dictionary<string, string> { ["meta/format"] = "1", ["graphics/fps_limit"] = "120" }).FpsLimit);
     }
 
     [Fact]
@@ -70,7 +82,7 @@ public sealed class SettingsValuesTests
     [Fact]
     public void TheFileNamesItsFormatVersion()
     {
-        Assert.Equal("1", SettingsValues.Defaults.ToRaw()["meta/format"]);
+        Assert.Equal("2", SettingsValues.Defaults.ToRaw()["meta/format"]);
     }
 
     [Fact]
@@ -142,7 +154,7 @@ public sealed class SettingsValuesTests
     }
 
     [Theory]
-    [InlineData("45", SettingsValues.Unlimited)]
+    [InlineData("45", SettingsValues.DefaultFpsLimit)]
     [InlineData("144", 144)]
     public void FrameLimitMustBeAChoice(string text, int expected)
     {

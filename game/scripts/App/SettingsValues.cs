@@ -47,8 +47,14 @@ public sealed record SettingsValues(
     bool PlaytestSurvey = false,
     bool Ra2Names = true)
 {
-    /// <summary>Layout version of the file, written as <c>meta/format</c>.</summary>
-    public const int FormatVersion = 1;
+    /// <summary>
+    /// Layout version of the file, written as <c>meta/format</c>. 2 (2026-10-26): the frame limit's default is 60; a file of format 1
+    /// with no limit had it by default, and gets 60.
+    /// </summary>
+    public const int FormatVersion = 2;
+
+    /// <summary>The frame limit of a new game (the owner, 2026-10-26: no limit heated the computer).</summary>
+    public const int DefaultFpsLimit = 60;
 
     /// <summary>Frame limit that means no limit.</summary>
     public const int Unlimited = 0;
@@ -89,7 +95,7 @@ public sealed record SettingsValues(
     public static int[] FpsChoices { get; } = { 30, 60, 120, 144, Unlimited };
 
     /// <summary>
-    /// What the game uses without a settings file: windowed 1280 × 720, VSync, no frame limit, 100 % and full volume, Classic
+    /// What the game uses without a settings file: windowed 1280 × 720, VSync, 60 frames a second at most, 100 % and full volume, Classic
     /// scheme, scroll speed 5, edge scrolling and camera drag on, health bars of the selected and the damaged, no playtest survey (M8 step 14),
     /// the names of RA2 on screen (while there are no models).
     /// </summary>
@@ -97,7 +103,7 @@ public sealed record SettingsValues(
         WindowMode.Windowed,
         new WindowSize(1280, 720),
         true,
-        Unlimited,
+        DefaultFpsLimit,
         100,
         MaxMasterVolume,
         ControlScheme.Classic,
@@ -180,6 +186,12 @@ public sealed record SettingsValues(
     private static int ParseFpsLimit(IReadOnlyDictionary<string, string> raw, int fallback)
     {
         var fps = ParseInteger(raw, FpsLimitKey, fallback);
+        // A file of before format 2 wrote no limit by default: it gets the default of now.
+        if (fps == Unlimited && ParseInteger(raw, FormatKey, FormatVersion) < 2)
+        {
+            return DefaultFpsLimit;
+        }
+
         return Array.IndexOf(FpsChoices, fps) >= 0 ? fps : fallback;
     }
 

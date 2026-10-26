@@ -87,10 +87,13 @@ public sealed class GameSimulation
     }
 
     /// <summary>
-    /// Measuring only (M4 step 15, the benchmarks): called after each phase of <see cref="Step"/> with its name, so its time and memory
-    /// can be taken. Null in a match.
+    /// Measuring only (M4 step 15, the benchmarks; the client's performance log): called after each phase of <see cref="Step"/> with its
+    /// name, so its time and memory can be taken. It must change nothing in the match.
     /// </summary>
-    internal System.Action<string>? Probe { get; set; }
+    public System.Action<string>? Probe { get; set; }
+
+    /// <summary>The names <see cref="Probe"/> is called with after the turn of each bot, by its player: <c>bot 1</c> to <c>bot 8</c>.</summary>
+    public static readonly string[] BotPhases = ["bot 1", "bot 2", "bot 3", "bot 4", "bot 5", "bot 6", "bot 7", "bot 8"];
 
     /// <summary>Executes tick <see cref="CurrentTick"/>.</summary>
     public void Step()
@@ -193,6 +196,7 @@ public sealed class GameSimulation
 
             bots[i].Turn.Tick = tick;
             bots[i].Bot.Think(bots[i].Turn);
+            Probe?.Invoke(BotPhases[bots[i].Bot.Player.Value - 1]);
         }
 
         Probe?.Invoke("bots");

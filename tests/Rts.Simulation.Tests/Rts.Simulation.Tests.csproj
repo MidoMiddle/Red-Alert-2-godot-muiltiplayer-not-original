@@ -47,6 +47,7 @@
   <!-- The client rules without Godot types are tested here too (docs/implementation/M6_menus_skirmish.md, 6). -->
   <ItemGroup>
     <Compile Include="../../game/scripts/App/SettingsValues.cs" Link="Client/SettingsValues.cs" />
+    <Compile Include="../../game/scripts/Debug/PerfMeter.cs" Link="Client/PerfMeter.cs" />
     <Compile Include="../../game/scripts/Matches/PlayerPalette.cs" Link="Client/PlayerPalette.cs" />
     <Compile Include="../../game/scripts/Matches/MatchSummary.cs" Link="Client/MatchSummary.cs" />
     <Compile Include="../../game/scripts/Matches/GameSpeeds.cs" Link="Client/GameSpeeds.cs" />

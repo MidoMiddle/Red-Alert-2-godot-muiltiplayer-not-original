@@ -150,6 +150,10 @@ public partial class SimulationHost : Node
 
     public GameSimulation Simulation { get; private set; } = null!;
 
+    // The performance log of the simulation running now (the owner, 2026-10-26); a new one with a new simulation.
+    private Debug.PerfLog? _perf;
+    private GameSimulation? _perfOf;
+
     /// <summary>The look of the map being played (climate, time of day, texture layer): the simulation map has none of it.</summary>
     public Climates.MapLook Look { get; private set; } = null!;
 
@@ -438,6 +442,14 @@ public partial class SimulationHost : Node
     public override void _Process(double delta)
     {
         MeasureTicksPerSecond(delta);
+        if (_perfOf != Simulation)
+        {
+            _perfOf = Simulation;
+            _perf?.Dispose();
+            _perf = Debug.PerfLog.Start(Simulation, _match?.MapId ?? (IsPlayback ? "replay" : "sandbox"));
+        }
+
+        _perf?.Frame(delta);
         if (_net is not null)
         {
             ProcessNetwork(delta);
@@ -1184,6 +1196,8 @@ public partial class SimulationHost : Node
 
         _net?.Close();
         _net = null;
+        _perf?.Dispose();
+        _perf = null;
     }
 
     /// <summary>A match opens with the camera over the start of the person at the keyboard.</summary>
@@ -1250,7 +1264,9 @@ public partial class SimulationHost : Node
     private void StepSimulation()
     {
         CapturePoses();
+        _perf?.BeginTick();
         Simulation.Step();
+        _perf?.EndTick();
         AfterStep();
     }
 
