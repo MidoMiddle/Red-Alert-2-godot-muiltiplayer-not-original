@@ -36,6 +36,11 @@ public sealed class SidebarModelTests
 
     private static Cameo Square(GameSimulation simulation, BuildGroup group, string name) => Tab(simulation, group).Single(cameo => cameo.Name == name);
 
+    /// <summary>Every square of a tab, the unavailable ones too (<see cref="SidebarModel.AllCameos"/>).</summary>
+    private static IReadOnlyList<Cameo> AllTab(GameSimulation simulation, BuildGroup group) => SidebarModel.AllCameos(simulation.World, Player1, group);
+
+    private static Cameo AnySquare(GameSimulation simulation, BuildGroup group, string name) => AllTab(simulation, group).Single(cameo => cameo.Name == name);
+
     /// <summary>What the sidebar does with an action: the matching command, sent and played for a tick.</summary>
     private void Do(GameSimulation simulation, CameoAction action)
     {
@@ -91,10 +96,37 @@ public sealed class SidebarModelTests
     {
         var simulation = WithYard();
 
-        Assert.Equal(["reactor", "refinery", "barracks", "war_factory", "radar", "tech_center"], Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
-        Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil"], Tab(simulation, BuildGroup.Defense).Select(c => c.Name));
-        Assert.Equal(["conscript", "engineer", "rocketeer"], Tab(simulation, BuildGroup.Infantry).Select(c => c.Name));
-        Assert.All(Tab(simulation, BuildGroup.Infantry), cameo => Assert.Equal(ProductionKind.Unit, cameo.Kind));
+        Assert.Equal(["reactor", "refinery", "barracks", "war_factory", "radar", "tech_center"], AllTab(simulation, BuildGroup.Buildings).Select(c => c.Name));
+        Assert.Equal(["wall", "sentry_bunker", "flak_cannon", "tesla_coil"], AllTab(simulation, BuildGroup.Defense).Select(c => c.Name));
+        Assert.Equal(["conscript", "engineer", "rocketeer"], AllTab(simulation, BuildGroup.Infantry).Select(c => c.Name));
+        Assert.All(AllTab(simulation, BuildGroup.Infantry), cameo => Assert.Equal(ProductionKind.Unit, cameo.Kind));
+    }
+
+    [Fact]
+    public void A_tab_shows_only_what_can_be_ordered_and_more_as_the_buildings_come_as_in_ra2()
+    {
+        // The owner, 2026-10-26: in RA2 an item not available yet is not in the list.
+        var simulation = WithYard();
+        Assert.Equal(["reactor"], Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
+
+        Build(simulation, "reactor", 6, 2);
+        simulation.Step();
+        Assert.Equal(["reactor", "refinery", "barracks"], Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
+    }
+
+    [Fact]
+    public void An_item_in_the_queue_stays_in_the_list_when_its_prerequisite_is_gone()
+    {
+        var simulation = WithYard();
+        var reactor = Build(simulation, "reactor", 6, 2);
+        simulation.Step();
+        Left(simulation, BuildGroup.Buildings, "barracks");
+
+        simulation.Enqueue(new SellCommand(Player1, simulation.CurrentTick, _sequence++, reactor.Id));
+        Run(simulation, 2);
+
+        Assert.DoesNotContain("refinery", Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
+        Assert.Contains("barracks", Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
     }
 
     [Fact]
@@ -104,9 +136,9 @@ public sealed class SidebarModelTests
 
         Assert.Equal(CameoState.Available, Square(simulation, BuildGroup.Buildings, "reactor").State);
         Assert.Equal(new Cameo(ProductionKind.Building, TestRules.Standard.Database.IndexOfBuilding("barracks"), "barracks", 100,
-            CameoState.Unavailable, 0f, 0, "reactor") { Role = CameoRole.Production, Code = "BAR" }, Square(simulation, BuildGroup.Buildings, "barracks"));
-        Assert.Equal("war_factory, radar", Square(simulation, BuildGroup.Buildings, "tech_center").Missing);
-        Assert.Equal(CameoAction.None, SidebarModel.LeftClick(Square(simulation, BuildGroup.Buildings, "barracks"), false));
+            CameoState.Unavailable, 0f, 0, "reactor") { Role = CameoRole.Production, Code = "BAR" }, AnySquare(simulation, BuildGroup.Buildings, "barracks"));
+        Assert.Equal("war_factory, radar", AnySquare(simulation, BuildGroup.Buildings, "tech_center").Missing);
+        Assert.Equal(CameoAction.None, SidebarModel.LeftClick(AnySquare(simulation, BuildGroup.Buildings, "barracks"), false));
     }
 
     [Fact]
@@ -125,7 +157,7 @@ public sealed class SidebarModelTests
         // The queue of buildings takes one: the others wait, a second click on it does nothing.
         Assert.Equal(CameoState.Busy, Square(simulation, BuildGroup.Buildings, "reactor").State);
         // The wall waits for the barracks (RA2), the defense queue is free.
-        Assert.Equal(CameoState.Unavailable, Square(simulation, BuildGroup.Defense, "wall").State);
+        Assert.Equal(CameoState.Unavailable, AnySquare(simulation, BuildGroup.Defense, "wall").State);
         Assert.Equal(CameoAction.None, SidebarModel.LeftClick(building, false));
 
         Right(simulation, BuildGroup.Buildings, "barracks");

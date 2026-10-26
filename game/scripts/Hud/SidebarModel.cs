@@ -154,10 +154,18 @@ public static class SidebarModel
     }
 
     /// <summary>
-    /// The squares of a tab, in the order of RA2 (<see cref="Ra2Place"/>): every item of the player's faction in the tab's category. Units
-    /// are only those the simulation knows how to drive. The construction yard is left out: it comes from the MCV.
+    /// The squares a tab shows, as in RA2 (the owner, 2026-10-26): of <see cref="AllCameos"/>, those the player can order now or has in
+    /// its queue — an item whose prerequisites are missing is not there until they are, another country's own never.
     /// </summary>
-    public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null)
+    public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null) =>
+        [.. AllCameos(world, player, group, nameOf).Where(cameo => cameo.State != CameoState.Unavailable)];
+
+    /// <summary>
+    /// Every square of a tab, in the order of RA2 (<see cref="Ra2Place"/>): every item of the player's faction in the tab's category, the
+    /// unavailable ones too. Units are only those the simulation knows how to drive. The construction yard is left out: it comes from the
+    /// MCV.
+    /// </summary>
+    public static IReadOnlyList<Cameo> AllCameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null)
     {
         // The name on screen of an id and its name of the data (DisplayNames: those of RA2 for now).
         string Name(string id, string name) => nameOf?.Invoke(id, name) ?? name;

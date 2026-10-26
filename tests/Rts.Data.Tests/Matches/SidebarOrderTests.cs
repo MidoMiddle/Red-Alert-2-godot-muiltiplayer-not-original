@@ -42,7 +42,7 @@ public sealed class SidebarOrderTests
     private static string[] Tab(GameWorld world, PlayerId player, BuildGroup group)
     {
         var rules = world.Rules.Database;
-        return [.. SidebarModel.Cameos(world, player, group)
+        return [.. SidebarModel.AllCameos(world, player, group)
             .Select(cameo => cameo.Kind == ProductionKind.Building ? rules.Buildings[cameo.DefIndex].Id : rules.Units[cameo.DefIndex].Id)];
     }
 
@@ -113,7 +113,7 @@ public sealed class SidebarOrderTests
         {
             foreach (var group in Enum.GetValues<BuildGroup>())
             {
-                var count = SidebarModel.Cameos(world, player, group).Count;
+                var count = SidebarModel.AllCameos(world, player, group).Count;
                 Assert.True(count <= SidebarLayout.Slots, $"{player} {group}: {count} items for {SidebarLayout.Slots} squares");
             }
         }
