@@ -11,7 +11,7 @@ RA2 cells (x, y) are our cells: the same screen axes (x right-down, y left-down)
 - [Terrain]: trees (TREE*) become pines (the climate gives their look); the ore trees (TIBTRE*) nearest the starts become the gem
   drills, one an each start (M8 step 10b), the others are dropped; an ore drill stands by every start.
 - [Structures]: by the table STRUCTURES (buildings) and OBJECTS (lamps, benches); what has no counterpart is listed and left out.
-- Starts: waypoints 0-3. The playable area: LocalSize, its top moved up by two of its units (RA2 shows a few rows above it).
+- Starts: waypoints 0 to MaxPlayer - 1 of [Basic] (4 when it is missing). The playable area: LocalSize, its top moved up by two of its units (RA2 shows a few rows above it).
 
 Usage: ra2_to_rtsmap.py <unpacked dir> <out.rtsmap> --id ID --name NAME --author AUTHOR --description TEXT
                         [--climate temperate] [--lighting day]"""
@@ -82,6 +82,8 @@ LOW_BRIDGE, HIGH_BRIDGE = range(74, 102), (24, 25)
 bridge_cells = {}
 ore = {}
 sandbags = []
+walls = []
+WALLS = (240,)  # the stone walls round the compounds of WAR Pro: walls of ours
 for i, b in enumerate(ov):
     if b == 255:
         continue
@@ -96,6 +98,8 @@ for i, b in enumerate(ov):
         ore[p] = 10 + od[i] * 3 // 12  # gems A, B, C by their density
     elif b == 0:
         sandbags.append(p)  # GASAND: a low wall here is a wooden fence
+    elif b in WALLS:
+        walls.append(p)
 
 # ---- Buildings and the sizes of ours (src/Rts.Simulation/World/BuildingTypes.cs).
 here = os.path.dirname(os.path.abspath(__file__))
@@ -106,6 +110,7 @@ STRUCTURES = {
     'CAMACH': 'neutral_office', 'CAPOWR': 'neutral_boiler_house', 'CAMISC01': 'neutral_fuel_tank', 'CAMISC02': 'neutral_silo',
     'CAHSE05': 'neutral_house_a', 'CAHSE06': 'neutral_house_a', 'CAARMY02': 'neutral_shed', 'CAARMY03': 'neutral_shed',
     'CAARMY04': 'neutral_shed', 'CAFRMB': 'neutral_barn', 'CATHOSP': 'tech_hospital',
+    'CAOUTP': 'tech_outpost', 'CARUS02A': 'neutral_house_a', 'CARUS02B': 'neutral_house_a', 'CARUS07': 'neutral_house_a',
 }
 # The blocks of the towns of RA2 (New York, Chicago, Europe, Washington): offices here.
 CITY = ('CANEWY', 'CANWY', 'CACHIG', 'CAEURO', 'CAWASH10')
@@ -119,7 +124,7 @@ for _, value in secs.get('Structures', []):
     if f[1] in STRUCTURES or f[1].startswith(CITY):
         t = STRUCTURES.get(f[1], 'neutral_office'); w, h = SIZES[t]
         cells = {(x0 + dx, y0 + dy) for dx in range(w) for dy in range(h)}
-        if cells & footprints:
+        if cells & footprints or cells & bridge_cells.keys():
             skipped[f[1] + ' (overlaps)'] += 1; continue
         structures.append((t, x0, y0, (int(f[5]) // 32) % 8)); footprints |= cells
     elif f[1] in OBJECTS:
@@ -195,7 +200,8 @@ def plays(x, y):
     return area[0] <= v <= area[2] and area[1] <= u <= area[3]
 
 # ---- Starts, trees, drills.
-starts = sorted((int(k) + 1, int(v) % 1000, int(v) // 1000) for k, v in secs['Waypoints'] if int(k) < 4)
+max_players = int(dict(secs.get('Basic', [])).get('MaxPlayer', 4))
+starts = sorted((int(k) + 1, int(v) % 1000, int(v) // 1000) for k, v in secs['Waypoints'] if int(k) < max_players)
 
 def variant(x, y):
     return (x * 73856093 ^ y * 19349663) % 4
@@ -212,6 +218,7 @@ for key, value in secs.get('Terrain', []):
     elif value == 'LT_GEN':
         objects.append(('lamp_post', x, y, 0))
 objects += [('fence_wood', x, y, 0) for x, y in sandbags if (x, y) not in footprints and not is_water((x, y))]
+objects += [('wall_stone', x, y, 0) for x, y in walls if (x, y) not in footprints and not is_water((x, y))]
 taken = {(x, y) for _, x, y, _ in objects} | footprints
 
 # One gem drill and one ore drill by every start (M8 step 10b): the ore tree nearest it, and the field cell (or the free ground
@@ -219,6 +226,7 @@ taken = {(x, y) for _, x, y, _ in objects} | footprints
 for _, sx, sy in starts:
     def far(p):
         return (p[0] - sx) ** 2 + (p[1] - sy) ** 2
+    tree = None
     if ore_trees:
         tree = min(ore_trees, key=far); ore_trees.remove(tree)
         objects.append(('gem_source', tree[0], tree[1], variant(*tree))); taken.add(tree); ore.pop(tree, None)
@@ -230,6 +238,11 @@ for _, sx, sy in starts:
         best = (best[0] - (best[0] > sx) + (best[0] < sx), best[1] - (best[1] > sy) + (best[1] < sy))
     ore.pop(best, None)
     objects.append(('ore_source', best[0], best[1], variant(*best))); taken.add(best)
+    if tree is None:
+        # No ore tree on the map: the gem drill stands on free dry ground by the ore drill, on the side of the base.
+        ring = sorted(((best[0] + dx, best[1] + dy) for dx in range(-3, 4) for dy in range(-3, 4) if max(abs(dx), abs(dy)) >= 2), key=far)
+        gem = next(q for q in ring if q not in taken and q not in footprints and not is_water(q) and q not in ore)
+        objects.append(('gem_source', gem[0], gem[1], variant(*gem))); taken.add(gem)
 
 ore = {p: value for p, value in ore.items() if plays(*p) and not is_water(p) and p not in taken}
 structures = [s for s in structures if all(plays(s[1] + dx, s[2] + dy) for dx in range(SIZES[s[0]][0]) for dy in range(SIZES[s[0]][1]))]

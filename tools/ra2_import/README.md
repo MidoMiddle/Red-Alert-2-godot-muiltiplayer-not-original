@@ -13,7 +13,10 @@
    - **Ресурсы:** руда и самоцветы.
    - **Мосты:** низкий мост RA2 — `bridge_wood_low` над водой по средней линии. Высокий мост — `bridge_concrete_high` шириной 3 над тем, что под ним в RA2 (долина, речка). Его концы продлеваются через обрывы до ровных берегов.
    - **Деревья и бурильщики:** обычные деревья переносятся. У каждого старта ставятся бурильщик самоцветов (на ближайшем рудном дереве) и бурильщик руды, остальные рудные деревья пропускаются.
-   - **Здания** — по таблицам `STRUCTURES` и `OBJECTS`. Чему нет пары, то пропускается, и скрипт это перечисляет.
+   - **Стены** (оверлей 240) — каменные стены `wall_stone`.
+   - **Старты** — путевые точки от 0 до `MaxPlayer` − 1 из `[Basic]`.
+   - **Бурильщики:** если на карте нет рудных деревьев, бурильщик самоцветов встаёт рядом с бурильщиком руды.
+   - **Здания** — по таблицам `STRUCTURES` и `OBJECTS`. Чему нет пары или что стоит на мосту, то пропускается, и скрипт это перечисляет.
 
    Собраны так:
 
@@ -27,6 +30,9 @@
    python3 tools/ra2_import/ra2_to_rtsmap.py <папка steph> game/data/maps/stephs-high-ground.rtsmap --id stephs-high-ground \
      --name "Steph's High Ground" --author "Stephane Gingras (Red Alert 2, 2001); converted" \
      --description "Four bases on their own high plateaus, a river from west to east with two bridges, a town in the middle and four oil derricks to take. From Steph's High Ground.mpr."
+   python3 tools/ra2_import/ra2_to_rtsmap.py <папка warpro> game/data/maps/war-pro.rtsmap --id war-pro --name "WAR Pro" \
+     --author "Bdizzle18 (Red Alert 2, 2005); converted" \
+     --description "Eight bases round a great field of gems that spells WAR PRO, rivers between them, and in the middle a walled island with an airfield and bridge repair huts, reached by four bridges; oil derricks and tech outposts to take. From WARPRO2.mpr."
    ```
 3. `render_rtsmap.py <карта.rtsmap> <out.ppm>` рисует карту в осях экрана, как превью RA2: так её удобно сравнить с оригиналом.
 

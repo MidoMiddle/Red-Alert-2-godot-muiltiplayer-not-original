@@ -590,8 +590,23 @@ public partial class SimulationHost : Node
     /// <summary>The selected units deploy; only the player's MCVs do (M3 step 7).</summary>
     public void IssueDeploy(IReadOnlyList<EntityId> units)
     {
+        // Of a group that digs in, while any stands only those standing dig in; all dug in, all stand up (RA2, DeployGroup).
+        var anyStanding = false;
         foreach (var unit in units)
         {
+            if (Simulation.World.TryGet(unit, out var entity) && entity is Unit { IsAlive: true, Deployed: false } soldier && DigsIn(soldier))
+            {
+                anyStanding = true;
+            }
+        }
+
+        foreach (var unit in units)
+        {
+            if (Simulation.World.TryGet(unit, out var one) && one is Unit trooper && !Controls.DeployGroup.Sends(DigsIn(trooper), trooper.Deployed, anyStanding))
+            {
+                continue;
+            }
+
             // An MCV, a unit with a deploy weapon (stage 3b: the toxin trooper), one that digs in (the Rifleman), a transport with
             // passengers; or the construction yard, which packs up (RA2).
             var faction = Simulation.World.Player(LocalPlayer).Faction;
@@ -607,6 +622,10 @@ public partial class SimulationHost : Node
             }
         }
     }
+
+    // A unit that stays deployed until told otherwise: the GI behind sandbags, the Desolator; not one that fires once and stands up.
+    private static bool DigsIn(Unit unit) =>
+        unit.Archetype.DeployedWeapon >= 0 || (unit.Archetype.DeployWeapon >= 0 && !unit.Archetype.Has(UnitTalents.DeployOnce));
 
     /// <summary>
     /// Debug (M3 steps 6, 11): places the <see cref="BuildIndex"/> building with the centre of its footprint at <paramref name="position"/>.

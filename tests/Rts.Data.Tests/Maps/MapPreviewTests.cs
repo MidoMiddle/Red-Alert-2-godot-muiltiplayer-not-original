@@ -166,7 +166,7 @@ public sealed class MapPreviewTests
             "Downtown Duel", "Dune Sea", "Facing Corners", "Four Farms", "Four Isles", "Four Ports", "Frost Arena", "Frost Gate", "Frozen Crossing",
             "Frozen Outpost", "Frozen Plateau", "Glacier Duel", "Green Valley", "Harbor District", "Heaven", "Ice City",
             "Ice Ridge", "Lagoon Isle", "Mesa Pass", "Oasis Crossing", "Palm Shore", "Pine Haven", "Polar Circle", "Resort Bay", "River Meadows",
-            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Steph's High Ground", "Tundra Lane", "Twin Isles", "Windswept Pass",
+            "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Steph's High Ground", "Tundra Lane", "Twin Isles", "WAR Pro", "Windswept Pass",
         }, maps.Select(m => m.Map.Name));
         var relief = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap")));
         var pixels = MapPreview.Render(relief);
