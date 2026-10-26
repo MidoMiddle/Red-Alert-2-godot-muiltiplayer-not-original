@@ -24,6 +24,18 @@ public enum HealthBarMode
     Selected,
 }
 
+/// <summary>
+/// The smoothing of the edges of the 3D, in the order of the dropdown (the owner, 2026-10-26): none, FXAA — a pass over the picture,
+/// cheap and a little blurred — or multisampling of 2 or 4 samples a pixel, the default as before.
+/// </summary>
+public enum AntiAliasing
+{
+    Off,
+    Fxaa,
+    Msaa2,
+    Msaa4,
+}
+
 /// <summary>A window size in pixels.</summary>
 public readonly record struct WindowSize(int Width, int Height);
 
@@ -45,7 +57,9 @@ public sealed record SettingsValues(
     bool CameraDrag,
     HealthBarMode HealthBars = HealthBarMode.Selected,
     bool PlaytestSurvey = false,
-    bool Ra2Names = true)
+    bool Ra2Names = true,
+    int RenderScale = SettingsValues.FullRenderScale,
+    AntiAliasing AntiAliasing = AntiAliasing.Msaa4)
 {
     /// <summary>
     /// Layout version of the file, written as <c>meta/format</c>. 2 (2026-10-26): the frame limit's default is 60; a file of format 1
@@ -55,6 +69,9 @@ public sealed record SettingsValues(
 
     /// <summary>The frame limit of a new game (the owner, 2026-10-26: no limit heated the computer).</summary>
     public const int DefaultFpsLimit = 60;
+
+    /// <summary>The 3D drawn at the size of the window: 100 %.</summary>
+    public const int FullRenderScale = 100;
 
     /// <summary>Frame limit that means no limit.</summary>
     public const int Unlimited = 0;
@@ -74,6 +91,8 @@ public sealed record SettingsValues(
     private const string VSyncKey = "graphics/vsync";
     private const string FpsLimitKey = "graphics/fps_limit";
     private const string InterfaceScaleKey = "graphics/interface_scale";
+    private const string RenderScaleKey = "graphics/render_scale";
+    private const string AntiAliasingKey = "graphics/anti_aliasing";
     private const string MasterVolumeKey = "audio/master_volume";
     private const string SchemeKey = "controls/scheme";
     private const string ScrollSpeedKey = "controls/scroll_speed";
@@ -93,6 +112,12 @@ public sealed record SettingsValues(
 
     /// <summary>Frame limits of the Graphics tab, in the order of the dropdown. <see cref="Unlimited"/> is the last one.</summary>
     public static int[] FpsChoices { get; } = { 30, 60, 120, 144, Unlimited };
+
+    /// <summary>
+    /// The scales of the 3D of the Graphics tab, in percent of the window's pixels, in the order of the dropdown (the owner, 2026-10-26: a
+    /// Retina screen draws some 6 million pixels a frame). The interface stays sharp: only the 3D is drawn smaller and stretched.
+    /// </summary>
+    public static int[] RenderScaleChoices { get; } = { FullRenderScale, 85, 75, 67, 50 };
 
     /// <summary>
     /// What the game uses without a settings file: windowed 1280 × 720, VSync, 60 frames a second at most, 100 % and full volume, Classic
@@ -128,7 +153,9 @@ public sealed record SettingsValues(
             ParseBool(raw, CameraDragKey, fallback.CameraDrag),
             ParseHealthBars(raw, fallback.HealthBars),
             ParseBool(raw, PlaytestSurveyKey, fallback.PlaytestSurvey),
-            ParseBool(raw, Ra2NamesKey, fallback.Ra2Names));
+            ParseBool(raw, Ra2NamesKey, fallback.Ra2Names),
+            ParseRenderScale(raw, fallback.RenderScale),
+            ParseAntiAliasing(raw, fallback.AntiAliasing));
     }
 
     /// <summary>The values as file contents, keyed by <c>section/key</c>. Every known key is written.</summary>
@@ -151,6 +178,8 @@ public sealed record SettingsValues(
             [HealthBarsKey] = HealthBars.ToString().ToLowerInvariant(),
             [PlaytestSurveyKey] = PlaytestSurvey ? "true" : "false",
             [Ra2NamesKey] = Ra2Names ? "true" : "false",
+            [RenderScaleKey] = RenderScale.ToString(CultureInfo.InvariantCulture),
+            [AntiAliasingKey] = AntiAliasing.ToString().ToLowerInvariant(),
         };
     }
 
@@ -166,6 +195,19 @@ public sealed record SettingsValues(
         return Enum.TryParse(Text(raw, HealthBarsKey), ignoreCase: true, out HealthBarMode mode) && Enum.IsDefined(mode)
             ? mode
             : fallback;
+    }
+
+    private static AntiAliasing ParseAntiAliasing(IReadOnlyDictionary<string, string> raw, AntiAliasing fallback)
+    {
+        return Enum.TryParse(Text(raw, AntiAliasingKey), ignoreCase: true, out AntiAliasing mode) && Enum.IsDefined(mode)
+            ? mode
+            : fallback;
+    }
+
+    private static int ParseRenderScale(IReadOnlyDictionary<string, string> raw, int fallback)
+    {
+        var percent = ParseInteger(raw, RenderScaleKey, fallback);
+        return Array.IndexOf(RenderScaleChoices, percent) >= 0 ? percent : fallback;
     }
 
     private static ControlScheme ParseScheme(IReadOnlyDictionary<string, string> raw, ControlScheme fallback)

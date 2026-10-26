@@ -5,10 +5,15 @@ using System.Text;
 
 namespace Rts.Client.Debug;
 
-/// <summary>What the client sees of the game for the line of a second of the performance log, beside the times the meter adds up.</summary>
+/// <summary>
+/// What the client sees of the game for the line of a second of the performance log, beside the times the meter adds up; the size the 3D
+/// is drawn at in pixels, its scale in percent, its anti-aliasing and the driver that draws it (the owner, 2026-10-26: the load of the
+/// graphics card).
+/// </summary>
 public readonly record struct PerfSample(
     double Seconds, int Tick, double ProcessMs, int Units, int Projectiles, int Buildings, int PathQueue, double DrawnObjects, double DrawCalls,
-    double Primitives, double StaticMemoryMb, double ManagedMemoryMb, int Gen0, int Gen1, int Gen2);
+    double Primitives, double StaticMemoryMb, double ManagedMemoryMb, int Gen0, int Gen1, int Gen2,
+    int RenderWidth = 0, int RenderHeight = 0, int RenderScale = 100, string AntiAliasing = "", string Driver = "");
 
 /// <summary>
 /// The sums of the performance log (the owner, 2026-10-26: a line a second into a file, to see what grows while a match heats the
@@ -25,6 +30,7 @@ public sealed class PerfMeter
         "seconds", "tick", "fps", "frame_ms_avg", "frame_ms_max", "process_ms", "ticks", "tick_ms_avg", "tick_ms_max", "sim_ms", "bots_ms",
         "path_expanded", "path_queue", "units", "projectiles", "buildings", "drawn_objects", "draw_calls", "primitives",
         "static_mb", "managed_mb", "gc0", "gc1", "gc2",
+        "gpu_ms_avg", "gpu_ms_max", "render_cpu_ms_avg", "render_w", "render_h", "render_scale", "aa", "driver",
     ];
 
     private readonly List<string> _parts = new();
@@ -42,6 +48,11 @@ public sealed class PerfMeter
     private double _thisTickMs;
     private long _expanded;
     private bool _headed;
+    private int _rendered;
+    private double _gpuMs;
+    private bool _gpuMeasured;
+    private double _gpuMaxMs;
+    private double _renderCpuMs;
 
     /// <summary>A frame of <paramref name="seconds"/>.</summary>
     public void Frame(double seconds)
@@ -50,6 +61,25 @@ public sealed class PerfMeter
         _frames++;
         _frameMs += ms;
         _frameMaxMs = Math.Max(_frameMaxMs, ms);
+    }
+
+    /// <summary>
+    /// What a frame cost to draw: <paramref name="gpuMs"/> on the graphics card, <paramref name="cpuMs"/> on the processor to give it
+    /// the work. Godot measures it a frame or two late; a frame it has nothing for (0 and 0) is not counted. A driver that cannot time
+    /// the graphics card (Metal, on a Mac) gives 0 every frame: the columns of the card stay empty, not 0.
+    /// </summary>
+    public void Render(double gpuMs, double cpuMs)
+    {
+        if (gpuMs <= 0 && cpuMs <= 0)
+        {
+            return;
+        }
+
+        _rendered++;
+        _gpuMs += gpuMs;
+        _gpuMeasured |= gpuMs > 0;
+        _gpuMaxMs = Math.Max(_gpuMaxMs, gpuMs);
+        _renderCpuMs += cpuMs;
     }
 
     /// <summary>A phase of the tick that took <paramref name="ms"/>.</summary>
@@ -144,7 +174,10 @@ public sealed class PerfMeter
         line.Append(c, $"{sample.Seconds:0.0},{sample.Tick},{_frames},{Average(_frameMs, _frames):0.00},{_frameMaxMs:0.00},{sample.ProcessMs:0.00},");
         line.Append(c, $"{_ticks},{Average(_tickMs, _ticks):0.00},{_tickMaxMs:0.00},{_tickMs:0.00},{bots:0.00},{_expanded},{sample.PathQueue},");
         line.Append(c, $"{sample.Units},{sample.Projectiles},{sample.Buildings},{sample.DrawnObjects:0},{sample.DrawCalls:0},{sample.Primitives:0},");
-        line.Append(c, $"{sample.StaticMemoryMb:0.0},{sample.ManagedMemoryMb:0.0},{sample.Gen0},{sample.Gen1},{sample.Gen2}");
+        line.Append(c, $"{sample.StaticMemoryMb:0.0},{sample.ManagedMemoryMb:0.0},{sample.Gen0},{sample.Gen1},{sample.Gen2},");
+        line.Append(_gpuMeasured ? string.Create(c, $"{Average(_gpuMs, _rendered):0.00},{_gpuMaxMs:0.00},") : ",,");
+        line.Append(c, $"{Average(_renderCpuMs, _rendered):0.00},");
+        line.Append(c, $"{sample.RenderWidth},{sample.RenderHeight},{sample.RenderScale},{sample.AntiAliasing},{sample.Driver}");
         for (var i = 0; i < _phases.Count; i++)
         {
             line.Append(c, $",{_phaseMs[i]:0.00}");
@@ -158,6 +191,7 @@ public sealed class PerfMeter
         Array.Clear(_phaseMs);
         Array.Clear(_partMs);
         (_frames, _frameMs, _frameMaxMs, _ticks, _tickMs, _tickMaxMs, _expanded) = (0, 0, 0, 0, 0, 0, 0);
+        (_rendered, _gpuMs, _gpuMaxMs, _renderCpuMs, _gpuMeasured) = (0, 0, 0, 0, false);
         return line.ToString();
     }
 

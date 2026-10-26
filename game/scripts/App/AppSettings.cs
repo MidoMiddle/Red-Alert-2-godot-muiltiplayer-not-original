@@ -41,6 +41,8 @@ public partial class AppSettings : Node
         ApplyResolution(Values.Resolution);
         ApplyVSync(Values.VSync);
         ApplyFpsLimit(Values.FpsLimit);
+        ApplyRenderScale(Values.RenderScale);
+        ApplyAntiAliasing(Values.AntiAliasing);
         ApplyInterfaceScale(Values.InterfaceScale);
         ApplyMasterVolume(Values.MasterVolume);
         InputMapper.Apply(Keys);
@@ -66,6 +68,21 @@ public partial class AppSettings : Node
     {
         Values = Values with { FpsLimit = fps };
         ApplyFpsLimit(fps);
+        Save();
+    }
+
+    /// <summary>The scale of the 3D, in percent of the window's pixels (<see cref="SettingsValues.RenderScaleChoices"/>).</summary>
+    public void SetRenderScale(int percent)
+    {
+        Values = Values with { RenderScale = percent };
+        ApplyRenderScale(percent);
+        Save();
+    }
+
+    public void SetAntiAliasing(AntiAliasing mode)
+    {
+        Values = Values with { AntiAliasing = mode };
+        ApplyAntiAliasing(mode);
         Save();
     }
 
@@ -194,6 +211,29 @@ public partial class AppSettings : Node
     private static void ApplyFpsLimit(int fps)
     {
         Engine.MaxFps = fps;
+    }
+
+    /// <summary>
+    /// The 3D drawn at <paramref name="percent"/> of the window's pixels and stretched to it by AMD's FSR 1, sharper than a plain stretch;
+    /// the interface is drawn at the full size whatever it is.
+    /// </summary>
+    private void ApplyRenderScale(int percent)
+    {
+        var root = GetTree().Root;
+        root.Scaling3DScale = percent / 100f;
+        root.Scaling3DMode = percent < SettingsValues.FullRenderScale ? Viewport.Scaling3DModeEnum.Fsr : Viewport.Scaling3DModeEnum.Bilinear;
+    }
+
+    private void ApplyAntiAliasing(AntiAliasing mode)
+    {
+        var root = GetTree().Root;
+        root.Msaa3D = mode switch
+        {
+            AntiAliasing.Msaa2 => Viewport.Msaa.Msaa2X,
+            AntiAliasing.Msaa4 => Viewport.Msaa.Msaa4X,
+            _ => Viewport.Msaa.Disabled,
+        };
+        root.ScreenSpaceAA = mode == AntiAliasing.Fxaa ? Viewport.ScreenSpaceAAEnum.Fxaa : Viewport.ScreenSpaceAAEnum.Disabled;
     }
 
     private void ApplyInterfaceScale(int percent)

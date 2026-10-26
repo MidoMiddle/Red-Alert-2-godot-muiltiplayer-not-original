@@ -214,6 +214,13 @@ UI_SETTINGS_VSYNC,VSync
 UI_SETTINGS_FRAME_LIMIT,Frame limit
 UI_FPS_FORMAT,{0} FPS
 UI_FPS_UNLIMITED,Unlimited
+UI_SETTINGS_RENDER_SCALE,3D render scale
+UI_SETTINGS_RENDER_SCALE_HINT,"The 3D is drawn at this share of the window's pixels and stretched; the interface stays sharp. Lower is lighter on the graphics card."
+UI_SETTINGS_ANTI_ALIASING,Anti-aliasing
+UI_AA_OFF,Off
+UI_AA_FXAA,FXAA
+UI_AA_MSAA2,MSAA 2×
+UI_AA_MSAA4,MSAA 4×
 UI_SETTINGS_SHADOWS,Shadow quality
 UI_QUALITY_LOW,Low
 UI_QUALITY_MEDIUM,Medium

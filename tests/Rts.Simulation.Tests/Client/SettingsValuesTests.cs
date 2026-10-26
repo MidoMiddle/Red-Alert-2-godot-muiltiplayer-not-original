@@ -23,6 +23,9 @@ public sealed class SettingsValuesTests
         Assert.True(defaults.EdgeScroll);
         Assert.True(defaults.CameraDrag);
         Assert.Equal(HealthBarMode.Selected, defaults.HealthBars);
+        // The 3D at the full size of the window, with the 4× multisampling the project had (2026-10-26).
+        Assert.Equal(100, defaults.RenderScale);
+        Assert.Equal(AntiAliasing.Msaa4, defaults.AntiAliasing);
     }
 
     [Fact]
@@ -100,6 +103,8 @@ public sealed class SettingsValuesTests
             ScrollSpeed = 8,
             EdgeScroll = false,
             CameraDrag = false,
+            RenderScale = 67,
+            AntiAliasing = AntiAliasing.Fxaa,
         };
 
         Assert.Equal(values, SettingsValues.Parse(values.ToRaw()));
@@ -159,6 +164,24 @@ public sealed class SettingsValuesTests
     public void FrameLimitMustBeAChoice(string text, int expected)
     {
         Assert.Equal(expected, ParseOne("graphics/fps_limit", text).FpsLimit);
+    }
+
+    [Theory]
+    [InlineData("75", 75)]
+    [InlineData("60", 100)]
+    [InlineData("half", 100)]
+    public void RenderScaleMustBeAChoice(string text, int expected)
+    {
+        Assert.Equal(expected, ParseOne("graphics/render_scale", text).RenderScale);
+    }
+
+    [Theory]
+    [InlineData("msaa2", AntiAliasing.Msaa2)]
+    [InlineData("OFF", AntiAliasing.Off)]
+    [InlineData("taa", AntiAliasing.Msaa4)]
+    public void AntiAliasingIsReadByNameOrFallsBackToFourSamples(string text, AntiAliasing expected)
+    {
+        Assert.Equal(expected, ParseOne("graphics/anti_aliasing", text).AntiAliasing);
     }
 
     [Theory]

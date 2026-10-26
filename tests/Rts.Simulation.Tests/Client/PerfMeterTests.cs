@@ -22,9 +22,12 @@ public sealed class PerfMeterTests
         meter.Part("FogOfWar.process", 2.5);
         meter.Part("FogOfWar.process", 1.5);
         meter.Part("HealthBars.draw", 1);
+        meter.Render(12, 2);
+        meter.Render(0, 0);
+        meter.Render(20, 4);
 
         var header = meter.Header().Split(',');
-        var line = meter.Line(new PerfSample(1, 30, 5, 12, 3, 4, 2, 50, 20, 900, 64, 32, 7, 1, 0)).Split(',');
+        var line = meter.Line(new PerfSample(1, 30, 5, 12, 3, 4, 2, 50, 20, 900, 64, 32, 7, 1, 0, 2268, 1473, 75, "msaa4", "vulkan")).Split(',');
         string Column(string name) => line[System.Array.IndexOf(header, name)];
 
         Assert.Equal(header.Length, line.Length);
@@ -42,11 +45,35 @@ public sealed class PerfMeterTests
         Assert.Equal("12", Column("units"));
         Assert.Equal("4.00", Column("client_FogOfWar.process"));
         Assert.Equal("1.00", Column("client_HealthBars.draw"));
+        // The frame Godot had nothing measured for is not counted.
+        Assert.Equal("16.00", Column("gpu_ms_avg"));
+        Assert.Equal("20.00", Column("gpu_ms_max"));
+        Assert.Equal("3.00", Column("render_cpu_ms_avg"));
+        Assert.Equal(("2268", "1473", "75", "msaa4", "vulkan"), (Column("render_w"), Column("render_h"), Column("render_scale"), Column("aa"), Column("driver")));
 
         // The next second starts from nothing.
         var next = meter.Line(new PerfSample(2, 45, 5, 12, 3, 4, 2, 50, 20, 900, 64, 32, 7, 1, 0)).Split(',');
         Assert.Equal("0", next[System.Array.IndexOf(header, "ticks")]);
         Assert.Equal("0.00", next[System.Array.IndexOf(header, "ms_movement")]);
+        Assert.Equal("", next[System.Array.IndexOf(header, "gpu_ms_avg")]);
+    }
+
+    [Fact]
+    public void A_driver_that_cannot_time_the_graphics_card_leaves_its_columns_empty()
+    {
+        // Metal on a Mac: 0 every frame on the card, the processor's part measured.
+        var meter = new PerfMeter();
+        meter.Frame(0.016);
+        meter.Render(0, 1);
+        meter.Render(0, 3);
+        var header = meter.Header().Split(',');
+        var line = meter.Line(new PerfSample(1, 15, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1280, 720, 100, "msaa4", "metal")).Split(',');
+        string Column(string name) => line[System.Array.IndexOf(header, name)];
+
+        Assert.Equal(header.Length, line.Length);
+        Assert.Equal(("", ""), (Column("gpu_ms_avg"), Column("gpu_ms_max")));
+        Assert.Equal("2.00", Column("render_cpu_ms_avg"));
+        Assert.Equal("metal", Column("driver"));
     }
 
     [Fact]

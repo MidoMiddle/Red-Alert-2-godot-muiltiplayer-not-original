@@ -13,7 +13,8 @@ namespace Rts.Client.Debug;
 /// <c>user://logs/perf/&lt;time&gt;-&lt;what&gt;.csv</c> — the frames and the time the scripts took, the ticks of the simulation and the
 /// time of each of its phases and of each bot (<see cref="GameSimulation.Probe"/>), the nodes the pathfinder looked at and the paths
 /// waiting, the units, shots and buildings, what the renderer drew, the memory, the time of each node's <c>_Process</c> and <c>_Draw</c>
-/// that times itself (<see cref="Time"/>). The sums are <see cref="PerfMeter"/>'s. On by default;
+/// that times itself (<see cref="Time"/>); the time a frame took the graphics card — measured by Vulkan, not by Metal, the Mac's
+/// default: <c>--rendering-driver vulkan</c> before <c>--</c> to see it — and the size, scale and anti-aliasing the 3D is drawn with. The sums are <see cref="PerfMeter"/>'s. On by default;
 /// <c>--no-perf-log</c> turns it off. The newest <see cref="KeptFiles"/> files are kept. Measuring only: nothing in the match changes.
 /// </summary>
 public sealed class PerfLog : IDisposable
@@ -34,7 +35,11 @@ public sealed class PerfLog : IDisposable
         Path = path;
         _file = new StreamWriter(path) { AutoFlush = true };
         simulation.Probe = Phase;
+        RenderingServer.ViewportSetMeasureRenderTime(Root.GetViewportRid(), true);
     }
+
+    /// <summary>The window: the viewport the 3D is drawn in.</summary>
+    private static Window Root => ((SceneTree)Engine.GetMainLoop()).Root;
 
     /// <summary>The simulation measured.</summary>
     public GameSimulation Simulation { get; }
@@ -63,7 +68,7 @@ public sealed class PerfLog : IDisposable
         var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
         var log = new PerfLog(simulation, System.IO.Path.Combine(folder, $"{stamp}-{what}.csv"));
         Current = log;
-        GD.Print($"[perf] the performance log in {log.Path}; frames a second at most {(Engine.MaxFps == 0 ? "unlimited" : Engine.MaxFps)}, vsync {DisplayServer.WindowGetVsyncMode()}");
+        GD.Print($"[perf] the performance log in {log.Path}; frames a second at most {(Engine.MaxFps == 0 ? "unlimited" : Engine.MaxFps)}, vsync {DisplayServer.WindowGetVsyncMode()}, the window {Root.Size.X} × {Root.Size.Y} pixels, drawn by {RenderingServer.GetCurrentRenderingDriverName()}");
         return log;
     }
 
@@ -101,6 +106,8 @@ public sealed class PerfLog : IDisposable
     public void Frame(double delta)
     {
         _meter.Frame(delta);
+        var viewport = Root.GetViewportRid();
+        _meter.Render(RenderingServer.ViewportGetMeasuredRenderTimeGpu(viewport), RenderingServer.ViewportGetMeasuredRenderTimeCpu(viewport));
         _seconds += delta;
         _secondTimer += delta;
         if (_secondTimer < 1.0)
@@ -128,6 +135,7 @@ public sealed class PerfLog : IDisposable
         if (Current == this)
         {
             Current = null;
+            RenderingServer.ViewportSetMeasureRenderTime(Root.GetViewportRid(), false);
         }
 
         _file.Dispose();
@@ -161,6 +169,14 @@ public sealed class PerfLog : IDisposable
         }
 
         const double mb = 1024 * 1024;
+        var root = Root;
+        var aa = root.Msaa3D switch
+        {
+            Viewport.Msaa.Msaa2X => "msaa2",
+            Viewport.Msaa.Msaa4X => "msaa4",
+            Viewport.Msaa.Msaa8X => "msaa8",
+            _ => root.ScreenSpaceAA == Viewport.ScreenSpaceAAEnum.Fxaa ? "fxaa" : "off",
+        };
         return new PerfSample(
             _seconds, world.CurrentTick, Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000, units, projectiles, buildings,
             world.PathRequests.Requests.Count,
@@ -169,6 +185,8 @@ public sealed class PerfLog : IDisposable
             Performance.GetMonitor(Performance.Monitor.RenderTotalPrimitivesInFrame),
             Performance.GetMonitor(Performance.Monitor.MemoryStatic) / mb,
             GC.GetTotalMemory(false) / mb,
-            GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
+            GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2),
+            (int)(root.Size.X * root.Scaling3DScale), (int)(root.Size.Y * root.Scaling3DScale), (int)Math.Round(root.Scaling3DScale * 100), aa,
+            RenderingServer.GetCurrentRenderingDriverName());
     }
 }
