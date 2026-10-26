@@ -6,17 +6,18 @@ using Rts.Simulation.Tests.Matches;
 namespace Rts.Simulation.Tests.Client;
 
 /// <summary>
-/// The game speed of RA2 (docs/implementation/M6_menus_skirmish.md, 4.4, step 8): 8 to 25 ticks a second, speed 4 the simulation's own
-/// rate; the keys step along the scale and stop at its ends; and the match itself does not depend on it.
+/// The game speed of RA2 (docs/implementation/M6_menus_skirmish.md, 4.4): RA2's frame rates, 12 to 60 ticks a second, speed 2 the
+/// simulation's own rate; the keys step along the scale and stop at its ends; and the match itself does not depend on it.
 /// </summary>
 public sealed class GameSpeedsTests
 {
     [Fact]
-    public void Every_speed_is_its_ticks_a_second_and_4_is_the_rate_of_the_simulation()
+    public void Every_speed_is_its_ticks_a_second_of_ra2_and_2_is_the_rate_of_the_simulation()
     {
-        Assert.Equal([8, 10, 12, 15, 20, 25], Enumerable.Range(1, 6).Select(GameSpeeds.TicksOf));
-        Assert.Equal(1.0, GameSpeeds.Multiplier(GameSpeeds.Normal, SimulationSettings.DefaultTicksPerSecond));
-        Assert.Equal(25.0 / 15, GameSpeeds.Multiplier(6, 15));
+        Assert.Equal([12, 15, 20, 30, 45, 60], Enumerable.Range(1, 6).Select(GameSpeeds.TicksOf));
+        Assert.Equal(1.0, GameSpeeds.Multiplier(2, SimulationSettings.DefaultTicksPerSecond));
+        Assert.Equal(2.0, GameSpeeds.Multiplier(GameSpeeds.Normal, SimulationSettings.DefaultTicksPerSecond));
+        Assert.Equal(4.0, GameSpeeds.Multiplier(6, 15));
         Assert.Equal((GameSpeeds.Slowest, GameSpeeds.Fastest), (MatchSetup.MinGameSpeed, MatchSetup.MaxGameSpeed));
     }
 
@@ -27,7 +28,7 @@ public sealed class GameSpeedsTests
         Assert.Equal(3, GameSpeeds.Step(4, -1));
         Assert.Equal(6, GameSpeeds.Step(6, +1));
         Assert.Equal(1, GameSpeeds.Step(1, -1));
-        Assert.Equal(8, GameSpeeds.TicksOf(0));
+        Assert.Equal(12, GameSpeeds.TicksOf(0));
     }
 
     [Fact]
