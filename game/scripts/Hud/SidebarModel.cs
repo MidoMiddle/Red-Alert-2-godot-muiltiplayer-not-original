@@ -154,18 +154,23 @@ public static class SidebarModel
     }
 
     /// <summary>
-    /// The squares a tab shows, as in RA2 (the owner, 2026-10-26): of <see cref="AllCameos"/>, those the player can order now or has in
-    /// its queue — an item whose prerequisites are missing is not there until they are, another country's own never.
+    /// The squares a tab shows, as in RA2 (the owner, 2026-10-26): those the player can order now or has in its queue — an item whose
+    /// prerequisites are missing is not there until they are, another country's own never — of its own faction and of the other, whose
+    /// items a building taken from it opens (<see cref="TechTree"/>).
     /// </summary>
     public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null) =>
-        [.. AllCameos(world, player, group, nameOf).Where(cameo => cameo.State != CameoState.Unavailable)];
+        [.. Squares(world, player, group, nameOf, everyFaction: true).Where(cameo => cameo.State != CameoState.Unavailable)];
 
     /// <summary>
     /// Every square of a tab, in the order of RA2 (<see cref="Ra2Place"/>): every item of the player's faction in the tab's category, the
     /// unavailable ones too. Units are only those the simulation knows how to drive. The construction yard is left out: it comes from the
     /// MCV.
     /// </summary>
-    public static IReadOnlyList<Cameo> AllCameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null)
+    public static IReadOnlyList<Cameo> AllCameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null) =>
+        Squares(world, player, group, nameOf, everyFaction: false);
+
+    /// <summary>The squares of a tab in the order of RA2: of the player's faction, or of every faction when <paramref name="everyFaction"/>.</summary>
+    private static IReadOnlyList<Cameo> Squares(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf, bool everyFaction)
     {
         // The name on screen of an id and its name of the data (DisplayNames: those of RA2 for now).
         string Name(string id, string name) => nameOf?.Invoke(id, name) ?? name;
@@ -181,7 +186,7 @@ public static class SidebarModel
             for (var i = 0; i < rules.Buildings.Length; i++)
             {
                 var def = rules.Buildings[i];
-                if (def.Faction == state.Faction.Id && def.Category == category && def.Id != state.Faction.ConstructionYard)
+                if ((everyFaction || def.Faction == state.Faction.Id) && def.Category == category && !IsYard(rules, def.Id))
                 {
                     var name = Name(def.Id, def.Name);
                     cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, name, def.Cost, state.CanBuildBuilding(i), def.Prerequisites, owned, nameOf)
@@ -198,7 +203,7 @@ public static class SidebarModel
                 var shown = category == ProductionCategory.Infantry
                     ? def.Category == UnitCategory.Infantry
                     : def.Category is UnitCategory.Vehicle or UnitCategory.Naval or UnitCategory.Aircraft;
-                if (def.Faction == state.Faction.Id && shown && !def.Spawned && UnitTypes.TryGetById(def.Id, out _))
+                if ((everyFaction || def.Faction == state.Faction.Id) && shown && !def.Spawned && UnitTypes.TryGetById(def.Id, out _))
                 {
                     var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));
                     var cost = ProductionRules.CostOf(rules, ProductionKind.Unit, i);
@@ -213,8 +218,31 @@ public static class SidebarModel
         return [.. cameos.OrderBy(cameo => Ra2Place(IdOf(rules, cameo)))];
     }
 
+    private static bool IsYard(RulesDatabase rules, string id)
+    {
+        foreach (var faction in rules.Factions)
+        {
+            if (faction.ConstructionYard == id)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static string IdOf(RulesDatabase rules, Cameo cameo) =>
         cameo.Kind == ProductionKind.Building ? rules.Buildings[cameo.DefIndex].Id : rules.Units[cameo.DefIndex].Id;
+
+    /// <summary>
+    /// The rows a tab of <paramref name="count"/> squares may be scrolled by: none while it fits the grid
+    /// (<see cref="SidebarLayout.Slots"/>), at most so far that its last row is the grid's last.
+    /// </summary>
+    public static int ScrollRows(int count, int rows)
+    {
+        var extra = Math.Max(0, count - SidebarLayout.Slots);
+        return Math.Clamp(rows, 0, (extra + SidebarLayout.Columns - 1) / SidebarLayout.Columns);
+    }
 
     /// <summary>
     /// A left click: a ready building goes to the placement mode, a paused item goes on (the order command resumes it), anything that

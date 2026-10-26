@@ -395,6 +395,7 @@ public sealed class GoldenValuesTests
         // Rules v106 (a defense fires at the target the player orders, RA2): the version and the recorded checksums, which take the
         // order of every building.
         // Rules v107 (the fields grow back slower and the maps from RA2 share their gem drills, the owner's wish): the version only.
-        Assert.Equal((22270, 1562524252216111194UL), (bytes.Length, hash.Value));
+        // Rules v108 (a building taken from the other faction opens its units and buildings, the owner's wish): the version only.
+        Assert.Equal((22270, 6407303327816887953UL), (bytes.Length, hash.Value));
     }
 }

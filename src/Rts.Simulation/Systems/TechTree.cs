@@ -7,7 +7,9 @@ namespace Rts.Simulation.Systems;
 
 /// <summary>
 /// What every player may build (docs/implementation/M3_base_economy.md, 4.7): a unit or building of its faction whose prerequisites are
-/// all among its ready buildings. Kept as a flag per definition, by its index in the rules (one set for units, one for buildings).
+/// all among its ready buildings. A unit or building of the other faction too, as in RA2, once the player holds a ready building of that
+/// faction that makes it — barracks for its infantry, a war factory for its vehicles, its construction yard for its buildings — taken by
+/// an engineer (the owner, 2026-10-26); not its specials: those of a country or of stolen technology. Kept as a flag per definition, by its index in the rules (one set for units, one for buildings).
 /// Worked out only when the buildings changed (<see cref="GameWorld.TechDirty"/>), late in the tick (4.15), so a building finished in
 /// a tick opens its technologies for the next one. Whether a factory is there to build it is the business of production (step 8).
 /// The construction yard of the faction is never built: it comes from the MCV, as in RA2. A lost prerequisite refuses new orders,
@@ -28,15 +30,21 @@ public static class TechTree
         var units = new bool[rules.Units.Length];
         var buildings = new bool[rules.Buildings.Length];
         var owned = new SortedSet<string>(System.StringComparer.Ordinal);
+        var factories = new SortedSet<(string Faction, ProductionCategory Category)>();
         foreach (var player in world.Players)
         {
             owned.Clear();
+            factories.Clear();
             var income = 0;
             foreach (var entity in world.Entities)
             {
                 if (entity is Building { IsAlive: true, IsReady: true, Def: { } def } building && building.Owner == player.Id)
                 {
                     owned.Add(def.Id);
+                    foreach (var category in def.Produces)
+                    {
+                        factories.Add((def.Faction, category));
+                    }
 
                     // The prerequisite groups of RA2: a building taken from the other faction counts too.
                     foreach (var group in def.Provides)
@@ -59,17 +67,23 @@ public static class TechTree
             {
                 // A unit available later (ships, aircraft) waits for its mechanic: never in the tree.
                 // A unit of stolen technology (RA2) opens once a spy took it from that faction's battle lab.
-                units[i] = rules.Units[i].Faction == faction && !rules.Units[i].AvailableLater && !rules.Units[i].Spawned && AllOwned(rules.Units[i].Prerequisites, owned)
-                    && (rules.Units[i].RequiresStolen.Length == 0 || player.StolenTech.Contains(rules.Units[i].RequiresStolen))
-                    && Allowed(player.Country, rules.Units[i].Countries, rules.Units[i].ForbiddenCountries);
+                var unit = rules.Units[i];
+                var own = unit.Faction == faction;
+                units[i] = (own || Taken(unit.Faction, unit.ProducedIn, unit.Countries, unit.RequiresStolen.Length > 0, factories))
+                    && !unit.AvailableLater && !unit.Spawned && AllOwned(unit.Prerequisites, owned)
+                    && (unit.RequiresStolen.Length == 0 || player.StolenTech.Contains(unit.RequiresStolen))
+                    && (!own || Allowed(player.Country, unit.Countries, unit.ForbiddenCountries));
             }
 
             for (var i = 0; i < buildings.Length; i++)
             {
-                buildings[i] = rules.Buildings[i].Faction == faction && rules.Buildings[i].Id != player.Faction.ConstructionYard
-                    && AllOwned(rules.Buildings[i].Prerequisites, owned)
-                    && Allowed(player.Country, rules.Buildings[i].Countries, rules.Buildings[i].ForbiddenCountries)
-                    && (world.Match is not { Options.Superweapons: false } || !SuperweaponSystem.IsStrike(rules.Buildings[i].Superweapon));
+                var building = rules.Buildings[i];
+                var own = building.Faction == faction;
+                buildings[i] = (own || Taken(building.Faction, building.Category, building.Countries, special: false, factories))
+                    && !IsYard(rules, building)
+                    && AllOwned(building.Prerequisites, owned)
+                    && (!own || Allowed(player.Country, building.Countries, building.ForbiddenCountries))
+                    && (world.Match is not { Options.Superweapons: false } || !SuperweaponSystem.IsStrike(building.Superweapon));
             }
 
             player.SetAvailable(units, buildings);
@@ -113,6 +127,28 @@ public static class TechTree
         foreach (var entity in world.Entities)
         {
             if (entity is Building { IsAlive: true, Def: { } def } building && building.Owner == player && def.Produces.Contains(category))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Whether an item of another faction is open for the player (RA2): it holds a ready building of <paramref name="faction"/> that makes
+    /// the <paramref name="category"/> — taken by an engineer — and the item is none of the specials, of a country or of stolen technology.
+    /// </summary>
+    private static bool Taken(
+        string faction, ProductionCategory category, ImmutableArray<string> countries, bool special, SortedSet<(string, ProductionCategory)> factories) =>
+        faction.Length > 0 && !special && countries.IsDefaultOrEmpty && factories.Contains((faction, category));
+
+    /// <summary>A construction yard, of any faction: it comes from an MCV, never from a sidebar.</summary>
+    private static bool IsYard(RulesDatabase rules, BuildingDef building)
+    {
+        foreach (var faction in rules.Factions)
+        {
+            if (faction.ConstructionYard == building.Id)
             {
                 return true;
             }

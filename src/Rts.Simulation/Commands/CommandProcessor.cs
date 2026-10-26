@@ -195,7 +195,8 @@ public static class CommandProcessor
 
         var def = buildings[command.DefIndex];
         var player = world.Player(command.Player);
-        if (def.Faction != player.Faction.Id || !def.Wall)
+        // Of either faction: a wall of a construction yard taken from the other is placed the same (its queue holds it ready).
+        if (!def.Wall)
         {
             return false;
         }
@@ -467,11 +468,6 @@ public static class CommandProcessor
 
         var def = buildings[command.DefIndex];
         var player = world.Player(command.Player);
-        if (def.Faction != player.Faction.Id)
-        {
-            return false;
-        }
-
         var queue = player.QueueList(def.Category);
         var ready = queue.Count > 0 && queue[0] is { Kind: ProductionKind.Building, Ready: true } item && item.DefIndex == command.DefIndex;
         var problem = ready
@@ -490,8 +486,9 @@ public static class CommandProcessor
     }
 
     /// <summary>
-    /// Production of a definition of the player's faction (4.10): resumes its first item when that one is paused; otherwise, when it is
-    /// available, a ready factory of its category stands and the queue has room, adds the items. A building or defense takes the queue
+    /// Production of a definition (4.10): resumes its first item when that one is paused; otherwise, when it is available — of the player's
+    /// faction, or of the other through a building taken from it (<see cref="TechTree"/>) — a ready factory of its category stands and the
+    /// queue has room, adds the items. A building or defense takes the queue
     /// alone; infantry and vehicles queue up to <see cref="ProductionRules.MaxUnitQueue"/>.
     /// </summary>
     private static bool ApplyProduce(GameWorld world, ProduceCommand command)
@@ -503,9 +500,7 @@ public static class CommandProcessor
         }
 
         var player = world.Player(command.Player);
-        var faction = command.Kind == ProductionKind.Unit ? rules.Units[command.DefIndex].Faction : rules.Buildings[command.DefIndex].Faction;
-        if (faction != player.Faction.Id
-            || (command.Kind == ProductionKind.Unit && !UnitTypes.TryGetById(rules.Units[command.DefIndex].Id, out _)))
+        if (command.Kind == ProductionKind.Unit && !UnitTypes.TryGetById(rules.Units[command.DefIndex].Id, out _))
         {
             return false;
         }

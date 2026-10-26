@@ -70,9 +70,10 @@ public partial class PlayerBuildings : Node3D
         {
             var def = building.Def!;
             seen.Add(building.Id);
-            if (!_views.TryGetValue(building.Id, out var view) || !ReferenceEquals(view.Source, building))
+            // A new session numbers its entities again: an id seen before may be another building now. A building taken by an engineer
+            // takes the colour of its new owner; a ghost keeps the colour it was last seen in.
+            if (!_views.TryGetValue(building.Id, out var view) || !ReferenceEquals(view.Source, building) || (!ghost && view.Owner != building.Owner))
             {
-                // A new session numbers its entities again: an id seen before may be another building now.
                 view?.Root.QueueFree();
                 view = MakeView(building);
                 _views[building.Id] = view;
@@ -293,6 +294,9 @@ public partial class PlayerBuildings : Node3D
         public float Rise(float growth) => Mathf.Max(0.01f, buried + (1f - buried) * growth);
 
         public Building Source { get; } = source;
+
+        /// <summary>The owner whose colour the view was made in.</summary>
+        public PlayerId Owner { get; } = source.Owner;
 
         public Node3D Root { get; } = root;
 

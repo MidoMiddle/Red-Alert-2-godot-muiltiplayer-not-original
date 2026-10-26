@@ -35,6 +35,9 @@ public partial class Sidebar : Control
     private SimulationHost? _host;
     private PlayerInput? _input;
     private BuildGroup _group = BuildGroup.Buildings;
+
+    // The rows of the tab scrolled past with the mouse wheel: a tab with the items of a faction taken too can be longer than the grid.
+    private int _scroll;
     private int _shownCredits = int.MinValue;
 
     /// <summary>The minimap at the top of the sidebar.</summary>
@@ -85,7 +88,7 @@ public partial class Sidebar : Control
             {
                 if (pressed)
                 {
-                    _group = group;
+                    (_group, _scroll) = (group, 0);
                 }
             };
         }
@@ -100,6 +103,7 @@ public partial class Sidebar : Control
         {
             var icon = new BuildIcon();
             icon.Clicked += OnIconClicked;
+            icon.Scrolled += rows => _scroll += rows;
             grid.AddChild(icon);
             _icons.Add(icon);
         }
@@ -166,9 +170,11 @@ public partial class Sidebar : Control
         UpdateTabs(world, player);
 
         var cameos = SidebarModel.Cameos(world, player, _group, NameOf);
+        _scroll = SidebarModel.ScrollRows(cameos.Count, _scroll);
+        var first = _scroll * SidebarLayout.Columns;
         for (var i = 0; i < _icons.Count; i++)
         {
-            _icons[i].Cameo = i < cameos.Count && SidebarModel.TabOpen(world, player, _group) ? cameos[i] : null;
+            _icons[i].Cameo = first + i < cameos.Count && SidebarModel.TabOpen(world, player, _group) ? cameos[first + i] : null;
         }
 
         UpdateSuperweapons(world, player);

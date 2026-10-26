@@ -129,6 +129,17 @@ public sealed class SidebarModelTests
         Assert.Contains("barracks", Tab(simulation, BuildGroup.Buildings).Select(c => c.Name));
     }
 
+    [Theory]
+    // The grid holds 20 squares, two a row: a tab of 25 scrolls by 3 rows at most, one that fits not at all.
+    [InlineData(25, 5, 3)]
+    [InlineData(25, -1, 0)]
+    [InlineData(20, 2, 0)]
+    [InlineData(21, 1, 1)]
+    public void A_tab_longer_than_the_grid_scrolls_down_to_its_last_row(int count, int rows, int expected)
+    {
+        Assert.Equal(expected, SidebarModel.ScrollRows(count, rows));
+    }
+
     [Fact]
     public void An_unavailable_square_names_what_is_missing()
     {

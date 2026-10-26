@@ -30,6 +30,9 @@ public partial class BuildIcon : Control
     /// <summary>A click on the square: right or left, and whether Shift was held.</summary>
     public event Action<Cameo, bool, bool>? Clicked;
 
+    /// <summary>The mouse wheel over the square: a row up (−1) or down (+1) through a tab longer than the grid.</summary>
+    public event Action<int>? Scrolled;
+
     /// <summary>The item of the square, or null for an empty one.</summary>
     public Cameo? Cameo
     {
@@ -63,6 +66,13 @@ public partial class BuildIcon : Control
 
     public override void _GuiInput(InputEvent @event)
     {
+        if (@event is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.WheelUp or MouseButton.WheelDown } wheel)
+        {
+            Scrolled?.Invoke(wheel.ButtonIndex == MouseButton.WheelUp ? -1 : 1);
+            AcceptEvent();
+            return;
+        }
+
         if (@event is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right } button && _cameo is { } cameo)
         {
             Clicked?.Invoke(cameo, button.ButtonIndex == MouseButton.Right, button.ShiftPressed);
