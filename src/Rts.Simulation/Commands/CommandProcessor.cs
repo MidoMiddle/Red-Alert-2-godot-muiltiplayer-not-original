@@ -251,7 +251,8 @@ public static class CommandProcessor
     /// An order to attack an enemy (M4, 4.12): a living unit or building of another player that the player sees, not a wall (a wall
     /// takes a forced attack, as in RA2). Every own armed unit
     /// with a ground weapon that hurts its armor takes it, drops its route and follows it whatever its stance; a harvester keeps to its
-    /// work and only fires. Refused when no unit takes it.
+    /// work and only fires. An own defense (RA2) takes it when it can fire at it from where it stands
+    /// (<see cref="TargetingSystem.CanFireAt"/>). Refused when no unit or defense takes it.
     /// </summary>
     private static bool ApplyAttack(GameWorld world, AttackCommand command)
     {
@@ -271,12 +272,13 @@ public static class CommandProcessor
             }
         }
 
-        return any;
+        return OrderDefenses(world, command, target, TargetOrder.Attack) | any;
     }
 
     /// <summary>
     /// A forced attack (M4, 4.12): on any living unit or building the player sees, own and neutral ones and walls too, or on a point
-    /// of the map. Every own unit with a ground weapon takes it, but not one ordered to fire at itself.
+    /// of the map. Every own unit with a ground weapon takes it, but not one ordered to fire at itself; an own defense takes a target
+    /// that it can fire at from where it stands, not a point.
     /// </summary>
     private static bool ApplyForceAttack(GameWorld world, ForceAttackCommand command)
     {
@@ -299,6 +301,23 @@ public static class CommandProcessor
             if (unit.Weapons.Length > 0 && unit != target && TargetingSystem.Hits(world.Rules, world.Rules.WeaponsOf(unit), TargetingSystem.LayerOf(target)))
             {
                 Order(world, unit, TargetOrder.Force, target?.Id, target is null ? command.Point : null);
+                any = true;
+            }
+        }
+
+        return (target is not null && OrderDefenses(world, command, target, TargetOrder.Force)) | any;
+    }
+
+    /// <summary>Gives the target to every own defense of the command that can fire at it from where it stands; whether one took it.</summary>
+    private static bool OrderDefenses(GameWorld world, UnitsCommand command, Entity target, TargetOrder order)
+    {
+        var any = false;
+        foreach (var building in OwnArmedBuildings(world, command))
+        {
+            if (building != target && building.ErasedBy is null && TargetingSystem.CanFireAt(world, building, target))
+            {
+                building.Target = target.Id;
+                building.TargetOrder = order;
                 any = true;
             }
         }
@@ -774,7 +793,15 @@ public static class CommandProcessor
             unit.Anchor = unit.Position;
         }
 
-        return units.Count > 0;
+        // A defense stops firing and chooses by itself again on its next look.
+        var buildings = OwnArmedBuildings(world, command);
+        foreach (var building in buildings)
+        {
+            building.Target = null;
+            building.TargetOrder = TargetOrder.None;
+        }
+
+        return units.Count + buildings.Count > 0;
     }
 
     // Units in id order, each drawing from the simulation's generator: a random free neighbouring cell it can step to.
@@ -806,6 +833,26 @@ public static class CommandProcessor
         }
 
         return units.Count > 0;
+    }
+
+    /// <summary>The command's living, ready buildings of its player that fire (a defense, a garrison), each once, in id order.</summary>
+    private static List<Building> OwnArmedBuildings(GameWorld world, UnitsCommand command)
+    {
+        var buildings = new List<Building>();
+        foreach (var id in command.Units)
+        {
+            if (world.TryGet(id, out var entity)
+                && entity is Building { IsAlive: true, IsReady: true } building
+                && building.Owner == command.Player
+                && (building.Weapons.Length > 0 || GarrisonSystem.IsArmed(building))
+                && !buildings.Contains(building))
+            {
+                buildings.Add(building);
+            }
+        }
+
+        buildings.Sort((a, b) => a.Id.CompareTo(b.Id));
+        return buildings;
     }
 
     /// <summary>The command's living units of its player, each once, in id order.</summary>

@@ -321,6 +321,7 @@ public static class EntrySystem
 
         building.Owner = to;
         building.Target = null;
+        building.TargetOrder = TargetOrder.None;
         building.Repairing = false;
         building.RallyPoint = null;
         if (building.Def is null)

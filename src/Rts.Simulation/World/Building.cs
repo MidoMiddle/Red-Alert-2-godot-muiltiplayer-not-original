@@ -51,6 +51,12 @@ public sealed class Building : Entity
     /// <summary>What a defense shoots at (M4, 4.7); null without a target. State: hashed.</summary>
     public EntityId? Target { get; internal set; }
 
+    /// <summary>
+    /// Whose choice <see cref="Target"/> is: <see cref="TargetOrder.None"/> when the defense chose it itself, else the player ordered it
+    /// (RA2: a selected defense fires where it is told until the target falls or leaves its range). State: hashed.
+    /// </summary>
+    public TargetOrder TargetOrder { get; internal set; }
+
     /// <summary>The state of the weapon of a defense (or of the outpost of the map); empty for any other building.</summary>
     public Combat.WeaponInstance[] Weapons { get; } = [];
 

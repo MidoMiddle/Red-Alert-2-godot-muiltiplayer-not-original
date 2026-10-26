@@ -872,8 +872,9 @@ public partial class SimulationHost : Node
         }
     }
 
+    // A building too: a selected defense takes an attack or a stop (RA2).
     private bool IsOwnLiving(EntityId id) =>
-        Simulation.World.TryGet(id, out var entity) && entity is Unit && entity.IsAlive && entity.Owner == LocalPlayer;
+        Simulation.World.TryGet(id, out var entity) && entity is Unit or Building && entity.IsAlive && entity.Owner == LocalPlayer;
 
     /// <summary>The same match once more with a new seed, on the spot (M5 step 12, the results screen).</summary>
     public void PlayAgain()

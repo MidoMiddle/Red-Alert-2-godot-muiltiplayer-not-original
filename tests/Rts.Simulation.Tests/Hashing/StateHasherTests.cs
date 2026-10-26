@@ -39,7 +39,7 @@ public sealed class StateHasherTests
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
         "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "primary", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "grounded", "climb ticks", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
-        "building hp", "building target", "building reload",
+        "building hp", "building target", "building target order", "building reload",
     };
 
     [Theory]
@@ -250,6 +250,13 @@ public sealed class StateHasherTests
                 aiming.Target = idle.Id;
                 Assert.NotEqual(idleCoil, StateHasher.Compute(world));
                 break;
+            case "building target order":
+                var ordered = world.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(44, 44), ready: true, null);
+                ordered.Target = idle.Id;
+                var chosen = StateHasher.Compute(world);
+                ordered.TargetOrder = TargetOrder.Attack;
+                Assert.NotEqual(chosen, StateHasher.Compute(world));
+                break;
             case "building reload":
                 var coil = world.CreateBuilding(Player1, TestRules.BuildingDef("tesla_coil"), new CellPos(44, 44), ready: true, null);
                 var loaded = StateHasher.Compute(world);
@@ -418,7 +425,7 @@ public sealed class StateHasherTests
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
         "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField", "<Primary>k__BackingField",
-        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
+        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<TargetOrder>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
         "<CashTimer>k__BackingField", "<CountryWeapon>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",

@@ -112,6 +112,24 @@ public sealed class InputInterpreterTests
         Assert.Equal(new Intent[] { new OrderMove(Spot) }, order);
     }
 
+    [Theory]
+    [InlineData(ControlScheme.Classic)]
+    [InlineData(ControlScheme.Modern)]
+    public void A_left_click_on_an_own_defense_selects_it_and_an_order_on_an_enemy_is_its_target(ControlScheme scheme)
+    {
+        // RA2 (the owner, 2026-10-26): a Prism Tower clicked shows its range and fires where it is told.
+        var input = new InputInterpreter(scheme, cameraDrag: true);
+        var tower = new EntityId(31);
+        var enemy = new EntityId(40);
+
+        Assert.Equal(new Intent[] { new SelectBuilding(tower) }, LeftClick(input, Context(Ground) with { OwnDefense = tower }));
+        Assert.Equal(new Intent[] { new SelectBuilding(tower) }, LeftClick(input, Context(Ground, hasSelection: true) with { OwnDefense = tower }));
+
+        var onEnemy = Context(new PointerTarget(PointerTargetKind.OtherUnit, enemy), hasSelection: true);
+        var order = scheme == ControlScheme.Modern ? input.Press(PointerButton.Right, Here, onEnemy) : LeftClick(input, onEnemy);
+        Assert.Equal(new Intent[] { new OrderAttack(enemy) }, order);
+    }
+
     [Fact]
     public void ModernRightClickWithNothingSelectedDoesNothing()
     {

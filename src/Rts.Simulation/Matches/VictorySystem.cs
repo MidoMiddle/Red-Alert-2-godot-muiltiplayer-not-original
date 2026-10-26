@@ -130,6 +130,7 @@ public static class VictorySystem
                     break;
                 case Building building:
                     building.Target = null;
+                    building.TargetOrder = TargetOrder.None;
                     building.Repairing = false;
                     break;
             }

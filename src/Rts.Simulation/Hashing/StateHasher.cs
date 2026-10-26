@@ -437,6 +437,9 @@ public static class StateHasher
                 // Rules v27 (M4 step 3): the target and the weapon of a defense.
                 AddWeapons(hash, building.Target, building.Weapons);
 
+                // Rules v106: a target the player ordered a defense to fire at.
+                hash.Add((byte)building.TargetOrder);
+
                 // Rules v56 (stage 2d): the charge of a superweapon.
                 hash.Add(building.ChargeLeft);
 

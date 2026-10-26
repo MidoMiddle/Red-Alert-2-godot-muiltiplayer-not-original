@@ -406,7 +406,7 @@ public partial class PlayerInput : Node
             // P (RA2): the combat units on the field; a second P within 400 ms takes those of the whole map.
             SelectCombatUnits(_typeTaps.Press(CombatSelectKey, Time.GetTicksMsec()));
         }
-        else if (key.IsActionPressed("stop", false, true) && !Selection.IsEmpty)
+        else if (key.IsActionPressed("stop", false, true) && (!Selection.IsEmpty || SelectedDefense is not null))
         {
             StopSelection();
         }
@@ -464,7 +464,8 @@ public partial class PlayerInput : Node
     private void StopSelection()
     {
         Voice("stopping");
-        _host.IssueStop(Selection.Units);
+        // A selected defense stops firing at its ordered target and chooses by itself again.
+        _host.IssueStop(SelectedDefense is { } defense ? [defense] : Selection.Units);
     }
 
     /// <summary>
@@ -598,10 +599,11 @@ public partial class PlayerInput : Node
 
             switch (intent)
             {
-                // A building that produces selected: an order on the ground is its rally point; nothing else is ordered.
+                // A building that produces selected: an order on the ground is its rally point; nothing else is ordered. A defense
+                // selected: its range shows, an order on what it can fire at is its target (RA2).
                 case SelectBuilding select:
                     ChangeSelection(Selection.Clear);
-                    _factory = select.Building;
+                    _building = select.Building;
                     break;
                 case OrderMove order when SelectedFactory is { } factory:
                     SetRallyPoint(factory, order.Target);
@@ -610,6 +612,29 @@ public partial class PlayerInput : Node
                     SetRallyPoint(factory, order.Target);
                     break;
                 case OrderAttack or OrderForceAttack or AddWaypoint or FinishWaypoints when SelectedFactory is not null:
+                    break;
+                case OrderAttack attack when SelectedDefense is { } defense:
+                    if (!_host.IsPlayback && _host.Simulation.World.TryGet(attack.Target, out var aimed) && CanFireAt(defense, aimed))
+                    {
+                        Voice("attacking");
+                        _markers ??= GetNodeOrNull<OrderMarkers>("../OrderMarkers");
+                        _markers?.Add(PointOf(aimed), MarkerKind.Attack);
+                        _host.IssueAttack([defense], attack.Target);
+                    }
+
+                    break;
+                case OrderForceAttack force when SelectedDefense is { } defense:
+                    // A defense fires at a unit or building, never at the ground.
+                    if (!_host.IsPlayback && force.Target is { } forcedAt && _host.Simulation.World.TryGet(forcedAt, out var shot) && CanFireAt(defense, shot))
+                    {
+                        Voice("attacking (forced)");
+                        _markers ??= GetNodeOrNull<OrderMarkers>("../OrderMarkers");
+                        _markers?.Add(PointOf(shot), MarkerKind.Attack);
+                        _host.IssueForceAttack([defense], forcedAt, PointOf(shot));
+                    }
+
+                    break;
+                case OrderMove or OrderAttackMove or AddWaypoint or FinishWaypoints when SelectedDefense is not null:
                     break;
                 case SelectUnit select:
                     ChangeSelection(() => Selection.Replace(select.Unit));
@@ -874,7 +899,7 @@ public partial class PlayerInput : Node
     /// <summary>Changes the selection; laid-out waypoints belong to the old selection and are dropped.</summary>
     private void ChangeSelection(Action change)
     {
-        _factory = null;
+        _building = null;
         Inspected = null;
         change();
         Waypoints.Clear();
@@ -997,18 +1022,19 @@ public partial class PlayerInput : Node
             ground,
             target,
             shift,
-            !Selection.IsEmpty || SelectedFactory is not null,
+            !Selection.IsEmpty || SelectedFactory is not null || SelectedDefense is not null,
             alt,
             ctrl,
             WaypointMode: WaypointArmed || WaypointHeld(),
             HasWaypoints: !Waypoints.IsEmpty,
             TargetDeploys: target.Kind == PointerTargetKind.OwnUnit && Selection.Contains(target.Unit) && Deploys(target.Unit),
             OwnFactory: ground is { } point ? FactoryAt(point) : null,
-            TargetBoards: target.Kind == PointerTargetKind.OwnUnit && !Selection.Contains(target.Unit) && EnterAt(target.Unit) is not null);
+            TargetBoards: target.Kind == PointerTargetKind.OwnUnit && !Selection.Contains(target.Unit) && EnterAt(target.Unit) is not null,
+            OwnDefense: ground is { } spot ? DefenseAt(spot) : null);
     }
 
-    // The building that produces selected instead of units: an order on the ground sets its rally point.
-    private EntityId? _factory;
+    // The building selected instead of units: one that produces (an order on the ground sets its rally point) or a defense.
+    private EntityId? _building;
 
     // Where the last event of the radar happened (Space), and the unit N / M picked last.
     private WorldPos? _lastEvent;
@@ -1112,10 +1138,39 @@ public partial class PlayerInput : Node
 
     /// <summary>The player's own building that produces, selected; null when none is, or it is gone or taken.</summary>
     public EntityId? SelectedFactory =>
-        _factory is { } id && _host.Simulation.World.TryGet(id, out var entity)
+        _building is { } id && _host.Simulation.World.TryGet(id, out var entity)
         && entity is Building { IsAlive: true, Def.Produces.Length: > 0 } building && building.Owner == SimulationHost.LocalPlayer
             ? id
             : null;
+
+    /// <summary>
+    /// The player's own ready building that fires — a defense, a garrisoned bunker — selected (RA2): its range shows and an order on what it
+    /// can fire at is its target; null when none is, or it is gone or taken.
+    /// </summary>
+    public EntityId? SelectedDefense =>
+        _building is { } id && _host.Simulation.World.TryGet(id, out var entity) && entity is Building { IsAlive: true } building
+        && building.Owner == SimulationHost.LocalPlayer && IsDefense(building)
+            ? id
+            : null;
+
+    /// <summary>The player's own ready building that fires at <paramref name="point"/>, if any (not one that produces).</summary>
+    private EntityId? DefenseAt(WorldPos point) =>
+        _host.Simulation.World.BuildingAt(point.ToCell()) is { IsAlive: true } building && building.Owner == SimulationHost.LocalPlayer
+        && IsDefense(building)
+            ? building.Id
+            : null;
+
+    // A ready building that fires and does not produce (a factory's click is its rally point).
+    private bool IsDefense(Building building) =>
+        building.Def is not { Produces.Length: > 0 } && WeaponReach.Of(_host.Simulation.World, building) is not null;
+
+    /// <summary>Whether the selected defense can fire at <paramref name="target"/> from where it stands (and the player sees it).</summary>
+    private bool CanFireAt(EntityId defense, Entity target)
+    {
+        var world = _host.Simulation.World;
+        return world.TryGet(defense, out var entity) && entity is Building building && target.IsAlive && Terrain.FogOfWar.Shows(world, target)
+            && Rts.Simulation.Systems.TargetingSystem.CanFireAt(world, building, target);
+    }
 
     /// <summary>The player's own ready building that produces at <paramref name="point"/> — the construction yard among them — if any.</summary>
     private EntityId? FactoryAt(WorldPos point) =>
@@ -1208,7 +1263,9 @@ public partial class PlayerInput : Node
             Tool == PointerTool.Superweapon && world.TryGet(_superweapon, out var armed) && armed is Building weapon
                 ? weapon.Def?.Superweapon ?? (BuildingTypes.IsKnown(weapon.Kind) ? weapon.Type.Superweapon : Rts.Simulation.Rules.SuperweaponKind.None)
                 : Rts.Simulation.Rules.SuperweaponKind.None,
-            SelectedFactory is not null && Selection.IsEmpty);
+            SelectedFactory is not null && Selection.IsEmpty,
+            SelectedDefense is not null && Selection.IsEmpty,
+            SelectedDefense is { } defense && target is not null && CanFireAt(defense, target));
     }
 
     /// <summary>What the first selected unit of the player that can go into <paramref name="target"/> would do there.</summary>

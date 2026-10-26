@@ -203,4 +203,19 @@ public sealed class CursorChoiceTests
         Assert.Equal(CursorKind.Select, CursorChoice.For(ground with { Target = new PointerTarget(PointerTargetKind.OwnUnit, new EntityId(3)) }, false, spot: spot));
         Assert.Equal(CursorKind.Sell, CursorChoice.For(ground, false, PointerTool.Sell, spot with { OwnBuilding = true }));
     }
+
+    [Fact]
+    public void A_selected_defense_aims_at_what_it_can_fire_at_and_never_moves()
+    {
+        var ground = new PointerContext(new WorldPos(1000, 1000), new PointerTarget(PointerTargetKind.Ground), Shift: false, HasSelection: true);
+        var enemy = ground with { Target = new PointerTarget(PointerTargetKind.OtherUnit, new EntityId(5)) };
+        var spot = new PointerSpot(Defense: true);
+
+        Assert.Equal(CursorKind.Attack, CursorChoice.For(enemy, anyCanEnter: false, spot: spot with { DefenseHits = true }));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(enemy, anyCanEnter: false, spot: spot));
+        Assert.Equal(CursorKind.ForceAttack, CursorChoice.For(
+            ground with { Ctrl = true, Target = new PointerTarget(PointerTargetKind.OwnUnit, new EntityId(3)) }, false, spot: spot with { DefenseHits = true }));
+        Assert.Equal(CursorKind.Normal, CursorChoice.For(ground, anyCanEnter: true, spot: spot));
+        Assert.Equal(CursorKind.Select, CursorChoice.For(ground with { OwnDefense = new EntityId(8) }, anyCanEnter: true, spot: spot));
+    }
 }

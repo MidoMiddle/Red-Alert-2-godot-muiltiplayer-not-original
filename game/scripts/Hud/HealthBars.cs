@@ -170,8 +170,8 @@ public partial class HealthBars : Control
 
     // Whether the entity is selected or under the cursor: a unit picked by the pointer, or a building standing on the cell under it.
     private bool Focused(Entity entity) =>
-        _input is not null && (_input.Selection.Contains(entity.Id) || _input.SelectedFactory == entity.Id || _input.Inspected == entity.Id
-            || _pointed == entity);
+        _input is not null && (_input.Selection.Contains(entity.Id) || _input.SelectedFactory == entity.Id || _input.SelectedDefense == entity.Id
+            || _input.Inspected == entity.Id || _pointed == entity);
 
     private string? TooltipName(GameWorld world, Entity entity) =>
         HoverTooltip.NameOf(world, SimulationHost.LocalPlayer, entity, AppSettings.Instance?.Values.Ra2Names ?? true, key => Tr(key));
@@ -264,6 +264,11 @@ public partial class HealthBars : Control
         if (_input.SelectedFactory is { } factory)
         {
             named.Add(factory);
+        }
+
+        if (_input.SelectedDefense is { } defense)
+        {
+            named.Add(defense);
         }
 
         foreach (var id in named)

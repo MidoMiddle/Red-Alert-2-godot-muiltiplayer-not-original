@@ -43,6 +43,7 @@ public partial class Main : Node3D
         AddChild(new CellOverlay { Name = "CellOverlay" });
         AddChild(new OrderMarkers { Name = "OrderMarkers" });
         AddChild(new RouteLines { Name = "RouteLines" });
+        AddChild(new RangeRings { Name = "RangeRings" });
         AddChild(new Effects.CombatEffects { Name = "CombatEffects" });
         AddChild(new Effects.RadiationView { Name = "RadiationView" });
         AddChild(new Effects.ProjectileViews { Name = "ProjectileViews" });

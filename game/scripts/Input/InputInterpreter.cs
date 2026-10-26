@@ -73,6 +73,11 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// <param name="WaypointMode">Whether the waypoints mode is on (the command bar's flag, or Z held): an order adds a waypoint instead.</param>
 /// <param name="HasWaypoints">Whether waypoints are laid out and not sent yet: an order without Z sends them.</param>
 /// <param name="TargetDeploys">Whether the unit under the pointer is an own MCV already selected: a click deploys it (M3 step 13).</param>
+/// <param name="OwnFactory">The player's own ready building that produces under the pointer: a click selects it, for its rally point.</param>
+/// <param name="OwnDefense">
+/// The player's own ready building that fires under the pointer (a defense, a garrison): a click selects it, to show its range and order
+/// its target (RA2).
+/// </param>
 /// <param name="TargetBoards">
 /// Whether the unit under the pointer is an own transport one of the selection can board (a helicopter, a landing craft, an IFV): a
 /// click is an order to board it, not a pick (the owner, 2026-10-25: «engineers sent into the helicopter did nothing»).
@@ -89,14 +94,18 @@ public readonly record struct PointerContext(
     bool HasWaypoints = false,
     bool TargetDeploys = false,
     EntityId? OwnFactory = null,
-    bool TargetBoards = false);
+    bool TargetBoards = false,
+    EntityId? OwnDefense = null);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
 
 public sealed record SelectUnit(EntityId Unit) : Intent;
 
-/// <summary>Select the player's own building that produces (a click on it): an order on the ground then sets its rally point.</summary>
+/// <summary>
+/// Select the player's own building that produces (a click on it): an order on the ground then sets its rally point. Or the player's
+/// own defense: its range shows, and an order on an enemy is its target (RA2).
+/// </summary>
 public sealed record SelectBuilding(EntityId Building) : Intent;
 
 /// <summary>Add the unit to the selection, or take it out if it is selected (Shift + click).</summary>
@@ -502,6 +511,12 @@ public sealed class InputInterpreter
             // The barracks, the war factory, a shipyard, the air command: selected, for its rally point; a double click makes it the
             // primary one (RA2).
             return context.DoubleClick ? new Intent[] { new SelectBuilding(factory), new MakePrimary(factory) } : new Intent[] { new SelectBuilding(factory) };
+        }
+
+        if (context.Target.Kind == PointerTargetKind.Ground && context.OwnDefense is { } defense && !context.Shift)
+        {
+            // A Prism Tower, a Pillbox, a garrisoned bunker: selected, for its range and its target (RA2).
+            return new Intent[] { new SelectBuilding(defense) };
         }
 
         switch (context.Target.Kind)

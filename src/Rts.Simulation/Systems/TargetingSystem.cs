@@ -24,7 +24,8 @@ namespace Rts.Simulation.Systems;
 /// left its sight is dropped. A unit with a target ordered by the player does not look while that stands, nor does a unit on a leg of
 /// a plain move: such a move ignores the enemies until it arrives (4.12). Neutral units and buildings look for nothing, nor do those a
 /// player left behind (M9 step 10), nor does a defense off for want of power (<see cref="Defenses.IsOnline"/>, step 10). Only what the
-/// owner sees counts (<see cref="Vision.Sees"/>, step 11): a target gone into the fog is dropped, an ordered one too.
+/// owner sees counts (<see cref="Vision.Sees"/>, step 11): a target gone into the fog is dropped, an ordered one too. A defense with a
+/// target ordered by the player (RA2) does not look either, until that falls or leaves its range (<see cref="CanFireAt"/>).
 /// </summary>
 public static class TargetingSystem
 {
@@ -40,9 +41,14 @@ public static class TargetingSystem
             {
                 EndFallenOrder(world, ordered);
             }
+            else if (entity is Building { IsAlive: true, TargetOrder: not TargetOrder.None } defense)
+            {
+                EndLostOrder(world, defense);
+            }
 
+            // A defense with a target ordered by the player does not look while that stands.
             if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || world.IsDefeated(entity.Owner) || entity.ErasedBy is not null
-                || entity is Unit { WarpTicks: > 0 })
+                || entity is Unit { WarpTicks: > 0 } or Building { TargetOrder: not TargetOrder.None })
             {
                 continue;
             }
@@ -236,6 +242,89 @@ public static class TargetingSystem
             unit.Target = null;
             unit.TargetOrder = TargetOrder.None;
         }
+    }
+
+    /// <summary>
+    /// The ordered target of a defense fell, went out of sight or out of its range, or it cannot fire at it any more (out of power): it
+    /// chooses by itself again.
+    /// </summary>
+    private static void EndLostOrder(GameWorld world, Building building)
+    {
+        if (building.Target is not { } id || !world.TryGet(id, out var target) || !target.IsAlive || !Vision.Sees(world, building.Owner, target)
+            || !CanFireAt(world, building, target))
+        {
+            building.Target = null;
+            building.TargetOrder = TargetOrder.None;
+        }
+    }
+
+    /// <summary>
+    /// The weapons a ready building fires now — those of a defense that works (<see cref="Defenses.IsOnline"/>), or those of the soldiers
+    /// inside (stage 2e) — and how far its range starts from its centre: 0 for a defense, the wall for a garrison. False when it fires
+    /// nothing.
+    /// </summary>
+    public static bool ArmsOf(GameWorld world, Building building, out ImmutableArray<int> weapons, out int wall)
+    {
+        weapons = ImmutableArray<int>.Empty;
+        wall = 0;
+        if (!building.IsReady)
+        {
+            return false;
+        }
+
+        if (building.Weapons.Length > 0)
+        {
+            if (!Defenses.IsOnline(world, building))
+            {
+                return false;
+            }
+
+            weapons = Defenses.WeaponsOf(world, building);
+            return true;
+        }
+
+        if (GarrisonSystem.IsArmed(building))
+        {
+            weapons = GarrisonSystem.WeaponsOf(world.Rules, building);
+            wall = GarrisonSystem.Wall(building);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Whether the building can fire at <paramref name="target"/> from where it stands: one of its weapons fires at the target's layer,
+    /// hurts its armor, and has it between its least and its longest range (what <c>WeaponSystem</c> asks before it fires). A defense
+    /// takes an ordered target only then, and drops it when that no longer holds.
+    /// </summary>
+    public static bool CanFireAt(GameWorld world, Building building, Entity target)
+    {
+        if (!ArmsOf(world, building, out var weapons, out var wall))
+        {
+            return false;
+        }
+
+        var rules = world.Rules;
+        var centre = Aim.CentreOf(building);
+        var distance = IntMath.Max(0, DamageCalculator.Distance(centre, Aim.NearestPoint(target, centre)) - wall);
+        var layer = LayerOf(target);
+        foreach (var index in weapons)
+        {
+            if (index < 0)
+            {
+                continue;
+            }
+
+            var weapon = rules.Database.Weapons[index];
+            if ((weapon.Targets & layer) != 0 && distance <= Aim.Leptons(weapon.Range) && distance >= Aim.Leptons(weapon.MinRange)
+                && BestShare(rules, ImmutableArray.Create(index), target) > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Where a unit or defense looks: within <c>Reach</c> of <c>From</c>, and within <c>Leash</c> of <c>Anchor</c> when that is not -1.</summary>
