@@ -398,6 +398,7 @@ public sealed class GoldenValuesTests
         // Rules v108 (a building taken from the other faction opens its units and buildings, the owner's wish): the version only.
         // Rules v109 (a yard taken from the other faction packs up into its MCV, which deploys again): the version only.
         // Rules v110, replay format v31 (a map may place a building of a faction's data for nobody): the versions only — no map here.
-        Assert.Equal((22270, 15419984352560298270UL), (bytes.Length, hash.Value));
+        // Rules v111 (the defenses of nobody fire at everybody; an engineer takes nobody's buildings of the data): the version only.
+        Assert.Equal((22270, 6791922389473942171UL), (bytes.Length, hash.Value));
     }
 }

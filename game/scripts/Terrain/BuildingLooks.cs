@@ -579,6 +579,14 @@ public static class BuildingLooks
             Pyramid(1.1f, 0.3f, 0, 1.5f, 0, LookTint.Red),
             Box(0.3f, 1.0f, 0.05f, 0, 0.5f, 0.7f, LookTint.Wood, -20f),
         ],
+        // The civilian bunker of RA2's maps (2026-10-27): a low block of concrete with dark firing slits and a steel roof.
+        ["neutral_civilian_bunker"] =
+        [
+            Box(1.8f, 0.7f, 1.8f, 0, 0, 0, LookTint.Concrete),
+            Box(1.84f, 0.1f, 0.12f, 0, 0.42f, 0.9f, LookTint.Dark),
+            Box(1.84f, 0.1f, 0.12f, 0, 0.42f, -0.9f, LookTint.Dark),
+            Box(1.6f, 0.15f, 1.6f, 0, 0.7f, 0, LookTint.Stone),
+        ],
         ["neutral_lighthouse"] =
         [
             Cyl(1.5f, 0.3f, 0, 0, 0, LookTint.Stone),

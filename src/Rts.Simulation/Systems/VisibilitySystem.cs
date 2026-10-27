@@ -161,10 +161,10 @@ public static class VisibilitySystem
             case Building { Def: { Sight: > 0 } def } building:
                 var middle = MiddleOf(building);
                 return (middle, SightRules.SightAt(world.Map, middle, def.Sight));
-            // A civilian building with soldiers inside sees round it (RA2: 4 cells).
+            // A civilian building with soldiers inside sees round it (RA2: 4 cells; the bunker of RA2 its own 6).
             case Building { Def: null, Occupants.Count: > 0 } held:
                 var inside = MiddleOf(held);
-                return (inside, SightRules.SightAt(world.Map, inside, GarrisonSystem.Sight));
+                return (inside, SightRules.SightAt(world.Map, inside, held.Type.Sight > 0 ? held.Type.Sight : GarrisonSystem.Sight));
             // A taken building of the map that sees (the outpost).
             case Building { Def: null } taken when BuildingTypes.IsKnown(taken.Kind) && taken.Type.Sight > 0:
                 var centre = MiddleOf(taken);

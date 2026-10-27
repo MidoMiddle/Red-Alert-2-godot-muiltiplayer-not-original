@@ -54,6 +54,9 @@ public enum BuildingKind : byte
 
     // The outpost of RA2 (CAOUTP), 2026-10-25: a repair pad with a missile turret that extends the base of its owner.
     TechOutpost = 44,
+
+    // The civilian bunker of RA2's maps (CABUNK01, CABUNK02), 2026-10-27: eight soldiers behind steel.
+    NeutralCivilianBunker = 45,
 }
 
 /// <summary>
@@ -134,6 +137,7 @@ public static class BuildingTypes
         [BuildingKind.NeutralSilo] = "neutral_silo",
         [BuildingKind.NeutralWindmill] = "neutral_windmill",
         [BuildingKind.TechOutpost] = "tech_outpost",
+        [BuildingKind.NeutralCivilianBunker] = "neutral_civilian_bunker",
     };
 
     private static readonly BuildingKind[] Kinds = System.Linq.Enumerable.ToArray(Ids.Keys);

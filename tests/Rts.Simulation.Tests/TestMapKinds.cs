@@ -86,6 +86,7 @@ internal static class TestMapKinds
         builder.Add(new MapBuildingDef { Id = "neutral_barn", Name = "Barn", Footprint = new CellSize(3, 2), Hp = 800 });
         builder.Add(new MapBuildingDef { Id = "neutral_silo", Name = "Silo", Footprint = new CellSize(1, 1), Hp = 1500 });
         builder.Add(new MapBuildingDef { Id = "neutral_windmill", Name = "Windmill", Footprint = new CellSize(2, 2), Hp = 700 });
+        builder.Add(new MapBuildingDef { Id = "neutral_civilian_bunker", Name = "Civilian bunker", Footprint = new CellSize(2, 2), Hp = 2000, Garrison = 8, Armor = "steel", Sight = 6 });
         builder.Add(new MapBuildingDef { Id = "tech_oil_derrick", Name = "Oil derrick", Footprint = new CellSize(2, 2), Hp = 1000, Capturable = true, DeathWeapon = "oil_explosion", ExtendsBase = true });
         builder.Add(new MapBuildingDef { Id = "tech_hospital", Name = "Hospital", Footprint = new CellSize(6, 4), Hp = 800, Capturable = true, ExtendsBase = true });
         builder.Add(new MapBuildingDef { Id = "tech_airfield", Name = "Airfield", Footprint = new CellSize(3, 3), Hp = 800, Capturable = true, Superweapon = SuperweaponKind.Paradrop, Recharge = 240 * SimulationSettings.DefaultTicksPerSecond, ExtendsBase = true });

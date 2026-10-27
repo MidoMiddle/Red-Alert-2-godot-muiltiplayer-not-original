@@ -244,3 +244,15 @@ neutral_windmill:
   name: Windmill
   footprint: [2, 2]
   hp: 700
+
+# The civilian bunker of RA2's maps (CABUNK01, CABUNK02; rules.ini: Strength 2000, steel, Sight 6, MaxNumberOccupants 8, not taken by an
+# engineer, leaves rubble). Eight soldiers whatever its size (the owner, 2026-10-27), not by the rule of the houses above. The footprint
+# is not in our documents (art.ini): 2 x 2, not confirmed.
+neutral_civilian_bunker:
+  kind: map_building
+  name: Civilian bunker
+  footprint: [2, 2]
+  hp: 2000
+  garrison: 8
+  armor: steel
+  sight: 6

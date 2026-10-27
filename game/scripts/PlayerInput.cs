@@ -1381,7 +1381,9 @@ public partial class PlayerInput : Node
         // A6) and is no wall; one the player does not see now — in the shroud, or a ghost in the fog (step 12) — is only ground.
         if (GroundAt(at) is { } point && world.BuildingAt(point.ToCell()) is { IsAlive: true } building && Terrain.FogOfWar.Shows(world, building))
         {
-            var enemy = !world.AreAllies(SimulationHost.LocalPlayer, building.Owner) && !building.Owner.IsNeutral && building.Def is not { Wall: true };
+            // A defense a map placed for nobody fires at everybody (2026-10-27): it is an enemy's to attack too.
+            var enemy = (!world.AreAllies(SimulationHost.LocalPlayer, building.Owner) && !building.Owner.IsNeutral && building.Def is not { Wall: true })
+                || Rts.Simulation.Combat.Hostility.IsHostileNeutral(building);
             return new PointerTarget(enemy ? PointerTargetKind.OtherBuilding : PointerTargetKind.Ground, Building: building.Id);
         }
 

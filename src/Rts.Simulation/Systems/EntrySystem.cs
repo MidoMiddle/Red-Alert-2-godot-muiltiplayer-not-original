@@ -122,8 +122,9 @@ public static class EntrySystem
 
         if (unit.Archetype.Has(UnitTalents.Engineer))
         {
+            // A building of a faction's data a map placed for nobody (2026-10-27): taken as an enemy's is, when the data lets it.
             return own && building.Hp < building.MaxHp && !def.Wall ? EntryAction.Mend
-                : enemy && def.Capturable && def.Wall is false ? EntryAction.Capture
+                : (enemy || building.Owner.IsNeutral) && def.Capturable && def.Wall is false ? EntryAction.Capture
                 : EntryAction.None;
         }
 
@@ -306,14 +307,15 @@ public static class EntrySystem
         // The primary factory of its owner it was; of the taker it is not.
         building.Primary = false;
         GarrisonSystem.Evacuate(world, building, events);
-        if (building.SightCell is { } cell)
+        // Nobody sees and veils nothing: a building taken from nobody has neither.
+        if (!from.IsNeutral && building.SightCell is { } cell)
         {
             world.VisionOf(from).Hide(cell, building.SightRadius);
             building.SightCell = null;
             building.SightRadius = 0;
         }
 
-        if (building.VeilRadius > 0)
+        if (!from.IsNeutral && building.VeilRadius > 0)
         {
             world.VisionOf(from).Veil(new CellPos(building.Cell.X + building.Width / 2, building.Cell.Y + building.Height / 2), building.VeilRadius, -1);
             building.VeilRadius = 0;
@@ -327,6 +329,11 @@ public static class EntrySystem
         if (building.Def is null)
         {
             TechBuildingSystem.Taken(world, building, from);
+        }
+        else if (from.IsNeutral && !building.Def.SuperweaponCountries.IsDefaultOrEmpty)
+        {
+            // Nobody's had no country; its taker's decides the superweapon of a country (RA2: the USA's paradrop of the air force command).
+            building.CountryWeapon = building.Def.SuperweaponCountries.Contains(world.Player(to).Country);
         }
 
         world.BuildingsChanged();

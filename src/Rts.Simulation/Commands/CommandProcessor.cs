@@ -249,8 +249,8 @@ public static class CommandProcessor
     }
 
     /// <summary>
-    /// An order to attack an enemy (M4, 4.12): a living unit or building of another player that the player sees, not a wall (a wall
-    /// takes a forced attack, as in RA2). Every own armed unit
+    /// An order to attack an enemy (M4, 4.12): a living unit or building of another player that the player sees, or a defense a map placed
+    /// for nobody, which fires at everybody (<see cref="Combat.Hostility"/>); not a wall (a wall takes a forced attack, as in RA2). Every own armed unit
     /// with a ground weapon that hurts its armor takes it, drops its route and follows it whatever its stance; a harvester keeps to its
     /// work and only fires. An own defense (RA2) takes it when it can fire at it from where it stands
     /// (<see cref="TargetingSystem.CanFireAt"/>). Refused when no unit or defense takes it.
@@ -258,7 +258,8 @@ public static class CommandProcessor
     private static bool ApplyAttack(GameWorld world, AttackCommand command)
     {
         if (!world.TryGet(command.Target, out var target) || !target.IsAlive || target is not (Unit or Building)
-            || target is Building { Def.Wall: true } || world.AreAllies(target.Owner, command.Player) || target.Owner.IsNeutral || !Vision.Sees(world, command.Player, target))
+            || target is Building { Def.Wall: true } || world.AreAllies(target.Owner, command.Player)
+            || (target.Owner.IsNeutral && !Combat.Hostility.IsHostileNeutral(target)) || !Vision.Sees(world, command.Player, target))
         {
             return false;
         }

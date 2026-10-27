@@ -46,8 +46,10 @@ public static class TargetingSystem
                 EndLostOrder(world, defense);
             }
 
-            // A defense with a target ordered by the player does not look while that stands.
-            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || entity.Owner.IsNeutral || world.IsDefeated(entity.Owner) || entity.ErasedBy is not null
+            // A defense with a target ordered by the player does not look while that stands. Nobody's look for nothing, but the defenses a
+            // map places for nobody, which fire at everybody (Hostility).
+            if (!IsLookTick(world, entity.Id) || !entity.IsAlive || (entity.Owner.IsNeutral && !Hostility.IsHostileNeutral(entity))
+                || world.IsDefeated(entity.Owner) || entity.ErasedBy is not null
                 || entity is Unit { WarpTicks: > 0 } or Building { TargetOrder: not TargetOrder.None })
             {
                 continue;
@@ -382,7 +384,8 @@ public static class TargetingSystem
             if (!world.TryGet(id, out var candidate) || !candidate.IsAlive || candidate == me
                 || (mending ? !Mendable(world, me, candidate)
                     : world.AreAllies(candidate.Owner, me.Owner) && !(freeing && HeldByEnemy(world, me, candidate)))
-                || candidate.Owner.IsNeutral
+                // Nobody's is no target, but for a player a defense of nobody that fires at everybody.
+                || (candidate.Owner.IsNeutral && (me.Owner.IsNeutral || !Hostility.IsHostileNeutral(candidate)))
                 || (candidate.ErasedBy is { } holder && holder != me.Id)
                 // A disguised unit (stage 3b: the infiltrator) passes for one of ours, but not before a dog; one with a bomb on it is
                 // left by those that only plant bombs.
@@ -391,7 +394,7 @@ public static class TargetingSystem
                 // A parasite (stage 3d) leaves a vehicle with one inside, a ship and a flier.
                 || (candidate is Unit { Parasite: not 0 } or Unit { Archetype.Category: UnitCategory.Naval or UnitCategory.Aircraft }
                     && ParasiteSystem.ParasitesOnly(rules, weapons))
-                || !area.Holds(candidate) || !Vision.Sees(world, me.Owner, candidate)
+                || !area.Holds(candidate) || !Hostility.Sees(world, me, candidate)
                 // Yuri (RA2) looks by himself only while he holds nobody, and only at what his control can take.
                 || (controlling && !MindControlSystem.CanTake(world, me, candidate, byItself: true)))
             {
@@ -415,7 +418,7 @@ public static class TargetingSystem
 
         // The target kept, unless it passes for one of ours again (a spy whose psychic sensor went off).
         if (best is null && current is { } kept && world.TryGet(kept, out var target) && target.IsAlive && area.Holds(target)
-            && Vision.Sees(world, me.Owner, target) && !Fooled(world, me, target))
+            && Hostility.Sees(world, me, target) && !Fooled(world, me, target))
         {
             return kept;
         }
