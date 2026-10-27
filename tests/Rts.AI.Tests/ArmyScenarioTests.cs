@@ -111,7 +111,7 @@ public sealed class ArmyScenarioTests
     {
         var match = Once.Value.Match;
         var again = Play().Match;
-        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()), GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(StateHasher.Compute(match.World), StateHasher.Compute(again.World));
         Assert.Equal(

@@ -18,7 +18,7 @@ internal static class Bridges
     public static void Place(GenMap map)
     {
         var n = map.N;
-        var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
+        var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""), map.Types);
         if (map.Settings.Symmetry == MapSymmetry.Mirror)
         {
             foreach (var row in new[] { n / 3, 2 * n / 3 })
@@ -65,7 +65,7 @@ internal static class Bridges
     }
 
     /// <summary>A repair hut by every bridge (loose ends, stage 2), symmetric: see <see cref="BridgeHuts"/>.</summary>
-    public static void Huts(GenMap map) => map.Structures.AddRange(BridgeHuts.For(map.ToDefinition("work", ""), map.Symmetry.Images));
+    public static void Huts(GenMap map) => map.Structures.AddRange(BridgeHuts.For(map.ToDefinition("work", ""), map.Types, map.Symmetry.Images));
 
     private static List<BridgePlacement> Images(GenMap map, BridgePlacement bridge, bool mirrored)
     {

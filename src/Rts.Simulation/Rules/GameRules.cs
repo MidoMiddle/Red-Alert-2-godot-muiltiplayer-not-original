@@ -75,16 +75,10 @@ public sealed class GameRules
         {
             _overcharge[i] = ImmutableArray.Create(database.IndexOfWeapon(database.Buildings[i].OverchargeWeapon));
         }
-        var kinds = 0;
-        foreach (var type in BuildingTypes.All)
-        {
-            kinds = IntMath.Max(kinds, (int)type.Kind + 1);
-        }
-
-        _kindWeapons = new ImmutableArray<int>[kinds];
-        _kindArmor = new int[kinds];
+        _kindWeapons = new ImmutableArray<int>[BuildingTypes.Highest + 1];
+        _kindArmor = new int[BuildingTypes.Highest + 1];
         System.Array.Fill(_kindWeapons, ImmutableArray.Create(-1));
-        foreach (var type in BuildingTypes.All)
+        foreach (var type in MapTypes.Buildings)
         {
             _kindWeapons[(int)type.Kind] = ImmutableArray.Create(database.IndexOfWeapon(type.Weapon));
             _kindArmor[(int)type.Kind] = IntMath.Max(0, database.IndexOfArmor(type.Armor));
@@ -444,27 +438,27 @@ public sealed class GameRules
     /// </summary>
     private static void MapTypeProblems(RulesDatabase database, List<RulesProblem> problems)
     {
-        foreach (var type in MapObjectTypes.All)
+        foreach (var kind in MapObjectTypes.All)
         {
-            if (!database.TryGetMapObject(type.Id, out _))
+            if (!database.TryGetMapObject(MapObjectTypes.IdOf(kind), out _))
             {
-                problems.Add(new RulesProblem("", "", $"the engine needs the map object '{type.Id}', and none is defined"));
+                problems.Add(new RulesProblem("", "", $"the engine needs the map object '{MapObjectTypes.IdOf(kind)}', and none is defined"));
             }
         }
 
-        foreach (var type in BridgeTypes.All)
+        foreach (var kind in BridgeTypes.All)
         {
-            if (!database.TryGetBridge(type.Id, out _))
+            if (!database.TryGetBridge(BridgeTypes.IdOf(kind), out _))
             {
-                problems.Add(new RulesProblem("", "", $"the engine needs the bridge '{type.Id}', and none is defined"));
+                problems.Add(new RulesProblem("", "", $"the engine needs the bridge '{BridgeTypes.IdOf(kind)}', and none is defined"));
             }
         }
 
-        foreach (var type in BuildingTypes.All)
+        foreach (var kind in BuildingTypes.All)
         {
-            if (!database.TryGetMapBuilding(type.Id, out _))
+            if (!database.TryGetMapBuilding(BuildingTypes.IdOf(kind), out _))
             {
-                problems.Add(new RulesProblem("", "", $"the engine needs the map building '{type.Id}', and none is defined"));
+                problems.Add(new RulesProblem("", "", $"the engine needs the map building '{BuildingTypes.IdOf(kind)}', and none is defined"));
             }
         }
 

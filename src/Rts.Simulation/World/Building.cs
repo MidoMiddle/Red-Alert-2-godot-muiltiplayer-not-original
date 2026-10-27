@@ -17,19 +17,22 @@ namespace Rts.Simulation.World;
 /// </summary>
 public sealed class Building : Entity
 {
-    /// <summary>A building of the map.</summary>
-    internal Building(EntityId id, PlayerId owner, BuildingKind kind, CellPos cell, int facing)
+    /// <summary>A building of the map, of the kind <paramref name="type"/> of the data (<see cref="Map.MapTypes"/>).</summary>
+    internal Building(EntityId id, PlayerId owner, BuildingType type, CellPos cell, int facing)
         : base(id, owner)
     {
-        Kind = kind;
+        _type = type;
+        Kind = type.Kind;
         Cell = cell;
         Facing = facing;
-        Width = BuildingTypes.Get(kind).Width;
-        Height = BuildingTypes.Get(kind).Height;
-        Hp = BuildingTypes.Get(kind).MaxHp;
+        Width = type.Width;
+        Height = type.Height;
+        Hp = type.MaxHp;
         DefIndex = -1;
-        Weapons = BuildingTypes.Get(kind).Weapon.Length > 0 ? [new()] : [];
+        Weapons = type.Weapon.Length > 0 ? [new()] : [];
     }
+
+    private readonly BuildingType? _type;
 
     /// <summary>
     /// A building of a player, the definition at <paramref name="defIndex"/> of the rules, growing for <paramref name="buildUp"/> ticks.
@@ -87,8 +90,8 @@ public sealed class Building : Entity
     /// <summary>The kind of a building of the map; 0 for a building of a player.</summary>
     public BuildingKind Kind { get; }
 
-    /// <summary>The type of a building of the map.</summary>
-    public BuildingType Type => BuildingTypes.Get(Kind);
+    /// <summary>The type of a building of the map; a building of a player has none.</summary>
+    public BuildingType Type => _type ?? throw new System.InvalidOperationException("A building of a player has no type of the map.");
 
     /// <summary>The definition of a building of a player; null for a building of the map.</summary>
     public BuildingDef? Def { get; }

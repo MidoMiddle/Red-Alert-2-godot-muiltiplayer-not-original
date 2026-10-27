@@ -67,7 +67,7 @@ public static class EconomyRun
             throw new ArgumentException($"The map '{map.Id}' has no starts.");
         }
 
-        var simulation = new GameSimulation(new SimulationSettings(seed, map.ToMapGrid()), rules);
+        var simulation = new GameSimulation(new SimulationSettings(seed, map.ToMapGrid(rules.MapTypes)), rules);
         var recorder = record ? new ReplayRecorder(simulation, dataHash: DataHasher.Compute(rules.Database)) : null;
         var player = new PlayerId(1);
         var bot = new Bot(simulation, player, rules, tanks);

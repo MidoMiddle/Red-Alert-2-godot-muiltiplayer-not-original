@@ -21,7 +21,7 @@ public sealed class SightRulesTests
         }
 
         var land = Enumerable.Repeat((byte)LandType.Clear, 400).ToArray();
-        return MapGrid.FromLayers(20, 20, land, new byte[400], heights);
+        return MapGrid.FromLayers(20, 20, land, new byte[400], heights, types: TestRules.Standard.MapTypes);
     }
 
     [Fact]

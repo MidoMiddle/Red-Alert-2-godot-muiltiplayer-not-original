@@ -17,7 +17,7 @@ public sealed class StartSquadsTests
     public void Slot_one_gets_every_type_and_the_others_four_units()
     {
         var map = Relief();
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         var units = StartSquads.Place(map, grid, GameDataFiles.Rules);
 
@@ -40,7 +40,7 @@ public sealed class StartSquadsTests
         land[7 * size + 7] = LandType.Deep;
         var map = new MapDefinition("edge", "Edge", "", "", size, size, "winter", 2, [new MapStart(1, new CellPos(5, 6)), new MapStart(2, new CellPos(6, 6))],
             [new('s', "snow")], [.. new byte[(size + 1) * (size + 1)]], [.. land], [.. Enumerable.Repeat('s', size * size)], [.. new byte[size * size]], [], [], []);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         var units = StartSquads.Place(map, grid, GameDataFiles.Rules);
 
@@ -53,7 +53,7 @@ public sealed class StartSquadsTests
     public void The_blue_squad_drives_up_the_plateau_by_a_ramp()
     {
         var definition = Relief();
-        var grid = definition.ToMapGrid();
+        var grid = definition.ToMapGrid(GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(new SimulationSettings(3, grid), GameDataFiles.Rules);
         uint sequence = 0;
         foreach (var unit in StartSquads.Place(definition, grid, GameDataFiles.Rules))

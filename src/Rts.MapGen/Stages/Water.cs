@@ -200,7 +200,7 @@ internal static class Water
             {
                 // The north-west cell of the turned footprint of every image is its smallest corner after the turn.
                 var (minX, minY) = (int.MaxValue, int.MaxValue);
-                foreach (var cell in MapChecks.Footprint(derrick))
+                foreach (var cell in MapChecks.Footprint(derrick, map.Types))
                 {
                     var image = map.Symmetry.Cell(k, cell);
                     (minX, minY) = (IntMath.Min(minX, image.X), IntMath.Min(minY, image.Y));

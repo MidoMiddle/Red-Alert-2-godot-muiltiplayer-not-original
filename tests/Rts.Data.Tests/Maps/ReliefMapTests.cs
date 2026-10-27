@@ -10,7 +10,7 @@ public sealed class ReliefMapTests
 {
     private static string ReliefPath => Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap");
 
-    private static MapGrid Relief() => RtsMapReader.Read(File.ReadAllText(ReliefPath)).ToMapGrid();
+    private static MapGrid Relief() => RtsMapReader.Read(File.ReadAllText(ReliefPath)).ToMapGrid(GameDataFiles.Rules.MapTypes);
 
     [Fact]
     public void The_committed_relief_map_is_what_the_generator_writes()
@@ -22,7 +22,7 @@ public sealed class ReliefMapTests
     public void Heights_reach_the_simulation_corner_by_corner()
     {
         var map = RtsMapReader.Read(File.ReadAllText(ReliefPath));
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         for (var y = 0; y <= map.Height; y++)
         {
@@ -69,7 +69,7 @@ public sealed class ReliefMapTests
     {
         var map = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));
 
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(map.Objects.Select(o => (o.Type, o.Cell, o.Variant)), grid.Objects.Select(o => (o.Type.Id, o.Cell, o.Variant)));
         Assert.All(grid.Objects, o => Assert.Equal(o.Type.MaxHp, o.Hp));
@@ -88,7 +88,7 @@ public sealed class ReliefMapTests
         var text = RtsMapWriter.Write(SampleMaps.Full()).Replace("type: pine_tree, cell: [1, 3]", "type: palm_tree, cell: [1, 3]");
         var map = RtsMapReader.Read(text);
 
-        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid());
+        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid(GameDataFiles.Rules.MapTypes));
 
         Assert.Contains("palm_tree", error.Message);
     }

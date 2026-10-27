@@ -28,7 +28,7 @@ internal static class Features
 
     public static void Buildings(GenMap map, CellPos contested)
     {
-        var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
+        var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""), map.Types);
         // Out of the ore zone round the contested field — its ore and what its gem drill throws — and clear of it (GenMap.OreClearance).
         foreach (var (dx, dy) in new[] { (6, 0), (0, 6), (-7, 0), (0, -7), (5, 5), (-6, -6), (8, 0), (0, 8), (-9, 0), (0, -9) })
         {
@@ -38,7 +38,7 @@ internal static class Features
             {
                 // The north-west cell of the turned footprint is its smallest corner after the turn.
                 var (minX, minY) = (int.MaxValue, int.MaxValue);
-                foreach (var cell in MapChecks.Footprint(new StructurePlacement("tech_oil_derrick", corner, 0, 0)))
+                foreach (var cell in MapChecks.Footprint(new StructurePlacement("tech_oil_derrick", corner, 0, 0), map.Types))
                 {
                     var image = map.Symmetry.Cell(k, cell);
                     (minX, minY) = (IntMath.Min(minX, image.X), IntMath.Min(minY, image.Y));
@@ -79,7 +79,7 @@ internal static class Features
             return;
         }
 
-        var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
+        var ground = MapChecks.BaseGrid(map.ToDefinition("work", ""), map.Types);
         var kinds = new[]
         {
             "neutral_house_a", "neutral_apartment", "neutral_shop", "neutral_office", "neutral_house_a", "neutral_school", "neutral_church",
@@ -115,7 +115,7 @@ internal static class Features
             {
                 // The north-west cell of the turned footprint is its smallest corner after the turn.
                 var (minX, minY) = (int.MaxValue, int.MaxValue);
-                foreach (var cell in MapChecks.Footprint(new StructurePlacement(kind, corner, 0, 0)))
+                foreach (var cell in MapChecks.Footprint(new StructurePlacement(kind, corner, 0, 0), map.Types))
                 {
                     var image = map.Symmetry.Cell(k, cell);
                     (minX, minY) = (IntMath.Min(minX, image.X), IntMath.Min(minY, image.Y));
@@ -133,7 +133,7 @@ internal static class Features
             foreach (var placement in images)
             {
                 fits &= MapChecks.BuildingProblem(ground, placement, placed) is null && NoOre(map, placement)
-                    && MapChecks.Footprint(placement).TrueForAll(cell => !NearRoad(map, cell, 0) && map.LandAt(cell) == LandType.Clear);
+                    && MapChecks.Footprint(placement, map.Types).TrueForAll(cell => !NearRoad(map, cell, 0) && map.LandAt(cell) == LandType.Clear);
                 placed.Add(placement);
             }
 
@@ -280,7 +280,7 @@ internal static class Features
         var built = new HashSet<CellPos>();
         foreach (var structure in map.Structures)
         {
-            built.UnionWith(MapChecks.Footprint(structure));
+            built.UnionWith(MapChecks.Footprint(structure, map.Types));
         }
 
         // The dressing stands there already (Dressing): no tree on it.
@@ -344,7 +344,7 @@ internal static class Features
     // No cell of the building within GenMap.OreClearance of the ore zone.
     private static bool NoOre(GenMap map, StructurePlacement placement)
     {
-        foreach (var cell in MapChecks.Footprint(placement))
+        foreach (var cell in MapChecks.Footprint(placement, map.Types))
         {
             if (!map.Contains(cell) || map.NearOre(cell, GenMap.OreClearance))
             {

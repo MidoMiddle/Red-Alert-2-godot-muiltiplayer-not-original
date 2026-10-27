@@ -44,7 +44,7 @@ public static class ArenaRunner
         output.WriteLine($"{config.Pairs.Length} pairs × {config.Maps.Length} maps × {config.Games} matches = {jobs.Count}, up to {Clock(config.MaxTicks)}, {parallel} at once");
         Parallel.ForEach(jobs, new ParallelOptions { MaxDegreeOfParallelism = parallel }, job =>
         {
-            var outcome = ArenaMatch.Play(data, job.Map.For(job.Seed), job.Map.Label, job.Pair.A, job.Pair.B, job.Number, job.Seed, job.Swap, config.MaxTicks);
+            var outcome = ArenaMatch.Play(data, job.Map.For(job.Seed, data.Rules.MapTypes), job.Map.Label, job.Pair.A, job.Pair.B, job.Number, job.Seed, job.Swap, config.MaxTicks);
             outcomes[job.Number] = outcome;
             lock (output)
             {
@@ -63,7 +63,7 @@ public static class ArenaRunner
             File.WriteAllBytes(file, ReplayFormat.Write(outcome.Replay));
             var journals = new Dictionary<PlayerId, string>();
             checks[game] = ArenaMatch.Check(
-                ReplayFormat.Read(File.ReadAllBytes(file)), data.Rules, journals);
+                ReplayFormat.Read(File.ReadAllBytes(file), data.Rules.MapTypes), data.Rules, journals);
             foreach (var (player, journal) in journals)
             {
                 File.WriteAllText(Path.Combine(folder, $"game-{game + 1:0000}-p{player.Value}.log"), journal);

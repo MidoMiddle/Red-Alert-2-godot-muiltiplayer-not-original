@@ -24,11 +24,11 @@ if (args.Length == 2 && args[0] == "check")
         Console.WriteLine($"{map.Id} \"{map.Name}\" {map.Width}x{map.Height}, climate {map.Climate}, lighting {map.Lighting}, {map.Players} players, {map.Starts.Length} starts");
         Console.WriteLine($"objects {map.Objects.Length} · bridges {map.Bridges.Length} · structures {map.Structures.Length} · " +
                           $"highest level {map.Heights.Max()} · ore cells {map.Ore.Count(o => o > 0)}");
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(MapData.Types);
         var shapes = Cells(map).Select(cell => grid.Heights.ShapeAt(cell)).ToList();
         Console.WriteLine($"cells: flat {shapes.Count(s => s == CellShape.Flat)} · slope {shapes.Count(s => s == CellShape.Slope)} · cliff {shapes.Count(s => s == CellShape.Cliff)}");
         Console.WriteLine($"hash {MapHasher.Hash(map)}");
-        foreach (var problem in MapValidator.Check(map))
+        foreach (var problem in MapValidator.Check(map, MapData.Types))
         {
             Console.WriteLine($"{problem.Level}: {problem.Message}" + (problem.Cell is { } at ? $" at {at.X},{at.Y}" : ""));
         }
@@ -86,7 +86,7 @@ if (args.Length == 2 && args[0] == "shapes")
 {
     return Run(args[1], map =>
     {
-        var heights = map.ToMapGrid().Heights;
+        var heights = map.ToMapGrid(MapData.Types).Heights;
         Console.WriteLine("shape: . flat  / slope  # cliff          level of each cell (its lowest corner, 0-9 a-e)");
         for (var y = 0; y < map.Height; y++)
         {
@@ -116,7 +116,7 @@ if (args.Length == 3 && args[0] == "passability")
 
     return Run(args[1], map =>
     {
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(MapData.Types);
         Console.WriteLine($"{locomotor}: # impassable  . 100 %  digit = tens of percent when slower  + faster");
         for (var y = 0; y < map.Height; y++)
         {
@@ -155,7 +155,7 @@ if (args.Length == 2 && args[0] == "canon")
 if (args.Length == 3 && args[0] == "convert")
 {
     var id = Path.GetFileNameWithoutExtension(args[2]);
-    var map = TestMapConverter.Convert(TestMapParser.Parse(File.ReadAllText(args[1])), id, char.ToUpperInvariant(id[0]) + id[1..]);
+    var map = TestMapConverter.Convert(TestMapParser.Parse(File.ReadAllText(args[1]), MapData.Rules), id, char.ToUpperInvariant(id[0]) + id[1..]);
     File.WriteAllText(args[2], RtsMapWriter.Write(map));
     Console.WriteLine($"wrote {args[2]} · {map.Objects.Length} objects · {map.Bridges.Length} bridges · {map.Structures.Length} buildings · hash {MapHasher.Hash(map)}");
     return 0;
@@ -165,11 +165,11 @@ if (args.Length == 2 && args[0] == "ready-maps")
 {
     foreach (var file in Rts.MapTool.ReadyMaps.Files)
     {
-        var map = Rts.MapTool.ReadyMaps.Build(file);
+        var map = Rts.MapTool.ReadyMaps.Build(file, MapData.Types);
         var path = Path.Combine(args[1], file + ".rtsmap");
         File.WriteAllText(path, RtsMapWriter.Write(map));
         Console.WriteLine($"wrote {path} · {map.Width}x{map.Height} · {map.Players} players · {map.Objects.Length} objects · {map.Bridges.Length} bridges · " +
-                          $"{map.Structures.Length} buildings · {MapValidator.Check(map).Count} warnings · hash {MapHasher.Hash(map)}");
+                          $"{map.Structures.Length} buildings · {MapValidator.Check(map, MapData.Types).Count} warnings · hash {MapHasher.Hash(map)}");
     }
 
     return 0;
@@ -193,8 +193,8 @@ if (args.Length >= 2 && args[0] == "add-drills")
                 throw new ArgumentException("its description does not say the symmetry: it was not made by the generator");
             }
 
-            var drilled = Rts.MapGen.Drills.AddTo(map, kindOfSymmetry, kind);
-            var errors = MapValidator.Check(drilled).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            var drilled = Rts.MapGen.Drills.AddTo(map, MapData.Types, kindOfSymmetry, kind);
+            var errors = MapValidator.Check(drilled, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
             if (errors.Count > 0)
             {
                 throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
@@ -202,7 +202,7 @@ if (args.Length >= 2 && args[0] == "add-drills")
 
             File.WriteAllText(path, RtsMapWriter.Write(drilled));
             var drills = drilled.Objects.Where(o => o.Type is Rts.MapGen.Drills.OreSource or Rts.MapGen.Drills.GemSource);
-            Console.WriteLine($"{path}: {string.Join(", ", drills.Select(d => $"{d.Type} {d.Cell.X},{d.Cell.Y}"))} · {MapValidator.Check(drilled).Count} warnings");
+            Console.WriteLine($"{path}: {string.Join(", ", drills.Select(d => $"{d.Type} {d.Cell.X},{d.Cell.Y}"))} · {MapValidator.Check(drilled, MapData.Types).Count} warnings");
         }
         catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
         {
@@ -229,8 +229,8 @@ if (args.Length >= 2 && args[0] == "add-tech")
                 throw new ArgumentException("its description does not say the symmetry: it was not made by the generator");
             }
 
-            var teched = TechSites.AddTo(map, new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width));
-            var errors = MapValidator.Check(teched).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            var teched = TechSites.AddTo(map, MapData.Types, new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width));
+            var errors = MapValidator.Check(teched, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
             if (errors.Count > 0)
             {
                 throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
@@ -238,7 +238,7 @@ if (args.Length >= 2 && args[0] == "add-tech")
 
             File.WriteAllText(path, RtsMapWriter.Write(teched));
             var added = teched.Structures.Where(s => s.Type is TechSites.Outpost);
-            Console.WriteLine($"{path}: {string.Join(", ", added.Select(s => $"{s.Type} {s.Cell.X},{s.Cell.Y}"))} · {MapValidator.Check(teched).Count} warnings");
+            Console.WriteLine($"{path}: {string.Join(", ", added.Select(s => $"{s.Type} {s.Cell.X},{s.Cell.Y}"))} · {MapValidator.Check(teched, MapData.Types).Count} warnings");
         }
         catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
         {
@@ -264,8 +264,8 @@ if (args.Length >= 2 && args[0] == "share-gems")
                 throw new ArgumentException($"its origin is {map.Origin}, not {MapOrigin.Ra2}");
             }
 
-            var shared = Rts.MapGen.Drills.ShareGems(map);
-            var errors = MapValidator.Check(shared).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            var shared = Rts.MapGen.Drills.ShareGems(map, MapData.Types);
+            var errors = MapValidator.Check(shared, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
             if (errors.Count > 0)
             {
                 throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
@@ -274,11 +274,11 @@ if (args.Length >= 2 && args[0] == "share-gems")
             File.WriteAllText(path, RtsMapWriter.Write(shared));
             var gems = shared.Objects.Where(o => o.Type is Rts.MapGen.Drills.GemSource);
             // The tank way from every start to each drill, in cells (on the map before, where the drill's cell is free).
-            var ground = map.ToMapGrid();
+            var ground = map.ToMapGrid(MapData.Types);
             var ways = gems.Select(g => string.Join("/", shared.Starts.Select(s =>
                 Rts.MapGen.Drills.PathCosts(ground, s.Cell)[g.Cell.Y * shared.Width + g.Cell.X] / 10)));
             Console.WriteLine($"{path}: {string.Join(", ", gems.Select(g => $"gem_source {g.Cell.X},{g.Cell.Y}"))}, ways from the starts " +
-                              $"{string.Join(", ", ways)} · {MapValidator.Check(shared).Count} warnings");
+                              $"{string.Join(", ", ways)} · {MapValidator.Check(shared, MapData.Types).Count} warnings");
         }
         catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
         {
@@ -305,8 +305,8 @@ if (args.Length >= 2 && args[0] == "add-huts")
                 throw new ArgumentException("its description does not say the symmetry: it was not made by the generator");
             }
 
-            var hutted = BridgeHuts.AddTo(map, new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width).Images);
-            var errors = MapValidator.Check(hutted).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            var hutted = BridgeHuts.AddTo(map, MapData.Types, new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width).Images);
+            var errors = MapValidator.Check(hutted, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
             if (errors.Count > 0)
             {
                 throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
@@ -342,6 +342,7 @@ if (args.Length >= 2 && args[0] == "generate")
     var symmetry = Choice("symmetry", Rts.MapGen.MapSymmetry.Mirror);
     var settings = new Rts.MapGen.MapGenSettings
     {
+        Types = MapData.Types,
         Seed = uint.Parse(Option("seed", "1"), System.Globalization.CultureInfo.InvariantCulture),
         Size = int.Parse(Option("size", "64"), System.Globalization.CultureInfo.InvariantCulture),
         Symmetry = symmetry,
@@ -372,7 +373,7 @@ if (args.Length >= 2 && args[0] == "generate")
     }
 
     File.WriteAllText(args[1], RtsMapWriter.Write(map));
-    var warnings = MapValidator.Check(map);
+    var warnings = MapValidator.Check(map, MapData.Types);
     Console.WriteLine($"wrote {args[1]} · seed {seed} · {map.Width}x{map.Height} · {map.Objects.Length} objects · {map.Bridges.Length} bridges · " +
                       $"{map.Structures.Length} buildings · {warnings.Count} warnings · hash {MapHasher.Hash(map)}");
     return 0;
@@ -395,4 +396,15 @@ static int Run(string path, Func<MapDefinition, int> action)
         Console.Error.WriteLine($"{path}:{e.Line}:{e.Column}: {e.Reason}");
         return 1;
     }
+}
+
+/// <summary>The kinds of the map of game/data (M3 step 14a), loaded once for the commands that read or make maps.</summary>
+internal static class MapData
+{
+    private static readonly Lazy<Rts.Simulation.Rules.GameRules> Loaded =
+        new(() => Rts.Data.GameData.LoadDirectory(Path.Combine("game", Rts.Data.GameData.Folder)).Rules);
+
+    public static Rts.Simulation.Rules.GameRules Rules => Loaded.Value;
+
+    public static MapTypes Types => Loaded.Value.MapTypes;
 }

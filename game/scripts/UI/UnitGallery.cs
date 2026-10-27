@@ -149,7 +149,7 @@ public partial class UnitGallery : Node3D
         const int PropColumns = 10;
         const float Step = 3.6f;
         var items = new System.Collections.Generic.List<(string Id, int W, int H, bool Building)>();
-        foreach (var type in Rts.Simulation.World.BuildingTypes.All)
+        foreach (var type in DataFiles.Current.Rules.MapTypes.Buildings)
         {
             if (Terrain.BuildingLooks.Known(type.Id))
             {
@@ -233,7 +233,7 @@ public partial class UnitGallery : Node3D
             var single = key.StartsWith("building/", System.StringComparison.Ordinal) || key.StartsWith("unit/", System.StringComparison.Ordinal);
             var (width, height) = key.StartsWith("building/", System.StringComparison.Ordinal)
                 ? database.TryGetBuilding(id, out var def) ? (def.Footprint.Width, def.Footprint.Height)
-                : Rts.Simulation.World.BuildingTypes.TryGetById(id, out var type) ? (type.Width, type.Height) : (1, 1)
+                : DataFiles.Current.Rules.MapTypes.TryGetBuilding(id, out var type) ? (type.Width, type.Height) : (1, 1)
                 : single ? (1, 1) : (3, 3);
             var at = new Vector3((i % ModelColumns - (ModelColumns - 1) / 2f) * Step, 0f, (i / ModelColumns - (rows - 1) / 2f) * Step);
             for (var y = 0; y < height; y++)

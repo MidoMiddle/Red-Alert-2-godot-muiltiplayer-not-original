@@ -67,7 +67,7 @@ public sealed class SkirmishConfigTests
 
         var setup = config.ToSetup(map, "union", seed: 77);
 
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
         // Crates on by default, as in RA2 (M11 a6).
         Assert.Equal(new MatchOptions(20_000, ShortGame: true, FogOfWar: false, Crates: true), setup.Options);
@@ -108,7 +108,7 @@ public sealed class SkirmishConfigTests
             .With(2, config.Slots[2] with { Kind = SlotKind.Bot, Faction = SkirmishConfig.RandomFaction });
 
         var setup = config.ToSetup(map, "union", seed: 9, ["union", "alliance"]);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
         Assert.Equal(["alliance", "union"], setup.Players.Take(2).Select(player => player.Faction));
@@ -161,7 +161,7 @@ public sealed class SkirmishConfigTests
         var config = SkirmishConfig.For(4);
         config = config.With(0, config.Slots[0] with { Faction = "alliance", Country = "france" });
         var setup = config.ToSetup(map, "union", seed: 3, ["union", "alliance"], countries);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
         Assert.Equal("france", setup.Players[0].Country);

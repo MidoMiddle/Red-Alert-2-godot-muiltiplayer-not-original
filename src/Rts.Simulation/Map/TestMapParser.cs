@@ -42,11 +42,13 @@ public static class TestMapParser
     public const char TreeCode = 'T';
 
     /// <summary>
-    /// Reads a test map. With <paramref name="rules"/> the map goes by their land speeds and every unit must be able to stand on its
-    /// cell; without them the map goes by <see cref="LandSpeeds.Reference"/> and the units are only named.
+    /// Reads a test map. With <paramref name="rules"/> the map goes by their land speeds and kinds of the map (<see cref="MapTypes"/>), and
+    /// every unit must be able to stand on its cell; without them the map goes by <see cref="LandSpeeds.Reference"/>, the units are only
+    /// named, and a tree, an object, a bridge or a building is refused: no data defines them.
     /// </summary>
     public static TestMap Parse(string text, GameRules? rules = null)
     {
+        var types = rules?.MapTypes ?? MapTypes.Empty;
         var rows = new List<(int Line, LandType[] Land, bool[] Trees)>();
         var unitLines = new List<(int Line, string Text)>();
         var objectLines = new List<(int Line, string Text)>();
@@ -119,17 +121,22 @@ public static class TestMapParser
                 if (trees[x])
                 {
                     // Every tree is a pine; four models, spread so neighbours rarely look the same.
-                    objects.Add(MapObjectState.New(MapObjectKind.PineTree, new CellPos(x, y), (x * 7 + y * 3) % 4));
+                    if (!types.IsKnown(MapObjectKind.PineTree))
+                    {
+                        throw Error(rows[y].Line, x + 1, "a tree needs the rules: no data defines the pine tree");
+                    }
+
+                    objects.Add(MapObjectState.New(types.Get(MapObjectKind.PineTree), new CellPos(x, y), (x * 7 + y * 3) % 4));
                 }
             }
         }
 
         foreach (var (line, objectText) in objectLines)
         {
-            objects.Add(ParseObject(line, objectText, width, rows.Count));
+            objects.Add(ParseObject(line, objectText, width, rows.Count, types));
         }
 
-        var grid = MapGrid.FromLayers(width, rows.Count, landLayer, new byte[landLayer.Length], default, objects, speeds: rules?.Land);
+        var grid = MapGrid.FromLayers(width, rows.Count, landLayer, new byte[landLayer.Length], default, objects, speeds: rules?.Land, types: types);
         foreach (var (line, bridgeText) in bridgeLines)
         {
             AddBridge(line, bridgeText, grid);
@@ -215,7 +222,7 @@ public static class TestMapParser
     }
 
     // object <type> <x> <y> [variant]
-    private static MapObjectState ParseObject(int lineNumber, string line, int width, int height)
+    private static MapObjectState ParseObject(int lineNumber, string line, int width, int height, MapTypes types)
     {
         var parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length is not (4 or 5))
@@ -223,7 +230,7 @@ public static class TestMapParser
             throw Error(lineNumber, 1, "expected 'object <type> <x> <y> [variant]'");
         }
 
-        if (!MapObjectTypes.TryGetById(parts[1], out var type))
+        if (!types.TryGetObject(parts[1], out var type))
         {
             throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown map object '{parts[1]}'");
         }
@@ -240,7 +247,7 @@ public static class TestMapParser
             throw Error(lineNumber, ColumnOf(line, parts[4]), $"variant must be 0…255, got {variant}");
         }
 
-        return MapObjectState.New(type.Kind, cell, variant);
+        return MapObjectState.New(type, cell, variant);
     }
 
     // bridge <type> <x1> <y1> <x2> <y2>
@@ -252,14 +259,14 @@ public static class TestMapParser
             throw Error(lineNumber, 1, "expected 'bridge <type> <x1> <y1> <x2> <y2>'");
         }
 
-        if (!BridgeTypes.TryGetById(parts[1], out var type))
+        if (!grid.Types.TryGetBridge(parts[1], out var type))
         {
             throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown bridge '{parts[1]}'");
         }
 
         var from = new CellPos(ParseNumber(lineNumber, line, parts[2]), ParseNumber(lineNumber, line, parts[3]));
         var to = new CellPos(ParseNumber(lineNumber, line, parts[4]), ParseNumber(lineNumber, line, parts[5]));
-        if (grid.TryAddBridge(BridgeState.New(type.Kind, from, to)) is { } problem)
+        if (grid.TryAddBridge(BridgeState.New(type, from, to)) is { } problem)
         {
             throw Error(lineNumber, ColumnOf(line, parts[2]), problem);
         }
@@ -274,7 +281,7 @@ public static class TestMapParser
             throw Error(lineNumber, 1, "expected 'building <type> <x> <y> [owner] [facing]'");
         }
 
-        if (!BuildingTypes.TryGetById(parts[1], out var type))
+        if (!grid.Types.TryGetBuilding(parts[1], out var type))
         {
             throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown building '{parts[1]}'");
         }

@@ -27,8 +27,8 @@ public sealed class BridgeTests
             land[i] = (byte)(i % Width is >= 6 and <= 9 ? LandType.Deep : LandType.Clear);
         }
 
-        var bridges = rows.Select(row => BridgeState.New(BridgeKind.WoodLow, new CellPos(6, row), new CellPos(9, row))).ToList();
-        return MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default, null, bridges);
+        var bridges = rows.Select(row => BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(6, row), new CellPos(9, row))).ToList();
+        return MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default, null, bridges, types: TestRules.Standard.MapTypes);
     }
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
@@ -179,8 +179,8 @@ public sealed class BridgeTests
         var land = Enumerable.Repeat((byte)LandType.Clear, Width * Height).ToArray();
         land[4 * Width + 7] = (byte)LandType.Shallow;
         var map = MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default,
-            [MapObjectState.New(MapObjectKind.LampPost, new CellPos(7, 4), 0)],
-            [BridgeState.New(BridgeKind.WoodLow, new CellPos(7, 4), new CellPos(7, 4))]);
+            [MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.LampPost), new CellPos(7, 4), 0)],
+            [BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(7, 4), new CellPos(7, 4))], types: TestRules.Standard.MapTypes);
         var world = new GameWorld(seed: 1, map, TestRules.Standard);
         var before = StateHasher.Compute(world);
 
@@ -208,7 +208,7 @@ public sealed class BridgeTests
         var land = River().LandBytes();
 
         var error = Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default, null,
-            [BridgeState.New(BridgeKind.WoodLow, new CellPos(x1, y1), new CellPos(x2, y2))]));
+            [BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(x1, y1), new CellPos(x2, y2))], types: TestRules.Standard.MapTypes));
 
         Assert.Contains(problem, error.Message);
     }
@@ -218,14 +218,14 @@ public sealed class BridgeTests
     {
         var land = River().LandBytes();
         var blocked = new byte[land.Length];
-        var full = BridgeState.New(BridgeKind.WoodLow, new CellPos(6, 4), new CellPos(9, 4));
+        var full = BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(6, 4), new CellPos(9, 4));
 
         Assert.Contains("already has a bridge", Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(Width, Height, land, blocked, default, null,
-            [full, BridgeState.New(BridgeKind.WoodLow, new CellPos(9, 4), new CellPos(6, 4))])).Message);
+            [full, BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(9, 4), new CellPos(6, 4))], types: TestRules.Standard.MapTypes)).Message);
         Assert.Contains("hit points", Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(Width, Height, land, blocked, default, null,
-            [full with { SegmentHp = [600, 601, 600, 600] }])).Message);
+            [full with { SegmentHp = [600, 601, 600, 600] }], types: TestRules.Standard.MapTypes)).Message);
         Assert.Contains("4 segments", Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(Width, Height, land, blocked, default, null,
-            [full with { SegmentHp = [600] }])).Message);
+            [full with { SegmentHp = [600] }], types: TestRules.Standard.MapTypes)).Message);
     }
 
     [Fact]
@@ -236,11 +236,11 @@ public sealed class BridgeTests
             ~ ~ ~ ~ ~
             . . . . .
             bridge bridge_wood_low 3 1 3 1
-            """).Grid.Bridges);
+            """, TestRules.Standard).Grid.Bridges);
         Assert.Equal(new[] { new CellPos(3, 1) }, bridge.Segments.Select(s => s.Cell));
 
         var reversed = River().Clone();
-        Assert.Null(reversed.TryAddBridge(BridgeState.New(BridgeKind.WoodLow, new CellPos(9, 2), new CellPos(6, 2))));
+        Assert.Null(reversed.TryAddBridge(BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(9, 2), new CellPos(6, 2))));
         Assert.Equal(new[] { 9, 8, 7, 6 }, reversed.Bridges[0].Segments.Select(s => s.Cell.X));
     }
 
@@ -250,7 +250,7 @@ public sealed class BridgeTests
     [InlineData("bridge bridge_wood_low 2 0", "line 3, column 1: expected 'bridge <type> <x1> <y1> <x2> <y2>'")]
     public void A_bad_bridge_line_names_its_line(string line, string message)
     {
-        var error = Assert.Throws<InvalidDataException>(() => TestMapParser.Parse($". . ~ ~ . .\n. . ~ ~ . .\n{line}\n"));
+        var error = Assert.Throws<InvalidDataException>(() => TestMapParser.Parse($". . ~ ~ . .\n. . ~ ~ . .\n{line}\n", TestRules.Standard));
 
         Assert.Contains(message, error.Message);
     }
@@ -276,7 +276,7 @@ public sealed class BridgeTests
         // The match starts with a bridge already broken in the middle and a damaged one.
         var start = River();
         Assert.Null(start.TryAddBridge(new BridgeState(BridgeKind.WoodLow, new CellPos(6, 2), new CellPos(9, 2), [600, 0, 250, 600])));
-        Assert.Null(start.TryAddBridge(BridgeState.New(BridgeKind.WoodLow, new CellPos(6, 6), new CellPos(9, 6))));
+        Assert.Null(start.TryAddBridge(BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(6, 6), new CellPos(9, 6))));
         var simulation = new GameSimulation(new SimulationSettings(seed: 7, start), TestRules.Standard);
         var recorder = new ReplayRecorder(simulation);
         simulation.Enqueue(new SpawnTestUnitCommand(Blue, 0, 0, UnitType.HeavyTank, new CellPos(2, 6).Center));
@@ -297,7 +297,7 @@ public sealed class BridgeTests
 
         Assert.True(destroyed);
         var bytes = ReplayFormat.Write(recorder.Build());
-        var read = ReplayFormat.Read(bytes);
+        var read = ReplayFormat.Read(bytes, TestRules.Standard.MapTypes);
 
         Assert.True(read.Settings.Map!.ContentEquals(start));
         Assert.Equal(0, read.Settings.Map.BridgeAt(new CellPos(7, 2))!.Hp);
@@ -341,7 +341,7 @@ public sealed class BridgeTests
         }
 
         var map = MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default, null,
-            [BridgeState.New(BridgeKind.WoodLow, new CellPos(6, 4), new CellPos(9, 4))]);
+            [BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.WoodLow), new CellPos(6, 4), new CellPos(9, 4))], types: TestRules.Standard.MapTypes);
         Assert.All(map.Bridges[0].Segments, segment => Assert.Equal(new[] { segment.Cell, new CellPos(segment.Cell.X, 5) }, segment.Cells));
     }
 }

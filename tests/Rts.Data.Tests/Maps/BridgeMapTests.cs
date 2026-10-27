@@ -1,3 +1,4 @@
+using Rts.Simulation.Tests;
 using Rts.Data.Maps;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
@@ -21,7 +22,7 @@ public sealed class BridgeMapTests
         bridge bridge_wood_low 3 2 4 2
         """;
 
-    private static string RiverText() => RtsMapWriter.Write(TestMapConverter.Convert(TestMapParser.Parse(River), "river", "River"));
+    private static string RiverText() => RtsMapWriter.Write(TestMapConverter.Convert(TestMapParser.Parse(River, TestRules.Standard), "river", "River"));
 
     [Fact]
     public void A_bridge_of_the_file_becomes_a_bridge_of_the_map_by_the_table()
@@ -29,7 +30,7 @@ public sealed class BridgeMapTests
         var text = RiverText();
         Assert.Contains("  - { type: bridge_wood_low, from: [3, 2], to: [4, 2] }", text);
 
-        var grid = RtsMapReader.Read(text).ToMapGrid();
+        var grid = RtsMapReader.Read(text).ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         var bridge = Assert.Single(grid.Bridges);
         Assert.Equal(BridgeKind.WoodLow, bridge.Kind);
@@ -37,7 +38,7 @@ public sealed class BridgeMapTests
         Assert.All(bridge.Segments, s => Assert.Equal(600, s.Hp));
         Assert.True(grid.CanEnter(new CellPos(4, 2), Locomotor.Wheel));
         Assert.False(grid.CanEnter(new CellPos(4, 2), Locomotor.Naval));
-        Assert.True(grid.ContentEquals(TestMapParser.Parse(River).Grid));
+        Assert.True(grid.ContentEquals(TestMapParser.Parse(River, TestRules.Standard).Grid));
     }
 
     [Fact]
@@ -45,7 +46,7 @@ public sealed class BridgeMapTests
     {
         var map = RtsMapReader.Read(RiverText().Replace("type: bridge_wood_low", "type: bridge_stone_high"));
 
-        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid());
+        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid(GameDataFiles.Rules.MapTypes));
 
         Assert.Contains("bridge_stone_high", error.Message);
     }
@@ -54,7 +55,7 @@ public sealed class BridgeMapTests
     public void Facing_corners_has_the_high_bridges_of_RA2_over_its_valleys()
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "facing-corners.rtsmap")));
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         var high = grid.Bridges.Where(b => b.Type.High).ToList();
         Assert.Equal(8, high.Count);
@@ -79,7 +80,7 @@ public sealed class BridgeMapTests
     public void The_highways_of_the_light_of_night_run_on_high_bridges_the_bases_can_drive_onto()
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "light-of-night.rtsmap")));
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         // Two highways at level 9 over the town at level 5, their spans of RA2 joined across the piers.
         Assert.Equal(12, grid.Bridges.Count(b => b.Type.High));
@@ -98,7 +99,7 @@ public sealed class BridgeMapTests
     public void On_route_66_every_base_reaches_every_other_over_the_high_bridges()
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "route-66.rtsmap")));
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(8, map.Starts.Length);
         Assert.Equal(28, grid.Bridges.Count(b => b.Type.High));
@@ -117,7 +118,7 @@ public sealed class BridgeMapTests
         // One segment on the shallows: deep water on the east, shallows north and south, so no shore along X or along Y.
         var map = RtsMapReader.Read(RiverText().Replace("from: [3, 2], to: [4, 2]", "from: [3, 2], to: [3, 2]"));
 
-        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid());
+        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid(GameDataFiles.Rules.MapTypes));
 
         Assert.Contains("no shore", error.Message);
     }

@@ -1,3 +1,4 @@
+using Rts.Simulation.Tests;
 using Rts.Client.Maps;
 using Rts.Client.Terrain;
 using Rts.Data.Maps;
@@ -27,7 +28,7 @@ public sealed class MapPreviewTests
 
     private static MapDefinition Map(Func<string, string>? edit = null)
     {
-        var text = RtsMapWriter.Write(TestMapConverter.Convert(TestMapParser.Parse(Village), "village", "Village"));
+        var text = RtsMapWriter.Write(TestMapConverter.Convert(TestMapParser.Parse(Village, TestRules.Standard), "village", "Village"));
         return RtsMapReader.Read((edit ?? (t => t))(text));
     }
 
@@ -58,17 +59,17 @@ public sealed class MapPreviewTests
     {
         var map = Map();
 
-        var pixels = MapPreview.Render(map);
+        var pixels = MapPreview.Render(map, GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(20 * 16 * 3, pixels.Length);
-        Assert.Equal(pixels, MapPreview.Render(Map()));
+        Assert.Equal(pixels, MapPreview.Render(Map(), GameDataFiles.Rules.MapTypes));
     }
 
     [Fact]
     public void Cells_take_the_colours_of_the_game()
     {
         var map = Map();
-        var pixels = MapPreview.Render(map);
+        var pixels = MapPreview.Render(map, GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(Shaded(LandColors.Of(LandType.Shallow), 0), Pixel(pixels, map, 1, 1));
         Assert.Equal(Shaded(LandColors.Of(LandType.Clear), 0), Pixel(pixels, map, 0, 0));
@@ -94,7 +95,7 @@ public sealed class MapPreviewTests
         }
 
         var raised = With(flat, heights: [.. heights]);
-        var pixels = MapPreview.Render(raised);
+        var pixels = MapPreview.Render(raised, GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(Shaded(LandColors.Of(LandType.Clear), 2), Pixel(pixels, raised, 6, 5));
         Assert.True(Pixel(pixels, raised, 6, 5).Item1 > Pixel(pixels, raised, 0, 0).Item1);
@@ -104,18 +105,18 @@ public sealed class MapPreviewTests
     [Fact]
     public void Starts_are_discs_in_the_colour_of_their_slot_and_ore_is_not_drawn()
     {
-        var plain = MapPreview.Render(Map());
+        var plain = MapPreview.Render(Map(), GameDataFiles.Rules.MapTypes);
         var map = With(Map(), starts: [new MapStart(1, new CellPos(1, 6)), new MapStart(2, new CellPos(8, 6))]);
         var ore = map.Ore.ToArray();
         ore[6 * 10 + 4] = 9;
         var withOre = With(map, ore: [.. ore]);
-        var pixels = MapPreview.Render(map);
+        var pixels = MapPreview.Render(map, GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(Bytes(MapPreview.SlotColor(1)), Pixel(pixels, map, 1, 6));
         Assert.Equal(Bytes(MapPreview.SlotColor(2)), Pixel(pixels, map, 8, 6));
         Assert.NotEqual(Bytes(MapPreview.SlotColor(1)), Bytes(MapPreview.SlotColor(3)));
         Assert.Equal(Pixel(plain, map, 4, 6), Pixel(pixels, map, 4, 6));
-        Assert.Equal(MapPreview.Render(withOre), pixels);
+        Assert.Equal(MapPreview.Render(withOre, GameDataFiles.Rules.MapTypes), pixels);
     }
 
     [Fact]
@@ -126,7 +127,7 @@ public sealed class MapPreviewTests
 
         Assert.Matches("^user://cache/previews/[0-9a-f]{64}\\.png$", MapPreview.CachePath(MapHasher.Hash(map)));
         Assert.NotEqual(MapPreview.CachePath(MapHasher.Hash(map)), MapPreview.CachePath(MapHasher.Hash(changed)));
-        Assert.NotEqual(MapPreview.Render(map), MapPreview.Render(changed));
+        Assert.NotEqual(MapPreview.Render(map, GameDataFiles.Rules.MapTypes), MapPreview.Render(changed, GameDataFiles.Rules.MapTypes));
     }
 
     [Fact]
@@ -141,7 +142,7 @@ public sealed class MapPreviewTests
             ("res://data/maps/broken.rtsmap", "format: rtsmap/1\nid: [oops\n"),
             ("res://data/maps/hamlet.rtsmap", hamlet),
             ("res://data/maps/wet.rtsmap", village.Replace("type: neutral_shed, cell: [8, 1]", "type: neutral_shed, cell: [1, 1]")),
-        ]);
+        ], GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(new[] { "Hamlet", "Village" }, maps.Select(m => m.Map.Name));
         Assert.Equal(MapHasher.Hash(maps[1].Map), maps[1].Hash);
@@ -156,7 +157,7 @@ public sealed class MapPreviewTests
         var files = Directory.GetFiles(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps"), "*.rtsmap")
             .Select(path => ($"res://data/maps/{Path.GetFileName(path)}", File.ReadAllText(path)));
 
-        var (maps, errors) = MapCatalog.Load(files);
+        var (maps, errors) = MapCatalog.Load(files, GameDataFiles.Rules.MapTypes);
 
         Assert.Empty(errors);
         // The square maps of before the playable area are left out for now (MapCatalog.Hidden).
@@ -169,11 +170,11 @@ public sealed class MapPreviewTests
             "Snowbound Hamlet", "Snowfall Forest", "Steel Tundra", "Steph's High Ground", "The Light of Night", "Tundra Lane", "Twin Isles", "WAR Pro", "Windswept Pass",
         }, maps.Select(m => m.Map.Name));
         var relief = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap")));
-        var pixels = MapPreview.Render(relief);
+        var pixels = MapPreview.Render(relief, GameDataFiles.Rules.MapTypes);
         Assert.All(relief.Starts, start => Assert.Equal(Bytes(MapPreview.SlotColor(start.Slot)), Pixel(pixels, relief, start.Cell.X, start.Cell.Y)));
-        Assert.Equal(128 * 128 * 3, MapPreview.Render(RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath))).Length);
+        Assert.Equal(128 * 128 * 3, MapPreview.Render(RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)), GameDataFiles.Rules.MapTypes).Length);
         // The maps with a playable area are drawn as the screen shows it: twice as wide as tall.
-        Assert.All(maps, m => Assert.Equal(MapPreview.SizeOf(m.Map).Width * MapPreview.SizeOf(m.Map).Height * 3, MapPreview.Render(m.Map).Length));
+        Assert.All(maps, m => Assert.Equal(MapPreview.SizeOf(m.Map).Width * MapPreview.SizeOf(m.Map).Height * 3, MapPreview.Render(m.Map, GameDataFiles.Rules.MapTypes).Length));
         var frozen = maps.Single(m => m.Map.Name == "Frozen Crossing").Map;
         Assert.Equal((180, 90), MapPreview.SizeOf(frozen));
     }

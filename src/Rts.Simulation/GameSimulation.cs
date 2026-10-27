@@ -30,7 +30,7 @@ public sealed class GameSimulation
     {
         settings.Validate(rules.Database);
         Settings = settings;
-        World = new GameWorld(settings.Seed, settings.CreateMap(rules.Land), rules, settings.StartingCredits, settings.Match);
+        World = new GameWorld(settings.Seed, settings.CreateMap(rules), rules, settings.StartingCredits, settings.Match);
         _commands = new CommandQueue(firstTick: World.CurrentTick);
     }
 

@@ -149,7 +149,7 @@ public sealed class GameWorldTests
     [Fact]
     public void World_can_start_on_a_given_map()
     {
-        var map = TestMapParser.Parse(". . #\n= T .").Grid;
+        var map = TestMapParser.Parse(". . #\n= T .", TestRules.Standard).Grid;
 
         var world = new GameWorld(seed: 1, map, TestRules.Standard);
 

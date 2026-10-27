@@ -339,10 +339,10 @@ internal static class Dressing
         public Site(GenMap map)
         {
             _map = map;
-            _ground = MapChecks.BaseGrid(map.ToDefinition("work", ""));
+            _ground = MapChecks.BaseGrid(map.ToDefinition("work", ""), map.Types);
             foreach (var structure in map.Structures)
             {
-                _taken.UnionWith(MapChecks.Footprint(structure));
+                _taken.UnionWith(MapChecks.Footprint(structure, map.Types));
             }
 
             foreach (var mapObject in map.Objects)
@@ -416,7 +416,7 @@ internal static class Dressing
             {
                 // The north-west cell of the turned footprint is its smallest corner after the turn.
                 var (minX, minY) = (int.MaxValue, int.MaxValue);
-                foreach (var cell in MapChecks.Footprint(new StructurePlacement(id, corner, 0, 0)))
+                foreach (var cell in MapChecks.Footprint(new StructurePlacement(id, corner, 0, 0), _map.Types))
                 {
                     var image = _map.Symmetry.Cell(k, cell);
                     (minX, minY) = (IntMath.Min(minX, image.X), IntMath.Min(minY, image.Y));
@@ -432,7 +432,7 @@ internal static class Dressing
             var placed = new List<StructurePlacement>(_map.Structures);
             foreach (var placement in images)
             {
-                var footprint = MapChecks.Footprint(placement);
+                var footprint = MapChecks.Footprint(placement, _map.Types);
                 // A building blocks: none of its cells by a road, as for a blocking thing, nor near the ore (GenMap.OreClearance).
                 if (!footprint.TrueForAll(cell => Free(cell, blocking: true) && !_map.NearOre(cell, GenMap.OreClearance))
                     || MapChecks.BuildingProblem(_ground, placement, placed) is not null)
@@ -446,7 +446,7 @@ internal static class Dressing
             foreach (var placement in images)
             {
                 _map.Structures.Add(placement);
-                _taken.UnionWith(MapChecks.Footprint(placement));
+                _taken.UnionWith(MapChecks.Footprint(placement, _map.Types));
             }
 
             return true;

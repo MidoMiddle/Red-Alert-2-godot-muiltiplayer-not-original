@@ -168,7 +168,7 @@ public sealed class DeployTests
             recorder.AfterStep();
         }
 
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
 
         Assert.Equal(150, simulation.World.Player(Player1).PowerOutput);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);

@@ -36,7 +36,7 @@ public sealed class CloningVatsTests
             }
         }
 
-        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, []);
+        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, [], types: GameDataFiles.Rules.MapTypes);
         return new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(

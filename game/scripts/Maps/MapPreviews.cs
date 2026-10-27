@@ -28,7 +28,7 @@ public static class MapPreviews
     /// <summary>Draws the preview in the background, stores it in the cache and returns it (the await resumes on the main thread).</summary>
     public static async Task<ImageTexture> RenderAsync(MapEntry entry)
     {
-        var pixels = await Task.Run(() => MapPreview.Render(entry.Map));
+        var pixels = await Task.Run(() => MapPreview.Render(entry.Map, Rts.Client.App.DataFiles.Current.Rules.MapTypes));
         var image = Image.CreateFromData(
             MapPreview.SizeOf(entry.Map).Width, MapPreview.SizeOf(entry.Map).Height, false, Image.Format.Rgb8, pixels);
         DirAccess.MakeDirRecursiveAbsolute(MapPreview.CacheDirectory);

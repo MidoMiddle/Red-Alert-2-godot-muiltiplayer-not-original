@@ -21,7 +21,7 @@ public sealed class SandboxEconomyTests
     {
         var map = SandboxWithStart();
         var sandbox = TestMapParser.Parse(File.ReadAllText(SandboxPath), GameDataFiles.Rules).Grid;
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         // The same ground and ore; only the order of the map objects differs (the map file sorts them by type).
         Assert.Equal(sandbox.OreBytes(), grid.OreBytes());
         Assert.Equal(sandbox.LandBytes(), grid.LandBytes());

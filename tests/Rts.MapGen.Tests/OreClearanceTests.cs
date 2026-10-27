@@ -1,4 +1,5 @@
 using Rts.Data.Maps;
+using Rts.Data.Tests;
 using Rts.Simulation.Geometry;
 
 namespace Rts.MapGen.Tests;
@@ -19,8 +20,7 @@ public sealed class OreClearanceTests
     public void No_building_by_the_ore_and_no_thing_in_it(uint seed, int size, string climate, WaterKind water)
     {
         var rotate = size == 128;
-        var (map, _) = MapGenerator.Generate(new MapGenSettings
-        {
+        var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes,
             Seed = seed, Size = size, Climate = climate, Water = water,
             Symmetry = rotate ? MapSymmetry.Rotate90 : MapSymmetry.Mirror, Players = rotate ? 4 : 2,
         });
@@ -76,7 +76,7 @@ public sealed class OreClearanceTests
             return false;
         }
 
-        Assert.All(map.Structures, structure => Assert.False(MapChecks.Footprint(structure).Any(cell => Near(cell, GenMap.OreClearance)),
+        Assert.All(map.Structures, structure => Assert.False(MapChecks.Footprint(structure, GameDataFiles.Rules.MapTypes).Any(cell => Near(cell, GenMap.OreClearance)),
             $"{map.Id}: {structure.Type} at {structure.Cell.X},{structure.Cell.Y} by the ore"));
         Assert.All(map.Objects.Where(o => o.Type is not (Drills.OreSource or Drills.GemSource) && o.Type != "pine_tree"),
             thing => Assert.False(Near(thing.Cell, 0), $"{map.Id}: {thing.Type} at {thing.Cell.X},{thing.Cell.Y} in the ore"));

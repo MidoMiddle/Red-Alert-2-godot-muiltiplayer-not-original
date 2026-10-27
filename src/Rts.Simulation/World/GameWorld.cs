@@ -28,7 +28,7 @@ public sealed class GameWorld
     /// <paramref name="startingCredits"/>.
     /// </summary>
     public GameWorld(ulong seed, int widthCells, int heightCells, GameRules rules, int startingCredits = SimulationSettings.DefaultStartingCredits)
-        : this(seed, new MapGrid(widthCells, heightCells, rules.Land), rules, startingCredits)
+        : this(seed, new MapGrid(widthCells, heightCells, rules.Land, rules.MapTypes), rules, startingCredits)
     {
     }
 
@@ -62,7 +62,7 @@ public sealed class GameWorld
         Spatial = new SpatialIndex(map.Width, map.Height);
         foreach (var start in map.StartBuildings)
         {
-            _entities.Add(new Building(AllocateId(), start.Owner, start.Kind, start.Cell, start.Facing));
+            _entities.Add(new Building(AllocateId(), start.Owner, map.Types.Get(start.Kind), start.Cell, start.Facing));
         }
 
         // A match: the factions and the starting units of its players (M5 step 2), and the players of a team are allies (M8 step 11).

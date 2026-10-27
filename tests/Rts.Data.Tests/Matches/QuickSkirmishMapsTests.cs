@@ -52,7 +52,7 @@ public sealed class QuickSkirmishMapsTests
     {
         var map = Read(id);
         var setup = MatchSetups.OneOnOne(map, GameDataFiles.Rules.DefaultFaction.Id, seed: 5);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
         var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, grid), GameDataFiles.Rules);
 
@@ -95,7 +95,7 @@ public sealed class QuickSkirmishMapsTests
         Assert.All(ore.Concat(gems), drill => Assert.Equal(0, map.Ore[drill.Cell.Y * map.Width + drill.Cell.X]));
         // Heaven, Facing Corners, Steph's High Ground, WAR Pro, The Light of Night and Route 66 come from RA2 (tools/ra2_import) with their authors' fields further from the bases: their ore drills
         // stand within 16 cells but not always within the 12 the editor's check asks for, so only that warning is let pass.
-        var problems = MapValidator.Check(map).Where(problem => id is not ("heaven" or "facing-corners" or "stephs-high-ground" or "war-pro" or "light-of-night" or "route-66") || !problem.Message.StartsWith("The starts have", StringComparison.Ordinal));
+        var problems = MapValidator.Check(map, GameDataFiles.Rules.MapTypes).Where(problem => id is not ("heaven" or "facing-corners" or "stephs-high-ground" or "war-pro" or "light-of-night" or "route-66") || !problem.Message.StartsWith("The starts have", StringComparison.Ordinal));
         Assert.DoesNotContain(problems, problem => problem.Message.Contains("drill") || problem.Message.Contains("under the"));
     }
 
@@ -105,7 +105,7 @@ public sealed class QuickSkirmishMapsTests
         // Gems neither grow nor spread: only the drills add them.
         var map = Read("frozen-crossing");
         var setup = MatchSetups.OneOnOne(map, GameDataFiles.Rules.DefaultFaction.Id, seed: 3);
-        var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, map.ToMapGrid()), GameDataFiles.Rules);
+        var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, map.ToMapGrid(GameDataFiles.Rules.MapTypes)), GameDataFiles.Rules);
         var before = Gems(simulation.World.Map);
         for (var tick = 0; tick < 900; tick++)
         {
@@ -154,7 +154,7 @@ public sealed class QuickSkirmishMapsTests
         // M6, A6: the quick skirmish's «Mode: 2 vs 2», the setup the fog of the whole team is seen in.
         var map = Read("four-corners");
         var setup = MatchSetups.TwoOnTwo(map, GameDataFiles.Rules.DefaultFaction.Id, seed: 9);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         Assert.True(MatchSetups.IsPlayableTwoOnTwo(map));
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));

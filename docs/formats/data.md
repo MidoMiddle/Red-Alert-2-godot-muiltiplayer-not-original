@@ -33,6 +33,12 @@ game/data/
 │       ├── buildings.yaml
 │       ├── units.yaml
 │       └── weapons.yaml    оружие юнитов и обороны
+├── map/                    виды карты (M3, шаг 14а)
+│   ├── objects.yaml        объекты карты: деревья, камни, заборы, буры, реквизит
+│   └── bridges.yaml        мосты
+├── neutral/                здания карты (M3, шаг 14а)
+│   ├── civilian.yaml       нейтральные дома
+│   └── tech.yaml           тех-здания
 ├── ai/                     боты (M5, M8)
 │   ├── difficulty.yaml     уровни ботов: ai_easy, ai_medium, ai_hard, ai_brutal
 │   ├── personalities/      характеры ботов, по файлу на характер (M8)
@@ -329,6 +335,16 @@ ap_shell:  # RA2 AP
 |---|---|
 | `locomotor` | `name`, `slope` (проценты: замедление на склоне). Движку нужны все шесть: `foot`, `track`, `wheel`, `amphibious`, `naval`, `hover` |
 | `terrain` | `name`, `code` (символ в картах), `buildable` (флаг), `speed` (словарь «передвижение: проценты», 0 — не проходит). Движку нужны все восемь типов земли |
+
+### `map_object`, `bridge`, `map_building` (виды карты, M3 шаг 14а)
+
+Движок знает каждый вид по номеру и id (`MapObjectTypes`, `BridgeTypes`, `BuildingTypes` в коде): номер — часть правил, он в хеше и повторах. Новый вид добавляют и в код, и в данные. Вид движка без записи и запись без вида движка — ошибка правил. Партия, редактор, генератор и проверка карт берут виды из данных (`GameRules.MapTypes`).
+
+| Вид | Ключи |
+|---|---|
+| `map_object` | `name`; `blocks` — список передвижений, которых не пускает; `hp` (0 — неразрушим); `crushed_by` — кто давит, заезжая; `stump` (флаг: дерево оставляет пень); `speed` — словарь «передвижение: проценты» на его клетке (не названные — 100 %, от 0 до 200 %) |
+| `bridge` | `name`, `segment_hp` (прочность пролёта), `width` (1–5 клеток), `high` (флаг: высокий мост на опорах) |
+| `map_building` | `name`, `footprint` (1–6 клеток по стороне), `hp`, `garrison` (бойцов внутри), `capturable` (берёт инженер), `superweapon` и `recharge` (что даёт захваченное тех-здание), `weapon`, `armor`, `sight`, `repairs_vehicles`, `extends_base`, `death_weapon` |
 
 ---
 

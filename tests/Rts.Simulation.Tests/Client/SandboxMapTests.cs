@@ -8,7 +8,7 @@ namespace Rts.Simulation.Tests.Client;
 public sealed class SandboxMapTests
 {
     private static TestMap Sandbox() =>
-        TestMapParser.Parse(File.ReadAllText(Path.Combine(ClientFiles.RepoRoot, "game", "maps", "test", "sandbox.txt")));
+        TestMapParser.Parse(File.ReadAllText(Path.Combine(ClientFiles.RepoRoot, "game", "maps", "test", "sandbox.txt")), TestRules.Standard);
 
     private static IEnumerable<CellPos> Cells(MapGrid grid) =>
         Enumerable.Range(0, grid.Height).SelectMany(y => Enumerable.Range(0, grid.Width).Select(x => new CellPos(x, y)));

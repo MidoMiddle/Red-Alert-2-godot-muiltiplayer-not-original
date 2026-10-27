@@ -287,7 +287,7 @@ public sealed class ReservationTests
     {
         // 10 cells = 2560 leptons. Wheels: 48 per tick, ×120% on road = 58 (45 ticks), ×75% on rough = 36 (72 ticks).
         // Infantry on rough: 24 × 90% = 21.6, rounded to 22 (117 ticks).
-        var world = new GameWorld(seed: 1, TestMapParser.Parse(row).Grid, TestRules.Standard);
+        var world = new GameWorld(seed: 1, TestMapParser.Parse(row, TestRules.Standard).Grid, TestRules.Standard);
         var unit = world.SpawnUnit(Player1, type, new CellPos(0, 0).Center);
         unit.Facing = BAngle.East;
         Order(world, unit, new CellPos(10, 0));

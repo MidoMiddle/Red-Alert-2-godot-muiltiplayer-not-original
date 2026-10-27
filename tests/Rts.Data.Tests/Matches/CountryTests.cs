@@ -141,7 +141,7 @@ public sealed class CountryTests
         Assert.Null(Setup("cuba", "britain").Problem(64, 64, GameDataFiles.Rules.Database));
 
         var settings = SimulationSettings.ForMatch(Setup("cuba", "britain"), new MapGrid(64, 64));
-        var replay = ReplayFormat.Read(ReplayFormat.Write(new Replay(SimulationVersion.Current, GameDataFiles.Current.Hash, settings, 0, [], [])));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(new Replay(SimulationVersion.Current, GameDataFiles.Current.Hash, settings, 0, [], [])), GameDataFiles.Rules.MapTypes);
         Assert.Equal(["cuba", "britain"], replay.Settings.Match!.Players.Select(p => p.Country));
     }
     [Fact]

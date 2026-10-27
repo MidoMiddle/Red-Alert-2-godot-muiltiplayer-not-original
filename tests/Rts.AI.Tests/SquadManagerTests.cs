@@ -209,7 +209,7 @@ public sealed class SquadManagerTests
         // person's engineer had taken — a building of the map, DefIndex -1 — and looked it up in the buildings of the data.
         var land = Enumerable.Repeat((byte)LandType.Clear, 64 * 64).ToArray();
         var map = MapGrid.FromLayers(64, 64, land, new byte[land.Length], default, null, null,
-            [new BuildingState(BuildingKind.TechOutpost, new CellPos(40, 40), Scene.Enemy, 0)]);
+            [new BuildingState(BuildingKind.TechOutpost, new CellPos(40, 40), Scene.Enemy, 0)], types: TestRules.Standard.MapTypes);
         var scene = new Scene(map: map);
         scene.Spawn(Scene.Me, UnitType.HeavyTank, 14, 14);
         scene.Spawn(Scene.Me, UnitType.HeavyTank, 15, 14);

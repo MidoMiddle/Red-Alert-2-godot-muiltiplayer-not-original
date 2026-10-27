@@ -59,7 +59,7 @@ public sealed class TeamScenarioTests
     public void A_match_of_two_teams_plays_back_with_the_bots_run_again()
     {
         var match = Attack.Value.Match;
-        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()), GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(
             ReplayStatus.Match,

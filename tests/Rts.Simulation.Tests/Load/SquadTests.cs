@@ -61,7 +61,7 @@ public sealed class SquadTests(ITestOutputHelper output)
 
     private static (GameSimulation Simulation, List<Unit> Squad) Start()
     {
-        var map = TestMapParser.Parse(File.ReadAllText(Path.Combine(ClientFiles.RepoRoot, SquadMap.MapPath)));
+        var map = TestMapParser.Parse(File.ReadAllText(Path.Combine(ClientFiles.RepoRoot, SquadMap.MapPath)), TestRules.Standard);
         var simulation = new GameSimulation(new SimulationSettings(LoadScenario.Seed, map.Grid), TestRules.Standard);
         uint sequence = 0;
         foreach (var unit in map.Units)

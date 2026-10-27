@@ -31,8 +31,8 @@ public sealed class BridgeDemolitionTests
         }
 
         var map = MapGrid.FromLayers(Size, Size, land, new byte[land.Length], default, null,
-            [BridgeState.New(BridgeKind.WoodLow, new CellPos(30, 20), new CellPos(33, 20))],
-            [new BuildingState(BuildingKind.TechBridgeRepairHut, Hut, PlayerId.Neutral, 0)]);
+            [BridgeState.New(GameDataFiles.Rules.MapTypes.Get(BridgeKind.WoodLow), new CellPos(30, 20), new CellPos(33, 20))],
+            [new BuildingState(BuildingKind.TechBridgeRepairHut, Hut, PlayerId.Neutral, 0)], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(

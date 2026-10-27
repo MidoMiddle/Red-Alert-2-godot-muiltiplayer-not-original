@@ -3,33 +3,26 @@ using Rts.Simulation.World;
 
 namespace Rts.Simulation.Tests.Map;
 
-/// <summary>The tables of the element kinds: every kind has its row in its place, and the ids are unique (docs/elements_data).</summary>
+/// <summary>
+/// The kinds of the map the engine knows (M3 step 14a): every number has its id, the ids are unique and found again, and the rules
+/// define every kind under its number (docs/elements_data).
+/// </summary>
 public sealed class ElementTablesTests
 {
     [Fact]
-    public void Every_map_object_kind_has_its_row_in_its_place()
+    public void Every_map_object_kind_has_its_id_and_its_record_in_the_rules()
     {
         var kinds = Enum.GetValues<MapObjectKind>();
 
-        Assert.Equal(kinds.Length, MapObjectTypes.All.Count);
+        Assert.Equal(kinds, MapObjectTypes.All);
         foreach (var kind in kinds)
         {
-            Assert.True(MapObjectTypes.IsKnown(kind), kind.ToString());
-            Assert.Equal(kind, MapObjectTypes.Get(kind).Kind);
+            Assert.True(MapObjectTypes.TryGetKind(MapObjectTypes.IdOf(kind), out var found));
+            Assert.Equal(kind, found);
+            Assert.Equal((kind, MapObjectTypes.IdOf(kind)), (TestRules.Standard.MapTypes.Get(kind).Kind, TestRules.Standard.MapTypes.Get(kind).Id));
         }
-    }
 
-    [Fact]
-    public void Map_object_ids_are_unique_and_found_by_their_id()
-    {
-        var ids = MapObjectTypes.All.Select(type => type.Id).ToList();
-
-        Assert.Equal(ids.Count, ids.Distinct().Count());
-        foreach (var type in MapObjectTypes.All)
-        {
-            Assert.True(MapObjectTypes.TryGetById(type.Id, out var found));
-            Assert.Equal(type, found);
-        }
+        Assert.Equal(kinds.Length, MapObjectTypes.All.Select(MapObjectTypes.IdOf).Distinct().Count());
     }
 
     [Fact]
@@ -37,31 +30,34 @@ public sealed class ElementTablesTests
     {
         Assert.False(MapObjectTypes.IsKnown(0));
         Assert.False(MapObjectTypes.IsKnown((MapObjectKind)(MapObjectTypes.All.Count + 1)));
+        Assert.False(TestRules.Standard.MapTypes.IsKnown((MapObjectKind)(MapObjectTypes.All.Count + 1)));
+        Assert.False(MapObjectTypes.TryGetKind("no_such_thing", out _));
     }
 
     [Fact]
-    public void Every_building_kind_has_its_row_in_its_place()
+    public void Every_building_kind_has_its_id_and_its_record_in_the_rules()
     {
         var kinds = Enum.GetValues<BuildingKind>();
 
-        Assert.Equal(kinds.Length, BuildingTypes.All.Count);
+        Assert.Equal(kinds, BuildingTypes.All);
         foreach (var kind in kinds)
         {
-            Assert.True(BuildingTypes.IsKnown(kind), kind.ToString());
-            Assert.Equal(kind, BuildingTypes.Get(kind).Kind);
+            Assert.True(BuildingTypes.TryGetKind(BuildingTypes.IdOf(kind), out var found));
+            Assert.Equal(kind, found);
+            Assert.Equal(BuildingTypes.IdOf(kind), TestRules.Standard.MapTypes.Get(kind).Id);
         }
+
+        Assert.Equal(kinds.Length, BuildingTypes.All.Select(BuildingTypes.IdOf).Distinct().Count());
     }
 
     [Fact]
-    public void Building_ids_are_unique_and_found_by_their_id()
+    public void Every_bridge_kind_has_its_id_and_its_record_in_the_rules()
     {
-        var ids = BuildingTypes.All.Select(type => type.Id).ToList();
-
-        Assert.Equal(ids.Count, ids.Distinct().Count());
-        foreach (var type in BuildingTypes.All)
+        foreach (var kind in Enum.GetValues<BridgeKind>())
         {
-            Assert.True(BuildingTypes.TryGetById(type.Id, out var found));
-            Assert.Equal(type, found);
+            Assert.True(BridgeTypes.TryGetKind(BridgeTypes.IdOf(kind), out var found));
+            Assert.Equal(kind, found);
+            Assert.Equal(kind, TestRules.Standard.MapTypes.Get(kind).Kind);
         }
     }
 }

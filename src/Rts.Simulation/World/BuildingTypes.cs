@@ -57,7 +57,8 @@ public enum BuildingKind : byte
 }
 
 /// <summary>
-/// What a kind of building is (docs/implementation/M7_maps.md, 4.8): its footprint of <see cref="Width"/> × <see cref="Height"/>
+/// What a kind of building of the map is (docs/implementation/M7_maps.md, 4.8), as the data defines it (<see cref="Rules.MapBuildingDef"/>;
+/// M3 step 14a): its footprint of <see cref="Width"/> × <see cref="Height"/>
 /// cells from the north-west corner, its hit points, how many soldiers it would hold and whether an engineer would take it.
 /// An engineer takes one that is <see cref="Capturable"/> (stage 1 of the loose ends); a tech building taken gives its owner what its
 /// kind gives (<see cref="Systems.TechBuildingSystem"/>), the airfield its <see cref="Superweapon"/> every <see cref="Recharge"/> ticks.
@@ -82,127 +83,87 @@ public sealed record BuildingType(
     string DeathWeapon = "");
 
 /// <summary>
-/// The neutral buildings and tech buildings of the rules so far — winter and industrial sets, and the town, beach, desert, harbour and
-/// farm buildings of the element documents (docs/city_elements … docs/temperate_elements) — kept in code until the data files of
-/// M3 (game/data/neutral/).
-/// Hit points are a rough guide until the balance of M4.
+/// The kinds of buildings of the map the engine knows (docs/implementation/M3_base_economy.md, step 14a): each number with its data id.
+/// What a kind is — footprint, hit points, garrison, what a tech building gives — is the data's (<c>game/data/neutral/</c>), held by
+/// <see cref="Map.MapTypes"/>; the engine gives some kinds their own behaviour by number (the oil derrick, the hospital, the bridge
+/// repair hut).
 /// </summary>
 public static class BuildingTypes
 {
-    // The soldiers a civilian building holds go by its size, from 3 in a hut to 12 in the biggest (the owner's wish, 2026-10-26; RA2's
-    // MaxNumberOccupants runs about so): a 2 x 2 footprint holds 3, a 2 x 3 or 3 x 2 one 6, 3 x 3 and more 12; a stone building of
-    // several storeys (1500 hit points and more) one step of 3 up, the skyscraper (2500) the most.
-    private static readonly BuildingType[] Types =
-    [
-        new(BuildingKind.NeutralShed, "neutral_shed", 1, 1, MaxHp: 300, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralHouseA, "neutral_house_a", 2, 2, MaxHp: 800, Garrison: 3, Capturable: false),
-        new(BuildingKind.NeutralApartment, "neutral_apartment", 3, 3, MaxHp: 1500, Garrison: 12, Capturable: false),
-        new(BuildingKind.TechOilDerrick, "tech_oil_derrick", 2, 2, MaxHp: 1000, Garrison: 0, Capturable: true, ExtendsBase: true, DeathWeapon: "oil_explosion"),
-        new(BuildingKind.TechHospital, "tech_hospital", 6, 4, MaxHp: 800, Garrison: 0, Capturable: true, ExtendsBase: true), // RA2: 6 x 4, 800
-        // RA2 ParaDropSpecial: a paradrop every 4 minutes.
-        new(BuildingKind.TechAirfield, "tech_airfield", 3, 3, MaxHp: 800, Garrison: 0, Capturable: true, Rules.SuperweaponKind.Paradrop, 240 * SimulationSettings.DefaultTicksPerSecond, ExtendsBase: true),
-        new(BuildingKind.NeutralFuelTank, "neutral_fuel_tank", 1, 1, MaxHp: 800, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralSmokestack, "neutral_smokestack", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralCoolingTower, "neutral_cooling_tower", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralFactoryHall, "neutral_factory_hall", 4, 3, MaxHp: 800, Garrison: 12, Capturable: false),
-        new(BuildingKind.NeutralBoilerHouse, "neutral_boiler_house", 2, 2, MaxHp: 800, Garrison: 3, Capturable: false),
-        // RA2 bridge repair hut: cannot be hurt (Immune) nor taken; an engineer going in mends its bridge.
-        new(BuildingKind.TechBridgeRepairHut, "tech_bridge_repair_hut", 1, 1, MaxHp: 2000, Garrison: 0, Capturable: false),
+    private static readonly SortedDictionary<BuildingKind, string> Ids = new()
+    {
+        [BuildingKind.NeutralShed] = "neutral_shed",
+        [BuildingKind.NeutralHouseA] = "neutral_house_a",
+        [BuildingKind.NeutralApartment] = "neutral_apartment",
+        [BuildingKind.TechOilDerrick] = "tech_oil_derrick",
+        [BuildingKind.TechHospital] = "tech_hospital",
+        [BuildingKind.TechAirfield] = "tech_airfield",
+        [BuildingKind.NeutralFuelTank] = "neutral_fuel_tank",
+        [BuildingKind.NeutralSmokestack] = "neutral_smokestack",
+        [BuildingKind.NeutralCoolingTower] = "neutral_cooling_tower",
+        [BuildingKind.NeutralFactoryHall] = "neutral_factory_hall",
+        [BuildingKind.NeutralBoilerHouse] = "neutral_boiler_house",
+        [BuildingKind.TechBridgeRepairHut] = "tech_bridge_repair_hut",
+        [BuildingKind.NeutralSchool] = "neutral_school",
+        [BuildingKind.NeutralOffice] = "neutral_office",
+        [BuildingKind.NeutralChurch] = "neutral_church",
+        [BuildingKind.NeutralShop] = "neutral_shop",
+        [BuildingKind.NeutralKiosk] = "neutral_kiosk",
+        [BuildingKind.NeutralSkyscraper] = "neutral_skyscraper",
+        [BuildingKind.NeutralCafe] = "neutral_cafe",
+        [BuildingKind.NeutralBank] = "neutral_bank",
+        [BuildingKind.NeutralHotel] = "neutral_hotel",
+        [BuildingKind.NeutralFireStation] = "neutral_fire_station",
+        [BuildingKind.NeutralAutoRepair] = "neutral_auto_repair",
+        [BuildingKind.NeutralFountain] = "neutral_fountain",
+        [BuildingKind.NeutralBeachCabin] = "neutral_beach_cabin",
+        [BuildingKind.NeutralBeachBar] = "neutral_beach_bar",
+        [BuildingKind.NeutralLifeguardTower] = "neutral_lifeguard_tower",
+        [BuildingKind.NeutralLighthouse] = "neutral_lighthouse",
+        [BuildingKind.NeutralBoatShed] = "neutral_boat_shed",
+        [BuildingKind.NeutralAdobeHouse] = "neutral_adobe_house",
+        [BuildingKind.NeutralAncientRuins] = "neutral_ancient_ruins",
+        [BuildingKind.NeutralRockMesa] = "neutral_rock_mesa",
+        [BuildingKind.NeutralRockArch] = "neutral_rock_arch",
+        [BuildingKind.NeutralPortCrane] = "neutral_port_crane",
+        [BuildingKind.NeutralContainerStack] = "neutral_container_stack",
+        [BuildingKind.NeutralPortWarehouse] = "neutral_port_warehouse",
+        [BuildingKind.NeutralWaterTower] = "neutral_water_tower",
+        [BuildingKind.NeutralFarmhouse] = "neutral_farmhouse",
+        [BuildingKind.NeutralBarn] = "neutral_barn",
+        [BuildingKind.NeutralSilo] = "neutral_silo",
+        [BuildingKind.NeutralWindmill] = "neutral_windmill",
+        [BuildingKind.TechOutpost] = "tech_outpost",
+    };
 
-        // The element documents (2026-10-25): footprints, hit points by the class of the document (low ≈ 300, medium ≈ 800, high
-        // ≈ 1500 and more), garrisons where the document has one; nothing is taken by an engineer.
-        new(BuildingKind.NeutralSchool, "neutral_school", 3, 2, MaxHp: 1500, Garrison: 9, Capturable: false),
-        new(BuildingKind.NeutralOffice, "neutral_office", 2, 2, MaxHp: 1500, Garrison: 6, Capturable: false),
-        new(BuildingKind.NeutralChurch, "neutral_church", 2, 3, MaxHp: 1000, Garrison: 6, Capturable: false),
-        new(BuildingKind.NeutralShop, "neutral_shop", 2, 2, MaxHp: 800, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralKiosk, "neutral_kiosk", 1, 1, MaxHp: 200, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralSkyscraper, "neutral_skyscraper", 2, 2, MaxHp: 2500, Garrison: 12, Capturable: false),
-        new(BuildingKind.NeutralCafe, "neutral_cafe", 2, 1, MaxHp: 600, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralBank, "neutral_bank", 3, 2, MaxHp: 2000, Garrison: 9, Capturable: false),
-        new(BuildingKind.NeutralHotel, "neutral_hotel", 3, 2, MaxHp: 1800, Garrison: 9, Capturable: false),
-        new(BuildingKind.NeutralFireStation, "neutral_fire_station", 3, 2, MaxHp: 1500, Garrison: 9, Capturable: false),
-        new(BuildingKind.NeutralAutoRepair, "neutral_auto_repair", 2, 2, MaxHp: 800, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralFountain, "neutral_fountain", 2, 2, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralBeachCabin, "neutral_beach_cabin", 1, 1, MaxHp: 300, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralBeachBar, "neutral_beach_bar", 3, 2, MaxHp: 600, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralLifeguardTower, "neutral_lifeguard_tower", 2, 2, MaxHp: 500, Garrison: 3, Capturable: false),
-        new(BuildingKind.NeutralLighthouse, "neutral_lighthouse", 2, 2, MaxHp: 2000, Garrison: 6, Capturable: false),
-        new(BuildingKind.NeutralBoatShed, "neutral_boat_shed", 2, 2, MaxHp: 600, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralAdobeHouse, "neutral_adobe_house", 2, 2, MaxHp: 600, Garrison: 3, Capturable: false),
-        new(BuildingKind.NeutralAncientRuins, "neutral_ancient_ruins", 2, 2, MaxHp: 2500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralRockMesa, "neutral_rock_mesa", 2, 2, MaxHp: 4000, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralRockArch, "neutral_rock_arch", 2, 1, MaxHp: 3000, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralPortCrane, "neutral_port_crane", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralContainerStack, "neutral_container_stack", 2, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralPortWarehouse, "neutral_port_warehouse", 3, 3, MaxHp: 1200, Garrison: 12, Capturable: false),
-        new(BuildingKind.NeutralWaterTower, "neutral_water_tower", 1, 1, MaxHp: 800, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralFarmhouse, "neutral_farmhouse", 2, 2, MaxHp: 700, Garrison: 3, Capturable: false),
-        new(BuildingKind.NeutralBarn, "neutral_barn", 3, 2, MaxHp: 800, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralSilo, "neutral_silo", 1, 1, MaxHp: 1500, Garrison: 0, Capturable: false),
-        new(BuildingKind.NeutralWindmill, "neutral_windmill", 2, 2, MaxHp: 700, Garrison: 0, Capturable: false),
+    private static readonly BuildingKind[] Kinds = System.Linq.Enumerable.ToArray(Ids.Keys);
 
-        // The outpost of RA2 (docs/ra2_buildings/tech/outpost): 4 x 3, 2000 hit points, concrete, sight 6; the IFV's HoverMissile, a pad
-        // that mends vehicles, a base of its owner's. A neutral one does not fire.
-        new(BuildingKind.TechOutpost, "tech_outpost", 4, 3, MaxHp: 2000, Garrison: 0, Capturable: true, Weapon: "alliance_ifv_missiles",
-            Armor: "concrete", Sight: 6, RepairsVehicles: true, ExtendsBase: true),
-    ];
-
-    // The rows by kind; a number that was taken out has none.
-    private static readonly BuildingType?[] ByKind = Index();
-
-    public static IReadOnlyList<BuildingType> All => Types;
+    /// <summary>Every kind, in the order of its number; a number taken out has none.</summary>
+    public static IReadOnlyList<BuildingKind> All => Kinds;
 
     /// <summary>The highest number of a kind the engine knows.</summary>
-    public static int Highest => ByKind.Length;
+    public static int Highest => (int)Kinds[^1];
+
+    public static bool IsKnown(BuildingKind kind) => Ids.ContainsKey(kind);
+
+    /// <summary>The data id of a kind, such as <c>neutral_house_a</c>.</summary>
+    public static string IdOf(BuildingKind kind) => Ids.TryGetValue(kind, out var id)
+        ? id
+        : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown building kind.");
 
     /// <summary>The kind the engine knows by the id <paramref name="id"/>.</summary>
     public static bool TryGetKind(string id, out BuildingKind kind)
     {
-        if (TryGetById(id, out var type))
+        foreach (var (candidate, candidateId) in Ids)
         {
-            kind = type.Kind;
-            return true;
-        }
-
-        kind = default;
-        return false;
-    }
-
-    public static bool IsKnown(BuildingKind kind) => kind >= BuildingKind.NeutralShed && (int)kind <= ByKind.Length && ByKind[(int)kind - 1] is not null;
-
-    public static BuildingType Get(BuildingKind kind) =>
-        IsKnown(kind) ? ByKind[(int)kind - 1]! : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown building kind.");
-
-    /// <summary>The type of a map file id such as <c>neutral_house_a</c>.</summary>
-    public static bool TryGetById(string id, out BuildingType type)
-    {
-        foreach (var candidate in Types)
-        {
-            if (candidate.Id == id)
+            if (candidateId == id)
             {
-                type = candidate;
+                kind = candidate;
                 return true;
             }
         }
 
-        type = null!;
+        kind = default;
         return false;
-    }
-
-    private static BuildingType?[] Index()
-    {
-        var highest = 0;
-        foreach (var type in Types)
-        {
-            highest = Math.IntMath.Max(highest, (int)type.Kind);
-        }
-
-        var byKind = new BuildingType?[highest];
-        foreach (var type in Types)
-        {
-            byKind[(int)type.Kind - 1] = type;
-        }
-
-        return byKind;
     }
 }

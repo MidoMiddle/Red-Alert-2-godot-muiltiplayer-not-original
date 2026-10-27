@@ -56,7 +56,7 @@ public sealed class ReplayTests
         var (replay, _) = RecordMatch();
 
         var bytes = ReplayFormat.Write(replay);
-        var read = ReplayFormat.Read(bytes);
+        var read = ReplayFormat.Read(bytes, TestRules.Standard.MapTypes);
 
         Assert.Equal(replay.SimVersion, read.SimVersion);
         Assert.Equal(replay.DataHash, read.DataHash);
@@ -87,7 +87,7 @@ public sealed class ReplayTests
     {
         var replay = new Replay(SimulationVersion.Current, DataHasher.NoData, new SimulationSettings(9) { StartingCredits = 7500 }, 0, [], []);
 
-        Assert.Equal(7500, ReplayFormat.Read(ReplayFormat.Write(replay)).Settings.StartingCredits);
+        Assert.Equal(7500, ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes).Settings.StartingCredits);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class ReplayTests
         var replay = new Replay(
             SimulationVersion.Current, DataHasher.NoData, SimulationSettings.ForMatch(setup, new Rts.Simulation.Map.MapGrid(64, 64)), 0, [], []);
 
-        var read = ReplayFormat.Read(ReplayFormat.Write(replay)).Settings.Match!;
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes).Settings.Match!;
 
         Assert.Equal(["balanced", "random"], read.Players.Select(player => player.Personality));
         Assert.Equal(setup, read);
@@ -135,9 +135,9 @@ public sealed class ReplayTests
             SimulationVersion.Current, DataHasher.NoData, SimulationSettings.ForMatch(setup, new Rts.Simulation.Map.MapGrid(64, 64)), 0, [], []);
         var network = single with { Network = new ReplayNetwork("0.9.0+abc", 0xFEED_F00D_1234_5678UL, new Dictionary<int, string> { [2] = "Guest", [1] = "Хост" }) };
 
-        var read = ReplayFormat.Read(ReplayFormat.Write(network)).Network!;
+        var read = ReplayFormat.Read(ReplayFormat.Write(network), TestRules.Standard.MapTypes).Network!;
 
-        Assert.Null(ReplayFormat.Read(ReplayFormat.Write(single)).Network);
+        Assert.Null(ReplayFormat.Read(ReplayFormat.Write(single), TestRules.Standard.MapTypes).Network);
         Assert.Equal(("0.9.0+abc", 0xFEED_F00D_1234_5678UL), (read.GameVersion, read.MapHash));
         Assert.Equal([(1, "Хост"), (2, "Guest")], read.Names.Select(pair => (pair.Key, pair.Value)));
     }
@@ -153,7 +153,7 @@ public sealed class ReplayTests
         var bytes = ReplayFormat.Write(recorder.Build());
 
         Assert.Equal(0x0123456789abcdefUL, BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(10)));
-        Assert.Equal(0x0123456789abcdefUL, ReplayFormat.Read(bytes).DataHash);
+        Assert.Equal(0x0123456789abcdefUL, ReplayFormat.Read(bytes, TestRules.Standard.MapTypes).DataHash);
     }
 
     [Fact]
@@ -268,7 +268,7 @@ public sealed class ReplayTests
             case "negative ticks": bytes[49] = 0xFF; break;
         }
 
-        Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(bytes.ToArray()));
+        Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(bytes.ToArray(), TestRules.Standard.MapTypes));
     }
 
     [Fact]
@@ -276,7 +276,7 @@ public sealed class ReplayTests
     {
         var replay = new Replay(SimulationVersion.Current, DataHasher.NoData, new SimulationSettings(9), 0, [], []);
 
-        var read = ReplayFormat.Read(ReplayFormat.Write(replay));
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes);
 
         Assert.Empty(read.Commands);
         Assert.Empty(read.Checksums);

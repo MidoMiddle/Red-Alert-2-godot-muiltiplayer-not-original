@@ -49,7 +49,7 @@ public sealed class UnitStateTextTests
             heights[i] = (byte)(i % 9 >= 5 ? 4 : 0);
         }
 
-        var map = Rts.Simulation.Map.MapGrid.FromLayers(8, 8, Enumerable.Repeat((byte)Rts.Simulation.Map.LandType.Clear, 64).ToArray(), new byte[64], heights);
+        var map = Rts.Simulation.Map.MapGrid.FromLayers(8, 8, Enumerable.Repeat((byte)Rts.Simulation.Map.LandType.Clear, 64).ToArray(), new byte[64], heights, types: TestRules.Standard.MapTypes);
         var world = new GameWorld(seed: 1, map, TestRules.Standard);
         var low = world.SpawnUnit(new PlayerId(1), UnitType.Conscript, new CellPos(1, 1).Center);
         var high = world.SpawnUnit(new PlayerId(1), UnitType.HeavyTank, new CellPos(6, 1).Center);

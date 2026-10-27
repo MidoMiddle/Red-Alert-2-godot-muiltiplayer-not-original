@@ -32,7 +32,7 @@ public sealed class OreMapTests
     {
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", file + ".rtsmap")));
 
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         Assert.NotEqual(0, map.Ore.Count(value => value > 0));
         for (var y = 0; y < map.Height; y++)

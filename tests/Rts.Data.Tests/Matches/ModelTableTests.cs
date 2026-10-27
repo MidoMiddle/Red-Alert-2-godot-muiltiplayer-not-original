@@ -33,9 +33,9 @@ public sealed class ModelTableTests
             var id = key[(key.IndexOf('/') + 1)..];
             var known = key[..key.IndexOf('/')] switch
             {
-                "building" => database.TryGetBuilding(id, out _) || BuildingTypes.TryGetById(id, out _),
+                "building" => database.TryGetBuilding(id, out _) || GameDataFiles.Rules.MapTypes.TryGetBuilding(id, out _),
                 "unit" => database.TryGetUnit(id, out _),
-                "object" => MapObjectTypes.TryGetById(id, out _) && id != "pine_tree",
+                "object" => GameDataFiles.Rules.MapTypes.TryGetObject(id, out _) && id != "pine_tree",
                 "tree" => TreeShapes.Contains(id),
                 "ore" => OreKinds.Contains(id),
                 "crate" => id == "supply",

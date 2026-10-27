@@ -27,8 +27,8 @@ public class SimulationBenchmarks
     public void Setup()
     {
         var repoRoot = LoadScenario.RepoRoot(AppContext.BaseDirectory);
-        _map = LoadScenario.LoadMap(repoRoot);
         _rules = GameData.LoadDirectory(Path.Combine(repoRoot, "game", GameData.Folder)).Rules;
+        _map = LoadScenario.LoadMap(repoRoot, _rules);
         _idle = LoadScenario.Start(_map, _rules);
         _pathfinder = new Pathfinder(_map.Grid);
         _found = new List<EntityId>();

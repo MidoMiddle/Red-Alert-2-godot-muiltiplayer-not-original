@@ -214,7 +214,7 @@ public sealed class VictorySystemTests
             recorder.AfterStep();
         }
 
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
 
         Assert.Contains(replay.Commands, command => command is SurrenderCommand);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
@@ -273,7 +273,7 @@ public sealed class VictorySystemTests
             recorder.AfterStep();
         }
 
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
 
         Assert.Contains(replay.Commands, command => command is PlayerLeftCommand);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);

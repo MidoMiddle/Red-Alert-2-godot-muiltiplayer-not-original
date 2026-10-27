@@ -1,3 +1,4 @@
+using Rts.Simulation.Tests;
 using Rts.Data.Maps;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
@@ -23,7 +24,7 @@ public sealed class BuildingMapTests
         building tech_oil_derrick 5 5 2
         """;
 
-    private static string HamletText() => RtsMapWriter.Write(TestMapConverter.Convert(TestMapParser.Parse(Hamlet), "hamlet", "Hamlet"));
+    private static string HamletText() => RtsMapWriter.Write(TestMapConverter.Convert(TestMapParser.Parse(Hamlet, TestRules.Standard), "hamlet", "Hamlet"));
 
     [Fact]
     public void Structures_of_the_file_become_the_start_buildings_by_the_table()
@@ -32,7 +33,7 @@ public sealed class BuildingMapTests
         Assert.Contains("  - { type: neutral_house_a, cell: [2, 2], owner: neutral, facing: 3 }", text);
         Assert.Contains("  - { type: tech_oil_derrick, cell: [5, 5], owner: 2, facing: 0 }", text);
 
-        var grid = RtsMapReader.Read(text).ToMapGrid();
+        var grid = RtsMapReader.Read(text).ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(
             new[]
@@ -43,7 +44,7 @@ public sealed class BuildingMapTests
             grid.StartBuildings);
         Assert.True(grid.HasBuilding(new CellPos(3, 3)));
         Assert.False(grid.CanEnter(new CellPos(6, 6), Locomotor.Track));
-        Assert.True(grid.ContentEquals(TestMapParser.Parse(Hamlet).Grid));
+        Assert.True(grid.ContentEquals(TestMapParser.Parse(Hamlet, TestRules.Standard).Grid));
     }
 
     [Fact]
@@ -51,7 +52,7 @@ public sealed class BuildingMapTests
     {
         var map = RtsMapReader.Read(HamletText().Replace("type: neutral_house_a", "type: neutral_castle"));
 
-        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid());
+        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid(GameDataFiles.Rules.MapTypes));
 
         Assert.Contains("neutral_castle", error.Message);
     }
@@ -61,7 +62,7 @@ public sealed class BuildingMapTests
     {
         var map = RtsMapReader.Read(HamletText().Replace("cell: [2, 2]", "cell: [0, 5]"));
 
-        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid());
+        var error = Assert.Throws<ArgumentException>(() => map.ToMapGrid(GameDataFiles.Rules.MapTypes));
 
         Assert.Contains("cell 0,6 is Shallow", error.Message);
     }
@@ -69,10 +70,10 @@ public sealed class BuildingMapTests
     [Fact]
     public void The_sandbox_village_stands_in_the_way_and_a_fallen_house_leaves_its_ruins_there()
     {
-        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
+        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid(GameDataFiles.Rules.MapTypes);
         Assert.Equal(7, grid.StartBuildings.Count);
         Assert.All(grid.StartBuildings, b => Assert.True(b.Owner.IsNeutral));
-        Assert.Equal(3, grid.StartBuildings.Count(b => BuildingTypes.Get(b.Kind).Capturable));
+        Assert.Equal(3, grid.StartBuildings.Count(b => GameDataFiles.Rules.MapTypes.Get(b.Kind).Capturable));
 
         // The house at (36, 52)…(37, 53): a jeep drives round it, and round its ruins once it is down (RA2).
         var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid), GameDataFiles.Rules);

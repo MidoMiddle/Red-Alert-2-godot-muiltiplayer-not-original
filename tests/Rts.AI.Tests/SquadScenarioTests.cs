@@ -111,7 +111,7 @@ public sealed class SquadScenarioTests
     {
         var match = Defended.Value.Match;
         var again = Play(minutes: 13, tanks: true).Match;
-        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()), GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(StateHasher.Compute(match.World), StateHasher.Compute(again.World));
         Assert.Equal(

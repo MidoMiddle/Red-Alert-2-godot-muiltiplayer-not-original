@@ -74,6 +74,9 @@ public sealed record MapGenSettings
 
     public uint Seed { get; init; }
 
+    /// <summary>The kinds of map objects, bridges and buildings of the data the map is made of (M3 step 14a: <c>GameRules.MapTypes</c>).</summary>
+    public Rts.Simulation.Map.MapTypes Types { get; init; } = Rts.Simulation.Map.MapTypes.Empty;
+
     public int Size { get; init; } = 64;
 
     public int Players { get; init; } = 2;
@@ -106,6 +109,11 @@ public sealed record MapGenSettings
     /// <summary>Throws when the settings do not go together: an unknown size, or players that do not match the symmetry.</summary>
     public void Check()
     {
+        if (!System.Linq.Enumerable.Any(Types.Objects))
+        {
+            throw new ArgumentException("The generator needs the kinds of the map of the data (Types: GameRules.MapTypes).");
+        }
+
         if (Array.IndexOf(Sizes, Size) < 0)
         {
             throw new ArgumentException($"Size {Size} is not one of 64, 96, 128, 160.");

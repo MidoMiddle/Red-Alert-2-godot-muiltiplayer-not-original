@@ -23,7 +23,7 @@ public sealed class NightHawkTests
     public void The_night_hawk_is_built_at_the_war_factory_with_the_tanks_and_takes_off_from_it()
     {
         var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
-        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, []);
+        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, [], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(

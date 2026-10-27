@@ -213,7 +213,7 @@ public sealed class RefereeTests
         match.Network.Disconnect(match[2].Transport, match[2].Transport.Peers[0]);
         match.Run(2000);
 
-        var replays = match.Computers.Select(computer => ReplayFormat.Read(ReplayFormat.Write(computer.Recorder.Build()))).ToList();
+        var replays = match.Computers.Select(computer => ReplayFormat.Read(ReplayFormat.Write(computer.Recorder.Build()), TestRules.Standard.MapTypes)).ToList();
 
         // The one who left has its match up to where it stopped; the others theirs with the leaving in it.
         Assert.All(replays, replay => Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status));

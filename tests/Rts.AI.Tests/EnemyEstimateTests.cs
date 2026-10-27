@@ -5,6 +5,7 @@ using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Matches;
+using Rts.Simulation.Tests;
 using Rts.Simulation.World;
 
 namespace Rts.AI.Tests;
@@ -273,7 +274,7 @@ public sealed class EnemyEstimateTests
         // in the buildings of the data. Now it counts as a building, neither a refinery nor tech, nor a defense to weigh.
         var land = Enumerable.Repeat((byte)LandType.Clear, 64 * 64).ToArray();
         var map = MapGrid.FromLayers(64, 64, land, new byte[land.Length], default, null, null,
-            [new BuildingState(BuildingKind.TechOutpost, new CellPos(12, 10), Scene.Enemy, 0), new BuildingState(BuildingKind.TechOilDerrick, new CellPos(8, 12), Scene.Enemy, 0)]);
+            [new BuildingState(BuildingKind.TechOutpost, new CellPos(12, 10), Scene.Enemy, 0), new BuildingState(BuildingKind.TechOilDerrick, new CellPos(8, 12), Scene.Enemy, 0)], types: TestRules.Standard.MapTypes);
         var scene = new Scene(map: map);
         scene.Spawn(Scene.Me, UnitType.Conscript, 10, 10);
         scene.Build(Scene.Enemy, "refinery", 12, 14);

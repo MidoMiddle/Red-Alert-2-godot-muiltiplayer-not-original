@@ -84,7 +84,7 @@ public sealed class FogOfWarTests
         var replay = new Replay(
             SimulationVersion.Current, Rts.Simulation.Rules.DataHasher.NoData, SimulationSettings.ForMatch(setup, new MapGrid(64, 64)), 0, [], []);
 
-        var read = ReplayFormat.Read(ReplayFormat.Write(replay)).Settings.Match!;
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes).Settings.Match!;
 
         Assert.False(read.Options.FogOfWar);
         Assert.True(new MatchOptions().FogOfWar);

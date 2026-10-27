@@ -23,7 +23,7 @@ public sealed class ReadyMapsTests
     {
         var committed = File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", file + ".rtsmap")).Replace("\r\n", "\n");
 
-        Assert.Equal(RtsMapWriter.Write(ReadyMaps.Build(file)), committed);
+        Assert.Equal(RtsMapWriter.Write(ReadyMaps.Build(file, GameDataFiles.Rules.MapTypes)), committed);
     }
 
     [Theory]
@@ -32,7 +32,7 @@ public sealed class ReadyMapsTests
     {
         var map = Committed(file);
 
-        Assert.Empty(MapValidator.Check(map));
+        Assert.Empty(MapValidator.Check(map, GameDataFiles.Rules.MapTypes));
         Assert.Equal(map.Players, map.Starts.Length);
 
         var ore = map.Starts.Select(s => OreNear(map, s.Cell)).ToList();
@@ -112,7 +112,7 @@ public sealed class ReadyMapsTests
     public void On_every_map_the_first_squad_drives_towards_the_second_start(string file)
     {
         var map = Committed(file);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(new SimulationSettings(seed: 3, grid), GameDataFiles.Rules);
         var sequences = new Dictionary<PlayerId, uint>();
         foreach (var unit in StartSquads.Place(map, grid, GameDataFiles.Rules))

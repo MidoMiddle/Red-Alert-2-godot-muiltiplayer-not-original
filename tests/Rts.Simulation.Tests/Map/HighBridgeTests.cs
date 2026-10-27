@@ -47,9 +47,9 @@ public sealed class HighBridgeTests
         }
 
         var bridges = bridge
-            ? new[] { BridgeState.New(BridgeKind.ConcreteHigh, from ?? new CellPos(6, Row), to ?? new CellPos(13, Row)) }
+            ? new[] { BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.ConcreteHigh), from ?? new CellPos(6, Row), to ?? new CellPos(13, Row)) }
             : [];
-        return MapGrid.FromLayers(Width, Height, land, new byte[land.Length], heights, null, bridges);
+        return MapGrid.FromLayers(Width, Height, land, new byte[land.Length], heights, null, bridges, types: TestRules.Standard.MapTypes);
     }
 
     private static string Refusal(Func<MapGrid> build) => Assert.Throws<ArgumentException>(build).Message;
@@ -146,7 +146,7 @@ public sealed class HighBridgeTests
         }
 
         var error = Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(Width, Height, land, new byte[land.Length], heights, null,
-            [BridgeState.New(BridgeKind.ConcreteHigh, new CellPos(6, Row), new CellPos(13, Row))]));
+            [BridgeState.New(TestRules.Standard.MapTypes.Get(BridgeKind.ConcreteHigh), new CellPos(6, Row), new CellPos(13, Row))], types: TestRules.Standard.MapTypes));
         Assert.Contains("is not low enough", error.Message);
     }
 
@@ -366,7 +366,7 @@ public sealed class HighBridgeTests
         }
 
         var bytes = ReplayFormat.Write(recorder.Build());
-        var read = ReplayFormat.Read(bytes);
+        var read = ReplayFormat.Read(bytes, TestRules.Standard.MapTypes);
 
         Assert.True(read.Settings.Map!.ContentEquals(Gorge()));
         Assert.Equal(Gorge().DeckCount, read.Settings.Map.DeckCount);

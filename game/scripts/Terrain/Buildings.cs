@@ -144,7 +144,7 @@ public partial class Buildings : Node3D
     private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner, bool repairing = false,
         DamageState state = DamageState.Healthy, bool occupied = false)
     {
-        var type = BuildingTypes.Get(kind);
+        var type = Rts.Client.App.DataFiles.Current.Rules.MapTypes.Get(kind);
         var tech = type.Capturable;
         var height = kind switch
         {
@@ -253,7 +253,7 @@ public partial class Buildings : Node3D
 
     private void AddRuin(Ruin ruin)
     {
-        var type = BuildingTypes.Get(ruin.Kind);
+        var type = Rts.Client.App.DataFiles.Current.Rules.MapTypes.Get(ruin.Kind);
         var centre = new Vector3(ruin.Cell.X + type.Width / 2f, 0, ruin.Cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
         if (Models.ModelLibrary.Find("building/" + type.Id)?.Ruins is not null
@@ -289,7 +289,7 @@ public partial class Buildings : Node3D
     // Whether a building stands on any cell of the footprint of the ruins.
     private static bool Covered(GameWorld world, Ruin ruin)
     {
-        var type = BuildingTypes.Get(ruin.Kind);
+        var type = Rts.Client.App.DataFiles.Current.Rules.MapTypes.Get(ruin.Kind);
         for (var y = ruin.Cell.Y; y < ruin.Cell.Y + type.Height; y++)
         {
             for (var x = ruin.Cell.X; x < ruin.Cell.X + type.Width; x++)

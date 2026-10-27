@@ -56,7 +56,7 @@ public static class ArenaMatch
                 new MatchPlayer(2, PlayerKind.Ai, b.Level, b.Faction, Color: 1, Team: 2, startB.Slot, startB.Cell) { Personality = b.Personality },
             ],
             [.. map.Starts.Select(start => start.Cell)]);
-        var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, map.ToMapGrid()), data.Rules);
+        var simulation = new GameSimulation(SimulationSettings.ForMatch(setup, map.ToMapGrid(data.Rules.MapTypes)), data.Rules);
         var bots = setup.Players.Select(player => Bot(setup, player, data, player.Slot == 1 ? a : b)).ToList();
         foreach (var bot in bots)
         {

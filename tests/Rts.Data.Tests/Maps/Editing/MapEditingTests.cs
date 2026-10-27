@@ -11,7 +11,7 @@ public sealed class MapEditingTests
 {
     private static readonly Brush Dot = new(BrushShape.Circle, 1);
 
-    private static MapEditSession Session(int size = 32) => new(EditableMap.New(size, size, 2));
+    private static MapEditSession Session(int size = 32) => new(EditableMap.New(size, size, 2), GameDataFiles.Rules.MapTypes);
 
     /// <summary>One stroke of <paramref name="tool"/> through the given corners (the cell is the one south-east of each).</summary>
     private static void Stroke(MapEditSession session, EditTool tool, Brush brush, params (int X, int Y)[] corners) =>
@@ -53,7 +53,7 @@ public sealed class MapEditingTests
         Assert.All(map.Heights, h => Assert.Equal(0, h));
         Assert.All(map.Land, l => Assert.Equal(LandType.Clear, l));
         Assert.All(map.Texture, t => Assert.Equal('s', t));
-        Assert.Equal(48 * 32, map.ToMapGrid().Width * map.ToMapGrid().Height);
+        Assert.Equal(48 * 32, map.ToMapGrid(GameDataFiles.Rules.MapTypes).Width * map.ToMapGrid(GameDataFiles.Rules.MapTypes).Height);
     }
 
     [Theory]
@@ -152,7 +152,7 @@ public sealed class MapEditingTests
     public void Land_paints_cells_and_their_texture_adding_a_legend_code_when_needed()
     {
         var relief = EditableMap.FromDefinition(RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap"))));
-        var session = new MapEditSession(relief);
+        var session = new MapEditSession(relief, GameDataFiles.Rules.MapTypes);
         Assert.DoesNotContain(relief.Legend, e => e.Material == "asphalt");
 
         Stroke(session, EditTool.Land, new Brush(BrushShape.Square, 2), LandType.Road, (12, 12));
@@ -161,7 +161,7 @@ public sealed class MapEditingTests
         Assert.Equal(LandType.Road, relief.LandAt(new CellPos(11, 13)));
         Assert.Equal(asphalt.Code, relief.TextureAt(new CellPos(13, 11)));
         Assert.Equal(LandType.Clear, relief.LandAt(new CellPos(14, 12)));
-        Assert.True(relief.ToDefinition().ToMapGrid().CanEnter(new CellPos(12, 12), Locomotor.Wheel));
+        Assert.True(relief.ToDefinition().ToMapGrid(GameDataFiles.Rules.MapTypes).CanEnter(new CellPos(12, 12), Locomotor.Wheel));
     }
 
     [Fact]
@@ -292,7 +292,7 @@ public sealed class MapEditingTests
             .Select(path => ($"res://data/maps/{Path.GetFileName(path)}", File.ReadAllText(path)))
             .Append((UserMapPaths.SavePath(mine.Id), RtsMapWriter.Write(mine.ToDefinition())));
 
-        var (maps, errors) = Rts.Client.Maps.MapCatalog.Load(files);
+        var (maps, errors) = Rts.Client.Maps.MapCatalog.Load(files, GameDataFiles.Rules.MapTypes);
 
         Assert.Empty(errors);
         Assert.Equal(new[]

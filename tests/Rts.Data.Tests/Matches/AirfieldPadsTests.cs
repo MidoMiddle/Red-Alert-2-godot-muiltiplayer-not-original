@@ -24,7 +24,7 @@ public sealed class AirfieldPadsTests
     public void Four_jets_stand_on_four_pads_fly_out_fire_and_land_back_on_a_pad()
     {
         var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
-        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, []);
+        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, [], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(

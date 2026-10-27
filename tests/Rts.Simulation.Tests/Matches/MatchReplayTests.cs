@@ -53,7 +53,7 @@ public sealed class MatchReplayTests
             recorder.AfterStep();
         }
 
-        return ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        return ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public sealed class MatchReplayTests
         var replay = Play();
 
         Assert.Equal(MatchSetupTests.OneOnOne(), replay.Settings.Match);
-        Assert.Equal(replay.Settings, ReplayFormat.Read(ReplayFormat.Write(replay)).Settings);
+        Assert.Equal(replay.Settings, ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes).Settings);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public sealed class MatchReplayTests
         setup = setup with { Players = [setup.Players[0], setup.Players[1] with { Difficulty = difficulty }] };
         var recorder = new ReplayRecorder(new GameSimulation(SimulationSettings.ForMatch(setup, new MapGrid(64, 64)), TestRules.Standard));
 
-        Assert.Equal(difficulty, ReplayFormat.Read(ReplayFormat.Write(recorder.Build())).Settings.Match!.Players[1].Difficulty);
+        Assert.Equal(difficulty, ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes).Settings.Match!.Players[1].Difficulty);
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public sealed class MatchReplayTests
         setup = setup with { Players = [setup.Players[0], setup.Players[1] with { Difficulty = (AiDifficulty)5 }] };
         var recorder = new ReplayRecorder(new GameSimulation(SimulationSettings.ForMatch(setup, new MapGrid(64, 64)), TestRules.Standard));
 
-        var error = Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(ReplayFormat.Write(recorder.Build())));
+        var error = Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes));
         Assert.Contains("difficulty 5", error.Message);
     }
 

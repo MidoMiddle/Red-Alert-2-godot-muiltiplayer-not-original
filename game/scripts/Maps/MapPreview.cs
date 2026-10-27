@@ -43,8 +43,8 @@ public static class MapPreview
         : (map.Width * PixelsPerCell, map.Height * PixelsPerCell);
 
     /// <summary>The picture of <paramref name="map"/>: (2W) × (2H) pixels, three bytes each; or that of its playable area.</summary>
-    public static byte[] Render(MapDefinition map) =>
-        map.Playable is { } area ? RenderArea(map.ToMapGrid(), map.Starts, area, map.Climate) : Render(map.ToMapGrid(), map.Starts, map.Climate);
+    public static byte[] Render(MapDefinition map, MapTypes types) =>
+        map.Playable is { } area ? RenderArea(map.ToMapGrid(types), map.Starts, area, map.Climate) : Render(map.ToMapGrid(types), map.Starts, map.Climate);
 
     /// <summary>The colour of the plain ground in a climate: the grey green of winter, the green of summer, the sand of the desert, the dry grass of the coast.</summary>
     public static (float R, float G, float B) PlainOf(string climate) => climate switch

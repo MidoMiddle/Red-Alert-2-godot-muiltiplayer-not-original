@@ -27,7 +27,7 @@ public static class MapCatalog
     /// </summary>
     public static readonly string[] Hidden = ["twin-rivers", "taiga-front", "four-corners", "sandbox", "relief_test"];
 
-    public static (List<MapEntry> Maps, List<string> Errors) Load(IEnumerable<(string File, string Text)> files)
+    public static (List<MapEntry> Maps, List<string> Errors) Load(IEnumerable<(string File, string Text)> files, Rts.Simulation.Map.MapTypes types)
     {
         var maps = new List<MapEntry>();
         var errors = new List<string>();
@@ -41,7 +41,7 @@ public static class MapCatalog
             try
             {
                 var map = RtsMapReader.Read(text);
-                map.ToMapGrid();
+                map.ToMapGrid(types);
                 maps.Add(new MapEntry(file, map, MapHasher.Hash(map)));
             }
             catch (RtsMapFormatException error)

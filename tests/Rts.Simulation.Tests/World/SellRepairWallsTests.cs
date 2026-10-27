@@ -304,7 +304,7 @@ public sealed class SellRepairWallsTests
         recorder.AfterStep();
 
         Assert.False(yard.IsAlive);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
     }
 }

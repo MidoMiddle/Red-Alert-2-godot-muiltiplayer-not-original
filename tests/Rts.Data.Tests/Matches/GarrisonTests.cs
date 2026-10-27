@@ -42,7 +42,7 @@ public sealed class GarrisonTests
         var land = new byte[64 * 64];
         System.Array.Fill(land, (byte)LandType.Clear);
         return MapGrid.FromLayers(64, 64, land, new byte[land.Length], default, null, [],
-            [new BuildingState(BuildingKind.NeutralOffice, Office, PlayerId.Neutral, 0)]);
+            [new BuildingState(BuildingKind.NeutralOffice, Office, PlayerId.Neutral, 0)], types: GameDataFiles.Rules.MapTypes);
     }
 
     private static Building OfficeOf(GameWorld world) =>

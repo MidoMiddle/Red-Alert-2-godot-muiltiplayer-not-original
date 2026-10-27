@@ -143,7 +143,7 @@ public sealed class SubcellTests
     [Fact]
     public void Tank_does_not_drive_into_soldiers()
     {
-        var world = new GameWorld(seed: 1, TestMapParser.Parse(string.Join("\n", Enumerable.Repeat(". . . . . . . . . .", 5))).Grid, TestRules.Standard);
+        var world = new GameWorld(seed: 1, TestMapParser.Parse(string.Join("\n", Enumerable.Repeat(". . . . . . . . . .", 5)), TestRules.Standard).Grid, TestRules.Standard);
         Place(world, Player2, UnitType.Conscript, new CellPos(5, 2).Center);
         var tank = Place(world, Player1, UnitType.HeavyTank, new CellPos(0, 2).Center);
         CommandProcessor.Apply(world, new MoveCommand(Player1, 0, 0, [tank.Id], new CellPos(9, 2).Center));

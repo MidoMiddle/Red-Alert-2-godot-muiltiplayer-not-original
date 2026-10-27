@@ -29,6 +29,9 @@ internal sealed class GenMap
 
     public MapGenSettings Settings { get; }
 
+    /// <summary>The kinds of the map of the data (<see cref="MapGenSettings.Types"/>).</summary>
+    public MapTypes Types => Settings.Types;
+
     /// <summary>Whether a land type is a road of any kind: the asphalt, the unpaved road and the footpath.</summary>
     public static bool IsRoad(LandType land) => land is LandType.Road or LandType.Track or LandType.Path;
 
@@ -197,7 +200,7 @@ internal sealed class GenMap
     }
 
     /// <summary>The ground of the map for the rules: land, heights, objects, bridges and buildings as they are now.</summary>
-    public MapGrid Grid() => ToDefinition("work", "").ToMapGrid();
+    public MapGrid Grid() => ToDefinition("work", "").ToMapGrid(Types);
 
     private static char CodeOf(ImmutableArray<TextureEntry> legend, string material)
     {

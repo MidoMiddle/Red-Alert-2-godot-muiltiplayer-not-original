@@ -17,23 +17,23 @@ public sealed class MapGeneratorTests
 {
     public static readonly TheoryData<MapGenSettings> Sets = new()
     {
-        new MapGenSettings { Symmetry = MapSymmetry.Mirror, Relief = ReliefKind.Hilly, Water = WaterKind.Rivers },
-        new MapGenSettings { Symmetry = MapSymmetry.Rotate180, Relief = ReliefKind.Mountainous, Water = WaterKind.Lakes },
-        new MapGenSettings { Symmetry = MapSymmetry.Rotate90, Players = 4, Relief = ReliefKind.Hilly, Water = WaterKind.Rivers },
-        new MapGenSettings { Symmetry = MapSymmetry.Mirror, Relief = ReliefKind.Flat, Water = WaterKind.None },
+        new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Symmetry = MapSymmetry.Mirror, Relief = ReliefKind.Hilly, Water = WaterKind.Rivers },
+        new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Symmetry = MapSymmetry.Rotate180, Relief = ReliefKind.Mountainous, Water = WaterKind.Lakes },
+        new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Symmetry = MapSymmetry.Rotate90, Players = 4, Relief = ReliefKind.Hilly, Water = WaterKind.Rivers },
+        new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Symmetry = MapSymmetry.Mirror, Relief = ReliefKind.Flat, Water = WaterKind.None },
     };
 
     public static readonly TheoryData<MapGenSettings> BigSets = new()
     {
-        new MapGenSettings { Size = 160, Symmetry = MapSymmetry.Mirror, Relief = ReliefKind.Mountainous, Water = WaterKind.Rivers, Forest = Amount.High },
-        new MapGenSettings { Size = 160, Symmetry = MapSymmetry.Rotate180, Relief = ReliefKind.Hilly, Water = WaterKind.Lakes, Resources = Amount.High },
-        new MapGenSettings { Size = 128, Symmetry = MapSymmetry.Rotate90, Players = 4, Relief = ReliefKind.Mountainous, Water = WaterKind.Rivers },
+        new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Size = 160, Symmetry = MapSymmetry.Mirror, Relief = ReliefKind.Mountainous, Water = WaterKind.Rivers, Forest = Amount.High },
+        new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Size = 160, Symmetry = MapSymmetry.Rotate180, Relief = ReliefKind.Hilly, Water = WaterKind.Lakes, Resources = Amount.High },
+        new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Size = 128, Symmetry = MapSymmetry.Rotate90, Players = 4, Relief = ReliefKind.Mountainous, Water = WaterKind.Rivers },
     };
 
     [Fact]
     public void The_same_seed_and_settings_give_the_same_map()
     {
-        var settings = new MapGenSettings { Seed = 2024 };
+        var settings = new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 2024 };
 
         var (first, seed) = MapGenerator.Generate(settings);
         var (second, _) = MapGenerator.Generate(settings);
@@ -56,8 +56,8 @@ public sealed class MapGeneratorTests
         // two cells of the ore zone, the oil derrick out of it. 2026-10-25 (roads): the main road is asphalt in a town and the unpaved
         // road of its climate elsewhere (docs/map_elements/04_roads). 2026-10-25 (origin): the header says the map is generated, and
         // the drills keep the playable area.
-        var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1 });
-        var (none, _) = MapGenerator.Generate(new MapGenSettings { Seed = 1, Drills = DrillKind.None });
+        var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1 });
+        var (none, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1, Drills = DrillKind.None });
 
         Assert.Equal("1b416971e914a2ef8326845eed59cbbd210eda6f81f9366a62faad5c139f032f", MapHasher.Hash(map));
         Assert.Equal("871509c48b3e70fd8f6363d406a868315087d918f424df3da5bf251356426979", MapHasher.Hash(none));
@@ -86,7 +86,7 @@ public sealed class MapGeneratorTests
     {
         var (bare, _) = MapGenerator.Generate(settings with { Seed = 17, Drills = DrillKind.None });
 
-        var drilled = Drills.AddTo(bare, settings.Symmetry, DrillKind.OreAndGems);
+        var drilled = Drills.AddTo(bare, GameDataFiles.Rules.MapTypes, settings.Symmetry, DrillKind.OreAndGems);
 
         AssertDrills(drilled, settings.Players, gems: true, "added");
         Assert.Equal(bare.Description.TrimEnd('.') + ", drills OreAndGems.", drilled.Description);
@@ -95,9 +95,9 @@ public sealed class MapGeneratorTests
         Assert.Equal(bare.Objects.Length + 2 * settings.Players, drilled.Objects.Length);
         var cleared = Enumerable.Range(0, bare.Ore.Length).Where(i => bare.Ore[i] != drilled.Ore[i]).ToList();
         Assert.All(cleared, i => Assert.Contains(drilled.Objects, o => o.Cell.Y * bare.Width + o.Cell.X == i && o.Type is Drills.OreSource or Drills.GemSource));
-        Assert.DoesNotContain(MapValidator.Check(drilled), p => p.Message.Contains("drill", StringComparison.OrdinalIgnoreCase) || p.Message.Contains("source", StringComparison.Ordinal));
+        Assert.DoesNotContain(MapValidator.Check(drilled, GameDataFiles.Rules.MapTypes), p => p.Message.Contains("drill", StringComparison.OrdinalIgnoreCase) || p.Message.Contains("source", StringComparison.Ordinal));
 
-        var again = Assert.Throws<ArgumentException>(() => Drills.AddTo(drilled, settings.Symmetry, DrillKind.OreAndGems));
+        var again = Assert.Throws<ArgumentException>(() => Drills.AddTo(drilled, GameDataFiles.Rules.MapTypes, settings.Symmetry, DrillKind.OreAndGems));
         Assert.Contains("has drills already", again.Message);
     }
 
@@ -111,7 +111,7 @@ public sealed class MapGeneratorTests
             var symmetry = new Symmetry(settings.Symmetry, map.Width);
             var objects = map.Objects.Select(o => (o.Type, o.Cell)).ToHashSet();
             var bridgeCells = map.Bridges.SelectMany(MapChecks.BridgeCells).ToHashSet();
-            var buildingCells = map.Structures.SelectMany(MapChecks.Footprint).ToHashSet();
+            var buildingCells = map.Structures.SelectMany(structure => MapChecks.Footprint(structure, GameDataFiles.Rules.MapTypes)).ToHashSet();
             var starts = map.Starts.Select(s => s.Cell).ToHashSet();
             for (var k = 1; k < symmetry.Order; k++)
             {
@@ -178,7 +178,7 @@ public sealed class MapGeneratorTests
     [Fact]
     public void A_failed_check_makes_the_map_again_from_the_next_seed_up_to_ten_times()
     {
-        var settings = new MapGenSettings { Seed = 40 };
+        var settings = new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 40 };
         var calls = 0;
         var problem = new MapProblem(ProblemLevel.Error, "made up", null);
 
@@ -199,14 +199,14 @@ public sealed class MapGeneratorTests
     [InlineData(64, 2, MapSymmetry.Rotate90)]
     public void Settings_that_do_not_go_together_are_refused(int size, int players, MapSymmetry symmetry)
     {
-        Assert.Throws<ArgumentException>(() => MapGenerator.Generate(new MapGenSettings { Size = size, Players = players, Symmetry = symmetry }));
+        Assert.Throws<ArgumentException>(() => MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Size = size, Players = players, Symmetry = symmetry }));
     }
 
     [Fact]
     public void A_generated_map_plays()
     {
-        var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 8, Symmetry = MapSymmetry.Rotate90, Players = 4 });
-        var grid = map.ToMapGrid();
+        var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 8, Symmetry = MapSymmetry.Rotate90, Players = 4 });
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(new SimulationSettings(seed: 1, grid), GameDataFiles.Rules);
         var sequences = new Dictionary<PlayerId, uint>();
         foreach (var unit in StartSquads.Place(map, grid, GameDataFiles.Rules))
@@ -230,7 +230,7 @@ public sealed class MapGeneratorTests
 
     private static void AssertGoodMap(MapDefinition map, MapGenSettings settings, string what)
     {
-        var problems = MapValidator.Check(map);
+        var problems = MapValidator.Check(map, GameDataFiles.Rules.MapTypes);
         Assert.False(MapValidator.HasErrors(problems), $"{what}: {string.Join("; ", problems.Select(p => p.Message))}");
         Assert.Equal(settings.Players, map.Starts.Length);
 
@@ -261,7 +261,7 @@ public sealed class MapGeneratorTests
             Assert.True(map.Bridges.Length >= 2, $"{what}: {map.Bridges.Length} bridges");
 
             // Loose ends, stage 2: a repair hut by every bridge that has a free cell for one in reach; every hut in reach of a bridge.
-            Assert.Empty(BridgeHuts.For(map));
+            Assert.Empty(BridgeHuts.For(map, GameDataFiles.Rules.MapTypes));
             Assert.All(map.Structures.Where(s => s.Type == BridgeHuts.Hut), hut => Assert.Contains(map.Bridges, bridge => MapChecks.BridgeCells(bridge).Exists(cell =>
                 Math.Max(Math.Abs(cell.X - hut.Cell.X), Math.Abs(cell.Y - hut.Cell.Y)) <= Rts.Simulation.Systems.BridgeRepair.HutReach)));
         }

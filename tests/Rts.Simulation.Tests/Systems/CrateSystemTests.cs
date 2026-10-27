@@ -90,7 +90,7 @@ public sealed class CrateSystemTests
 
         for (ulong seed = 1; seed <= 30; seed++)
         {
-            var simulation = Match(seed, map: MapGrid.FromLayers(64, 64, land, new byte[64 * 64], default, null, [], [], ore));
+            var simulation = Match(seed, map: MapGrid.FromLayers(64, 64, land, new byte[64 * 64], default, null, [], [], ore, types: TestRules.Standard.MapTypes));
             Run(simulation, 1);
             Assert.All(Cells(simulation.World), cell =>
             {
@@ -267,7 +267,7 @@ public sealed class CrateSystemTests
         }
 
         Assert.DoesNotContain(simulation.World.CratesOnMap, c => c.Id == crate.Id);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
         Assert.True(replay.Settings.Match!.Options.Crates);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
 

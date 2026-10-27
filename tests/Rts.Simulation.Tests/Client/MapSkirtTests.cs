@@ -49,11 +49,11 @@ public sealed class MapSkirtTests
         var objects = new List<MapObjectState>();
         for (var x = 40; x <= 50; x += 2)
         {
-            objects.Add(MapObjectState.New(MapObjectKind.PineTree, new CellPos(x, 0), 0));
+            objects.Add(MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.PineTree), new CellPos(x, 0), 0));
         }
 
         cells[(5 * Size + 5) * 2] = Pines; // a material of the map's own, inside: the skirt copies the map unchanged
-        return (MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], levels, objects), cells);
+        return (MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], levels, objects, types: TestRules.Standard.MapTypes), cells);
     }
 
     private static MapSkirt Build() => Build(out _);

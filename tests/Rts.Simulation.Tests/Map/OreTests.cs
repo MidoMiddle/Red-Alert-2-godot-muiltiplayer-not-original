@@ -189,7 +189,7 @@ public sealed class OreTests
     {
         var replay = new Replay(SimulationVersion.Current, 0, new SimulationSettings(3, FieldMap()), 0, [], []);
 
-        var read = ReplayFormat.Read(ReplayFormat.Write(replay));
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes);
 
         Assert.Equal(FieldMap().OreBytes(), read.Settings.Map!.OreBytes());
     }
@@ -203,7 +203,7 @@ public sealed class OreTests
         var ore = new byte[4];
         ore[2] = (byte)packed;
 
-        Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(2, 2, new byte[] { 1, 1, 1, 1 }, new byte[4], default, null, null, null, ore));
+        Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(2, 2, new byte[] { 1, 1, 1, 1 }, new byte[4], default, null, null, null, ore, types: TestRules.Standard.MapTypes));
     }
 
     [Fact]

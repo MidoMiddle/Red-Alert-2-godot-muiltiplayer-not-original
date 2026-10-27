@@ -33,7 +33,7 @@ public sealed class RepairRulesTests
             }
         }
 
-        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, []);
+        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, [], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(

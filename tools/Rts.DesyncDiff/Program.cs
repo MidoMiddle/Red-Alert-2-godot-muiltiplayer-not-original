@@ -23,8 +23,8 @@ if (args.Length >= 3 && args[0] == "replay")
     var dataIndex = Array.IndexOf(args, "--data");
     var data = dataIndex > 0 && dataIndex + 1 < args.Length ? args[dataIndex + 1] : Path.Combine("game", "data");
     var dumps = args.Skip(2).Where((_, i) => dataIndex < 0 || (i + 2 != dataIndex && i + 2 != dataIndex + 1)).ToList();
-    var replay = ReplayFormat.Read(File.ReadAllBytes(args[1]));
     var game = Rts.Data.GameData.LoadDirectory(data);
+    var replay = ReplayFormat.Read(File.ReadAllBytes(args[1]), game.Rules.MapTypes);
     if (ReplayPlayer.DataWarning(replay, game.Hash) is { } warning)
     {
         Console.WriteLine("Warning: " + warning);

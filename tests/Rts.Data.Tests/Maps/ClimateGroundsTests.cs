@@ -30,7 +30,7 @@ public sealed class ClimateGroundsTests
     [Fact]
     public void The_editor_takes_a_winter_map_to_the_desert_role_by_role()
     {
-        var session = new MapEditSession(EditableMap.New(16, 16, 2));
+        var session = new MapEditSession(EditableMap.New(16, 16, 2), GameDataFiles.Rules.MapTypes);
         var snow = session.Map.TextureAt(new Rts.Simulation.Geometry.CellPos(3, 3));
         Assert.Equal('s', snow);
 

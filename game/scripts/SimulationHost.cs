@@ -406,7 +406,7 @@ public partial class SimulationHost : Node
         Replay replay;
         try
         {
-            replay = ReplayFormat.Read(File.ReadAllBytes(ProjectSettings.GlobalizePath(path)));
+            replay = ReplayFormat.Read(File.ReadAllBytes(ProjectSettings.GlobalizePath(path)), Data.Rules.MapTypes);
         }
         catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)
         {

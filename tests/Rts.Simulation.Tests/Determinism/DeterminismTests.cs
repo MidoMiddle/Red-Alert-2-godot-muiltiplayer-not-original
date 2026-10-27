@@ -80,7 +80,7 @@ public sealed class DeterminismTests
             recorder.AfterStep();
         }
 
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
         var result = ReplayPlayer.Verify(replay, TestRules.Standard);
 
         Assert.Equal(ReplayStatus.Match, result.Status);

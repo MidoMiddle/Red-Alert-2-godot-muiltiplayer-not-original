@@ -35,7 +35,7 @@ public partial class QuickSkirmish : Control
         _who = new Label { Name = "Who" };
         column.AddChild(_who);
 
-        var (maps, errors) = MapCatalog.Load(MapPreviews.ReadMapFiles());
+        var (maps, errors) = MapCatalog.Load(MapPreviews.ReadMapFiles(), Rts.Client.App.DataFiles.Current.Rules.MapTypes);
         foreach (var error in errors)
         {
             GD.PushWarning($"Map left out: {error}");

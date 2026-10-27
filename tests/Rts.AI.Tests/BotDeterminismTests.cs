@@ -69,7 +69,7 @@ public sealed class BotDeterminismTests
     public void The_replay_of_a_match_with_a_bot_played_without_bots_is_the_same_match()
     {
         var live = Run(new WalkerBot(new PlayerId(3)));
-        var replay = ReplayFormat.Read(ReplayFormat.Write(live.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(live.Recorder.Build()), TestRules.Standard.MapTypes);
 
         var result = ReplayPlayer.Verify(replay, TestRules.Standard);
 

@@ -49,7 +49,7 @@ public sealed class ArenaTests(ITestOutputHelper output)
     public void Bot_against_bot_plays_twelve_minutes_with_no_refused_command_and_its_replay_with_the_bot_run_again(string map)
     {
         var (match, _) = Play(map, seed: 3, minutes: 12);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()), GameDataFiles.Rules.MapTypes);
 
         Assert.Empty(match.RefusedBotCommands);
         // The person's seat plays back its recorded commands; the bot of the other seat runs again and must give the same.

@@ -1,4 +1,5 @@
 using Rts.Data.Maps;
+using Rts.Data.Tests;
 using Rts.Simulation.Geometry;
 
 namespace Rts.MapGen.Tests;
@@ -58,7 +59,7 @@ public sealed class Ra2GemDrillsTests
         var ground = new MapDefinition(
             map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts,
             map.TextureLegend, map.Heights, map.Land, map.Texture, map.Ore, [.. map.Objects.Where(o => o.Type != Drills.GemSource)],
-            map.Bridges, map.Structures, map.Lighting, map.Playable, map.Origin).ToMapGrid();
+            map.Bridges, map.Structures, map.Lighting, map.Playable, map.Origin).ToMapGrid(GameDataFiles.Rules.MapTypes);
         var gems = map.Objects.Where(o => o.Type == Drills.GemSource).Select(o => o.Cell).ToList();
         var ways = map.Starts.Select(start =>
         {
@@ -74,7 +75,7 @@ public sealed class Ra2GemDrillsTests
     public void The_file_is_what_share_gems_writes(string id)
     {
         var map = Load(id);
-        Assert.Equal(RtsMapWriter.Write(map), RtsMapWriter.Write(Drills.ShareGems(map)));
+        Assert.Equal(RtsMapWriter.Write(map), RtsMapWriter.Write(Drills.ShareGems(map, GameDataFiles.Rules.MapTypes)));
     }
 
     private static int Distance2(CellPos a, CellPos b) => (a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y);

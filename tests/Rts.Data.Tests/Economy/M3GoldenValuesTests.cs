@@ -79,7 +79,7 @@ public sealed class M3GoldenValuesTests
     [Fact]
     public void The_replay_of_the_run_plays_back_the_same()
     {
-        var replay = ReplayFormat.Read(ReplayFormat.Write(Run.Value.Replay!));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(Run.Value.Replay!), GameDataFiles.Rules.MapTypes);
 
         var verification = ReplayPlayer.Verify(replay, GameDataFiles.Rules);
 

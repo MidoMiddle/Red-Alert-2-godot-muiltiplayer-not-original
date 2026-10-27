@@ -13,8 +13,8 @@ public static class PhaseRun
 {
     public static void Run(string repoRoot)
     {
-        var map = LoadScenario.LoadMap(repoRoot);
         var rules = GameData.LoadDirectory(Path.Combine(repoRoot, "game", GameData.Folder)).Rules;
+        var map = LoadScenario.LoadMap(repoRoot, rules);
         GameSimulation Load()
         {
             var simulation = LoadScenario.Start(map, rules);

@@ -181,13 +181,13 @@ public sealed class MapDefinition
     }
 
     /// <summary>
-    /// The map as the simulation plays it: corner heights and land as they are, the map objects by the table of
-    /// <see cref="MapObjectTypes"/> (M7 step 5), the bridges by <see cref="BridgeTypes"/> (step 6) and the structures by
-    /// <see cref="BuildingTypes"/> (step 7), at full hit points, in the order of <see cref="Objects"/>, <see cref="Bridges"/> and
-    /// <see cref="Structures"/>. The texture stays out: it is visual. Throws on a type the tables do not know, on a bridge that
-    /// does not run over water from shore to shore and on a building out of place.
+    /// The map as the simulation plays it: corner heights and land as they are, the map objects (M7 step 5), the bridges (step 6) and
+    /// the structures (step 7) by the kinds of the data <paramref name="types"/> (M3 step 14a: <c>GameRules.MapTypes</c>), at full hit
+    /// points, in the order of <see cref="Objects"/>, <see cref="Bridges"/> and <see cref="Structures"/>. The texture stays out: it is
+    /// visual. Throws on a kind the types do not define, on a bridge that does not run over water from shore to shore and on a building
+    /// out of place.
     /// </summary>
-    public MapGrid ToMapGrid()
+    public MapGrid ToMapGrid(MapTypes types)
     {
         var land = new byte[Width * Height];
         for (var i = 0; i < land.Length; i++)
@@ -199,31 +199,31 @@ public sealed class MapDefinition
         for (var i = 0; i < objects.Length; i++)
         {
             var placement = Objects[i];
-            if (!MapObjectTypes.TryGetById(placement.Type, out var type))
+            if (!types.TryGetObject(placement.Type, out var type))
             {
                 throw new ArgumentException($"Unknown map object '{placement.Type}' at {placement.Cell.X},{placement.Cell.Y}.");
             }
 
-            objects[i] = MapObjectState.New(type.Kind, placement.Cell, placement.Variant);
+            objects[i] = MapObjectState.New(type, placement.Cell, placement.Variant);
         }
 
         var bridges = new BridgeState[Bridges.Length];
         for (var i = 0; i < bridges.Length; i++)
         {
             var placement = Bridges[i];
-            if (!BridgeTypes.TryGetById(placement.Type, out var type))
+            if (!types.TryGetBridge(placement.Type, out var type))
             {
                 throw new ArgumentException($"Unknown bridge '{placement.Type}' at {placement.From.X},{placement.From.Y}.");
             }
 
-            bridges[i] = BridgeState.New(type.Kind, placement.From, placement.To);
+            bridges[i] = BridgeState.New(type, placement.From, placement.To);
         }
 
         var buildings = new BuildingState[Structures.Length];
         for (var i = 0; i < buildings.Length; i++)
         {
             var placement = Structures[i];
-            if (!BuildingTypes.TryGetById(placement.Type, out var type))
+            if (!types.TryGetBuilding(placement.Type, out var type))
             {
                 throw new ArgumentException($"Unknown building '{placement.Type}' at {placement.Cell.X},{placement.Cell.Y}.");
             }
@@ -237,7 +237,7 @@ public sealed class MapDefinition
             ore[i] = OreOf(Ore[i]).Packed;
         }
 
-        return MapGrid.FromLayers(Width, Height, land, BlockedLayer(), Heights.AsSpan(), objects, bridges, buildings, ore);
+        return MapGrid.FromLayers(Width, Height, land, BlockedLayer(), Heights.AsSpan(), objects, bridges, buildings, ore, types: types);
     }
 
     /// <summary>

@@ -25,7 +25,9 @@ public sealed record ReplaySelection(bool All, bool Draws, bool Upsets, int Long
 public sealed record MapSpec(string Text, MapDefinition? Ready, MapGenSettings? Random)
 {
     /// <summary>The map of a match with <paramref name="seed"/>.</summary>
-    public MapDefinition For(ulong seed) => Ready ?? MapGenerator.Generate(Random! with { Seed = (uint)seed }).Map;
+    /// <summary>The map of a game: the ready one, or a random one of <paramref name="seed"/> made of the kinds of the map of the data.</summary>
+    public MapDefinition For(ulong seed, Rts.Simulation.Map.MapTypes types) =>
+        Ready ?? MapGenerator.Generate(Random! with { Seed = (uint)seed, Types = types }).Map;
 
     /// <summary>The map as a column of a CSV: no commas.</summary>
     public string Label => Text.Replace(',', ';');

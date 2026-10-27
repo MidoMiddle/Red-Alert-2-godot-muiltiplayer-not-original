@@ -102,7 +102,7 @@ public sealed class VisibilityTests
             }
         }
 
-        var map = MapGrid.FromLayers(20, 20, Enumerable.Repeat((byte)LandType.Clear, 400).ToArray(), new byte[400], heights);
+        var map = MapGrid.FromLayers(20, 20, Enumerable.Repeat((byte)LandType.Clear, 400).ToArray(), new byte[400], heights, types: TestRules.Standard.MapTypes);
         var world = new GameWorld(seed: 1, map, TestRules.Standard);
         world.SpawnUnit(Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
         VisibilitySystem.Update(world);

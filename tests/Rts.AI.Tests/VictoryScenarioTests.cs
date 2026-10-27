@@ -69,7 +69,7 @@ public sealed class VictoryScenarioTests
     public void A_match_won_by_the_bot_plays_back_with_the_bot_run_again()
     {
         var match = Normal.Value.Match;
-        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()), GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(
             ReplayStatus.Match,

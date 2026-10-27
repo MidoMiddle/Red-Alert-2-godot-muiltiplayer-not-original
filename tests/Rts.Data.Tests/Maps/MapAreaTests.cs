@@ -55,7 +55,7 @@ public sealed class MapAreaTests
     public void The_rules_block_every_cell_outside_the_area_and_no_other()
     {
         var map = RtsMapReader.Read(File.ReadAllText(MapPath("frozen-crossing")));
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         for (var i = 0; i < map.Width * map.Height; i++)
         {
@@ -78,11 +78,11 @@ public sealed class MapAreaTests
             [map.Starts[0], new MapStart(2, new CellPos(3, 3))], map.TextureLegend, map.Heights, map.Land, map.Texture, map.Ore,
             map.Objects, map.Bridges, [.. map.Structures, new StructurePlacement("neutral_shed", new CellPos(80, 2), 0, 0)], map.Lighting, map.Playable);
 
-        var problems = MapValidator.Check(outside);
+        var problems = MapValidator.Check(outside, GameDataFiles.Rules.MapTypes);
 
         Assert.Contains(problems, p => p.Level == ProblemLevel.Error && p.Message.Contains("Start 2"));
         Assert.Contains(problems, p => p.Level == ProblemLevel.Error && p.Message.Contains("neutral_shed") && p.Message.Contains("outside the playable area"));
-        Assert.DoesNotContain(MapValidator.Check(map), p => p.Level == ProblemLevel.Error);
+        Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), p => p.Level == ProblemLevel.Error);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class MapAreaTests
         var files = new[] { "frozen-crossing", "twin-rivers", "taiga-front", "four-corners", "sandbox", "relief_test" }
             .Select(id => ($"{MapCatalog.Directory}/{id}.rtsmap", File.ReadAllText(MapPath(id))));
 
-        var (maps, errors) = MapCatalog.Load(files);
+        var (maps, errors) = MapCatalog.Load(files, GameDataFiles.Rules.MapTypes);
 
         Assert.Empty(errors);
         Assert.Equal(["frozen-crossing"], maps.Select(m => m.Map.Id));

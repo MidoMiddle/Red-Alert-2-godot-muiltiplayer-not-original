@@ -10,10 +10,10 @@ namespace Rts.Simulation.Map;
 /// </summary>
 public sealed class MapObject
 {
-    internal MapObject(int id, MapObjectKind kind, CellPos cell, int variant, int hp, bool destroyed)
+    internal MapObject(int id, MapObjectType type, CellPos cell, int variant, int hp, bool destroyed)
     {
         Id = id;
-        Kind = kind;
+        Type = type;
         Cell = cell;
         Variant = variant;
         Hp = hp;
@@ -22,9 +22,10 @@ public sealed class MapObject
 
     public int Id { get; }
 
-    public MapObjectKind Kind { get; }
+    public MapObjectKind Kind => Type.Kind;
 
-    public MapObjectType Type => MapObjectTypes.Get(Kind);
+    /// <summary>What its kind does, as the data of the map defines it (<see cref="MapTypes"/>).</summary>
+    public MapObjectType Type { get; }
 
     public CellPos Cell { get; }
 
@@ -38,7 +39,8 @@ public sealed class MapObject
     /// <summary>Standing and in the way of whoever it blocks.</summary>
     public bool IsAlive => !Destroyed;
 
-    internal MapObject Clone() => new(Id, Kind, Cell, Variant, Hp, Destroyed);
+    /// <summary>A copy of the kind <paramref name="type"/> — the same kind, as the rules of a match define it.</summary>
+    internal MapObject Clone(MapObjectType type) => new(Id, type, Cell, Variant, Hp, Destroyed);
 
     internal bool ContentEquals(MapObject other) =>
         Id == other.Id && Kind == other.Kind && Cell == other.Cell && Variant == other.Variant && Hp == other.Hp && Destroyed == other.Destroyed;

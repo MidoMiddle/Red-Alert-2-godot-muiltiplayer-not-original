@@ -188,8 +188,8 @@ public sealed class OreSourceTests(ITestOutputHelper output)
 
         Assert.Equal(PlacementProblem.Taken, PlacementRules.CellProblem(simulation.World, cell, simulation.World.Map.Heights.CellLevel(cell)));
         Assert.False(OreGrowthSystem.CanTakeOre(simulation.World.Map, cell));
-        Assert.False(MapObjectTypes.Get(MapObjectKind.OreSource).Destructible);
-        Assert.False(MapObjectTypes.Get(MapObjectKind.GemSource).Destructible);
+        Assert.False(TestRules.Standard.MapTypes.Get(MapObjectKind.OreSource).Destructible);
+        Assert.False(TestRules.Standard.MapTypes.Get(MapObjectKind.GemSource).Destructible);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public sealed class OreSourceTests(ITestOutputHelper output)
 
         // 3 minutes of a 6 s interval: 30 eruptions of each source.
         Assert.Equal(60, eruptions);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
     }
 }

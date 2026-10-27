@@ -106,7 +106,7 @@ public sealed class EngineerManager(AiSettings settings) : IAiModule
         foreach (var building in context.Memory.MapBuildings)
         {
             var distance = Distance(building.Cell, start);
-            if (!building.Owner.IsNeutral || !BuildingTypes.IsKnown(building.Kind) || !BuildingTypes.Get(building.Kind).Capturable
+            if (!building.Owner.IsNeutral || !context.View.Rules.MapTypes.IsKnown(building.Kind) || !context.View.Rules.MapTypes.Get(building.Kind).Capturable
                 || building.Kind == BuildingKind.TechBridgeRepairHut || distance > CaptureCells || distance >= bestDistance || Guarded(context, building))
             {
                 continue;

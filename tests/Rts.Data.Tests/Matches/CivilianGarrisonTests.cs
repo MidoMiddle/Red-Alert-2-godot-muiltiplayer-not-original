@@ -32,7 +32,7 @@ public sealed class CivilianGarrisonTests
                 new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0),
                 new BuildingState(BuildingKind.TechOilDerrick, Derrick, PlayerId.Neutral, 0),
                 new BuildingState(BuildingKind.NeutralApartment, Apartment, PlayerId.Neutral, 0),
-            ]);
+            ], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(
@@ -113,14 +113,14 @@ public sealed class CivilianGarrisonTests
     [Fact]
     public void Every_civilian_building_that_holds_soldiers_holds_three_to_twelve_by_its_size()
     {
-        var held = BuildingTypes.All.Where(type => type.Garrison > 0).ToList();
+        var held = GameDataFiles.Rules.MapTypes.Buildings.Where(type => type.Garrison > 0).ToList();
         Assert.NotEmpty(held);
         Assert.All(held, type => Assert.False(type.Capturable));
         Assert.All(held, type => Assert.InRange(type.Garrison, 3, 12));
         // The smallest hut 3, the biggest buildings 12; a bigger footprint never holds fewer.
-        Assert.Equal(3, BuildingTypes.Get(BuildingKind.NeutralHouseA).Garrison);
-        Assert.Equal(12, BuildingTypes.Get(BuildingKind.NeutralApartment).Garrison);
-        Assert.Equal(12, BuildingTypes.Get(BuildingKind.NeutralSkyscraper).Garrison);
+        Assert.Equal(3, GameDataFiles.Rules.MapTypes.Get(BuildingKind.NeutralHouseA).Garrison);
+        Assert.Equal(12, GameDataFiles.Rules.MapTypes.Get(BuildingKind.NeutralApartment).Garrison);
+        Assert.Equal(12, GameDataFiles.Rules.MapTypes.Get(BuildingKind.NeutralSkyscraper).Garrison);
         Assert.All(held, small => Assert.All(held.Where(big => big.Width * big.Height > small.Width * small.Height && big.MaxHp >= small.MaxHp),
             big => Assert.True(big.Garrison >= small.Garrison, $"{big.Id} holds fewer than {small.Id}")));
     }

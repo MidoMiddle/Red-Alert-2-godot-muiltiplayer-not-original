@@ -14,63 +14,44 @@ public enum BridgeKind : byte
 }
 
 /// <summary>
-/// What a kind of bridge is (docs/implementation/M7_maps.md, 4.6; map_elements/05_bridges): hit points of each segment and how many
+/// What a kind of bridge is (docs/implementation/M7_maps.md, 4.6; map_elements/05_bridges), as the data defines it
+/// (<see cref="Rules.BridgeDef"/>; M3 step 14a): hit points of each segment and how many
 /// cells wide it is across — three tanks side by side on a low bridge (the owner's wish, 2026-10-24). A <paramref name="High"/>
 /// bridge has a deck at the level of the plateaus it joins, over whatever lies below (<see cref="Decks"/>).
 /// </summary>
 public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp, int Width, bool High = false);
 
 /// <summary>
-/// The bridges, kept in code until the data files of M3 (map_objects.yaml) like the map objects. Hit points are a rough guide
-/// until the balance of M4. The low bridge of wood over water, and the high bridge of concrete between two plateaus (2026-10-26:
-/// RA2's BridgeStrength of 1500 a segment, three cells wide as RA2 draws them). An engineer mends a bridge through its repair hut
-/// (loose ends, stage 2).
+/// The kinds of bridges the engine knows (docs/implementation/M3_base_economy.md, step 14a): each number with its data id. What a kind
+/// is — the hit points of a segment, the width, a high bridge — is the data's (<c>game/data/map/bridges.yaml</c>), held by
+/// <see cref="MapTypes"/>. An engineer mends a bridge through its repair hut (loose ends, stage 2).
 /// </summary>
 public static class BridgeTypes
 {
-    private static readonly BridgeType[] Types =
-    [
-        new(BridgeKind.WoodLow, "bridge_wood_low", SegmentHp: 600, Width: 3),
-        new(BridgeKind.ConcreteHigh, "bridge_concrete_high", SegmentHp: 1500, Width: 3, High: true),
-    ];
+    // The ids by number, from 1.
+    private static readonly string[] Ids = ["bridge_wood_low", "bridge_concrete_high"];
 
-    public static IReadOnlyList<BridgeType> All => Types;
+    private static readonly BridgeKind[] Kinds = [BridgeKind.WoodLow, BridgeKind.ConcreteHigh];
+
+    /// <summary>Every kind, in the order of its number.</summary>
+    public static IReadOnlyList<BridgeKind> All => Kinds;
 
     /// <summary>The highest number of a kind the engine knows.</summary>
-    public static int Highest => (int)BridgeKind.ConcreteHigh;
+    public static int Highest => Ids.Length;
+
+    public static bool IsKnown(BridgeKind kind) => kind is >= BridgeKind.WoodLow and <= BridgeKind.ConcreteHigh;
+
+    /// <summary>The data id of a kind, such as <c>bridge_wood_low</c>.</summary>
+    public static string IdOf(BridgeKind kind) => IsKnown(kind)
+        ? Ids[(int)kind - 1]
+        : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown bridge kind.");
 
     /// <summary>The kind the engine knows by the id <paramref name="id"/>.</summary>
     public static bool TryGetKind(string id, out BridgeKind kind)
     {
-        if (TryGetById(id, out var type))
-        {
-            kind = type.Kind;
-            return true;
-        }
-
-        kind = default;
-        return false;
-    }
-
-    public static bool IsKnown(BridgeKind kind) => kind is >= BridgeKind.WoodLow and <= BridgeKind.ConcreteHigh;
-
-    public static BridgeType Get(BridgeKind kind) =>
-        IsKnown(kind) ? Types[(int)kind - 1] : throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "Unknown bridge kind.");
-
-    /// <summary>The type of a map file id such as <c>bridge_wood_low</c>.</summary>
-    public static bool TryGetById(string id, out BridgeType type)
-    {
-        foreach (var candidate in Types)
-        {
-            if (candidate.Id == id)
-            {
-                type = candidate;
-                return true;
-            }
-        }
-
-        type = null!;
-        return false;
+        var index = System.Array.IndexOf(Ids, id);
+        kind = (BridgeKind)(index + 1);
+        return index >= 0;
     }
 }
 
@@ -80,12 +61,12 @@ public static class BridgeTypes
 /// </summary>
 public sealed record BridgeState(BridgeKind Kind, CellPos From, CellPos To, ImmutableArray<int> SegmentHp)
 {
-    /// <summary>A new bridge of <paramref name="kind"/> with every segment at full hit points.</summary>
-    public static BridgeState New(BridgeKind kind, CellPos from, CellPos to)
+    /// <summary>A new bridge of the kind <paramref name="type"/> with every segment at full hit points.</summary>
+    public static BridgeState New(BridgeType type, CellPos from, CellPos to)
     {
         var hp = new int[Bridge.Length(from, to)];
-        System.Array.Fill(hp, BridgeTypes.Get(kind).SegmentHp);
-        return new BridgeState(kind, from, to, ImmutableArray.Create(hp));
+        System.Array.Fill(hp, type.SegmentHp);
+        return new BridgeState(type.Kind, from, to, ImmutableArray.Create(hp));
     }
 }
 
@@ -101,10 +82,10 @@ public sealed class Bridge
 {
     private readonly BridgeSegment[] _segments;
 
-    internal Bridge(int id, BridgeKind kind, CellPos from, CellPos to, ImmutableArray<int> hp, IReadOnlyList<ImmutableArray<CellPos>> cells)
+    internal Bridge(int id, BridgeType type, CellPos from, CellPos to, ImmutableArray<int> hp, IReadOnlyList<ImmutableArray<CellPos>> cells)
     {
         Id = id;
-        Kind = kind;
+        Type = type;
         From = from;
         To = to;
         _segments = new BridgeSegment[hp.Length];
@@ -116,9 +97,10 @@ public sealed class Bridge
 
     public int Id { get; }
 
-    public BridgeKind Kind { get; }
+    public BridgeKind Kind => Type.Kind;
 
-    public BridgeType Type => BridgeTypes.Get(Kind);
+    /// <summary>What its kind is, as the data of the map defines it (<see cref="MapTypes"/>).</summary>
+    public BridgeType Type { get; }
 
     public CellPos From { get; }
 

@@ -35,7 +35,7 @@ public sealed class TechBuildingTests
             new BuildingState(BuildingKind.TechHospital, Hospital, PlayerId.Neutral, 0),
             new BuildingState(BuildingKind.TechAirfield, Airfield, PlayerId.Neutral, 0),
             new BuildingState(BuildingKind.TechOutpost, Outpost, PlayerId.Neutral, 0),
-        ]);
+        ], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(

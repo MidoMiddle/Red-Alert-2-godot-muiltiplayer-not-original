@@ -67,7 +67,7 @@ public sealed class ScoutScenarioTests
     {
         var (match, _) = Play("frozen-crossing", 6);
         var (again, _) = Play("frozen-crossing", 6);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()), GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(StateHasher.Compute(match.World), StateHasher.Compute(again.World));
         Assert.Equal(

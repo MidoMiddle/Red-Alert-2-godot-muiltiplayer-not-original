@@ -40,7 +40,7 @@ public static class Drills
     /// The drills for the fields of the first start of <paramref name="map"/> under <paramref name="symmetry"/>, with the fields that
     /// had no cell fit for one (none of them on a sane map).
     /// </summary>
-    public static (List<MapObjectPlacement> Placements, List<string> Missing) For(MapDefinition map, Symmetry symmetry, DrillKind kind)
+    public static (List<MapObjectPlacement> Placements, List<string> Missing) For(MapDefinition map, MapTypes types, Symmetry symmetry, DrillKind kind)
     {
         var placements = new List<MapObjectPlacement>();
         var missing = new List<string>();
@@ -50,7 +50,7 @@ public static class Drills
         }
 
         var (home, contested) = Stages.Ore.Centres(map.Starts[0].Cell, symmetry.Size);
-        var site = new Site(map);
+        var site = new Site(map, types);
         if (!Add(site, symmetry, home, Stages.Ore.HomeRadius, OreSource, placements))
         {
             missing.Add($"the home field at {home.X}, {home.Y}");
@@ -69,7 +69,7 @@ public static class Drills
     /// <paramref name="kind"/> and the ore under them taken away; the description says which. Everything else stays as it is.
     /// </summary>
     /// <exception cref="ArgumentException">The map has drills already, or a field has no cell fit for one.</exception>
-    public static MapDefinition AddTo(MapDefinition map, MapSymmetry symmetry, DrillKind kind)
+    public static MapDefinition AddTo(MapDefinition map, MapTypes types, MapSymmetry symmetry, DrillKind kind)
     {
         if (HasDrills(map))
         {
@@ -81,7 +81,7 @@ public static class Drills
             throw new ArgumentException($"The map '{map.Id}' is {map.Width} × {map.Height}: the generator makes square maps only.");
         }
 
-        var (placements, missing) = For(map, new Symmetry(symmetry, map.Width), kind);
+        var (placements, missing) = For(map, types, new Symmetry(symmetry, map.Width), kind);
         if (missing.Count > 0)
         {
             throw new ArgumentException($"The map '{map.Id}' has no cell for a drill in {string.Join(" and ", missing)}.");
@@ -110,15 +110,15 @@ public static class Drills
     /// every start, with room for what it throws; ties go to the nearer, then by y and x. Everything else stays as it is.
     /// </summary>
     /// <exception cref="ArgumentException">No cell of the map fits.</exception>
-    public static MapDefinition ShareGems(MapDefinition map)
+    public static MapDefinition ShareGems(MapDefinition map, MapTypes types)
     {
         var objects = map.Objects.Where(o => o.Type != GemSource).ToList();
         var bare = new MapDefinition(
             map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts,
             map.TextureLegend, map.Heights, map.Land, map.Texture, map.Ore, [.. objects], map.Bridges, map.Structures, map.Lighting,
             map.Playable, map.Origin);
-        var site = new Site(bare);
-        var paths = map.Starts.Select(start => PathCosts(bare.ToMapGrid(), start.Cell)).ToList();
+        var site = new Site(bare, types);
+        var paths = map.Starts.Select(start => PathCosts(bare.ToMapGrid(types), start.Cell)).ToList();
         var occupied = objects.Select(o => o.Cell).ToHashSet();
         var all = Enumerable.Range(0, map.Starts.Length).ToList();
         var shared = Fairest(map, site, paths, occupied, all);
@@ -292,10 +292,10 @@ public static class Drills
         private readonly MapGrid _ground;
         private readonly HashSet<CellPos> _taken = [];
 
-        public Site(MapDefinition map)
+        public Site(MapDefinition map, MapTypes types)
         {
             _map = map;
-            _ground = MapChecks.BaseGrid(map);
+            _ground = MapChecks.BaseGrid(map, types);
             foreach (var bridge in map.Bridges)
             {
                 _taken.UnionWith(MapChecks.BridgeCells(bridge));
@@ -303,7 +303,7 @@ public static class Drills
 
             foreach (var structure in map.Structures)
             {
-                _taken.UnionWith(MapChecks.Footprint(structure));
+                _taken.UnionWith(MapChecks.Footprint(structure, types));
             }
         }
 

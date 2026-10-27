@@ -319,7 +319,7 @@ public sealed class HarvesterTests(ITestOutputHelper output)
         }
 
         Assert.True(simulation.World.Entities.OfType<Unit>().Single().Harvester!.Load > 0);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);
     }
 }

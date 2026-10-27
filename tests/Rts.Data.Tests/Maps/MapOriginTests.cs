@@ -51,7 +51,7 @@ public sealed class MapOriginTests
     {
         var files = Directory.GetFiles(MapsFolder, "*.rtsmap").Order(StringComparer.Ordinal)
             .Select(path => ($"{MapCatalog.Directory}/{Path.GetFileName(path)}", File.ReadAllText(path)));
-        var (maps, _) = MapCatalog.Load(files);
+        var (maps, _) = MapCatalog.Load(files, GameDataFiles.Rules.MapTypes);
 
         Assert.Equal(["Facing Corners", "Heaven", "Route 66", "Steph's High Ground", "The Light of Night", "WAR Pro"], MapCatalog.OfOrigin(maps, MapOrigin.Ra2).Select(m => m.Map.Name));
         Assert.All(MapCatalog.OfOrigin(maps, MapOrigin.Generated), m => Assert.Equal("Map generator", m.Map.Author));

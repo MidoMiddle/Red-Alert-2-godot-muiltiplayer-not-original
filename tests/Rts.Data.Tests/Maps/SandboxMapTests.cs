@@ -1,3 +1,4 @@
+using Rts.Simulation.Tests;
 using Rts.Data.Maps;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
@@ -7,7 +8,7 @@ namespace Rts.Data.Tests.Maps;
 /// <summary>The sandbox of M2 in the new format: game/data/maps/sandbox.rtsmap, made by the converter.</summary>
 public sealed class SandboxMapTests
 {
-    private static TestMap OldSandbox() => TestMapParser.Parse(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "maps", "test", "sandbox.txt")));
+    private static TestMap OldSandbox() => TestMapParser.Parse(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "maps", "test", "sandbox.txt")), TestRules.Standard);
 
     [Fact]
     public void The_committed_file_is_the_canonical_conversion_of_the_m2_sandbox()
@@ -45,7 +46,7 @@ public sealed class SandboxMapTests
 
         // So do the building lines (M7 step 7), as structures.
         Assert.Equal(
-            old.StartBuildings.Select(b => new StructurePlacement(Rts.Simulation.World.BuildingTypes.Get(b.Kind).Id, b.Cell, b.Owner.Value, b.Facing))
+            old.StartBuildings.Select(b => new StructurePlacement(Rts.Simulation.World.BuildingTypes.IdOf(b.Kind), b.Cell, b.Owner.Value, b.Facing))
                 .OrderBy(s => s.Type, StringComparer.Ordinal).ThenBy(s => s.Cell.Y).ThenBy(s => s.Cell.X),
             map.Structures);
 
@@ -64,7 +65,7 @@ public sealed class SandboxMapTests
     [Fact]
     public void On_the_sandbox_a_tank_crushes_the_fence_and_a_conscript_goes_round_it()
     {
-        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
+        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid(GameDataFiles.Rules.MapTypes);
         var simulation = new Rts.Simulation.GameSimulation(new Rts.Simulation.SimulationSettings(4, grid), GameDataFiles.Rules);
         var blue = new Rts.Simulation.World.PlayerId(1);
         simulation.Enqueue(new Rts.Simulation.Commands.SpawnTestUnitCommand(blue, 0, 0, Rts.Simulation.World.UnitType.HeavyTank, new CellPos(7, 36).Center));
@@ -92,7 +93,7 @@ public sealed class SandboxMapTests
     [Fact]
     public void On_the_sandbox_a_jeep_crosses_the_lake_by_the_bridge_until_a_segment_falls()
     {
-        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
+        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid(GameDataFiles.Rules.MapTypes);
         var bridge = Assert.Single(grid.Bridges);
         Assert.Equal((new CellPos(2, 57), new CellPos(10, 57), 9), (bridge.From, bridge.To, bridge.Segments.Count));
         Assert.All(bridge.Segments, s => Assert.Equal(LandType.Road, grid.SurfaceAt(s.Cell)));

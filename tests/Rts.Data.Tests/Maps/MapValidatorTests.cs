@@ -28,7 +28,7 @@ public sealed class MapValidatorTests
     /// <summary>40 x 40 for the given players, starts where asked, ore beside every start.</summary>
     private static MapEditSession Arena(int players, params (int X, int Y)[] starts)
     {
-        var session = new MapEditSession(EditableMap.New(40, 40, players));
+        var session = new MapEditSession(EditableMap.New(40, 40, players), GameDataFiles.Rules.MapTypes);
         foreach (var (x, y) in starts)
         {
             Stroke(session, EditTool.Start, Dot, null, (x, y));
@@ -38,7 +38,7 @@ public sealed class MapValidatorTests
         return session;
     }
 
-    private static List<MapProblem> Check(MapEditSession session) => MapValidator.Check(session.Map.ToDefinition());
+    private static List<MapProblem> Check(MapEditSession session) => MapValidator.Check(session.Map.ToDefinition(), GameDataFiles.Rules.MapTypes);
 
     [Fact]
     public void A_fair_map_has_no_problems()
@@ -80,7 +80,7 @@ public sealed class MapValidatorTests
             [new BridgePlacement("bridge_wood_low", new CellPos(20, 5), new CellPos(22, 5))],
             [new StructurePlacement("neutral_house_a", new CellPos(15, 15), 0, 0), new StructurePlacement("tech_castle", new CellPos(3, 30), 0, 0)]);
 
-        var problems = MapValidator.Check(broken);
+        var problems = MapValidator.Check(broken, GameDataFiles.Rules.MapTypes);
 
         Assert.Contains(problems, p => p.Level == ProblemLevel.Error && p.Cell == new CellPos(20, 5) && p.Message.Contains("not water"));
         Assert.Contains(problems, p => p.Level == ProblemLevel.Error && p.Cell == new CellPos(3, 30) && p.Message.Contains("unknown building"));
@@ -90,7 +90,7 @@ public sealed class MapValidatorTests
     [Fact]
     public void Ore_must_be_near_every_start_and_about_even()
     {
-        var bare = new MapEditSession(EditableMap.New(40, 40, 2));
+        var bare = new MapEditSession(EditableMap.New(40, 40, 2), GameDataFiles.Rules.MapTypes);
         Stroke(bare, EditTool.Start, Dot, null, (8, 8));
         Stroke(bare, EditTool.Start, Dot, null, (30, 30));
         Assert.Equal(2, Check(bare).Count(p => p.Level == ProblemLevel.Warning && p.Message.Contains("No ore")));
@@ -128,12 +128,12 @@ public sealed class MapValidatorTests
         Assert.Equal(0, map.Ore[20 * map.Width + 20]);
         Assert.NotEqual(0, map.Ore[20 * map.Width + 21]);
         Assert.Contains(map.Objects, o => o.Type == "ore_source" && o.Cell == new CellPos(20, 20));
-        Assert.DoesNotContain(MapValidator.Check(map), p => p.Message.Contains("under"));
+        Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), p => p.Message.Contains("under"));
 
         // Saved and read back, the source is an object of the map and of its grid.
         var read = RtsMapReader.Read(RtsMapWriter.Write(map));
         Assert.True(read.ContentEquals(map));
-        Assert.Equal(new CellPos(20, 20), Assert.Single(read.ToMapGrid().Sources).Cell);
+        Assert.Equal(new CellPos(20, 20), Assert.Single(read.ToMapGrid(GameDataFiles.Rules.MapTypes).Sources).Cell);
 
         // Undone, the source gives its cell its ore back (the second ore stroke changed nothing, so it left no step to undo).
         Assert.True(session.Undo());
@@ -143,7 +143,7 @@ public sealed class MapValidatorTests
         ore[20 * map.Width + 20] = 5;
         var underOre = new MapDefinition(map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players,
             map.Starts, map.TextureLegend, map.Heights, map.Land, map.Texture, ore.ToImmutableArray(), map.Objects, map.Bridges, map.Structures);
-        Assert.Contains(MapValidator.Check(underOre), p => p.Level == ProblemLevel.Warning && p.Cell == new CellPos(20, 20) && p.Message.Contains("under the ore_source"));
+        Assert.Contains(MapValidator.Check(underOre, GameDataFiles.Rules.MapTypes), p => p.Level == ProblemLevel.Warning && p.Cell == new CellPos(20, 20) && p.Message.Contains("under the ore_source"));
     }
 
     [Fact]
@@ -157,8 +157,8 @@ public sealed class MapValidatorTests
     public void The_maps_of_the_game_have_no_errors_but_the_sandbox_has_no_starts()
     {
         var root = Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps");
-        var relief = MapValidator.Check(RtsMapReader.Read(File.ReadAllText(Path.Combine(root, "relief_test.rtsmap"))));
-        var sandbox = MapValidator.Check(RtsMapReader.Read(File.ReadAllText(Path.Combine(root, "sandbox.rtsmap"))));
+        var relief = MapValidator.Check(RtsMapReader.Read(File.ReadAllText(Path.Combine(root, "relief_test.rtsmap"))), GameDataFiles.Rules.MapTypes);
+        var sandbox = MapValidator.Check(RtsMapReader.Read(File.ReadAllText(Path.Combine(root, "sandbox.rtsmap"))), GameDataFiles.Rules.MapTypes);
 
         Assert.DoesNotContain(relief, p => p.Level == ProblemLevel.Error);
         Assert.Equal("0 starts for 2 players", Assert.Single(sandbox, p => p.Level == ProblemLevel.Error).Message);
@@ -167,7 +167,7 @@ public sealed class MapValidatorTests
     [Fact]
     public void A_map_built_from_scratch_passes_the_checks_saves_and_plays()
     {
-        var session = new MapEditSession(EditableMap.New(48, 48, 2));
+        var session = new MapEditSession(EditableMap.New(48, 48, 2), GameDataFiles.Rules.MapTypes);
         session.Map.Name = "From scratch";
         session.Map.Id = UserMapPaths.IdFromName(session.Map.Name);
 
@@ -192,12 +192,12 @@ public sealed class MapValidatorTests
         Stroke(session, EditTool.Ore, new Brush(BrushShape.Square, 2), null, (42, 36));
 
         var map = session.Map.ToDefinition();
-        Assert.Empty(MapValidator.Check(map));
+        Assert.Empty(MapValidator.Check(map, GameDataFiles.Rules.MapTypes));
         var read = RtsMapReader.Read(RtsMapWriter.Write(map));
         Assert.True(read.ContentEquals(map));
 
         // Play it as «Play» does: the squads at the starts, the blue one sent to the red start across the bridge.
-        var grid = read.ToMapGrid();
+        var grid = read.ToMapGrid(GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(new SimulationSettings(seed: 12, grid), GameDataFiles.Rules);
         var units = StartSquads.Place(read, grid, GameDataFiles.Rules);
         var sequences = new Dictionary<PlayerId, uint>();

@@ -12,8 +12,8 @@ public sealed class SnowdriftTests
     /// <summary>A 16 x <paramref name="height"/> field of clear ground with a snowdrift on every cell of column 8.</summary>
     private static GameWorld Drifted(int height = 9)
     {
-        var objects = Enumerable.Range(0, height).Select(y => MapObjectState.New(MapObjectKind.Snowdrift, new CellPos(8, y), 0)).ToList();
-        return new GameWorld(seed: 1, MapGrid.FromLayers(16, height, new byte[16 * height].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * height], default, objects), TestRules.Standard);
+        var objects = Enumerable.Range(0, height).Select(y => MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.Snowdrift), new CellPos(8, y), 0)).ToList();
+        return new GameWorld(seed: 1, MapGrid.FromLayers(16, height, new byte[16 * height].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * height], default, objects, types: TestRules.Standard.MapTypes), TestRules.Standard);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class SnowdriftTests
     public void A_route_across_a_snowdrift_costs_more_than_across_clear_ground()
     {
         var drifted = Drifted().Map;
-        var clear = MapGrid.FromLayers(16, 9, new byte[16 * 9].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * 9], default, new List<MapObjectState>());
+        var clear = MapGrid.FromLayers(16, 9, new byte[16 * 9].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * 9], default, new List<MapObjectState>(), types: TestRules.Standard.MapTypes);
         var from = new CellPos(2, 4);
         var to = new CellPos(14, 4);
 

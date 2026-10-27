@@ -76,8 +76,9 @@ game/data/
 │   └── compositions/<faction>.yaml                                 M5
 ├── audio/                    sounds, voices, eva, music            M6
 ├── maps/                     builtin.yaml (M6), *.rtsmap (M7)
-├── climates/<climate>/       map_objects.yaml, look.yaml           M7, M11
-└── neutral/                  техздания, гражданские здания, ящики  M7, M11
+├── map/                      objects.yaml, bridges.yaml — виды объектов карты и мостов (M3, шаг 14а)
+├── climates/<climate>/       look.yaml (вид; загрузчик правил эту папку не читает)  M7, M11
+└── neutral/                  civilian.yaml, tech.yaml — здания карты (M3, шаг 14а)  M7, M11
 ```
 
 Конфигурации инструментов — **не** игровые данные и лежат рядом с инструментом (например, `tools/Rts.Arena/configs/`).

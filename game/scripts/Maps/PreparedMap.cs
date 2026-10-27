@@ -27,7 +27,7 @@ public static class PreparedMap
         // A map of the M7 format: with two starts or more it is played as a match; the debug squads at the starts are left for
         // a map with fewer.
         var definition = RtsMapReader.Read(text);
-        var grid = definition.ToMapGrid();
+        var grid = definition.ToMapGrid(rules.MapTypes);
         return (new TestMap(grid, StartSquads.Place(definition, grid, rules)), definition);
     }
 

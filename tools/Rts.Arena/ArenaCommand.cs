@@ -98,7 +98,7 @@ public static class ArenaCommand
         Replay replay;
         try
         {
-            replay = ReplayFormat.Read(File.ReadAllBytes(file));
+            replay = ReplayFormat.Read(File.ReadAllBytes(file), data.Rules.MapTypes);
         }
         catch (InvalidDataException e)
         {

@@ -20,15 +20,17 @@ public static class ReadyMaps
 {
     public static readonly string[] Files = ["frozen-crossing", "twin-rivers", "taiga-front", "four-corners"];
 
-    public static MapDefinition Build(string file) => BridgeHuts.AddTo(
+    /// <summary>A ready map, of the kinds of the map of the data <paramref name="types"/> (M3 step 14a).</summary>
+    public static MapDefinition Build(string file, MapTypes types) => BridgeHuts.AddTo(
         file switch
         {
-            "frozen-crossing" => FrozenCrossing(),
-            "twin-rivers" => TwinRivers(),
-            "taiga-front" => TaigaFront(),
-            "four-corners" => FourCorners(),
+            "frozen-crossing" => FrozenCrossing(types),
+            "twin-rivers" => TwinRivers(types),
+            "taiga-front" => TaigaFront(types),
+            "four-corners" => FourCorners(types),
             _ => throw new ArgumentException($"No ready map '{file}'."),
         },
+        types,
         // A repair hut by every bridge (loose ends, stage 2), each by its own bridge.
         images: null);
 
@@ -40,7 +42,7 @@ public static class ReadyMaps
     /// bridge over each. A small hill by each base, woods in the corners, roads to the bridges and the ice, gems at the ice
     /// crossing, two houses by the ice. The river goes on beyond the area, so it leaves the screen instead of ending there.
     /// </summary>
-    public static MapDefinition FrozenCrossing()
+    public static MapDefinition FrozenCrossing(MapTypes types)
     {
         const int grid = 90;
         CellPos P(int a, int b) => MapScript.Screen(a, b, Design, grid);
@@ -50,7 +52,7 @@ public static class ReadyMaps
             return (int)Math.Max(Cone(a, b, 16, 50, 3), Cone(a, b, 20, 12, 2));
         }
 
-        var map = new MapScript("frozen-crossing", "Frozen Crossing", "A short duel across a frozen river: two bridges, and ice that anyone can cross.",
+        var map = new MapScript(types, "frozen-crossing", "Frozen Crossing", "A short duel across a frozen river: two bridges, and ice that anyone can cross.",
             grid, grid, 2, rotate: false, Height, MapArea.Inscribed(grid));
         // Brushes of 2 along the diagonal of the cells, with the turned image beside them: a river about 3 cells wide.
         map.Water(P(31, -8), P(31, 71), 2, LandType.Deep);
@@ -82,7 +84,7 @@ public static class ReadyMaps
     /// to the west, north and south and cliffs over the crossings — whoever holds the height sees farther. Contested ore and an
     /// oil derrick on the plateau.
     /// </summary>
-    public static MapDefinition TwinRivers()
+    public static MapDefinition TwinRivers(MapTypes types)
     {
         // Written for the west half (the script reads every corner at its west image).
         static int Height(int x, int y)
@@ -105,7 +107,7 @@ public static class ReadyMaps
             return x >= 45 && y is >= 68 and <= 72 ? 72 - y : 0;
         }
 
-        var map = new MapScript("twin-rivers", "Twin Rivers", "Two rivers and four bridges; the plateau between them watches every crossing.",
+        var map = new MapScript(types, "twin-rivers", "Twin Rivers", "Two rivers and four bridges; the plateau between them watches every crossing.",
             96, 96, 2, rotate: false, Height);
         map.Water(new CellPos(25, 0), new CellPos(25, 95), 2, LandType.Deep);
         map.Bridge(new CellPos(23, 20), new CellPos(27, 20));
@@ -133,11 +135,11 @@ public static class ReadyMaps
     /// the clearings of the bases, the roads and the village at the central crossroads (houses, an apartment block, sheds).
     /// Gentle hills.
     /// </summary>
-    public static MapDefinition TaigaFront()
+    public static MapDefinition TaigaFront(MapTypes types)
     {
         int Height(int x, int y) => Math.Max(Cone(x, y, 34, 48, 3), Math.Max(Cone(x, y, 48, 14, 2), Cone(x, y, 48, 82, 2)));
 
-        var map = new MapScript("taiga-front", "Taiga Front", "Two against two through dense taiga; teams: slots 1 and 3 in the west, 2 and 4 in the east.",
+        var map = new MapScript(types, "taiga-front", "Taiga Front", "Two against two through dense taiga; teams: slots 1 and 3 in the west, 2 and 4 in the east.",
             128, 96, 4, rotate: false, Height);
         map.Start(new CellPos(16, 20));
         map.Start(new CellPos(16, 75));
@@ -169,7 +171,7 @@ public static class ReadyMaps
     /// derrick, ramps on all four sides; a lake and woods in every quarter, home ore, a hospital between each pair of
     /// neighbours.
     /// </summary>
-    public static MapDefinition FourCorners()
+    public static MapDefinition FourCorners(MapTypes types)
     {
         static int Height(int x, int y)
         {
@@ -189,7 +191,7 @@ public static class ReadyMaps
             };
         }
 
-        var map = new MapScript("four-corners", "Four Corners", "Four bases in the corners; the plateau in the middle holds the gems.",
+        var map = new MapScript(types, "four-corners", "Four Corners", "Four bases in the corners; the plateau in the middle holds the gems.",
             128, 128, 4, rotate: true, Height);
         map.Start(new CellPos(20, 20));
         map.Water(new CellPos(38, 36), new CellPos(42, 40), 4, LandType.Deep);
@@ -229,14 +231,16 @@ public readonly record struct Rect(int X, int Y, int Width, int Height)
 public sealed class MapScript
 {
     private readonly MapEditSession _session;
+    private readonly MapTypes _types;
     private readonly int _width;
     private readonly int _height;
     private readonly bool _rotate;
     private readonly bool _halfTurn;
 
-    public MapScript(string id, string name, string description, int width, int height, int players, bool rotate, Func<int, int, int> heightAt,
+    public MapScript(MapTypes types, string id, string name, string description, int width, int height, int players, bool rotate, Func<int, int, int> heightAt,
         MapArea? playable = null)
     {
+        _types = types;
         (_width, _height, _rotate, _halfTurn) = (width, height, rotate, playable is not null && !rotate);
         var levels = new byte[(width + 1) * (height + 1)];
         for (var y = 0; y <= height; y++)
@@ -253,7 +257,7 @@ public sealed class MapScript
             id, name, "Ready maps (M7)", description, width, height, "winter", players, [], TestMapConverter.Legend,
             ImmutableArray.Create(levels), [.. Enumerable.Repeat(LandType.Clear, cells)], [.. Enumerable.Repeat('s', cells)],
             ImmutableArray.Create(new byte[cells]), [], [], [], playable: playable, origin: MapOrigin.Ready);
-        _session = new MapEditSession(EditableMap.FromDefinition(definition));
+        _session = new MapEditSession(EditableMap.FromDefinition(definition), types);
     }
 
     /// <summary>
@@ -339,7 +343,7 @@ public sealed class MapScript
     /// <summary>A building with its north-west cell here, and its images (turned footprints start at their own north-west cell).</summary>
     public void Building(string type, CellPos corner, int facing)
     {
-        BuildingTypes.TryGetById(type, out var kind);
+        _types.TryGetBuilding(type, out var kind);
         var placed = new List<CellPos>();
         for (var k = 0; k < Order; k++)
         {
@@ -400,7 +404,7 @@ public sealed class MapScript
     public MapDefinition Finish()
     {
         var map = _session.Map.ToDefinition();
-        var errors = MapValidator.Check(map).Where(p => p.Level == ProblemLevel.Error).ToList();
+        var errors = MapValidator.Check(map, _types).Where(p => p.Level == ProblemLevel.Error).ToList();
         if (errors.Count > 0)
         {
             throw new InvalidOperationException($"{map.Id}: " + string.Join("; ", errors.Select(e => $"{e.Message} [{e.Cell}]")));

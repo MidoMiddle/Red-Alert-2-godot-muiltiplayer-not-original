@@ -92,7 +92,7 @@ public sealed class MapReplayTests
         var replay = RecordOnMap(LandTypes());
 
         var bytes = ReplayFormat.Write(replay);
-        var read = ReplayFormat.Read(bytes);
+        var read = ReplayFormat.Read(bytes, TestRules.Standard.MapTypes);
 
         Assert.Equal(1, bytes[MapFlagOffset]);
         Assert.Equal(replay.Settings, read.Settings);
@@ -111,7 +111,7 @@ public sealed class MapReplayTests
         grid.SetCornerLevel(24, 12, 7);
         var replay = RecordOnMap(map with { Grid = grid }, ticks: 30);
 
-        var read = ReplayFormat.Read(ReplayFormat.Write(replay));
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes);
 
         Assert.True(read.Settings.Map!.ContentEquals(grid));
         Assert.Equal(14, read.Settings.Map.Heights.CornerLevel(0, 0));
@@ -125,18 +125,18 @@ public sealed class MapReplayTests
         var map = LandTypes();
         var objects = new List<MapObjectState>
         {
-            MapObjectState.New(MapObjectKind.Boulder, new CellPos(0, 9), 3),
-            MapObjectState.New(MapObjectKind.FenceWood, new CellPos(22, 11), 1),
+            MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.Boulder), new CellPos(0, 9), 3),
+            MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.FenceWood), new CellPos(22, 11), 1),
             new(MapObjectKind.PineTree, new CellPos(23, 11), 2, 0, true),
             new(MapObjectKind.WallStone, new CellPos(21, 11), 0, 700, false),
-            MapObjectState.New(MapObjectKind.LampPost, new CellPos(20, 11), 0),
+            MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.LampPost), new CellPos(20, 11), 0),
         };
         var grid = MapGrid.FromLayers(map.Grid.Width, map.Grid.Height, map.Grid.LandBytes(), map.Grid.BlockedBytes(), map.Grid.Heights.LevelBytes(),
-            [.. map.Grid.ObjectStates(), .. objects]);
+            [.. map.Grid.ObjectStates(), .. objects], types: TestRules.Standard.MapTypes);
         var replay = RecordOnMap(map with { Grid = grid }, ticks: 60);
 
         var bytes = ReplayFormat.Write(replay);
-        var read = ReplayFormat.Read(bytes);
+        var read = ReplayFormat.Read(bytes, TestRules.Standard.MapTypes);
 
         Assert.True(read.Settings.Map!.ContentEquals(grid));
         Assert.Equal(bytes, ReplayFormat.Write(read));
@@ -153,7 +153,7 @@ public sealed class MapReplayTests
         var bytes = ReplayFormat.Write(replay);
 
         Assert.Equal(0, bytes[MapFlagOffset]);
-        Assert.Null(ReplayFormat.Read(bytes).Settings.Map);
+        Assert.Null(ReplayFormat.Read(bytes, TestRules.Standard.MapTypes).Settings.Map);
     }
 
     [Theory]
@@ -177,6 +177,6 @@ public sealed class MapReplayTests
             case "no heights": bytes = bytes[..(MapFlagOffset + 1 + 2 * cells + 5)]; break;
         }
 
-        Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(bytes));
+        Assert.Throws<InvalidDataException>(() => ReplayFormat.Read(bytes, TestRules.Standard.MapTypes));
     }
 }

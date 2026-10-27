@@ -28,7 +28,7 @@ public sealed class BuildingLooksTests
         // MapObjects.cs (or their models).
         string[] older = ["neutral_shed", "neutral_house_a", "neutral_apartment", "neutral_fuel_tank", "neutral_smokestack", "neutral_cooling_tower",
             "neutral_factory_hall", "neutral_boiler_house", "tech_oil_derrick", "tech_hospital", "tech_airfield", "tech_bridge_repair_hut"];
-        foreach (var type in Rts.Simulation.World.BuildingTypes.All.Where(type => !older.Contains(type.Id)))
+        foreach (var type in GameDataFiles.Rules.MapTypes.Buildings.Where(type => !older.Contains(type.Id)))
         {
             Assert.True(BuildingLooks.Known(type.Id), type.Id);
             Assert.All(BuildingLooks.Of(type.Id, type.Width, type.Height, false), part => Assert.True(
@@ -37,7 +37,7 @@ public sealed class BuildingLooksTests
         }
 
         string[] olderObjects = ["pine_tree", "boulder", "fence_wood", "wall_stone", "lamp_post", "anti_tank_hedgehog", "pipeline", "snowdrift", "ore_source", "gem_source"];
-        foreach (var type in Rts.Simulation.Map.MapObjectTypes.All.Where(type => !olderObjects.Contains(type.Id)))
+        foreach (var type in GameDataFiles.Rules.MapTypes.Objects.Where(type => !olderObjects.Contains(type.Id)))
         {
             Assert.True(PropLooks.Known(type.Id), type.Id);
             Assert.All(PropLooks.Of(type.Id), part => Assert.True(

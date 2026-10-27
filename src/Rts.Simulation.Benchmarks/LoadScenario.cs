@@ -47,7 +47,8 @@ public static class LoadScenario
         return directory?.FullName ?? throw new InvalidOperationException($"No RtsGame.sln above {start}.");
     }
 
-    public static TestMap LoadMap(string repoRoot) => TestMapParser.Parse(File.ReadAllText(Path.Combine(repoRoot, MapPath)));
+    /// <summary>The load map, by <paramref name="rules"/>: its trees are of the data (M3 step 14a).</summary>
+    public static TestMap LoadMap(string repoRoot, GameRules rules) => TestMapParser.Parse(File.ReadAllText(Path.Combine(repoRoot, MapPath)), rules);
 
     /// <summary>A new match on the load map by <paramref name="rules"/>, with its 300 units spawned (tick 0 done).</summary>
     public static GameSimulation Start(TestMap map, GameRules rules)

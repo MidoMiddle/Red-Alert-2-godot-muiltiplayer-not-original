@@ -121,7 +121,7 @@ public sealed class ClimateLookTests
             [.. heights], [.. land], [.. texture], [.. new byte[size * size]], [], [], []);
         var winter = Winter();
 
-        var cells = MaterialSlots.Build(MapLook.FromDefinition(map), winter, map.ToMapGrid());
+        var cells = MaterialSlots.Build(MapLook.FromDefinition(map), winter, map.ToMapGrid(GameDataFiles.Rules.MapTypes));
 
         byte Slot(int x, int y) => cells[(y * size + x) * MaterialSlots.BytesPerCell];
         Assert.Equal(winter.SlotOf("grass"), Slot(0, 0));
@@ -136,7 +136,7 @@ public sealed class ClimateLookTests
     [Fact]
     public void A_map_without_a_look_of_its_own_is_a_winter_day_textured_by_its_land()
     {
-        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid();
+        var grid = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath)).ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         var look = MapLook.FromLand(grid);
 

@@ -26,7 +26,7 @@ public sealed class MinimapImageTests
         // 3x2: deep water at (2, 0), a tree at (0, 1).
         byte[] land = [(byte)LandType.Clear, (byte)LandType.Clear, (byte)LandType.Deep, (byte)LandType.Clear, (byte)LandType.Road, (byte)LandType.Clear];
         byte[] blocked = [0, 0, 0, 1, 0, 0];
-        var map = MapGrid.FromLayers(3, 2, land, blocked);
+        var map = MapGrid.FromLayers(3, 2, land, blocked, types: TestRules.Standard.MapTypes);
 
         var pixels = MinimapImage.Pixels(map);
 

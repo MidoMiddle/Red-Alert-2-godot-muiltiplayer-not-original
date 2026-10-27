@@ -10,7 +10,7 @@ public sealed class MapEditingToolsTests
 {
     private static readonly Brush Dot = new(BrushShape.Circle, 1);
 
-    private static MapEditSession Session(int size = 32, int players = 2) => new(EditableMap.New(size, size, players));
+    private static MapEditSession Session(int size = 32, int players = 2) => new(EditableMap.New(size, size, players), GameDataFiles.Rules.MapTypes);
 
     /// <summary>One stroke through the given cells; height tools use the same numbers as corners.</summary>
     private static string? Stroke(MapEditSession session, EditTool tool, Brush brush, EditOptions? options, params (int X, int Y)[] points)
@@ -126,7 +126,7 @@ public sealed class MapEditingToolsTests
         Assert.Contains(full.Map.Objects, o => o.Cell == new CellPos(9, 9));
         Assert.All(full.Map.Objects, o => Assert.InRange(o.Variant, 0, 3));
         Assert.DoesNotContain(full.Map.Objects, o => o.Cell == new CellPos(12, 12));
-        Assert.True(full.Map.ToDefinition().ToMapGrid().Objects.Count > 0);
+        Assert.True(full.Map.ToDefinition().ToMapGrid(GameDataFiles.Rules.MapTypes).Objects.Count > 0);
 
         Stroke(full, EditTool.Objects, square, new EditOptions { ObjectType = "boulder", Density = 100 }, (12, 12));
         Assert.DoesNotContain(full.Map.Objects, o => o.Type == "boulder");
@@ -163,7 +163,7 @@ public sealed class MapEditingToolsTests
 
         var bridge = Assert.Single(session.Map.Bridges);
         Assert.Equal((new CellPos(10, 12), new CellPos(14, 12)), (bridge.From, bridge.To));
-        Assert.Single(session.Map.ToDefinition().ToMapGrid().Bridges);
+        Assert.Single(session.Map.ToDefinition().ToMapGrid(GameDataFiles.Rules.MapTypes).Bridges);
         Assert.NotNull(Stroke(session, EditTool.Bridge, Dot, null, (9, 12), (15, 12)));
 
         Assert.True(session.Undo());
@@ -177,7 +177,7 @@ public sealed class MapEditingToolsTests
         var flat = string.Concat(Enumerable.Repeat("    " + new string('0', 21) + "\n", 13));
         var gorge = string.Concat(Enumerable.Repeat("    " + new string('4', 7) + new string('0', 7) + new string('4', 7) + "\n", 13));
         Assert.Contains(flat, text);
-        return new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(text.Replace(flat, gorge))));
+        return new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(text.Replace(flat, gorge))), GameDataFiles.Rules.MapTypes);
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public sealed class MapEditingToolsTests
 
         var bridge = Assert.Single(session.Map.Bridges);
         Assert.Equal(("bridge_concrete_high", new CellPos(6, 5), new CellPos(13, 5)), (bridge.Type, bridge.From, bridge.To));
-        var grid = session.Map.ToDefinition().ToMapGrid();
+        var grid = session.Map.ToDefinition().ToMapGrid(GameDataFiles.Rules.MapTypes);
         Assert.Equal(24, grid.DeckCount);
         Assert.True(session.Undo());
         Assert.Empty(session.Map.Bridges);
@@ -216,7 +216,7 @@ public sealed class MapEditingToolsTests
 
         var placed = Assert.Single(session.Map.Structures);
         Assert.Equal(("neutral_house_a", new CellPos(3, 3), 0, 2), (placed.Type, placed.Cell, placed.Owner, placed.Facing));
-        Assert.True(session.Map.ToDefinition().ToMapGrid().HasBuilding(new CellPos(4, 4)));
+        Assert.True(session.Map.ToDefinition().ToMapGrid(GameDataFiles.Rules.MapTypes).HasBuilding(new CellPos(4, 4)));
         Assert.True(session.Undo());
         Assert.Empty(session.Map.Structures);
     }

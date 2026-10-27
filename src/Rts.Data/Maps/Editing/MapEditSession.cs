@@ -93,12 +93,17 @@ public sealed class MapEditSession
     private (int X, int Y, CellPos Cell)? _first;
     private (int X, int Y, CellPos Cell)? _last;
 
-    public MapEditSession(EditableMap map)
+    /// <summary>A session on <paramref name="map"/> by the kinds of the map of the data <paramref name="types"/> (M3 step 14a).</summary>
+    public MapEditSession(EditableMap map, MapTypes types)
     {
         Map = map;
+        Types = types;
     }
 
     public EditableMap Map { get; }
+
+    /// <summary>The kinds of map objects, bridges and buildings the editor places.</summary>
+    public MapTypes Types { get; }
 
     public UndoStack History { get; } = new();
 
@@ -252,11 +257,11 @@ public sealed class MapEditSession
         var definition = Map.ToDefinition();
         try
         {
-            return definition.ToMapGrid();
+            return definition.ToMapGrid(Types);
         }
         catch (ArgumentException)
         {
-            return MapChecks.BaseGrid(definition);
+            return MapChecks.BaseGrid(definition, Types);
         }
     }
 
@@ -375,7 +380,7 @@ public sealed class MapEditSession
     /// </summary>
     private void PlaceObjects(List<CellPos> cells)
     {
-        if (!MapObjectTypes.TryGetById(_options.ObjectType, out var type))
+        if (!Types.TryGetObject(_options.ObjectType, out var type))
         {
             Message = $"unknown map object '{_options.ObjectType}'";
             return;
@@ -418,7 +423,7 @@ public sealed class MapEditSession
         var (dx, dy) = (IntMath.Sign(to.X - from.X), IntMath.Sign(to.Y - from.Y));
         var start = new CellPos(from.X + dx, from.Y + dy);
         var end = new CellPos(to.X - dx, to.Y - dy);
-        if (BridgeTypes.TryGetById(_options.BridgeType, out var type) && type.High)
+        if (Types.TryGetBridge(_options.BridgeType, out var type) && type.High)
         {
             if (start == to)
             {
@@ -455,7 +460,7 @@ public sealed class MapEditSession
 
     private void AddBridge(BridgePlacement bridge)
     {
-        if (MapChecks.BridgeProblem(MapChecks.BaseGrid(Map.ToDefinition()), bridge, Map.Bridges) is { } problem)
+        if (MapChecks.BridgeProblem(MapChecks.BaseGrid(Map.ToDefinition(), Types), bridge, Map.Bridges) is { } problem)
         {
             Message = problem;
             return;
@@ -469,7 +474,7 @@ public sealed class MapEditSession
     private void PlaceBuilding(CellPos cell)
     {
         var structure = new StructurePlacement(_options.BuildingType, cell, 0, _options.Facing);
-        if (MapChecks.BuildingProblem(MapChecks.BaseGrid(Map.ToDefinition()), structure, Map.Structures) is { } problem)
+        if (MapChecks.BuildingProblem(MapChecks.BaseGrid(Map.ToDefinition(), Types), structure, Map.Structures) is { } problem)
         {
             Message = problem;
             return;
@@ -523,7 +528,7 @@ public sealed class MapEditSession
 
         if (Wants(EraseLayer.Buildings))
         {
-            removed += Remove(Map.StructureList, s => MapChecks.Footprint(s).Exists(under.Contains) || under.Contains(s.Cell));
+            removed += Remove(Map.StructureList, s => MapChecks.Footprint(s, Types).Exists(under.Contains) || under.Contains(s.Cell));
         }
 
         if (Wants(EraseLayer.Bridges))
@@ -560,7 +565,7 @@ public sealed class MapEditSession
         var cells = new HashSet<CellPos>();
         foreach (var mapObject in Map.Objects)
         {
-            if (MapObjectTypes.TryGetById(mapObject.Type, out var type) && IsSource(type))
+            if (Types.TryGetObject(mapObject.Type, out var type) && IsSource(type))
             {
                 cells.Add(mapObject.Cell);
             }
@@ -586,7 +591,7 @@ public sealed class MapEditSession
 
         foreach (var structure in Map.Structures)
         {
-            taken.UnionWith(MapChecks.Footprint(structure));
+            taken.UnionWith(MapChecks.Footprint(structure, Types));
         }
 
         return taken;

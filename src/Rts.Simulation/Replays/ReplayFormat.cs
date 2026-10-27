@@ -186,7 +186,11 @@ public static class ReplayFormat
             : new ReplayHeader(format, simVersion, BinaryPrimitives.ReadInt32LittleEndian(source[26..]), BinaryPrimitives.ReadInt32LittleEndian(source[46..]));
     }
 
-    public static Replay Read(ReadOnlySpan<byte> source)
+    /// <summary>
+    /// Reads a replay. Its map is rebuilt with the kinds of map objects, bridges and buildings <paramref name="types"/> define (M3 step
+    /// 14a: those of the data, <see cref="Rules.GameRules.MapTypes"/>); a map with an object of a kind they do not define is refused.
+    /// </summary>
+    public static Replay Read(ReadOnlySpan<byte> source, MapTypes? types = null)
     {
         Require(source, HeaderSize);
         if (!source[..4].SequenceEqual(Magic))
@@ -311,7 +315,7 @@ public static class ReplayFormat
             {
                 map = MapGrid.FromLayers(
                     width, height, source.Slice(offset, cells), source.Slice(offset + cells, cells), source.Slice(offset + 2 * cells, corners), objects, bridges,
-                    buildings, source.Slice(offset + 2 * cells + corners, cells));
+                    buildings, source.Slice(offset + 2 * cells + corners, cells), types: types);
             }
             catch (ArgumentException error)
             {

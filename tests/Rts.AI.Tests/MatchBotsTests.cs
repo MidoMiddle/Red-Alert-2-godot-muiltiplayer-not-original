@@ -114,7 +114,7 @@ public sealed class MatchBotsTests
             recorder.AfterStep();
         }
 
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
 
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.VerifyWithBots(replay, GameDataFiles.Rules, MatchBots.For(replay.Settings.Match!, GameDataFiles.Rules)).Status);
     }
@@ -124,7 +124,7 @@ public sealed class MatchBotsTests
     {
         var first = Play();
         var second = Play();
-        var replay = ReplayFormat.Read(ReplayFormat.Write(first.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(first.Recorder.Build()), TestRules.Standard.MapTypes);
 
         Assert.Equal(StateHasher.Compute(first.Simulation.World), StateHasher.Compute(second.Simulation.World));
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, TestRules.Standard).Status);

@@ -41,7 +41,7 @@ internal sealed class BotMatch
             Options = Setup.Options with { ShortGame = shortGame, StartingCredits = credits ?? Setup.Options.StartingCredits },
             Players = [.. Setup.Players.Select(player => player.Kind == PlayerKind.Ai ? player with { Difficulty = difficulty } : player)],
         };
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         if (noOre)
         {
             for (var y = 0; y < grid.Height; y++)

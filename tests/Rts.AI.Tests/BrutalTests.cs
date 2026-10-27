@@ -16,7 +16,7 @@ public sealed class BrutalTests
     public void A_match_against_brutal_plays_back_from_its_replay_with_the_same_bonuses()
     {
         var match = new BotMatch(difficulty: AiDifficulty.Brutal).PlayTo(3);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(match.Recorder.Build()), GameDataFiles.Rules.MapTypes);
 
         Assert.Empty(match.RefusedBotCommands);
         Assert.Equal(AiDifficulty.Brutal, replay.Settings.Match!.PlayerOf(BotMatch.Bot)!.Difficulty);

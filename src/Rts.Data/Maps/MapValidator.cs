@@ -30,13 +30,14 @@ public static class MapValidator
     public const int OreRadius = 12;
     public const int BalancePercent = 15;
 
-    public static List<MapProblem> Check(MapDefinition map)
+    /// <summary>What is wrong with <paramref name="map"/>, by the kinds of the map of the data <paramref name="types"/> (M3 step 14a).</summary>
+    public static List<MapProblem> Check(MapDefinition map, MapTypes types)
     {
         var problems = new List<MapProblem>();
-        var ground = MapChecks.BaseGrid(map);
+        var ground = MapChecks.BaseGrid(map, types);
         foreach (var placement in map.Objects)
         {
-            if (!MapObjectTypes.TryGetById(placement.Type, out var type))
+            if (!types.TryGetObject(placement.Type, out var type))
             {
                 problems.Add(new MapProblem(ProblemLevel.Error, $"Unknown map object '{placement.Type}'", placement.Cell));
             }
@@ -60,8 +61,8 @@ public static class MapValidator
             }
 
             bridges.Add(bridge);
-            BridgeTypes.TryGetById(bridge.Type, out var type);
-            bridgeStates.Add(BridgeState.New(type.Kind, bridge.From, bridge.To));
+            types.TryGetBridge(bridge.Type, out var type);
+            bridgeStates.Add(BridgeState.New(type, bridge.From, bridge.To));
         }
 
         var structures = new List<StructurePlacement>();
@@ -75,13 +76,13 @@ public static class MapValidator
             }
 
             structures.Add(structure);
-            BuildingTypes.TryGetById(structure.Type, out var type);
+            types.TryGetBuilding(structure.Type, out var type);
             buildings.Add(new BuildingState(type.Kind, structure.Cell, new PlayerId(structure.Owner), structure.Facing));
         }
 
         var grid = MapGrid.FromLayers(
-            ground.Width, ground.Height, ground.LandBytes(), ground.BlockedBytes(), ground.Heights.LevelBytes(), ground.ObjectStates(), bridgeStates, buildings);
-        CheckArea(map, problems);
+            ground.Width, ground.Height, ground.LandBytes(), ground.BlockedBytes(), ground.Heights.LevelBytes(), ground.ObjectStates(), bridgeStates, buildings, types: types);
+        CheckArea(map, types, problems);
         CheckStarts(map, grid, problems);
         CheckOre(map, problems);
         CheckDrills(map, problems);
@@ -90,7 +91,7 @@ public static class MapValidator
     }
 
     /// <summary>Buildings, bridges and ore outside the playable area: nobody could reach them (map objects there are scenery).</summary>
-    private static void CheckArea(MapDefinition map, List<MapProblem> problems)
+    private static void CheckArea(MapDefinition map, MapTypes types, List<MapProblem> problems)
     {
         if (map.Playable is null)
         {
@@ -99,7 +100,7 @@ public static class MapValidator
 
         foreach (var structure in map.Structures)
         {
-            if (!MapChecks.Footprint(structure).All(map.Plays))
+            if (!MapChecks.Footprint(structure, types).All(map.Plays))
             {
                 problems.Add(new MapProblem(ProblemLevel.Error, $"Building {structure.Type} at {Text(structure.Cell)} is outside the playable area", structure.Cell));
             }
@@ -292,7 +293,7 @@ public static class MapValidator
             foreach (var start in map.Starts)
             {
                 counts.Add(map.Objects.Count(placement =>
-                    MapObjectTypes.TryGetById(placement.Type, out var type) && type.Kind == kind
+                    MapObjectTypes.TryGetKind(placement.Type, out var found) && found == kind
                     && (placement.Cell.X - start.Cell.X) * (placement.Cell.X - start.Cell.X) + (placement.Cell.Y - start.Cell.Y) * (placement.Cell.Y - start.Cell.Y) <= OreRadius * OreRadius));
             }
 

@@ -14,7 +14,7 @@ public sealed class BattleDeterminismTests
 {
     public const int HashInterval = 10;
 
-    private static readonly Rts.Simulation.Map.MapGrid Land = LoadScenario.LoadMap(LoadScenario.RepoRoot(AppContext.BaseDirectory)).Grid;
+    private static readonly Rts.Simulation.Map.MapGrid Land = LoadScenario.LoadMap(LoadScenario.RepoRoot(AppContext.BaseDirectory), TestRules.Standard).Grid;
 
     /// <summary>The checksums of one run, made once and shared with the golden values.</summary>
     internal static readonly Lazy<IReadOnlyList<StateChecksum>> Once = new(() => Run(watch: true));
@@ -79,7 +79,7 @@ public sealed class BattleDeterminismTests
             recorder.AfterStep();
         }
 
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), TestRules.Standard.MapTypes);
         var result = ReplayPlayer.Verify(replay, TestRules.Standard);
 
         Assert.Equal(ReplayStatus.Match, result.Status);

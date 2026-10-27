@@ -76,7 +76,7 @@ public sealed class MatchOptionsTests
         }
 
         var map = MapGrid.FromLayers(Size, Size, land, new byte[land.Length], default, null,
-            [BridgeState.New(BridgeKind.WoodLow, new CellPos(30, 8), new CellPos(33, 8))]);
+            [BridgeState.New(GameDataFiles.Rules.MapTypes.Get(BridgeKind.WoodLow), new CellPos(30, 8), new CellPos(33, 8))], types: GameDataFiles.Rules.MapTypes);
         var world = Match(new MatchOptions(StartingCredits: 10_000, DestroyableBridges: false), map).World;
         var segment = world.Map.Bridges[0].Segments[1];
         var hp = segment.Hp;

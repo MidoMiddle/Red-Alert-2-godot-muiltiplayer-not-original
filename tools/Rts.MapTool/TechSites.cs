@@ -27,14 +27,14 @@ internal static class TechSites
     private const int DrillThrow = 3;
 
     /// <summary><paramref name="map"/> with the outposts placed, or an error when they find no room.</summary>
-    public static MapDefinition AddTo(MapDefinition map, Symmetry symmetry)
+    public static MapDefinition AddTo(MapDefinition map, MapTypes types, Symmetry symmetry)
     {
         if (map.Structures.Any(structure => structure.Type is Outpost))
         {
             throw new ArgumentException($"The map '{map.Id}' has its tech buildings already.");
         }
 
-        var ground = MapChecks.BaseGrid(map);
+        var ground = MapChecks.BaseGrid(map, types);
         var ore = OreZone(map);
         var taken = new HashSet<CellPos>();
         foreach (var bridge in map.Bridges)
@@ -44,7 +44,7 @@ internal static class TechSites
 
         foreach (var structure in map.Structures)
         {
-            taken.UnionWith(MapChecks.Footprint(structure));
+            taken.UnionWith(MapChecks.Footprint(structure, types));
         }
 
         var corners = Place(map, ground, symmetry, taken, ore)

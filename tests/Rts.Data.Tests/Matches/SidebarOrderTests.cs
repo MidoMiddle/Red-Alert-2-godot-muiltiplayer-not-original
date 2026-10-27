@@ -22,7 +22,7 @@ public sealed class SidebarOrderTests
         const int size = 64;
         var land = new byte[size * size];
         System.Array.Fill(land, (byte)LandType.Clear);
-        var map = MapGrid.FromLayers(size, size, land, new byte[land.Length], default, null, [], []);
+        var map = MapGrid.FromLayers(size, size, land, new byte[land.Length], default, null, [], [], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(

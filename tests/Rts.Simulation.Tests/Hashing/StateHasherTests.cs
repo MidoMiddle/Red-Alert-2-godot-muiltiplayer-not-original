@@ -403,8 +403,8 @@ public sealed class StateHasherTests
         // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of
         // every locomotor on every cell (M7 step 3).
         "_digest", "<Version>k__BackingField", "_passability",
-        // The land speeds the cells above are read by: rules of the match, not state (M3 step 4).
-        "<Speeds>k__BackingField",
+        // The land speeds the cells above are read by: rules of the match, not state (M3 step 4); so are the kinds of the map (step 14a).
+        "<Speeds>k__BackingField", "<Types>k__BackingField",
         // A counter of ore changes for the client to redraw (M3 step 9).
         "<OreVersion>k__BackingField",
         // A counter of destroyed objects, for the client to hide them without rebuilding the map.
@@ -415,10 +415,11 @@ public sealed class StateHasherTests
     [InlineData(typeof(CornerHeightGrid), new[] { "_levels", "<Width>k__BackingField", "<Height>k__BackingField" })]
     [InlineData(typeof(MapObject), new[]
     {
-        "<Id>k__BackingField", "<Kind>k__BackingField", "<Cell>k__BackingField", "<Variant>k__BackingField", "<Hp>k__BackingField",
+        // The type is the kind, hashed by its number; what it does is the rules' (M3 step 14a).
+        "<Id>k__BackingField", "<Type>k__BackingField", "<Cell>k__BackingField", "<Variant>k__BackingField", "<Hp>k__BackingField",
         "<Destroyed>k__BackingField",
     })]
-    [InlineData(typeof(Bridge), new[] { "_segments", "<Id>k__BackingField", "<Kind>k__BackingField", "<From>k__BackingField", "<To>k__BackingField" })]
+    [InlineData(typeof(Bridge), new[] { "_segments", "<Id>k__BackingField", "<Type>k__BackingField", "<From>k__BackingField", "<To>k__BackingField" })]
     // Only the hit points are hashed: the bridge, the place in the chain and the cells follow from the bridge's ends and the water.
     [InlineData(typeof(BridgeSegment), new[] { "<Hp>k__BackingField", "<Bridge>k__BackingField", "<Index>k__BackingField", "<Cells>k__BackingField" })]
     [InlineData(typeof(Building), new[]
@@ -428,7 +429,7 @@ public sealed class StateHasherTests
         "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<TargetOrder>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
         "<CashTimer>k__BackingField", "<CountryWeapon>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
-        "<Def>k__BackingField", "<Width>k__BackingField", "<Height>k__BackingField",
+        "<Def>k__BackingField", "_type", "<Width>k__BackingField", "<Height>k__BackingField",
         // The tesla troopers charging it (RA2), counted every tick from theirs: derived.
         "<Chargers>k__BackingField",
         // The veil it added (stage 2d): derived from the building and its owner's power; the grids it went into are hashed.

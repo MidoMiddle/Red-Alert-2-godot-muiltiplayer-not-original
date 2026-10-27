@@ -111,7 +111,7 @@ public sealed class PowerSystemTests
     public void Buildings_of_other_players_and_of_the_map_do_not_count()
     {
         var world = new GameWorld(seed: 1, TestMapParser.Parse(string.Join("\n", Enumerable.Repeat(string.Join(" ", Enumerable.Repeat(".", 20)), 10)) +
-            "\nbuilding neutral_house_a 15 5 1").Grid, TestRules.Standard);
+            "\nbuilding neutral_house_a 15 5 1", TestRules.Standard).Grid, TestRules.Standard);
         Build(world, "reactor", 0, 0, owner: new PlayerId(2));
 
         Update(world);

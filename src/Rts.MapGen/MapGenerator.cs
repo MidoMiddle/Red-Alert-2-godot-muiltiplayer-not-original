@@ -26,7 +26,7 @@ public static class MapGenerator
     public const int Attempts = 10;
 
     /// <summary>The map and the seed it was made from (the asked one, or a later one after a failed check).</summary>
-    public static (MapDefinition Map, uint Seed) Generate(MapGenSettings settings) => Generate(settings, MapValidator.Check);
+    public static (MapDefinition Map, uint Seed) Generate(MapGenSettings settings) => Generate(settings, map => MapValidator.Check(map, settings.Types));
 
     /// <summary>As <see cref="Generate(MapGenSettings)"/> with another check, so tests can make the retries happen.</summary>
     internal static (MapDefinition Map, uint Seed) Generate(MapGenSettings settings, Func<MapDefinition, List<MapProblem>> check)
@@ -130,7 +130,7 @@ public static class MapGenerator
     // for one keeps none — the map stays fair, its images alike.
     private static void PlaceDrills(GenMap map)
     {
-        var (placements, _) = Drills.For(map.ToDefinition("work", ""), map.Symmetry, map.Settings.Drills);
+        var (placements, _) = Drills.For(map.ToDefinition("work", ""), map.Types, map.Symmetry, map.Settings.Drills);
         foreach (var placement in placements)
         {
             map.Objects.Add(placement);

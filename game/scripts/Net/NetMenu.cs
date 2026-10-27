@@ -47,7 +47,7 @@ public partial class NetMenu : Control
         column.AddChild(_name);
 
         column.AddChild(Title(Tr("UI_NET_HOST"), 24));
-        _maps = MapCatalog.Load(MapPreviews.ReadMapFiles()).Maps.Where(entry => entry.Map.Players >= 2 && !MapCatalog.IsHidden(entry.File)).ToArray();
+        _maps = MapCatalog.Load(MapPreviews.ReadMapFiles(), Rts.Client.App.DataFiles.Current.Rules.MapTypes).Maps.Where(entry => entry.Map.Players >= 2 && !MapCatalog.IsHidden(entry.File)).ToArray();
         _map = new OptionButton { CustomMinimumSize = new Vector2(480, 40) };
         foreach (var entry in _maps)
         {

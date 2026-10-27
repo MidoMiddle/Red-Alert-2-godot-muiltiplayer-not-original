@@ -117,7 +117,7 @@ public partial class ReplaysScreen : Control
     // Every replay under the folder, newest first; one that cannot be read at all is left out.
     private void Fill()
     {
-        var maps = MapCatalog.Load(MapPreviews.ReadMapFiles()).Maps;
+        var maps = MapCatalog.Load(MapPreviews.ReadMapFiles(), Rts.Client.App.DataFiles.Current.Rules.MapTypes).Maps;
         var root = _table.CreateItem();
         var files = Files(ProjectSettings.GlobalizePath(Folder)).OrderByDescending(File.GetLastWriteTime).ToList();
         foreach (var file in files)
@@ -130,7 +130,7 @@ public partial class ReplaysScreen : Control
                 header = ReplayFormat.ReadHeader(bytes);
                 if (header.FormatVersion == ReplayFormat.FormatVersion)
                 {
-                    replay = ReplayFormat.Read(bytes);
+                    replay = ReplayFormat.Read(bytes, Rts.Client.App.DataFiles.Current.Rules.MapTypes);
                 }
             }
             catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)

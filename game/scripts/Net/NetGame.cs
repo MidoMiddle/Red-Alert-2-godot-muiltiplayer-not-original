@@ -41,7 +41,7 @@ public partial class NetGame : Node
         Socket = socket;
         Transport = transport;
         Map = map;
-        var maps = MapCatalog.Load(MapPreviews.ReadMapFiles()).Maps;
+        var maps = MapCatalog.Load(MapPreviews.ReadMapFiles(), Rts.Client.App.DataFiles.Current.Rules.MapTypes).Maps;
         Maps = maps;
         _hasMap = (id, hash) => maps.Any(entry => entry.Map.Id == id && HashOf(entry) == hash);
     }

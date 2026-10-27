@@ -1,5 +1,6 @@
 using System.Linq;
 using Rts.Data.Maps;
+using Rts.Data.Tests;
 using Rts.Simulation.Map;
 
 namespace Rts.MapGen.Tests;
@@ -14,12 +15,12 @@ public sealed class ClimateMapsTests
     [InlineData("coast", 'g')]
     public void The_generator_paints_the_ground_of_the_climate(string climate, char plain)
     {
-        var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 7, Climate = climate });
+        var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 7, Climate = climate });
 
         Assert.Equal(climate, map.Climate);
         Assert.Equal(ClimateGrounds.Of(climate).Legend.OrderBy(entry => entry.Code), map.TextureLegend);
         Assert.Contains(plain, map.Texture);
-        Assert.DoesNotContain(MapValidator.Check(map), problem => problem.Level == ProblemLevel.Error);
+        Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), problem => problem.Level == ProblemLevel.Error);
         if (climate == "urban")
         {
             // A town: houses by the roads and the pavement along them.
@@ -38,10 +39,10 @@ public sealed class ClimateMapsTests
     {
         // 2026-10-25: the objects of the element documents by the climate (Stages/Dressing), every one with its images.
         var water = climate == "coast" ? WaterKind.Sea : WaterKind.Rivers;
-        var settings = new MapGenSettings { Seed = 2101, Size = 96, Climate = climate, Water = water };
+        var settings = new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 2101, Size = 96, Climate = climate, Water = water };
         var (map, _) = MapGenerator.Generate(settings);
 
-        Assert.DoesNotContain(MapValidator.Check(map), problem => problem.Level == ProblemLevel.Error);
+        Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), problem => problem.Level == ProblemLevel.Error);
         Assert.All(objects, id => Assert.Contains(map.Objects, o => o.Type == id));
         Assert.All(buildings, id => Assert.Contains(map.Structures, s => s.Type == id));
         var symmetry = new Symmetry(settings.Symmetry, map.Width);
@@ -63,13 +64,13 @@ public sealed class ClimateMapsTests
     [InlineData(MapSymmetry.Mirror, 341u, "urban", 2)]
     public void The_sea_runs_round_the_playable_area_and_every_base_lies_near_it(MapSymmetry symmetry, uint seed, string climate, int isletDerricks)
     {
-        var settings = new MapGenSettings { Seed = seed, Size = symmetry == MapSymmetry.Rotate90 ? 128 : 96, Symmetry = symmetry,
+        var settings = new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = seed, Size = symmetry == MapSymmetry.Rotate90 ? 128 : 96, Symmetry = symmetry,
                                             Players = symmetry == MapSymmetry.Rotate90 ? 4 : 2, Climate = climate, Water = WaterKind.Sea };
         var (map, _) = MapGenerator.Generate(settings);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         // Water on every side of the area, near its edge; the bases stay reachable from each other by land.
-        Assert.Empty(MapValidator.Check(map));
+        Assert.Empty(MapValidator.Check(map, GameDataFiles.Rules.MapTypes));
         var area = map.Playable!;
         var edge = Enumerable.Range(0, map.Width).SelectMany(x => Enumerable.Range(0, map.Height).Select(y => new Rts.Simulation.Geometry.CellPos(x, y)))
             .Where(cell => area.Margin(cell) == 2).ToList();
@@ -88,8 +89,8 @@ public sealed class ClimateMapsTests
     public void A_sea_of_a_fifth_leaves_four_fifths_land_with_a_resort_of_two_hotels_and_small_houses()
     {
         // The owner's wish (2026-10-25): 80 % land, 20 % water; a couple of big buildings, the rest small resort houses.
-        var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 351, Size = 96, Climate = "coast", Water = WaterKind.Sea, SeaPercent = 20 });
-        var grid = map.ToMapGrid();
+        var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 351, Size = 96, Climate = "coast", Water = WaterKind.Sea, SeaPercent = 20 });
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         var area = Enumerable.Range(0, map.Width).SelectMany(x => Enumerable.Range(0, map.Height).Select(y => new Rts.Simulation.Geometry.CellPos(x, y)))
             .Where(map.Playable!.Contains).ToList();
         var water = area.Count(cell => grid.LandAt(cell) is Rts.Simulation.Map.LandType.Shallow or Rts.Simulation.Map.LandType.Deep) * 100 / area.Count;
@@ -97,7 +98,7 @@ public sealed class ClimateMapsTests
         Assert.Equal(2, map.Structures.Count(s => s.Type == "neutral_hotel"));
         Assert.True(map.Structures.Count(s => s.Type is "neutral_beach_cabin" or "neutral_kiosk" or "neutral_cafe") >= 12);
         Assert.Contains("water Sea 20%", map.Description, StringComparison.Ordinal);
-        Assert.Throws<ArgumentException>(() => MapGenerator.Generate(new MapGenSettings { Seed = 1, Water = WaterKind.Rivers, SeaPercent = 20 }));
+        Assert.Throws<ArgumentException>(() => MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1, Water = WaterKind.Rivers, SeaPercent = 20 }));
     }
 
     [Theory]
@@ -107,13 +108,13 @@ public sealed class ClimateMapsTests
     {
         // The owner's wish (2026-10-25): an island for every player, raised, two ramps down to a beach; a derrick on every island
         // and a few islets with one at sea.
-        var settings = new MapGenSettings { Seed = seed, Size = players == 4 ? 128 : 96, Symmetry = symmetry, Players = players, Climate = "coast",
+        var settings = new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = seed, Size = players == 4 ? 128 : 96, Symmetry = symmetry, Players = players, Climate = "coast",
                                             Water = WaterKind.Islands };
         var (map, _) = MapGenerator.Generate(settings);
-        var grid = map.ToMapGrid();
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
         // No other start by land, every one over the water: a warning, not an error.
-        var problems = MapValidator.Check(map);
+        var problems = MapValidator.Check(map, GameDataFiles.Rules.MapTypes);
         Assert.DoesNotContain(problems, problem => problem.Level == ProblemLevel.Error);
         Assert.Equal(players - 1, problems.Count(problem => problem.Message.Contains("only over the water", StringComparison.Ordinal)));
 
@@ -176,7 +177,7 @@ public sealed class ClimateMapsTests
     [Fact]
     public void An_unknown_climate_is_refused_by_the_generator()
     {
-        Assert.Throws<ArgumentException>(() => MapGenerator.Generate(new MapGenSettings { Seed = 7, Climate = "lunar" }));
+        Assert.Throws<ArgumentException>(() => MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 7, Climate = "lunar" }));
     }
 
     [Theory]
@@ -187,7 +188,7 @@ public sealed class ClimateMapsTests
     [InlineData("coast", LandType.Track, LandType.Road)]
     public void The_main_road_is_asphalt_in_a_town_and_the_unpaved_road_elsewhere(string climate, LandType expected, LandType other)
     {
-        var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = 7, Climate = climate });
+        var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 7, Climate = climate });
 
         Assert.Contains(expected, map.Land);
         Assert.DoesNotContain(other, map.Land);

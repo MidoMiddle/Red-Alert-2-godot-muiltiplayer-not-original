@@ -41,7 +41,7 @@ internal sealed class TeamMatch
                     start.Cell)),
             ],
             [.. map.Starts.Select(start => start.Cell)]);
-        Simulation = new GameSimulation(SimulationSettings.ForMatch(Setup, map.ToMapGrid()), GameDataFiles.Rules);
+        Simulation = new GameSimulation(SimulationSettings.ForMatch(Setup, map.ToMapGrid(GameDataFiles.Rules.MapTypes)), GameDataFiles.Rules);
         var create = MatchBots.For(Setup, GameDataFiles.Rules);
         foreach (var player in Setup.Players.Where(player => player.Kind == PlayerKind.Ai))
         {

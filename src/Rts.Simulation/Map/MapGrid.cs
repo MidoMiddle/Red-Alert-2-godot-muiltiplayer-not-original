@@ -8,8 +8,8 @@ namespace Rts.Simulation.Map;
 /// <summary>How a map object starts a match (or stands in a replay): ids follow the order of the list, from 1.</summary>
 public readonly record struct MapObjectState(MapObjectKind Kind, CellPos Cell, int Variant, int Hp, bool Destroyed)
 {
-    /// <summary>A new object of <paramref name="kind"/> with full hit points.</summary>
-    public static MapObjectState New(MapObjectKind kind, CellPos cell, int variant) => new(kind, cell, variant, MapObjectTypes.Get(kind).MaxHp, false);
+    /// <summary>A new object of the kind <paramref name="type"/> with full hit points.</summary>
+    public static MapObjectState New(MapObjectType type, CellPos cell, int variant) => new(type.Kind, cell, variant, type.MaxHp, false);
 }
 
 /// <summary>A building the map places at the start of a match (M7 step 7): north-west cell, owner (0 neutral), facing 0…7.</summary>
@@ -53,9 +53,10 @@ public sealed class MapGrid
 
     /// <summary>
     /// A map of <paramref name="width"/> × <paramref name="height"/> clear cells. <paramref name="speeds"/> are the land speeds of
-    /// the match; a map outside a match goes by <see cref="LandSpeeds.Reference"/>.
+    /// the match; a map outside a match goes by <see cref="LandSpeeds.Reference"/>. <paramref name="types"/> are the kinds of map
+    /// objects, bridges and buildings of the data (<see cref="MapTypes"/>; none without them).
     /// </summary>
-    public MapGrid(int width, int height, LandSpeeds? speeds = null)
+    public MapGrid(int width, int height, LandSpeeds? speeds = null, MapTypes? types = null)
     {
         if (width <= 0 || height <= 0)
         {
@@ -65,6 +66,7 @@ public sealed class MapGrid
         Width = width;
         Height = height;
         Speeds = speeds ?? LandSpeeds.Reference;
+        Types = types ?? MapTypes.Empty;
         _land = new LandType[width * height];
         Array.Fill(_land, LandType.Clear);
         _blocked = new bool[width * height];
@@ -80,14 +82,15 @@ public sealed class MapGrid
     /// start. Used by the replay reader and the map loader; throws on unknown land types, flags or levels, on a bridge that does
     /// not run over water from shore to shore (see <see cref="TryAddBridge"/>) and on a building out of place (see
     /// <see cref="TryAddBuilding"/>). <paramref name="ore"/> is one byte per cell (<see cref="OreCell.Packed"/>; empty: no ore).
-    /// <paramref name="speeds"/> as in the constructor.
+    /// <paramref name="speeds"/> and <paramref name="types"/> as in the constructor; an object, bridge or building of a kind the types do
+    /// not define is refused.
     /// </summary>
     public static MapGrid FromLayers(
         int width, int height, ReadOnlySpan<byte> land, ReadOnlySpan<byte> blocked, ReadOnlySpan<byte> heights = default,
         IReadOnlyList<MapObjectState>? objects = null, IReadOnlyList<BridgeState>? bridges = null, IReadOnlyList<BuildingState>? buildings = null,
-        ReadOnlySpan<byte> ore = default, LandSpeeds? speeds = null)
+        ReadOnlySpan<byte> ore = default, LandSpeeds? speeds = null, MapTypes? types = null)
     {
-        var grid = new MapGrid(width, height, speeds);
+        var grid = new MapGrid(width, height, speeds, types);
         if (land.Length != grid._land.Length || blocked.Length != grid._blocked.Length)
         {
             throw new ArgumentException($"Layers must have {grid._land.Length} cells, got {land.Length} and {blocked.Length}.");
@@ -112,13 +115,17 @@ public sealed class MapGrid
 
         foreach (var state in objects ?? [])
         {
-            if (!MapObjectTypes.IsKnown(state.Kind) || !grid.Contains(state.Cell) || state.Variant is < 0 or > 255
-                || state.Hp < 0 || state.Hp > MapObjectTypes.Get(state.Kind).MaxHp)
+            if (!grid.Types.IsKnown(state.Kind))
+            {
+                throw new ArgumentException($"Map object {grid._objects.Count + 1} is of the kind {(int)state.Kind}, which the map types do not define.");
+            }
+
+            if (!grid.Contains(state.Cell) || state.Variant is < 0 or > 255 || state.Hp < 0 || state.Hp > grid.Types.Get(state.Kind).MaxHp)
             {
                 throw new ArgumentException($"Map object {grid._objects.Count + 1} is not valid: {state}.");
             }
 
-            var mapObject = new MapObject(grid._objects.Count + 1, state.Kind, state.Cell, state.Variant, state.Hp, state.Destroyed);
+            var mapObject = new MapObject(grid._objects.Count + 1, grid.Types.Get(state.Kind), state.Cell, state.Variant, state.Hp, state.Destroyed);
             grid._objects.Add(mapObject);
             if (state.Kind is MapObjectKind.OreSource or MapObjectKind.GemSource)
             {
@@ -180,6 +187,12 @@ public sealed class MapGrid
     /// <see cref="ContentEquals"/>.
     /// </summary>
     public LandSpeeds Speeds { get; }
+
+    /// <summary>
+    /// The kinds of map objects, bridges and buildings of this map: those of the data of the match (<see cref="Rules.GameRules.MapTypes"/>),
+    /// or the ones a map outside a match was read with. Rules, not map content: not in the digest, the replay or <see cref="ContentEquals"/>.
+    /// </summary>
+    public MapTypes Types { get; }
 
     public bool Contains(CellPos cell) => cell.X >= 0 && cell.Y >= 0 && cell.X < Width && cell.Y < Height;
 
@@ -335,14 +348,14 @@ public sealed class MapGrid
 
     /// <summary>
     /// An independent copy: the match changes its own map, never the one in the settings. Buildings destroyed in the match stay
-    /// down in the copy. The copy goes by <paramref name="speeds"/>, or by the speeds of this map.
+    /// down in the copy. The copy goes by <paramref name="speeds"/> and <paramref name="types"/>, or by those of this map.
     /// </summary>
-    public MapGrid Clone(LandSpeeds? speeds = null)
+    public MapGrid Clone(LandSpeeds? speeds = null, MapTypes? types = null)
     {
         // The blocked cells come after the start buildings: the ruins of one that fell (RA2) lie where it stood.
         var copy = FromLayers(
             Width, Height, LandBytes(), new byte[Width * Height], _heights.LevelBytes(), ObjectStates(), BridgeStates(), _startBuildings, _ore,
-            speeds ?? Speeds);
+            speeds ?? Speeds, types ?? Types);
         _blocked.CopyTo(copy._blocked, 0);
         _building.CopyTo(copy._building, 0);
         copy._passability = new Passability(copy);
@@ -465,7 +478,7 @@ public sealed class MapGrid
     /// </summary>
     internal string? TryAddBridge(BridgeState state)
     {
-        if (!BridgeTypes.IsKnown(state.Kind))
+        if (!Types.IsKnown(state.Kind))
         {
             return $"unknown bridge kind {(int)state.Kind}";
         }
@@ -488,7 +501,7 @@ public sealed class MapGrid
         }
 
         var (dx, dy) = Bridge.Step(from, to);
-        if (BridgeTypes.Get(state.Kind).High)
+        if (Types.Get(state.Kind).High)
         {
             return TryAddHighBridge(state, dx, dy, length);
         }
@@ -506,7 +519,7 @@ public sealed class MapGrid
                 return $"cell {Text(cell)} already has a bridge";
             }
 
-            if (state.SegmentHp[i] < 0 || state.SegmentHp[i] > BridgeTypes.Get(state.Kind).SegmentHp)
+            if (state.SegmentHp[i] < 0 || state.SegmentHp[i] > Types.Get(state.Kind).SegmentHp)
             {
                 return $"segment {i} has {state.SegmentHp[i]} hit points";
             }
@@ -526,7 +539,7 @@ public sealed class MapGrid
 
         // The spans across: the middle cell, and beside it the water cells no bridge takes, as wide as the type.
         var (acrossX, acrossY) = (alongY, alongX);
-        var half = (BridgeTypes.Get(state.Kind).Width - 1) / 2;
+        var half = (Types.Get(state.Kind).Width - 1) / 2;
         var spans = new System.Collections.Immutable.ImmutableArray<CellPos>[length];
         for (var i = 0; i < length; i++)
         {
@@ -546,7 +559,7 @@ public sealed class MapGrid
             spans[i] = cells.ToImmutable();
         }
 
-        var bridge = new Bridge(_bridges.Count + 1, state.Kind, from, to, state.SegmentHp, spans);
+        var bridge = new Bridge(_bridges.Count + 1, Types.Get(state.Kind), from, to, state.SegmentHp, spans);
         _bridges.Add(bridge);
         foreach (var segment in bridge.Segments)
         {
@@ -571,7 +584,7 @@ public sealed class MapGrid
     private string? TryAddHighBridge(BridgeState state, int dx, int dy, int length)
     {
         var (from, to) = (state.From, state.To);
-        var type = BridgeTypes.Get(state.Kind);
+        var type = Types.Get(state.Kind);
         if (length < 3)
         {
             return $"a high bridge spans three cells or more, {Text(from)} to {Text(to)} is {length}";
@@ -642,7 +655,7 @@ public sealed class MapGrid
             spans[i] = cells.ToImmutable();
         }
 
-        var bridge = new Bridge(_bridges.Count + 1, state.Kind, from, to, state.SegmentHp, spans);
+        var bridge = new Bridge(_bridges.Count + 1, Types.Get(state.Kind), from, to, state.SegmentHp, spans);
         _bridges.Add(bridge);
         foreach (var segment in bridge.Segments)
         {
@@ -718,7 +731,7 @@ public sealed class MapGrid
     /// </summary>
     internal string? TryAddBuilding(BuildingState state)
     {
-        if (!World.BuildingTypes.IsKnown(state.Kind))
+        if (!Types.IsKnown(state.Kind))
         {
             return $"unknown building kind {(int)state.Kind}";
         }
@@ -728,7 +741,7 @@ public sealed class MapGrid
             return $"owner {state.Owner.Value} must be 0…{World.PlayerId.MaxPlayers} and facing {state.Facing} 0…7";
         }
 
-        var type = World.BuildingTypes.Get(state.Kind);
+        var type = Types.Get(state.Kind);
         var far = new CellPos(state.Cell.X + type.Width - 1, state.Cell.Y + type.Height - 1);
         if (!Contains(state.Cell) || !Contains(far))
         {

@@ -36,7 +36,7 @@ public sealed class HoverTooltipTests
     {
         var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
         var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null,
-            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0), new BuildingState(BuildingKind.TechOilDerrick, new CellPos(40, 20), PlayerId.Neutral, 0)]);
+            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0), new BuildingState(BuildingKind.TechOilDerrick, new CellPos(40, 20), PlayerId.Neutral, 0)], types: TestRules.Standard.MapTypes);
         return new GameSimulation(SimulationSettings.ForMatch(MatchSetupTests.OneOnOne(), map), rules ?? TestRules.Standard).World;
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Systems;
 
@@ -19,9 +20,9 @@ public static class BridgeHuts
     public const string Hut = "tech_bridge_repair_hut";
 
     /// <summary>The huts the map lacks, each with its <paramref name="images"/> (the cell itself among them), or alone without them.</summary>
-    public static List<StructurePlacement> For(MapDefinition map, Func<CellPos, IEnumerable<CellPos>>? images = null)
+    public static List<StructurePlacement> For(MapDefinition map, MapTypes types, Func<CellPos, IEnumerable<CellPos>>? images = null)
     {
-        var ground = MapChecks.BaseGrid(map);
+        var ground = MapChecks.BaseGrid(map, types);
         var placed = new List<StructurePlacement>(map.Structures);
         var huts = new List<StructurePlacement>();
         foreach (var bridge in map.Bridges)
@@ -78,9 +79,9 @@ public static class BridgeHuts
     }
 
     /// <summary>The map with the huts it lacks (see <see cref="For"/>).</summary>
-    public static MapDefinition AddTo(MapDefinition map, Func<CellPos, IEnumerable<CellPos>>? images = null)
+    public static MapDefinition AddTo(MapDefinition map, MapTypes types, Func<CellPos, IEnumerable<CellPos>>? images = null)
     {
-        var huts = For(map, images);
+        var huts = For(map, types, images);
         return new MapDefinition(
             map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts,
             map.TextureLegend, map.Heights, map.Land, map.Texture, map.Ore, map.Objects, map.Bridges, [.. map.Structures, .. huts],

@@ -118,7 +118,7 @@ public partial class MapEditorScene : Node3D, IMapSource
     {
         // Before the terrain and the camera are ready: they ask for the map at once. «-- --ui-editor --open NAME» opens a map of
         // res://data/maps (to look at it, a screenshot of every climate).
-        Load(Kept ?? OpenedFromArguments() ?? new MapEditSession(EditableMap.NewWithArea(64, 2)));
+        Load(Kept ?? OpenedFromArguments() ?? new MapEditSession(EditableMap.NewWithArea(64, 2), DataFiles.Current.Rules.MapTypes));
     }
 
     public override void _Ready()
@@ -270,7 +270,7 @@ public partial class MapEditorScene : Node3D, IMapSource
         _checkedVersion = _session.Version;
         try
         {
-            _problems = MapValidator.Check(_session.Map.ToDefinition());
+            _problems = MapValidator.Check(_session.Map.ToDefinition(), _session.Types);
         }
         catch (ArgumentException error)
         {
@@ -347,7 +347,7 @@ public partial class MapEditorScene : Node3D, IMapSource
 
                 break;
             case EditTool.Building:
-                if (BuildingTypes.TryGetById(_options.BuildingType, out var type))
+                if (_session.Types.TryGetBuilding(_options.BuildingType, out var type))
                 {
                     Outline(terrain, at.Cell, type.Width, type.Height);
                 }
@@ -434,7 +434,7 @@ public partial class MapEditorScene : Node3D, IMapSource
         stack.AddChild(ActionButton("UI_EDITOR_NEW", () =>
         {
             // As in RA2 the playable area is a rectangle on the screen, about size² cells (MapArea).
-            Load(new MapEditSession(EditableMap.NewWithArea(Sizes[_sizeList.Selected], (int)_players.Value)));
+            Load(new MapEditSession(EditableMap.NewWithArea(Sizes[_sizeList.Selected], (int)_players.Value), DataFiles.Current.Rules.MapTypes));
             _message = "";
         }));
 
@@ -531,8 +531,8 @@ public partial class MapEditorScene : Node3D, IMapSource
         {
             try
             {
-                var (map, used) = Rts.MapGen.MapGenerator.Generate(options.Settings);
-                Load(new MapEditSession(EditableMap.FromDefinition(map)));
+                var (map, used) = Rts.MapGen.MapGenerator.Generate(options.Settings with { Types = DataFiles.Current.Rules.MapTypes });
+                Load(new MapEditSession(EditableMap.FromDefinition(map), DataFiles.Current.Rules.MapTypes));
                 _message = string.Format(Tr("UI_EDITOR_GENERATED"), used);
             }
             catch (Rts.MapGen.MapGenException error)
@@ -581,7 +581,7 @@ public partial class MapEditorScene : Node3D, IMapSource
                 break;
             case EditTool.Objects:
                 var objects = new List<string>();
-                foreach (var type in MapObjectTypes.All)
+                foreach (var type in DataFiles.Current.Rules.MapTypes.Objects)
                 {
                     objects.Add(type.Id);
                 }
@@ -591,7 +591,7 @@ public partial class MapEditorScene : Node3D, IMapSource
                 break;
             case EditTool.Bridge:
                 var bridges = new List<string>();
-                foreach (var type in BridgeTypes.All)
+                foreach (var type in DataFiles.Current.Rules.MapTypes.Bridges)
                 {
                     bridges.Add(type.Id);
                 }
@@ -600,7 +600,7 @@ public partial class MapEditorScene : Node3D, IMapSource
                 break;
             case EditTool.Building:
                 var buildings = new List<string>();
-                foreach (var type in BuildingTypes.All)
+                foreach (var type in DataFiles.Current.Rules.MapTypes.Buildings)
                 {
                     buildings.Add(type.Id);
                 }
@@ -617,7 +617,7 @@ public partial class MapEditorScene : Node3D, IMapSource
 
     private void RefreshOpenList()
     {
-        var (maps, errors) = MapCatalog.Load(MapPreviews.ReadMapFiles());
+        var (maps, errors) = MapCatalog.Load(MapPreviews.ReadMapFiles(), Rts.Client.App.DataFiles.Current.Rules.MapTypes);
         foreach (var error in errors)
         {
             GD.PushWarning($"Map left out: {error}");
@@ -700,7 +700,7 @@ public partial class MapEditorScene : Node3D, IMapSource
         var index = Array.IndexOf(args, "--open");
         var path = index >= 0 && index + 1 < args.Length ? $"res://data/maps/{args[index + 1]}.rtsmap" : null;
         return path is not null && Godot.FileAccess.FileExists(path)
-            ? new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(Godot.FileAccess.GetFileAsString(path))))
+            ? new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(Godot.FileAccess.GetFileAsString(path))), DataFiles.Current.Rules.MapTypes)
             : null;
     }
 
@@ -712,7 +712,7 @@ public partial class MapEditorScene : Node3D, IMapSource
         }
 
         var entry = _openListed[_openList.Selected];
-        Load(new MapEditSession(EditableMap.FromDefinition(entry.Map)));
+        Load(new MapEditSession(EditableMap.FromDefinition(entry.Map), DataFiles.Current.Rules.MapTypes));
         _message = string.Format(Tr("UI_EDITOR_OPENED"), entry.File);
     }
 

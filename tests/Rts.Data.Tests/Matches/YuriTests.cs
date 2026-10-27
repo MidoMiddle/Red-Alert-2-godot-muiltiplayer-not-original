@@ -26,7 +26,7 @@ public sealed class YuriTests
     private static GameSimulation Match(bool explored = true)
     {
         var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
-        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, []);
+        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, [], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(
@@ -202,7 +202,7 @@ public sealed class YuriTests
         }
 
         Assert.True(taken);
-        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()));
+        var replay = ReplayFormat.Read(ReplayFormat.Write(recorder.Build()), GameDataFiles.Rules.MapTypes);
         Assert.Equal(ReplayStatus.Match, ReplayPlayer.Verify(replay, GameDataFiles.Rules).Status);
     }
 }

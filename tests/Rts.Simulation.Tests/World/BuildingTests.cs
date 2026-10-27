@@ -23,7 +23,7 @@ public sealed class BuildingTests
     /// <summary>16 x 10 of clear land with a neutral house at (7, 4)…(8, 5) and whatever else is given.</summary>
     private static MapGrid Village(params BuildingState[] more) =>
         MapGrid.FromLayers(Width, Height, ClearLand(), new byte[Width * Height], default, null, null,
-            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 2), .. more]);
+            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 2), .. more], types: TestRules.Standard.MapTypes);
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
         CommandProcessor.Apply(world, new MoveCommand(unit.Owner, world.CurrentTick, 0, [unit.Id], target.Center));
@@ -92,8 +92,8 @@ public sealed class BuildingTests
     {
         var land = ClearLand();
         var world = new GameWorld(seed: 1, MapGrid.FromLayers(Width, Height, land, new byte[land.Length], default,
-            [MapObjectState.New(MapObjectKind.PineTree, new CellPos(6, 4), 0)], null,
-            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0)]), TestRules.Standard);
+            [MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.PineTree), new CellPos(6, 4), 0)], null,
+            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0)], types: TestRules.Standard.MapTypes), TestRules.Standard);
         var house = (Building)world.Entities[0];
         var events = new List<SimEvent>();
 
@@ -155,8 +155,8 @@ public sealed class BuildingTests
         heights[9 * (Width + 1) + 13] = 1;
 
         var error = Assert.Throws<ArgumentException>(() => MapGrid.FromLayers(Width, Height, land, new byte[land.Length], heights,
-            [MapObjectState.New(MapObjectKind.LampPost, new CellPos(0, 9), 0)], null,
-            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0), new BuildingState(kind, new CellPos(x, y), new PlayerId(owner), facing)]));
+            [MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.LampPost), new CellPos(0, 9), 0)], null,
+            [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0), new BuildingState(kind, new CellPos(x, y), new PlayerId(owner), facing)], types: TestRules.Standard.MapTypes));
 
         Assert.Contains(problem, error.Message);
     }
@@ -180,7 +180,7 @@ public sealed class BuildingTests
     [InlineData("building neutral_house_a 1 1", "line 3, column 26: neutral_house_a at 1,1 reaches outside the 6x2 map")]
     public void A_bad_building_line_names_its_line(string line, string message)
     {
-        var error = Assert.Throws<InvalidDataException>(() => TestMapParser.Parse($". . . . . .\n. . . . . .\n{line}\n"));
+        var error = Assert.Throws<InvalidDataException>(() => TestMapParser.Parse($". . . . . .\n. . . . . .\n{line}\n", TestRules.Standard));
 
         Assert.Contains(message, error.Message);
     }
@@ -188,7 +188,7 @@ public sealed class BuildingTests
     [Fact]
     public void Building_lines_take_an_owner_and_a_facing()
     {
-        var map = TestMapParser.Parse(". . . . . .\n. . . . . .\nbuilding neutral_house_a 1 0 2 5\nbuilding neutral_shed 4 1\n").Grid;
+        var map = TestMapParser.Parse(". . . . . .\n. . . . . .\nbuilding neutral_house_a 1 0 2 5\nbuilding neutral_shed 4 1\n", TestRules.Standard).Grid;
 
         Assert.Equal(
             new[] { new BuildingState(BuildingKind.NeutralHouseA, new CellPos(1, 0), new PlayerId(2), 5), new BuildingState(BuildingKind.NeutralShed, new CellPos(4, 1), PlayerId.Neutral, 0) },
@@ -237,7 +237,7 @@ public sealed class BuildingTests
         Assert.True(destroyed);
         Assert.Equal(2, simulation.World.Entities.Count);
         var bytes = ReplayFormat.Write(recorder.Build());
-        var read = ReplayFormat.Read(bytes);
+        var read = ReplayFormat.Read(bytes, TestRules.Standard.MapTypes);
 
         Assert.True(read.Settings.Map!.ContentEquals(start));
         Assert.Equal(start.StartBuildings, read.Settings.Map.StartBuildings);
@@ -254,11 +254,11 @@ public sealed class BuildingTests
     public void An_industrial_building_has_its_footprint_and_closes_it_to_every_ground_mover(
         BuildingKind kind, int width, int height, int hp, int garrison)
     {
-        var type = BuildingTypes.Get(kind);
+        var type = TestRules.Standard.MapTypes.Get(kind);
         Assert.Equal((width, height, hp, garrison, false), (type.Width, type.Height, type.MaxHp, type.Garrison, type.Capturable));
 
         var map = MapGrid.FromLayers(Width, Height, ClearLand(), new byte[Width * Height], default, null, null,
-            [new BuildingState(kind, new CellPos(4, 4), PlayerId.Neutral, 0)]);
+            [new BuildingState(kind, new CellPos(4, 4), PlayerId.Neutral, 0)], types: TestRules.Standard.MapTypes);
         for (var y = 4; y < 4 + height; y++)
         {
             for (var x = 4; x < 4 + width; x++)

@@ -1,4 +1,5 @@
 using Rts.Data.Maps;
+using Rts.Data.Tests;
 using Rts.Simulation.Geometry;
 
 namespace Rts.MapGen.Tests;
@@ -51,9 +52,9 @@ public sealed class PlayableAreaTests
     {
         foreach (var seed in new uint[] { 1, 2, 3 })
         {
-            var (map, _) = MapGenerator.Generate(new MapGenSettings { Seed = seed, Symmetry = kind, Players = players });
+            var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = seed, Symmetry = kind, Players = players });
             var area = map.Playable!;
-            var grid = map.ToMapGrid();
+            var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
 
             Assert.All(map.Starts, start => Assert.True(area.Contains(start.Cell), $"seed {seed}: start {start.Slot}"));
             Assert.All(map.Bridges, bridge => Assert.True(area.Contains(bridge.From) && area.Contains(bridge.To), $"seed {seed}: bridge {bridge.From}"));

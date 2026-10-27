@@ -15,8 +15,8 @@ public static class BattleRun
 
     public static void Run(string repoRoot)
     {
-        var map = LoadScenario.LoadMap(repoRoot).Grid;
         var rules = GameData.LoadDirectory(Path.Combine(repoRoot, "game", GameData.Folder)).Rules;
+        var map = LoadScenario.LoadMap(repoRoot, rules).Grid;
         for (var round = 0; round < WarmUpRounds; round++)
         {
             Measure(map, rules, 600, print: false);

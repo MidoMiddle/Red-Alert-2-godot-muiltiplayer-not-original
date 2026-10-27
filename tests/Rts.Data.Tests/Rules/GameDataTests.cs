@@ -45,7 +45,7 @@ public sealed class GameDataTests
         Assert.Equal(6, database.Locomotors.Length);
 
         // The weapon and armor of the outpost of the map are in the data.
-        var outpost = BuildingTypes.Get(BuildingKind.TechOutpost);
+        var outpost = GameDataFiles.Rules.MapTypes.Get(BuildingKind.TechOutpost);
         Assert.True(database.IndexOfWeapon(outpost.Weapon) >= 0, outpost.Weapon);
         Assert.True(database.IndexOfArmor(outpost.Armor) >= 0, outpost.Armor);
         Assert.Equal(10, database.Terrains.Length);
@@ -54,32 +54,27 @@ public sealed class GameDataTests
     }
 
     [Fact]
-    public void The_kinds_of_the_map_in_the_data_are_those_the_engine_had_in_its_code()
+    public void The_kinds_of_the_map_in_the_data_keep_the_values_they_had_in_the_code()
     {
-        // M3 step 14a: the tables of map objects, bridges and buildings of the map moved into game/data with the same values.
+        // M3 step 14a: the tables of map objects, bridges and buildings of the map moved into game/data with the same values (compared
+        // one by one when they moved, ef27a98); a few of them pinned here.
         var types = GameDataFiles.Rules.MapTypes;
-        foreach (var type in Rts.Simulation.Map.MapObjectTypes.All)
-        {
-            var data = types.Get(type.Kind);
-            Assert.Equal(type with { Speeds = null }, data with { Speeds = null });
-            for (var locomotor = Rts.Simulation.Map.Locomotor.Foot; locomotor <= Rts.Simulation.Map.Locomotor.Hover; locomotor++)
-            {
-                Assert.Equal(type.SpeedPercentFor(locomotor), data.SpeedPercentFor(locomotor));
-            }
-        }
-
-        foreach (var type in Rts.Simulation.Map.BridgeTypes.All)
-        {
-            Assert.Equal(type, types.Get(type.Kind));
-        }
-
-        foreach (var type in Rts.Simulation.World.BuildingTypes.All)
-        {
-            Assert.Equal(type, types.Get(type.Kind));
-        }
-
-        Assert.Equal(Rts.Simulation.Map.MapObjectTypes.All.Count, types.Objects.Count());
-        Assert.Equal(Rts.Simulation.World.BuildingTypes.All.Count, types.Buildings.Count());
+        var pine = types.Get(MapObjectKind.PineTree);
+        Assert.Equal((400, true, true, false), (pine.MaxHp, pine.LeavesStump, pine.Blocks(Locomotor.Foot), pine.CrushedBy(Locomotor.Track)));
+        var drift = types.Get(MapObjectKind.Snowdrift);
+        Assert.Equal((60, 80, 50, 100), (drift.SpeedPercentFor(Locomotor.Foot), drift.SpeedPercentFor(Locomotor.Track), drift.SpeedPercentFor(Locomotor.Wheel), drift.SpeedPercentFor(Locomotor.Hover)));
+        var fence = types.Get(MapObjectKind.FenceWood);
+        Assert.Equal((true, false, true), (fence.Blocks(Locomotor.Foot), fence.Blocks(Locomotor.Track), fence.CrushedBy(Locomotor.Track)));
+        Assert.Equal((1500, 3, true), (types.Get(BridgeKind.ConcreteHigh).SegmentHp, types.Get(BridgeKind.ConcreteHigh).Width, types.Get(BridgeKind.ConcreteHigh).High));
+        var hospital = types.Get(BuildingKind.TechHospital);
+        Assert.Equal((6, 4, 800, true), (hospital.Width, hospital.Height, hospital.MaxHp, hospital.Capturable));
+        var airfield = types.Get(BuildingKind.TechAirfield);
+        Assert.Equal((Rts.Simulation.Rules.SuperweaponKind.Paradrop, 240 * 15), (airfield.Superweapon, airfield.Recharge));
+        var outpost = types.Get(BuildingKind.TechOutpost);
+        Assert.Equal(("alliance_ifv_missiles", "concrete", 6, true), (outpost.Weapon, outpost.Armor, outpost.Sight, outpost.RepairsVehicles));
+        Assert.Equal(12, types.Get(BuildingKind.NeutralApartment).Garrison);
+        Assert.Equal(MapObjectTypes.All.Count, types.Objects.Count());
+        Assert.Equal(BuildingTypes.All.Count, types.Buildings.Count());
     }
 
     [Fact]

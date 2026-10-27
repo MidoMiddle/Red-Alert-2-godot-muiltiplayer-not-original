@@ -1,3 +1,4 @@
+using Rts.Simulation.Tests;
 using System.Reflection;
 using Rts.Net.Desync;
 using Rts.Net.Lockstep;
@@ -107,7 +108,7 @@ public sealed class DesyncTests
                 Directory.GetFiles(folder).Select(Path.GetFileName).Order(StringComparer.Ordinal));
             Assert.Equal(string.Join('\n', dumps[1]), File.ReadAllText(Path.Combine(folder, "p2_state.txt")));
             Assert.Contains($"desync_tick = {expected}", File.ReadAllText(Path.Combine(folder, "p1_desync.txt")));
-            var replay = Rts.Simulation.Replays.ReplayFormat.Read(File.ReadAllBytes(Path.Combine(folder, "p1.rtsreplay")));
+            var replay = Rts.Simulation.Replays.ReplayFormat.Read(File.ReadAllBytes(Path.Combine(folder, "p1.rtsreplay")), TestRules.Standard.MapTypes);
             Assert.Equal(expected + ChecksumExchange.StopAfterTicks, replay.TickCount);
             Assert.Equal(match[0].Simulation.ExecutedCommands.Count, replay.Commands.Count);
 

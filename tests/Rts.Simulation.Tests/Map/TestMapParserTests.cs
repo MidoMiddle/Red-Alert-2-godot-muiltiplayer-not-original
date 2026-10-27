@@ -8,12 +8,12 @@ public sealed class TestMapParserTests
 {
     /// <summary>Reads a map from tests/Rts.Simulation.Tests/Maps, copied next to the test binary.</summary>
     internal static TestMap Load(string name) =>
-        TestMapParser.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Maps", name)));
+        TestMapParser.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Maps", name)), TestRules.Standard);
 
     [Fact]
     public void Every_code_maps_to_its_land_type()
     {
-        var map = TestMapParser.Parse(". , = b ~ W # i T");
+        var map = TestMapParser.Parse(". , = b ~ W # i T", TestRules.Standard);
 
         LandType[] expected =
         [
@@ -32,7 +32,7 @@ public sealed class TestMapParserTests
     {
         foreach (var land in Enum.GetValues<LandType>())
         {
-            var map = TestMapParser.Parse(TestMapParser.CodeOf(land).ToString());
+            var map = TestMapParser.Parse(TestMapParser.CodeOf(land).ToString(), TestRules.Standard);
             Assert.Equal(land, map.Grid.LandAt(new CellPos(0, 0)));
         }
     }
@@ -40,7 +40,7 @@ public sealed class TestMapParserTests
     [Fact]
     public void Rows_go_down_the_map_and_comments_and_blank_lines_are_skipped()
     {
-        var map = TestMapParser.Parse("// header\n\n. #\r\n  // indented comment\n= .\n\n");
+        var map = TestMapParser.Parse("// header\n\n. #\r\n  // indented comment\n= .\n\n", TestRules.Standard);
 
         Assert.Equal((2, 2), (map.Grid.Width, map.Grid.Height));
         Assert.Equal(LandType.Rock, map.Grid.LandAt(new CellPos(1, 0)));
@@ -50,7 +50,7 @@ public sealed class TestMapParserTests
     [Fact]
     public void Units_are_read_with_type_cell_and_owner()
     {
-        var map = TestMapParser.Parse(". . .\n. = .\nunit heavy_tank 1 1 player=2\nunit conscript 0 0 player=0");
+        var map = TestMapParser.Parse(". . .\n. = .\nunit heavy_tank 1 1 player=2\nunit conscript 0 0 player=0", TestRules.Standard);
 
         Assert.Equal(
             [

@@ -15,8 +15,11 @@ namespace Rts.Data.Maps;
 /// </summary>
 public static class MapChecks
 {
-    /// <summary>The land, heights and map objects of a known type of <paramref name="map"/>, without bridges and buildings.</summary>
-    public static MapGrid BaseGrid(MapDefinition map)
+    /// <summary>
+    /// The land, heights and map objects of a kind <paramref name="types"/> define of <paramref name="map"/>, without bridges and buildings.
+    /// The grid keeps the types for the checks that build on it.
+    /// </summary>
+    public static MapGrid BaseGrid(MapDefinition map, MapTypes types)
     {
         var land = new byte[map.Width * map.Height];
         for (var i = 0; i < land.Length; i++)
@@ -27,13 +30,13 @@ public static class MapChecks
         var objects = new List<MapObjectState>();
         foreach (var placement in map.Objects)
         {
-            if (MapObjectTypes.TryGetById(placement.Type, out var type))
+            if (types.TryGetObject(placement.Type, out var type))
             {
-                objects.Add(MapObjectState.New(type.Kind, placement.Cell, placement.Variant));
+                objects.Add(MapObjectState.New(type, placement.Cell, placement.Variant));
             }
         }
 
-        return MapGrid.FromLayers(map.Width, map.Height, land, map.BlockedLayer(), map.Heights.AsSpan(), objects);
+        return MapGrid.FromLayers(map.Width, map.Height, land, map.BlockedLayer(), map.Heights.AsSpan(), objects, types: types);
     }
 
     /// <summary>
@@ -88,11 +91,11 @@ public static class MapChecks
         return cells;
     }
 
-    /// <summary>The cells a structure of a known type takes; none for an unknown type.</summary>
-    public static List<CellPos> Footprint(StructurePlacement structure)
+    /// <summary>The cells a structure of a kind <paramref name="types"/> define takes; none for an unknown kind.</summary>
+    public static List<CellPos> Footprint(StructurePlacement structure, MapTypes types)
     {
         var cells = new List<CellPos>();
-        if (BuildingTypes.TryGetById(structure.Type, out var type))
+        if (types.TryGetBuilding(structure.Type, out var type))
         {
             for (var y = structure.Cell.Y; y < structure.Cell.Y + type.Height; y++)
             {
@@ -109,7 +112,7 @@ public static class MapChecks
     /// <summary>What is wrong with the bridge on this ground beside <paramref name="others"/>, or null when it stands.</summary>
     public static string? BridgeProblem(MapGrid ground, BridgePlacement bridge, IEnumerable<BridgePlacement> others)
     {
-        if (!BridgeTypes.TryGetById(bridge.Type, out var type))
+        if (!ground.Types.TryGetBridge(bridge.Type, out var type))
         {
             return $"unknown bridge '{bridge.Type}'";
         }
@@ -119,9 +122,9 @@ public static class MapChecks
         foreach (var other in others)
         {
             taken.UnionWith(BridgeCells(other));
-            if (BridgeTypes.TryGetById(other.Type, out var otherType))
+            if (ground.Types.TryGetBridge(other.Type, out var otherType))
             {
-                states.Add(BridgeState.New(otherType.Kind, other.From, other.To));
+                states.Add(BridgeState.New(otherType, other.From, other.To));
             }
         }
 
@@ -134,14 +137,14 @@ public static class MapChecks
         }
 
         // With the others before it: a wide bridge takes the water beside its middle line (three tanks side by side).
-        states.Add(BridgeState.New(type.Kind, bridge.From, bridge.To));
+        states.Add(BridgeState.New(type, bridge.From, bridge.To));
         return Problem(() => FromGround(ground, bridges: states));
     }
 
     /// <summary>What is wrong with the building on this ground beside <paramref name="others"/>, or null when it stands.</summary>
     public static string? BuildingProblem(MapGrid ground, StructurePlacement structure, IEnumerable<StructurePlacement> others)
     {
-        if (!BuildingTypes.TryGetById(structure.Type, out var type))
+        if (!ground.Types.TryGetBuilding(structure.Type, out var type))
         {
             return $"unknown building '{structure.Type}'";
         }
@@ -149,10 +152,10 @@ public static class MapChecks
         var taken = new HashSet<CellPos>();
         foreach (var other in others)
         {
-            taken.UnionWith(Footprint(other));
+            taken.UnionWith(Footprint(other, ground.Types));
         }
 
-        foreach (var cell in Footprint(structure))
+        foreach (var cell in Footprint(structure, ground.Types))
         {
             if (taken.Contains(cell))
             {
@@ -164,7 +167,7 @@ public static class MapChecks
     }
 
     private static MapGrid FromGround(MapGrid ground, IReadOnlyList<BridgeState>? bridges = null, IReadOnlyList<BuildingState>? buildings = null) =>
-        MapGrid.FromLayers(ground.Width, ground.Height, ground.LandBytes(), ground.BlockedBytes(), ground.Heights.LevelBytes(), ground.ObjectStates(), bridges, buildings);
+        MapGrid.FromLayers(ground.Width, ground.Height, ground.LandBytes(), ground.BlockedBytes(), ground.Heights.LevelBytes(), ground.ObjectStates(), bridges, buildings, types: ground.Types);
 
     // "Bridge 1 is not valid: no shore at 9,4, a bridge runs from shore to shore." → "no shore at 9,4, a bridge runs from shore to shore"
     private static string? Problem(Func<MapGrid> build)

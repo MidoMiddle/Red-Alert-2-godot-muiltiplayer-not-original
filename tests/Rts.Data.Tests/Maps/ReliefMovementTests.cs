@@ -16,7 +16,7 @@ public sealed class ReliefMovementTests
 {
     private static readonly PlayerId Blue = new(1);
 
-    private static MapGrid Relief() => RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap"))).ToMapGrid();
+    private static MapGrid Relief() => RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "relief_test.rtsmap"))).ToMapGrid(GameDataFiles.Rules.MapTypes);
 
     [Theory]
     [InlineData(Locomotor.Foot)]

@@ -18,8 +18,8 @@ public sealed class MapObjectTests
     /// <summary>A world of 16 x 9 with a wall of <paramref name="kind"/> down column 8, no gap.</summary>
     private static GameWorld Walled(MapObjectKind kind, int height = 9)
     {
-        var objects = Enumerable.Range(0, height).Select(y => MapObjectState.New(kind, new CellPos(8, y), 0)).ToList();
-        return new GameWorld(seed: 1, MapGrid.FromLayers(16, height, new byte[16 * height].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * height], default, objects), TestRules.Standard);
+        var objects = Enumerable.Range(0, height).Select(y => MapObjectState.New(TestRules.Standard.MapTypes.Get(kind), new CellPos(8, y), 0)).ToList();
+        return new GameWorld(seed: 1, MapGrid.FromLayers(16, height, new byte[16 * height].Select(_ => (byte)LandType.Clear).ToArray(), new byte[16 * height], default, objects, types: TestRules.Standard.MapTypes), TestRules.Standard);
     }
 
     private static void Order(GameWorld world, Unit unit, CellPos target) =>
@@ -134,7 +134,7 @@ public sealed class MapObjectTests
         static MapGrid AddOpenRow(MapGrid walled)
         {
             var land = Enumerable.Repeat((byte)LandType.Clear, 16 * 9).ToArray();
-            return MapGrid.FromLayers(16, 9, land, new byte[16 * 9], default, walled.ObjectStates());
+            return MapGrid.FromLayers(16, 9, land, new byte[16 * 9], default, walled.ObjectStates(), types: TestRules.Standard.MapTypes);
         }
     }
 
@@ -142,7 +142,7 @@ public sealed class MapObjectTests
     public void A_lamp_post_stops_nobody_and_falls_under_anyone()
     {
         var world = new GameWorld(seed: 1, MapGrid.FromLayers(12, 5, Enumerable.Repeat((byte)LandType.Clear, 60).ToArray(), new byte[60], default,
-            [MapObjectState.New(MapObjectKind.LampPost, new CellPos(6, 2), 0)]), TestRules.Standard);
+            [MapObjectState.New(TestRules.Standard.MapTypes.Get(MapObjectKind.LampPost), new CellPos(6, 2), 0)], types: TestRules.Standard.MapTypes), TestRules.Standard);
         Assert.All(Enum.GetValues<Locomotor>().Where(l => l != Locomotor.Naval), l => Assert.True(world.Map.CanEnter(new CellPos(6, 2), l)));
         var conscript = world.SpawnUnit(Blue, UnitType.Conscript, new CellPos(1, 2).Center);
 
@@ -160,10 +160,10 @@ public sealed class MapObjectTests
         var objects = new List<MapObjectState>();
         for (var i = 0; i < 80; i++)
         {
-            objects.Add(MapObjectState.New((MapObjectKind)(1 + random.NextInt(5)), new CellPos(random.NextInt(20), random.NextInt(12)), random.NextInt(4)));
+            objects.Add(MapObjectState.New(TestRules.Standard.MapTypes.Get((MapObjectKind)(1 + random.NextInt(5))), new CellPos(random.NextInt(20), random.NextInt(12)), random.NextInt(4)));
         }
 
-        var world = new GameWorld(seed: 1, MapGrid.FromLayers(20, 12, Enumerable.Repeat((byte)LandType.Clear, 240).ToArray(), new byte[240], default, objects), TestRules.Standard);
+        var world = new GameWorld(seed: 1, MapGrid.FromLayers(20, 12, Enumerable.Repeat((byte)LandType.Clear, 240).ToArray(), new byte[240], default, objects, types: TestRules.Standard.MapTypes), TestRules.Standard);
         for (var i = 0; i < 120; i++)
         {
             var cell = new CellPos(random.NextInt(20), random.NextInt(12));
@@ -214,7 +214,7 @@ public sealed class MapObjectTests
     [Fact]
     public void The_sandbox_trees_are_pines_and_its_objects_are_there()
     {
-        var map = TestMapParser.Parse(File.ReadAllText(Path.Combine(Rts.Simulation.Tests.Client.ClientFiles.RepoRoot, "game", "maps", "test", "sandbox.txt"))).Grid;
+        var map = TestMapParser.Parse(File.ReadAllText(Path.Combine(Rts.Simulation.Tests.Client.ClientFiles.RepoRoot, "game", "maps", "test", "sandbox.txt")), TestRules.Standard).Grid;
 
         Assert.Equal(88, map.Objects.Count(o => o.Kind == MapObjectKind.PineTree));
         Assert.Equal(8, map.Objects.Count(o => o.Kind == MapObjectKind.FenceWood));

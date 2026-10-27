@@ -19,8 +19,8 @@ public static class LoadRun
 
     public static void Run(string repoRoot)
     {
-        var map = LoadScenario.LoadMap(repoRoot);
         var rules = GameData.LoadDirectory(Path.Combine(repoRoot, "game", GameData.Folder)).Rules;
+        var map = LoadScenario.LoadMap(repoRoot, rules);
         // Warm the JIT first: a method is optimised after about 30 calls, and an order runs the group code once per group,
         // so a cold run would time unoptimised code on the order tick. A match runs many orders; this is what it sees.
         for (var round = 0; round < WarmUpRounds; round++)

@@ -655,7 +655,7 @@ public partial class SkirmishSetup : Control
     /// <summary>The maps of the catalog; the one of the last config is chosen, else the first. Broken map files go to the log.</summary>
     private void LoadMaps()
     {
-        var (maps, errors) = MapCatalog.Load(MapPreviews.ReadMapFiles());
+        var (maps, errors) = MapCatalog.Load(MapPreviews.ReadMapFiles(), Rts.Client.App.DataFiles.Current.Rules.MapTypes);
         foreach (var error in errors)
         {
             GD.PushWarning($"Map left out: {error}");
@@ -733,7 +733,7 @@ public partial class SkirmishSetup : Control
     {
         try
         {
-            var (map, _) = Rts.MapGen.MapGenerator.Generate(settings);
+            var (map, _) = Rts.MapGen.MapGenerator.Generate(settings with { Types = Rts.Client.App.DataFiles.Current.Rules.MapTypes });
             _generated = new MapEntry("random", map, Rts.Data.Maps.MapHasher.Hash(map));
             Browse(_generated);
         }

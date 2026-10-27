@@ -44,7 +44,7 @@ public static class Skirmish
         GameRules rules, IReadOnlyList<UnitType> first, IReadOnlyList<UnitType> second, int maxTicks = MaxTicks, ulong seed = 1,
         Action<GameSimulation>? setup = null, Action<GameSimulation>? afterTick = null)
     {
-        var simulation = new GameSimulation(new SimulationSettings(seed, new MapGrid(Width, Height, rules.Land)), rules);
+        var simulation = new GameSimulation(new SimulationSettings(seed, new MapGrid(Width, Height, rules.Land, rules.MapTypes)), rules);
         setup?.Invoke(simulation);
         var players = new[] { new PlayerId(1), new PlayerId(2) };
         uint sequence = 0;
