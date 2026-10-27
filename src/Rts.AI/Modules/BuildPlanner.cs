@@ -12,7 +12,8 @@ namespace Rts.AI.Modules;
 
 /// <summary>
 /// The base of a bot (docs/implementation/M5_first_bot.md, 4.6–4.7, steps 4–5). First the MCV deploys — where it stands, or on the nearest
-/// cell within <see cref="FarReach"/> where the yard fits as far as the bot has seen; with none seen it drives to the nearest ground not
+/// cell within <see cref="FarReach"/> where the yard fits as far as the bot has seen and no defense of nobody reaches it (2026-10-27: on
+/// WAR Pro the Grand Cannons of the middle reach the inner starts); with none seen it drives to the nearest ground not
 /// explored yet, with all explored <see cref="ScoutStep"/> cells toward the middle of the map; a move that has not got it anywhere for
 /// <see cref="StuckTicks"/> is given up for a new one. Then, on every turn, a ready building is placed where <see cref="BasePlacement"/>
 /// finds room, and with a queue empty the next building is ordered, the most important first:
@@ -755,7 +756,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
         }
 
         var here = mcv.Position.ToCell();
-        if (view.CanPlace(yard, Corner(here, yard), needsBase: false, ignoreUnit: mcv.Id))
+        if (Deploys(context, yard, here, mcv))
         {
             context.Issue(new DeployCommand(view.Me, context.ExecuteTick, context.NextSequence(), mcv.Id));
             return;
@@ -769,7 +770,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 {
                     var cell = new CellPos(here.X + dx, here.Y + dy);
                     if (IntMath.Max(IntMath.Abs(dx), IntMath.Abs(dy)) == ring && view.CanEnter(cell, mcv.Archetype.Locomotor)
-                        && view.CanPlace(yard, Corner(cell, yard), needsBase: false, ignoreUnit: mcv.Id))
+                        && Deploys(context, yard, cell, mcv))
                     {
                         context.Issue(new MoveCommand(view.Me, context.ExecuteTick, context.NextSequence(), [mcv.Id], cell.Center));
                         return;
@@ -787,7 +788,7 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 {
                     var cell = new CellPos(here.X + dx, here.Y + dy);
                     if (IntMath.Max(IntMath.Abs(dx), IntMath.Abs(dy)) == ring && view.Contains(cell) && !view.IsExplored(cell)
-                        && view.CanEnterOnPreview(cell, mcv.Archetype.Locomotor))
+                        && view.CanEnterOnPreview(cell, mcv.Archetype.Locomotor) && context.Memory.NobodysDefenseReaching(cell) is null)
                     {
                         context.Issue(new MoveCommand(view.Me, context.ExecuteTick, context.NextSequence(), [mcv.Id], cell.Center));
                         return;
@@ -808,7 +809,8 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 for (var dx = -ring; dx <= ring; dx++)
                 {
                     var cell = new CellPos(ahead.X + dx, ahead.Y + dy);
-                    if (IntMath.Max(IntMath.Abs(dx), IntMath.Abs(dy)) == ring && cell != here && view.CanEnter(cell, mcv.Archetype.Locomotor))
+                    if (IntMath.Max(IntMath.Abs(dx), IntMath.Abs(dy)) == ring && cell != here && view.CanEnter(cell, mcv.Archetype.Locomotor)
+                        && context.Memory.NobodysDefenseReaching(cell) is null)
                     {
                         context.Issue(new MoveCommand(view.Me, context.ExecuteTick, context.NextSequence(), [mcv.Id], cell.Center));
                         return;
@@ -816,6 +818,15 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 }
             }
         }
+    }
+
+    /// <summary>Whether the yard of <paramref name="mcv"/> fits with its middle on <paramref name="cell"/>, out of the reach of every defense of nobody.</summary>
+    private static bool Deploys(AiContext context, BuildingDef yard, CellPos cell, Unit mcv)
+    {
+        var corner = Corner(cell, yard);
+        var far = new CellPos(corner.X + yard.Footprint.Width - 1, corner.Y + yard.Footprint.Height - 1);
+        return context.Memory.NobodysDefenseReaching(corner, far, 0) is null
+            && context.View.CanPlace(yard, corner, needsBase: false, ignoreUnit: mcv.Id);
     }
 
     /// <summary>The north-west cell of <paramref name="def"/> centred on <paramref name="centre"/>, as a deploy places the yard.</summary>

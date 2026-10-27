@@ -10,10 +10,12 @@ namespace Rts.AI.Modules;
 
 /// <summary>
 /// The engineers of a bot (M11 step 3, the bot that knows every weapon): they take the tech buildings of the map — the oil derrick, the
-/// hospital, the airfield, the outpost — that nobody holds.
+/// hospital, the airfield, the outpost — that nobody holds, and the buildings of the factions the map placed for nobody that the data lets an
+/// engineer take — a nuclear reactor, a construction yard, barracks (2026-10-27, the maps of RA2).
 /// <list type="bullet">
-/// <item>The target is the nearest such building to the start the bot has seen (<see cref="AiMemory.MapBuildings"/>), within
-/// <see cref="CaptureCells"/> of it, that no armed enemy the bot sees or remembers stands within <see cref="GuardCells"/> of.</item>
+/// <item>The target is the nearest such building to the start the bot knows of (<see cref="AiMemory.MapBuildings"/>,
+/// <see cref="AiMemory.NobodysBuildings"/>), within <see cref="CaptureCells"/> of it, that no armed enemy the bot sees or remembers stands
+/// within <see cref="GuardCells"/> of, nor a defense of nobody reaches within a cell of.</item>
 /// <item>With a target and no engineer, one is ordered from the barracks — of the faction's engineers the first it may build — once the
 /// money left after the queues covers it; one at a time. An engineer lost waits <see cref="RetryTicks"/> before the next.</item>
 /// <item>An engineer is sent into the target (<see cref="EnterCommand"/>); once the building is the bot's, it looks for the next.</item>
@@ -59,9 +61,9 @@ public sealed class EngineerManager(AiSettings settings) : IAiModule
         {
             _sent = null;
             var taken = false;
-            foreach (var building in context.Memory.MapBuildings)
+            foreach (var building in view.OwnBuildings)
             {
-                taken |= building.Id == sent.Building && building.Owner == view.Me;
+                taken |= building.Id == sent.Building;
             }
 
             _retryAt = taken ? 0 : context.Tick + RetryTicks;
@@ -86,14 +88,20 @@ public sealed class EngineerManager(AiSettings settings) : IAiModule
             }
 
             context.Issue(new EnterCommand(view.Me, context.ExecuteTick, context.NextSequence(), [engineer.Id], target.Id));
-            context.Log?.Add(context.Tick, context.Module, $"sends {engineer.Archetype.Id} to take {target.Kind} at {target.Cell.X},{target.Cell.Y}");
+            context.Log?.Add(context.Tick, context.Module, $"sends {engineer.Archetype.Id} to take {target.What} at {target.Cell.X},{target.Cell.Y}");
             _sent = (engineer.Id, target.Id);
             return;
         }
     }
 
-    /// <summary>The tech building to take: nobody's, seen, near the start, not guarded; the nearest first; null for none.</summary>
-    internal static RememberedMapBuilding? Target(AiContext context)
+    /// <summary>A building to take: its id, its north-west cell, what it is.</summary>
+    internal readonly record struct CaptureTarget(EntityId Id, CellPos Cell, string What);
+
+    /// <summary>
+    /// The building to take: nobody's, known, near the start, not guarded; the nearest first, a tech building before a building of a faction
+    /// as far; null for none.
+    /// </summary>
+    internal static CaptureTarget? Target(AiContext context)
     {
         var view = context.View;
         if (view.Start is not { } start)
@@ -101,28 +109,48 @@ public sealed class EngineerManager(AiSettings settings) : IAiModule
             return null;
         }
 
-        RememberedMapBuilding? best = null;
+        CaptureTarget? best = null;
         var bestDistance = int.MaxValue;
+        var types = view.Rules.MapTypes;
         foreach (var building in context.Memory.MapBuildings)
         {
             var distance = Distance(building.Cell, start);
-            if (!building.Owner.IsNeutral || !context.View.Rules.MapTypes.IsKnown(building.Kind) || !context.View.Rules.MapTypes.Get(building.Kind).Capturable
-                || building.Kind == BuildingKind.TechBridgeRepairHut || distance > CaptureCells || distance >= bestDistance || Guarded(context, building))
+            if (!building.Owner.IsNeutral || !types.IsKnown(building.Kind) || !types.Get(building.Kind).Capturable
+                || building.Kind == BuildingKind.TechBridgeRepairHut || distance > CaptureCells || distance >= bestDistance
+                || Guarded(context, building.Cell, building.FarCell))
             {
                 continue;
             }
 
-            (best, bestDistance) = (building, distance);
+            (best, bestDistance) = (new CaptureTarget(building.Id, building.Cell, types.Get(building.Kind).Id), distance);
+        }
+
+        foreach (var building in context.Memory.NobodysBuildings)
+        {
+            var distance = Distance(building.Cell, start);
+            var def = view.Rules.Database.Buildings[building.DefIndex];
+            if (!def.Capturable || def.Wall || distance > CaptureCells || distance >= bestDistance || Guarded(context, building.Cell, building.FarCell))
+            {
+                continue;
+            }
+
+            (best, bestDistance) = (new CaptureTarget(building.Id, building.Cell, def.Id), distance);
         }
 
         return best;
     }
 
-    private static bool Guarded(AiContext context, RememberedMapBuilding building)
+    private static bool Guarded(AiContext context, CellPos cell, CellPos far)
     {
+        // A defense of nobody next to it fires at the engineer on its way in.
+        if (context.Memory.NobodysDefenseReaching(cell, far, 1) is not null)
+        {
+            return true;
+        }
+
         foreach (var enemy in context.View.VisibleEnemies)
         {
-            if (enemy is Unit { Archetype.Armed: true, Harvester: null } unit && Near(building, unit.Position.ToCell()))
+            if (enemy is Unit { Archetype.Armed: true, Harvester: null } unit && Near(cell, far, unit.Position.ToCell()))
             {
                 return true;
             }
@@ -130,7 +158,7 @@ public sealed class EngineerManager(AiSettings settings) : IAiModule
 
         foreach (var army in context.Memory.Armies)
         {
-            if (army.Armed > 0 && Near(building, army.Centre.ToCell()))
+            if (army.Armed > 0 && Near(cell, far, army.Centre.ToCell()))
             {
                 return true;
             }
@@ -139,9 +167,8 @@ public sealed class EngineerManager(AiSettings settings) : IAiModule
         return false;
     }
 
-    private static bool Near(RememberedMapBuilding building, CellPos cell) =>
-        cell.X >= building.Cell.X - GuardCells && cell.X <= building.FarCell.X + GuardCells
-        && cell.Y >= building.Cell.Y - GuardCells && cell.Y <= building.FarCell.Y + GuardCells;
+    private static bool Near(CellPos from, CellPos to, CellPos cell) =>
+        cell.X >= from.X - GuardCells && cell.X <= to.X + GuardCells && cell.Y >= from.Y - GuardCells && cell.Y <= to.Y + GuardCells;
 
     /// <summary>An engineer from the barracks, unless one is queued, the last was lost lately or the money is not there.</summary>
     private void Order(AiContext context)
@@ -166,7 +193,7 @@ public sealed class EngineerManager(AiSettings settings) : IAiModule
             if (card.Use == Knowledge.UnitUse.Engineer && view.Player.CanBuildUnit(card.Index) && def.Cost <= view.SpareCredits())
             {
                 context.Issue(new ProduceCommand(view.Me, context.ExecuteTick, context.NextSequence(), ProductionKind.Unit, card.Index, 1));
-                context.Log?.Add(context.Tick, context.Module, $"orders {def.Id} to take a tech building");
+                context.Log?.Add(context.Tick, context.Module, $"orders {def.Id} to take a building of nobody");
                 return;
             }
         }

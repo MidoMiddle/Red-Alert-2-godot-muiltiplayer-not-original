@@ -31,7 +31,8 @@ namespace Rts.AI.Modules;
 /// memory — in the order of <see cref="AiSettings.TargetPriority"/> (<see cref="Rank"/>), the nearest of the first kind there is — else where
 /// the enemy was last seen or may be; unarmed enemy units near it — harvesters, an MCV — and the target building in sight are
 /// attacked;</item>
-/// <item><b>fighting</b> — while an armed enemy is near, by the micro of the level (M8, 4.4, step 5, <see cref="AiSettings.Micro"/>):
+/// <item><b>fighting</b> — while an armed enemy is near — or a defense of nobody, which fires at every player (<see cref="AiWorldView.Foes"/>,
+/// 2026-10-27) — by the micro of the level (M8, 4.4, step 5, <see cref="AiSettings.Micro"/>):
 /// «Easy» attack-moves at the nearest and lets its units choose; from «Medium» on every unit that can hurt it fires at the enemy the squad
 /// kills soonest (<see cref="Focus"/>); «Hard» also pulls the wounded back behind the squad; «Brutal» also keeps a longer-ranged unit out of
 /// the reach of what it fights (<see cref="KeepRange"/>). From «Medium» on a squad that loses the trade — weaker than
@@ -763,7 +764,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     {
         var rules = context.View.Rules;
         _foes.Clear();
-        foreach (var enemy in context.View.VisibleEnemies)
+        foreach (var enemy in context.View.Foes)
         {
             if (!Armed(enemy) || Distance(centre, CellOf(enemy)) > settings.EngageCells)
             {
@@ -813,7 +814,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
             var reach = RangeOf(view.Rules, view.Rules.WeaponsOf(unit.Type));
             Entity? threat = null;
             var (threatDistance, threatReach) = (int.MaxValue, Fixed.Zero);
-            foreach (var enemy in view.VisibleEnemies)
+            foreach (var enemy in view.Foes)
             {
                 var distance = Distance(cell, CellOf(enemy));
                 if (!Armed(enemy) || distance >= threatDistance || !Hurts(view.Rules, enemy, unit))
@@ -846,7 +847,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     {
         var database = context.View.Rules.Database;
         var enemies = 0L;
-        foreach (var enemy in context.View.VisibleEnemies)
+        foreach (var enemy in context.View.Foes)
         {
             if (!Armed(enemy) || Distance(centre, CellOf(enemy)) > settings.EngageCells + TradeCells)
             {
@@ -1211,7 +1212,7 @@ public sealed class SquadManager(AiSettings settings, TeamBlackboard? team = nul
     {
         Entity? best = null;
         var bestDistance = settings.EngageCells + 1;
-        foreach (var enemy in context.View.VisibleEnemies)
+        foreach (var enemy in context.View.Foes)
         {
             var (fits, at) = enemy switch
             {

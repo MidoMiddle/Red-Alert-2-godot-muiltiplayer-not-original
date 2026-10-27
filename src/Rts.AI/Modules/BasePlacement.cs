@@ -15,7 +15,9 @@ namespace Rts.AI.Modules;
 /// <item>the rules do not let the building stand there, as far as the bot has seen (<see cref="AiWorldView.CanPlace"/>);</item>
 /// <item>it comes nearer than <see cref="EdgeMargin"/> cells to the edge of the map;</item>
 /// <item>an own building stands in the ring of cells round it — the passages of one cell stay open;</item>
-/// <item>the cell where the building releases units or takes ore cannot be driven on.</item>
+/// <item>the cell where the building releases units or takes ore cannot be driven on;</item>
+/// <item>a defense of nobody that hits the ground reaches its footprint (2026-10-27, the maps of RA2): it would fire at it from the
+/// start.</item>
 /// </list>
 /// The rest are weighed, the lowest first: a building by its distance to the yard, a refinery by its distance to the explored ore, a
 /// defense by its distance to a point <see cref="DefenseAhead"/> cells from the yard toward the likely enemy; equal ones go to the smaller
@@ -76,7 +78,7 @@ public sealed class BasePlacement
         for (; _next < end; _next++)
         {
             var candidate = new CellPos(centre.X + Offsets[_next].X, centre.Y + Offsets[_next].Y);
-            if (Fits(view, def, candidate))
+            if (Fits(view, memory, def, candidate))
             {
                 _found.Add((Score(def, candidate, centre, target), candidate));
             }
@@ -94,7 +96,7 @@ public sealed class BasePlacement
         foreach (var (_, candidate) in _found)
         {
             // The base may have changed while the search went on: the place is looked at again.
-            if (!Fits(view, def, candidate))
+            if (!Fits(view, memory, def, candidate))
             {
                 continue;
             }
@@ -116,10 +118,11 @@ public sealed class BasePlacement
     }
 
     /// <summary>Whether <paramref name="def"/> may stand with its north-west cell on <paramref name="corner"/>, the passages aside.</summary>
-    private static bool Fits(AiWorldView view, BuildingDef def, CellPos corner)
+    private static bool Fits(AiWorldView view, AiMemory memory, BuildingDef def, CellPos corner)
     {
         var far = new CellPos(corner.X + def.Footprint.Width - 1, corner.Y + def.Footprint.Height - 1);
-        if (corner.X < EdgeMargin || corner.Y < EdgeMargin || far.X >= view.Width - EdgeMargin || far.Y >= view.Height - EdgeMargin)
+        if (corner.X < EdgeMargin || corner.Y < EdgeMargin || far.X >= view.Width - EdgeMargin || far.Y >= view.Height - EdgeMargin
+            || memory.NobodysDefenseReaching(corner, far, 0) is not null)
         {
             return false;
         }

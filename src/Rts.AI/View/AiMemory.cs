@@ -19,6 +19,18 @@ public sealed record RememberedMapBuilding(EntityId Id, BuildingKind Kind, Playe
     int Occupants, int SeenTick);
 
 /// <summary>
+/// A building of a faction the map placed for nobody, as the bot knows it (2026-10-27, the maps of RA2): from the map before the match, then
+/// as it saw it last. <paramref name="Reach"/> is the longest range of its weapons in whole cells, 0 for one that does not fire;
+/// <paramref name="HitsGround"/> whether one of them hits what goes on the ground.
+/// </summary>
+public sealed record RememberedNobodysBuilding(EntityId Id, int DefIndex, CellPos Cell, CellPos FarCell, int Hp, int Reach, bool HitsGround,
+    int SeenTick)
+{
+    /// <summary>Whether it fires at the bot's units: a defense of nobody, which fires at every player (<see cref="Rts.Simulation.Combat.Hostility"/>).</summary>
+    public bool Fires => Reach > 0;
+}
+
+/// <summary>
 /// Enemy units seen together in one block of <see cref="AiMemory.BlockCells"/> × <see cref="AiMemory.BlockCells"/> cells: where they stood on
 /// average, how strong they were (cost × the share of hit points left, as the strength of a squad in 4.6), how many and how many of them
 /// infantry (step 6), when.
@@ -41,7 +53,9 @@ public sealed record HarvesterSighting(EntityId Id, CellPos Cell, int SeenTick);
 /// without them;</item>
 /// <item>the starts of the map where an enemy may be — every start but the bot's own, until it is explored;</item>
 /// <item>enemy harvesters where they were seen last (M8 step 10) — forgotten after <see cref="EnemyEstimate.ForgetTicks"/>, or once
-/// their cell is in sight without them.</item>
+/// their cell is in sight without them;</item>
+/// <item>the buildings of the factions the map placed for nobody (2026-10-27) — known from the map on the first turn, as its preview
+/// shows them; forgotten once a cell of theirs is in sight and they are not there, or no longer nobody's.</item>
 /// </list>
 /// The state of the bot only, not of the match: it is not hashed, and it is the same on every machine because the bot is deterministic.
 /// </summary>
@@ -153,10 +167,45 @@ public sealed class AiMemory
 
     private readonly SortedDictionary<int, RememberedMapBuilding> _mapBuildings = new();
 
+    /// <summary>The buildings of the factions the map placed for nobody, by id: its defenses and what an engineer may take (2026-10-27).</summary>
+    public IReadOnlyCollection<RememberedNobodysBuilding> NobodysBuildings => _nobodys.Values;
+
+    private readonly SortedDictionary<int, RememberedNobodysBuilding> _nobodys = new();
+    private bool _nobodysKnown;
+
+    /// <summary>
+    /// The defense of nobody that hits the ground and reaches within <paramref name="margin"/> cells of <paramref name="cell"/> — by its
+    /// reach from the nearest cell of its footprint, more than the rules allow it, so that the bot stays clear; null for none.
+    /// </summary>
+    public RememberedNobodysBuilding? NobodysDefenseReaching(CellPos cell, int margin = 0) => NobodysDefenseReaching(cell, cell, margin);
+
+    /// <summary>As <see cref="NobodysDefenseReaching(CellPos, int)"/>, for the cells from <paramref name="from"/> to <paramref name="to"/>: a footprint.</summary>
+    public RememberedNobodysBuilding? NobodysDefenseReaching(CellPos from, CellPos to, int margin)
+    {
+        foreach (var building in _nobodys.Values)
+        {
+            if (!building.Fires || !building.HitsGround)
+            {
+                continue;
+            }
+
+            var dx = (long)IntMath.Max(IntMath.Max(building.Cell.X - to.X, from.X - building.FarCell.X), 0);
+            var dy = (long)IntMath.Max(IntMath.Max(building.Cell.Y - to.Y, from.Y - building.FarCell.Y), 0);
+            var reach = (long)building.Reach + margin;
+            if (dx * dx + dy * dy <= reach * reach)
+            {
+                return building;
+            }
+        }
+
+        return null;
+    }
+
     internal void Update(AiWorldView view)
     {
         RememberBuildings(view);
         RememberMapBuildings(view);
+        RememberNobodysBuildings(view);
         RememberArmies(view);
         RememberHarvesters(view);
         RememberStarts(view);
@@ -235,6 +284,59 @@ public sealed class AiMemory
         {
             _mapBuildings.Remove(id);
         }
+    }
+
+    private void RememberNobodysBuildings(AiWorldView view)
+    {
+        if (!_nobodysKnown)
+        {
+            foreach (var building in view.NobodysBuildingsOfTheMap())
+            {
+                _nobodys[building.Id.Value] = Nobodys(view, building);
+            }
+
+            _nobodysKnown = true;
+        }
+
+        _seen.Clear();
+        foreach (var building in view.NobodysBuildingsInSight)
+        {
+            _seen.Add(building.Id.Value);
+            _nobodys[building.Id.Value] = Nobodys(view, building);
+        }
+
+        _forgotten.Clear();
+        foreach (var remembered in _nobodys.Values)
+        {
+            // Destroyed, or taken by an engineer: not nobody's any more.
+            if (!_seen.Contains(remembered.Id.Value) && AnyVisible(view, remembered.Cell, remembered.FarCell))
+            {
+                _forgotten.Add(remembered.Id.Value);
+            }
+        }
+
+        foreach (var id in _forgotten)
+        {
+            _nobodys.Remove(id);
+        }
+    }
+
+    private static RememberedNobodysBuilding Nobodys(AiWorldView view, Building building)
+    {
+        var (reach, ground) = (0, false);
+        if (Rts.Simulation.Combat.Hostility.IsHostileNeutral(building))
+        {
+            foreach (var index in view.Rules.WeaponsOfBuilding(building.DefIndex))
+            {
+                if (index >= 0 && view.Rules.Database.Weapons[index] is var weapon)
+                {
+                    reach = IntMath.Max(reach, (weapon.Range + Fixed.One - Fixed.Epsilon).ToIntFloor());
+                    ground |= (weapon.Targets & WeaponTargets.Ground) != 0;
+                }
+            }
+        }
+
+        return new RememberedNobodysBuilding(building.Id, building.DefIndex, building.Cell, building.FarCell, building.Hp, reach, ground, view.Tick);
     }
 
     private void RememberHarvesters(AiWorldView view)

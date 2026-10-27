@@ -30,6 +30,8 @@ public sealed class AiWorldView
     private readonly List<Entity> _allied = new();
     private readonly List<Entity> _enemies = new();
     private readonly List<Building> _mapBuildings = new();
+    private readonly List<Building> _nobodys = new();
+    private readonly List<Entity> _foes = new();
     private GameWorld _world;
 
     internal AiWorldView(GameWorld world, PlayerId me, CellPos? start, ImmutableArray<CellPos> mapStarts, int perceptionDelay = 0)
@@ -81,6 +83,33 @@ public sealed class AiWorldView
     /// them — for the engineers and the garrisons. The memory keeps them when they are out of sight.
     /// </summary>
     public IReadOnlyList<Building> MapBuildingsInSight => _mapBuildings;
+
+    /// <summary>
+    /// The living buildings of the factions the map placed for nobody that the bot's player sees now (2026-10-27, the maps of RA2): the
+    /// defenses that fire at every player (<see cref="Rts.Simulation.Combat.Hostility"/>) and what an engineer may take. The memory keeps
+    /// them when they are out of sight.
+    /// </summary>
+    public IReadOnlyList<Building> NobodysBuildingsInSight => _nobodys;
+
+    /// <summary>
+    /// What the bot's squads fight: the enemies of <see cref="VisibleEnemies"/> and the defenses of nobody in sight, which fire at them too.
+    /// </summary>
+    public IReadOnlyList<Entity> Foes => _foes;
+
+    /// <summary>
+    /// The buildings of the factions the map placed for nobody, as its preview shows them before the match — every player knows the map of
+    /// the match. Asked once, by the memory of a bot on its first turn.
+    /// </summary>
+    internal IEnumerable<Building> NobodysBuildingsOfTheMap()
+    {
+        foreach (var entity in _world.Entities)
+        {
+            if (entity is Building { IsAlive: true, Def: not null, Owner.IsNeutral: true } building)
+            {
+                yield return building;
+            }
+        }
+    }
 
     /// <summary>Whether <paramref name="player"/> is the bot's player or an ally of it.</summary>
     public bool IsAlly(PlayerId player) => (_world.AlliesOf(Me) & Bit(player)) != 0;
@@ -249,6 +278,8 @@ public sealed class AiWorldView
         _allied.Clear();
         _enemies.Clear();
         _mapBuildings.Clear();
+        _nobodys.Clear();
+        _foes.Clear();
         foreach (var entity in world.Entities)
         {
             if (!entity.IsAlive || entity is not (Unit or Building))
@@ -259,6 +290,15 @@ public sealed class AiWorldView
             if (entity is Building { Def: null } mapBuilding && Vision.Sees(world, Me, mapBuilding))
             {
                 _mapBuildings.Add(mapBuilding);
+            }
+
+            if (entity is Building { Def: not null, Owner.IsNeutral: true } nobodys && Vision.Sees(world, Me, nobodys))
+            {
+                _nobodys.Add(nobodys);
+                if (Rts.Simulation.Combat.Hostility.IsHostileNeutral(nobodys))
+                {
+                    _foes.Add(nobodys);
+                }
             }
 
             if (entity.Owner == Me)
@@ -279,6 +319,7 @@ public sealed class AiWorldView
             else if (IsEnemy(entity.Owner) && Vision.Sees(world, Me, entity) && !PassesForAnother(world, entity) && Perception.Sight(entity.Id.Value, tick))
             {
                 _enemies.Add(entity);
+                _foes.Add(entity);
             }
         }
 

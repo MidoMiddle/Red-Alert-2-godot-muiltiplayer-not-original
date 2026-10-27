@@ -21,10 +21,14 @@ namespace Rts.AI.Modules;
 /// output.</item>
 /// </list>
 /// It orders harvesters itself, one at a time, up to <see cref="AiSettings.HarvestersPerRefinery"/> a refinery, and sends a harvester
-/// that works within <see cref="AiSettings.DangerCells"/> of a known enemy to the explored ore nearest its refineries that lies farther.
+/// that works within <see cref="AiSettings.DangerCells"/> of a known enemy — or within the reach of a defense of nobody, by
+/// <see cref="NobodysMargin"/> — to the explored ore nearest its refineries that lies farther.
 /// </summary>
 public sealed class EconomyManager(AiSettings settings) : IAiModule
 {
+    /// <summary>A harvester keeps this many cells beyond the reach of a defense of nobody (2026-10-27).</summary>
+    public const int NobodysMargin = 2;
+
     /// <summary>The ore within this of a refinery is what its harvesters are bought for, in cells (M8 step 10).</summary>
     public const int OreReachCells = 24;
 
@@ -302,9 +306,17 @@ public sealed class EconomyManager(AiSettings settings) : IAiModule
         }
     }
 
-    /// <summary>Whether a known enemy — an army remembered or an armed building — is within the danger distance of <paramref name="cell"/>.</summary>
+    /// <summary>
+    /// Whether a known enemy — an army remembered or an armed building — is within the danger distance of <paramref name="cell"/>, or a
+    /// defense of nobody reaches within <see cref="NobodysMargin"/> of it (2026-10-27): it fires at every harvester.
+    /// </summary>
     private bool NearEnemy(AiContext context, CellPos cell)
     {
+        if (context.Memory.NobodysDefenseReaching(cell, NobodysMargin) is not null)
+        {
+            return true;
+        }
+
         foreach (var army in context.Memory.Armies)
         {
             if (Distance(cell, army.Centre.ToCell()) < settings.DangerCells)

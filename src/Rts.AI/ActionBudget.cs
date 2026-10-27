@@ -163,9 +163,10 @@ public sealed class ActionBudget(int actionsPerSecond)
         return false;
     }
 
+    // An enemy in sight, or a defense of nobody: the squads fight both (AiWorldView.Foes).
     private static bool Known(AiWorldView view, EntityId id)
     {
-        foreach (var enemy in view.VisibleEnemies)
+        foreach (var enemy in view.Foes)
         {
             if (enemy.Id == id)
             {
