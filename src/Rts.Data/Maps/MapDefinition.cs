@@ -223,12 +223,9 @@ public sealed class MapDefinition
         for (var i = 0; i < buildings.Length; i++)
         {
             var placement = Structures[i];
-            if (!types.TryGetBuilding(placement.Type, out var type))
-            {
-                throw new ArgumentException($"Unknown building '{placement.Type}' at {placement.Cell.X},{placement.Cell.Y}.");
-            }
-
-            buildings[i] = new BuildingState(type.Kind, placement.Cell, new PlayerId(placement.Owner), placement.Facing);
+            // A kind of the map, or a building of a faction's data the map places for nobody (2026-10-27, as on the maps of RA2).
+            buildings[i] = MapChecks.StateOf(placement, types)
+                ?? throw new ArgumentException($"Unknown building '{placement.Type}' at {placement.Cell.X},{placement.Cell.Y}.");
         }
 
         var ore = new byte[Width * Height];

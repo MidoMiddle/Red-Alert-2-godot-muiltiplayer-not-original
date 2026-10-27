@@ -111,7 +111,14 @@ public partial class Buildings : Node3D
         {
             foreach (var start in map.StartBuildings)
             {
-                Add(start.Kind, start.Cell, start.Owner);
+                if (start.IsOfData)
+                {
+                    AddOfData(start);
+                }
+                else
+                {
+                    Add(start.Kind, start.Cell, start.Owner);
+                }
             }
 
             return;
@@ -139,6 +146,24 @@ public partial class Buildings : Node3D
         {
             AddRuin(ruin);
         }
+    }
+
+    /// <summary>
+    /// A building of a faction's data the map places for nobody (2026-10-27), with no match (the editor, a preview): its look in the grey
+    /// of nobody. In a match it is an entity, which <see cref="PlayerBuildings"/> draws.
+    /// </summary>
+    private void AddOfData(Rts.Simulation.Map.BuildingState start)
+    {
+        if (!Rts.Client.App.DataFiles.Current.Rules.Database.TryGetBuilding(start.Def!, out var def))
+        {
+            return;
+        }
+
+        var centre = new Vector3(start.Cell.X + def.Footprint.Width / 2f, 0, start.Cell.Y + def.Footprint.Height / 2f);
+        var ground = WorldCoords.Terrain?.HeightAt(centre.X, centre.Z) ?? 0f;
+        var body = new Node3D { Position = centre + new Vector3(0, ground - Sink, 0) };
+        AddChild(body);
+        BuildingLookView.AddTo(body, def, OwnerColor(start.Owner), Sink, new Vector2I(start.Cell.X, start.Cell.Y));
     }
 
     private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner, bool repairing = false,

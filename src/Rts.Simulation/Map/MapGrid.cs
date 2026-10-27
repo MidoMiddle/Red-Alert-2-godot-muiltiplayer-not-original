@@ -12,8 +12,21 @@ public readonly record struct MapObjectState(MapObjectKind Kind, CellPos Cell, i
     public static MapObjectState New(MapObjectType type, CellPos cell, int variant) => new(type.Kind, cell, variant, type.MaxHp, false);
 }
 
-/// <summary>A building the map places at the start of a match (M7 step 7): north-west cell, owner (0 neutral), facing 0…7.</summary>
-public sealed record BuildingState(World.BuildingKind Kind, CellPos Cell, World.PlayerId Owner, int Facing);
+/// <summary>
+/// A building the map places at the start of a match (M7 step 7): north-west cell, owner (0 neutral), facing 0…7 — of a kind of the map,
+/// or, with kind 0, a building of a faction's data named by <paramref name="Def"/> with its footprint (<paramref name="Width"/> ×
+/// <paramref name="Height"/>), as RA2's maps place the Neutral house's defenses and tech (2026-10-27). The footprint is the data's,
+/// written here so the map needs no rules to stand; the match checks it against its rules (<see cref="World.GameWorld"/>).
+/// </summary>
+public sealed record BuildingState(World.BuildingKind Kind, CellPos Cell, World.PlayerId Owner, int Facing, string? Def = null, int Width = 0, int Height = 0)
+{
+    /// <summary>A building of a faction's data, neutral, at <paramref name="cell"/>.</summary>
+    public static BuildingState OfData(string def, Rules.CellSize size, CellPos cell, int facing) =>
+        new(0, cell, World.PlayerId.Neutral, facing, def, size.Width, size.Height);
+
+    /// <summary>Whether it is a building of a faction's data rather than of a kind of the map.</summary>
+    public bool IsOfData => Kind == 0;
+}
 
 /// <summary>
 /// The map as the simulation sees it (docs/implementation/M2_unit_control.md, 4.3; M7_maps.md, 4.1–4.7): per cell a logical
@@ -731,7 +744,25 @@ public sealed class MapGrid
     /// </summary>
     internal string? TryAddBuilding(BuildingState state)
     {
-        if (!Types.IsKnown(state.Kind))
+        if (state.IsOfData)
+        {
+            // A building of a faction's data on the map: the Neutral house's, as on the maps of RA2.
+            if (string.IsNullOrEmpty(state.Def) || state.Def.Length > 64 || !System.Linq.Enumerable.All(state.Def, c => c is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '_'))
+            {
+                return "a building of the data needs the id of its definition";
+            }
+
+            if (!state.Owner.IsNeutral)
+            {
+                return $"{state.Def} is a building of a faction: a map places it for nobody (neutral) only";
+            }
+
+            if (state.Width is < 1 or > 6 || state.Height is < 1 or > 6)
+            {
+                return $"{state.Def} must have a footprint of 1 to 6 cells a side";
+            }
+        }
+        else if (!Types.IsKnown(state.Kind))
         {
             return $"unknown building kind {(int)state.Kind}";
         }
@@ -741,11 +772,11 @@ public sealed class MapGrid
             return $"owner {state.Owner.Value} must be 0…{World.PlayerId.MaxPlayers} and facing {state.Facing} 0…7";
         }
 
-        var type = Types.Get(state.Kind);
-        var far = new CellPos(state.Cell.X + type.Width - 1, state.Cell.Y + type.Height - 1);
+        var (id, width, height) = state.IsOfData ? (state.Def!, state.Width, state.Height) : (Types.Get(state.Kind).Id, Types.Get(state.Kind).Width, Types.Get(state.Kind).Height);
+        var far = new CellPos(state.Cell.X + width - 1, state.Cell.Y + height - 1);
         if (!Contains(state.Cell) || !Contains(far))
         {
-            return $"{type.Id} at {Text(state.Cell)} reaches outside the {Width}x{Height} map";
+            return $"{id} at {Text(state.Cell)} reaches outside the {Width}x{Height} map";
         }
 
         var level = _heights.CellLevel(state.Cell);
@@ -928,6 +959,15 @@ public sealed class MapGrid
             hash.Add(building.Cell.Y);
             hash.Add(building.Owner.Value);
             hash.Add(building.Facing);
+            if (building.IsOfData)
+            {
+                // Rules v110: a building of a faction's data, by its id and footprint (a kind of the map has none of these).
+                var id = System.Text.Encoding.UTF8.GetBytes(building.Def!);
+                hash.Add(id.Length);
+                hash.Add(id);
+                hash.Add(building.Width);
+                hash.Add(building.Height);
+            }
         }
 
         // Rules v99: the docks open in the footprints of buildings.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
+using Rts.Simulation.Rules;
 using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
@@ -91,11 +92,27 @@ public static class MapChecks
         return cells;
     }
 
+    /// <summary>
+    /// The footprint of a structure: of a kind of the map, or of a building of a faction's data the map may place for nobody (2026-10-27,
+    /// as RA2's maps do); null for an id <paramref name="types"/> know neither way.
+    /// </summary>
+    public static CellSize? SizeOf(string type, MapTypes types) =>
+        types.TryGetBuilding(type, out var kind) ? new CellSize(kind.Width, kind.Height)
+        : types.TryGetBuildingOfData(type, out var size) ? size
+        : null;
+
+    /// <summary>The building of the start a structure is (<see cref="BuildingState"/>); null for an id <paramref name="types"/> do not know.</summary>
+    public static BuildingState? StateOf(StructurePlacement structure, MapTypes types) =>
+        types.TryGetBuilding(structure.Type, out var kind) ? new BuildingState(kind.Kind, structure.Cell, new PlayerId(structure.Owner), structure.Facing)
+        : types.TryGetBuildingOfData(structure.Type, out var size)
+            ? BuildingState.OfData(structure.Type, size, structure.Cell, structure.Facing) with { Owner = new PlayerId(structure.Owner) }
+        : null;
+
     /// <summary>The cells a structure of a kind <paramref name="types"/> define takes; none for an unknown kind.</summary>
     public static List<CellPos> Footprint(StructurePlacement structure, MapTypes types)
     {
         var cells = new List<CellPos>();
-        if (types.TryGetBuilding(structure.Type, out var type))
+        if (SizeOf(structure.Type, types) is { } type)
         {
             for (var y = structure.Cell.Y; y < structure.Cell.Y + type.Height; y++)
             {
@@ -144,7 +161,7 @@ public static class MapChecks
     /// <summary>What is wrong with the building on this ground beside <paramref name="others"/>, or null when it stands.</summary>
     public static string? BuildingProblem(MapGrid ground, StructurePlacement structure, IEnumerable<StructurePlacement> others)
     {
-        if (!ground.Types.TryGetBuilding(structure.Type, out var type))
+        if (StateOf(structure, ground.Types) is not { } state)
         {
             return $"unknown building '{structure.Type}'";
         }
@@ -163,7 +180,7 @@ public static class MapChecks
             }
         }
 
-        return Problem(() => FromGround(ground, buildings: [new BuildingState(type.Kind, structure.Cell, new PlayerId(structure.Owner), structure.Facing)]));
+        return Problem(() => FromGround(ground, buildings: [state]));
     }
 
     private static MapGrid FromGround(MapGrid ground, IReadOnlyList<BridgeState>? bridges = null, IReadOnlyList<BuildingState>? buildings = null) =>

@@ -17,14 +17,21 @@ public sealed class MapTypes
     private readonly MapObjectType?[] _objects;
     private readonly BridgeType?[] _bridges;
     private readonly BuildingType?[] _buildings;
+    private readonly SortedDictionary<string, CellSize> _ofData;
 
-    private MapTypes(MapObjectType?[] objects, BridgeType?[] bridges, BuildingType?[] buildings)
+    private MapTypes(MapObjectType?[] objects, BridgeType?[] bridges, BuildingType?[] buildings, SortedDictionary<string, CellSize> ofData)
     {
-        (_objects, _bridges, _buildings) = (objects, bridges, buildings);
+        (_objects, _bridges, _buildings, _ofData) = (objects, bridges, buildings, ofData);
     }
 
     /// <summary>No kinds: a map of land and ore only.</summary>
-    public static MapTypes Empty { get; } = new([], [], []);
+    public static MapTypes Empty { get; } = new([], [], [], new SortedDictionary<string, CellSize>(System.StringComparer.Ordinal));
+
+    /// <summary>
+    /// The footprint of a building of a faction's data a map may place for nobody (2026-10-27: RA2's maps place the Neutral house's
+    /// defenses and tech): any but a wall, a building on the water and one with a dock.
+    /// </summary>
+    public bool TryGetBuildingOfData(string id, out CellSize footprint) => _ofData.TryGetValue(id, out footprint);
 
     /// <summary>The kinds of map objects the data defines, in the order of their numbers.</summary>
     public IEnumerable<MapObjectType> Objects => Present(_objects);
@@ -110,10 +117,19 @@ public sealed class MapTypes
             }
         }
 
-        return new MapTypes(objects, bridges, buildings);
+        var ofData = new SortedDictionary<string, CellSize>(System.StringComparer.Ordinal);
+        foreach (var definition in database.Buildings)
+        {
+            if (!definition.Wall && !definition.Water && definition.DockCell is null)
+            {
+                ofData[definition.Id] = definition.Footprint;
+            }
+        }
+
+        return new MapTypes(objects, bridges, buildings, ofData);
     }
 
-    /// <summary>Whether both hold the same kinds with the same values (the speeds of an object compared by content).</summary>
+    /// <summary>Whether both hold the same kinds of the map with the same values (the speeds of an object compared by content).</summary>
     public bool ContentEquals(MapTypes other)
     {
         if (_objects.Length != other._objects.Length || _bridges.Length != other._bridges.Length || _buildings.Length != other._buildings.Length)
@@ -129,6 +145,7 @@ public sealed class MapTypes
             }
         }
 
+        // The kinds of the map only: the buildings of the factions' data are the factions' (a test set has fewer of them).
         return System.Linq.Enumerable.SequenceEqual(_bridges, other._bridges) && System.Linq.Enumerable.SequenceEqual(_buildings, other._buildings);
     }
 

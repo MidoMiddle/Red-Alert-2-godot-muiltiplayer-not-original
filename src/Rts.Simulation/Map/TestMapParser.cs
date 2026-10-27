@@ -281,15 +281,14 @@ public static class TestMapParser
             throw Error(lineNumber, 1, "expected 'building <type> <x> <y> [owner] [facing]'");
         }
 
-        if (!grid.Types.TryGetBuilding(parts[1], out var type))
-        {
-            throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown building '{parts[1]}'");
-        }
-
         var cell = new CellPos(ParseNumber(lineNumber, line, parts[2]), ParseNumber(lineNumber, line, parts[3]));
         var owner = parts.Length > 4 ? ParseNumber(lineNumber, line, parts[4]) : 0;
         var facing = parts.Length > 5 ? ParseNumber(lineNumber, line, parts[5]) : 0;
-        if (grid.TryAddBuilding(new BuildingState(type.Kind, cell, new PlayerId(owner), facing)) is { } problem)
+        // A kind of the map, or a building of a faction's data the map places for nobody (2026-10-27).
+        var state = grid.Types.TryGetBuilding(parts[1], out var type) ? new BuildingState(type.Kind, cell, new PlayerId(owner), facing)
+            : grid.Types.TryGetBuildingOfData(parts[1], out var size) ? BuildingState.OfData(parts[1], size, cell, facing) with { Owner = new PlayerId(owner) }
+            : throw Error(lineNumber, ColumnOf(line, parts[1]), $"unknown building '{parts[1]}'");
+        if (grid.TryAddBuilding(state) is { } problem)
         {
             throw Error(lineNumber, ColumnOf(line, parts[2]), problem);
         }

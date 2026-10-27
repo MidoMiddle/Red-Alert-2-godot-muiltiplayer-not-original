@@ -76,8 +76,7 @@ public static class MapValidator
             }
 
             structures.Add(structure);
-            types.TryGetBuilding(structure.Type, out var type);
-            buildings.Add(new BuildingState(type.Kind, structure.Cell, new PlayerId(structure.Owner), structure.Facing));
+            buildings.Add(MapChecks.StateOf(structure, types)!);
         }
 
         var grid = MapGrid.FromLayers(

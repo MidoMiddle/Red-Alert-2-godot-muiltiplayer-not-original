@@ -42,11 +42,13 @@ namespace Rts.Simulation.Replays;
 /// faction: u16 length + UTF-8 id, empty for the whole faction; v25 (the skirmish screen of RA2) adds u8 mcvRepacks | u8 superweapons |
 /// u8 destroyableBridges after the fog of war; v26 (M9 step 10) command format v13 (PlayerLeft); v27 (M9 step 11) adds the network
 /// of the match after its setup: u8 0, or u8 1 | u16 length + UTF-8 game version | u64 mapHash | u8 count, then u8 player | u16 length +
-/// UTF-8 name each; v28 (M6 step 8) adds u8 startingUnits after destroyableBridges; v29 (M11 a6) u8 crates after it; v30 command format v14 (SetPrimary).
+/// UTF-8 name each; v28 (M6 step 8) adds u8 startingUnits after destroyableBridges; v29 (M11 a6) u8 crates after it; v30 command format v14 (SetPrimary);
+/// v31 (rules v110) a building of the start of kind 0 — a building of a faction's data — is followed by u8 width | u8 height | u8 length +
+/// ASCII id of its definition.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 30;
+    public const ushort FormatVersion = 31;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -60,7 +62,7 @@ public static class ReplayFormat
     // u8 kind | u16 fromX | u16 fromY | u16 toX | u16 toY, then i32 hp per segment.
     private const int BridgeHeaderSize = 1 + 2 * 4;
 
-    // u8 kind | u16 x | u16 y | u8 owner | u8 facing.
+    // u8 kind | u16 x | u16 y | u8 owner | u8 facing; with kind 0 (a building of the data), then u8 width | u8 height | u8 length + id.
     private const int BuildingSize = 1 + 2 + 2 + 1 + 1;
 
     // 512 × 512 cells: far above any map we plan, small enough to reject garbage sizes before allocating.
@@ -77,6 +79,10 @@ public static class ReplayFormat
         }
 
         mapSize += map is null ? 0 : 4 + BuildingSize * map.StartBuildings.Count;
+        foreach (var building in map?.StartBuildings ?? [])
+        {
+            mapSize += building.IsOfData ? 3 + building.Def!.Length : 0;
+        }
 
         var match = WriteMatch(replay.Settings.Match).Concat(WriteNetwork(replay.Network)).ToArray();
         var buffer = new byte[HeaderSize + mapSize + match.Length + commands.Length + 4 + ChecksumSize * replay.Checksums.Count];
@@ -146,6 +152,14 @@ public static class ReplayFormat
                 span[offset + 5] = (byte)building.Owner.Value;
                 span[offset + 6] = (byte)building.Facing;
                 offset += BuildingSize;
+                if (building.IsOfData)
+                {
+                    span[offset] = (byte)building.Width;
+                    span[offset + 1] = (byte)building.Height;
+                    span[offset + 2] = (byte)building.Def!.Length;
+                    System.Text.Encoding.ASCII.GetBytes(building.Def, span[(offset + 3)..]);
+                    offset += 3 + building.Def.Length;
+                }
             }
         }
 
@@ -298,19 +312,31 @@ public static class ReplayFormat
             }
 
             next += 4;
-            Require(source[next..], BuildingSize * (int)buildingCount);
             var buildings = new BuildingState[buildingCount];
             for (var i = 0; i < buildings.Length; i++)
             {
-                var at = source[(next + BuildingSize * i)..];
+                Require(source[next..], BuildingSize);
+                var at = source[next..];
                 buildings[i] = new BuildingState(
                     (World.BuildingKind)at[0],
                     new CellPos(BinaryPrimitives.ReadUInt16LittleEndian(at[1..]), BinaryPrimitives.ReadUInt16LittleEndian(at[3..])),
                     new World.PlayerId(at[5]),
                     at[6]);
+                next += BuildingSize;
+                if (at[0] == 0)
+                {
+                    // A building of a faction's data (v31): its footprint and the id of its definition.
+                    Require(source[next..], 3);
+                    var length = source[next + 2];
+                    Require(source[(next + 3)..], length);
+                    buildings[i] = buildings[i] with
+                    {
+                        Width = source[next], Height = source[next + 1], Def = System.Text.Encoding.ASCII.GetString(source.Slice(next + 3, length)),
+                    };
+                    next += 3 + length;
+                }
             }
 
-            next += BuildingSize * (int)buildingCount;
             try
             {
                 map = MapGrid.FromLayers(

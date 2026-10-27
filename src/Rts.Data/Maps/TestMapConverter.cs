@@ -78,7 +78,7 @@ public static class TestMapConverter
         var structures = ImmutableArray.CreateBuilder<StructurePlacement>();
         foreach (var building in grid.StartBuildings)
         {
-            structures.Add(new StructurePlacement(BuildingTypes.IdOf(building.Kind), building.Cell, building.Owner.Value, building.Facing));
+            structures.Add(new StructurePlacement(building.Def ?? BuildingTypes.IdOf(building.Kind), building.Cell, building.Owner.Value, building.Facing));
         }
 
         var players = test.Units.Count == 0 ? 2 : IntMath.Max(2, test.Units.Max(u => u.Owner.Value));

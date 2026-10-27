@@ -145,7 +145,7 @@ public sealed class BuildingTests
     [InlineData(BuildingKind.NeutralShed, 0, 9, 0, 0, "cell 0,9 is taken")]
     [InlineData(BuildingKind.NeutralShed, 0, 0, 9, 0, "owner 9 must be 0…8")]
     [InlineData(BuildingKind.NeutralShed, 0, 0, 0, 8, "facing 8 0…7")]
-    [InlineData((BuildingKind)0, 0, 0, 0, 0, "unknown building kind 0")]
+    [InlineData((BuildingKind)0, 0, 0, 0, 0, "a building of the data needs the id of its definition")]
     public void A_building_needs_flat_free_dry_ground_on_the_map(BuildingKind kind, int x, int y, int owner, int facing, string problem)
     {
         var land = ClearLand();

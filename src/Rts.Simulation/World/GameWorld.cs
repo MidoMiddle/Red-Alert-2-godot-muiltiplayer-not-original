@@ -62,7 +62,7 @@ public sealed class GameWorld
         Spatial = new SpatialIndex(map.Width, map.Height);
         foreach (var start in map.StartBuildings)
         {
-            _entities.Add(new Building(AllocateId(), start.Owner, map.Types.Get(start.Kind), start.Cell, start.Facing));
+            _entities.Add(start.IsOfData ? StartBuildingOfData(rules, start) : new Building(AllocateId(), start.Owner, map.Types.Get(start.Kind), start.Cell, start.Facing));
         }
 
         // A match: the factions and the starting units of its players (M5 step 2), and the players of a team are allies (M8 step 11).
@@ -433,6 +433,28 @@ public sealed class GameWorld
     /// </summary>
     /// <param name="ready">False for a building that grows for the <c>build_up</c> of its definition first: it gives no power and
     /// opens nothing until <see cref="CompleteBuildUp"/>.</param>
+    /// <summary>
+    /// A building of a faction's data the map places for nobody (RA2: the Neutral house's defenses and tech; 2026-10-27), ready, on the cells
+    /// the map took for it. Its definition must be in the rules of the match with the footprint the map wrote.
+    /// </summary>
+    private Building StartBuildingOfData(GameRules rules, BuildingState start)
+    {
+        var index = rules.Database.IndexOfBuilding(start.Def!);
+        if (index < 0)
+        {
+            throw new ArgumentException($"The map places '{start.Def}', which the rules of this match do not define.");
+        }
+
+        var def = rules.Database.Buildings[index];
+        if (def.Footprint != new CellSize(start.Width, start.Height))
+        {
+            throw new ArgumentException(
+                $"The map places '{start.Def}' {start.Width}x{start.Height}, and the rules make it {def.Footprint.Width}x{def.Footprint.Height}.");
+        }
+
+        return new Building(AllocateId(), start.Owner, def, index, start.Cell, buildUp: 0);
+    }
+
     internal Building CreateBuilding(PlayerId owner, BuildingDef def, CellPos cell, bool ready, List<Events.SimEvent>? events)
     {
         var index = Rules.Database.IndexOfBuilding(def.Id);

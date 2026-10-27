@@ -48,6 +48,41 @@ public sealed class BuildingMapTests
     }
 
     [Fact]
+    public void A_building_of_a_faction_s_data_stands_on_the_map_for_nobody_by_the_footprint_of_the_data()
+    {
+        // 2026-10-27: RA2's maps place the Neutral house's defenses and tech; a structure of the file may name a building of the data.
+        var text = HamletText().Replace("type: neutral_house_a, cell: [2, 2]", "type: alliance_prism_tower, cell: [2, 2]")
+            .Replace("type: tech_oil_derrick, cell: [5, 5], owner: 2", "type: nuclear_reactor, cell: [3, 3], owner: neutral");
+        var map = RtsMapReader.Read(text);
+        var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
+
+        Assert.Equal(
+            new[]
+            {
+                BuildingState.OfData("alliance_prism_tower", new(1, 1), new CellPos(2, 2), 3),
+                BuildingState.OfData("nuclear_reactor", new(4, 4), new CellPos(3, 3), 0),
+            },
+            grid.StartBuildings);
+        Assert.True(grid.HasBuilding(new CellPos(6, 6)));
+        Assert.Equal(16, MapChecks.Footprint(map.Structures[1], GameDataFiles.Rules.MapTypes).Count);
+        Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), problem => problem.Message.Contains("reactor", StringComparison.Ordinal));
+
+        // The editor keeps them as they are.
+        var session = new Rts.Data.Maps.Editing.MapEditSession(Rts.Data.Maps.Editing.EditableMap.FromDefinition(map), GameDataFiles.Rules.MapTypes);
+        Assert.Equal(RtsMapWriter.Write(map), RtsMapWriter.Write(session.Map.ToDefinition()));
+        Assert.Equal(grid.StartBuildings, session.ViewGrid().StartBuildings);
+    }
+
+    [Fact]
+    public void A_building_of_a_faction_s_data_for_a_player_is_an_error()
+    {
+        var map = RtsMapReader.Read(HamletText().Replace("type: tech_oil_derrick, cell: [5, 5], owner: 2", "type: alliance_pillbox, cell: [5, 5], owner: 2"));
+
+        Assert.Contains("for nobody (neutral) only", Assert.Throws<ArgumentException>(() => map.ToMapGrid(GameDataFiles.Rules.MapTypes)).Message);
+        Assert.Contains(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), problem => problem.Message.Contains("for nobody (neutral) only", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void A_building_type_the_table_does_not_know_is_an_error()
     {
         var map = RtsMapReader.Read(HamletText().Replace("type: neutral_house_a", "type: neutral_castle"));
