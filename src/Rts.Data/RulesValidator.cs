@@ -109,6 +109,21 @@ internal static class RulesValidator
             checker.Projectile(projectile);
         }
 
+        foreach (var mapObject in rules.MapObjects)
+        {
+            checker.MapObject(mapObject);
+        }
+
+        foreach (var bridge in rules.Bridges)
+        {
+            checker.Bridge(bridge);
+        }
+
+        foreach (var building in rules.MapBuildings)
+        {
+            checker.MapBuilding(building);
+        }
+
         checker.PrerequisiteCycles();
     }
 
@@ -530,6 +545,65 @@ internal static class RulesValidator
                 if (!codes.TryAdd(terrain.Code, terrain.Id))
                 {
                     Error(terrain.Id, "code", $"code '{terrain.Code}' of '{terrain.Id}' is already used by '{codes[terrain.Code]}'");
+                }
+            }
+        }
+
+        // The kinds of map objects (M3 step 14a): locomotors of the data; sane hit points and speeds.
+        public void MapObject(MapObjectDef mapObject)
+        {
+            NotNegative(mapObject.Id, "hp", mapObject.Hp);
+            LocomotorsOf(mapObject.Id, "blocks", mapObject.Blocks);
+            LocomotorsOf(mapObject.Id, "crushed_by", mapObject.CrushedBy);
+            LocomotorsOf(mapObject.Id, "speed", [.. mapObject.Speeds.Select(speed => speed.Locomotor)]);
+            if (mapObject.Speeds.Any(speed => speed.Multiplier < Fixed.Zero || speed.Multiplier > Fixed.FromInt(2)))
+            {
+                Error(mapObject.Id, "speed", $"the speeds of '{mapObject.Id}' must be 0% to 200%");
+            }
+        }
+
+        public void Bridge(BridgeDef bridge)
+        {
+            Positive(bridge.Id, "segment_hp", bridge.SegmentHp);
+            if (bridge.Width is < 1 or > 5)
+            {
+                Error(bridge.Id, "width", $"'width' of '{bridge.Id}' must be 1 to 5");
+            }
+        }
+
+        // The buildings of the map (M3 step 14a): a footprint of 1 to 6 cells a side, hit points, weapons and armor of the data.
+        public void MapBuilding(MapBuildingDef building)
+        {
+            Positive(building.Id, "hp", building.Hp);
+            NotNegative(building.Id, "garrison", building.Garrison);
+            NotNegative(building.Id, "sight", building.Sight);
+            NotNegative(building.Id, "recharge", building.Recharge);
+            if (building.Footprint.Width is < 1 or > 6 || building.Footprint.Height is < 1 or > 6)
+            {
+                Error(building.Id, "footprint", $"the footprint of '{building.Id}' must be 1 to 6 cells a side");
+            }
+
+            if (building.Superweapon != SuperweaponKind.None && building.Recharge <= 0)
+            {
+                Error(building.Id, "recharge", $"'{building.Id}' gives a superweapon, so it needs a recharge");
+            }
+
+            WeaponOf(building.Id, "weapon", building.Weapon);
+            WeaponOf(building.Id, "death_weapon", building.DeathWeapon);
+            if (building.Armor.Length > 0)
+            {
+                ArmorOf(building.Id, building.Armor);
+            }
+        }
+
+        /// <summary>The locomotors a map object names are locomotors of the data.</summary>
+        private void LocomotorsOf(string id, string key, ImmutableArray<string> locomotors)
+        {
+            foreach (var locomotor in locomotors)
+            {
+                if (!rules.TryGetLocomotor(locomotor, out _))
+                {
+                    Error(id, key, Missing(id, "locomotor", locomotor));
                 }
             }
         }

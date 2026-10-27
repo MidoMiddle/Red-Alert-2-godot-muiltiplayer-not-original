@@ -25,7 +25,10 @@ public sealed class RulesDatabase
         ImmutableArray<DifficultyDef> difficulties,
         ImmutableArray<PersonalityDef> personalities,
         ImmutableArray<CountryDef> countries = default,
-        ImmutableArray<CratesDef> crates = default)
+        ImmutableArray<CratesDef> crates = default,
+        ImmutableArray<MapObjectDef> mapObjects = default,
+        ImmutableArray<BridgeDef> bridges = default,
+        ImmutableArray<MapBuildingDef> mapBuildings = default)
     {
         Locomotors = locomotors;
         Terrains = terrains;
@@ -43,6 +46,9 @@ public sealed class RulesDatabase
         Personalities = personalities;
         Countries = countries.IsDefault ? ImmutableArray<CountryDef>.Empty : countries;
         Crates = crates.IsDefault ? ImmutableArray<CratesDef>.Empty : crates;
+        MapObjects = mapObjects.IsDefault ? ImmutableArray<MapObjectDef>.Empty : mapObjects;
+        Bridges = bridges.IsDefault ? ImmutableArray<BridgeDef>.Empty : bridges;
+        MapBuildings = mapBuildings.IsDefault ? ImmutableArray<MapBuildingDef>.Empty : mapBuildings;
     }
 
     public ImmutableArray<LocomotorDef> Locomotors { get; }
@@ -84,6 +90,21 @@ public sealed class RulesDatabase
 
     /// <summary>The crates of a match (M11 a6): at most one record; without one the rules take <see cref="CratesDef.Default"/>.</summary>
     public ImmutableArray<CratesDef> Crates { get; }
+
+    /// <summary>The kinds of map objects (M3 step 14a): trees, rocks, fences, the drills of ore fields, the props of the towns.</summary>
+    public ImmutableArray<MapObjectDef> MapObjects { get; }
+
+    /// <summary>The kinds of bridges (M3 step 14a).</summary>
+    public ImmutableArray<BridgeDef> Bridges { get; }
+
+    /// <summary>The buildings of the map (M3 step 14a): neutral houses and tech buildings.</summary>
+    public ImmutableArray<MapBuildingDef> MapBuildings { get; }
+
+    public bool TryGetMapObject(string id, out MapObjectDef definition) => TryFind(MapObjects, id, out definition);
+
+    public bool TryGetBridge(string id, out BridgeDef definition) => TryFind(Bridges, id, out definition);
+
+    public bool TryGetMapBuilding(string id, out MapBuildingDef definition) => TryFind(MapBuildings, id, out definition);
 
     public bool TryGetLocomotor(string id, out LocomotorDef definition) => TryFind(Locomotors, id, out definition);
 

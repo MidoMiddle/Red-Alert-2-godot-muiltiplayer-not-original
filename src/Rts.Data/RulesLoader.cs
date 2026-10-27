@@ -153,6 +153,15 @@ public static class RulesLoader
             case "crates":
                 AddUnlessTemplate(template, DefinitionReader.Crates(entry, !template), definition => builder.Add(definition));
                 break;
+            case "map_object":
+                AddUnlessTemplate(template, DefinitionReader.MapObject(entry, !template), definition => builder.Add(definition));
+                break;
+            case "bridge":
+                AddUnlessTemplate(template, DefinitionReader.Bridge(entry, !template), definition => builder.Add(definition));
+                break;
+            case "map_building":
+                AddUnlessTemplate(template, DefinitionReader.MapBuilding(entry, !template), definition => builder.Add(definition));
+                break;
             case "army":
                 AddUnlessTemplate(template, DefinitionReader.Army(entry, !template), definition => builder.Add(definition));
                 break;

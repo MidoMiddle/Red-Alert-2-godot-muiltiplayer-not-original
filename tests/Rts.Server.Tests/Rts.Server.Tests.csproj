@@ -26,6 +26,7 @@
   <!-- The rules of the simulation tests, for a match through the relay. -->
   <ItemGroup>
     <Compile Include="../Rts.Simulation.Tests/TestRules.cs" Link="Simulation/TestRules.cs" />
+    <Compile Include="../Rts.Simulation.Tests/TestMapKinds.cs" Link="Simulation/TestMapKinds.cs" />
   </ItemGroup>
 
 </Project>

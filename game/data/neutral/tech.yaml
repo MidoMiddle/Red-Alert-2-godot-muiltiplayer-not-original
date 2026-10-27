@@ -1,0 +1,53 @@
+# The tech buildings of maps (docs/implementation/M3_base_economy.md, step 14a; docs/ra2_buildings/tech). The engine knows each by its
+# id (src/Rts.Simulation/World/BuildingTypes.cs) and gives it what its kind does (src/Rts.Simulation/Systems/TechBuildingSystem.cs):
+# an engineer takes it, and it serves its new owner.
+
+tech_oil_derrick:
+  kind: map_building
+  name: Oil derrick
+  footprint: [2, 2]
+  hp: 1000
+  capturable: true
+  extends_base: true
+  death_weapon: oil_explosion
+
+# RA2: 6 x 4, 800.
+tech_hospital:
+  kind: map_building
+  name: Hospital
+  footprint: [6, 4]
+  hp: 800
+  capturable: true
+  extends_base: true
+
+# RA2 ParaDropSpecial: a paradrop every 4 minutes.
+tech_airfield:
+  kind: map_building
+  name: Airfield
+  footprint: [3, 3]
+  hp: 800
+  capturable: true
+  superweapon: paradrop
+  recharge: 240s
+  extends_base: true
+
+# RA2 bridge repair hut: cannot be hurt (Immune) nor taken; an engineer going in mends its bridge.
+tech_bridge_repair_hut:
+  kind: map_building
+  name: Bridge repair hut
+  footprint: [1, 1]
+  hp: 2000
+
+# The outpost of RA2 (docs/ra2_buildings/tech/outpost): 4 x 3, 2000 hit points, concrete, sight 6; the IFV's HoverMissile, a pad that
+# mends vehicles, a base of its owner's. A neutral one does not fire.
+tech_outpost:
+  kind: map_building
+  name: Tech outpost
+  footprint: [4, 3]
+  hp: 2000
+  capturable: true
+  weapon: alliance_ifv_missiles
+  armor: concrete
+  sight: 6
+  repairs_vehicles: true
+  extends_base: true

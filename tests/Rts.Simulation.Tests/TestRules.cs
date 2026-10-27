@@ -94,6 +94,7 @@ internal static class TestRules
             builder.Add(definition);
         }
 
+        TestMapKinds.AddTo(builder);
         return GameRules.From(builder.Build());
     }
 
@@ -346,6 +347,7 @@ internal static class TestRules
             RetreatThreshold = Fixed.FromRatio(70, 100),
             TargetPriority = ["harvesters", "defense", "production", "core", "army", "power"],
         });
+        TestMapKinds.AddTo(builder);
         return builder.Build();
     }
 

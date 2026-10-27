@@ -35,6 +35,7 @@
   <!-- The M2 rules of the simulation tests: game/data must give the same rules (M3 step 4). -->
   <ItemGroup>
     <Compile Include="../Rts.Simulation.Tests/TestRules.cs" Link="Rules/TestRules.cs" />
+    <Compile Include="../Rts.Simulation.Tests/TestMapKinds.cs" Link="Rules/TestMapKinds.cs" />
   </ItemGroup>
 
   <!-- The map previews and the map catalog of the client (docs/implementation/M7_maps.md, step 10): pure, without Godot. -->

@@ -27,6 +27,9 @@ public sealed class RulesBuilder
     private readonly List<ArmorDef> _armors = [];
     private readonly List<WarheadDef> _warheads = [];
     private readonly List<ProjectileDef> _projectiles = [];
+    private readonly List<MapObjectDef> _mapObjects = [];
+    private readonly List<BridgeDef> _bridges = [];
+    private readonly List<MapBuildingDef> _mapBuildings = [];
 
     public RulesBuilder Add(LocomotorDef definition)
     {
@@ -124,6 +127,24 @@ public sealed class RulesBuilder
         return this;
     }
 
+    public RulesBuilder Add(MapObjectDef definition)
+    {
+        _mapObjects.Add(definition);
+        return this;
+    }
+
+    public RulesBuilder Add(BridgeDef definition)
+    {
+        _bridges.Add(definition);
+        return this;
+    }
+
+    public RulesBuilder Add(MapBuildingDef definition)
+    {
+        _mapBuildings.Add(definition);
+        return this;
+    }
+
     /// <summary>Sorts every kind by id and checks that no id is used twice, in any kind.</summary>
     /// <exception cref="ArgumentException">Two definitions have the same id.</exception>
     public RulesDatabase Build()
@@ -153,7 +174,10 @@ public sealed class RulesBuilder
             Sorted(_difficulties),
             Sorted(_personalities),
             Sorted(_countries),
-            Sorted(_crates));
+            Sorted(_crates),
+            Sorted(_mapObjects),
+            Sorted(_bridges),
+            Sorted(_mapBuildings));
     }
 
     private IEnumerable<string> AllIds()
@@ -234,6 +258,21 @@ public sealed class RulesBuilder
         }
 
         foreach (var definition in _projectiles)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _mapObjects)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _bridges)
+        {
+            yield return definition.Id;
+        }
+
+        foreach (var definition in _mapBuildings)
         {
             yield return definition.Id;
         }

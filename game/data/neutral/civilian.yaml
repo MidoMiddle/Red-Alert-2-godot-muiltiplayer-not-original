@@ -1,0 +1,246 @@
+# The neutral buildings of maps (docs/implementation/M3_base_economy.md, step 14a; M7, 4.8): the winter and industrial sets and the
+# town, beach, desert, harbour and farm buildings of the element documents (docs/city_elements … docs/temperate_elements). The engine
+# knows each by its id (src/Rts.Simulation/World/BuildingTypes.cs). Hit points by the class of the document (low ≈ 300, medium ≈ 800,
+# high ≈ 1500 and more), a rough guide until the balance.
+#
+# The soldiers a civilian building holds go by its size, from 3 in a hut to 12 in the biggest (the owner's wish, 2026-10-26; RA2's
+# MaxNumberOccupants runs about so): a 2 x 2 footprint holds 3, a 2 x 3 or 3 x 2 one 6, 3 x 3 and more 12; a stone building of
+# several storeys (1500 hit points and more) one step of 3 up, the skyscraper (2500) the most. No engineer takes them.
+
+neutral_shed:
+  kind: map_building
+  name: Shed
+  footprint: [1, 1]
+  hp: 300
+
+neutral_house_a:
+  kind: map_building
+  name: House
+  footprint: [2, 2]
+  hp: 800
+  garrison: 3
+
+neutral_apartment:
+  kind: map_building
+  name: Apartment block
+  footprint: [3, 3]
+  hp: 1500
+  garrison: 12
+
+neutral_fuel_tank:
+  kind: map_building
+  name: Fuel tank
+  footprint: [1, 1]
+  hp: 800
+
+neutral_smokestack:
+  kind: map_building
+  name: Smokestack
+  footprint: [1, 1]
+  hp: 1500
+
+neutral_cooling_tower:
+  kind: map_building
+  name: Cooling tower
+  footprint: [2, 2]
+  hp: 1500
+
+neutral_factory_hall:
+  kind: map_building
+  name: Factory hall
+  footprint: [4, 3]
+  hp: 800
+  garrison: 12
+
+neutral_boiler_house:
+  kind: map_building
+  name: Boiler house
+  footprint: [2, 2]
+  hp: 800
+  garrison: 3
+
+neutral_school:
+  kind: map_building
+  name: School
+  footprint: [3, 2]
+  hp: 1500
+  garrison: 9
+
+neutral_office:
+  kind: map_building
+  name: Office
+  footprint: [2, 2]
+  hp: 1500
+  garrison: 6
+
+neutral_church:
+  kind: map_building
+  name: Church
+  footprint: [2, 3]
+  hp: 1000
+  garrison: 6
+
+neutral_shop:
+  kind: map_building
+  name: Shop
+  footprint: [2, 2]
+  hp: 800
+
+neutral_kiosk:
+  kind: map_building
+  name: Kiosk
+  footprint: [1, 1]
+  hp: 200
+
+neutral_skyscraper:
+  kind: map_building
+  name: Skyscraper
+  footprint: [2, 2]
+  hp: 2500
+  garrison: 12
+
+neutral_cafe:
+  kind: map_building
+  name: Cafe
+  footprint: [2, 1]
+  hp: 600
+
+neutral_bank:
+  kind: map_building
+  name: Bank
+  footprint: [3, 2]
+  hp: 2000
+  garrison: 9
+
+neutral_hotel:
+  kind: map_building
+  name: Hotel
+  footprint: [3, 2]
+  hp: 1800
+  garrison: 9
+
+neutral_fire_station:
+  kind: map_building
+  name: Fire station
+  footprint: [3, 2]
+  hp: 1500
+  garrison: 9
+
+neutral_auto_repair:
+  kind: map_building
+  name: Auto repair shop
+  footprint: [2, 2]
+  hp: 800
+
+neutral_fountain:
+  kind: map_building
+  name: Fountain
+  footprint: [2, 2]
+  hp: 1500
+
+neutral_beach_cabin:
+  kind: map_building
+  name: Beach cabin
+  footprint: [1, 1]
+  hp: 300
+
+neutral_beach_bar:
+  kind: map_building
+  name: Beach bar
+  footprint: [3, 2]
+  hp: 600
+
+neutral_lifeguard_tower:
+  kind: map_building
+  name: Lifeguard tower
+  footprint: [2, 2]
+  hp: 500
+  garrison: 3
+
+neutral_lighthouse:
+  kind: map_building
+  name: Lighthouse
+  footprint: [2, 2]
+  hp: 2000
+  garrison: 6
+
+neutral_boat_shed:
+  kind: map_building
+  name: Boat shed
+  footprint: [2, 2]
+  hp: 600
+
+neutral_adobe_house:
+  kind: map_building
+  name: Adobe house
+  footprint: [2, 2]
+  hp: 600
+  garrison: 3
+
+neutral_ancient_ruins:
+  kind: map_building
+  name: Ancient ruins
+  footprint: [2, 2]
+  hp: 2500
+
+neutral_rock_mesa:
+  kind: map_building
+  name: Rock mesa
+  footprint: [2, 2]
+  hp: 4000
+
+neutral_rock_arch:
+  kind: map_building
+  name: Rock arch
+  footprint: [2, 1]
+  hp: 3000
+
+neutral_port_crane:
+  kind: map_building
+  name: Port crane
+  footprint: [1, 1]
+  hp: 1500
+
+neutral_container_stack:
+  kind: map_building
+  name: Container stack
+  footprint: [2, 1]
+  hp: 1500
+
+neutral_port_warehouse:
+  kind: map_building
+  name: Port warehouse
+  footprint: [3, 3]
+  hp: 1200
+  garrison: 12
+
+neutral_water_tower:
+  kind: map_building
+  name: Water tower
+  footprint: [1, 1]
+  hp: 800
+
+neutral_farmhouse:
+  kind: map_building
+  name: Farmhouse
+  footprint: [2, 2]
+  hp: 700
+  garrison: 3
+
+neutral_barn:
+  kind: map_building
+  name: Barn
+  footprint: [3, 2]
+  hp: 800
+
+neutral_silo:
+  kind: map_building
+  name: Silo
+  footprint: [1, 1]
+  hp: 1500
+
+neutral_windmill:
+  kind: map_building
+  name: Windmill
+  footprint: [2, 2]
+  hp: 700

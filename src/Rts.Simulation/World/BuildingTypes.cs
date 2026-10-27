@@ -152,6 +152,22 @@ public static class BuildingTypes
 
     public static IReadOnlyList<BuildingType> All => Types;
 
+    /// <summary>The highest number of a kind the engine knows.</summary>
+    public static int Highest => ByKind.Length;
+
+    /// <summary>The kind the engine knows by the id <paramref name="id"/>.</summary>
+    public static bool TryGetKind(string id, out BuildingKind kind)
+    {
+        if (TryGetById(id, out var type))
+        {
+            kind = type.Kind;
+            return true;
+        }
+
+        kind = default;
+        return false;
+    }
+
     public static bool IsKnown(BuildingKind kind) => kind >= BuildingKind.NeutralShed && (int)kind <= ByKind.Length && ByKind[(int)kind - 1] is not null;
 
     public static BuildingType Get(BuildingKind kind) =>

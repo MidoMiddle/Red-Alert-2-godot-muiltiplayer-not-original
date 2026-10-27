@@ -15,7 +15,7 @@ namespace Rts.Data.Yaml;
 /// </summary>
 internal static class DefinitionReader
 {
-    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty", "personality", "country", "crates"];
+    private static readonly string[] Kinds = ["unit", "building", "weapon", "locomotor", "terrain", "faction", "economy", "armor", "warhead", "projectile", "build_order", "army", "difficulty", "personality", "country", "crates", "map_object", "bridge", "map_building"];
 
     private static readonly string[] UnitKeys =
     [
@@ -49,6 +49,16 @@ internal static class DefinitionReader
     private static readonly string[] TerrainKeys = ["name", "code", "buildable", "speed"];
 
     private static readonly string[] CountryKeys = ["name", "faction"];
+
+    private static readonly string[] MapObjectKeys = ["name", "blocks", "hp", "crushed_by", "stump", "speed"];
+
+    private static readonly string[] BridgeKeys = ["name", "segment_hp", "width", "high"];
+
+    private static readonly string[] MapBuildingKeys =
+    [
+        "name", "footprint", "hp", "garrison", "capturable", "superweapon", "recharge", "weapon", "armor", "sight", "repairs_vehicles",
+        "extends_base", "death_weapon",
+    ];
 
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester", "starting_infantry", "paradrop", "paradrop_count", "default"];
 
@@ -370,6 +380,56 @@ internal static class DefinitionReader
             Id = definition.Id,
             Name = fields.Required("name", Scalars.Text, ""),
             Faction = fields.Required("faction", Scalars.Id, ""),
+        };
+    }
+
+    public static MapObjectDef MapObject(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, MapObjectKeys);
+        return new MapObjectDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            Blocks = fields.Optional("blocks", Scalars.IdList, ImmutableArray<string>.Empty),
+            Hp = fields.Optional("hp", Scalars.Int, 0),
+            CrushedBy = fields.Optional("crushed_by", Scalars.IdList, ImmutableArray<string>.Empty),
+            Stump = fields.Optional("stump", Scalars.Flag, false),
+            Speeds = fields.Optional("speed", Scalars.Speeds, ImmutableArray<LocomotorSpeed>.Empty),
+        };
+    }
+
+    public static BridgeDef Bridge(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, BridgeKeys);
+        return new BridgeDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            SegmentHp = fields.Required("segment_hp", Scalars.Int, 0),
+            Width = fields.Required("width", Scalars.Int, 0),
+            High = fields.Optional("high", Scalars.Flag, false),
+        };
+    }
+
+    public static MapBuildingDef MapBuilding(RawDefinition definition, bool complete)
+    {
+        var fields = new FieldReader(definition, complete, MapBuildingKeys);
+        return new MapBuildingDef
+        {
+            Id = definition.Id,
+            Name = fields.Required("name", Scalars.Text, ""),
+            Footprint = fields.Required("footprint", Scalars.Size, new CellSize(1, 1)),
+            Hp = fields.Required("hp", Scalars.Int, 0),
+            Garrison = fields.Optional("garrison", Scalars.Int, 0),
+            Capturable = fields.Optional("capturable", Scalars.Flag, false),
+            Superweapon = fields.Optional("superweapon", SuperweaponOf, SuperweaponKind.None),
+            Recharge = fields.Optional("recharge", Scalars.Ticks, 0),
+            Weapon = fields.Optional("weapon", Scalars.Id, ""),
+            Armor = fields.Optional("armor", Scalars.Id, ""),
+            Sight = fields.Optional("sight", Scalars.Int, 0),
+            RepairsVehicles = fields.Optional("repairs_vehicles", Scalars.Flag, false),
+            ExtendsBase = fields.Optional("extends_base", Scalars.Flag, false),
+            DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
         };
     }
 

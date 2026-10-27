@@ -53,6 +53,7 @@ public sealed class ProductionTests
 
         builder.Add(database.Factions.Single());
         builder.Add(database.Economies.Single());
+        TestMapKinds.AddTo(builder);
         return GameRules.From(builder.Build());
     }
 

@@ -402,6 +402,51 @@ public static class DataHasher
             Add(hash, projectile.Armor);
         }
 
+        // The kinds of the map (M3 step 14a): what the engine reads of them; the names are the screen's.
+        hash.Add(rules.MapObjects.Length);
+        foreach (var mapObject in rules.MapObjects)
+        {
+            Add(hash, mapObject.Id);
+            Add(hash, mapObject.Blocks);
+            hash.Add(mapObject.Hp);
+            Add(hash, mapObject.CrushedBy);
+            hash.Add(mapObject.Stump ? 1 : 0);
+            hash.Add(mapObject.Speeds.Length);
+            foreach (var speed in mapObject.Speeds)
+            {
+                Add(hash, speed.Locomotor);
+                hash.Add(speed.Multiplier.Raw);
+            }
+        }
+
+        hash.Add(rules.Bridges.Length);
+        foreach (var bridge in rules.Bridges)
+        {
+            Add(hash, bridge.Id);
+            hash.Add(bridge.SegmentHp);
+            hash.Add(bridge.Width);
+            hash.Add(bridge.High ? 1 : 0);
+        }
+
+        hash.Add(rules.MapBuildings.Length);
+        foreach (var building in rules.MapBuildings)
+        {
+            Add(hash, building.Id);
+            hash.Add(building.Footprint.Width);
+            hash.Add(building.Footprint.Height);
+            hash.Add(building.Hp);
+            hash.Add(building.Garrison);
+            hash.Add(building.Capturable ? 1 : 0);
+            hash.Add((int)building.Superweapon);
+            hash.Add(building.Recharge);
+            Add(hash, building.Weapon);
+            Add(hash, building.Armor);
+            hash.Add(building.Sight);
+            hash.Add(building.RepairsVehicles ? 1 : 0);
+            hash.Add(building.ExtendsBase ? 1 : 0);
+            Add(hash, building.DeathWeapon);
+        }
+
         return hash.Value;
     }
 

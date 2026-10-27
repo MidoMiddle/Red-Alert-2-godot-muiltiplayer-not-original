@@ -132,6 +132,22 @@ public static class MapObjectTypes
 
     public static IReadOnlyList<MapObjectType> All => Types;
 
+    /// <summary>The highest number of a kind the engine knows.</summary>
+    public static int Highest => Types.Length;
+
+    /// <summary>The kind the engine knows by the id <paramref name="id"/>.</summary>
+    public static bool TryGetKind(string id, out MapObjectKind kind)
+    {
+        if (TryGetById(id, out var type))
+        {
+            kind = type.Kind;
+            return true;
+        }
+
+        kind = default;
+        return false;
+    }
+
     public static MapObjectType Get(MapObjectKind kind) =>
         IsKnown(kind)
             ? Types[(int)kind - 1]

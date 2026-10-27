@@ -1,0 +1,17 @@
+# The kinds of bridges (docs/implementation/M3_base_economy.md, step 14a; docs/formats/rtsmap.md, section 4). The engine knows each by
+# its id (src/Rts.Simulation/Map/Bridge.cs). `segment_hp` — the hit points of a segment; `width` — cells across; `high` — a high bridge
+# of RA2 on piers, over what lies under it.
+
+bridge_wood_low:
+  kind: bridge
+  name: Low wooden bridge
+  segment_hp: 600
+  width: 3
+
+# RA2 BridgeStrength.
+bridge_concrete_high:
+  kind: bridge
+  name: High concrete bridge
+  segment_hp: 1500
+  width: 3
+  high: true

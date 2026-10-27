@@ -54,13 +54,64 @@ public sealed class GameDataTests
     }
 
     [Fact]
+    public void The_kinds_of_the_map_in_the_data_are_those_the_engine_had_in_its_code()
+    {
+        // M3 step 14a: the tables of map objects, bridges and buildings of the map moved into game/data with the same values.
+        var types = GameDataFiles.Rules.MapTypes;
+        foreach (var type in Rts.Simulation.Map.MapObjectTypes.All)
+        {
+            var data = types.Get(type.Kind);
+            Assert.Equal(type with { Speeds = null }, data with { Speeds = null });
+            for (var locomotor = Rts.Simulation.Map.Locomotor.Foot; locomotor <= Rts.Simulation.Map.Locomotor.Hover; locomotor++)
+            {
+                Assert.Equal(type.SpeedPercentFor(locomotor), data.SpeedPercentFor(locomotor));
+            }
+        }
+
+        foreach (var type in Rts.Simulation.Map.BridgeTypes.All)
+        {
+            Assert.Equal(type, types.Get(type.Kind));
+        }
+
+        foreach (var type in Rts.Simulation.World.BuildingTypes.All)
+        {
+            Assert.Equal(type, types.Get(type.Kind));
+        }
+
+        Assert.Equal(Rts.Simulation.Map.MapObjectTypes.All.Count, types.Objects.Count());
+        Assert.Equal(Rts.Simulation.World.BuildingTypes.All.Count, types.Buildings.Count());
+    }
+
+    [Fact]
+    public void A_kind_of_the_map_needs_its_number_in_the_engine_and_every_number_its_record()
+    {
+        // M3 step 14a: the number of a kind is part of the rules, so a new kind is added to the code too.
+        var builder = new Rts.Simulation.Rules.RulesBuilder();
+        TestMapKinds.AddTo(builder);
+        builder.Add(new Rts.Simulation.Rules.MapObjectDef
+        {
+            Id = "rock", Name = "Rock", Blocks = [], Hp = 0, CrushedBy = [], Stump = false, Speeds = [],
+        });
+        var reasons = Rts.Simulation.Rules.GameRules.Problems(builder.Build()).Select(problem => problem.Reason).ToList();
+
+        Assert.Contains("the engine has no map object 'rock': a new kind needs its number in MapObjectTypes", reasons);
+        Assert.DoesNotContain(reasons, reason => reason.Contains("the engine needs the map object", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_test_rules_have_the_kinds_of_the_map_of_the_data()
+    {
+        Assert.True(TestRules.Standard.MapTypes.ContentEquals(GameDataFiles.Rules.MapTypes));
+    }
+
+    [Fact]
     public void The_hash_of_the_game_data_is_pinned()
     {
         // Changes with every change of a number in game/data: update it then, together with the reason in the commit.
         // M5 step 5: the build order of the bots of the Union (game/data/ai/union.yaml); step 6: their army; step 14: «Medium» in the data
         // (game/data/ai/difficulty.yaml), the war factory before the second refinery and no tech centre in the build order. M8 step 1: the
-        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources). The Alliance: the faction, its buildings, units, weapons and bots, the starting infantry and the default faction; the late buildings of the Union. Every unit of both factions, ships and aircraft available later. Stage 2a: the shipyards on the water build the ships. Stage 2b: the aircraft fly, from the air command and the Union's war factory. Stage 2c: the workshops, the discount, the bonus of the ore, the blast of the atomic plant. Stage 2d: the orbital uplink reveals the map, the veil generator veils. Stage 2e: the bunker holds five soldiers, the lens towers chain. Stage 3a: the weapons of eight soldiers, the jet pack, the temporal beam. Stage 3b: engineers, the infiltrator, the bombs, the toxin on the ground, the jump; what can be taken and infiltrated. Stage 3c: the weapons of five vehicles, the splitting beam, the rocket anti-air can bring down, the holo tank. Stage 3d: the drone, the demolition truck, the transports, the IFV and its passengers' weapons, the robot tank and its hub. Stage 3e: the weapons of the ships, under the water and on it, sensors, the squid's grip. Stage 3f: the airship's bombs, the strike jets' ammo and rearming, the helicopter. The loose ends: the Hornet as a unit, the IFV's repair arm, the dolphin's freeing wave, self-repair, the pads. Stage 2d: the four superweapons, their charge and weapons, one of each. Loose ends, stage 1: the paradrop of the factions and its plane. Stage 3: who trains not, the spy in barracks and war factories. Stage 4: the numbers of RA2 for the destroyer and its Osprey, the Hornet, the cruiser, the squid's grip and the Super Heavy Tank's self-repair. Stage 5: the nine countries of RA2, their own units and buildings, the USA's paradrop. The Rifleman's M60 (range 4) and Para behind sandbags. M11 a6: the crates (game/data/shared/crates.yaml). The content of Yuri's Revenge taken out: the robot tank, its control centre, the industrial plant, the battle bunker. The cloning vats of RA2. The psychic sensor of RA2. Yuri of RA2, his mind control and wave; who is immune to it. The defenses with the numbers of RA2: the pillbox, the Patriot, the prism tower and its support, the Grand Cannon, the tesla coil, the flak warhead. The tesla coil's charged shot and the tesla trooper that charges it. The nuke's verses of RA2 and its burning of the ore; the atomic plant blows up with half the missile. Repairs as in RA2: 8 every 14 ticks for 15%; the shipyards mend ships, the Soviet one needs power; the MCV needs the service depot; the Soviet wall needs the barracks. The economy of RA2: production under low power from 50% to 80%, each more factory the time × 0.8; the purifier needs power; the Soviet refinery is sold for 300. The prerequisite groups of RA2 (power, proc, radar, barracks, tech): the buildings name them; the Soviet war factory needs a refinery and barracks, the flak cannon barracks, the tesla coil and the prism tower power and a radar. The building sizes of RA2: the yards 4 x 4, the war factories 5 x 3, the refineries 4 x 3, the tesla reactor 3 x 2, the tesla coil and the flak cannon 1 x 1, the Allied barracks 2 x 3, the Soviet service depot 4 x 3. The garrisons of RA2: the GI and the conscript alone, with their weapons of the garrison (shared/tech.yaml); the oil derrick's blast. The stolen technology of RA2: the battle labs, the Chrono Commando, the Chrono Ivan, the Psi Commando, Yuri Prime. The spy satellite on the Defenses tab. The check against rules.ini of the models branch: the drone's special_1 and its share in the warheads, the turn rates of ROT, the Hornet's and the Osprey's numbers, the warheads that had numbers of ours; the refinery sees 6 cells. Tanya swims (RA2 SpeedType=Amphibious). The units' mechanics of RA2: who is not crushed, the transports that do not crush nor train, the harvesters, the airship and the squid heal themselves, the squid is a sensor, Ivan goes off when killed and bombs bridges. The Chrono Miner jumps home to its refinery (teleports_home). The Night Hawk is built in the war factory's queue (queue). The refineries' pads are in their footprints, on the east side. The carrier's Hornets: five missiles of 8, a lost one back in 40 s. The bot that knows every weapon (M11): the armies of the bots by roles and the share of the fleet. The fields grow back slower (the owner, 2026-10-26): source_interval 6 s, ore_growth_interval 40 s.
-        Assert.Equal(0xc02e8eeefcad9f0dUL, GameDataFiles.Current.Hash);
+        // four levels of the bots and their keys of M8, the four personalities (game/data/ai/personalities); step 2: the bonuses of the player in every level; step 7: counter_shift gives way to counter_pick; step 8: the build orders and armies of every personality; step 10: the tuning — harvesters by the count or by the ore, «Easy» slower, the optimized build order of «Balanced», the income of «Brutal» ×1.4; step 10a: attack_knowledge, the army of the «Saboteur» with tanks for its raids. M3 step 16: source_interval and source_radius of the economy (ore and gem sources). The Alliance: the faction, its buildings, units, weapons and bots, the starting infantry and the default faction; the late buildings of the Union. Every unit of both factions, ships and aircraft available later. Stage 2a: the shipyards on the water build the ships. Stage 2b: the aircraft fly, from the air command and the Union's war factory. Stage 2c: the workshops, the discount, the bonus of the ore, the blast of the atomic plant. Stage 2d: the orbital uplink reveals the map, the veil generator veils. Stage 2e: the bunker holds five soldiers, the lens towers chain. Stage 3a: the weapons of eight soldiers, the jet pack, the temporal beam. Stage 3b: engineers, the infiltrator, the bombs, the toxin on the ground, the jump; what can be taken and infiltrated. Stage 3c: the weapons of five vehicles, the splitting beam, the rocket anti-air can bring down, the holo tank. Stage 3d: the drone, the demolition truck, the transports, the IFV and its passengers' weapons, the robot tank and its hub. Stage 3e: the weapons of the ships, under the water and on it, sensors, the squid's grip. Stage 3f: the airship's bombs, the strike jets' ammo and rearming, the helicopter. The loose ends: the Hornet as a unit, the IFV's repair arm, the dolphin's freeing wave, self-repair, the pads. Stage 2d: the four superweapons, their charge and weapons, one of each. Loose ends, stage 1: the paradrop of the factions and its plane. Stage 3: who trains not, the spy in barracks and war factories. Stage 4: the numbers of RA2 for the destroyer and its Osprey, the Hornet, the cruiser, the squid's grip and the Super Heavy Tank's self-repair. Stage 5: the nine countries of RA2, their own units and buildings, the USA's paradrop. The Rifleman's M60 (range 4) and Para behind sandbags. M11 a6: the crates (game/data/shared/crates.yaml). The content of Yuri's Revenge taken out: the robot tank, its control centre, the industrial plant, the battle bunker. The cloning vats of RA2. The psychic sensor of RA2. Yuri of RA2, his mind control and wave; who is immune to it. The defenses with the numbers of RA2: the pillbox, the Patriot, the prism tower and its support, the Grand Cannon, the tesla coil, the flak warhead. The tesla coil's charged shot and the tesla trooper that charges it. The nuke's verses of RA2 and its burning of the ore; the atomic plant blows up with half the missile. Repairs as in RA2: 8 every 14 ticks for 15%; the shipyards mend ships, the Soviet one needs power; the MCV needs the service depot; the Soviet wall needs the barracks. The economy of RA2: production under low power from 50% to 80%, each more factory the time × 0.8; the purifier needs power; the Soviet refinery is sold for 300. The prerequisite groups of RA2 (power, proc, radar, barracks, tech): the buildings name them; the Soviet war factory needs a refinery and barracks, the flak cannon barracks, the tesla coil and the prism tower power and a radar. The building sizes of RA2: the yards 4 x 4, the war factories 5 x 3, the refineries 4 x 3, the tesla reactor 3 x 2, the tesla coil and the flak cannon 1 x 1, the Allied barracks 2 x 3, the Soviet service depot 4 x 3. The garrisons of RA2: the GI and the conscript alone, with their weapons of the garrison (shared/tech.yaml); the oil derrick's blast. The stolen technology of RA2: the battle labs, the Chrono Commando, the Chrono Ivan, the Psi Commando, Yuri Prime. The spy satellite on the Defenses tab. The check against rules.ini of the models branch: the drone's special_1 and its share in the warheads, the turn rates of ROT, the Hornet's and the Osprey's numbers, the warheads that had numbers of ours; the refinery sees 6 cells. Tanya swims (RA2 SpeedType=Amphibious). The units' mechanics of RA2: who is not crushed, the transports that do not crush nor train, the harvesters, the airship and the squid heal themselves, the squid is a sensor, Ivan goes off when killed and bombs bridges. The Chrono Miner jumps home to its refinery (teleports_home). The Night Hawk is built in the war factory's queue (queue). The refineries' pads are in their footprints, on the east side. The carrier's Hornets: five missiles of 8, a lost one back in 40 s. The bot that knows every weapon (M11): the armies of the bots by roles and the share of the fleet. The fields grow back slower (the owner, 2026-10-26): source_interval 6 s, ore_growth_interval 40 s. M3 step 14a: the kinds of map objects, bridges and buildings of the map in the data (game/data/map, game/data/neutral).
+        Assert.Equal(0x1ca4a9e24792d5e5UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

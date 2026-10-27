@@ -36,6 +36,22 @@ public static class BridgeTypes
 
     public static IReadOnlyList<BridgeType> All => Types;
 
+    /// <summary>The highest number of a kind the engine knows.</summary>
+    public static int Highest => (int)BridgeKind.ConcreteHigh;
+
+    /// <summary>The kind the engine knows by the id <paramref name="id"/>.</summary>
+    public static bool TryGetKind(string id, out BridgeKind kind)
+    {
+        if (TryGetById(id, out var type))
+        {
+            kind = type.Kind;
+            return true;
+        }
+
+        kind = default;
+        return false;
+    }
+
     public static bool IsKnown(BridgeKind kind) => kind is >= BridgeKind.WoodLow and <= BridgeKind.ConcreteHigh;
 
     public static BridgeType Get(BridgeKind kind) =>

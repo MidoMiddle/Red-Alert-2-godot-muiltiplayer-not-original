@@ -52,6 +52,7 @@ public sealed class GameRules
     {
         _buildingWeapon = buildingWeapon;
         Database = database;
+        MapTypes = MapTypes.From(database);
         _units = units;
         _known = System.Array.FindAll(units, unit => unit is not null);
         Land = land;
@@ -92,6 +93,9 @@ public sealed class GameRules
 
     /// <summary>The definitions the rules are made from.</summary>
     public RulesDatabase Database { get; }
+
+    /// <summary>The kinds of map objects, bridges and buildings of the map (M3 step 14a), from <see cref="Database"/>.</summary>
+    public MapTypes MapTypes { get; }
 
     /// <summary>The speeds of every locomotor on every land type: the map of a match goes by them.</summary>
     public LandSpeeds Land { get; }
@@ -341,6 +345,8 @@ public sealed class GameRules
                 $"the engine needs exactly one economy record, and there are {database.Economies.Length}"));
         }
 
+        MapTypeProblems(database, problems);
+
         for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             if (!database.TryGetLocomotor(LandSpeeds.IdOf(locomotor), out _))
@@ -431,6 +437,61 @@ public sealed class GameRules
         | (unit.Trainable ? 0 : UnitTalents.Untrainable)
         | (unit.PsionicImmune ? UnitTalents.PsionicImmune : 0) | (unit.DeployOnce ? UnitTalents.DeployOnce : 0)
         | (unit.ChargesCoils ? UnitTalents.ChargesCoils : 0) | (unit.Occupier ? UnitTalents.Occupier : 0);
+
+    /// <summary>
+    /// The kinds of the map (M3 step 14a): every kind the engine numbers needs its record, and a record needs a kind of the engine — the
+    /// number of a kind is part of the rules, so a new kind is added to the code as well.
+    /// </summary>
+    private static void MapTypeProblems(RulesDatabase database, List<RulesProblem> problems)
+    {
+        foreach (var type in MapObjectTypes.All)
+        {
+            if (!database.TryGetMapObject(type.Id, out _))
+            {
+                problems.Add(new RulesProblem("", "", $"the engine needs the map object '{type.Id}', and none is defined"));
+            }
+        }
+
+        foreach (var type in BridgeTypes.All)
+        {
+            if (!database.TryGetBridge(type.Id, out _))
+            {
+                problems.Add(new RulesProblem("", "", $"the engine needs the bridge '{type.Id}', and none is defined"));
+            }
+        }
+
+        foreach (var type in BuildingTypes.All)
+        {
+            if (!database.TryGetMapBuilding(type.Id, out _))
+            {
+                problems.Add(new RulesProblem("", "", $"the engine needs the map building '{type.Id}', and none is defined"));
+            }
+        }
+
+        foreach (var mapObject in database.MapObjects)
+        {
+            if (!MapObjectTypes.TryGetKind(mapObject.Id, out _))
+            {
+                problems.Add(new RulesProblem(mapObject.Id, "", $"the engine has no map object '{mapObject.Id}': a new kind needs its number in MapObjectTypes"));
+            }
+        }
+
+        foreach (var bridge in database.Bridges)
+        {
+            if (!BridgeTypes.TryGetKind(bridge.Id, out _))
+            {
+                problems.Add(new RulesProblem(bridge.Id, "", $"the engine has no bridge '{bridge.Id}': a new kind needs its number in BridgeTypes"));
+            }
+        }
+
+        foreach (var building in database.MapBuildings)
+        {
+            if (!BuildingTypes.TryGetKind(building.Id, out _))
+            {
+                problems.Add(new RulesProblem(building.Id, "", $"the engine has no map building '{building.Id}': a new kind needs its number in BuildingTypes"));
+            }
+        }
+    }
 
     private static Locomotor? LocomotorOf(string id)
     {

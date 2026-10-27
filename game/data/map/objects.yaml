@@ -1,0 +1,211 @@
+# The kinds of map objects (docs/implementation/M3_base_economy.md, step 14a; docs/formats/rtsmap.md, section 4). The engine knows
+# each by its id (src/Rts.Simulation/Map/MapObjectTypes.cs), and its number is part of the rules: a new kind needs both.
+# `blocks` — the locomotors it stops; `hp` — 0 when nothing destroys it; `crushed_by` — the locomotors that drive over it and
+# flatten it; `stump` — a tree that leaves a stump; `speed` — the speed it gives a locomotor on its cell (100% when not named).
+# Hit points are a rough guide: the RA2 numbers for map objects are not confirmed in our documents.
+
+pine_tree:
+  kind: map_object
+  name: Pine tree
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 400
+  stump: true
+
+boulder:
+  kind: map_object
+  name: Boulder
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+
+# A fence stops infantry and wheels (and the other light movers); tracks drive through and flatten it.
+fence_wood:
+  kind: map_object
+  name: Wooden fence
+  blocks: [amphibious, foot, hover, naval, wheel]
+  hp: 150
+  crushed_by: [track]
+
+wall_stone:
+  kind: map_object
+  name: Stone wall
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 1500
+
+lamp_post:
+  kind: map_object
+  name: Lamp post
+  hp: 50
+  crushed_by: [amphibious, foot, hover, naval, track, wheel]
+
+anti_tank_hedgehog:
+  kind: map_object
+  name: Anti-tank hedgehog
+  blocks: [track, wheel]
+  hp: 400
+
+pipeline:
+  kind: map_object
+  name: Pipeline
+  blocks: [track, wheel]
+  hp: 50
+
+# A snowdrift slows foot, tracks and wheels; the rest drive at full speed (docs/map_elements/20_snowdrift).
+snowdrift:
+  kind: map_object
+  name: Snowdrift
+  crushed_by: [track]
+  speed: { foot: 60%, track: 80%, wheel: 50% }
+
+# The drill towers of ore and gem fields (M3 step 16): in everyone's way, never destroyed; they erupt ore or gems.
+ore_source:
+  kind: map_object
+  name: Ore drill
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+
+gem_source:
+  kind: map_object
+  name: Gem drill
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+
+# The element documents (2026-10-25): small things of the street, the beach and the farm a vehicle crushes; a hedge, a well or a billboard stops everyone; barbed wire stops all but tracks, which flatten it (RA2).
+bench:
+  kind: map_object
+  name: Bench
+  hp: 50
+  crushed_by: [track, wheel]
+
+trash_bin:
+  kind: map_object
+  name: Trash bin
+  hp: 40
+  crushed_by: [track, wheel]
+
+mailbox:
+  kind: map_object
+  name: Mailbox
+  hp: 40
+  crushed_by: [track, wheel]
+
+phone_booth:
+  kind: map_object
+  name: Phone booth
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 100
+  crushed_by: [track]
+
+bus_stop:
+  kind: map_object
+  name: Bus stop
+  hp: 100
+  crushed_by: [track]
+
+billboard:
+  kind: map_object
+  name: Billboard
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 150
+
+road_sign:
+  kind: map_object
+  name: Road sign
+  hp: 30
+  crushed_by: [track, wheel]
+
+traffic_light:
+  kind: map_object
+  name: Traffic light
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 200
+  crushed_by: [track]
+
+flowerbed:
+  kind: map_object
+  name: Flowerbed
+  hp: 50
+  crushed_by: [track, wheel]
+
+street_stall:
+  kind: map_object
+  name: Street stall
+  blocks: [track, wheel]
+  hp: 80
+  crushed_by: [track]
+
+beach_umbrella:
+  kind: map_object
+  name: Beach umbrella
+  hp: 30
+  crushed_by: [track, wheel]
+
+sun_lounger:
+  kind: map_object
+  name: Sun lounger
+  hp: 30
+  crushed_by: [track, wheel]
+
+beach_shower:
+  kind: map_object
+  name: Beach shower
+  hp: 50
+  crushed_by: [track, wheel]
+
+volleyball_net:
+  kind: map_object
+  name: Volleyball net
+  hp: 40
+  crushed_by: [track, wheel]
+
+fishing_nets:
+  kind: map_object
+  name: Fishing nets
+  hp: 20
+  crushed_by: [track, wheel]
+
+driftwood:
+  kind: map_object
+  name: Driftwood
+  hp: 50
+  crushed_by: [track]
+
+beached_boat:
+  kind: map_object
+  name: Beached boat
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 300
+
+dry_shrub:
+  kind: map_object
+  name: Dry shrub
+  hp: 30
+  crushed_by: [amphibious, foot, hover, naval, track, wheel]
+
+hedge:
+  kind: map_object
+  name: Hedge
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 300
+
+hay_bale:
+  kind: map_object
+  name: Hay bale
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 100
+  crushed_by: [track]
+
+well:
+  kind: map_object
+  name: Well
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 1500
+
+barbed_wire:
+  kind: map_object
+  name: Barbed wire
+  blocks: [amphibious, foot, hover, naval, wheel]
+  hp: 100
+  crushed_by: [track]
+
+farm_tractor:
+  kind: map_object
+  name: Farm tractor
+  blocks: [amphibious, foot, hover, naval, track, wheel]
+  hp: 400

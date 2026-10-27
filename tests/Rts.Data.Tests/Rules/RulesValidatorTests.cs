@@ -46,6 +46,28 @@ public sealed class RulesValidatorTests
     private static RulesError Fails(string fileName, string text, string replacement) =>
         Assert.Single(Errors(Edited(Dataset(), fileName, text, replacement)));
 
+    [Theory]
+    // M3 step 14a: the kinds of the map are checked like the rest.
+    [InlineData("map_object", "blocks: [foot, legs]", "'rock' refers to locomotor 'legs', which is not defined")]
+    [InlineData("map_object", "speed: { foot: 300% }", "the speeds of 'rock' must be 0% to 200%")]
+    [InlineData("map_building", "footprint: [7, 2]", "the footprint of 'rock' must be 1 to 6 cells a side")]
+    [InlineData("map_building", "superweapon: paradrop", "'rock' gives a superweapon, so it needs a recharge")]
+    [InlineData("map_building", "death_weapon: big_bang", "'rock' refers to weapon 'big_bang', which is not defined")]
+    [InlineData("bridge", "width: 9", "'width' of 'rock' must be 1 to 5")]
+    public void A_kind_of_the_map_is_checked_like_the_rest(string kind, string line, string reason)
+    {
+        var body = kind switch
+        {
+            "map_object" => "  name: Rock\n",
+            "bridge" => "  name: Rock\n  segment_hp: 600\n",
+            _ => "  name: Rock\n  hp: 500\n" + (line.StartsWith("footprint", StringComparison.Ordinal) ? "" : "  footprint: [1, 1]\n"),
+        };
+        var files = Dataset();
+        files.Add(("map/kinds.yaml", $"rock:\n  kind: {kind}\n{body}  {line}\n" + (kind == "bridge" && !line.StartsWith("width", StringComparison.Ordinal) ? "  width: 3\n" : "")));
+
+        Assert.Equal(reason, Assert.Single(Errors(files)).Reason);
+    }
+
     [Fact]
     public void The_dataset_passes_every_check()
     {
