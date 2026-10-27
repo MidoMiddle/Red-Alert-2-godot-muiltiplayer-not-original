@@ -1891,6 +1891,58 @@ bridges:
   - { type: bridge_concrete_high, from: [144, 240], to: [153, 240] }
   - { type: bridge_concrete_high, from: [150, 250], to: [165, 250] }
 structures:
+  - { type: neutral_civilian_bunker, cell: [156, 22], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [147, 46], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [179, 50], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [151, 53], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [102, 75], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [181, 78], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [188, 78], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [113, 79], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [107, 81], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [236, 102], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [91, 103], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [212, 104], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [206, 108], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [135, 109], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [143, 110], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [66, 120], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [98, 120], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [71, 126], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [134, 127], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [219, 129], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [176, 133], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [260, 133], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [125, 147], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [131, 147], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [162, 149], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [219, 152], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [116, 155], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [94, 160], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [116, 162], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [226, 165], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [235, 171], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [165, 172], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [158, 173], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [193, 177], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [217, 182], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [153, 185], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [159, 186], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [99, 188], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [134, 191], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [192, 202], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [117, 205], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [198, 208], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [120, 219], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [110, 223], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [159, 236], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [165, 242], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [123, 248], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [143, 255], owner: neutral, facing: 2 }
+  - { type: nuclear_reactor, cell: [107, 112], owner: neutral, facing: 2 }
+  - { type: nuclear_reactor, cell: [226, 118], owner: neutral, facing: 2 }
+  - { type: nuclear_reactor, cell: [162, 142], owner: neutral, facing: 2 }
+  - { type: nuclear_reactor, cell: [125, 253], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [176, 44], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [82, 97], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [127, 121], owner: neutral, facing: 2 }

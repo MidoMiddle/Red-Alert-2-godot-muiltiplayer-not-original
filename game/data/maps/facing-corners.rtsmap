@@ -1075,6 +1075,14 @@ bridges:
   - { type: bridge_wood_low, from: [179, 95], to: [179, 115] }
   - { type: bridge_wood_low, from: [96, 176], to: [114, 176] }
 structures:
+  - { type: alliance_construction_yard, cell: [57, 49], owner: neutral, facing: 2 }
+  - { type: alliance_construction_yard, cell: [139, 71], owner: neutral, facing: 2 }
+  - { type: alliance_construction_yard, cell: [53, 124], owner: neutral, facing: 2 }
+  - { type: alliance_construction_yard, cell: [133, 147], owner: neutral, facing: 2 }
+  - { type: construction_yard, cell: [123, 52], owner: neutral, facing: 2 }
+  - { type: construction_yard, cell: [52, 63], owner: neutral, facing: 2 }
+  - { type: construction_yard, cell: [149, 132], owner: neutral, facing: 2 }
+  - { type: construction_yard, cell: [74, 145], owner: neutral, facing: 2 }
   - { type: neutral_fuel_tank, cell: [93, 17], owner: neutral, facing: 2 }
   - { type: neutral_fuel_tank, cell: [92, 21], owner: neutral, facing: 2 }
   - { type: neutral_fuel_tank, cell: [94, 21], owner: neutral, facing: 2 }

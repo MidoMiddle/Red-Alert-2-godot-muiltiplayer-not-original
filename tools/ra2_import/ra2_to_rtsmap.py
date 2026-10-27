@@ -10,7 +10,8 @@ RA2 cells (x, y) are our cells: the same screen axes (x right-down, y left-down)
   carried on through the cliff cells to the flat shores.
 - [Terrain]: trees (TREE*) become pines (the climate gives their look); the ore trees (TIBTRE*) are dropped; an ore drill stands by
   every start (M8 step 10b). No gem drill stands by a start: `Rts.MapTool -- share-gems` puts them in the middle ground afterwards.
-- [Structures]: by the table STRUCTURES (buildings) and OBJECTS (lamps, benches); what has no counterpart is listed and left out.
+- [Structures]: by the table STRUCTURES (buildings, those of the factions among them, for nobody) and OBJECTS (lamps, benches);
+  what has no counterpart is listed and left out. A building whose owner is not Neutral is placed for nobody, with a warning.
 - Starts: waypoints 0 to MaxPlayer - 1 of [Basic] (--players, or 4, when it is missing). The playable area: LocalSize, its top moved up by two of its units (RA2 shows a few rows above it), grown where a start lies
   closer than 4 cells to its edge.
 
@@ -126,26 +127,61 @@ for p, b in list(bridge_cells.items()):
         bridge_cells[pier] = b
         level[pier] = min(level.get(p, 0), level.get(beyond, 0))
 
-# ---- Buildings and the sizes of ours (src/Rts.Simulation/World/BuildingTypes.cs).
+# ---- Buildings and the sizes of ours: the footprints of game/data (the neutral buildings, those of the factions), an entry without
+# one taking its template's.
 here = os.path.dirname(os.path.abspath(__file__))
-types = open(os.path.join(here, '..', '..', 'src', 'Rts.Simulation', 'World', 'BuildingTypes.cs')).read()
-SIZES = {m[0]: (int(m[1]), int(m[2])) for m in re.findall(r'new\(BuildingKind\.\w+, "(\w+)", (\d+), (\d+)', types)}
+data = os.path.join(here, '..', '..', 'game', 'data')
+entries = {}
+for folder in ('neutral', 'factions', 'shared'):
+    for root, _, files in os.walk(os.path.join(data, folder)):
+        for name in sorted(files):
+            if not name.endswith('.yaml'):
+                continue
+            entry = None
+            for line in open(os.path.join(root, name), encoding='utf-8'):
+                top = re.match(r'([a-z0-9_]+):', line)
+                if top:
+                    entry = entries.setdefault(top[1], {})
+                elif entry is not None and (field := re.match(r'  (footprint|inherits): *(.+?) *(#.*)?$', line)):
+                    entry[field[1]] = field[2]
+
+def size_of(id):
+    entry = entries.get(id, {})
+    if 'footprint' in entry:
+        w, h = re.match(r'\[(\d+), *(\d+)\]', entry['footprint']).groups()
+        return int(w), int(h)
+    return size_of(entry['inherits']) if 'inherits' in entry else None
+
+SIZES = {id: size_of(id) for id in entries if size_of(id)}
 STRUCTURES = {
     'CAOILD': 'tech_oil_derrick', 'CAAIRP': 'tech_airfield', 'CABHUT': 'tech_bridge_repair_hut', 'CALAB': 'tech_hospital',
     'CAMACH': 'neutral_office', 'CAPOWR': 'neutral_boiler_house', 'CAMISC01': 'neutral_fuel_tank', 'CAMISC02': 'neutral_silo',
     'CAHSE05': 'neutral_house_a', 'CAHSE06': 'neutral_house_a', 'CAARMY02': 'neutral_shed', 'CAARMY03': 'neutral_shed',
     'CAARMY04': 'neutral_shed', 'CAFRMB': 'neutral_barn', 'CATHOSP': 'tech_hospital',
     'CAOUTP': 'tech_outpost', 'CARUS02A': 'neutral_house_a', 'CARUS02B': 'neutral_house_a', 'CARUS07': 'neutral_house_a',
+    'CABUNK01': 'neutral_civilian_bunker', 'CABUNK02': 'neutral_civilian_bunker',
+    # The buildings of the factions a map gives to nobody (Neutral): the defenses fire at every player, an engineer takes the
+    # reactor, the yards, the barracks, the war factory, the lab and the air force command.
+    'NASAM': 'alliance_patriot_missile_system', 'ATESLA': 'alliance_prism_tower', 'TESLA': 'tesla_coil',
+    'GTGCAN': 'alliance_grand_cannon', 'GAPILL': 'alliance_pillbox', 'NAFLAK': 'flak_cannon', 'NALASR': 'sentry_bunker',
+    'NANRCT': 'nuclear_reactor', 'NACLON': 'cloning_vats', 'NAHAND': 'barracks', 'GAWEAT': 'alliance_weather_control_device',
+    'NAMISL': 'nuclear_missile_silo', 'NAIRON': 'iron_curtain', 'GACSPH': 'alliance_chronosphere',
+    'GACNST': 'alliance_construction_yard', 'NACNST': 'construction_yard', 'GATECH': 'alliance_battle_lab',
+    'GAWEAP': 'alliance_war_factory', 'GAAIRC': 'alliance_air_force_command',
 }
 # The blocks of the towns of RA2 (New York, Chicago, Europe, Washington): offices here.
 CITY = ('CANEWY', 'CANWY', 'CACHIG', 'CAEURO', 'CAWASH10')
 OBJECTS = {'CASTRT03': 'lamp_post', 'CASTRT04': 'lamp_post', 'CASTRT05': 'lamp_post', 'TEMDAYLAMP': 'lamp_post',
-           'CAPARK01': 'bench', 'CAPARK02': 'bench', 'CAPARK03': 'bench'}
+           'TEMNITLAMP': 'lamp_post', 'CAPARK01': 'bench', 'CAPARK02': 'bench', 'CAPARK03': 'bench'}
+missing = [t for t in STRUCTURES.values() if t not in SIZES]
+assert not missing, f'no footprint in game/data for {missing}'
 structures, objects, skipped = [], [], collections.Counter()
 footprints = set()
 for _, value in secs.get('Structures', []):
     f = value.split(',')
     x0, y0 = int(f[3]), int(f[4])
+    if f[0] != 'Neutral' and (f[1] in STRUCTURES or f[1].startswith(CITY)):
+        print(f'warning: {f[1]} at {x0},{y0} belongs to {f[0]}; placed for nobody')
     if f[1] in STRUCTURES or f[1].startswith(CITY):
         t = STRUCTURES.get(f[1], 'neutral_office'); w, h = SIZES[t]
         cells = {(x0 + dx, y0 + dy) for dx in range(w) for dy in range(h)}
@@ -252,6 +288,9 @@ for key, value in secs.get('Terrain', []):
     elif value.startswith('LT_GEN'):
         objects.append(('lamp_post', x, y, 0))
 objects += [('fence_wood', x, y, 0) for x, y in sandbags if (x, y) not in footprints and not is_water((x, y))]
+# A lamp or a bench under the footprint of ours (larger than RA2's, or of another size) gives way to the building.
+for o in [o for o in objects if (o[1], o[2]) in footprints]:
+    objects.remove(o); skipped[o[0] + ' (under a building)'] += 1
 objects += [('wall_stone', x, y, 0) for x, y in walls if (x, y) not in footprints and not is_water((x, y))]
 taken = {(x, y) for _, x, y, _ in objects} | footprints
 

@@ -1033,7 +1033,7 @@ layers:
     ..........................................................................................................................................................................................................................................................
     ..........................................................................................................................................................................................................................................................
 objects:
-  - { type: gem_source, cell: [123, 124], variant: 3 }
+  - { type: gem_source, cell: [120, 123], variant: 1 }
   - { type: ore_source, cell: [134, 22], variant: 0 }
   - { type: ore_source, cell: [180, 80], variant: 0 }
   - { type: ore_source, cell: [90, 82], variant: 0 }
@@ -1053,10 +1053,13 @@ objects:
   - { type: wall_stone, cell: [122, 93], variant: 0 }
   - { type: wall_stone, cell: [118, 94], variant: 0 }
   - { type: wall_stone, cell: [122, 94], variant: 0 }
+  - { type: wall_stone, cell: [117, 95], variant: 0 }
+  - { type: wall_stone, cell: [118, 95], variant: 0 }
   - { type: wall_stone, cell: [122, 95], variant: 0 }
   - { type: wall_stone, cell: [123, 95], variant: 0 }
   - { type: wall_stone, cell: [124, 95], variant: 0 }
   - { type: wall_stone, cell: [125, 95], variant: 0 }
+  - { type: wall_stone, cell: [117, 96], variant: 0 }
   - { type: wall_stone, cell: [117, 97], variant: 0 }
   - { type: wall_stone, cell: [126, 97], variant: 0 }
   - { type: wall_stone, cell: [117, 103], variant: 0 }
@@ -1068,14 +1071,19 @@ objects:
   - { type: wall_stone, cell: [123, 104], variant: 0 }
   - { type: wall_stone, cell: [124, 104], variant: 0 }
   - { type: wall_stone, cell: [125, 104], variant: 0 }
+  - { type: wall_stone, cell: [143, 119], variant: 0 }
+  - { type: wall_stone, cell: [144, 119], variant: 0 }
   - { type: wall_stone, cell: [145, 119], variant: 0 }
   - { type: wall_stone, cell: [150, 119], variant: 0 }
   - { type: wall_stone, cell: [151, 119], variant: 0 }
   - { type: wall_stone, cell: [90, 120], variant: 0 }
+  - { type: wall_stone, cell: [91, 120], variant: 0 }
+  - { type: wall_stone, cell: [92, 120], variant: 0 }
   - { type: wall_stone, cell: [96, 120], variant: 0 }
   - { type: wall_stone, cell: [97, 120], variant: 0 }
   - { type: wall_stone, cell: [98, 120], variant: 0 }
   - { type: wall_stone, cell: [99, 120], variant: 0 }
+  - { type: wall_stone, cell: [143, 120], variant: 0 }
   - { type: wall_stone, cell: [86, 121], variant: 0 }
   - { type: wall_stone, cell: [87, 121], variant: 0 }
   - { type: wall_stone, cell: [88, 121], variant: 0 }
@@ -1127,6 +1135,8 @@ objects:
   - { type: wall_stone, cell: [93, 129], variant: 0 }
   - { type: wall_stone, cell: [94, 129], variant: 0 }
   - { type: wall_stone, cell: [99, 129], variant: 0 }
+  - { type: wall_stone, cell: [118, 146], variant: 0 }
+  - { type: wall_stone, cell: [119, 146], variant: 0 }
   - { type: wall_stone, cell: [120, 146], variant: 0 }
   - { type: wall_stone, cell: [121, 146], variant: 0 }
   - { type: wall_stone, cell: [122, 146], variant: 0 }
@@ -1134,8 +1144,11 @@ objects:
   - { type: wall_stone, cell: [124, 146], variant: 0 }
   - { type: wall_stone, cell: [125, 146], variant: 0 }
   - { type: wall_stone, cell: [126, 146], variant: 0 }
+  - { type: wall_stone, cell: [118, 147], variant: 0 }
   - { type: wall_stone, cell: [118, 148], variant: 0 }
   - { type: wall_stone, cell: [127, 148], variant: 0 }
+  - { type: wall_stone, cell: [118, 152], variant: 0 }
+  - { type: wall_stone, cell: [118, 153], variant: 0 }
   - { type: wall_stone, cell: [118, 154], variant: 0 }
   - { type: wall_stone, cell: [127, 154], variant: 0 }
   - { type: wall_stone, cell: [120, 155], variant: 0 }
@@ -1159,8 +1172,115 @@ bridges:
   - { type: bridge_wood_low, from: [127, 124], to: [138, 124] }
   - { type: bridge_wood_low, from: [122, 130], to: [122, 140] }
 structures:
+  - { type: alliance_chronosphere, cell: [111, 132], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [94, 78], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [85, 81], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [159, 82], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [167, 90], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [134, 112], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [111, 114], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [109, 135], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [134, 136], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [71, 154], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [154, 166], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [160, 167], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [83, 168], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [119, 56], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [138, 56], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [95, 76], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [162, 76], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [78, 84], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [174, 89], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [187, 113], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [55, 114], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [130, 115], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [117, 116], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [114, 119], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [132, 119], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [187, 125], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [109, 132], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [133, 134], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [51, 136], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [113, 136], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [132, 137], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [69, 156], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [163, 167], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [84, 171], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [148, 171], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [107, 181], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [129, 181], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [128, 61], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [133, 61], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [92, 79], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [83, 81], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [159, 87], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [163, 91], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [124, 96], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [119, 103], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [150, 120], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [174, 120], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [98, 121], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [144, 126], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [174, 126], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [59, 127], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [92, 127], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [59, 133], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [124, 147], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [119, 153], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [74, 156], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [152, 165], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [83, 166], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [163, 169], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [110, 171], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [118, 171], owner: neutral, facing: 2 }
+  - { type: alliance_weather_control_device, cell: [120, 125], owner: neutral, facing: 2 }
+  - { type: barracks, cell: [118, 121], owner: neutral, facing: 2 }
+  - { type: barracks, cell: [118, 128], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [122, 51], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [74, 72], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [166, 84], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [119, 92], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [189, 118], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [87, 122], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [153, 123], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [50, 130], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [122, 156], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [70, 163], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [173, 176], owner: neutral, facing: 2 }
+  - { type: cloning_vats, cell: [118, 183], owner: neutral, facing: 2 }
+  - { type: flak_cannon, cell: [120, 102], owner: neutral, facing: 2 }
+  - { type: flak_cannon, cell: [145, 121], owner: neutral, facing: 2 }
+  - { type: flak_cannon, cell: [121, 147], owner: neutral, facing: 2 }
+  - { type: iron_curtain, cell: [128, 117], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [127, 63], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [134, 63], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [127, 66], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [134, 66], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [88, 82], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [92, 82], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [159, 85], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [91, 86], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [160, 89], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [164, 90], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [169, 118], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [172, 118], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [61, 125], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [64, 125], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [169, 127], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [172, 127], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [61, 134], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [64, 134], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [77, 158], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [81, 160], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [157, 161], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [152, 163], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [81, 164], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [158, 165], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [110, 166], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [119, 166], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [110, 169], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [119, 169], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [128, 55], owner: neutral, facing: 2 }
-  - { type: neutral_house_a, cell: [117, 95], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [126, 95], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [117, 98], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [124, 98], owner: neutral, facing: 2 }
@@ -1171,10 +1291,8 @@ structures:
   - { type: neutral_house_a, cell: [126, 104], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [113, 116], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [131, 117], owner: neutral, facing: 2 }
-  - { type: neutral_house_a, cell: [143, 119], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [148, 119], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [152, 119], owner: neutral, facing: 2 }
-  - { type: neutral_house_a, cell: [91, 120], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [93, 120], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [100, 120], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [146, 120], owner: neutral, facing: 2 }
@@ -1193,16 +1311,15 @@ structures:
   - { type: neutral_house_a, cell: [100, 129], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [115, 131], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [130, 133], owner: neutral, facing: 2 }
-  - { type: neutral_house_a, cell: [118, 146], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [127, 146], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [118, 149], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [125, 149], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [127, 149], owner: neutral, facing: 2 }
-  - { type: neutral_house_a, cell: [118, 152], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [127, 152], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [118, 155], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [127, 155], owner: neutral, facing: 2 }
   - { type: neutral_house_a, cell: [116, 179], owner: neutral, facing: 2 }
+  - { type: nuclear_missile_silo, cell: [123, 124], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [125, 119], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [126, 128], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [123, 110], owner: neutral, facing: 2 }
@@ -1261,3 +1378,15 @@ structures:
   - { type: tech_outpost, cell: [186, 172], owner: neutral, facing: 2 }
   - { type: tech_outpost, cell: [104, 183], owner: neutral, facing: 2 }
   - { type: tech_outpost, cell: [85, 184], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [118, 96], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [124, 103], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [123, 119], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [144, 120], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [92, 121], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [115, 121], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [150, 125], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [98, 127], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [128, 127], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [117, 131], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [119, 147], owner: neutral, facing: 2 }
+  - { type: tesla_coil, cell: [125, 152], owner: neutral, facing: 2 }

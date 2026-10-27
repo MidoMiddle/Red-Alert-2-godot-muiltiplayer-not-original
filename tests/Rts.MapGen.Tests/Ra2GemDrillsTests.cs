@@ -21,9 +21,9 @@ public sealed class Ra2GemDrillsTests
     private static MapDefinition Load(string id) => RtsMapReader.Read(File.ReadAllText(Path.Combine(Folder, id + ".rtsmap")));
 
     [Fact]
-    public void The_game_has_the_four_maps_from_RA2()
+    public void The_game_has_the_six_maps_from_RA2()
     {
-        Assert.Equal(["facing-corners", "heaven", "stephs-high-ground", "war-pro"], Ra2Ids());
+        Assert.Equal(["facing-corners", "heaven", "light-of-night", "route-66", "stephs-high-ground", "war-pro"], Ra2Ids());
     }
 
     [Theory]
@@ -67,7 +67,9 @@ public sealed class Ra2GemDrillsTests
             return gems.Min(cell => costs[cell.Y * map.Width + cell.X]);
         }).ToList();
         Assert.DoesNotContain(int.MaxValue, ways);
-        Assert.True((ways.Max() - ways.Min()) * 100 <= ways.Max() * Drills.FairShare, $"tank ways {string.Join("/", ways.Select(w => w / 10))}");
+        // The owner (2026-10-27): The Light of Night, whose pairs of starts lie unevenly about the town, within 40 % (37 to 60 cells).
+        var share = id == "light-of-night" ? 40 : Drills.FairShare;
+        Assert.True((ways.Max() - ways.Min()) * 100 <= ways.Max() * share, $"tank ways {string.Join("/", ways.Select(w => w / 10))}");
     }
 
     [Theory]

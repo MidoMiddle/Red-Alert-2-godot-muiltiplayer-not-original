@@ -1068,94 +1068,157 @@ objects:
   - { type: gem_source, cell: [91, 150], variant: 1 }
   - { type: gem_source, cell: [168, 188], variant: 0 }
   - { type: lamp_post, cell: [145, 18], variant: 0 }
+  - { type: lamp_post, cell: [145, 18], variant: 0 }
   - { type: lamp_post, cell: [119, 21], variant: 0 }
   - { type: lamp_post, cell: [121, 21], variant: 0 }
   - { type: lamp_post, cell: [125, 21], variant: 0 }
   - { type: lamp_post, cell: [149, 22], variant: 0 }
+  - { type: lamp_post, cell: [149, 22], variant: 0 }
   - { type: lamp_post, cell: [115, 25], variant: 0 }
   - { type: lamp_post, cell: [119, 25], variant: 0 }
+  - { type: lamp_post, cell: [120, 25], variant: 0 }
   - { type: lamp_post, cell: [121, 25], variant: 0 }
   - { type: lamp_post, cell: [125, 25], variant: 0 }
   - { type: lamp_post, cell: [138, 26], variant: 0 }
+  - { type: lamp_post, cell: [138, 26], variant: 0 }
+  - { type: lamp_post, cell: [145, 28], variant: 0 }
   - { type: lamp_post, cell: [145, 28], variant: 0 }
   - { type: lamp_post, cell: [115, 30], variant: 0 }
   - { type: lamp_post, cell: [119, 30], variant: 0 }
   - { type: lamp_post, cell: [121, 30], variant: 0 }
   - { type: lamp_post, cell: [125, 30], variant: 0 }
   - { type: lamp_post, cell: [134, 31], variant: 0 }
+  - { type: lamp_post, cell: [134, 31], variant: 0 }
+  - { type: lamp_post, cell: [149, 32], variant: 0 }
   - { type: lamp_post, cell: [149, 32], variant: 0 }
   - { type: lamp_post, cell: [138, 35], variant: 0 }
+  - { type: lamp_post, cell: [138, 35], variant: 0 }
+  - { type: lamp_post, cell: [145, 38], variant: 0 }
   - { type: lamp_post, cell: [145, 38], variant: 0 }
   - { type: lamp_post, cell: [134, 41], variant: 0 }
+  - { type: lamp_post, cell: [134, 41], variant: 0 }
+  - { type: lamp_post, cell: [149, 42], variant: 0 }
   - { type: lamp_post, cell: [149, 42], variant: 0 }
   - { type: lamp_post, cell: [138, 45], variant: 0 }
+  - { type: lamp_post, cell: [138, 45], variant: 0 }
+  - { type: lamp_post, cell: [145, 48], variant: 0 }
   - { type: lamp_post, cell: [145, 48], variant: 0 }
   - { type: lamp_post, cell: [138, 55], variant: 0 }
+  - { type: lamp_post, cell: [138, 55], variant: 0 }
+  - { type: lamp_post, cell: [182, 58], variant: 0 }
   - { type: lamp_post, cell: [145, 59], variant: 0 }
+  - { type: lamp_post, cell: [145, 59], variant: 0 }
+  - { type: lamp_post, cell: [134, 61], variant: 0 }
   - { type: lamp_post, cell: [134, 61], variant: 0 }
   - { type: lamp_post, cell: [75, 62], variant: 0 }
   - { type: lamp_post, cell: [115, 62], variant: 0 }
   - { type: lamp_post, cell: [119, 62], variant: 0 }
   - { type: lamp_post, cell: [121, 62], variant: 0 }
   - { type: lamp_post, cell: [125, 62], variant: 0 }
+  - { type: lamp_post, cell: [92, 64], variant: 0 }
+  - { type: lamp_post, cell: [162, 64], variant: 0 }
   - { type: lamp_post, cell: [79, 65], variant: 0 }
   - { type: lamp_post, cell: [115, 65], variant: 0 }
   - { type: lamp_post, cell: [119, 65], variant: 0 }
+  - { type: lamp_post, cell: [120, 65], variant: 0 }
   - { type: lamp_post, cell: [121, 65], variant: 0 }
   - { type: lamp_post, cell: [125, 65], variant: 0 }
   - { type: lamp_post, cell: [138, 65], variant: 0 }
+  - { type: lamp_post, cell: [138, 65], variant: 0 }
+  - { type: lamp_post, cell: [182, 66], variant: 0 }
+  - { type: lamp_post, cell: [92, 69], variant: 0 }
   - { type: lamp_post, cell: [115, 69], variant: 0 }
   - { type: lamp_post, cell: [119, 69], variant: 0 }
   - { type: lamp_post, cell: [121, 69], variant: 0 }
   - { type: lamp_post, cell: [125, 69], variant: 0 }
   - { type: lamp_post, cell: [145, 69], variant: 0 }
+  - { type: lamp_post, cell: [145, 69], variant: 0 }
+  - { type: lamp_post, cell: [75, 71], variant: 0 }
   - { type: lamp_post, cell: [75, 71], variant: 0 }
   - { type: lamp_post, cell: [134, 71], variant: 0 }
+  - { type: lamp_post, cell: [134, 71], variant: 0 }
   - { type: lamp_post, cell: [79, 75], variant: 0 }
+  - { type: lamp_post, cell: [79, 75], variant: 0 }
+  - { type: lamp_post, cell: [92, 75], variant: 0 }
+  - { type: lamp_post, cell: [138, 75], variant: 0 }
   - { type: lamp_post, cell: [138, 75], variant: 0 }
   - { type: lamp_post, cell: [153, 76], variant: 0 }
+  - { type: lamp_post, cell: [153, 76], variant: 0 }
+  - { type: lamp_post, cell: [92, 79], variant: 0 }
+  - { type: lamp_post, cell: [75, 81], variant: 0 }
   - { type: lamp_post, cell: [75, 81], variant: 0 }
   - { type: lamp_post, cell: [134, 81], variant: 0 }
+  - { type: lamp_post, cell: [134, 81], variant: 0 }
+  - { type: lamp_post, cell: [86, 84], variant: 0 }
+  - { type: lamp_post, cell: [97, 84], variant: 0 }
+  - { type: lamp_post, cell: [79, 85], variant: 0 }
   - { type: lamp_post, cell: [79, 85], variant: 0 }
   - { type: lamp_post, cell: [138, 85], variant: 0 }
+  - { type: lamp_post, cell: [138, 85], variant: 0 }
   - { type: lamp_post, cell: [153, 86], variant: 0 }
+  - { type: lamp_post, cell: [153, 86], variant: 0 }
+  - { type: lamp_post, cell: [92, 90], variant: 0 }
+  - { type: lamp_post, cell: [157, 90], variant: 0 }
   - { type: lamp_post, cell: [157, 90], variant: 0 }
   - { type: lamp_post, cell: [75, 91], variant: 0 }
+  - { type: lamp_post, cell: [75, 91], variant: 0 }
+  - { type: lamp_post, cell: [134, 91], variant: 0 }
   - { type: lamp_post, cell: [134, 91], variant: 0 }
   - { type: lamp_post, cell: [79, 95], variant: 0 }
+  - { type: lamp_post, cell: [79, 95], variant: 0 }
   - { type: lamp_post, cell: [138, 95], variant: 0 }
+  - { type: lamp_post, cell: [138, 95], variant: 0 }
+  - { type: lamp_post, cell: [91, 96], variant: 0 }
+  - { type: lamp_post, cell: [93, 96], variant: 0 }
   - { type: lamp_post, cell: [115, 96], variant: 0 }
   - { type: lamp_post, cell: [119, 96], variant: 0 }
   - { type: lamp_post, cell: [121, 96], variant: 0 }
   - { type: lamp_post, cell: [125, 96], variant: 0 }
+  - { type: lamp_post, cell: [153, 96], variant: 0 }
   - { type: lamp_post, cell: [153, 96], variant: 0 }
   - { type: lamp_post, cell: [86, 98], variant: 0 }
   - { type: lamp_post, cell: [89, 98], variant: 0 }
   - { type: lamp_post, cell: [94, 98], variant: 0 }
   - { type: lamp_post, cell: [97, 98], variant: 0 }
   - { type: lamp_post, cell: [75, 99], variant: 0 }
+  - { type: lamp_post, cell: [75, 99], variant: 0 }
   - { type: lamp_post, cell: [115, 99], variant: 0 }
   - { type: lamp_post, cell: [119, 99], variant: 0 }
+  - { type: lamp_post, cell: [120, 99], variant: 0 }
   - { type: lamp_post, cell: [121, 99], variant: 0 }
   - { type: lamp_post, cell: [125, 99], variant: 0 }
   - { type: lamp_post, cell: [99, 100], variant: 0 }
   - { type: lamp_post, cell: [157, 100], variant: 0 }
+  - { type: lamp_post, cell: [157, 100], variant: 0 }
   - { type: lamp_post, cell: [84, 101], variant: 0 }
   - { type: lamp_post, cell: [134, 101], variant: 0 }
+  - { type: lamp_post, cell: [134, 101], variant: 0 }
+  - { type: lamp_post, cell: [89, 102], variant: 0 }
+  - { type: lamp_post, cell: [94, 102], variant: 0 }
   - { type: lamp_post, cell: [115, 102], variant: 0 }
   - { type: lamp_post, cell: [119, 102], variant: 0 }
   - { type: lamp_post, cell: [121, 102], variant: 0 }
   - { type: lamp_post, cell: [125, 102], variant: 0 }
+  - { type: lamp_post, cell: [46, 103], variant: 0 }
+  - { type: lamp_post, cell: [79, 103], variant: 0 }
   - { type: lamp_post, cell: [79, 103], variant: 0 }
   - { type: lamp_post, cell: [99, 103], variant: 0 }
   - { type: lamp_post, cell: [138, 105], variant: 0 }
+  - { type: lamp_post, cell: [138, 105], variant: 0 }
   - { type: lamp_post, cell: [99, 106], variant: 0 }
   - { type: lamp_post, cell: [125, 106], variant: 0 }
+  - { type: lamp_post, cell: [125, 106], variant: 0 }
+  - { type: lamp_post, cell: [153, 106], variant: 0 }
   - { type: lamp_post, cell: [153, 106], variant: 0 }
   - { type: lamp_post, cell: [84, 108], variant: 0 }
+  - { type: lamp_post, cell: [89, 108], variant: 0 }
+  - { type: lamp_post, cell: [94, 108], variant: 0 }
+  - { type: lamp_post, cell: [75, 109], variant: 0 }
   - { type: lamp_post, cell: [75, 109], variant: 0 }
   - { type: lamp_post, cell: [99, 109], variant: 0 }
   - { type: lamp_post, cell: [129, 110], variant: 0 }
+  - { type: lamp_post, cell: [129, 110], variant: 0 }
+  - { type: lamp_post, cell: [157, 110], variant: 0 }
   - { type: lamp_post, cell: [157, 110], variant: 0 }
   - { type: lamp_post, cell: [85, 111], variant: 0 }
   - { type: lamp_post, cell: [88, 111], variant: 0 }
@@ -1163,102 +1226,185 @@ objects:
   - { type: lamp_post, cell: [94, 111], variant: 0 }
   - { type: lamp_post, cell: [97, 111], variant: 0 }
   - { type: lamp_post, cell: [79, 113], variant: 0 }
+  - { type: lamp_post, cell: [79, 113], variant: 0 }
+  - { type: lamp_post, cell: [49, 114], variant: 0 }
+  - { type: lamp_post, cell: [35, 115], variant: 0 }
+  - { type: lamp_post, cell: [35, 116], variant: 0 }
+  - { type: lamp_post, cell: [125, 116], variant: 0 }
   - { type: lamp_post, cell: [125, 116], variant: 0 }
   - { type: lamp_post, cell: [153, 116], variant: 0 }
+  - { type: lamp_post, cell: [153, 116], variant: 0 }
+  - { type: lamp_post, cell: [75, 119], variant: 0 }
   - { type: lamp_post, cell: [75, 119], variant: 0 }
   - { type: lamp_post, cell: [129, 120], variant: 0 }
+  - { type: lamp_post, cell: [129, 120], variant: 0 }
+  - { type: lamp_post, cell: [157, 120], variant: 0 }
   - { type: lamp_post, cell: [157, 120], variant: 0 }
   - { type: lamp_post, cell: [79, 123], variant: 0 }
+  - { type: lamp_post, cell: [79, 123], variant: 0 }
+  - { type: lamp_post, cell: [92, 124], variant: 0 }
   - { type: lamp_post, cell: [92, 124], variant: 0 }
   - { type: lamp_post, cell: [101, 124], variant: 0 }
+  - { type: lamp_post, cell: [101, 124], variant: 0 }
+  - { type: lamp_post, cell: [88, 128], variant: 0 }
   - { type: lamp_post, cell: [88, 128], variant: 0 }
   - { type: lamp_post, cell: [97, 128], variant: 0 }
+  - { type: lamp_post, cell: [97, 128], variant: 0 }
+  - { type: lamp_post, cell: [79, 129], variant: 0 }
   - { type: lamp_post, cell: [79, 129], variant: 0 }
   - { type: lamp_post, cell: [157, 131], variant: 0 }
   - { type: lamp_post, cell: [103, 133], variant: 0 }
+  - { type: lamp_post, cell: [103, 133], variant: 0 }
+  - { type: lamp_post, cell: [75, 135], variant: 0 }
   - { type: lamp_post, cell: [75, 135], variant: 0 }
   - { type: lamp_post, cell: [115, 135], variant: 0 }
   - { type: lamp_post, cell: [119, 135], variant: 0 }
   - { type: lamp_post, cell: [121, 135], variant: 0 }
   - { type: lamp_post, cell: [125, 135], variant: 0 }
   - { type: lamp_post, cell: [99, 136], variant: 0 }
+  - { type: lamp_post, cell: [99, 136], variant: 0 }
   - { type: lamp_post, cell: [153, 136], variant: 0 }
+  - { type: lamp_post, cell: [153, 136], variant: 0 }
+  - { type: lamp_post, cell: [119, 138], variant: 0 }
+  - { type: lamp_post, cell: [121, 138], variant: 0 }
   - { type: lamp_post, cell: [79, 139], variant: 0 }
+  - { type: lamp_post, cell: [79, 139], variant: 0 }
+  - { type: lamp_post, cell: [157, 140], variant: 0 }
   - { type: lamp_post, cell: [157, 140], variant: 0 }
   - { type: lamp_post, cell: [115, 141], variant: 0 }
   - { type: lamp_post, cell: [119, 141], variant: 0 }
   - { type: lamp_post, cell: [121, 141], variant: 0 }
   - { type: lamp_post, cell: [125, 141], variant: 0 }
   - { type: lamp_post, cell: [103, 142], variant: 0 }
+  - { type: lamp_post, cell: [103, 142], variant: 0 }
+  - { type: lamp_post, cell: [43, 143], variant: 0 }
   - { type: lamp_post, cell: [75, 145], variant: 0 }
+  - { type: lamp_post, cell: [75, 145], variant: 0 }
+  - { type: lamp_post, cell: [99, 145], variant: 0 }
   - { type: lamp_post, cell: [99, 145], variant: 0 }
   - { type: lamp_post, cell: [115, 145], variant: 0 }
   - { type: lamp_post, cell: [119, 145], variant: 0 }
   - { type: lamp_post, cell: [121, 145], variant: 0 }
   - { type: lamp_post, cell: [125, 145], variant: 0 }
   - { type: lamp_post, cell: [153, 147], variant: 0 }
+  - { type: lamp_post, cell: [153, 147], variant: 0 }
+  - { type: lamp_post, cell: [79, 149], variant: 0 }
   - { type: lamp_post, cell: [79, 149], variant: 0 }
   - { type: lamp_post, cell: [103, 151], variant: 0 }
+  - { type: lamp_post, cell: [103, 151], variant: 0 }
   - { type: lamp_post, cell: [157, 151], variant: 0 }
+  - { type: lamp_post, cell: [157, 151], variant: 0 }
+  - { type: lamp_post, cell: [179, 151], variant: 0 }
+  - { type: lamp_post, cell: [75, 155], variant: 0 }
   - { type: lamp_post, cell: [75, 155], variant: 0 }
   - { type: lamp_post, cell: [99, 155], variant: 0 }
+  - { type: lamp_post, cell: [99, 155], variant: 0 }
+  - { type: lamp_post, cell: [108, 158], variant: 0 }
   - { type: lamp_post, cell: [108, 158], variant: 0 }
   - { type: lamp_post, cell: [118, 158], variant: 0 }
+  - { type: lamp_post, cell: [118, 158], variant: 0 }
+  - { type: lamp_post, cell: [127, 158], variant: 0 }
   - { type: lamp_post, cell: [127, 158], variant: 0 }
   - { type: lamp_post, cell: [79, 159], variant: 0 }
+  - { type: lamp_post, cell: [79, 159], variant: 0 }
+  - { type: lamp_post, cell: [153, 159], variant: 0 }
   - { type: lamp_post, cell: [153, 159], variant: 0 }
   - { type: lamp_post, cell: [104, 162], variant: 0 }
+  - { type: lamp_post, cell: [104, 162], variant: 0 }
+  - { type: lamp_post, cell: [114, 162], variant: 0 }
   - { type: lamp_post, cell: [114, 162], variant: 0 }
   - { type: lamp_post, cell: [123, 162], variant: 0 }
+  - { type: lamp_post, cell: [123, 162], variant: 0 }
+  - { type: lamp_post, cell: [134, 162], variant: 0 }
   - { type: lamp_post, cell: [134, 162], variant: 0 }
   - { type: lamp_post, cell: [157, 163], variant: 0 }
+  - { type: lamp_post, cell: [157, 163], variant: 0 }
+  - { type: lamp_post, cell: [56, 164], variant: 0 }
+  - { type: lamp_post, cell: [75, 165], variant: 0 }
   - { type: lamp_post, cell: [75, 165], variant: 0 }
   - { type: lamp_post, cell: [130, 165], variant: 0 }
+  - { type: lamp_post, cell: [130, 165], variant: 0 }
+  - { type: lamp_post, cell: [79, 169], variant: 0 }
   - { type: lamp_post, cell: [79, 169], variant: 0 }
   - { type: lamp_post, cell: [115, 169], variant: 0 }
   - { type: lamp_post, cell: [119, 169], variant: 0 }
   - { type: lamp_post, cell: [121, 169], variant: 0 }
   - { type: lamp_post, cell: [125, 169], variant: 0 }
   - { type: lamp_post, cell: [153, 169], variant: 0 }
+  - { type: lamp_post, cell: [153, 169], variant: 0 }
   - { type: lamp_post, cell: [115, 172], variant: 0 }
   - { type: lamp_post, cell: [119, 172], variant: 0 }
+  - { type: lamp_post, cell: [120, 172], variant: 0 }
   - { type: lamp_post, cell: [121, 172], variant: 0 }
   - { type: lamp_post, cell: [125, 172], variant: 0 }
   - { type: lamp_post, cell: [134, 172], variant: 0 }
+  - { type: lamp_post, cell: [134, 172], variant: 0 }
+  - { type: lamp_post, cell: [56, 173], variant: 0 }
   - { type: lamp_post, cell: [157, 173], variant: 0 }
+  - { type: lamp_post, cell: [157, 173], variant: 0 }
+  - { type: lamp_post, cell: [87, 174], variant: 0 }
+  - { type: lamp_post, cell: [100, 174], variant: 0 }
+  - { type: lamp_post, cell: [143, 174], variant: 0 }
   - { type: lamp_post, cell: [143, 174], variant: 0 }
   - { type: lamp_post, cell: [162, 174], variant: 0 }
+  - { type: lamp_post, cell: [75, 175], variant: 0 }
   - { type: lamp_post, cell: [75, 175], variant: 0 }
   - { type: lamp_post, cell: [115, 175], variant: 0 }
   - { type: lamp_post, cell: [119, 175], variant: 0 }
   - { type: lamp_post, cell: [121, 175], variant: 0 }
   - { type: lamp_post, cell: [125, 175], variant: 0 }
   - { type: lamp_post, cell: [130, 175], variant: 0 }
+  - { type: lamp_post, cell: [130, 175], variant: 0 }
+  - { type: lamp_post, cell: [140, 178], variant: 0 }
   - { type: lamp_post, cell: [140, 178], variant: 0 }
   - { type: lamp_post, cell: [79, 179], variant: 0 }
+  - { type: lamp_post, cell: [79, 179], variant: 0 }
+  - { type: lamp_post, cell: [157, 179], variant: 0 }
   - { type: lamp_post, cell: [157, 179], variant: 0 }
   - { type: lamp_post, cell: [75, 183], variant: 0 }
+  - { type: lamp_post, cell: [75, 183], variant: 0 }
+  - { type: lamp_post, cell: [153, 184], variant: 0 }
   - { type: lamp_post, cell: [153, 184], variant: 0 }
   - { type: lamp_post, cell: [62, 187], variant: 0 }
+  - { type: lamp_post, cell: [62, 187], variant: 0 }
+  - { type: lamp_post, cell: [72, 187], variant: 0 }
   - { type: lamp_post, cell: [72, 187], variant: 0 }
   - { type: lamp_post, cell: [79, 187], variant: 0 }
+  - { type: lamp_post, cell: [79, 187], variant: 0 }
+  - { type: lamp_post, cell: [90, 187], variant: 0 }
   - { type: lamp_post, cell: [90, 187], variant: 0 }
   - { type: lamp_post, cell: [99, 187], variant: 0 }
+  - { type: lamp_post, cell: [99, 187], variant: 0 }
+  - { type: lamp_post, cell: [110, 187], variant: 0 }
   - { type: lamp_post, cell: [110, 187], variant: 0 }
   - { type: lamp_post, cell: [120, 187], variant: 0 }
+  - { type: lamp_post, cell: [120, 187], variant: 0 }
+  - { type: lamp_post, cell: [131, 187], variant: 0 }
   - { type: lamp_post, cell: [131, 187], variant: 0 }
   - { type: lamp_post, cell: [141, 187], variant: 0 }
+  - { type: lamp_post, cell: [141, 187], variant: 0 }
+  - { type: lamp_post, cell: [151, 187], variant: 0 }
   - { type: lamp_post, cell: [151, 187], variant: 0 }
   - { type: lamp_post, cell: [152, 187], variant: 0 }
   - { type: lamp_post, cell: [157, 188], variant: 0 }
+  - { type: lamp_post, cell: [157, 188], variant: 0 }
+  - { type: lamp_post, cell: [58, 191], variant: 0 }
   - { type: lamp_post, cell: [58, 191], variant: 0 }
   - { type: lamp_post, cell: [68, 191], variant: 0 }
+  - { type: lamp_post, cell: [68, 191], variant: 0 }
+  - { type: lamp_post, cell: [78, 191], variant: 0 }
   - { type: lamp_post, cell: [78, 191], variant: 0 }
   - { type: lamp_post, cell: [87, 191], variant: 0 }
+  - { type: lamp_post, cell: [87, 191], variant: 0 }
+  - { type: lamp_post, cell: [95, 191], variant: 0 }
   - { type: lamp_post, cell: [95, 191], variant: 0 }
   - { type: lamp_post, cell: [106, 191], variant: 0 }
+  - { type: lamp_post, cell: [106, 191], variant: 0 }
+  - { type: lamp_post, cell: [127, 191], variant: 0 }
   - { type: lamp_post, cell: [127, 191], variant: 0 }
   - { type: lamp_post, cell: [137, 191], variant: 0 }
+  - { type: lamp_post, cell: [137, 191], variant: 0 }
+  - { type: lamp_post, cell: [147, 191], variant: 0 }
   - { type: lamp_post, cell: [147, 191], variant: 0 }
   - { type: lamp_post, cell: [115, 192], variant: 0 }
   - { type: lamp_post, cell: [119, 192], variant: 0 }
@@ -1266,8 +1412,11 @@ objects:
   - { type: lamp_post, cell: [125, 192], variant: 0 }
   - { type: lamp_post, cell: [115, 196], variant: 0 }
   - { type: lamp_post, cell: [119, 196], variant: 0 }
+  - { type: lamp_post, cell: [120, 196], variant: 0 }
   - { type: lamp_post, cell: [121, 196], variant: 0 }
   - { type: lamp_post, cell: [125, 196], variant: 0 }
+  - { type: lamp_post, cell: [149, 198], variant: 0 }
+  - { type: lamp_post, cell: [150, 198], variant: 0 }
   - { type: lamp_post, cell: [115, 199], variant: 0 }
   - { type: lamp_post, cell: [119, 199], variant: 0 }
   - { type: lamp_post, cell: [121, 199], variant: 0 }
@@ -1278,12 +1427,14 @@ objects:
   - { type: lamp_post, cell: [125, 212], variant: 0 }
   - { type: lamp_post, cell: [115, 215], variant: 0 }
   - { type: lamp_post, cell: [119, 215], variant: 0 }
+  - { type: lamp_post, cell: [120, 215], variant: 0 }
   - { type: lamp_post, cell: [121, 215], variant: 0 }
   - { type: lamp_post, cell: [125, 215], variant: 0 }
   - { type: lamp_post, cell: [115, 218], variant: 0 }
   - { type: lamp_post, cell: [119, 218], variant: 0 }
   - { type: lamp_post, cell: [121, 218], variant: 0 }
   - { type: lamp_post, cell: [125, 218], variant: 0 }
+  - { type: lamp_post, cell: [120, 249], variant: 0 }
   - { type: ore_source, cell: [131, 39], variant: 2 }
   - { type: ore_source, cell: [128, 84], variant: 0 }
   - { type: ore_source, cell: [70, 92], variant: 2 }
@@ -1507,8 +1658,40 @@ bridges:
   - { type: bridge_concrete_high, from: [117, 201], to: [117, 210] }
   - { type: bridge_concrete_high, from: [123, 201], to: [123, 210] }
 structures:
+  - { type: alliance_air_force_command, cell: [32, 144], owner: neutral, facing: 2 }
+  - { type: alliance_battle_lab, cell: [32, 141], owner: neutral, facing: 2 }
+  - { type: alliance_construction_yard, cell: [27, 141], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [49, 137], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [49, 139], owner: neutral, facing: 2 }
+  - { type: alliance_grand_cannon, cell: [24, 142], owner: neutral, facing: 2 }
+  - { type: alliance_patriot_missile_system, cell: [54, 97], owner: neutral, facing: 6 }
+  - { type: alliance_patriot_missile_system, cell: [51, 105], owner: neutral, facing: 5 }
+  - { type: alliance_patriot_missile_system, cell: [51, 108], owner: neutral, facing: 5 }
+  - { type: alliance_patriot_missile_system, cell: [43, 114], owner: neutral, facing: 5 }
+  - { type: alliance_patriot_missile_system, cell: [41, 116], owner: neutral, facing: 5 }
+  - { type: alliance_patriot_missile_system, cell: [43, 118], owner: neutral, facing: 5 }
+  - { type: alliance_patriot_missile_system, cell: [53, 122], owner: neutral, facing: 5 }
+  - { type: alliance_patriot_missile_system, cell: [53, 130], owner: neutral, facing: 5 }
+  - { type: alliance_pillbox, cell: [30, 131], owner: neutral, facing: 2 }
+  - { type: alliance_pillbox, cell: [36, 131], owner: neutral, facing: 2 }
+  - { type: alliance_pillbox, cell: [45, 131], owner: neutral, facing: 2 }
+  - { type: alliance_pillbox, cell: [41, 141], owner: neutral, facing: 2 }
+  - { type: alliance_pillbox, cell: [27, 145], owner: neutral, facing: 2 }
+  - { type: alliance_pillbox, cell: [30, 145], owner: neutral, facing: 2 }
+  - { type: alliance_pillbox, cell: [41, 145], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [54, 122], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [53, 123], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [53, 124], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [53, 128], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [53, 129], owner: neutral, facing: 2 }
+  - { type: alliance_prism_tower, cell: [54, 130], owner: neutral, facing: 2 }
+  - { type: alliance_war_factory, cell: [36, 142], owner: neutral, facing: 2 }
   - { type: neutral_barn, cell: [147, 194], owner: neutral, facing: 2 }
   - { type: neutral_barn, cell: [150, 194], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [51, 173], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [60, 173], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [113, 215], owner: neutral, facing: 2 }
+  - { type: neutral_civilian_bunker, cell: [126, 215], owner: neutral, facing: 2 }
   - { type: neutral_fuel_tank, cell: [173, 55], owner: neutral, facing: 2 }
   - { type: neutral_fuel_tank, cell: [175, 55], owner: neutral, facing: 2 }
   - { type: neutral_fuel_tank, cell: [176, 55], owner: neutral, facing: 2 }
@@ -1585,6 +1768,8 @@ structures:
   - { type: neutral_silo, cell: [175, 56], owner: neutral, facing: 2 }
   - { type: neutral_silo, cell: [174, 57], owner: neutral, facing: 2 }
   - { type: neutral_silo, cell: [156, 63], owner: neutral, facing: 2 }
+  - { type: nuclear_reactor, cell: [42, 105], owner: neutral, facing: 2 }
+  - { type: nuclear_reactor, cell: [46, 105], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 22], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [115, 29], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 29], owner: neutral, facing: 2 }
