@@ -1,6 +1,7 @@
 using System.Linq;
 using Rts.AI.Knowledge;
 using Rts.AI.Modules;
+using Rts.Data.Maps;
 using Rts.Data.Tests;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -125,10 +126,71 @@ public sealed class NavalScenarioTests
         scene.Look();
         var planner = new BuildPlanner(Scene.Settings with { BuildOrder = "balanced_simple", MaxRefineries = 1 });
 
-        planner.Update(scene.Context());
-
-        var produce = Assert.Single(scene.RunCommands().OfType<ProduceCommand>());
+        // The placement looks for its room on the water over a few turns first.
+        var produce = Assert.Single(Turns(scene, planner).OfType<ProduceCommand>());
         Assert.Equal("naval_shipyard", Game.Database.Buildings[produce.DefIndex].Id);
+    }
+
+    [Theory]
+    // Route 66 (the journal, 2026-10-28): at start 4 the harbour of the map reading has something on its water, and the placement
+    // finds no other room by the base — the bot ordered the shipyard and cancelled it 45 times. At start 7 there is room.
+    [InlineData(4, false)]
+    [InlineData(7, true)]
+    public void A_shipyard_is_ordered_only_where_the_placement_finds_room_for_it_on_the_water(int slot, bool ordered)
+    {
+        var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(Root(), "game", "data", "maps", "route-66.rtsmap")));
+        var start = map.Starts.Single(s => s.Slot == slot).Cell;
+        var scene = new Scene([start, .. map.Starts.Where(s => s.Slot != slot).Select(s => s.Cell)], rules: Game, map: map.ToMapGrid(Game.MapTypes));
+        var yardDef = Game.Database.Buildings[Game.Database.IndexOfBuilding("construction_yard")];
+        var yard = Build(scene, "construction_yard", start.X - (yardDef.Footprint.Width - 1) / 2, start.Y - (yardDef.Footprint.Height - 1) / 2);
+        scene.World.VisionOf(Scene.Me).ExploreAll();
+        scene.World.Player(Scene.Me).Credits = 3000;
+        // The base the shipyard needs, where the bot's own placement puts it: it is the shipyard that is weighed.
+        foreach (var id in new[] { "reactor", "refinery", "barracks", "war_factory" })
+        {
+            scene.Look();
+            var placement = new BasePlacement();
+            CellPos? corner;
+            while (!placement.TryFind(scene.View, scene.Memory, yard, Game.Database.IndexOfBuilding(id), out corner))
+            {
+            }
+
+            Build(scene, id, corner!.Value.X, corner.Value.Y);
+        }
+
+        var planner = new BuildPlanner(Scene.Settings with { BuildOrder = "balanced_simple", MaxRefineries = 0 });
+
+        var shipyards = Turns(scene, planner).OfType<ProduceCommand>().Count(produce => Game.Database.Buildings[produce.DefIndex].Id == "naval_shipyard");
+
+        Assert.Equal(ordered ? 1 : 0, shipyards);
+    }
+
+    /// <summary>Turns of <paramref name="planner"/> till it orders something, five at most: the commands it gave.</summary>
+    private static List<Command> Turns(Scene scene, BuildPlanner planner)
+    {
+        for (var turn = 0; turn < 5; turn++)
+        {
+            scene.Look(scene.Simulation.CurrentTick);
+            planner.Update(scene.Context());
+            var commands = scene.RunCommands();
+            if (commands.Any(command => command is ProduceCommand))
+            {
+                return commands;
+            }
+        }
+
+        return [];
+    }
+
+    private static string Root()
+    {
+        var root = AppContext.BaseDirectory;
+        while (!Directory.Exists(Path.Combine(root, "game", "data", "maps")))
+        {
+            root = Path.GetDirectoryName(root)!;
+        }
+
+        return root;
     }
 
     [Fact]

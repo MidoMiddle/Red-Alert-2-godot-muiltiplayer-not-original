@@ -27,8 +27,8 @@ namespace Rts.AI.Modules;
 /// <see cref="AiSettings.SecondFactoryCredits"/>, and the defense of the order once more when the base was attacked from a side no
 /// defense covers (<see cref="AiPlan.AttackedFrom"/>, step 9), up to <see cref="AiSettings.MaxDefenses"/>; it faces that side;</item>
 /// <item>M11: the shipyard of the faction on a map whose water leads to an enemy (<see cref="MapReading.NavalRoute"/>), at its harbour once
-/// that has been seen — till then the nearest unit of the army goes to look, and a shipyard with no room on the water after all is
-/// cancelled; and, but for the simple build orders, with the army as big as a squad that may set out and the money there, the building
+/// that has been seen — till then the nearest unit of the army goes to look — and the placement finds room for it there
+/// (<see cref="HarbourRoom"/>; a shipyard with no room on the water after all is cancelled); and, but for the simple build orders, with the army as big as a squad that may set out and the money there, the building
 /// that opens the most units of the army (<see cref="Opener"/>), then one of each superweapon it may build (<see cref="Superweapon"/>);</item>
 /// <item>before the tuning: the purifier of the ore once a refinery stands (<see cref="Purifier"/>); toward the side attacked, the
 /// defense that fights best what the enemy fields (<see cref="Against"/>); against its fliers, defenses that fire at the air — one, and
@@ -61,6 +61,12 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
         [ProductionCategory.Infantry, ProductionCategory.Vehicle, ProductionCategory.Building, ProductionCategory.Defense];
 
     private readonly BasePlacement _placement = new();
+
+    // Whether the shipyard has room on the water by the base, as the placement finds it (BasePlacement), and how many buildings the
+    // base had when that was looked at: the search is made again once the base has changed. -1 for not looked at yet.
+    private readonly BasePlacement _harbourProbe = new();
+    private int _harbourLookedAt = -1;
+    private bool _harbourRoom;
     private readonly List<int> _choices = new();
     private readonly List<string> _upcoming = new();
 
@@ -261,7 +267,10 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
             {
                 if (Seen(view, rules.Buildings[shipyard], context.Map.Harbour!.Value))
                 {
-                    _choices.Add(shipyard);
+                    if (HarbourRoom(context, yard, shipyard))
+                    {
+                        _choices.Add(shipyard);
+                    }
                 }
                 else
                 {
@@ -306,6 +315,36 @@ public sealed class BuildPlanner(AiSettings settings) : IAiModule
                 _choices.Add(antiAir);
             }
         }
+    }
+
+    /// <summary>
+    /// Whether the placement of the base finds room on the water for <paramref name="shipyard"/> by <paramref name="yard"/> — looked at
+    /// over a few turns (<see cref="BasePlacement.TryFind"/>), once for every size of the base: the harbour of the map reading is where
+    /// the water is deep and leads to the enemy, not where the rules let a shipyard stand. On Route 66 a bot ordered it and cancelled it
+    /// for want of room 45 times in a match, the queue of its buildings held all the while (the journal, 2026-10-28).
+    /// </summary>
+    private bool HarbourRoom(AiContext context, Building yard, int shipyard)
+    {
+        var buildings = context.View.OwnBuildings.Count;
+        if (buildings == _harbourLookedAt)
+        {
+            return _harbourRoom;
+        }
+
+        _harbourProbe.Harbour = context.Map.Harbour;
+        if (!_harbourProbe.TryFind(context.View, context.Memory, yard, shipyard, out var corner))
+        {
+            return false;
+        }
+
+        (_harbourLookedAt, _harbourRoom) = (buildings, corner is not null);
+        if (corner is null)
+        {
+            context.Log?.Add(context.Tick, context.Module,
+                $"finds no room on the water for {context.View.Rules.Database.Buildings[shipyard].Id} by the base: none ordered till the base changes");
+        }
+
+        return _harbourRoom;
     }
 
     /// <summary>Whether every cell of <paramref name="def"/> on <paramref name="corner"/> has been explored.</summary>
