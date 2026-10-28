@@ -157,11 +157,21 @@ public partial class BuildIcon : Control
         return size;
     }
 
-    /// <summary>The clock of RA2: what is left to build is darkened, clockwise from the top.</summary>
+    /// <summary>
+    /// The clock of RA2: what is left to build is darkened, clockwise from the top. At its very start the whole square is dark and at its
+    /// very end none of it: a fan of the whole circle closes on itself, and one of a sliver has no area — the renderer refuses both
+    /// ("triangulation failed", 25 times in a match, the log of 2026-10-28).
+    /// </summary>
     private void DrawClock(float progress)
     {
-        if (progress >= 1f)
+        if (progress >= 1f - ClockEnds || !float.IsFinite(progress) || Size.X <= 0f || Size.Y <= 0f)
         {
+            return;
+        }
+
+        if (progress <= ClockEnds)
+        {
+            DrawRect(new Rect2(Vector2.Zero, Size), Shade);
             return;
         }
 
@@ -180,6 +190,9 @@ public partial class BuildIcon : Control
 
         DrawColoredPolygon(points.ToArray(), Shade);
     }
+
+    // The share of the clock at either end drawn whole or not at all: less than a degree.
+    private const float ClockEnds = 0.002f;
 
     private string Tooltip(Cameo cameo)
     {
