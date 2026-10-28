@@ -8,7 +8,8 @@ namespace Rts.Client.Terrain;
 
 /// <summary>
 /// Symbolic map objects on the ground (docs/implementation/conventions.md, section 12; M7_maps.md, 4.7): a tree in the shape of
-/// the climate's trees (<see cref="TreeShapes"/>: a pine, a broadleaf tree, a palm or a cactus) and a short trunk for its stump, a grey lump for a boulder, a thin brown rail for a fence, a low steel
+/// the climate's trees (<see cref="TreeShapes"/>: a pine, a broadleaf tree, a palm or a cactus) and a short trunk for its stump once it is
+/// felled (<see cref="AddStumps"/>), a grey lump for a boulder, a thin brown rail for a fence, a low steel
 /// block for an anti-tank hedgehog, a thin dark pipe for a pipeline (ore and gem sources: <see cref="OreSources"/>), a tall
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
 /// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell; a high bridge of concrete
@@ -30,9 +31,13 @@ public partial class MapObjects : Node3D
 
     private MapGrid _map = null!;
 
-    // The copies of each map object by its id (gone when it is destroyed) and the stump of each tree (shown when it is felled).
+    // The copies of each map object by its id (gone when it is destroyed).
     private readonly Dictionary<int, List<(MultiMesh Mesh, int Index, Transform3D Place)>> _copies = [];
-    private readonly Dictionary<int, List<(MultiMesh Mesh, int Index, Transform3D Place)>> _stumps = [];
+
+    // The stumps (the owner, 2026-10-28: docs/art/model_standards.md, «the forest of a map»): one copy for each tree felled, added as it
+    // falls — none stands hidden under a living tree, which the graphics card drew all the same. Where each tree's would stand, by its id.
+    private MultiMesh? _stumpMesh;
+    private readonly Dictionary<int, Transform3D> _stumpPlaces = [];
     private bool[] _shownDead = [];
     private int _builtDeaths = -1;
 
@@ -80,12 +85,10 @@ public partial class MapObjects : Node3D
                 }
             }
 
-            if (_stumps.TryGetValue(mapObject.Id, out var stumps))
+            if (_stumpMesh is { } stumpMesh && _stumpPlaces.TryGetValue(mapObject.Id, out var place))
             {
-                foreach (var (mesh, index, place) in stumps)
-                {
-                    mesh.SetInstanceTransform(index, place);
-                }
+                stumpMesh.SetInstanceTransform(stumpMesh.VisibleInstanceCount, place);
+                stumpMesh.VisibleInstanceCount++;
             }
         }
     }
@@ -100,7 +103,7 @@ public partial class MapObjects : Node3D
         _builtMap = _map;
         _builtVersion = _map.LayoutVersion;
         _copies.Clear();
-        _stumps.Clear();
+        _stumpPlaces.Clear();
         var kind = _builtClimate?.Trees ?? Climates.TreeKind.Pine;
         var trees = new List<(Vector3 At, int Variant, int Object)>();
         var stumps = new List<Spot>();
@@ -165,7 +168,7 @@ public partial class MapObjects : Node3D
         }
 
         AddInstances("Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
-        AddInstances("Stumps", new CylinderMesh { TopRadius = 0.08f, BottomRadius = 0.09f, Height = 0.08f }, new Color(0.42f, 0.3f, 0.18f), stumps, 0.04f, slots: _stumps);
+        AddStumps(stumps);
         // The models of the table by the object's id (docs/art/model_standards.md), the primitives without one.
         AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f, "object/boulder");
         AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f, "object/fence_wood");
@@ -190,15 +193,7 @@ public partial class MapObjects : Node3D
             AddProps(id, points);
         }
 
-        // The stumps stand hidden until their trees fall; the destroyed objects of the map hide now.
-        foreach (var copies in _stumps.Values)
-        {
-            foreach (var (mesh, index, _) in copies)
-            {
-                mesh.SetInstanceTransform(index, Hidden);
-            }
-        }
-
+        // The destroyed objects of the map hide now, and their stumps show.
         _shownDead = new bool[_map.Objects.Count];
         ShowDeaths();
     }
@@ -488,6 +483,38 @@ public partial class MapObjects : Node3D
         var places = positions.ConvertAll(spot => new Transform3D(Basis.Identity, spot.At + new Vector3(0, lift, 0)));
         ChunkedInstances.Add(this, name, mesh, places, (i, multiMesh, index) => Remember(slots, positions[i].Object, multiMesh, index, places[i]));
         return false;
+    }
+
+    /// <summary>
+    /// The stumps of <paramref name="trees"/>: a short trunk for each, drawn only once its tree is felled (<see cref="ShowDeaths"/> adds it)
+    /// — one MultiMesh for the map, as few as trees fall, its bounds those of the trees.
+    /// </summary>
+    private void AddStumps(List<Spot> trees)
+    {
+        _stumpMesh = null;
+        if (trees.Count == 0)
+        {
+            return;
+        }
+
+        var mesh = new CylinderMesh { TopRadius = 0.08f, BottomRadius = 0.09f, Height = 0.08f, RadialSegments = 8, Rings = 0, CapBottom = false };
+        mesh.Material = new StandardMaterial3D { AlbedoColor = new Color(0.42f, 0.3f, 0.18f) };
+        var bounds = new Aabb(trees[0].At, Vector3.Zero);
+        foreach (var tree in trees)
+        {
+            _stumpPlaces[tree.Object] = new Transform3D(Basis.Identity, tree.At + new Vector3(0, 0.04f, 0));
+            bounds = bounds.Expand(tree.At);
+        }
+
+        _stumpMesh = new MultiMesh
+        {
+            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+            Mesh = mesh,
+            InstanceCount = trees.Count,
+            VisibleInstanceCount = 0,
+            CustomAabb = bounds.Grow(0.5f),
+        };
+        AddChild(new MultiMeshInstance3D { Name = "Stumps", Multimesh = _stumpMesh });
     }
 
     private static List<Vector3> PointsOf(List<Spot> spots) => spots.ConvertAll(spot => spot.At);

@@ -11,7 +11,9 @@ public sealed record TreePart(string Key, System.Func<PrimitiveMesh> Mesh, Color
 /// The trees by the climate of the map (<see cref="ClimateLook.Trees"/>; the rules have one kind of tree): a pine is a dark cone on a
 /// trunk; a broadleaf tree a round crown, small or big by its variant; in the desert a palm with four fronds (variants 0, 1) or a cactus
 /// with two arms (2, 3); by the sea a palm (0…2) or a small broadleaf tree (3). The map's trees, the skirt's and the holo tank's disguise use
-/// the same shapes.
+/// the same shapes. A forest is tens of thousands of copies (the owner, 2026-10-28: docs/art/model_standards.md, «the forest of a map»):
+/// a trunk has 6 sides and no caps — its foot is in the ground, its top in the crown — a cone 8 sides and no bottom, a round crown 10 × 5
+/// segments: a pine is 28 triangles instead of 132, a broadleaf tree 132 instead of 240.
 /// </summary>
 public static class TreeShapes
 {
@@ -25,25 +27,25 @@ public static class TreeShapes
 
     private static readonly TreePart[] Pine =
     [
-        new("PineTrunk", () => new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = 0.25f }, Trunk, new Vector3(0, 0.125f, 0)),
-        new("PineCrown", () => new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = 0.8f }, PineGreen, new Vector3(0, 0.65f, 0)),
+        new("PineTrunk", () => Trunk6(new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.07f, Height = 0.25f }), Trunk, new Vector3(0, 0.125f, 0)),
+        new("PineCrown", () => new CylinderMesh { TopRadius = 0f, BottomRadius = 0.38f, Height = 0.8f, RadialSegments = 8, Rings = 0, CapBottom = false }, PineGreen, new Vector3(0, 0.65f, 0)),
     ];
 
     private static readonly TreePart[] SmallBroadleaf =
     [
-        new("LeafTrunk", () => new CylinderMesh { TopRadius = 0.04f, BottomRadius = 0.06f, Height = 0.36f }, Trunk, new Vector3(0, 0.18f, 0)),
-        new("LeafCrown", () => new SphereMesh { Radius = 0.32f, Height = 0.56f }, LeafGreen, new Vector3(0, 0.58f, 0)),
+        new("LeafTrunk", () => Trunk6(new CylinderMesh { TopRadius = 0.04f, BottomRadius = 0.06f, Height = 0.36f }), Trunk, new Vector3(0, 0.18f, 0)),
+        new("LeafCrown", () => Crown(new SphereMesh { Radius = 0.32f, Height = 0.56f }), LeafGreen, new Vector3(0, 0.58f, 0)),
     ];
 
     private static readonly TreePart[] BigBroadleaf =
     [
-        new("OakTrunk", () => new CylinderMesh { TopRadius = 0.05f, BottomRadius = 0.07f, Height = 0.42f }, Trunk, new Vector3(0, 0.21f, 0)),
-        new("OakCrown", () => new SphereMesh { Radius = 0.42f, Height = 0.72f }, DarkLeaf, new Vector3(0, 0.72f, 0)),
+        new("OakTrunk", () => Trunk6(new CylinderMesh { TopRadius = 0.05f, BottomRadius = 0.07f, Height = 0.42f }), Trunk, new Vector3(0, 0.21f, 0)),
+        new("OakCrown", () => Crown(new SphereMesh { Radius = 0.42f, Height = 0.72f }), DarkLeaf, new Vector3(0, 0.72f, 0)),
     ];
 
     private static readonly TreePart[] Palm =
     [
-        new("PalmTrunk", () => new CylinderMesh { TopRadius = 0.035f, BottomRadius = 0.06f, Height = 1f }, PalmTrunk, new Vector3(0, 0.5f, 0)),
+        new("PalmTrunk", () => Trunk6(new CylinderMesh { TopRadius = 0.035f, BottomRadius = 0.06f, Height = 1f }), PalmTrunk, new Vector3(0, 0.5f, 0)),
         new("PalmFrond", () => new BoxMesh { Size = new Vector3(0.75f, 0.03f, 0.12f) }, Frond, new Vector3(0, 1f, 0)),
         new("PalmFrond", () => new BoxMesh { Size = new Vector3(0.75f, 0.03f, 0.12f) }, Frond, new Vector3(0, 1f, 0), 45f),
         new("PalmFrond", () => new BoxMesh { Size = new Vector3(0.75f, 0.03f, 0.12f) }, Frond, new Vector3(0, 1f, 0), 90f),
@@ -52,12 +54,27 @@ public static class TreeShapes
 
     private static readonly TreePart[] CactusParts =
     [
-        new("CactusBody", () => new CylinderMesh { TopRadius = 0.07f, BottomRadius = 0.08f, Height = 0.62f }, Cactus, new Vector3(0, 0.31f, 0)),
+        // Its top is seen from above: 8 sides and its cap.
+        new("CactusBody", () => new CylinderMesh { TopRadius = 0.07f, BottomRadius = 0.08f, Height = 0.62f, RadialSegments = 8, Rings = 0, CapBottom = false }, Cactus, new Vector3(0, 0.31f, 0)),
         new("CactusArm", () => new BoxMesh { Size = new Vector3(0.05f, 0.24f, 0.05f) }, Cactus, new Vector3(0.14f, 0.42f, 0)),
         new("CactusArm", () => new BoxMesh { Size = new Vector3(0.05f, 0.24f, 0.05f) }, Cactus, new Vector3(-0.13f, 0.34f, 0)),
         new("CactusJoint", () => new BoxMesh { Size = new Vector3(0.1f, 0.05f, 0.05f) }, Cactus, new Vector3(0.09f, 0.31f, 0)),
         new("CactusJoint", () => new BoxMesh { Size = new Vector3(0.1f, 0.05f, 0.05f) }, Cactus, new Vector3(-0.08f, 0.24f, 0)),
     ];
+
+    // A trunk: 6 sides, its ends in the ground and in the crown (a palm's under its fronds).
+    private static CylinderMesh Trunk6(CylinderMesh trunk)
+    {
+        (trunk.RadialSegments, trunk.Rings, trunk.CapTop, trunk.CapBottom) = (6, 0, false, false);
+        return trunk;
+    }
+
+    // A round crown: 10 segments round, 5 down.
+    private static SphereMesh Crown(SphereMesh crown)
+    {
+        (crown.RadialSegments, crown.Rings) = (10, 5);
+        return crown;
+    }
 
     /// <summary>The shapes of a tree of <paramref name="variant"/> (0…3) in a climate whose trees are <paramref name="kind"/>.</summary>
     public static IReadOnlyList<TreePart> Of(TreeKind kind, int variant) => kind switch
