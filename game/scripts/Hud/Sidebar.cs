@@ -146,6 +146,9 @@ public partial class Sidebar : Control
         _input = input;
     }
 
+    private IReadOnlyList<Cameo> _cameos = [];
+    private (GameWorld? World, int Tick, BuildGroup Group, bool Names) _cameosOf = (null, -1, default, true);
+
     public override void _Process(double delta)
     {
         using var frameTimer = Rts.Client.Debug.PerfLog.Time("Sidebar.process");
@@ -169,7 +172,16 @@ public partial class Sidebar : Control
         Minimap.Online = MinimapRule.Online(world, player, _host.RadarRule);
         UpdateTabs(world, player);
 
-        var cameos = SidebarModel.Cameos(world, player, _group, NameOf);
+        // The squares change with a tick of the simulation, a tab or the names: not every frame (a list built anew 60 times a second
+        // was over a third of all the garbage of the game, the performance log, 2026-10-28).
+        var names = AppSettings.Instance?.Values.Ra2Names ?? true;
+        if (!ReferenceEquals(world, _cameosOf.World) || world.CurrentTick != _cameosOf.Tick || _group != _cameosOf.Group || names != _cameosOf.Names)
+        {
+            _cameos = SidebarModel.Cameos(world, player, _group, NameOf);
+            _cameosOf = (world, world.CurrentTick, _group, names);
+        }
+
+        var cameos = _cameos;
         _scroll = SidebarModel.ScrollRows(cameos.Count, _scroll);
         var first = _scroll * SidebarLayout.Columns;
         for (var i = 0; i < _icons.Count; i++)
@@ -184,9 +196,30 @@ public partial class Sidebar : Control
         _repair.Disabled = _host.IsPlayback;
     }
 
-    /// <summary>The name on screen of a unit or building: RA2's while the setting says so (DisplayNames).</summary>
-    private string NameOf(string id, string name) =>
-        DisplayNames.Of(id, name, AppSettings.Instance?.Values.Ra2Names ?? true, key => Tr(key));
+    /// <summary>
+    /// The name on screen of a unit or building: RA2's while the setting says so (DisplayNames). Kept once made: a name through the
+    /// translation server is a new string every time, and the tab asks for every one on every tick.
+    /// </summary>
+    private string NameOf(string id, string name)
+    {
+        var ra2 = AppSettings.Instance?.Values.Ra2Names ?? true;
+        if (ra2 != _namesRa2)
+        {
+            _names.Clear();
+            _namesRa2 = ra2;
+        }
+
+        if (!_names.TryGetValue(id, out var shown))
+        {
+            shown = DisplayNames.Of(id, name, ra2, key => Tr(key));
+            _names[id] = shown;
+        }
+
+        return shown;
+    }
+
+    private readonly Dictionary<string, string> _names = new(System.StringComparer.Ordinal);
+    private bool _namesRa2 = true;
 
     /// <summary>
     /// A button for every ready superweapon of the player (stage 2d): its name and the time it still charges, or Ready; pressed, it arms

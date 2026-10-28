@@ -159,7 +159,7 @@ public static class SidebarModel
     /// items a building taken from it opens (<see cref="TechTree"/>).
     /// </summary>
     public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null) =>
-        [.. Squares(world, player, group, nameOf, everyFaction: true).Where(cameo => cameo.State != CameoState.Unavailable)];
+        Squares(world, player, group, nameOf, everyFaction: true, availableOnly: true);
 
     /// <summary>
     /// Every square of a tab, in the order of RA2 (<see cref="Ra2Place"/>): every item of the player's faction in the tab's category, the
@@ -167,10 +167,15 @@ public static class SidebarModel
     /// MCV.
     /// </summary>
     public static IReadOnlyList<Cameo> AllCameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null) =>
-        Squares(world, player, group, nameOf, everyFaction: false);
+        Squares(world, player, group, nameOf, everyFaction: false, availableOnly: false);
 
-    /// <summary>The squares of a tab in the order of RA2: of the player's faction, or of every faction when <paramref name="everyFaction"/>.</summary>
-    private static IReadOnlyList<Cameo> Squares(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf, bool everyFaction)
+    /// <summary>
+    /// The squares of a tab in the order of RA2: of the player's faction, or of every faction when <paramref name="everyFaction"/>; with
+    /// <paramref name="availableOnly"/> not the unavailable ones — left out before their names and what they miss are made: the tab is
+    /// built on every tick, and most items of every faction are unavailable (the performance log, 2026-10-28).
+    /// </summary>
+    private static IReadOnlyList<Cameo> Squares(
+        GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf, bool everyFaction, bool availableOnly)
     {
         // The name on screen of an id and its name of the data (DisplayNames: those of RA2 for now).
         string Name(string id, string name) => nameOf?.Invoke(id, name) ?? name;
@@ -186,10 +191,11 @@ public static class SidebarModel
             for (var i = 0; i < rules.Buildings.Length; i++)
             {
                 var def = rules.Buildings[i];
-                if ((everyFaction || def.Faction == state.Faction.Id) && def.Category == category && !world.Rules.IsConstructionYard(def.Id))
+                if ((everyFaction || def.Faction == state.Faction.Id) && def.Category == category && !world.Rules.IsConstructionYard(def.Id)
+                    && state.CanBuildBuilding(i) is var available && (available || !availableOnly || Queued(queue, ProductionKind.Building, i)))
                 {
                     var name = Name(def.Id, def.Name);
-                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, name, def.Cost, state.CanBuildBuilding(i), def.Prerequisites, owned, nameOf)
+                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, name, def.Cost, available, def.Prerequisites, owned, nameOf)
                         with { Role = RoleOf(def), Code = CodeOf(name) });
                 }
             }
@@ -203,9 +209,10 @@ public static class SidebarModel
                 var shown = category == ProductionCategory.Infantry
                     ? def.Category == UnitCategory.Infantry
                     : def.Category is UnitCategory.Vehicle or UnitCategory.Naval or UnitCategory.Aircraft;
-                if ((everyFaction || def.Faction == state.Faction.Id) && shown && !def.Spawned && UnitTypes.TryGetById(def.Id, out _))
+                if ((everyFaction || def.Faction == state.Faction.Id) && shown && !def.Spawned && UnitTypes.TryGetById(def.Id, out _)
+                    && state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i)) is var own
+                    && (state.CanBuildUnit(i) || !availableOnly || Queued(own, ProductionKind.Unit, i)))
                 {
-                    var own = state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i));
                     var cost = ProductionRules.CostOf(rules, ProductionKind.Unit, i);
                     var name = Name(def.Id, def.Name);
                     cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, name, cost, state.CanBuildUnit(i), def.Prerequisites, owned, nameOf)
@@ -216,6 +223,19 @@ public static class SidebarModel
 
         // A stable sort: the items not named keep the order of the data.
         return [.. cameos.OrderBy(cameo => Ra2Place(IdOf(rules, cameo)))];
+    }
+
+    private static bool Queued(IReadOnlyList<ProductionItem> queue, ProductionKind kind, int index)
+    {
+        foreach (var item in queue)
+        {
+            if (item.Kind == kind && item.DefIndex == index)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string IdOf(RulesDatabase rules, Cameo cameo) =>
