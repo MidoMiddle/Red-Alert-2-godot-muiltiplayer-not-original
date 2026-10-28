@@ -16,16 +16,29 @@ public partial class PowerBar : Control
     private static readonly Color Mark = new("#EAE6D8");
 
     private PowerGauge _gauge = PowerGauge.Of(0, 0, false);
+    private (int Output, int Drain) _shown = (-1, -1);
 
     public override void _Ready()
     {
         CustomMinimumSize = new Vector2(BarWidth, 0f);
         MouseFilter = MouseFilterEnum.Stop;
+        Show(0, 0, false);
     }
 
-    /// <summary>Shows the power of the player; the tooltip gives the numbers.</summary>
+    /// <summary>
+    /// Shows the power of the player; held under the mouse, the tooltip gives the numbers — what the power plants make, what the base
+    /// uses, and what is spare or short (the owner, 2026-10-28).
+    /// </summary>
     public void Show(int output, int drain, bool low)
     {
+        if ((output, drain) != _shown)
+        {
+            _shown = (output, drain);
+            TooltipText = string.Format(Tr("UI_SIDEBAR_POWER"), output, drain) + "\n" + (output >= drain
+                ? string.Format(Tr("UI_SIDEBAR_POWER_SPARE"), output - drain)
+                : string.Format(Tr("UI_SIDEBAR_POWER_SHORT"), drain - output));
+        }
+
         var gauge = PowerGauge.Of(output, drain, low);
         if (gauge == _gauge)
         {
@@ -33,7 +46,6 @@ public partial class PowerBar : Control
         }
 
         _gauge = gauge;
-        TooltipText = string.Format(Tr("UI_SIDEBAR_POWER"), drain, output);
         QueueRedraw();
     }
 

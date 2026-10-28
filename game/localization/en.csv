@@ -323,7 +323,9 @@ UI_SIDEBAR_AVAILABLE_LATER,Can be built in a later update
 UI_SIDEBAR_REQUIRES,Requires: {0}
 UI_SIDEBAR_SELL_HINT,Sell: click your building. Right click to stop.
 UI_SIDEBAR_REPAIR_HINT,Repair: click your building. Right click to stop.
-UI_SIDEBAR_POWER,Power {0} / {1}
+UI_SIDEBAR_POWER,Power: {0} produced, {1} used
+UI_SIDEBAR_POWER_SPARE,{0} spare
+UI_SIDEBAR_POWER_SHORT,"{0} short: the base builds slower, the radar and the defenses that need power are off"
 UI_MINIMAP_OFFLINE,Offline
 UI_EVA_CONSTRUCTION_COMPLETE,Construction complete
 UI_EVA_UNIT_READY,Unit ready
