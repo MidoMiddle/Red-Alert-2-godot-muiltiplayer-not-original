@@ -409,6 +409,8 @@ public sealed class StateHasherTests
         "<OreVersion>k__BackingField",
         // A counter of destroyed objects, for the client to hide them without rebuilding the map.
         "<ObjectDeaths>k__BackingField",
+        // And of the changes of the cells of buildings, for the client to leave the ground as it is (2026-10-28).
+        "<BuildingChanges>k__BackingField",
         // The decks of the high bridges (rules v93), built from the bridges and the heights.
         "_deckCell", "_deckSegment", "_deckLevel", "_deckExit", "_deckSlotByCell", "_deckEntries",
     })]

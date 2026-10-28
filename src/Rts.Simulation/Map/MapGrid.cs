@@ -484,6 +484,20 @@ public sealed class MapGrid
     public int LayoutVersion => Version - ObjectDeaths;
 
     /// <summary>
+    /// Counts the changes of the cells buildings take (<see cref="SetBuildingCells"/>: one placed, sold, destroyed, packed up), each of
+    /// which also grows <see cref="Version"/>. Not part of the state.
+    /// </summary>
+    public int BuildingChanges { get; private set; }
+
+    /// <summary>
+    /// Grows with every change of the ground and what stands on it for good: the land, the heights, the bridges — not an object
+    /// destroyed, not a building placed or gone. The trees, the terrain and the drills of the client are rebuilt by it: by
+    /// <see cref="LayoutVersion"/> every building of a match rebuilt the 25 000 trees of a forest map, a frame of 140 ms (the performance
+    /// log, 2026-10-28).
+    /// </summary>
+    public int GroundVersion => LayoutVersion - BuildingChanges;
+
+    /// <summary>
     /// Adds a bridge (docs/implementation/M7_maps.md, 4.6) and returns null, or returns what is wrong with it and adds nothing:
     /// it must run along X or along Y over water cells (shallow or deep) that no other bridge takes, with a shore beyond both
     /// ends, a cell on the map that is not water; a bridge of one cell needs that along X or along Y. Hit points are per segment,
@@ -1000,6 +1014,7 @@ public sealed class MapGrid
 
         _digest = null;
         Version++;
+        BuildingChanges++;
     }
 
     private static string Text(CellPos cell) => $"{cell.X},{cell.Y}";

@@ -55,6 +55,24 @@ public sealed class MapChangeTests
     }
 
     [Fact]
+    public void A_building_placed_changes_the_layout_but_not_the_ground_and_the_land_changes_both()
+    {
+        // The client rebuilds its trees, terrain and drills by the ground (2026-10-28): every building of a match rebuilt them before.
+        var world = new GameWorld(seed: 1, new MapGrid(16, 16), TestRules.Standard);
+        var map = world.Map;
+        var (layout, ground) = (map.LayoutVersion, map.GroundVersion);
+
+        world.CreateBuilding(Blue, TestRules.BuildingDef("reactor"), new CellPos(4, 4), ready: true, null);
+
+        Assert.True(map.LayoutVersion > layout);
+        Assert.Equal(ground, map.GroundVersion);
+
+        map.SetBlocked(new CellPos(12, 12), true);
+
+        Assert.True(map.GroundVersion > ground);
+    }
+
+    [Fact]
     public void A_felled_tree_opens_a_way_for_the_next_order()
     {
         var world = Walled(12, 7, wallX: 6);

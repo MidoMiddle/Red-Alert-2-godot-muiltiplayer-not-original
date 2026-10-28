@@ -70,7 +70,7 @@ public partial class OreSources : Node3D
         {
             Rebuild(map, key);
         }
-        else if (map.LayoutVersion != _placedVersion)
+        else if (map.GroundVersion != _placedVersion)
         {
             // The ground under a source rose or fell in the editor.
             Place(map);
@@ -149,7 +149,7 @@ public partial class OreSources : Node3D
 
     private void Place(MapGrid map)
     {
-        _placedVersion = map.LayoutVersion;
+        _placedVersion = map.GroundVersion;
         if (WorldCoords.Terrain is not { } terrain)
         {
             return;

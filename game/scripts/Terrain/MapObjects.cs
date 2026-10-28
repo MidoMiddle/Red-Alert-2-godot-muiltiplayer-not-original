@@ -53,7 +53,7 @@ public partial class MapObjects : Node3D
         // A new match or a new map in the editor (another map object), or a change of this one.
         var map = GetParent<TerrainBuilder>().Map;
         var climate = GetParent<TerrainBuilder>().Climate;
-        if (!ReferenceEquals(map, _builtMap) || map.LayoutVersion != _builtVersion || !ReferenceEquals(climate, _builtClimate))
+        if (!ReferenceEquals(map, _builtMap) || map.GroundVersion != _builtVersion || !ReferenceEquals(climate, _builtClimate))
         {
             _map = map;
             _builtClimate = climate;
@@ -101,7 +101,7 @@ public partial class MapObjects : Node3D
         }
 
         _builtMap = _map;
-        _builtVersion = _map.LayoutVersion;
+        _builtVersion = _map.GroundVersion;
         _copies.Clear();
         _stumpPlaces.Clear();
         var kind = _builtClimate?.Trees ?? Climates.TreeKind.Pine;
