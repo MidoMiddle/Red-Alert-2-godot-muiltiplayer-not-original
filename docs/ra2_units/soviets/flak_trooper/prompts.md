@@ -52,7 +52,7 @@ One lightly armored infantry figure with a heavy anti-aircraft cannon slung acro
 ```text
 An anti-aircraft infantryman in a simple padded uniform with very light armor and a plain padded cap. A heavy portable anti-aircraft cannon is slung across one shoulder, its long barrel angled up, so the weapon dominates the silhouette. Lean, quick build, standing upright in plain boots. The unit looks lean and fragile, built for speed. The gun is the one big shape that makes the unit readable at a distance. A flat pure magenta (#FF00FF) armband on the left upper arm marks the team color.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

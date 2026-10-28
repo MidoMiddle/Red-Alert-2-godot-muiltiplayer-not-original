@@ -52,7 +52,7 @@ A large unarmed wheeled construction vehicle: a six-wheel chassis with a boxy ca
 A large, unarmed wheeled construction vehicle, a heavy six-wheel chassis with a boxy truck cab at the front and a folded construction module on the flat cargo bed behind it. The cab has angular sides and a wide windshield, the module is a closed box with rounded corners and folded panels. No weapons, no turret, no antennas, no crew in the cab. The only team color zone is the cab doors and the side panels of the module housing, painted flat pure magenta (#FF00FF). Long, low and heavy proportions with big wheels. Neutral parked pose, wheels in place, no ground plane, no base.
 modern Western military design, clean angular shapes.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

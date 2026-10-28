@@ -52,7 +52,7 @@ One infantry figure in a long brown greatcoat, a bulky breathing apparatus built
 ```text
 A cheap, mass-produced infantry soldier built for numbers rather than style. He wears a long brown greatcoat over a metal breastplate, with iron plates protecting the shoulders and an ammunition bandolier crossing the chest. A bulky breathing apparatus is built into the suit, making the silhouette long and heavy. A short submachine gun hangs from a sling in front of the body. Average height, slightly stocky, the coat reaching below the knees. A flat pure magenta (#FF00FF) armband on the left upper arm marks the team color.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

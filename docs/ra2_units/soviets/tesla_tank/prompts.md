@@ -49,7 +49,7 @@ A heavy tracked tank with a squat hull and a low turret carrying two tall vertic
 ```text
 A heavy electric battle tank: a wide, squat tracked hull with a low, boxy turret and no cannon. Two tall vertical coil emitters stand on the turret, one on each side. Each emitter is a metal rod wrapped in copper windings with a rounded cap at the top. Proportions: a wide, squat hull, a low turret, and tall thin coils that make up about half of the total height. Neutral static pose, coils dark and unlit, no electric arcs or glow. The team color zone is the flat turret roof panel only.
 heavy Eastern-bloc industrial design, boxy shapes
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
 

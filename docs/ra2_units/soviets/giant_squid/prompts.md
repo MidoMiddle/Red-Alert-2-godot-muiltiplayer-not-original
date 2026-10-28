@@ -49,7 +49,7 @@ A giant cephalopod-like sea creature with eight short arms and two long tentacle
 ```text
 A giant cephalopod-like sea creature: a long, bulbous mantle with large eyes on each side, eight short arms and two long grabbing tentacles with suction pads at the tips. The skin is soft and organic. Proportions: the mantle is about twice as long as it is wide, and each long tentacle is about as long as the mantle. Neutral static pose: tentacles relaxed and curled, not wrapping anything, with no water, no waves and no base. The team color zone is one flat magenta neural collar ring around the top of the mantle only.
 heavy Eastern-bloc industrial design, boxy shapes
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
 

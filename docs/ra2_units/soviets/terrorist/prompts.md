@@ -52,7 +52,7 @@ One light, fast demolition infantry figure in a plain olive-drab field jacket an
 ```text
 A cheap, fast demolition infantryman in a plain olive-drab field jacket and trousers, with no rifle. A backpack is loaded with demolition charges, visible on the straps, and a small tool case is clipped to the belt. Light, wiry build, average height, standing upright in plain boots. The charges make the role obvious from a distance. A flat pure magenta (#FF00FF) armband on the left upper arm marks the team color.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

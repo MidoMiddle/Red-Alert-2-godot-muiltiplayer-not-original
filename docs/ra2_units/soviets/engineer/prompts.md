@@ -52,7 +52,7 @@ One unarmed infantry figure in a padded work jacket and trousers, with a metal t
 ```text
 A non-combat field technician built as a support specialist, not a fighter. He wears a padded work jacket and trousers with sturdy boots, and carries no weapon. A metal toolkit case hangs from a strap at the hip, and a canvas tool pouch sits on the belt on the other side. Medium build, neat and practical, nothing decorative, with simple clear outlines. Standing upright, the toolkit makes the role readable at a glance. A flat pure magenta (#FF00FF) armband on the left upper arm marks the team color.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

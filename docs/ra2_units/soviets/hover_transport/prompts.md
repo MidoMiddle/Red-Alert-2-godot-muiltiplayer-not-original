@@ -49,7 +49,7 @@ A wide, flat, unarmed air-cushion transport with a low cabin at the front, a clo
 ```text
 An unarmed air-cushion transport: a wide, flat, armored hull with a low boxy cabin at the front and an open cargo deck behind it. A rear loading ramp is closed. A skirt hangs around the lower edge of the hull, and two large fan housings sit on the rear deck. Proportions: the hull is low and wide, about three times longer than it is wide. Neutral static pose, hovering in place, with no water, no waves and no ground. The team color zone is the flat roof panel of the cabin only.
 heavy Eastern-bloc industrial design, boxy shapes
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
 

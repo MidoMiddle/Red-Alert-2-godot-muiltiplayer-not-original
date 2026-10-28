@@ -52,7 +52,7 @@ An amphibious special operations soldier in a T-pose in sand-toned camouflage: t
 An amphibious special operations soldier, lean and fast-looking. He wears a camouflage combat uniform in sand and khaki blotch tones, a plain tactical vest with pouches, and a soft combat cap. A compact submachine gun with a folding stock hangs across the chest on a strap, a separate part. A block of demolition charges sits on the belt, another separate part. Athletic, standard human proportions. The only team color zone is a shoulder patch on the left shoulder, painted flat pure magenta (#FF00FF). Stands in a T-pose with arms straight out, no base.
 modern Western military design, clean angular shapes.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

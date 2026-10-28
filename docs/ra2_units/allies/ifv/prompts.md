@@ -52,7 +52,7 @@ Light wheeled armored vehicle with large tires, a low boxy hull and a separate w
 ```text
 Light wheeled armored vehicle with a low, boxy hull and large tires. A single weapon pod sits on the roof of the hull. In its default form the pod holds a twin rocket launcher, its two tubes angled upward, and it is the most recognizable feature, so it must read as a separate module. The rest of the vehicle is compact and simple. Proportions: short, low and fast-looking, not bulky. Team color zones, flat magenta: the side panels of the hull and the rear face of the weapon pod. Neutral static pose, no passenger visible.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

@@ -52,7 +52,7 @@ Matte black two-seat jet with twin engines, forward-swept wings, two missiles un
 ```text
 Black two-seat jet attack aircraft with twin engines, forward-swept wings and vertical takeoff nozzles. The body has matte black paint. Two air-to-ground missiles hang under the wings, one under each wing. Both cockpit canopies are empty; no pilots are visible. Proportions: sleek, compact and fast-looking. Built for quick strike runs on ground targets, with a pointed nose. Team color zones, flat magenta: the vertical tail fin and the wingtips. Flying in a neutral pose, no smoke, no exhaust trail, no ground, no base.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

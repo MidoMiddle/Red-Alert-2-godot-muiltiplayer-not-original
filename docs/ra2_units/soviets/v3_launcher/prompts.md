@@ -49,7 +49,7 @@ A rocket launcher on a four-wheeled truck chassis with one large missile on a re
 ```text
 A heavy rocket artillery launcher on a wheeled truck chassis: a boxy, light-armored truck with a small cab at the front and four wheels. One large missile is loaded on a launch rail at the rear, tilted up about 15 degrees. The missile is roughly as long as the chassis, with a pointed nose and small tail fins. Proportions: a compact, fragile-looking chassis, with the missile as the dominant element. Neutral static pose: no exhaust, no flames. The team color zone is one flat panel on the rear side of the chassis only.
 heavy Eastern-bloc industrial design, boxy shapes
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
 

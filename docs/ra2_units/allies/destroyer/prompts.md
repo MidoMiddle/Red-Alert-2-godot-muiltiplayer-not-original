@@ -52,7 +52,7 @@ Medium warship with a long, low hull, a single fixed gun on the bow and a simple
 ```text
 Medium warship with a long, low hull and a single fixed gun on the bow, not on a rotating mount. The hull has a sharp bow, a flat deck and a plain outline. A simple superstructure with flat panels sits amidships, and a flat helicopter pad on the stern stays empty. The deck is clean, with no extra equipment. Proportions: medium-sized, sturdy and long, with a low freeboard. Team color zones, flat magenta: the side panels of the superstructure. No water, no waves, no base; neutral static pose.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

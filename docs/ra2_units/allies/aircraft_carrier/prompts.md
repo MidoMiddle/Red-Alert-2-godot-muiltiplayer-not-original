@@ -52,7 +52,7 @@ Very large flat-top ship with a long, wide flight deck, three empty launch pads 
 ```text
 Very large, slow flat-top ship with a long, wide flight deck and no guns anywhere on it. Three empty square launch pads are set into the deck, which has clean, flat edges. The deck is the dominant feature. Proportions: the largest ship in the fleet, very long and low, with a wide deck and a heavy hull. Team color zones, flat magenta: the hull sides below the deck edge. No aircraft on the deck, no water, no waves, no base; neutral static pose.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

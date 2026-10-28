@@ -49,7 +49,7 @@ A giant zeppelin-style airship with a long ellipsoid envelope, four tail fins an
 ```text
 A giant zeppelin-style airship: a long ellipsoid envelope with a rounded nose and a tapering tail with four flat cross fins. A narrow gondola hangs under the envelope, with large cylindrical bombs in open racks beneath it. A custom emblem is painted on the nose. Proportions: the envelope is about six times longer than its diameter, and the gondola is about one third of the envelope length. Neutral static pose, no pilots or crew visible in the windows. The team color zone is one flat magenta band along the top of the envelope only.
 heavy Eastern-bloc industrial design, boxy shapes
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
 

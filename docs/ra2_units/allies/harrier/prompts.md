@@ -52,7 +52,7 @@ Compact single-seat vertical-takeoff jet with two air-to-ground missiles under t
 ```text
 Single-seat jet attack aircraft with vertical takeoff, built for quick strike runs on ground targets. It has a compact fuselage, a pair of wings, and vectoring exhaust nozzles under the rear fuselage for hovering takeoff. Two air-to-ground missiles hang on underwing hardpoints, one under each wing. The cockpit canopy is empty; no pilot is visible. Proportions: short, light and fast-looking, not bulky. Team color zones, flat magenta: the vertical tail fin and the wingtips. Flying in a neutral pose, no smoke or exhaust effects, no ground, no base.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

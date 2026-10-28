@@ -30,7 +30,7 @@ Technical requirements: one single object, centered, standing on nothing: no bas
 ## 3. Стиль
 
 ```text
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 ```
 
 Строка стиля фракции (добавляется в промт шага 1):

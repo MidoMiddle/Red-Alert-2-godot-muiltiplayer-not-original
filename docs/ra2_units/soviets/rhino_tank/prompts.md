@@ -49,7 +49,7 @@ A tracked heavy battle tank with one centered turret, one long cannon and two fu
 ```text
 A heavy battle tank on tracks: a tall, boxy hull with track skirts along both sides and two fuel tanks mounted at the rear. One large turret sits centered on the hull, carrying one long 120 mm cannon with a muzzle brake. Proportions: a tall, wide hull, a large turret about one third of the hull length, and a long barrel. Neutral static pose, gun pointing forward, no smoke or muzzle flash. The team color zone is the flat roof panel of the turret only.
 heavy Eastern-bloc industrial design, boxy shapes
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
 

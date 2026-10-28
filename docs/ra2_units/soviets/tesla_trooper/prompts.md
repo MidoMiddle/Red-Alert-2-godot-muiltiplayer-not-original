@@ -52,7 +52,7 @@ One infantry figure in a bulky armored suit with thick plates, a sealed helmet w
 ```text
 A heavy infantryman in a bulky armored suit with thick plates across the chest, shoulders and thighs, and a sealed helmet with a dark visor. A compact power pack sits on the back. Heavy insulated gauntlets cover both forearms, each ending in a metal emitter tip. He is broad and imposing, standing upright with boots planted wide. The suit reads as the main silhouette: armored, heavy, electric. A flat pure magenta (#FF00FF) band on the left upper arm of the suit marks the team color.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

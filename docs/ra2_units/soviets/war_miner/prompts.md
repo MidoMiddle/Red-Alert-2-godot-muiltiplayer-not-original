@@ -52,7 +52,7 @@ One large, heavy, armored ore-collecting machine on wide tracks with a wide scoo
 ```text
 A large, heavy, armored ore-collecting machine on wide tracks, boxy and low to the ground. A wide scoop is mounted at the front, resting in a neutral position. A small turret on top of the hull holds a rapid-fire 20 mm machine gun. No crew, no driver visible. The hull is sturdy, with flat, blocky armor panels. The turret side panels and the hull side panels are flat pure magenta (#FF00FF) and mark the team color. Stands in a neutral, static pose.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

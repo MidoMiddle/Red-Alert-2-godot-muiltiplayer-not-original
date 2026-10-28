@@ -49,7 +49,7 @@ A slim attack submarine with a tall sail amidships and a teardrop sonar fairing 
 ```text
 An attack submarine: a long, slim, cigar-shaped hull with a rounded blunt bow and a tapered stern. A tall, narrow sail stands amidships with a small mast on top, and a teardrop-shaped sonar fairing sits at the stern. Proportions: the hull is about six times longer than it is wide, and the sail is about one tenth of the hull length. Neutral static pose, surfaced and isolated, with no water, no waves and no base. The team color zone is the flat top panel of the sail only.
 heavy Eastern-bloc industrial design, boxy shapes
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
 

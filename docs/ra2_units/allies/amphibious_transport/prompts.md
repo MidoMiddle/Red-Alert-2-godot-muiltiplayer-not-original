@@ -52,7 +52,7 @@ Flat, wide air-cushion landing craft with a boxy cargo hold open at the rear and
 ```text
 Flat, wide air-cushion landing craft with a low deck and a boxy cargo hold with an opening at the rear and a drop-down ramp for loading. It carries no weapons anywhere on the vessel. Built to cross water and drive straight onto a beach, so the shape is simple and utilitarian, with smooth sides. Proportions: medium-sized, wide and low. Team color zones, flat magenta: the outer side walls of the cargo hold. Neutral static pose, shown alone with no water, no waves, no base.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

@@ -52,7 +52,7 @@ Light, low chassis with a fixed hemispherical dome, three small projector pods o
 ```text
 Light, low armored chassis topped by a fixed hemispherical dome that does not rotate. Three small projector pods sit on the sides of the dome, and a short emitter tube sticks out from the front of the hull. The dome is smooth and rounded, and the hull is simple and angular. Proportions: compact and low, with the dome as the dominant shape on top. Team color zones, flat magenta: the hull side panels and the rear half of the dome. Neutral static pose, shown as a plain tank with no foliage or disguise.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```

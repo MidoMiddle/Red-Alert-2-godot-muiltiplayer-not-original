@@ -52,7 +52,7 @@ A marine mammal with a streamlined body, a curved dorsal fin and flippers, carry
 ```text
 A marine mammal with a streamlined, torpedo-shaped body, a tall curved dorsal fin, two paddle-like flippers, a short beak and a broad tail fluke. Natural animal skin, no armor. Strapped to its back, just behind the dorsal fin, is a small rigid sound-emitter device with a flat, angular housing. The animal is the main shape, and the device is the only man-made part. Proportions: sleek and natural, with realistic animal anatomy. Team color zones, flat magenta: the sound-emitter housing only. Neutral static pose, body straight, no water, no waves, no base.
 
-Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. Original design; do not imitate any existing game unit or real product.
+Style: realistic 3D military design for a real-time strategy game, detailed but simple shapes, readable from a distance, saturated but natural colors, warm lighting. No text, logos or emblems.
 
 Technical requirements: one single object, centered, standing on nothing: no base, no ground plane, no background, no text, no logos, no labels. Neutral static pose; infantry in T-pose with arms straight out to the sides. Separate parts where the design has them: hull, turret, barrel. Team color zones are flat pure magenta (#FF00FF) and appear only where the unit description says; no other magenta anywhere. Realistic PBR materials, no baked shadows or lighting in the textures. Clean closed geometry, no loose or floating pieces. Proportions as described; a readable silhouette matters more than small details.
 ```
