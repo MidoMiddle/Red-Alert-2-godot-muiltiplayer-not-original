@@ -69,7 +69,11 @@ public partial class Main : Node3D
             _screenshotFrame = frames;
         }
 
-        if (args.Contains("--smoke"))
+        if (App.GraphicsBenchmark.Requested)
+        {
+            CallDeferred(MethodName.RunGraphicsTest);
+        }
+        else if (args.Contains("--smoke"))
         {
             CallDeferred(MethodName.RunSmoke);
         }
@@ -131,6 +135,32 @@ public partial class Main : Node3D
         camera.ZoomOutFully();
         _perfFrames = new List<double>();
         _perfStart = ChargeBattle;
+    }
+
+    /// <summary>
+    /// The graphics test (<see cref="App.GraphicsBenchmark"/>, the owner, 2026-10-28): the general battle of <c>--perf-battle</c>, seen as
+    /// a player sees it — at the zoom of a match, the clash in the middle of the screen, the land without its shroud — the levels of graphics
+    /// tried over it once the armies charge.
+    /// </summary>
+    private void RunGraphicsTest()
+    {
+        var camera = GetNode<RtsCamera>("CameraRig");
+        var middle = (BattleScenario.BlueLeft + BattleScenario.RedLeft + 2 * BattleScenario.Columns) / 2f;
+        camera.CenterOn(new Vector3(middle, 0f, BattleScenario.Top + BattleScenario.Rows / 2f));
+        AddChild(new App.GraphicsBenchmark(() =>
+        {
+            if (GetNode<SimulationHost>("SimulationHost").Simulation.World.Entities.Count == 0)
+            {
+                return false;
+            }
+
+            // The whole land drawn, as a match shows it once explored: the shroud is no picture to measure.
+            Terrain.FogOfWar.Current?.Reveal();
+            return ChargeBattle();
+        })
+        {
+            Name = "GraphicsBenchmark",
+        });
     }
 
     /// <summary>Both armies of the battle charge, once they have spawned (on the first tick).</summary>

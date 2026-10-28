@@ -81,10 +81,10 @@ public partial class SimulationHost : Node
     public static readonly int[] PlaybackFactors = [1, 2, 4, 8];
 
     /// <summary>
-    /// <c>--perf-battle</c>: the live session is the general battle of M4 (<see cref="BattleScenario"/>, both armies without their
-    /// bases) on the land of the load map, instead of the map's own units.
+    /// <c>--perf-battle</c> and the graphics test (<see cref="App.GraphicsBenchmark"/>): the live session is the general battle of M4
+    /// (<see cref="BattleScenario"/>, both armies without their bases) on the land of the load map, instead of the map's own units.
     /// </summary>
-    public static bool IsBattle => OS.GetCmdlineUserArgs().Contains("--perf-battle");
+    public static bool IsBattle => OS.GetCmdlineUserArgs().Contains("--perf-battle") || App.GraphicsBenchmark.Requested;
 
     public static string MapPath
     {

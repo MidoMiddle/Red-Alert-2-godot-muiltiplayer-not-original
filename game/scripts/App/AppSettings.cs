@@ -29,9 +29,16 @@ public partial class AppSettings : Node
     /// <summary>The key of every game action. Change it only through <see cref="SetKey"/> and <see cref="ResetKeys"/>.</summary>
     public KeyBindings Keys { get; private set; } = new();
 
+    /// <summary>
+    /// Whether the game started without a settings file: its first start on this computer. The graphics test runs then
+    /// (<see cref="GraphicsBenchmark"/>), and its result is the first file.
+    /// </summary>
+    public bool FirstStart { get; private set; }
+
     public override void _Ready()
     {
         Instance = this;
+        FirstStart = !FileAccess.FileExists(FilePath);
         var raw = ReadFile();
         Values = SettingsValues.Parse(raw);
         Keys = KeyBindings.Parse(raw, IsKnownKey);
@@ -107,6 +114,33 @@ public partial class AppSettings : Node
         Values = Values with { Ssao = enabled };
         ApplyToScene();
         Save();
+    }
+
+    /// <summary>
+    /// The graphics of <paramref name="level"/> at once — the scale and the smoothing of the 3D, the shadows, the SSAO — saved unless
+    /// <paramref name="save"/> is false: the graphics test tries levels before it keeps one.
+    /// </summary>
+    public void SetGraphics(GraphicsLevel level, bool save = true)
+    {
+        Values = level.ApplyTo(Values);
+        ApplyRenderScale(level.RenderScale);
+        ApplyAntiAliasing(level.AntiAliasing);
+        ApplyShadowAtlas(level.Shadows);
+        ApplyToScene();
+        if (save)
+        {
+            Save();
+        }
+    }
+
+    /// <summary>
+    /// While the graphics test measures (<paramref name="measuring"/>): no VSync and no frame limit, so that a frame is not held back to
+    /// the screen; false puts those of the settings back.
+    /// </summary>
+    public void SetMeasuring(bool measuring)
+    {
+        ApplyVSync(!measuring && Values.VSync);
+        ApplyFpsLimit(measuring ? SettingsValues.Unlimited : Values.FpsLimit);
     }
 
     public void SetHealthBars(HealthBarMode mode)

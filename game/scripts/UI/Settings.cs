@@ -11,7 +11,8 @@ namespace Rts.Client.UI;
 /// Settings with four tabs (docs/menu/README.md, sections 2.5 and 3.7; docs/implementation/M6_menus_skirmish.md, 4.5).
 /// The window options, the interface scale and the master volume work now. Every other option is greyed out with
 /// "Coming soon" until its step comes, and changes nothing yet. A new resolution is shown at once and kept only after
-/// the player confirms it within 15 seconds (<see cref="ResolutionChange"/>).
+/// the player confirms it within 15 seconds (<see cref="ResolutionChange"/>). «Pick automatically» runs the graphics test
+/// (<see cref="GraphicsBenchmark"/>) and shows what it chose when the tab is back.
 /// Debug argument: <c>--tab &lt;0-3&gt;</c> opens a tab, for visual checks.
 /// </summary>
 public partial class Settings : Control
@@ -197,6 +198,28 @@ public partial class Settings : Control
         _ssao.Toggled += enabled => Store.SetSsao(enabled);
         _ssao.TooltipText = Tr("UI_SETTINGS_SSAO_HINT");
         AddRow(rows, "UI_SETTINGS_SSAO", _ssao);
+
+        // The graphics test (the owner, 2026-10-28): the game picks the four above for 60 FPS. Not over a match: it is a battle of its own.
+        var test = new Button
+        {
+            Name = "GraphicsTest",
+            Text = Tr("UI_SETTINGS_GRAPHICS_TEST"),
+            CustomMinimumSize = new Vector2(FieldWidth, FieldHeight),
+            TooltipText = Tr("UI_SETTINGS_GRAPHICS_TEST_HINT"),
+            Disabled = OverMatch,
+        };
+        test.Pressed += () => SceneRouter.Instance?.GoTo(SceneRouter.MatchScene, new() { [GraphicsBenchmark.Key] = true });
+        AddRow(rows, "UI_SETTINGS_GRAPHICS_TEST_LABEL", test);
+        if (GraphicsBenchmark.LastResult is { } result)
+        {
+            rows.AddChild(new Label
+            {
+                Text = result,
+                AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                CustomMinimumSize = new Vector2(LabelWidth + RowSeparation + FieldWidth, 0f),
+            });
+        }
+
         AddRow(rows, "UI_SETTINGS_EFFECTS", NewDropdown(2, Tr("UI_QUALITY_LOW"), Tr("UI_QUALITY_MEDIUM"), Tr("UI_QUALITY_HIGH")), locked: true);
 
         _interfaceScale = NewSlider(SettingsValues.MinInterfaceScale, SettingsValues.MaxInterfaceScale,

@@ -74,6 +74,9 @@ public partial class SceneRouter : Node
         Switch(scenePath, args);
     }
 
+    /// <summary>Whether there is a previous screen for <see cref="Back"/>.</summary>
+    public bool CanGoBack => _history.Count > 0;
+
     /// <summary>Returns to the previous screen. Does nothing if there is none.</summary>
     public void Back()
     {

@@ -5,7 +5,8 @@ using Rts.Client.App;
 namespace Rts.Client.UI;
 
 /// <summary>
-/// Entry scene. Shows a short splash, then opens the main menu. Debug arguments skip the splash:
+/// Entry scene. Shows a short splash, then opens the main menu — on the first start the graphics test first (<see cref="GraphicsBenchmark"/>).
+/// Debug arguments skip the splash:
 /// <c>--smoke</c>, <c>--check-camera</c>, <c>--check-terrain</c> and <c>--screenshot</c> go straight to <c>Main</c>, so the M0 checks keep
 /// working; <c>--sandbox</c> goes through the loading screen, as every match does (docs/implementation/M6_menus_skirmish.md, 4.14).
 /// <c>--ui-menu</c>, <c>--ui-skirmish</c>, <c>--ui-settings</c>, <c>--ui-stub</c> and <c>--ui-showcase</c> open UI screens for visual checks;
@@ -125,6 +126,15 @@ public partial class Boot : Control
         if (SceneRouter.Instance is null)
         {
             GD.PushError("[boot] SceneRouter autoload is missing");
+            return;
+        }
+
+        // The first start on this computer (no settings file): the graphics test picks the settings, then the main menu opens (the owner,
+        // 2026-10-28).
+        if (AppSettings.Instance is { FirstStart: true })
+        {
+            GD.Print("[boot] first start: the graphics test picks the settings");
+            SceneRouter.Instance.Replace(SceneRouter.MatchScene, new() { [GraphicsBenchmark.Key] = true });
             return;
         }
 

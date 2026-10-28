@@ -52,7 +52,14 @@ public static class Localization
                 continue;
             }
 
-            translation.AddMessage(line[..comma], line[(comma + 1)..]);
+            // A text with a comma is quoted, as in a CSV: its quotes are not part of it, and a doubled quote inside is one.
+            var text = line[(comma + 1)..];
+            if (text.Length >= 2 && text[0] == '"' && text[^1] == '"')
+            {
+                text = text[1..^1].Replace("\"\"", "\"");
+            }
+
+            translation.AddMessage(line[..comma], text);
         }
 
         TranslationServer.AddTranslation(translation);

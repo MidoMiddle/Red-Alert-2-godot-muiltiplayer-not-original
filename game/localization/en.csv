@@ -229,6 +229,19 @@ UI_QUALITY_HIGH,High
 UI_SETTINGS_SSAO,SSAO
 UI_SETTINGS_SSAO_HINT,"Soft shade in corners and under things. Off is lighter on the graphics card."
 UI_SETTINGS_EFFECTS,Effects quality
+UI_SETTINGS_GRAPHICS_TEST,Pick automatically
+UI_SETTINGS_GRAPHICS_TEST_LABEL,Graphics for 60 FPS
+UI_SETTINGS_GRAPHICS_TEST_HINT,"A short test over a battle: the game tries the graphics settings and keeps the finest that holds 60 frames a second on this computer. Esc stops it."
+UI_GRAPHICS_TEST_TITLE,Picking the graphics settings for this computer
+UI_GRAPHICS_TEST_STEP,Trying settings: step {0}
+UI_GRAPHICS_TEST_CANCEL,Esc — stop and keep the settings as they were
+UI_GRAPHICS_TEST_RESULT,Picked: {0}.
+UI_GRAPHICS_TEST_LEVEL,"3D {0} %, {1}, shadows {2}, SSAO {3}"
+UI_GRAPHICS_TEST_SLOW,"Even these may not hold 60 FPS in a big battle."
+UI_GRAPHICS_TEST_PROCESSOR,"The graphics card keeps up; the processor holds the game below 60 FPS in a big battle, and lower graphics would not help."
+UI_GRAPHICS_TEST_CANCELED,The test was stopped: the graphics settings are as they were.
+UI_ON,on
+UI_OFF,off
 UI_SETTINGS_INTERFACE_SCALE,Interface scale
 UI_PERCENT,{0} %
 UI_SETTINGS_VOLUME_MASTER,Master
