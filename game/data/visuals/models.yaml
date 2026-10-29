@@ -25,6 +25,37 @@ models:
 
   # The buildings of the players (docs/ra2_buildings). The team_mask nodes take the owner's colour.
   building/tesla_coil: { file: building/tesla_coil/tesla_coil.glb, height: 3 }
+  building/barracks:   { file: building/barracks/barracks.glb, height: 3.6 }
+  building/alliance_barracks: { file: building/alliance_barracks/alliance_barracks.glb, height: 2.5 }
+  building/war_factory: { file: building/war_factory/war_factory.glb, height: 2.6 }
+  building/alliance_war_factory: { file: building/alliance_war_factory/alliance_war_factory.glb, height: 1.8 }
+  building/alliance_power_plant: { file: building/alliance_power_plant/alliance_power_plant.glb, height: 2 }
+  building/reactor:    { file: building/reactor/reactor.glb, height: 1.6 }
+  building/alliance_air_force_command: { file: building/alliance_air_force_command/alliance_air_force_command.glb, height: 2 }
+  building/radar:      { file: building/radar/radar.glb, height: 2.1 }
+  building/tech_center: { file: building/tech_center/tech_center.glb, height: 2.7 }
+  building/alliance_battle_lab: { file: building/alliance_battle_lab/alliance_battle_lab.glb, height: 3.1 }
+  building/alliance_service_depot: { file: building/alliance_service_depot/alliance_service_depot.glb, height: 1.1 }
+  building/alliance_ore_purifier: { file: building/alliance_ore_purifier/alliance_ore_purifier.glb, height: 1.8 }
+  building/service_depot: { file: building/service_depot/service_depot.glb, height: 2.4 }
+  building/nuclear_reactor: { file: building/nuclear_reactor/nuclear_reactor.glb, height: 1.6 }
+  building/alliance_construction_yard: { file: building/alliance_construction_yard/alliance_construction_yard.glb, height: 1.6 }
+  building/construction_yard: { file: building/construction_yard/construction_yard.glb, height: 2.2 }
+  building/alliance_naval_shipyard: { file: building/alliance_naval_shipyard/alliance_naval_shipyard.glb, height: 2.1 }
+  building/naval_shipyard: { file: building/naval_shipyard/naval_shipyard.glb, height: 2.3 }
+  building/nuclear_missile_silo: { file: building/nuclear_missile_silo/nuclear_missile_silo.glb, height: 2.3 }
+  building/alliance_weather_control_device: { file: building/alliance_weather_control_device/alliance_weather_control_device.glb, height: 2.4 }
+  building/alliance_chronosphere: { file: building/alliance_chronosphere/alliance_chronosphere.glb, height: 1.3 }
+  building/iron_curtain: { file: building/iron_curtain/iron_curtain.glb, height: 1.75 }
+  building/alliance_pillbox: { file: building/alliance_pillbox/alliance_pillbox.glb, height: 0.5 }
+  building/sentry_bunker: { file: building/sentry_bunker/sentry_bunker.glb, height: 0.7 }
+  building/wall:       { file: building/wall/wall.glb, height: 0.7 }
+  building/alliance_wall: { file: building/alliance_wall/alliance_wall.glb, height: 0.65 }
+  building/alliance_prism_tower: { file: building/alliance_prism_tower/alliance_prism_tower.glb, height: 2 }
+  building/alliance_patriot_missile_system: { file: building/alliance_patriot_missile_system/alliance_patriot_missile_system.glb, height: 0.75 }
+  building/alliance_spy_satellite_uplink: { file: building/alliance_spy_satellite_uplink/alliance_spy_satellite_uplink.glb, height: 1.5 }
+  building/flak_cannon: { file: building/flak_cannon/flak_cannon.glb, height: 1 }
+  building/alliance_gap_generator: { file: building/alliance_gap_generator/alliance_gap_generator.glb, height: 1.55 }
 
   # The civilian and industrial buildings of the map are low, as RA2's: a storey about 0.25 cells, a soldier 0.6 (measured against RA2,
   # 2026-10-26). Their models were made a storey to a cell: height_scale 0.35 squashes them upright, their footprints the same.

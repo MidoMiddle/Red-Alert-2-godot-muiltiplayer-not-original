@@ -71,7 +71,9 @@ public sealed class M3GoldenValuesTests
         // player tells it).
         // Rules v107: the fields grow back slower (ore every 40 s, drills every 6 s): the refinery stands a cell over and an unload
         // comes just before minute 5 rather than after — 1000 credits more then, 350 fewer of income by minute 8.
-        Assert.Equal((7007, 0x6fc205e62d9475d1UL), (fifth.Credits, fifth.Checksum));
+        // The Union's war factory releases from the east end of its hall (exit_cell [5, 1]): the same credits; the tank comes out
+        // and stands elsewhere.
+        Assert.Equal((7007, 0x9eb51305caf701faUL), (fifth.Credits, fifth.Checksum));
         // The first tank at 4:18 (tick 3873; rules v85: the war factory waits for the barracks).
         Assert.Equal(3873, Run.Value.TankTicks[0]);
     }

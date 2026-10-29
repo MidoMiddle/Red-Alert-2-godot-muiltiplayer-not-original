@@ -47,7 +47,7 @@ public sealed class BaseVisualsTests
         Assert.True(BuildingShape.Of(TestRules.BuildingDef("radar")).Dish);
         Assert.Equal(new CellPos(3, 1), BuildingShape.Of(TestRules.BuildingDef("refinery")).Dock);
         Assert.Equal(new CellPos(1, 2), BuildingShape.Of(TestRules.BuildingDef("barracks")).Exit);
-        Assert.Equal(new CellPos(2, 3), BuildingShape.Of(TestRules.BuildingDef("war_factory")).Exit);
+        Assert.Equal(new CellPos(5, 1), BuildingShape.Of(TestRules.BuildingDef("war_factory")).Exit);
 
         var yard = BuildingShape.Of(TestRules.BuildingDef("construction_yard"));
         Assert.Equal((false, false, (CellPos?)null, (CellPos?)null), (yard.Stack, yard.Dish, yard.Dock, yard.Exit));

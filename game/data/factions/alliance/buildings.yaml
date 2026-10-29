@@ -77,7 +77,7 @@ alliance_war_factory:  # vehicle production
   footprint: [5, 3]  # RA2 Foundation 5x3 (OpenRA port; not confirmed)
   power: -25
   produces: [vehicle]
-  exit_cell: [2, 3]  # below the middle
+  exit_cell: [5, 1]  # east of the middle row: the gate is in the east end of the hall, as RA2's
   prerequisites: [proc, barracks]
   spy_effect: veteran_vehicles  # RA2: a spy makes the spy's vehicles veteran
 

@@ -304,6 +304,7 @@ def run():
     imgs = rc.bake_material(meshes, graph, SIZE, ID, os.path.join(base, "bake"))
     rc.wire_final(mat, imgs)
     objs = meshes + empties
+    rc.arrange(objs, ID)  # its place in the file: the row of the players' buildings
     glb = os.path.join(rc.GLB_ROOT, "building", ID, ID + ".glb")
     with rc.node_names(objs, [o.name[len(PREFIX):] for o in objs]):
         rc.save_blend(objs, mat, imgs, os.path.join(base, ID + ".blend"))

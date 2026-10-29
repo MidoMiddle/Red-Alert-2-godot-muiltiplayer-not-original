@@ -69,6 +69,26 @@ public sealed class EconomyBuildingsTests
     }
 
     [Fact]
+    public void The_workshop_says_it_repairs_while_a_hurt_vehicle_stands_beside_it()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var depot = Build(world, Allied, "alliance_service_depot", 40, 40);
+        Assert.False(RepairSystem.IsRepairing(world, depot), "nothing beside it");
+
+        var tank = world.SpawnUnit(Allied, UnitType.AllianceLightTank, new CellPos(43, 41).Center);
+        Assert.False(RepairSystem.IsRepairing(world, depot), "a whole tank");
+
+        world.SetHp(tank, 100, null);
+        Assert.True(RepairSystem.IsRepairing(world, depot), "a hurt tank beside it");
+
+        var soldier = world.SpawnUnit(Allied, UnitType.AllianceRifleman, new CellPos(39, 41).Center);
+        world.SetHp(soldier, 50, null);
+        world.SetHp(tank, tank.MaxHp, null);
+        Assert.False(RepairSystem.IsRepairing(world, depot), "a soldier is not repaired");
+    }
+
+    [Fact]
     public void Without_the_credits_the_workshop_waits()
     {
         var simulation = Match(credits: 0);

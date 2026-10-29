@@ -36,6 +36,9 @@ public partial class Main : Node3D
     private int _screenshotFrame = 60;
     private int _frame;
 
+    // --look-at X Y: the cell the camera stands over for a screenshot, with the fog lifted (a debug view of a map's buildings).
+    private Vector2? _lookAt;
+
     public override void _Ready()
     {
         GD.Print($"Simulation v{SimulationVersion.Current}");
@@ -61,6 +64,13 @@ public partial class Main : Node3D
         if (screenshotIndex >= 0 && screenshotIndex + 1 < args.Length)
         {
             _screenshotPath = args[screenshotIndex + 1];
+        }
+
+        var lookIndex = Array.IndexOf(args, "--look-at");
+        if (lookIndex >= 0 && lookIndex + 2 < args.Length && int.TryParse(args[lookIndex + 1], out var lookX)
+            && int.TryParse(args[lookIndex + 2], out var lookY))
+        {
+            _lookAt = new Vector2(lookX + 0.5f, lookY + 0.5f);
         }
 
         var framesIndex = Array.IndexOf(args, "--frames");
@@ -99,6 +109,16 @@ public partial class Main : Node3D
     {
         using var frameTimer = Rts.Client.Debug.PerfLog.Time("Main.process");
         TrackPerf(delta);
+        if (_lookAt is { } look && _frame < 10)
+        {
+            // Over the first frames, so the start of the match does not take the camera back to the player's start.
+            var rig = GetNode<RtsCamera>("CameraRig");
+            rig.CenterOn(new Vector3(look.X, 0f, look.Y));
+            rig.ZoomInFully();
+            Terrain.FogOfWar.Current?.Reveal();
+            _frame += _screenshotPath is null ? 1 : 0;
+        }
+
         if (_screenshotPath is null || ++_frame < _screenshotFrame)
         {
             return;

@@ -332,7 +332,7 @@ public partial class Buildings : Node3D
     private sealed record Ruin(GameWorld World, BuildingKind Kind, Rts.Simulation.Geometry.CellPos Cell);
 
     // The node of that name below a node, the first one found.
-    private static Node3D? FindNode(Node node, string name)
+    internal static Node3D? FindNode(Node node, string name)
     {
         if (node is Node3D spatial && node.Name.ToString() == name)
         {

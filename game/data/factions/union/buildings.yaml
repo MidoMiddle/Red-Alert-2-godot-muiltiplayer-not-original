@@ -77,7 +77,7 @@ war_factory:  # vehicle production
   power: -25
   # The Union's airship comes from the war factory too, as in RA2 (stage 2b).
   produces: [vehicle, aircraft]
-  exit_cell: [2, 3]  # below the middle
+  exit_cell: [5, 1]  # east of the middle row: the gate is in the east end of the hall, as RA2's
   prerequisites: [proc, barracks]  # RA2: PROC + NAHAND
   spy_effect: veteran_vehicles  # RA2: a spy makes the spy's vehicles veteran
 

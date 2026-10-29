@@ -123,6 +123,9 @@ public partial class RtsCamera : Node3D
     /// <summary>Zooms out as far as the wheel can, for the performance run with all units on screen.</summary>
     public void ZoomOutFully() => _targetSize = DefaultSize * MaxZoom;
 
+    /// <summary>Zooms in as far as the wheel can, for a close debug view (<c>--look-at</c>).</summary>
+    public void ZoomInFully() => _targetSize = DefaultSize * MinZoom;
+
     /// <summary>
     /// Point on the ground under a screen position: on the terrain when there is one, else on the plane y = 0 — or on the deck of a
     /// high bridge when the ray meets it first (<see cref="Rts.Client.Terrain.DeckPicking"/>).

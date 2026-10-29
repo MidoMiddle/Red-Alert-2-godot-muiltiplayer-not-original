@@ -1,16 +1,21 @@
 # Модели: исходники
 
-> Статус: первая пробная модель (ёж) · Создан: 2026-10-23
+> Статус: действует · Обновлён: 2026-10-28 · Создан: 2026-10-23
 
 Исходники моделей в Blender (`.blend`) и сырые генерации. Готовые модели для игры лежат в `game/assets/models/`. Оба каталога в Git LFS (см. `.gitattributes`).
 
 ## Раскладка
 
 - `assets_src/models/<категория>/<id>/<id>.blend` — исходник, один файл на элемент.
-- `game/assets/models/<категория>/<id>/<категория>_<id>[_вариант][_damaged].glb` — экспорт для Godot.
+- `assets_src/models/<категория>/<id>/bake/<id>_albedo.png`, `<id>_normal.png`, `<id>_orm.png` — запечённые текстуры. Из них собирается материал в `.glb`; в игру сами PNG не идут.
+- `game/assets/models/<категория>/<id>/<id>.glb` — экспорт для Godot, текстуры внутри файла. Вариант объекта (повреждённый, занятый, руины) — своя папка со своим id, как `building_house_small_damaged`.
 - Сырые генерации Meshy и Tripo — `assets_src/generated/<id>/<сервис>/`, как сказано в [генерации моделей](../../docs/map_elements/generation_requirements.md).
 
-Пример: `assets_src/models/obstacle/anti_tank_hedgehog/anti_tank_hedgehog.blend` → `game/assets/models/obstacle/anti_tank_hedgehog/obstacle_anti_tank_hedgehog.glb`.
+Модель, сделанную скриптом, строит скрипт Blender `tools/blender/<units|buildings|families>/<id>.py` (образец: [tesla_coil.py](../../tools/blender/buildings/tesla_coil.py)). Он пишет `.blend`, `bake/` и `.glb` по путям выше. Правки вносим в скрипт и запускаем его заново: ручная правка `.blend` пропадёт при следующей сборке.
+
+Пример: `assets_src/models/building/tesla_coil/tesla_coil.blend` → `game/assets/models/building/tesla_coil/tesla_coil.glb`.
+
+Исключение — ёж: `assets_src/models/obstacle/anti_tank_hedgehog/anti_tank_hedgehog.blend` → `game/assets/models/obstacle/anti_tank_hedgehog/obstacle_anti_tank_hedgehog.glb`. Префикс категории в его имени оставляем, переименовывать готовый файл не будем.
 
 ## Правила
 

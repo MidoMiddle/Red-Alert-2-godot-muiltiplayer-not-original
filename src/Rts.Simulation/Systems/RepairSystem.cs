@@ -115,9 +115,7 @@ public static class RepairSystem
         HashSet<EntityId>? repaired = null;
         foreach (var entity in world.Entities)
         {
-            if (entity is not Building { IsAlive: true, IsReady: true } workshop
-                || !(workshop.Def?.RepairsVehicles ?? (BuildingTypes.IsKnown(workshop.Kind) && workshop.Type.RepairsVehicles))
-                || !Combat.Defenses.IsOnline(world, workshop))
+            if (entity is not Building workshop || !Works(world, workshop))
             {
                 continue;
             }
@@ -130,9 +128,7 @@ public static class RepairSystem
             near.Sort();
             foreach (var id in near)
             {
-                if (!world.TryGet(id, out var found) || found is not Unit { IsAlive: true } unit || unit.Owner != workshop.Owner
-                    || unit.Archetype.Category is not (UnitCategory.Vehicle or UnitCategory.Naval) || unit.Hp >= unit.MaxHp
-                    || unit.MoveTarget is not null || unit.PathPending || !Beside(workshop, unit.Position.ToCell()) || !repaired.Add(unit.Id)
+                if (!world.TryGet(id, out var found) || found is not Unit unit || !Waits(workshop, unit) || !repaired.Add(unit.Id)
                     || !world.Rules.Database.TryGetUnit(unit.Archetype.Id, out var def))
                 {
                     continue;
@@ -160,6 +156,42 @@ public static class RepairSystem
             }
         }
     }
+
+    /// <summary>
+    /// Whether <paramref name="workshop"/> has a vehicle or ship to repair now: one of its owner, hurt, standing still beside it (the
+    /// client moves the arm of the service depot meanwhile). Whether the owner can pay for the next step does not count.
+    /// </summary>
+    public static bool IsRepairing(GameWorld world, Building workshop)
+    {
+        if (!Works(world, workshop))
+        {
+            return false;
+        }
+
+        var near = new List<EntityId>();
+        var reach = (IntMath.Max(workshop.Width, workshop.Height) / 2 + 2) * WorldPos.LeptonsPerCell;
+        world.Spatial.QueryRadius(world, Combat.Aim.CentreOf(workshop), reach, near);
+        foreach (var id in near)
+        {
+            if (world.TryGet(id, out var found) && found is Unit unit && Waits(workshop, unit))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // A workshop that repairs now: ready, alive, one that repairs vehicles, with power.
+    private static bool Works(GameWorld world, Building workshop) =>
+        workshop is { IsAlive: true, IsReady: true }
+        && (workshop.Def?.RepairsVehicles ?? (BuildingTypes.IsKnown(workshop.Kind) && workshop.Type.RepairsVehicles))
+        && Combat.Defenses.IsOnline(world, workshop);
+
+    // A unit the workshop repairs: a vehicle or ship of its owner, hurt, standing still beside it.
+    private static bool Waits(Building workshop, Unit unit) =>
+        unit.IsAlive && unit.Owner == workshop.Owner && unit.Archetype.Category is (UnitCategory.Vehicle or UnitCategory.Naval)
+        && unit.Hp < unit.MaxHp && unit.MoveTarget is null && !unit.PathPending && Beside(workshop, unit.Position.ToCell());
 
     // A cell next to the footprint of the workshop, or under it.
     private static bool Beside(Building workshop, CellPos cell) =>
