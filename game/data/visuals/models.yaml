@@ -56,6 +56,7 @@ models:
   building/alliance_spy_satellite_uplink: { file: building/alliance_spy_satellite_uplink/alliance_spy_satellite_uplink.glb, height: 1.5 }
   building/flak_cannon: { file: building/flak_cannon/flak_cannon.glb, height: 1 }
   building/alliance_gap_generator: { file: building/alliance_gap_generator/alliance_gap_generator.glb, height: 1.55 }
+  building/alliance_grand_cannon: { file: building/alliance_grand_cannon/alliance_grand_cannon.glb, height: 0.9 }
 
   # The civilian and industrial buildings of the map are low, as RA2's: a storey about 0.25 cells, a soldier 0.6 (measured against RA2,
   # 2026-10-26). Their models were made a storey to a cell: height_scale 0.35 squashes them upright, their footprints the same.

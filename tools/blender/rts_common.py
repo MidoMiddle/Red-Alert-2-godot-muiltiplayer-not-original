@@ -509,6 +509,7 @@ LAYOUT = {
     "alliance_spy_satellite_uplink": (8, 29),
     "flak_cannon": (8, 30),
     "alliance_gap_generator": (8, 31),
+    "alliance_grand_cannon": (8, 32),
 }
 
 
