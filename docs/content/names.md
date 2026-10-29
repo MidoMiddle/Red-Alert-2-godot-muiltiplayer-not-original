@@ -42,7 +42,7 @@
 | alliance_naval_shipyard | Harbor | верфь | Naval Shipyard | работает: стоит на глубокой воде, строит корабли (этап 2а); ремонт кораблей позже |
 | alliance_service_depot | Repair Bay | ремонт техники | Service Depot | работает: чинит технику и корабли рядом, за деньги (этап 2в) |
 | alliance_battle_lab | Research Lab | высокий тех | Battle Lab | работает |
-| alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | работает: руда приносит на 25 % больше (этап 2в) |
+| alliance_ore_purifier | Ore Refining Annex | +доход с руды | Ore Purifier | работает: руда приносит на 25 % больше (этап 2в); у игрока одна, после постройки квадрат серый (решение владельца 2026-10-29) |
 | alliance_spy_satellite_uplink | Orbital Uplink | открывает карту | Spy Satellite Uplink | работает: радар; пока стоит с энергией, вся карта разведана (этап 2г) |
 | alliance_chronosphere | Phase Gate | переброска группы | Chronosphere | работает: переносит технику и корабли 3×3 в другое место, пехота гибнет; заряд 7 мин (этап 2д) |
 | alliance_weather_control_device | Storm Generator | шторм над областью | Weather Control Device | работает: через ~17 с буря на 12 с, молнии по 250; заряд 10 мин (этап 2д) |

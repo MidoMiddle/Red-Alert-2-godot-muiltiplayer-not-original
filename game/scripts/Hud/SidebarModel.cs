@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Rts.Simulation.Rules;
+using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
 namespace Rts.Client.Hud;
@@ -51,6 +52,12 @@ public sealed record Cameo(
 
     /// <summary>A unit that cannot be built until its mechanic comes (ships, aircraft): the tooltip says so instead of what is missing.</summary>
     public bool AvailableLater { get; init; }
+
+    /// <summary>
+    /// The player has as many as it may (the build limit: one ore purifier, one superweapon of a kind, one hero): the square stays,
+    /// greyed, and the tooltip says so (the owner, 2026-10-29).
+    /// </summary>
+    public bool AtLimit { get; init; }
 
     /// <summary>What it is for, by which the square takes its colour until there are icons (the owner's wish, 2026-10-24).</summary>
     public CameoRole Role { get; init; }
@@ -195,7 +202,8 @@ public static class SidebarModel
                     && state.CanBuildBuilding(i) is var available && (available || !availableOnly || Queued(queue, ProductionKind.Building, i)))
                 {
                     var name = Name(def.Id, def.Name);
-                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, name, def.Cost, available, def.Prerequisites, owned, nameOf)
+                    var limit = !SuperweaponSystem.UnderLimit(world, player, i);
+                    cameos.Add(CameoOf(rules, queue, ProductionKind.Building, i, name, def.Cost, available, def.Prerequisites, owned, nameOf, limit)
                         with { Role = RoleOf(def), Code = CodeOf(name) });
                 }
             }
@@ -215,7 +223,8 @@ public static class SidebarModel
                 {
                     var cost = ProductionRules.CostOf(rules, ProductionKind.Unit, i);
                     var name = Name(def.Id, def.Name);
-                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, name, cost, state.CanBuildUnit(i), def.Prerequisites, owned, nameOf)
+                    var limit = !ProductionRules.UnderUnitLimit(world, player, i);
+                    cameos.Add(CameoOf(rules, own, ProductionKind.Unit, i, name, cost, state.CanBuildUnit(i), def.Prerequisites, owned, nameOf, limit)
                         with { Role = RoleOf(def.Category), Code = CodeOf(name) });
                 }
             }
@@ -303,7 +312,8 @@ public static class SidebarModel
         bool available,
         ImmutableArray<string> prerequisites,
         HashSet<string> owned,
-        Func<string, string, string>? nameOf = null)
+        Func<string, string, string>? nameOf = null,
+        bool atLimit = false)
     {
         ProductionItem? first = null;
         var count = 0;
@@ -327,12 +337,15 @@ public static class SidebarModel
                 : first.Paused ? CameoState.OnHold
                 : first.WaitingForFunds ? CameoState.WaitingForFunds
                 : CameoState.Building;
-            return new Cameo(kind, index, name, cost, state, first.Ready ? 1f : progress, count, missing) { AbilityLater = later, AvailableLater = availableLater };
+            return new Cameo(kind, index, name, cost, state, first.Ready ? 1f : progress, count, missing)
+            {
+                AbilityLater = later, AvailableLater = availableLater, AtLimit = atLimit,
+            };
         }
 
         var full = kind == ProductionKind.Building ? queue.Count > 0 : queue.Count >= ProductionRules.MaxUnitQueue;
-        var free = !available ? CameoState.Unavailable : full ? CameoState.Busy : CameoState.Available;
-        return new Cameo(kind, index, name, cost, free, 0f, 0, missing) { AbilityLater = later, AvailableLater = availableLater };
+        var free = !available || atLimit ? CameoState.Unavailable : full ? CameoState.Busy : CameoState.Available;
+        return new Cameo(kind, index, name, cost, free, 0f, 0, missing) { AbilityLater = later, AvailableLater = availableLater, AtLimit = atLimit };
     }
 
     /// <summary>

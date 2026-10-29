@@ -207,6 +207,11 @@ public partial class BuildIcon : Control
             text += "\n" + Tr(cameo.Kind == Rts.Simulation.World.ProductionKind.Unit ? "UI_SIDEBAR_WEAPON_LATER" : "UI_SIDEBAR_ABILITY_LATER");
         }
 
+        if (cameo.AtLimit)
+        {
+            text += "\n" + Tr("UI_SIDEBAR_AT_LIMIT");
+        }
+
         return cameo.Missing.Length == 0 ? text : text + "\n" + string.Format(Tr("UI_SIDEBAR_REQUIRES"), cameo.Missing);
     }
 }

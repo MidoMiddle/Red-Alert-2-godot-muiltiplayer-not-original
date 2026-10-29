@@ -1,3 +1,4 @@
+using Rts.Client.Hud;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
@@ -173,23 +174,59 @@ public sealed class EconomyBuildingsTests
         Assert.Equal("nuke", blast.Warhead);
     }
     [Fact]
-    public void Ore_purifiers_add_up_and_work_only_with_power()
+    public void An_ore_purifier_adds_a_quarter_and_works_only_with_power()
     {
         var world = Match().World;
         Build(world, Allied, "alliance_ore_purifier", 40, 40);
-        Build(world, Allied, "alliance_ore_purifier", 44, 40);
         PowerSystem.Update(world, null);
         TechTree.Update(world);
         Assert.True(world.Player(Allied).LowPower);
         Assert.Equal(0, world.Player(Allied).BuildingIncomeBonusPercent);
 
         Build(world, Allied, "alliance_power_plant", 40, 46);
-        Build(world, Allied, "alliance_power_plant", 44, 46);
         PowerSystem.Update(world, null);
         TechTree.Update(world);
-        // RA2 PurifierBonus: 25% for each.
-        Assert.Equal(50, world.Player(Allied).BuildingIncomeBonusPercent);
+        // RA2 PurifierBonus.
+        Assert.Equal(25, world.Player(Allied).BuildingIncomeBonusPercent);
     }
+
+    [Fact]
+    public void A_player_may_have_one_ore_purifier_and_the_sidebar_greys_out_the_second()
+    {
+        // The owner (2026-10-29): one purifier, its bonus with it; the square stays, greyed, and says why.
+        var simulation = Match();
+        var world = simulation.World;
+        Build(world, Allied, "alliance_construction_yard", 40, 40);
+        Build(world, Allied, "alliance_power_plant", 44, 40);
+        Build(world, Allied, "alliance_power_plant", 46, 40);
+        Build(world, Allied, "alliance_battle_lab", 40, 44);
+        var purifier = world.Rules.Database.IndexOfBuilding("alliance_ore_purifier");
+        Step(simulation, 2);
+        Assert.Equal(CameoState.Available, Square(world, purifier).State);
+
+        simulation.Enqueue(new ProduceCommand(Allied, simulation.CurrentTick, 0, ProductionKind.Building, purifier, 1));
+        Step(simulation, 2);
+        Assert.Equal(CameoState.Building, Square(world, purifier).State);
+
+        // Cancelled, and one built: the player has one of one.
+        simulation.Enqueue(new CancelProductionCommand(Allied, simulation.CurrentTick, 1, ProductionKind.Building, purifier));
+        Step(simulation, 2);
+        Build(world, Allied, "alliance_ore_purifier", 44, 44);
+        Step(simulation, 2);
+        var square = Square(world, purifier);
+        Assert.Equal((CameoState.Unavailable, true, ""), (square.State, square.AtLimit, square.Missing));
+        Assert.Equal(CameoActionKind.None, SidebarModel.LeftClick(square, shift: false).Kind);
+
+        // An order sent all the same is refused.
+        simulation.Enqueue(new ProduceCommand(Allied, simulation.CurrentTick, 2, ProductionKind.Building, purifier, 1));
+        Step(simulation, 2);
+        Assert.Empty(world.Player(Allied).Queue(Rts.Simulation.Rules.ProductionCategory.Building));
+        // The other buildings of the tab are free.
+        Assert.Equal(CameoState.Available, Square(world, world.Rules.Database.IndexOfBuilding("alliance_power_plant")).State);
+    }
+
+    private static Cameo Square(GameWorld world, int building) =>
+        SidebarModel.Cameos(world, Allied, BuildGroup.Buildings).Single(cameo => cameo.DefIndex == building);
 
     [Fact]
     public void A_damaged_power_plant_gives_power_by_its_hit_points()

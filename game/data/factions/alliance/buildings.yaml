@@ -168,9 +168,10 @@ alliance_ore_purifier:  # the ore brings 25% more (stage 2c)
   footprint: [3, 3]
   power: -200
   powered: true  # RA2: the purifier works only with power
-  income_bonus: 25%  # RA2 PurifierBonus, for each purifier
+  income_bonus: 25%  # RA2 PurifierBonus
   prerequisites: [tech]
   capturable: false
+  build_limit: 1  # the owner, 2026-10-29: one per player, the bonus with it
 
 alliance_spy_satellite_uplink:  # a radar; while ready and online, the whole map is explored (stage 2d)
   kind: building
