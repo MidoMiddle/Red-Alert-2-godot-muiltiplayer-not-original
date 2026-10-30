@@ -60,6 +60,26 @@ public sealed class WeaponSystemTests
     }
 
     [Fact]
+    public void A_shot_names_the_weapon_it_was_fired_with()
+    {
+        // The client plays the sound of each weapon by its place in the rules (game/data/audio/bindings.yaml).
+        var simulation = Match();
+        var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
+        var target = simulation.World.CreateBuilding(Nobody, TestRules.BuildingDef("construction_yard"), new CellPos(14, 9), true, null);
+        tank.Target = target.Id;
+
+        WeaponFired? shot = null;
+        for (var i = 0; i < 10 && shot is null; i++)
+        {
+            simulation.Step();
+            shot = simulation.LastTickEvents.OfType<WeaponFired>().FirstOrDefault(fired => fired.Shooter == tank.Id);
+        }
+
+        Assert.NotNull(shot);
+        Assert.Equal("heavy_tank_cannon", TestRules.Standard.Database.Weapons[shot.Weapon].Id);
+    }
+
+    [Fact]
     public void The_turret_turns_at_its_rate_and_the_hull_stays()
     {
         var simulation = Match();

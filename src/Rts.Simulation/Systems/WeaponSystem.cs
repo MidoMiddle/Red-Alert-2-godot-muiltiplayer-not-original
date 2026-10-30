@@ -323,7 +323,7 @@ public static class WeaponSystem
             return null;
         }
 
-        events?.Add(new WeaponFired(world.CurrentTick, shooter, target, chosen));
+        events?.Add(new WeaponFired(world.CurrentTick, shooter, target, chosen, slots[chosen]));
         return slots[chosen];
     }
 

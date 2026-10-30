@@ -48,9 +48,10 @@ public sealed record DamageStateChanged(int Tick, EntityId Entity, Combat.Damage
 
 /// <summary>
 /// A unit or a defense fired at its target (M4, 4.7) with the weapon in <paramref name="Slot"/>: 0 the primary, 1 the secondary.
-/// <paramref name="Target"/> is null for a forced attack on the ground (step 7).
+/// <paramref name="Target"/> is null for a forced attack on the ground (step 7). <paramref name="Weapon"/> is the place of the weapon
+/// in the rules, for the client's sound of each weapon (-1 when not known).
 /// </summary>
-public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId? Target, int Slot) : SimEvent(Tick);
+public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId? Target, int Slot, int Weapon = -1) : SimEvent(Tick);
 
 /// <summary>
 /// A shot landed (M4, 4.8) at <paramref name="Point"/>: an instant one on the tick it was fired (no <paramref name="Projectile"/>),
@@ -87,8 +88,13 @@ public enum DeathCause
     Defeat,
 }
 
-/// <summary>A building fell; its footprint from <paramref name="Cell"/> is open now.</summary>
-public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell) : SimEvent(Tick);
+/// <summary>
+/// A building fell; its footprint from <paramref name="Cell"/> is open now. <paramref name="Type"/> is its data id and
+/// <paramref name="Centre"/> the middle of its footprint, for the client, which no longer finds the building in the world (the sound of
+/// its material).
+/// </summary>
+public sealed record BuildingDestroyed(int Tick, EntityId Building, BuildingKind Kind, CellPos Cell, string Type = "", WorldPos Centre = default)
+    : SimEvent(Tick);
 
 /// <summary>The map changed in the cells from <paramref name="From"/> to <paramref name="To"/> (inclusive): the client redraws them.</summary>
 public sealed record MapChanged(int Tick, CellPos From, CellPos To) : SimEvent(Tick);

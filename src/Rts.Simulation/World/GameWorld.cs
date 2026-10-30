@@ -634,7 +634,8 @@ public sealed class GameWorld
         building.Repairing = false;
         BuildingsChanged();
         Wrecks.Add(building);
-        events?.Add(new Events.BuildingDestroyed(CurrentTick, building.Id, building.Kind, building.Cell));
+        events?.Add(new Events.BuildingDestroyed(
+            CurrentTick, building.Id, building.Kind, building.Cell, building.Def?.Id ?? building.Type.Id, Combat.Aim.CentreOf(building)));
     }
 
     /// <summary>

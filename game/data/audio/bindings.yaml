@@ -1,0 +1,72 @@
+# Which sound of sounds.yaml plays for what (docs/10_audio.md, 5; the code is game/scripts/Audio/SoundBindings.cs and CombatSounds.cs).
+# Only the client reads this file: the rules, their hash and the replays do not change with it.
+
+# The shot of each weapon, by its id in the rules. A weapon not here fires snd_shot.
+weapons:
+  # Single rounds.
+  alliance_rifle: snd_rifle
+  conscript_rifle: snd_rifle
+  alliance_sniper_rifle: snd_rifle
+  alliance_chrono_mp5: snd_rifle
+  ifv_machine_gun: snd_rifle
+  ifv_smg: snd_rifle
+  ifv_sniper: snd_rifle
+  allied_occupy_gun: snd_rifle
+  soviet_occupy_gun: snd_rifle
+  alliance_double_pistols: snd_pistol
+  # Machine guns: one shot of the rules is a burst on the ear.
+  alliance_rifle_deployed: snd_rifle_burst
+  alliance_pillbox_gun: snd_rifle_burst
+  alliance_jetpack_guns: snd_rifle_burst
+  alliance_nighthawk_gun: snd_rifle_burst
+  alliance_mirage_gun: snd_rifle_burst
+  harvester_machine_gun: snd_rifle_burst
+  sentry_machine_gun: snd_rifle_burst
+  # Guns.
+  alliance_light_cannon: snd_tank_cannon
+  alliance_sabot: snd_tank_cannon
+  alliance_siege_shell: snd_tank_cannon
+  destroyer_cannon: snd_tank_cannon
+  heavy_tank_cannon: snd_tank_cannon
+  apocalypse_cannons: snd_tank_cannon
+  # The prisms: the tank's beam, and the tower's (the Lens Tower).
+  alliance_prism_beam: snd_prism_tank
+  alliance_lens_beam: snd_prism_tower
+
+# A building that falls, by its id in the rules: brick ones here, every other one (the bases of the players, the concrete and steel
+# buildings of the map) is `default`. The wooden ones are with brick until they have their own sound.
+buildings:
+  default: snd_building_concrete
+  neutral_shed: snd_building_brick
+  neutral_house_a: snd_building_brick
+  neutral_apartment: snd_building_brick
+  neutral_smokestack: snd_building_brick
+  neutral_factory_hall: snd_building_brick
+  neutral_boiler_house: snd_building_brick
+  neutral_school: snd_building_brick
+  neutral_church: snd_building_brick
+  neutral_shop: snd_building_brick
+  neutral_kiosk: snd_building_brick
+  neutral_cafe: snd_building_brick
+  neutral_bank: snd_building_brick
+  neutral_hotel: snd_building_brick
+  neutral_fire_station: snd_building_brick
+  neutral_auto_repair: snd_building_brick
+  neutral_beach_cabin: snd_building_brick
+  neutral_beach_bar: snd_building_brick
+  neutral_lifeguard_tower: snd_building_brick
+  neutral_lighthouse: snd_building_brick
+  neutral_boat_shed: snd_building_brick
+  neutral_adobe_house: snd_building_brick
+  neutral_port_warehouse: snd_building_brick
+  neutral_farmhouse: snd_building_brick
+  neutral_barn: snd_building_brick
+  neutral_windmill: snd_building_brick
+  tech_hospital: snd_building_brick
+  tech_bridge_repair_hut: snd_building_brick
+
+# A bridge that falls, by its id in the rules: `span` when one segment falls in a tick, `whole` when more do (C4, or a high bridge,
+# which comes down whole).
+bridges:
+  bridge_wood_low: {span: snd_bridge_wood_span, whole: snd_bridge_wood_all}
+  bridge_concrete_high: {span: snd_bridge_concrete, whole: snd_bridge_concrete}

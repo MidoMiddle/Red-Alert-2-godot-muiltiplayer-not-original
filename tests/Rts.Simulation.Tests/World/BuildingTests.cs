@@ -1,3 +1,4 @@
+using Rts.Simulation.Combat;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
@@ -116,7 +117,8 @@ public sealed class BuildingTests
 
         Assert.False(house.IsAlive);
         Assert.Equal(0, house.Hp);
-        Assert.Contains(new BuildingDestroyed(0, house.Id, BuildingKind.NeutralHouseA, House), events);
+        Assert.Contains(events, e => e is BuildingDestroyed { Kind: BuildingKind.NeutralHouseA, Type: "neutral_house_a" } fallen
+            && fallen.Building == house.Id && fallen.Cell == House && fallen.Centre == Aim.CentreOf(house));
 
         // M4 step 9: the building leaves the cells at the end of the tick it fell; a building of the map leaves its ruins there, which
         // close them for good (RA2).

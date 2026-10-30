@@ -57,3 +57,170 @@ sounds:
     maxConcurrent: 2
     cooldownMs: 60
     positional: false
+  # The weapons by kind and the helicopter rotor. Which weapon fires which is in bindings.yaml; one not there fires snd_shot. The
+  # rotor has no player yet.
+  snd_pistol:
+    files: [sfx/pistol_01.wav, sfx/pistol_02.wav]
+    bus: SFX
+    volume: -8
+    pitch: [0.95, 1.05]
+    priority: 50
+    maxConcurrent: 6
+    cooldownMs: 40
+    positional: true
+  snd_rifle:
+    files: [sfx/rifle_01.wav, sfx/rifle_02.wav, sfx/rifle_03.wav]
+    bus: SFX
+    volume: -8
+    pitch: [0.95, 1.05]
+    priority: 50
+    maxConcurrent: 8
+    cooldownMs: 30
+    positional: true
+  snd_rifle_burst:
+    files: [sfx/rifle_burst_01.wav]
+    bus: SFX
+    volume: -8
+    pitch: [0.94, 1.06]
+    priority: 50
+    maxConcurrent: 4
+    cooldownMs: 120
+    positional: true
+  snd_tank_cannon:
+    files: [sfx/tank_cannon_01.wav, sfx/tank_cannon_02.wav]
+    bus: SFX
+    volume: -4
+    pitch: [0.93, 1.05]
+    priority: 50
+    maxConcurrent: 4
+    cooldownMs: 80
+    positional: true
+  # A loop (edit/loop_mode in its .import): it plays until stopped, so it wants a player of movement sounds that stops it, and
+  # pitch is where the rotor speeds up or slows down.
+  snd_rotor:
+    files: [sfx/rotor_loop_01.wav]
+    bus: SFX
+    volume: -10
+    pitch: [1.0, 1.0]
+    priority: 30
+    maxConcurrent: 4
+    cooldownMs: 0
+    positional: true
+  # The prisms: the shot of the tank and of the tower, the support beam a tower sends into the one that fires, and the charges
+  # before the shot (for the charge of the turret, IsChargeTurret). The shots by bindings.yaml, the support beam on TowerSupported;
+  # the charges play nowhere yet, the simulation has no event of the start of a charge. Their middle is bright, so they sit lower
+  # than the other shots.
+  snd_prism_tank:
+    files: [sfx/prism_tank_01.wav, sfx/prism_tank_02.wav]
+    bus: SFX
+    volume: -12
+    pitch: [0.96, 1.04]
+    priority: 50
+    maxConcurrent: 4
+    cooldownMs: 80
+    positional: true
+  snd_prism_tower:
+    files: [sfx/prism_tower_01.wav, sfx/prism_tower_02.wav]
+    bus: SFX
+    volume: -11
+    pitch: [0.97, 1.03]
+    priority: 50
+    maxConcurrent: 4
+    cooldownMs: 80
+    positional: true
+  snd_prism_support:
+    files: [sfx/prism_support_01.wav]
+    bus: SFX
+    volume: -16
+    pitch: [0.94, 1.08]
+    priority: 50
+    maxConcurrent: 6
+    cooldownMs: 30
+    positional: true
+  snd_prism_tank_charge:
+    files: [sfx/prism_tank_charge_01.wav]
+    bus: SFX
+    volume: -15
+    pitch: [0.97, 1.03]
+    priority: 50
+    maxConcurrent: 4
+    cooldownMs: 80
+    positional: true
+  snd_prism_tower_charge:
+    files: [sfx/prism_tower_charge_01.wav]
+    bus: SFX
+    volume: -15
+    pitch: [0.97, 1.03]
+    priority: 50
+    maxConcurrent: 4
+    cooldownMs: 80
+    positional: true
+  # The fighter jet: the engine as a loop (edit/loop_mode in its .import; like the rotor, it wants a player that stops it) and a
+  # pass overhead, for a plane that flies over. Nothing plays them yet: they want a player of the sounds of movement.
+  snd_jet:
+    files: [sfx/jet_loop_01.wav]
+    bus: SFX
+    volume: -12
+    pitch: [1.0, 1.0]
+    priority: 30
+    maxConcurrent: 4
+    cooldownMs: 0
+    positional: true
+  snd_jet_flyby:
+    files: [sfx/jet_flyby_01.wav, sfx/jet_flyby_02.wav]
+    bus: SFX
+    volume: -6
+    pitch: [0.95, 1.05]
+    priority: 30
+    maxConcurrent: 3
+    cooldownMs: 300
+    positional: true
+  # The bridges (docs/map_elements/05_bridges): a wooden span broken by fire, the whole wooden bridge under C4, a high concrete
+  # bridge coming down whole. Which bridge plays which is in bindings.yaml.
+  snd_bridge_wood_span:
+    files: [sfx/bridge_wood_span_01.wav, sfx/bridge_wood_span_02.wav]
+    bus: SFX
+    volume: -4
+    pitch: [0.94, 1.06]
+    priority: 60
+    maxConcurrent: 2
+    cooldownMs: 150
+    positional: true
+  snd_bridge_wood_all:
+    files: [sfx/bridge_wood_all_01.wav]
+    bus: SFX
+    volume: -4
+    pitch: [0.96, 1.04]
+    priority: 60
+    maxConcurrent: 1
+    cooldownMs: 500
+    positional: true
+  snd_bridge_concrete:
+    files: [sfx/bridge_concrete_01.wav]
+    bus: SFX
+    volume: -3
+    pitch: [0.96, 1.04]
+    priority: 60
+    maxConcurrent: 1
+    cooldownMs: 500
+    positional: true
+  # A building coming down, by its material (docs/map_elements/11_civilian_buildings): brick, with windows, and concrete. Which
+  # building is of which is in bindings.yaml.
+  snd_building_brick:
+    files: [sfx/building_brick_01.wav, sfx/building_brick_02.wav]
+    bus: SFX
+    volume: -3
+    pitch: [0.94, 1.06]
+    priority: 60
+    maxConcurrent: 2
+    cooldownMs: 200
+    positional: true
+  snd_building_concrete:
+    files: [sfx/building_concrete_01.wav, sfx/building_concrete_02.wav]
+    bus: SFX
+    volume: -3
+    pitch: [0.94, 1.06]
+    priority: 60
+    maxConcurrent: 2
+    cooldownMs: 200
+    positional: true
