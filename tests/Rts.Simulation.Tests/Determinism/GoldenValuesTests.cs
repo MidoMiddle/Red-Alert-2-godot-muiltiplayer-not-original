@@ -403,6 +403,7 @@ public sealed class GoldenValuesTests
         // Rules v113 (a high bridge comes down whole, only its piers stay; the owner's wish): the version only — no bridge here.
         // Rules v114 (the highway, wheels 130% and tracks 115%, and its guardrail; the owner's wish): the version only — no highway here.
         // Rules v115 (a commando's C4 brings a low bridge down whole, from bank to bank; the owner's wish): the version only.
-        Assert.Equal((22270, 5299640065217670359UL), (bytes.Length, hash.Value));
+        // Rules v116 (the Kirov slow as in RA2, the cruiser's missiles of RA2, soldiers go in at the wall; the owner's wish): the version only.
+        Assert.Equal((22270, 5006480020967018828UL), (bytes.Length, hash.Value));
     }
 }

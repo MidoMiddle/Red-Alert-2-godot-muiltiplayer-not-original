@@ -63,8 +63,14 @@ public enum EntryAction
 /// </summary>
 public static class EntrySystem
 {
-    /// <summary>How far from the footprint a soldier goes in, in cells: a group of five crowds round the door.</summary>
-    public const int DoorReach = 2;
+    /// <summary>
+    /// How far from the footprint a soldier goes in, in cells: from the ring around it, right at the wall (the owner, 2026-10-30: not
+    /// from afar). Each one of a group walks to the cell of the ring nearest to it, which the ones before it left by going in.
+    /// </summary>
+    public const int DoorReach = 1;
+
+    /// <summary>How far from its tesla coil a tesla trooper that charges it may stand, in cells.</summary>
+    public const int ChargeReach = 2;
 
     /// <summary>The ticks of a blackout (RA2 <c>SpyPowerBlackout=1000</c> frames).</summary>
     public const int BlackoutTicks = 1000;
@@ -151,8 +157,8 @@ public static class EntrySystem
     }
 
     /// <summary>
-    /// Sends the units among <paramref name="units"/> that can do something in the building to it, each to a place of its own round the
-    /// cell beside it nearest to the first of them. False when none can.
+    /// Sends the units among <paramref name="units"/> that can do something in the building to it, each to the cell of the ring around
+    /// it nearest to itself: they go in there one by one, so no cell of the ring fills. False when none can.
     /// </summary>
     internal static bool Order(GameWorld world, List<Unit> units, EntityId targetId)
     {
@@ -167,11 +173,10 @@ public static class EntrySystem
             return false;
         }
 
-        var door = Door(world, target, going[0]);
-        foreach (var (unit, destination) in GroupDestinations.Assign(world, going, door))
+        foreach (var unit in going)
         {
             UnitOrders.ForgetTarget(unit);
-            UnitOrders.GiveRoute(world, unit, [new UnitOrder(destination, AttackMove: false)], loop: false, append: false);
+            UnitOrders.GiveRoute(world, unit, [new UnitOrder(Door(world, target, unit), AttackMove: false)], loop: false, append: false);
             unit.EnterTarget = target.Id;
         }
 
@@ -263,7 +268,7 @@ public static class EntrySystem
 
     /// <summary>
     /// The soldiers charging each building (RA2 tesla troopers by a tesla coil), counted anew before the defenses look: one that stands
-    /// within <see cref="DoorReach"/> of its own living building that can be charged still charges it; any other forgets it.
+    /// within <see cref="ChargeReach"/> of its own living building that can be charged still charges it; any other forgets it.
     /// </summary>
     public static void CountChargers(GameWorld world)
     {
@@ -283,7 +288,7 @@ public static class EntrySystem
             }
 
             if (world.TryGet(id, out var found) && found is Building { IsAlive: true, Def.OverchargeWeapon.Length: > 0 } coil
-                && coil.Owner == unit.Owner && unit.MoveTarget is null && Outside(coil, unit.Position.ToCell()) <= DoorReach)
+                && coil.Owner == unit.Owner && unit.MoveTarget is null && Outside(coil, unit.Position.ToCell()) <= ChargeReach)
             {
                 coil.Chargers++;
             }

@@ -59,6 +59,14 @@ chrono_beam:  # the Time Trooper's beam
   motion: instant
   visual: chrono_beam
 
+aegis_missile:  # the Air Defense Cruiser's missile, RA2 MedusaProjectile with Speed=120: four times a rocket's, it catches any plane
+  kind: projectile
+  name: Aegis Missile
+  motion: homing
+  speed: 120
+  turn_rate: 16384
+  lifetime: 3s
+
 v3_shot:  # the rocket artillery's rocket, RA2 V3ROCKET: a slow flying thing anti-air can bring down (50 hp, special_2); speed and arc are ours, slower than a homing missile
   kind: projectile
   name: V3 Rocket

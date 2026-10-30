@@ -86,8 +86,9 @@ public sealed class CivilianGarrisonTests
         simulation.Enqueue(new EnterCommand(Allied, simulation.CurrentTick, 1, [gis[1].Id, gis[2].Id, gis[3].Id], house.Id));
         Run(simulation, 300);
         Assert.Equal(3, house.Occupants.Count);
-        Assert.True(gis[3].IsAlive);
-        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, gis[3], house));
+        // Each walks to the wall by itself (2026-10-30): the nearest go in first, the farthest finds no room.
+        Assert.True(gis[1].IsAlive);
+        Assert.Equal(EntryAction.None, EntrySystem.ActionOf(world, gis[1], house));
     }
 
     [Fact]

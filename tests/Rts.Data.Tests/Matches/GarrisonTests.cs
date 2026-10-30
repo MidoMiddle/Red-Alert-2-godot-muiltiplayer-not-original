@@ -109,6 +109,28 @@ public sealed class GarrisonTests
     }
 
     [Fact]
+    public void Soldiers_go_in_at_the_wall_not_from_afar()
+    {
+        // The owner, 2026-10-30: they walk right up to the building, and do not vanish cells before it.
+        var simulation = Match();
+        var world = simulation.World;
+        var office = OfficeOf(world);
+        var soldiers = Soldiers(world, 6, 10, 30);
+
+        simulation.Enqueue(new EnterCommand(Union, simulation.CurrentTick, 0, Ids(soldiers), office.Id));
+        Fill(simulation, office, soldiers.Count);
+
+        // Where each stood when it went in: in the ring round the office's 2 x 2 cells, by its wall.
+        Assert.All(soldiers, soldier =>
+        {
+            Assert.False(soldier.IsAlive);
+            var cell = soldier.Position.ToCell();
+            Assert.InRange(cell.X, Office.X - 1, Office.X + 2);
+            Assert.InRange(cell.Y, Office.Y - 1, Office.Y + 2);
+        });
+    }
+
+    [Fact]
     public void Another_order_on_the_way_forgets_the_office()
     {
         var simulation = Match();

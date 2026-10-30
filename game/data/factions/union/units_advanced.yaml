@@ -238,7 +238,7 @@ kirov_airship:  # a slow bomber: bombs straight down, and falls on what is under
   hp: 2000
   threat: 50
   armor: light
-  speed: 30
+  speed: 9  # RA2 JumpjetSpeed=5, scaled as the Rocketeer's 30 is to its 54: a quarter of a Heavy Tank's (the owner, 2026-10-30: slow)
   turn_rate: 4096
   sight: 8
   turret: false

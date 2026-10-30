@@ -44,11 +44,12 @@ public sealed class KeepApartTests
             simulation.Enqueue(new MoveCommand(Union, simulation.CurrentTick, (uint)i, [kirovs[i].Id], point));
         }
 
-        Run(simulation, 60);
+        // A Kirov flies 9 leptons a tick (2026-10-30, RA2's slow airship): 30 cells in about 900 ticks.
+        Run(simulation, 180);
         Assert.True(Closest(kirovs) >= ApartLeptons / 2, $"on the way, the nearest two {Closest(kirovs)} leptons apart");
         Assert.All(kirovs, kirov => Assert.True(kirov.Position.X > new CellPos(12, 30).Center.X, "on its way"));
 
-        Run(simulation, 600);
+        Run(simulation, 1500);
         Assert.True(Closest(kirovs) >= ApartLeptons, $"there, the nearest two {Closest(kirovs)} leptons apart");
         Assert.All(kirovs, kirov => Assert.InRange(Distance(kirov.Position, point), 0, 3 * WorldPos.LeptonsPerCell));
     }

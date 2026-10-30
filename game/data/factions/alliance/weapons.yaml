@@ -257,16 +257,14 @@ osprey_bombs:  # of the Osprey, RA2 ASWBomb: 50, range 3, ROF 3; under the water
   warhead: depth_charge
   targets: [underwater]
 
-aegis_missiles:  # of the Air Defense Cruiser, RA2 Medusa: 100, a volley of 3 (13 frames apart), ROF 100; at the air only
+aegis_missiles:  # of the Air Defense Cruiser, RA2 Medusa (rules.ini, the owner, 2026-10-30): 100 a missile, ROF 15, range 12, missile Speed 120; at the air only
   kind: weapon
   name: Aegis Missiles
   damage: 100
-  reload: 6.67s
+  reload: 1s
   range: 12
-  projectile: rocket
+  projectile: aegis_missile
   warhead: sam
-  burst: 3
-  burst_delay: 0.87s
   targets: [air]
 
 carrier_hornets:  # of the Aircraft Carrier, RA2 HornetLauncher: firing it launches the Hornets aboard at the target, ROF 150
