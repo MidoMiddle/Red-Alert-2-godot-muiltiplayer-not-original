@@ -221,11 +221,13 @@ public sealed class GoldenValuesTests
         // Rules v60 (loose ends, stage 3): the experience of every unit and the veterans of a spy in the hash (none); the states are the same.
         // Rules v93: the harvester heals itself (RA2 SelfHealing): from tick 500 a harvester that was hit has its hit points back.
         // Rules v99: the map's hash takes the docks open in buildings (none here); the states are the same.
+        // Rules v117 (the weapons and warheads of rules.ini, the owner's wish): AP hurts concrete 60 % and plate 15 %, the flak at the
+        // ground 125 % flak whole to the edge of its cell; the fight runs otherwise.
         StateChecksum[] expected =
         [
-            new(100, 0x74b8e6db244234ccUL),
-            new(500, 0x1e3ba4f1e7fbd71eUL),
-            new(1000, 0xa861e8cac13ff334UL),
+            new(100, 0x0b6b80fd9c1fe376UL),
+            new(500, 0x974231e6d405279dUL),
+            new(1000, 0x7bfdb8deec9253d9UL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -262,11 +264,13 @@ public sealed class GoldenValuesTests
         // dock in its footprint.
         // Rules v106: the hash takes the target order of every building (RA2: a defense fires where the player tells it); the states
         // are the same.
+        // Rules v117 (the weapons and warheads of rules.ini, the owner's wish): AP, the flak at the ground and its gun's reload of RA2;
+        // the battle runs otherwise.
         StateChecksum[] expected =
         [
-            new(1000, 0x76899abef7371f87UL),
-            new(2000, 0x21721c20c2756948UL),
-            new(3000, 0xf348cad39562e97cUL),
+            new(1000, 0x8b51be60a2c7178bUL),
+            new(2000, 0x1a89bc8dca1618ffUL),
+            new(3000, 0xad310f1c6252a3fbUL),
         ];
         Assert.Equal(expected, actual);
     }
@@ -404,6 +408,7 @@ public sealed class GoldenValuesTests
         // Rules v114 (the highway, wheels 130% and tracks 115%, and its guardrail; the owner's wish): the version only — no highway here.
         // Rules v115 (a commando's C4 brings a low bridge down whole, from bank to bank; the owner's wish): the version only.
         // Rules v116 (the Kirov slow as in RA2, the cruiser's missiles of RA2, soldiers go in at the wall; the owner's wish): the version only.
-        Assert.Equal((22270, 5006480020967018828UL), (bytes.Length, hash.Value));
+        // Rules v117 (the weapons and warheads of rules.ini): the version, and the run that AP and the flak of RA2 change.
+        Assert.Equal((22270, 903363576667833966UL), (bytes.Length, hash.Value));
     }
 }

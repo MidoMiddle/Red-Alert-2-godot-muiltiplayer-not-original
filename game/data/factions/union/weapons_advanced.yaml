@@ -99,7 +99,7 @@ apocalypse_tusks:  # of the Super Heavy Tank, RA2 MammothTusk: two missiles of 5
   reload: 5.33s
   range: 8
   projectile: rocket
-  warhead: flak_air
+  warhead: he  # RA2 MammothTusk's warhead HE
   burst: 2
   burst_delay: 0.2s
   targets: [air]
@@ -171,10 +171,10 @@ squid_grab:  # of the Trained Squid, RA2 SquidGrab: it grips a ship
   warhead: squid_grip
   targets: [naval]
 
-squid_punch:  # of the Trained Squid, RA2 SquidPunch: at what it cannot grip
+squid_punch:  # of the Trained Squid, RA2 SquidPunch: 100, ROF 32, range 1.83; at what it cannot grip
   kind: weapon
   name: Tentacle
-  damage: 50
+  damage: 100
   reload: 2.13s
   range: 1.83
   projectile: pounce
@@ -193,13 +193,13 @@ dreadnought_missiles:  # of the Missile Battleship, RA2 DredLauncher: two of 300
   burst: 2
   burst_delay: 0.4s
 
-kirov_bombs:  # of the Heavy Airship, RA2 BlimpBomb: 250 straight down, ROF 50
+kirov_bombs:  # of the Heavy Airship, RA2 BlimpBomb: 250 straight down, ROF 50, falling at speed 20
   kind: weapon
   name: Airship Bombs
   damage: 250
   reload: 3.33s
   range: 1.5
-  projectile: shell
+  projectile: airship_bomb
   warhead: blimp_bomb
 
 kirov_crash:  # the airship falling where it was brought down; ours
@@ -238,11 +238,11 @@ yuri_psi_wave:  # Yuri deployed, RA2 PsiWave: 250 at every soldier within 3 cell
   projectile: bullet
   warhead: psi_wave
 
-yuri_prime_mind_control:  # of Yuri Prime, RA2 SuperMindControl: range 30, ROF 200
+yuri_prime_mind_control:  # of Yuri Prime, RA2 SuperMindControl: range 7, ROF 200 (rules.ini; 30 was a mistake of ours)
   kind: weapon
   name: Super Mind Control
   damage: 100
   reload: 13.33s
-  range: 30
+  range: 7
   projectile: psi_link
   warhead: mind_control

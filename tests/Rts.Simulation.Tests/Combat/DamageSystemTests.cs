@@ -107,9 +107,10 @@ public sealed class DamageSystemTests
 
         Apply(world, HitAt(centre, "flak_track_gun"));
 
-        // 25 × 100 % against flak armor; fall-off 1 − 0.75 × d / 256: 25, 15.6, 6.25, nothing beyond the cell.
-        Assert.Equal([100, 110, 119, 125], enemies.Select(enemy => enemy.Hp));
-        Assert.Equal(110, friend.Hp);
+        // 25 × 125 % against flak armor (RA2 FlakTWH), the whole of it to the edge of the cell (PercentAtMax 1): 31 within it, nothing
+        // beyond.
+        Assert.Equal([94, 94, 94, 125], enemies.Select(enemy => enemy.Hp));
+        Assert.Equal(94, friend.Hp);
     }
 
     [Fact]
@@ -156,7 +157,7 @@ public sealed class DamageSystemTests
         Assert.Equal(500, wall.Hp);
 
         Apply(world, HitOn(wall, "heavy_tank_cannon", point));
-        Assert.Equal(460, wall.Hp);    // 90 × 45 % against concrete = 40.5
+        Assert.Equal(446, wall.Hp);    // 90 × 60 % against concrete (RA2 AP) = 54
     }
 
     [Fact]

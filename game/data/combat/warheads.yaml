@@ -11,13 +11,13 @@ small_arms:  # RA2 SA: rifles and machine guns, strong against infantry
 small_arms_deployed:  # RA2 SSA: the machine gun of a Rifleman dug in, better at light and medium armor
   kind: warhead
   name: Heavy Small Arms
-  verses: { none: 100%, flak: 100%, plate: 70%, light: 60%, medium: 40%, heavy: 40%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 60%, medium: 40%, heavy: 40%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
   infantry_death: normal
 
 ap_shell:  # RA2 AP: tank shells, strong against vehicles
   kind: warhead
   name: Armor Piercing
-  verses: { none: 25%, flak: 25%, plate: 25%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 45%, concrete: 45%, special_1: 60%, special_2: 100% }
+  verses: { none: 25%, flak: 25%, plate: 15%, light: 75%, medium: 100%, heavy: 100%, wood: 65%, steel: 45%, concrete: 60%, special_1: 60%, special_2: 100% }
   spread: 0.3
   percent_at_max: 50%
   wall_damage: true
@@ -33,9 +33,8 @@ electric:  # RA2 Electric: Tesla bolts, good against everything, half against bu
 flak_ground:  # RA2 FlakTWH: flak at the ground, in an area, strong against infantry
   kind: warhead
   name: Flak (ground)
-  verses: { none: 150%, flak: 100%, plate: 50%, light: 60%, medium: 10%, heavy: 10%, wood: 30%, steel: 10%, concrete: 10%, special_1: 100%, special_2: 100% }
+  verses: { none: 150%, flak: 125%, plate: 100%, light: 60%, medium: 10%, heavy: 10%, wood: 30%, steel: 20%, concrete: 10%, special_1: 100%, special_2: 100% }
   spread: 1
-  percent_at_max: 25%
   infantry_death: explode
 
 flak_air:  # RA2 FlakWH: flak at aircraft, nothing against buildings
@@ -46,10 +45,10 @@ flak_air:  # RA2 FlakWH: flak at aircraft, nothing against buildings
   percent_at_max: 10%
   affects_air: true
 
-light_mg:  # RA2 20mmRapid: the harvester's machine gun
+light_mg:  # RA2 HARVWH, of 20mmRapid: the harvester's machine gun
   kind: warhead
   name: Light Machine Gun
-  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 20%, heavy: 20%, wood: 20%, steel: 10%, concrete: 10%, special_1: 400%, special_2: 100% }
+  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 20%, heavy: 20%, wood: 20%, steel: 15%, concrete: 10%, special_1: 400%, special_2: 100% }
   infantry_death: normal
 
 missile:  # the anti-tank rocket of the Rocket Trooper (M4 plan, 4.18)
@@ -81,7 +80,7 @@ bite:  # RA2 ParasiteDog: a dog's bite kills any soldier, does nothing to vehicl
 jetpack_rounds:  # RA2 SSA: the 20mm guns of the Jetpack Trooper
   kind: warhead
   name: Jetpack Rounds
-  verses: { none: 100%, flak: 100%, plate: 70%, light: 60%, medium: 40%, heavy: 40%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 60%, medium: 40%, heavy: 40%, wood: 75%, steel: 50%, concrete: 25%, special_1: 100%, special_2: 100% }
   infantry_death: normal
 
 chrono:  # RA2 ChronoBeam: hurts nothing, erases the target from time (temporal)
@@ -357,7 +356,7 @@ oil_blast:  # RA2: the oil derrick's blast, buildings double, soldiers 150%, veh
 garrison_fire:  # RA2 SSAB: the soldiers in a civilian building
   kind: warhead
   name: Garrison Fire
-  verses: { none: 100%, flak: 80%, plate: 70%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 30%, concrete: 20%, special_1: 100%, special_2: 100% }
+  verses: { none: 100%, flak: 80%, plate: 80%, light: 50%, medium: 25%, heavy: 25%, wood: 75%, steel: 30%, concrete: 20%, special_1: 100%, special_2: 100% }
   infantry_death: normal
 
 hollow_point_no_building:  # RA2 HollowPointNoBuilding: the Chrono Commando's gun, soldiers only
@@ -370,3 +369,19 @@ fake_c4:  # RA2 FakeC4WH: the Chrono Commando's charge, buildings only
   kind: warhead
   name: Chrono Charge
   verses: { none: 0%, flak: 0%, plate: 0%, light: 0%, medium: 0%, heavy: 0%, wood: 100%, steel: 100%, concrete: 100%, special_1: 0%, special_2: 0% }
+
+hollow_point_2:  # RA2 HollowPoint2: the Elite Commando's pistols; soldiers only, vehicles none, buildings 1%
+  kind: warhead
+  name: Hollow Point
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 0%, medium: 0%, heavy: 0%, wood: 1%, steel: 1%, concrete: 1%, special_1: 1%, special_2: 100% }
+  infantry_death: normal
+
+he:  # RA2 HE: the IFV's missiles and the Super Heavy Tank's tusks, half a cell round, half at the edge
+  kind: warhead
+  name: High Explosive
+  verses: { none: 100%, flak: 100%, plate: 100%, light: 70%, medium: 70%, heavy: 35%, wood: 75%, steel: 40%, concrete: 20%, special_1: 80%, special_2: 100% }
+  spread: 0.5
+  percent_at_max: 50%
+  wall_damage: true
+  affects_air: true
+  infantry_death: explode

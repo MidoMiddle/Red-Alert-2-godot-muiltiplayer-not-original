@@ -9,10 +9,10 @@ alliance_rifle:  # of the Rifleman, RA2 M60: 15, ROF 20, range 4
   projectile: bullet
   warhead: small_arms
 
-alliance_rifle_deployed:  # of the Rifleman behind its sandbags, RA2 Para: 15, ROF 15, range 5
+alliance_rifle_deployed:  # of the Rifleman behind its sandbags, RA2 Para: 25, ROF 15, range 5
   kind: weapon
   name: Machine Gun
-  damage: 15
+  damage: 25
   reload: 1s
   range: 5
   projectile: bullet
@@ -74,14 +74,14 @@ alliance_dog_bite:  # of the Guard Dog, RA2 BadTeeth: 1000 so that the bite kill
   projectile: pounce
   warhead: bite
 
-alliance_double_pistols:  # of the Elite Commando, RA2 DoublePistols
+alliance_double_pistols:  # of the Elite Commando, RA2 DoublePistols: 125, ROF 5, range 6
   kind: weapon
   name: Double Pistols
   damage: 125
-  reload: 0.67s
+  reload: 0.33s
   range: 6
   projectile: bullet
-  warhead: hollow_point
+  warhead: hollow_point_2
 
 alliance_sniper_rifle:  # of the Marksman, RA2 AWP: reaches farther than it sees
   kind: weapon
@@ -150,13 +150,13 @@ alliance_prism_shard:  # a splinter of the beam, RA2 CometFragment
   projectile: prism_ray
   warhead: prism
 
-alliance_sabot:  # of the Tank Hunter, RA2 SABOT
+alliance_sabot:  # of the Tank Hunter, RA2 SABOT: 150, ROF 70, range 5, a shell of speed 60
   kind: weapon
   name: Sabot Cannon
   damage: 150
   reload: 4.67s
   range: 5
-  projectile: shell
+  projectile: sabot_shell
   warhead: ultra_ap
 
 alliance_mirage_gun:  # of the Holo Tank, RA2 MirageGun
@@ -168,34 +168,34 @@ alliance_mirage_gun:  # of the Holo Tank, RA2 MirageGun
   projectile: bullet
   warhead: mirage
 
-alliance_ifv_missiles:  # of the IFV with no soldier inside, RA2 HoverMissile: two of 25, at the ground and the air (one range for both, ours)
+alliance_ifv_missiles:  # of the IFV with no soldier inside, RA2 HoverMissile: two of 25, ROF 50, range 6, warhead HE, speed 40; at the ground and the air (one range for both, ours)
   kind: weapon
   name: IFV Missiles
   damage: 25
   reload: 3.33s
   range: 6
   min_range: 1
-  projectile: rocket
-  warhead: missile
+  projectile: hover_missile
+  warhead: he
   burst: 2
   burst_delay: 0.2s
   targets: [ground, air]
 
-ifv_machine_gun:  # what a rifleman, a conscript or an infiltrator gives the IFV, RA2 CRM60
+ifv_machine_gun:  # what a rifleman, a conscript or an infiltrator gives the IFV, RA2 CRM60: 25, ROF 15, range 6
   kind: weapon
   name: IFV Machine Gun
-  damage: 20
+  damage: 25
   reload: 1s
   range: 6
   projectile: bullet
   warhead: small_arms
 
-ifv_smg:  # what the Elite Commando gives the IFV, RA2 CRMP5
+ifv_smg:  # what the Elite Commando gives the IFV, RA2 CRMP5: 125, ROF 10, range 7
   kind: weapon
   name: IFV Submachine Gun
   damage: 125
-  reload: 1.33s
-  range: 6
+  reload: 0.67s
+  range: 7
   projectile: bullet
   warhead: hollow_point
 

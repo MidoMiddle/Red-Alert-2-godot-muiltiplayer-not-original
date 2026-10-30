@@ -415,12 +415,12 @@ internal static class TestRules
         }
 
         Warhead(builder, "small_arms", [100, 80, 80, 50, 25, 25, 75, 50, 25, 100, 100], "normal");
-        Warhead(builder, "garrison_fire", [100, 80, 70, 50, 25, 25, 75, 30, 20, 100, 100], "normal");
-        Warhead(builder, "ap_shell", [25, 25, 25, 75, 100, 100, 65, 45, 45, 60, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true, bridges: true);
+        Warhead(builder, "garrison_fire", [100, 80, 80, 50, 25, 25, 75, 30, 20, 100, 100], "normal");
+        Warhead(builder, "ap_shell", [25, 25, 15, 75, 100, 100, 65, 45, 60, 60, 100], "explode", spread: Tenths(3), atMax: 50, wallDamage: true, bridges: true);
         Warhead(builder, "electric", [100, 100, 100, 85, 100, 100, 50, 50, 50, 200, 100], "electro");
-        Warhead(builder, "flak_ground", [150, 100, 50, 60, 10, 10, 30, 10, 10, 100, 100], "explode", spread: Fixed.One, atMax: 25);
+        Warhead(builder, "flak_ground", [150, 125, 100, 60, 10, 10, 30, 20, 10, 100, 100], "explode", spread: Fixed.One);
         Warhead(builder, "flak_air", [150, 80, 50, 100, 100, 20, 0, 0, 0, 100, 100], "", spread: Fixed.One, atMax: 10, affectsAir: true);
-        Warhead(builder, "light_mg", [100, 80, 70, 50, 20, 20, 20, 10, 10, 400, 100], "normal");
+        Warhead(builder, "light_mg", [100, 80, 70, 50, 20, 20, 20, 15, 10, 400, 100], "normal");
         Warhead(builder, "missile", [25, 25, 25, 75, 100, 100, 50, 50, 25, 100, 100], "explode", spread: Tenths(3), atMax: 50);
 
         builder.Add(new ProjectileDef { Id = "bullet", Name = "bullet", Motion = ProjectileMotion.Instant });
@@ -431,7 +431,16 @@ internal static class TestRules
             Id = "flak_shell",
             Name = "flak_shell",
             Motion = ProjectileMotion.Ballistic,
-            Speed = 40,
+            Speed = 50,
+            Arc = Fixed.One,
+            Inaccuracy = Tenths(5),
+        });
+        builder.Add(new ProjectileDef
+        {
+            Id = "flak_air_shell",
+            Name = "flak_air_shell",
+            Motion = ProjectileMotion.Ballistic,
+            Speed = 100,
             Arc = Fixed.One,
             Inaccuracy = Tenths(5),
         });
@@ -443,12 +452,12 @@ internal static class TestRules
         Weapon(builder, "rocketeer_rocket", 50, 60, Fixed.FromInt(6), "rocket", "missile");
         Weapon(builder, "heavy_tank_cannon", 90, 65, Fixed.FromRatio(23, 4), "shell", "ap_shell");
         Weapon(builder, "tesla_tank_bolt", 135, 75, Fixed.FromInt(4), "bolt", "electric");
-        Weapon(builder, "flak_track_gun", 25, 40, Fixed.FromInt(5), "flak_shell", "flak_ground");
+        Weapon(builder, "flak_track_gun", 25, 25, Fixed.FromInt(5), "flak_shell", "flak_ground");
         Weapon(builder, "flak_track_aa_gun", 35, 25, Fixed.FromInt(10), "bullet", "flak_air", WeaponTargets.Air);
         Weapon(builder, "harvester_machine_gun", 30, 20, Fixed.FromRatio(11, 2), "bullet", "light_mg");
         Weapon(builder, "sentry_machine_gun", 50, 26, Fixed.FromRatio(11, 2), "bullet", "small_arms");
         Weapon(builder, "tesla_coil_bolt", 200, 120, Fixed.FromInt(7), "bolt", "electric");
-        Weapon(builder, "flak_cannon_gun", 40, 20, Fixed.FromInt(12), "flak_shell", "flak_air", WeaponTargets.Air);
+        Weapon(builder, "flak_cannon_gun", 40, 20, Fixed.FromInt(12), "flak_air_shell", "flak_air", WeaponTargets.Air);
     }
 
     private static void Warhead(

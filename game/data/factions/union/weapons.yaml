@@ -37,11 +37,11 @@ tesla_tank_bolt:  # RA2 TankBolt
   projectile: bolt
   warhead: electric
 
-flak_track_gun:  # RA2 FlakTrackGun: at the ground
+flak_track_gun:  # RA2 FlakTrackGun: 25, ROF 25, range 5, at the ground
   kind: weapon
   name: Flak Gun
   damage: 25
-  reload: 2.67s
+  reload: 1.67s
   range: 5
   projectile: flak_shell
   warhead: flak_ground
@@ -92,12 +92,12 @@ tesla_coil_overcharge:  # RA2 OPCoilBolt: the coil charged by tesla troopers, 30
   projectile: bolt
   warhead: electric
 
-flak_cannon_gun:  # RA2 FlakWeapon: aircraft only
+flak_cannon_gun:  # RA2 FlakWeapon: 40, ROF 20, range 12, a shell of speed 100; aircraft only
   kind: weapon
   name: Flak Cannon
   damage: 40
   reload: 1.33s
   range: 12
-  projectile: flak_shell
+  projectile: flak_air_shell
   warhead: flak_air
   targets: [air]

@@ -44,7 +44,7 @@ public sealed class WeaponSystemTests
     [Fact]
     public void A_rhino_fires_at_a_standing_target_once_a_reload()
     {
-        // A construction yard to the east takes 11 shells (40 each against concrete) of its 1000 hit points and still stands.
+        // A construction yard to the east, of 500 hit points in the test rules, falls to the tenth shell (54 each against concrete, RA2 AP).
         var simulation = Match();
         var tank = Spawn(simulation, Player1, UnitType.HeavyTank, new CellPos(10, 10).Center);
         var target = simulation.World.CreateBuilding(Nobody, TestRules.BuildingDef("construction_yard"), new CellPos(14, 9), true, null);
@@ -54,7 +54,8 @@ public sealed class WeaponSystemTests
 
         // The turret turns 2048 a tick from north to east, 16384: within 2048 of it after 7 ticks.
         Assert.Equal(6, shots[0].Tick);
-        Assert.Equal(11, shots.Count);
+        Assert.Equal(10, shots.Count);
+        Assert.False(target.IsAlive);
         Assert.All(shots.Zip(shots.Skip(1)), pair => Assert.Equal(CannonReload, pair.Second.Tick - pair.First.Tick));
         Assert.All(shots, shot => Assert.Equal(0, shot.Slot));
     }

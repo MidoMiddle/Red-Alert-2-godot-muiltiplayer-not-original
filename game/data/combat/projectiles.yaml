@@ -19,13 +19,42 @@ shell:
   speed: 40
   arc: 0.5
 
-flak_shell:
+flak_shell:  # RA2 FlakTProj of the Flak Track's gun at the ground, Speed 50
   kind: projectile
   name: Flak
   motion: ballistic
-  speed: 40
+  speed: 50
   arc: 1
   inaccuracy: 0.5
+
+flak_air_shell:  # RA2 FlakProj of the flak cannon and the Anti-Air Hydrofoil at aircraft, Speed 100
+  kind: projectile
+  name: Flak (air)
+  motion: ballistic
+  speed: 100
+  arc: 1
+  inaccuracy: 0.5
+
+sabot_shell:  # the Tank Hunter's shell, RA2 SABOT's Speed 60
+  kind: projectile
+  name: Sabot Shell
+  motion: ballistic
+  speed: 60
+  arc: 0.5
+
+hover_missile:  # the IFV's missile, RA2 HoverMissile's Speed 40
+  kind: projectile
+  name: IFV Missile
+  motion: homing
+  speed: 40
+  turn_rate: 8192
+  lifetime: 6s
+
+airship_bomb:  # the Kirov's bomb, RA2 BlimpBomb's Speed 20: it falls
+  kind: projectile
+  name: Airship Bomb
+  motion: ballistic
+  speed: 20
 
 rocket:
   kind: projectile

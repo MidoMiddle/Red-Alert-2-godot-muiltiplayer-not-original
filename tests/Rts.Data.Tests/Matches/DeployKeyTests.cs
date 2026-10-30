@@ -58,7 +58,7 @@ public sealed class DeployKeyTests
         Run(simulation, 1);
         Assert.True(rifleman.Deployed);
         var gun = rules.Database.Weapons[rules.WeaponsOf(rifleman)[0]];
-        Assert.Equal(("alliance_rifle_deployed", 15), (gun.Id, gun.Damage));
+        Assert.Equal(("alliance_rifle_deployed", 25), (gun.Id, gun.Damage));
         Assert.True(gun.Range > rules.Database.Weapons[rules.Database.IndexOfWeapon("alliance_rifle")].Range);
 
         // Dug in, it stays; the sandbags give no armor (RA2).
