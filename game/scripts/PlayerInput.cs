@@ -1181,7 +1181,10 @@ public partial class PlayerInput : Node
             ? building.Id
             : null;
 
-    /// <summary>The rally point of the selected factory: its units go there once they are out.</summary>
+    /// <summary>
+    /// The rally point of the selected factory: its units go there once they are out. The factory is let go then (the owner,
+    /// 2026-10-30): the cursor is the plain one again, not still that of a rally point.
+    /// </summary>
     private void SetRallyPoint(EntityId factory, WorldPos point)
     {
         if (_host.IsPlayback || !_host.Simulation.World.Contains(point))
@@ -1192,6 +1195,7 @@ public partial class PlayerInput : Node
         Voice("rally point");
         _markers?.Add(point, MarkerKind.Move);
         _host.IssueRallyPoint(factory, point);
+        _building = null;
     }
 
     /// <summary>
