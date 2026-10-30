@@ -26,7 +26,7 @@ public sealed class TechBuildingTests
     // An outpost of 4 x 3 cells: (40, 30) to (43, 32), its centre at (42, 31.5).
     private static readonly CellPos Outpost = new(40, 30);
 
-    private static GameSimulation Match()
+    private static GameSimulation Match(string alliedCountry = "")
     {
         var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
         var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null,
@@ -44,7 +44,10 @@ public sealed class TechBuildingTests
                     new MatchOptions(StartingCredits: 10_000, FogOfWar: false),
                     [
                         new MatchPlayer(1, PlayerKind.Human, AiDifficulty.Medium, "union", Color: 0, Team: 1, StartIndex: 1, new CellPos(4, 4)),
-                        new MatchPlayer(2, PlayerKind.Human, AiDifficulty.Medium, "alliance", Color: 1, Team: 2, StartIndex: 2, new CellPos(60, 60)),
+                        new MatchPlayer(2, PlayerKind.Human, AiDifficulty.Medium, "alliance", Color: 1, Team: 2, StartIndex: 2, new CellPos(60, 60))
+                        {
+                            Country = alliedCountry,
+                        },
                     ],
                     [new CellPos(4, 4), new CellPos(60, 60)]),
                 map),
@@ -171,6 +174,46 @@ public sealed class TechBuildingTests
             && System.Math.Abs(unit.Position.ToCell().X - target.X) <= 2 && System.Math.Abs(unit.Position.ToCell().Y - target.Y) <= 2);
         Assert.Equal(9, dropped);
         Assert.InRange(airfield.ChargeLeft, airfield.Type.Recharge - 1600, airfield.Type.Recharge - 1);
+    }
+
+    [Fact]
+    public void The_usa_that_takes_an_airfield_has_two_paradrops_its_own_and_the_airfield_s()
+    {
+        // RA2: the American paradrop of the air force command (8 GIs) and the airfield's (6 GIs of the Allies) are two superweapons.
+        var simulation = Match("usa");
+        var world = simulation.World;
+        world.Rules.Database.TryGetBuilding("alliance_air_force_command", out var def);
+        var command = world.CreateBuilding(Allied, def, new CellPos(50, 50), true, null);
+        Take(simulation, Allied, UnitType.AllianceEngineer, Airfield, 0);
+        var airfield = At(world, Airfield);
+        var paradrops = world.Entities.OfType<Building>()
+            .Where(building => building.Owner == Allied && SuperweaponSystem.KindOf(world, building) == Rts.Simulation.Rules.SuperweaponKind.Paradrop)
+            .Select(building => building.Id);
+        Assert.Equal([airfield.Id, command.Id], paradrops.Order());
+
+        // Each charges and fires on its own: the airfield's sent, the air command's is still ready.
+        command.ChargeLeft = 0;
+        airfield.ChargeLeft = 0;
+        var near = new CellPos(30, 30);
+        var far = new CellPos(40, 20);
+        simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 1, airfield.Id, near, near));
+        Run(simulation, 1);
+        Assert.Equal(0, command.ChargeLeft);
+        Assert.InRange(airfield.ChargeLeft, airfield.Type.Recharge - 1, airfield.Type.Recharge);
+        simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 2, command.Id, far, far));
+        Run(simulation, 1);
+        Assert.Equal(2, world.Entities.OfType<Unit>().Count(unit => unit.IsAlive && unit.Type == UnitType.ParadropPlane));
+
+        Run(simulation, 2000, () => !world.Entities.OfType<Unit>().Any(unit => unit.IsAlive && unit.Type == UnitType.ParadropPlane));
+        int Riflemen(CellPos at) => world.Entities.OfType<Unit>().Count(unit => unit.IsAlive && unit.Type == UnitType.AllianceRifleman
+            && System.Math.Abs(unit.Position.ToCell().X - at.X) <= 2 && System.Math.Abs(unit.Position.ToCell().Y - at.Y) <= 2);
+        Assert.Equal((6, 8), (Riflemen(near), Riflemen(far)));
+
+        // Korea's air command has none: the airfield's alone.
+        var korea = Match("korea");
+        Assert.Equal(
+            Rts.Simulation.Rules.SuperweaponKind.None,
+            SuperweaponSystem.KindOf(korea.World, korea.World.CreateBuilding(Allied, def, new CellPos(50, 50), true, null)));
     }
 
     [Fact]
