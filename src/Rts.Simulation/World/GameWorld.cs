@@ -559,28 +559,65 @@ public sealed class GameWorld
 
     /// <summary>
     /// A bridge segment falls (docs/implementation/M7_maps.md, 4.6): its cell is water again, paths are rebuilt through
-    /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. A high bridge's
-    /// segment kills everyone on its deck, and those under it stay (<see cref="Decks"/>). The dead keep their place in the cell until
-    /// the end of the tick, like every unit that dies.
+    /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. A high bridge comes
+    /// down whole (RA2; the owner, 2026-10-29): every standing segment of it falls with the one hit, only its piers stay, so no span is
+    /// left hanging between gaps. It kills everyone on its deck, and those under it stay (<see cref="Decks"/>). The dead keep their place
+    /// in the cell until the end of the tick, like every unit that dies.
     /// </summary>
     internal void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events)
     {
-        ChangeMap([new DestroyBridgeSegmentEdit(segment.Bridge.Id, segment.Index)], events);
-        events?.Add(new Events.BridgeSegmentDestroyed(CurrentTick, segment.Bridge.Id, segment.Cell));
-        var high = segment.Bridge.Type.High;
+        var bridge = segment.Bridge;
+        var high = bridge.Type.High;
+        var falling = new List<BridgeSegment> { segment };
+        if (high)
+        {
+            foreach (var other in bridge.Segments)
+            {
+                if (other != segment && other.IsIntact)
+                {
+                    falling.Add(other);
+                }
+            }
+        }
+
+        var edits = new List<MapEdit>(falling.Count);
+        foreach (var fall in falling)
+        {
+            edits.Add(new DestroyBridgeSegmentEdit(bridge.Id, fall.Index));
+        }
+
+        ChangeMap(edits, events);
+        foreach (var fall in falling)
+        {
+            events?.Add(new Events.BridgeSegmentDestroyed(CurrentTick, bridge.Id, fall.Cell));
+        }
+
         foreach (var entity in _entities)
         {
-            if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && segment.Cells.Contains(unit.Position.ToCell())
+            if (entity is Unit { IsAlive: true } unit && !unit.Archetype.Flies && OnAny(falling, unit.Position.ToCell())
                 && (high ? unit.OnDeck : !Map.CanEnter(unit.Position.ToCell(), unit.Archetype.Locomotor)))
             {
                 unit.MarkDead();
                 events?.Add(new Events.UnitKilled(CurrentTick, unit.Id, unit.Position));
             }
-            else if (entity is Unit { IsAlive: true, Target: null, TargetPoint: { } point } shooter && segment.Cells.Contains(point.ToCell()))
+            else if (entity is Unit { IsAlive: true, Target: null, TargetPoint: { } point } shooter && OnAny(falling, point.ToCell()))
             {
                 // Those forced to fire at the segment are done with it.
                 UnitOrders.ForgetTarget(shooter);
             }
+        }
+
+        static bool OnAny(List<BridgeSegment> segments, CellPos cell)
+        {
+            foreach (var fall in segments)
+            {
+                if (fall.Cells.Contains(cell))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 

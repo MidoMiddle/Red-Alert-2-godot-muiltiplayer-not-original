@@ -296,22 +296,27 @@ public sealed class HighBridgeTests
     }
 
     [Fact]
-    public void A_tank_on_its_way_over_turns_back_when_a_segment_ahead_falls()
+    public void A_high_bridge_comes_down_whole_whichever_segment_is_hit()
     {
         var world = new GameWorld(seed: 1, Gorge(), TestRules.Standard);
-        var tank = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(2, Row).Center);
-        Order(world, tank, new CellPos(17, Row));
-        for (var tick = 0; tick < 2000 && !(tank.OnDeck && tank.Position.ToCell().X >= 7); tick++)
-        {
-            Step(world, []);
-        }
+        var top = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(2, Row).Center);
+        Order(world, top, new CellPos(8, Row));
+        RunToStop(world, top);
+        var below = world.SpawnUnit(Red, UnitType.HeavyTank, new CellPos(11, Row).Center);
+        var bridge = world.Map.Bridges[0];
+        Assert.True(top.OnDeck);
 
-        Assert.True(tank.OnDeck);
-        world.DestroyBridgeSegment(world.Map.BridgeAt(new CellPos(11, Row))!, []);
-        RunToStop(world, tank);
+        // A segment far from the tank: the whole deck falls, no span is left hanging between gaps; only the piers stay.
+        var events = new List<SimEvent>();
+        world.DestroyBridgeSegment(world.Map.BridgeAt(new CellPos(12, Row))!, events);
 
-        Assert.True(tank.IsAlive);
-        Assert.True(tank.Position.ToCell().X < 11, $"The tank got to {tank.Position.ToCell()}.");
+        Assert.All(bridge.Segments, segment => Assert.False(segment.IsIntact));
+        Assert.Equal(bridge.Segments.Count, events.Count(e => e is BridgeSegmentDestroyed));
+        Assert.Equal(new CellPos(12, Row), events.OfType<BridgeSegmentDestroyed>().First().Cell);
+        Assert.False(top.IsAlive);
+        Assert.True(below.IsAlive);
+        Assert.Equal(0, Decks.SpeedPercent(world.Map, new CellPos(8, Row), true, Locomotor.Track));
+        Assert.Equal(PathStatus.Found, AStar.FindPath(world.Map, new CellPos(8, 0), new CellPos(8, Height - 1), Locomotor.Track).Status);
     }
 
     [Fact]

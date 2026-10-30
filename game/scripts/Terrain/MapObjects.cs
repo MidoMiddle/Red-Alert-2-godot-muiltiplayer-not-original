@@ -12,7 +12,7 @@ namespace Rts.Client.Terrain;
 /// felled (<see cref="AddStumps"/>), a grey lump for a boulder, a thin brown rail for a fence, a low steel
 /// block for an anti-tank hedgehog, a thin dark pipe for a pipeline (ore and gem sources: <see cref="OreSources"/>), a tall
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
-/// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell; a high bridge of concrete
+/// bridge a plank deck just above the water with a rail on each side, and open water where a segment fell; a high bridge of concrete
 /// with an asphalt deck at its level (<see cref="AddHighBridge"/>); stones along the cliffs (<see cref="AddCliffRocks"/>). One MultiMesh
 /// per shape (and per direction for bridges) — since 2026-10-26 one for every piece of the map holding copies of it
 /// (<see cref="ChunkedInstances"/>), so the pieces off the screen are not drawn. A snowdrift is a bush in summer and a dune in the desert. Rebuilt whenever the map changes
@@ -201,7 +201,7 @@ public partial class MapObjects : Node3D
 
     /// <summary>
     /// The deck of a standing segment lies flat just above the water across all its cells (three tanks side by side), so units on it
-    /// seem to drive on the planks; the rails run along its outer edges.
+    /// seem to drive on the planks; the rails run along its outer edges. A fallen segment leaves nothing: it sank.
     /// </summary>
     private void AddBridge(Bridge bridge)
     {
@@ -215,7 +215,6 @@ public partial class MapObjects : Node3D
         var alongX = bridge.From != bridge.To ? bridge.From.Y == bridge.To.Y : !System.Linq.Enumerable.Any(bridge.Segments[0].Cells, cell => cell.X != bridge.From.X);
         var decks = new List<Spot>();
         var rails = new List<Spot>();
-        var stubs = new List<Spot>();
         var side = alongX ? new Vector3(0, 0, 0.44f) : new Vector3(0.44f, 0, 0);
         foreach (var segment in bridge.Segments)
         {
@@ -229,11 +228,10 @@ public partial class MapObjects : Node3D
                     : (cell.X < first.X ? cell : first, cell.X > last.X ? cell : last);
             }
 
+            // A fallen segment sank deep under the water (the owner, 2026-10-29): nothing of it is left above, and ships pass.
             if (!segment.IsIntact)
             {
                 decks.RemoveRange(decks.Count - segment.Cells.Length, segment.Cells.Length);
-                stubs.Add(new Spot(Ground(first.X, first.Y) - side, 0));
-                stubs.Add(new Spot(Ground(last.X, last.Y) + side, 0));
                 continue;
             }
 
@@ -246,22 +244,21 @@ public partial class MapObjects : Node3D
         var rail = alongX ? new Vector3(1f, 0.1f, 0.04f) : new Vector3(0.04f, 0.1f, 1f);
         AddInstances(name + "Deck", new BoxMesh { Size = deck }, new Color(0.55f, 0.4f, 0.24f), decks, 0.03f);
         AddInstances(name + "Rails", new BoxMesh { Size = rail }, new Color(0.38f, 0.26f, 0.15f), rails, 0.1f);
-        AddInstances(name + "Stubs", new BoxMesh { Size = new Vector3(0.12f, 0.12f, 0.12f) }, new Color(0.2f, 0.16f, 0.13f), stubs, 0.02f);
     }
 
     // The colours of a high bridge (owner 2026-10-26: "the bridge is concrete, asphalt on top").
     private static readonly Color Asphalt = new(0.2f, 0.2f, 0.22f);
     private static readonly Color Marking = new(0.86f, 0.85f, 0.78f);
     private static readonly Color Concrete = new(0.7f, 0.69f, 0.66f);
-    private static readonly Color Rubble = new(0.55f, 0.54f, 0.52f);
 
     private const float DeckThickness = 0.1f;
     private const float BeamDepth = 0.28f;
 
     /// <summary>
     /// A high bridge (docs/implementation/M7_maps.md, 4.6): an asphalt deck at its level with a light dashed line along the middle,
-    /// concrete curbs along its outer edges, a concrete beam under every cell and concrete piers from the ground up under every third
-    /// segment. A fallen segment leaves concrete rubble on the ground below and the stumps of its piers.
+    /// concrete curbs along its outer edges, a concrete beam under every cell and concrete piers from the ground up about every fifth
+    /// segment. A high bridge comes down whole (GameWorld.DestroyBridgeSegment): only its piers stand, whole, and nothing
+    /// else is left of it (the owner, 2026-10-29).
     /// </summary>
     private void AddHighBridge(Bridge bridge)
     {
@@ -272,7 +269,6 @@ public partial class MapObjects : Node3D
         var marks = new List<Spot>();
         var curbs = new List<Spot>();
         var beams = new List<Spot>();
-        var rubble = new List<Spot>();
         var piers = new List<Transform3D>();
         foreach (var segment in bridge.Segments)
         {
@@ -284,19 +280,13 @@ public partial class MapObjects : Node3D
                     : (cell.X < first.X ? cell : first, cell.X > last.X ? cell : last);
             }
 
-            var end = segment.Index == 0 || segment.Index == bridge.Segments.Count - 1;
-            var pier = !end && segment.Index % 3 == 2;
+            var pier = HasPier(segment.Index, bridge.Segments.Count);
             if (!segment.IsIntact)
             {
-                foreach (var cell in segment.Cells)
-                {
-                    rubble.Add(new Spot(Ground(cell.X, cell.Y), 0));
-                }
-
                 if (pier)
                 {
-                    piers.Add(Pier(first, -side, Ground(first.X, first.Y).Y + 0.45f));
-                    piers.Add(Pier(last, side, Ground(last.X, last.Y).Y + 0.45f));
+                    piers.Add(Pier(first, -side, height - DeckThickness - BeamDepth));
+                    piers.Add(Pier(last, side, height - DeckThickness - BeamDepth));
                 }
 
                 continue;
@@ -330,7 +320,6 @@ public partial class MapObjects : Node3D
         AddInstances(name + "Marks", new BoxMesh { Size = across(new Vector3(0.5f, 0.01f, 0.07f)) }, Marking, marks, 0.005f);
         AddInstances(name + "Curbs", new BoxMesh { Size = across(new Vector3(1f, 0.14f, 0.08f)) }, Concrete, curbs, 0.07f);
         AddInstances(name + "Beams", new BoxMesh { Size = across(new Vector3(1f, BeamDepth, 0.8f)) }, Concrete, beams, -DeckThickness - BeamDepth / 2);
-        AddInstances(name + "Rubble", new BoxMesh { Size = new Vector3(0.55f, 0.16f, 0.45f) }, Rubble, rubble, 0.08f);
         if (piers.Count > 0)
         {
             var mesh = LowPoly.Of(new BoxMesh { Size = Vector3.One });
@@ -343,6 +332,25 @@ public partial class MapObjects : Node3D
 
             AddChild(new MultiMeshInstance3D { Name = name + "Piers", Multimesh = multiMesh });
         }
+    }
+
+    /// <summary>
+    /// Whether segment <paramref name="index"/> of a high bridge of <paramref name="count"/> stands on a pair of piers: spans of about
+    /// five cells between them (the owner, 2026-10-29: fewer piers), spread evenly so both halves match; none at the ends, which rest on
+    /// the shores. A bridge of 9 to 12 cells has one pair in its middle, one of 29 five.
+    /// </summary>
+    private static bool HasPier(int index, int count)
+    {
+        var spans = System.Math.Max(1, (int)System.MathF.Round((count - 1) / 5f));
+        for (var k = 1; k < spans; k++)
+        {
+            if (index == (int)System.MathF.Round(k * (count - 1) / (float)spans))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // A square concrete pier under the outer edge of a cell, from the ground up to <paramref name="top"/>: a unit box stretched.

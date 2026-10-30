@@ -400,6 +400,7 @@ public sealed class GoldenValuesTests
         // Rules v110, replay format v31 (a map may place a building of a faction's data for nobody): the versions only — no map here.
         // Rules v111 (the defenses of nobody fire at everybody; an engineer takes nobody's buildings of the data): the version only.
         // Rules v112 (one ore purifier per player): the version only.
-        Assert.Equal((22270, 1224729233164474480UL), (bytes.Length, hash.Value));
+        // Rules v113 (a high bridge comes down whole, only its piers stay; the owner's wish): the version only — no bridge here.
+        Assert.Equal((22270, 10525987360691120965UL), (bytes.Length, hash.Value));
     }
 }

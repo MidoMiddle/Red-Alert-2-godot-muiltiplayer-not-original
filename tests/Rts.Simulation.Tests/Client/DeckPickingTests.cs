@@ -33,12 +33,13 @@ public sealed class DeckPickingTests
     }
 
     [Fact]
-    public void A_fallen_segment_is_no_deck_to_click()
+    public void A_fallen_bridge_is_no_deck_to_click()
     {
         var world = new GameWorld(seed: 1, HighBridgeTests.Gorge(), TestRules.Standard);
         world.DestroyBridgeSegment(world.Map.BridgeAt(new CellPos(8, 5))!, null);
 
+        // A high bridge comes down whole: no deck is left, not even far from the hit.
         Assert.False(DeckPicking.TryHit(world.Map, Above(8.4f, 5.5f, Deck), Down, 100f, out _));
-        Assert.True(DeckPicking.TryHit(world.Map, Above(10.4f, 5.5f, Deck), Down, 100f, out _));
+        Assert.False(DeckPicking.TryHit(world.Map, Above(10.4f, 5.5f, Deck), Down, 100f, out _));
     }
 }
