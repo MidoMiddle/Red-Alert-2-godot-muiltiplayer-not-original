@@ -178,4 +178,28 @@ public sealed class MapPreviewTests
         var frozen = maps.Single(m => m.Map.Name == "Frozen Crossing").Map;
         Assert.Equal((180, 90), MapPreview.SizeOf(frozen));
     }
+
+    [Fact]
+    public void The_number_of_every_start_goes_on_its_disc()
+    {
+        var files = Directory.GetFiles(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps"), "*.rtsmap")
+            .Select(path => ($"res://data/maps/{Path.GetFileName(path)}", File.ReadAllText(path)));
+        var maps = MapCatalog.Load(files, GameDataFiles.Rules.MapTypes).Maps.Select(m => m.Map).ToList();
+
+        // Route 66 (eight starts, a playable area) among them: the screen once laid the numbers by the grid, off the discs.
+        Assert.Contains(maps, map => map.Id == "route-66");
+        foreach (var map in maps)
+        {
+            var pixels = MapPreview.Render(map, GameDataFiles.Rules.MapTypes);
+            var (width, height) = MapPreview.SizeOf(map);
+            foreach (var start in map.Starts)
+            {
+                var (x, y) = MapPreview.StartCentre(map, start.Cell);
+                Assert.InRange(x, 0f, width);
+                Assert.InRange(y, 0f, height);
+                var index = ((int)y * width + (int)x) * 3;
+                Assert.Equal(Bytes(MapPreview.SlotColor(start.Slot)), (pixels[index], pixels[index + 1], pixels[index + 2]));
+            }
+        }
+    }
 }

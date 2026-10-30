@@ -42,6 +42,23 @@ public static class MapPreview
         ? (2 * (area.Right - area.Left), area.Bottom - area.Top)
         : (map.Width * PixelsPerCell, map.Height * PixelsPerCell);
 
+    /// <summary>
+    /// Where the disc of a start lies on the picture of <paramref name="map"/>, in its pixels (<see cref="SizeOf"/>): the screen lays
+    /// the start's number there (<c>MapPreviewView</c>). On the picture of a playable area it is the start cell's centre in the
+    /// screen's axes, on that of the whole grid the cell's middle.
+    /// </summary>
+    public static (float X, float Y) StartCentre(MapDefinition map, CellPos cell) =>
+        map.Playable is { } area ? StartCentre(area, cell) : StartCentre(cell);
+
+    private static (float X, float Y) StartCentre(MapArea area, CellPos cell)
+    {
+        var (u, v) = (cell.X + cell.Y + 1f, (float)(cell.X - cell.Y));
+        return ((v - area.Left) * 2f, u - area.Top);
+    }
+
+    private static (float X, float Y) StartCentre(CellPos cell) =>
+        (cell.X * PixelsPerCell + PixelsPerCell / 2f, cell.Y * PixelsPerCell + PixelsPerCell / 2f);
+
     /// <summary>The picture of <paramref name="map"/>: (2W) × (2H) pixels, three bytes each; or that of its playable area.</summary>
     public static byte[] Render(MapDefinition map, MapTypes types) =>
         map.Playable is { } area ? RenderArea(map.ToMapGrid(types), map.Starts, area, map.Climate) : Render(map.ToMapGrid(types), map.Starts, map.Climate);
@@ -78,8 +95,7 @@ public static class MapPreview
 
         foreach (var start in starts)
         {
-            var (u, v) = (start.Cell.X + start.Cell.Y + 1f, (float)(start.Cell.X - start.Cell.Y));
-            var (centreX, centreY) = ((v - area.Left) * width / (area.Right - area.Left), u - area.Top);
+            var (centreX, centreY) = StartCentre(area, start.Cell);
             for (var py = (int)centreY - StartRadius; py <= (int)centreY + StartRadius; py++)
             {
                 for (var px = (int)centreX - StartRadius; px <= (int)centreX + StartRadius; px++)
@@ -118,8 +134,7 @@ public static class MapPreview
         foreach (var start in starts)
         {
             // The disc is centred on the middle of the start cell: pixel centres within the radius take the slot's colour.
-            var centreX = start.Cell.X * PixelsPerCell + PixelsPerCell / 2f;
-            var centreY = start.Cell.Y * PixelsPerCell + PixelsPerCell / 2f;
+            var (centreX, centreY) = StartCentre(start.Cell);
             for (var py = (int)centreY - StartRadius; py <= (int)centreY + StartRadius; py++)
             {
                 for (var px = (int)centreX - StartRadius; px <= (int)centreX + StartRadius; px++)
