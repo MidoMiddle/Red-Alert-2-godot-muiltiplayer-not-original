@@ -1033,7 +1033,7 @@ layers:
     ..........................................................................................................................................................................................................................................................
     ..........................................................................................................................................................................................................................................................
 objects:
-  - { type: gem_source, cell: [120, 123], variant: 1 }
+  - { type: gem_source, cell: [119, 127], variant: 2 }
   - { type: ore_source, cell: [134, 22], variant: 0 }
   - { type: ore_source, cell: [180, 80], variant: 0 }
   - { type: ore_source, cell: [90, 82], variant: 0 }
@@ -1322,10 +1322,14 @@ structures:
   - { type: nuclear_missile_silo, cell: [123, 124], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [125, 119], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [126, 128], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [120, 108], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [119, 119], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [128, 122], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [106, 123], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [139, 123], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [117, 126], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [120, 131], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [121, 141], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [104, 41], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [156, 46], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [88, 51], owner: neutral, facing: 2 }

@@ -21,7 +21,7 @@ public static class BridgeRepair
     /// <summary>The bridge of a hut; null when none is near.</summary>
     public static Bridge? BridgeOf(MapGrid map, Building hut) => BridgeOf(map, hut.Cell);
 
-    /// <summary>The bridge a hut on <paramref name="hut"/> would belong to; null when none is near (the map checks, one hut a bridge).</summary>
+    /// <summary>The bridge a hut on <paramref name="hut"/> would belong to; null when none is near (the map checks, a hut by each end of a bridge).</summary>
     public static Bridge? BridgeOf(MapGrid map, CellPos hut)
     {
         Bridge? best = null;

@@ -5946,6 +5946,8 @@ structures:
   - { type: neutral_water_tower, cell: [45, 89], owner: neutral, facing: 0 }
   - { type: neutral_water_tower, cell: [90, 89], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [63, 41], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [72, 41], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [63, 87], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [72, 87], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [54, 73], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [80, 73], owner: neutral, facing: 0 }

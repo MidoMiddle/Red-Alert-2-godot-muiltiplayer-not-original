@@ -12917,10 +12917,14 @@ structures:
   - { type: neutral_water_tower, cell: [117, 84], owner: neutral, facing: 0 }
   - { type: neutral_water_tower, cell: [64, 97], owner: neutral, facing: 0 }
   - { type: neutral_water_tower, cell: [97, 117], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [109, 62], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [70, 65], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [116, 70], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [62, 72], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [119, 109], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [65, 111], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [111, 116], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [72, 119], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [96, 71], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [71, 84], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [109, 96], owner: neutral, facing: 0 }

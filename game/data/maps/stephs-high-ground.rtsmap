@@ -1306,8 +1306,10 @@ structures:
   - { type: neutral_silo, cell: [98, 108], owner: neutral, facing: 2 }
   - { type: neutral_silo, cell: [101, 113], owner: neutral, facing: 2 }
   - { type: neutral_silo, cell: [132, 137], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [134, 110], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [118, 113], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [111, 120], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [108, 136], owner: neutral, facing: 0 }
   - { type: tech_hospital, cell: [101, 93], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [180, 43], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [201, 62], owner: neutral, facing: 2 }

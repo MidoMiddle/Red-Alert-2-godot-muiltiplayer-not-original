@@ -1774,14 +1774,26 @@ structures:
   - { type: nuclear_reactor, cell: [46, 105], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [115, 29], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 29], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [116, 61], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [122, 61], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [116, 70], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [122, 70], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [115, 97], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 97], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [115, 101], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 101], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [116, 131], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [122, 131], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [116, 146], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [122, 146], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [115, 170], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 170], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [115, 174], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 174], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [116, 191], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [122, 191], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [116, 200], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [122, 200], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [115, 213], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [125, 213], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [129, 42], owner: neutral, facing: 2 }

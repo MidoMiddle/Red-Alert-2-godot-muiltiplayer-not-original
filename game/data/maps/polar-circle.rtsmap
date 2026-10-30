@@ -1622,8 +1622,12 @@ structures:
   - { type: neutral_silo, cell: [117, 91], owner: neutral, facing: 0 }
   - { type: neutral_silo, cell: [90, 117], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [109, 63], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [73, 64], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [63, 72], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [117, 73], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [64, 108], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [118, 109], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [108, 117], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [72, 118], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [92, 65], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [65, 88], owner: neutral, facing: 0 }

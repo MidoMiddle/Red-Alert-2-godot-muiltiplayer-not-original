@@ -975,10 +975,14 @@ structures:
   - { type: neutral_office, cell: [86, 83], owner: neutral, facing: 2 }
   - { type: neutral_silo, cell: [77, 73], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [77, 74], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [82, 65], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [84, 72], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [76, 78], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [98, 78], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [69, 79], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [89, 81], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [82, 86], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [83, 93], owner: neutral, facing: 0 }
   - { type: tech_hospital, cell: [87, 73], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [58, 35], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [46, 36], owner: neutral, facing: 2 }

@@ -169,17 +169,20 @@ public sealed class MapValidatorTests
     }
 
     [Fact]
-    public void A_bridge_has_one_repair_hut_and_a_hut_has_a_bridge()
+    public void A_bridge_has_a_repair_hut_on_each_bank_and_a_hut_has_a_bridge()
     {
-        // The owner, 2026-10-30: one hut a bridge, by one of its ends; a second is an error, one no bridge is near a warning.
+        // The owner, 2026-10-30: a hut by each end of a bridge, one on each bank; a second by the same end is an error, one no bridge
+        // is near a warning.
         var types = GameDataFiles.Rules.MapTypes;
         var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "twin-rivers.rtsmap")));
         var first = map.Bridges[0];
-        var hut = Assert.Single(map.Structures, s => s.Type == BridgeHuts.Hut && MapChecks.BridgeCells(first).Exists(c => Near(c, s.Cell)));
+        var huts = map.Structures.Where(s => s.Type == BridgeHuts.Hut && MapChecks.BridgeCells(first).Exists(c => Near(c, s.Cell))).ToList();
+        Assert.Equal([0, 1], huts.Select(h => BridgeHuts.EndOf(first.From, first.To, h.Cell)).Order());
+        var hut = huts.Single(h => BridgeHuts.EndOf(first.From, first.To, h.Cell) == 0);
         var ground = MapChecks.BaseGrid(map, types);
         bool Free(CellPos cell) => map.Contains(cell) && map.Ore[cell.Y * map.Width + cell.X] == 0
             && MapChecks.BuildingProblem(ground, new StructurePlacement(BridgeHuts.Hut, cell, 0, 0), [.. map.Structures]) is null;
-        var second = MapChecks.HutCandidates(first).First(cell => cell != hut.Cell && Free(cell));
+        var second = MapChecks.HutCandidates(first, 0).First(cell => cell != hut.Cell && Free(cell) && BridgeHuts.EndOf(first.From, first.To, cell) == 0);
         var lone = Enumerable.Range(0, map.Width * map.Height).Select(i => new CellPos(i % map.Width, i / map.Width))
             .First(cell => Free(cell) && map.Bridges.All(b => MapChecks.BridgeCells(b).All(c => !Near(c, cell) && Math.Max(Math.Abs(c.X - cell.X), Math.Abs(c.Y - cell.Y)) > 6)));
         var crowded = new MapDefinition(map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players,
@@ -189,15 +192,22 @@ public sealed class MapValidatorTests
 
         Assert.DoesNotContain(MapValidator.Check(map, types), p => p.Message.Contains("hut"));
         var problems = MapValidator.Check(crowded, types);
-        Assert.Single(problems, p => p.Level == ProblemLevel.Error && p.Message.Contains("its bridge has a hut already"));
+        Assert.Single(problems, p => p.Level == ProblemLevel.Error && p.Message.Contains("its end of the bridge has a hut already"));
         Assert.Single(problems, p => p.Level == ProblemLevel.Warning && p.Cell == lone && p.Message.Contains("has no bridge"));
 
-        // Trimmed, one hut stands by the first bridge again, the lone one is gone, and no bridge lacks one.
+        // Trimmed, one hut stands by each end of the first bridge again, the lone one is gone, and no end lacks one.
         var trimmed = BridgeHuts.Trim(crowded, types);
         Assert.DoesNotContain(MapValidator.Check(trimmed, types), p => p.Message.Contains("hut"));
         Assert.Equal(map.Structures.Length, trimmed.Structures.Length);
         Assert.Empty(BridgeHuts.For(trimmed, types));
         Assert.Same(map, BridgeHuts.Trim(map, types));
+
+        // Without the hut of the far bank, the map lacks it and gets it back there.
+        var oneSided = new MapDefinition(map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players,
+            map.Starts, map.TextureLegend, map.Heights, map.Land, map.Texture, map.Ore, map.Objects, map.Bridges,
+            [.. map.Structures.Where(s => s != huts.Single(h => h != hut))], map.Lighting, map.Playable, map.Origin);
+        var back = Assert.Single(BridgeHuts.For(oneSided, types));
+        Assert.Equal(1, BridgeHuts.EndOf(first.From, first.To, back.Cell));
     }
 
     private static bool Near(CellPos a, CellPos b) =>

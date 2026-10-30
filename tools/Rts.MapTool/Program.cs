@@ -290,7 +290,8 @@ if (args.Length >= 2 && args[0] == "share-gems")
     return failed == 0 ? 0 : 1;
 }
 
-// Loose ends, stage 2: the bridge repair huts on maps the generator made before it had them; the symmetry comes from the description.
+// Loose ends, stage 2: the bridge repair huts a map lacks (2026-10-30: one by each end of a bridge). On a map of the generator the
+// symmetry comes from the description and the huts get their images; on another (a map of RA2) each goes alone.
 if (args.Length >= 2 && args[0] == "add-huts")
 {
     var failed = 0;
@@ -300,12 +301,10 @@ if (args.Length >= 2 && args[0] == "add-huts")
         {
             var map = RtsMapReader.Read(File.ReadAllText(path));
             var symmetry = System.Text.RegularExpressions.Regex.Match(map.Description, @"^Generated from seed \d+: \d players, (\w+),");
-            if (!symmetry.Success || !Enum.TryParse<Rts.MapGen.MapSymmetry>(symmetry.Groups[1].Value, out var kindOfSymmetry))
-            {
-                throw new ArgumentException("its description does not say the symmetry: it was not made by the generator");
-            }
-
-            var hutted = BridgeHuts.AddTo(map, MapData.Types, new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width).Images);
+            Func<Rts.Simulation.Geometry.CellPos, IEnumerable<Rts.Simulation.Geometry.CellPos>>? images = symmetry.Success && Enum.TryParse<Rts.MapGen.MapSymmetry>(symmetry.Groups[1].Value, out var kindOfSymmetry)
+                ? new Rts.MapGen.Symmetry(kindOfSymmetry, map.Width).Images
+                : null;
+            var hutted = BridgeHuts.AddTo(map, MapData.Types, images);
             var errors = MapValidator.Check(hutted, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
             if (errors.Count > 0)
             {
@@ -326,7 +325,7 @@ if (args.Length >= 2 && args[0] == "add-huts")
     return failed == 0 ? 0 : 1;
 }
 
-// 2026-10-30, the owner's rules: no ore on a road (the ore of a road cell goes) and one repair hut a bridge (BridgeHuts.Trim keeps the
+// 2026-10-30, the owner's rules: no ore on a road (the ore of a road cell goes) and one repair hut an end of a bridge, a hut on each bank since later that day (BridgeHuts.Trim keeps the
 // one farthest from the starts), on the maps made before. A converted RA2 map first gets ra2_tidy.py, which gives its fields back the
 // ground the preview took for a road.
 if (args.Length >= 2 && args[0] == "tidy")

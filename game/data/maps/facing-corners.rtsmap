@@ -1119,18 +1119,30 @@ structures:
   - { type: tech_airfield, cell: [146, 71], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [46, 124], owner: neutral, facing: 2 }
   - { type: tech_airfield, cell: [133, 160], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [85, 17], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [101, 17], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [91, 39], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [79, 40], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [108, 40], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [96, 43], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [50, 80], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [21, 85], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [153, 88], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [49, 93], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [177, 95], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [53, 97], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [156, 101], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [25, 105], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [152, 105], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [50, 111], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [177, 113], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [153, 119], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [102, 153], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [89, 154], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [120, 154], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [107, 157], owner: neutral, facing: 2 }
   - { type: tech_bridge_repair_hut, cell: [96, 174], owner: neutral, facing: 2 }
+  - { type: tech_bridge_repair_hut, cell: [114, 174], owner: neutral, facing: 0 }
   - { type: tech_hospital, cell: [96, 96], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [59, 65], owner: neutral, facing: 2 }
   - { type: tech_oil_derrick, cell: [64, 65], owner: neutral, facing: 2 }

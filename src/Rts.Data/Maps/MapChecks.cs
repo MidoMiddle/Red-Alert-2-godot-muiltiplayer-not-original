@@ -70,6 +70,32 @@ public static class MapChecks
     }
 
     /// <summary>
+    /// The cells a repair hut by one end of the bridge may take (<paramref name="end"/> 0: <see cref="BridgePlacement.From"/>, 1: the
+    /// other; the owner, 2026-10-30: a hut on each bank), best first: up to <see cref="BridgeRepair.HutReach"/> cells from that end,
+    /// nearest first, then row by row. Whether one is free is for <see cref="BuildingProblem"/>.
+    /// </summary>
+    public static List<CellPos> HutCandidates(BridgePlacement bridge, int end)
+    {
+        var at = end == 0 ? bridge.From : bridge.To;
+        var cells = new List<CellPos>();
+        for (var ring = 1; ring <= BridgeRepair.HutReach; ring++)
+        {
+            for (var y = at.Y - ring; y <= at.Y + ring; y++)
+            {
+                for (var x = at.X - ring; x <= at.X + ring; x++)
+                {
+                    if (IntMath.Max(IntMath.Abs(x - at.X), IntMath.Abs(y - at.Y)) == ring)
+                    {
+                        cells.Add(new CellPos(x, y));
+                    }
+                }
+            }
+        }
+
+        return cells;
+    }
+
+    /// <summary>
     /// The cells a repair hut of the bridge may take (loose ends, stage 2), best first: up to <see cref="BridgeRepair.HutReach"/> cells from an end, nearest first,
     /// the <see cref="BridgePlacement.From"/> end before the other, then row by row. Whether one is free is for
     /// <see cref="BuildingProblem"/>.

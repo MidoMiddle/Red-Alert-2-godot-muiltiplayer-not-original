@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Rts.Data.Maps;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
@@ -64,8 +65,21 @@ internal static class Bridges
         }
     }
 
-    /// <summary>A repair hut by every bridge (loose ends, stage 2), symmetric: see <see cref="BridgeHuts"/>.</summary>
-    public static void Huts(GenMap map) => map.Structures.AddRange(BridgeHuts.For(map.ToDefinition("work", ""), map.Types, map.Symmetry.Images));
+    /// <summary>
+    /// A repair hut by each end of every bridge (loose ends, stage 2; 2026-10-30), symmetric, a tree felled for one where no cell by the
+    /// end is free: see <see cref="BridgeHuts"/>.
+    /// </summary>
+    public static void Huts(GenMap map)
+    {
+        var before = map.ToDefinition("work", "");
+        var hutted = BridgeHuts.AddTo(before, map.Types, map.Symmetry.Images);
+        map.Structures.AddRange(hutted.Structures.Where(structure => !before.Structures.Contains(structure)));
+        if (hutted.Objects.Length != before.Objects.Length)
+        {
+            var kept = hutted.Objects.ToHashSet();
+            map.Objects.RemoveAll(placement => !kept.Contains(placement));
+        }
+    }
 
     private static List<BridgePlacement> Images(GenMap map, BridgePlacement bridge, bool mirrored)
     {

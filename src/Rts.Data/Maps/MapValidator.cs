@@ -148,12 +148,12 @@ public static class MapValidator
     }
 
     /// <summary>
-    /// One repair hut a bridge, by one of its ends (the owner, 2026-10-30): a second hut of the same bridge is an error, a hut no bridge
-    /// is near (<see cref="BridgeRepair.HutReach"/>) a warning.
+    /// A repair hut by each end of a bridge, one on each bank (the owner, 2026-10-30): a second hut by the same end is an error, a hut
+    /// no bridge is near (<see cref="BridgeRepair.HutReach"/>) a warning.
     /// </summary>
     private static void CheckHuts(MapDefinition map, MapGrid grid, List<MapProblem> problems)
     {
-        var owned = new HashSet<int>();
+        var owned = new HashSet<(int Bridge, int End)>();
         foreach (var structure in map.Structures)
         {
             if (structure.Type != BridgeHuts.Hut)
@@ -165,9 +165,9 @@ public static class MapValidator
             {
                 problems.Add(new MapProblem(ProblemLevel.Warning, $"Repair hut at {Text(structure.Cell)} has no bridge within {BridgeRepair.HutReach} cells", structure.Cell));
             }
-            else if (!owned.Add(bridge.Id))
+            else if (!owned.Add((bridge.Id, BridgeHuts.EndOf(bridge.From, bridge.To, structure.Cell))))
             {
-                problems.Add(new MapProblem(ProblemLevel.Error, $"Repair hut at {Text(structure.Cell)}: its bridge has a hut already", structure.Cell));
+                problems.Add(new MapProblem(ProblemLevel.Error, $"Repair hut at {Text(structure.Cell)}: its end of the bridge has a hut already", structure.Cell));
             }
         }
     }

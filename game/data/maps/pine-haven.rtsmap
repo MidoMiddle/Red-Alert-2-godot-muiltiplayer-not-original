@@ -3191,7 +3191,6 @@ objects:
   - { type: pine_tree, cell: [166, 64], variant: 1 }
   - { type: pine_tree, cell: [69, 65], variant: 1 }
   - { type: pine_tree, cell: [70, 65], variant: 2 }
-  - { type: pine_tree, cell: [71, 65], variant: 3 }
   - { type: pine_tree, cell: [72, 65], variant: 3 }
   - { type: pine_tree, cell: [73, 65], variant: 1 }
   - { type: pine_tree, cell: [96, 65], variant: 1 }
@@ -3425,7 +3424,6 @@ objects:
   - { type: pine_tree, cell: [102, 71], variant: 2 }
   - { type: pine_tree, cell: [114, 71], variant: 2 }
   - { type: pine_tree, cell: [115, 71], variant: 2 }
-  - { type: pine_tree, cell: [116, 71], variant: 3 }
   - { type: pine_tree, cell: [117, 71], variant: 0 }
   - { type: pine_tree, cell: [118, 71], variant: 3 }
   - { type: pine_tree, cell: [119, 71], variant: 2 }
@@ -4156,7 +4154,6 @@ objects:
   - { type: pine_tree, cell: [62, 110], variant: 2 }
   - { type: pine_tree, cell: [63, 110], variant: 3 }
   - { type: pine_tree, cell: [64, 110], variant: 0 }
-  - { type: pine_tree, cell: [65, 110], variant: 3 }
   - { type: pine_tree, cell: [66, 110], variant: 2 }
   - { type: pine_tree, cell: [67, 110], variant: 2 }
   - { type: pine_tree, cell: [79, 110], variant: 2 }
@@ -4390,7 +4387,6 @@ objects:
   - { type: pine_tree, cell: [85, 116], variant: 1 }
   - { type: pine_tree, cell: [108, 116], variant: 1 }
   - { type: pine_tree, cell: [109, 116], variant: 3 }
-  - { type: pine_tree, cell: [110, 116], variant: 3 }
   - { type: pine_tree, cell: [111, 116], variant: 2 }
   - { type: pine_tree, cell: [112, 116], variant: 1 }
   - { type: pine_tree, cell: [15, 117], variant: 1 }
@@ -6778,8 +6774,12 @@ structures:
   - { type: neutral_silo, cell: [124, 100], owner: neutral, facing: 0 }
   - { type: neutral_silo, cell: [81, 124], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [111, 64], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [71, 65], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [64, 70], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [116, 71], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [65, 110], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [117, 111], owner: neutral, facing: 0 }
+  - { type: tech_bridge_repair_hut, cell: [110, 116], owner: neutral, facing: 0 }
   - { type: tech_bridge_repair_hut, cell: [70, 117], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [89, 76], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [104, 89], owner: neutral, facing: 0 }

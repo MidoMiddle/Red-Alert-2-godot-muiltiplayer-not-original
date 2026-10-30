@@ -57,12 +57,12 @@ public sealed class MapGeneratorTests
         // road of its climate elsewhere (docs/map_elements/04_roads). 2026-10-25 (origin): the header says the map is generated, and
         // the drills keep the playable area. 2026-10-30: the legend of every climate has the highway (h): the cells are the same. Later on
         // 2026-10-30 (the owner's rules): one repair hut a bridge — both bridges are their own images, two huts instead of four — and
-        // no ore on a road.
+        // no ore on a road. That evening (the owner): a hut on each bank of a bridge, four again.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("eb1457b9bdd78db4e47ad8248225c3bc29bb5e828e7d2f07ff73ef311c1c6ef2", MapHasher.Hash(map));
-        Assert.Equal("99c65e312909f6a51795482e61c126d7e5628357717efe872bf7f68010cb6fb6", MapHasher.Hash(none));
+        Assert.Equal("10440e9252e771744184219dd53e5376622bcabee09b9e0e979c8f32686931c2", MapHasher.Hash(map));
+        Assert.Equal("d95757a200b4ff272d4acaf7adccd1a48591a1ac4d79b1f5f26d9833f9f2e0be", MapHasher.Hash(none));
     }
 
     [Theory]
@@ -146,12 +146,10 @@ public sealed class MapGeneratorTests
                     }
                 }
 
-                // One hut a bridge (2026-10-30): the image of a hut is a hut, but by a bridge that is its own image there is one only.
+                // A hut on each bank (2026-10-30): the image of a hut is a hut, by a bridge its own image the one of its other end.
                 foreach (var hut in huts)
                 {
-                    var own = MapChecks.BridgeCells(map.Bridges.First(bridge => MapChecks.BridgeCells(bridge).Exists(cell =>
-                        Math.Max(Math.Abs(cell.X - hut.X), Math.Abs(cell.Y - hut.Y)) <= Rts.Simulation.Systems.BridgeRepair.HutReach)));
-                    Assert.True(huts.Contains(symmetry.Cell(k, hut)) || own.All(cell => own.Contains(symmetry.Cell(k, cell))), $"the hut at {hut} has no image");
+                    Assert.True(huts.Contains(symmetry.Cell(k, hut)), $"the hut at {hut} has no image");
                 }
 
                 Assert.Equal(map.Starts[k].Cell, symmetry.Cell(k, map.Starts[0].Cell));
@@ -277,8 +275,10 @@ public sealed class MapGeneratorTests
             Assert.All(map.Structures.Where(s => s.Type == BridgeHuts.Hut), hut => Assert.Contains(map.Bridges, bridge => MapChecks.BridgeCells(bridge).Exists(cell =>
                 Math.Max(Math.Abs(cell.X - hut.Cell.X), Math.Abs(cell.Y - hut.Cell.Y)) <= Rts.Simulation.Systems.BridgeRepair.HutReach)));
 
-            // 2026-10-30: one hut a bridge — the image of a hut by the same bridge (a bridge its own image) is left out.
-            Assert.True(map.Structures.Count(s => s.Type == BridgeHuts.Hut) <= map.Bridges.Length, $"{what}: more huts than bridges");
+            // 2026-10-30: a hut by each end of a bridge, one on each bank.
+            Assert.True(map.Structures.Count(s => s.Type == BridgeHuts.Hut) <= 2 * map.Bridges.Length, $"{what}: more huts than ends of bridges");
+            // Every bank with room for one has its hut, a tree felled for it if need be (where water and slopes leave none, it has not).
+            Assert.Equal(map.Structures.Length, BridgeHuts.AddTo(map, GameDataFiles.Rules.MapTypes).Structures.Length);
             Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), p => p.Message.Contains("hut"));
         }
 
