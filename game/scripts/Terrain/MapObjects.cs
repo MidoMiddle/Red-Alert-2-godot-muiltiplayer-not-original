@@ -534,6 +534,13 @@ public partial class MapObjects : Node3D
     {
         var heights = GetParent<TerrainBuilder>().Heights;
         var stones = CliffRocks.Place(heights, NearBridge);
+        // The climate's stones over the free level ground (ClimateLook.Stones): plain land, no slope, nothing standing there, no ore.
+        stones.AddRange(CliffRocks.Scatter(heights, _builtClimate?.Stones ?? 0f, (x, y) =>
+        {
+            var cell = new CellPos(x, y);
+            return _map.LandAt(cell) is LandType.Clear or LandType.Rough && _map.Heights.ShapeAt(cell) == CellShape.Flat && !_map.IsBlocked(cell)
+                && _map.OreAt(cell).IsEmpty && !NearBridge(x, y);
+        }));
         if (stones.Count == 0)
         {
             return;
@@ -543,12 +550,16 @@ public partial class MapObjects : Node3D
         if (_builtClimate is { } climate && System.Linq.Enumerable.FirstOrDefault(climate.Materials, m => m.Id == climate.Cliff) is { } rock
             && GD.Load<Texture2D>(Climates.ClimateLooks.TextureFolder + rock.Albedo) is { } texture)
         {
-            // A little lighter than the wall: the stones at its foot lie in its shade and must still show.
-            material.AlbedoColor = Climates.SceneLighting.Color(rock.Tint) * new Color(1.15f, 1.15f, 1.15f);
-            material.AlbedoTexture = texture;
-            material.Uv1Triplanar = true;
-            material.Uv1WorldTriplanar = true;
-            material.Uv1Scale = Vector3.One / rock.Tiling;
+            // A little lighter than the wall: the stones at its foot lie in its shade and must still show. A painted rock (the
+            // desert's sandstone) gives its colour plain, the photograph would darken it.
+            material.AlbedoColor = Climates.SceneLighting.Color(rock.Color ?? rock.Tint) * new Color(1.15f, 1.15f, 1.15f);
+            if (rock.Color is null)
+            {
+                material.AlbedoTexture = texture;
+                material.Uv1Triplanar = true;
+                material.Uv1WorldTriplanar = true;
+                material.Uv1Scale = Vector3.One / rock.Tiling;
+            }
         }
 
         for (var variant = 0; variant < 3; variant++)

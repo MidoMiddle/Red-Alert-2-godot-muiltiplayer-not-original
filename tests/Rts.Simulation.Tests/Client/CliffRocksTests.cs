@@ -56,4 +56,29 @@ public sealed class CliffRocksTests
         Assert.DoesNotContain(CliffRocks.Place(terrain, (x, _) => x < 8), stone => stone.At.X < 8f);
         Assert.Empty(CliffRocks.Place(terrain, (_, _) => true));
     }
+
+    [Fact]
+    public void The_climate_scatters_stones_over_the_free_level_ground_and_nowhere_else()
+    {
+        var terrain = Cliff();
+        var free = (int x, int y) => y != 7 && x != 5;
+
+        var stones = CliffRocks.Scatter(terrain, 0.2f, free);
+
+        Assert.NotEmpty(stones);
+        Assert.Empty(CliffRocks.Scatter(terrain, 0f, free));
+        Assert.Equal(stones, CliffRocks.Scatter(terrain, 0.2f, free));
+        foreach (var stone in stones)
+        {
+            var (x, z) = ((int)stone.At.X, (int)stone.At.Z);
+            Assert.True(free(x, z), $"a stone on a cell kept clear at {stone.At}");
+            Assert.False(terrain.IsCliff(x, z), $"a stone of the ground on the cliff at {stone.At}");
+            Assert.Equal(terrain.HeightAt(stone.At.X, stone.At.Z), stone.At.Y);
+            Assert.InRange(stone.Size, 0.3f, 0.6f);
+        }
+
+        // About a fifth of the 16 x 8 cells but the cliff row and those kept clear, a heap of one to three on each.
+        var heaps = stones.Select(stone => ((int)stone.At.X, (int)stone.At.Z)).Distinct().Count();
+        Assert.InRange(heaps, 8, 36);
+    }
 }

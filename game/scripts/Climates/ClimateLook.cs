@@ -16,9 +16,22 @@ public readonly record struct LookColor(float R, float G, float B)
 /// stand for. <paramref name="Albedo"/> is a file of <c>res://assets/textures/terrain/</c>; <paramref name="Tiling"/> is how many
 /// cells one copy of it covers; <paramref name="Tint"/> multiplies it; <paramref name="Frost"/> (0…1) lays the climate's frost
 /// over it in patches, so a photograph of a summer ground looks wintry; <paramref name="Water"/> gets the ripples and the depth of
-/// the water's land types.
+/// the water's land types. With <paramref name="Color"/> the shader paints the ground itself (the owner, 2026-10-30: the light grass
+/// of RA2): the colour is <paramref name="Color"/>, in large soft patches of <paramref name="Patches"/> over
+/// <paramref name="PatchesShare"/> of the ground (0…1, half by default), and the photograph gives only its light and shade, its own
+/// colour left out; the tint is not used then. Snowy grass is snow with patches of green over a third of it, as in RA2.
 /// </summary>
-public sealed record ClimateMaterial(string Id, string Albedo, float Tiling, float Roughness, LookColor Tint, float Frost, bool Water);
+public sealed record ClimateMaterial(
+    string Id,
+    string Albedo,
+    float Tiling,
+    float Roughness,
+    LookColor Tint,
+    float Frost,
+    bool Water,
+    LookColor? Color = null,
+    LookColor? Patches = null,
+    float PatchesShare = 0.5f);
 
 /// <summary>
 /// A time of day of a climate (docs/map_elements/18_lighting/README.md): the sun (or the moon) and the environment. The sun's
@@ -77,7 +90,8 @@ public sealed class ClimateLook
         string waterNormal,
         LookColor deepWater,
         ImmutableArray<LightPreset> lighting,
-        TreeKind trees = TreeKind.Pine)
+        TreeKind trees = TreeKind.Pine,
+        float stones = 0f)
     {
         Require(!materials.IsEmpty && materials.Length <= MaxMaterials, $"a climate has 1…{MaxMaterials} materials");
         Require(materials.Select(m => m.Id).Distinct(StringComparer.Ordinal).Count() == materials.Length, "every material once");
@@ -90,7 +104,14 @@ public sealed class ClimateLook
         DeepWater = deepWater;
         Lighting = [.. MapLighting.Ids.Select(preset => lighting.First(l => l.Id == preset))];
         Trees = trees;
+        Stones = stones;
     }
+
+    /// <summary>
+    /// The share of the free level ground that has a few stones lying on it, 0…1 (key <c>stones</c>; none by default): the rocks
+    /// among RA2's snow (the owner, 2026-10-30). Only a picture.
+    /// </summary>
+    public float Stones { get; }
 
     /// <summary>How the trees of the map and the holo tank's disguise look in the climate (the rules have one kind of tree).</summary>
     public TreeKind Trees { get; }

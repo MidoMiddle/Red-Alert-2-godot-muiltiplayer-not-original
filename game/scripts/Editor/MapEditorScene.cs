@@ -121,7 +121,8 @@ public partial class MapEditorScene : Node3D, IMapSource
     public override void _EnterTree()
     {
         // Before the terrain and the camera are ready: they ask for the map at once. «-- --ui-editor --open NAME» opens a map of
-        // res://data/maps (to look at it, a screenshot of every climate); «--look-at X Y» shows one cell of it.
+        // res://data/maps (to look at it, a screenshot of every climate); «--look-at X Y» shows one cell of it, «--climate» and
+        // «--lighting» take it to another climate and time of day.
         Load(Kept ?? OpenedFromArguments() ?? new MapEditSession(EditableMap.NewWithArea(64, 2), DataFiles.Current.Rules.MapTypes));
     }
 
@@ -724,9 +725,24 @@ public partial class MapEditorScene : Node3D, IMapSource
         var args = OS.GetCmdlineUserArgs();
         var index = Array.IndexOf(args, "--open");
         var path = index >= 0 && index + 1 < args.Length ? $"res://data/maps/{args[index + 1]}.rtsmap" : null;
-        return path is not null && Godot.FileAccess.FileExists(path)
-            ? new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(Godot.FileAccess.GetFileAsString(path))), DataFiles.Current.Rules.MapTypes)
-            : null;
+        if (path is null || !Godot.FileAccess.FileExists(path))
+        {
+            return null;
+        }
+
+        var session = new MapEditSession(EditableMap.FromDefinition(RtsMapReader.Read(Godot.FileAccess.GetFileAsString(path))), DataFiles.Current.Rules.MapTypes);
+        // «--climate ID» and «--lighting ID» as the editor's own choices would set them: every climate and time of day of one map.
+        if (Array.IndexOf(args, "--climate") is var climate and >= 0 && climate + 1 < args.Length && ClimateGrounds.Ids.Contains(args[climate + 1]))
+        {
+            session.SetClimate(args[climate + 1]);
+        }
+
+        if (Array.IndexOf(args, "--lighting") is var lighting and >= 0 && lighting + 1 < args.Length && MapLighting.Ids.Contains(args[lighting + 1]))
+        {
+            session.SetLighting(args[lighting + 1]);
+        }
+
+        return session;
     }
 
     private void OpenSelected()

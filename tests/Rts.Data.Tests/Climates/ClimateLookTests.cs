@@ -81,11 +81,39 @@ public sealed class ClimateLookTests
         Assert.DoesNotContain(RulesLoader.FilesBelow(GameDataFiles.Folder), file => file.FileName.StartsWith("climates/", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void A_painted_ground_has_its_colour_and_its_patches_and_the_others_keep_their_photograph()
+    {
+        var temperate = ClimateLookReader.Read(File.ReadAllText(Path.Combine(ClimateFolder, "temperate", "look.yaml")));
+        var grass = temperate.Materials.Single(m => m.Id == "grass");
+
+        // The light grass of RA2 (the owner, 2026-10-30): the shader paints it, the photograph gives its light and shade.
+        Assert.Equal(new LookColor(0x77 / 255f, 0x85 / 255f, 0x39 / 255f), grass.Color);
+        Assert.Equal(new LookColor(0x5c / 255f, 0x6e / 255f, 0x28 / 255f), grass.Patches);
+        Assert.Null(temperate.Materials.Single(m => m.Id == "dirt").Color);
+        var lone = ClimateLookReader.Read(File.ReadAllText(Path.Combine(ClimateFolder, "winter", "look.yaml"))
+            .Replace("dirt_snow.png, tiling: 5, roughness: 0.95 }", "dirt_snow.png, tiling: 5, roughness: 0.95, color: \"#f4f7fc\" }"));
+        var dirt = lone.Materials.Single(m => m.Id == "dirt");
+        Assert.Equal(dirt.Color, dirt.Patches);
+
+        // The snow of RA2: white with clean patches of grass over a small share, and stones on the free ground.
+        var winter = ClimateLookReader.Read(File.ReadAllText(Path.Combine(ClimateFolder, "winter", "look.yaml")));
+        Assert.Equal(0.12f, winter.Materials.Single(m => m.Id == "snow").PatchesShare);
+        Assert.Equal(0.5f, grass.PatchesShare);
+        Assert.Equal(0.03f, winter.Stones);
+        Assert.Equal(0f, temperate.Stones);
+    }
+
     [Theory]
     [InlineData("materials:", "materiels:", 1, "unknown key 'materiels' in the climate")]
     [InlineData("deep_water: \"#1a3d8f\"", "deep_water: \"#1a3d8\"", 13, "colour '#1a3d8' must be \"#rrggbb\"")]
     [InlineData("cliff: rock", "cliff: lava", 8, "the cliff material 'lava' is none of the materials")]
     [InlineData("  night:", "  noon:", 3, "unknown key 'noon' in lighting")]
+    [InlineData(
+        "  dirt:    { albedo: dirt_snow.png, tiling: 5, roughness: 0.95 }",
+        "  dirt:    { albedo: dirt_snow.png, tiling: 5, roughness: 0.95, patches: \"#5c6e28\" }",
+        74,
+        "patches need a color")]
     public void A_mistake_in_a_climate_points_at_its_place(string line, string replacement, int column, string reason)
     {
         var lines = File.ReadAllText(Path.Combine(ClimateFolder, "winter", "look.yaml")).Replace("\r\n", "\n").Split('\n');

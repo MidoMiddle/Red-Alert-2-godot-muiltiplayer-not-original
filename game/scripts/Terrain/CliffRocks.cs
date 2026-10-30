@@ -44,6 +44,42 @@ public static class CliffRocks
         return rocks;
     }
 
+    /// <summary>
+    /// The stones scattered over level ground (<c>ClimateLook.Stones</c>: the rocks among RA2's snow, the owner, 2026-10-30): on
+    /// about <paramref name="share"/> of the cells <paramref name="free"/> allows, a heap of one to three stones, smaller than the
+    /// scree of a cliff. No cliff cell gets them, it has its own.
+    /// </summary>
+    public static List<CliffRock> Scatter(TerrainHeights heights, float share, Func<int, int, bool> free)
+    {
+        var stones = new List<CliffRock>();
+        if (share <= 0f)
+        {
+            return stones;
+        }
+
+        for (var cellZ = 0; cellZ < heights.HeightCells; cellZ++)
+        {
+            for (var cellX = 0; cellX < heights.WidthCells; cellX++)
+            {
+                if (Hash(cellX, cellZ, 0, 6) >= share || heights.IsCliff(cellX, cellZ) || !free(cellX, cellZ))
+                {
+                    continue;
+                }
+
+                var count = 1 + (int)(Hash(cellX, cellZ, 0, 7) * 3f);
+                for (var i = 0; i < count; i++)
+                {
+                    var x = cellX + 0.2f + 0.6f * Hash(cellX, cellZ, i, 8);
+                    var z = cellZ + 0.2f + 0.6f * Hash(cellX, cellZ, i, 9);
+                    var size = 0.3f + 0.3f * Hash(cellX, cellZ, i, 10);
+                    stones.Add(new CliffRock(new Vector3(x, heights.HeightAt(x, z), z), size, Hash(cellX, cellZ, i, 11) * MathF.Tau, (int)(Hash(cellX, cellZ, i, 12) * 3f) % 3));
+                }
+            }
+        }
+
+        return stones;
+    }
+
     private static void PlaceInCell(TerrainHeights heights, int cellX, int cellZ, List<CliffRock> rocks)
     {
         var a = heights.VertexHeight(cellX, cellZ);

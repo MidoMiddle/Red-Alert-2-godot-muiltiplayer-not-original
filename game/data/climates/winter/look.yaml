@@ -3,18 +3,20 @@
 #
 # materials: the ids of the maps' legend.texture, in the order of the ground shader's slots. Albedo files are in
 #   res://assets/textures/terrain/; tiling is how many cells one copy covers; tint multiplies the texture; frost (0…1) lays
-#   frost over it in patches.
+#   frost over it in patches. color paints the ground instead of the tint: the shader gives it that colour, in large soft
+#   patches of the colour patches (the same without it) over the share patches_share of it (0…1, half by default), and the
+#   photograph only its light and shade.
 # trees: how the trees look (pine, broadleaf, desert: palms and cacti), the holo tank's disguise too.
 # lighting: the times of day of the map header's `lighting`. The sun's azimuth is the direction its light goes in,
 #   degrees from the map's east (+X) towards its south (+Y); elevation is degrees above the horizon.
 format: climate/1
 id: winter
 materials:
-  snow:    { albedo: snow_powder.png, tiling: 9, roughness: 0.95, tint: "#f4f7fc" }
-  grass:   { albedo: sparse_grass.png, tiling: 5, roughness: 0.95, tint: "#d8d4b8", frost: 0.55 }
+  snow:    { albedo: snow_powder.png, tiling: 9, roughness: 0.95, color: "#cfd9e8", patches: "#7a8a5e", patches_share: 0.12 }
+  grass:   { albedo: sparse_grass.png, tiling: 5, roughness: 0.95, color: "#c3cddb", patches: "#6f8058", patches_share: 0.3 }
   dirt:    { albedo: dirt_snow.png, tiling: 5, roughness: 0.95 }
   asphalt: { albedo: asphalt_snow.png, tiling: 4, roughness: 0.8, tint: "#d0d2d8" }
-  shore:   { albedo: coast_sand.png, tiling: 5, roughness: 0.9, tint: "#dcdcd8" }
+  shore:   { albedo: coast_sand.png, tiling: 5, roughness: 0.9, color: "#aab2bf", patches: "#959eae" }
   rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9 }
   ice:     { albedo: frozen_water.png, tiling: 12, roughness: 0.6 }
   water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.25, water: true }
@@ -22,6 +24,8 @@ materials:
   path:  { albedo: snow_powder.png, tiling: 4, roughness: 0.95, tint: "#c4ccd6" }
   highway: { albedo: road_highway_snow.png, tiling: 4, roughness: 0.75 }
 cliff: rock
+# The share of the free level ground with a few stones on it (0…0.2), as among RA2's snow.
+stones: 0.03
 trees: pine
 water_normal: water_normal.png
 deep_water: "#1a3d8f"

@@ -197,6 +197,10 @@ public partial class TerrainBuilder : Node3D
         var water = new float[ClimateLook.MaxMaterials];
         var frost = new float[ClimateLook.MaxMaterials];
         var tint = new Vector3[ClimateLook.MaxMaterials];
+        var painted = new float[ClimateLook.MaxMaterials];
+        var color = new Vector3[ClimateLook.MaxMaterials];
+        var patches = new Vector3[ClimateLook.MaxMaterials];
+        var share = new float[ClimateLook.MaxMaterials];
         for (var i = 0; i < ClimateLook.MaxMaterials; i++)
         {
             var material = climate.Materials[System.Math.Min(i, climate.Materials.Length - 1)];
@@ -207,6 +211,13 @@ public partial class TerrainBuilder : Node3D
             // The shader takes the tint as linear light, like the albedo it multiplies.
             var linear = SceneLighting.Color(material.Tint).SrgbToLinear();
             tint[i] = new Vector3(linear.R, linear.G, linear.B);
+            if (material.Color is { } own && material.Patches is { } second)
+            {
+                painted[i] = 1f;
+                color[i] = Linear(own);
+                patches[i] = Linear(second);
+                share[i] = material.PatchesShare;
+            }
         }
 
         GroundMaterial.SetShaderParameter("cliff_slot", climate.SlotOf(climate.Cliff));
@@ -217,7 +228,18 @@ public partial class TerrainBuilder : Node3D
         GroundMaterial.SetShaderParameter("mat_water", water);
         GroundMaterial.SetShaderParameter("mat_frost", frost);
         GroundMaterial.SetShaderParameter("mat_tint", tint);
+        GroundMaterial.SetShaderParameter("mat_painted", painted);
+        GroundMaterial.SetShaderParameter("mat_color", color);
+        GroundMaterial.SetShaderParameter("mat_patches", patches);
+        GroundMaterial.SetShaderParameter("mat_patches_share", share);
         GroundMaterial.SetShaderParameter("deep_water_color", SceneLighting.Color(climate.DeepWater));
+    }
+
+    // A colour of the look as linear light, the way the shader multiplies colours.
+    private static Vector3 Linear(LookColor color)
+    {
+        var linear = SceneLighting.Color(color).SrgbToLinear();
+        return new Vector3(linear.R, linear.G, linear.B);
     }
 
     private void BuildChunk((int X, int Z) start)

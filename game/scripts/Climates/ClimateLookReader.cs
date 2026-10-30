@@ -43,7 +43,7 @@ public static class ClimateLookReader
             throw new ClimateFormatException(1, 1, "a climate is one YAML mapping");
         }
 
-        var values = Entries(root, ["format", "id", "materials", "cliff", "water_normal", "deep_water", "lighting", "trees"], "the climate");
+        var values = Entries(root, ["format", "id", "materials", "cliff", "water_normal", "deep_water", "lighting", "trees", "stones"], "the climate");
         var format = Text(Required(values, "format", root));
         if (format != ClimateLook.FormatVersion)
         {
@@ -92,7 +92,8 @@ public static class ClimateLookReader
             File(Required(values, "water_normal", root)),
             Color(Required(values, "deep_water", root)),
             lighting.ToImmutable(),
-            values.TryGetValue("trees", out var trees) ? TreesOf(trees) : TreeKind.Pine);
+            values.TryGetValue("trees", out var trees) ? TreesOf(trees) : TreeKind.Pine,
+            values.TryGetValue("stones", out var stones) ? Number(stones, 0f, 0.2f, "stones") : 0f);
     }
 
     private static TreeKind TreesOf(YamlNode node) => Text(node) switch
@@ -106,7 +107,13 @@ public static class ClimateLookReader
 
     private static ClimateMaterial Material(string id, YamlNode node)
     {
-        var fields = Entries(node, ["albedo", "tiling", "roughness", "tint", "frost", "water"], $"material '{id}'");
+        var fields = Entries(node, ["albedo", "tiling", "roughness", "tint", "frost", "water", "color", "patches", "patches_share"], $"material '{id}'");
+        var color = Optional(fields, "color") is { } painted ? Color(painted) : (LookColor?)null;
+        if (color is null && (Optional(fields, "patches") ?? Optional(fields, "patches_share")) is { } lonely)
+        {
+            throw Error(lonely, "patches need a color: they are a second colour of a painted ground");
+        }
+
         return new ClimateMaterial(
             id,
             File(Required(fields, "albedo", node)),
@@ -114,7 +121,10 @@ public static class ClimateLookReader
             Optional(fields, "roughness") is { } roughness ? Number(roughness, 0f, 1f, "roughness") : 0.9f,
             Optional(fields, "tint") is { } tint ? Color(tint) : LookColor.White,
             Optional(fields, "frost") is { } frost ? Number(frost, 0f, 1f, "frost") : 0f,
-            Optional(fields, "water") is { } water && Bool(water));
+            Optional(fields, "water") is { } water && Bool(water),
+            color,
+            Optional(fields, "patches") is { } patches ? Color(patches) : color,
+            Optional(fields, "patches_share") is { } share ? Number(share, 0f, 1f, "patches_share") : 0.5f);
     }
 
     private static LightPreset Light(string id, YamlNode node)

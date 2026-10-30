@@ -3,14 +3,14 @@
 format: climate/1
 id: urban
 materials:
-  grass:   { albedo: grass_meadow.png, tiling: 6, roughness: 0.95, tint: "#c4dca8" }
+  grass:   { albedo: grass_meadow.png, tiling: 6, roughness: 0.95, color: "#778539", patches: "#5c6e28" }
   pavers:  { albedo: concrete_pavers.png, tiling: 3, roughness: 0.85 }
   slabs:   { albedo: concrete_slabs.png, tiling: 3, roughness: 0.85 }
   dirt:    { albedo: dirt_brown.png, tiling: 5, roughness: 0.95 }
   asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8, tint: "#c8c8cc" }
   shore:   { albedo: sand_shore.png, tiling: 5, roughness: 0.9 }
   rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9 }
-  water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.2, tint: "#4a7488", water: true }
+  water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.2, color: "#3f4862", water: true }
   track: { albedo: dirt_brown.png, tiling: 4, roughness: 0.9, tint: "#8a7358" }
   path:  { albedo: concrete_pavers.png, tiling: 3, roughness: 0.85 }
   highway: { albedo: road_highway.png, tiling: 4, roughness: 0.75 }
@@ -19,7 +19,7 @@ materials:
 cliff: rock
 trees: broadleaf
 water_normal: water_normal.png
-deep_water: "#1a3a52"
+deep_water: "#282c44"
 lighting:
   dawn:
     sun: { azimuth: 4, elevation: 40, color: "#ffcfa6", energy: 1.15 }

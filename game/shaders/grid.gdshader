@@ -32,6 +32,13 @@ uniform float mat_roughness[MAX_MATERIALS];
 uniform vec3 mat_tint[MAX_MATERIALS];
 uniform float mat_water[MAX_MATERIALS];
 uniform float mat_frost[MAX_MATERIALS];
+// A painted material (ClimateLook.cs, the key color): the shader gives its colour, in large soft patches of the second one, and
+// the photograph only its light and shade.
+uniform float mat_painted[MAX_MATERIALS];
+uniform vec3 mat_color[MAX_MATERIALS];
+uniform vec3 mat_patches[MAX_MATERIALS];
+// The share of the ground under the patches, 0…1.
+uniform float mat_patches_share[MAX_MATERIALS];
 // The slot of the climate's cliff material, for the walls; -1 without one.
 uniform int cliff_slot = -1;
 // The rock's grain runs down the wall: the texture is this much longer upright than across.
@@ -96,7 +103,25 @@ ivec2 material_of(ivec2 cell, ivec2 size) {
 }
 
 vec3 albedo_of(int slot, vec2 position, float frost_patches) {
-	vec3 albedo = texture(ground_albedo, vec3(position / mat_tiling[slot], float(slot))).rgb * mat_tint[slot];
+	vec3 photo = texture(ground_albedo, vec3(position / mat_tiling[slot], float(slot))).rgb;
+	vec3 albedo = photo * mat_tint[slot];
+	if (mat_painted[slot] > 0.5) {
+		// The photograph's light and shade about its mean (its smallest mip level, one texel), kept within reason so a bright
+		// stone of the photograph does not shine; the colour is the material's, in patches a few cells across.
+		vec3 luma = vec3(0.3, 0.59, 0.11);
+		float mean = dot(textureLod(ground_albedo, vec3(0.5, 0.5, float(slot)), 16.0).rgb, luma);
+		// A little more contrast than the photograph's own: RA2's grass is speckled.
+		float shade = clamp(1.0 + 1.3 * (dot(photo, luma) / max(mean, 0.001) - 1.0), 0.4, 1.7);
+		// Painted water takes nothing of the photograph: its light comes from the ripple alone (RA2's water is even).
+		shade = mat_water[slot] > 0.5 ? 1.0 : shade;
+		// Half the ground under the patches at a share of 0.5; a smaller share raises the line the noise must cross and sharpens
+		// the edge, so a few patches of grass in the snow have clean borders, as in RA2, instead of a haze.
+		float share = mat_patches_share[slot];
+		float line = 0.5 + 0.6 * (0.5 - share);
+		float edge = clamp(0.4 * share, 0.04, 0.2);
+		float blotch = smoothstep(line - edge, line + edge, 0.65 * noise(position * 0.17 + vec2(3.7, 1.9)) + 0.35 * noise(position * 0.43 + vec2(8.1, 5.3)));
+		albedo = mix(mat_color[slot], mat_patches[slot], blotch) * shade;
+	}
 	return mix(albedo, frost_color, mat_frost[slot] * frost_patches);
 }
 
@@ -139,17 +164,32 @@ void fragment() {
 		color *= mix(0.9, 1.08, noise(p * 0.11));
 
 		float water = dot(w, vec4(mat_water[m00.x], mat_water[m10.x], mat_water[m01.x], mat_water[m11.x]));
-		float deep = dot(w, vec4(equal(ivec4(m00.y, m10.y, m01.y, m11.y), ivec4(2))));
+		// The deep water over the plain blend of the cells, so shallow and deep cells side by side fade into each other instead
+		// of showing as blotches.
+		float deep = dot(w_bilinear, vec4(equal(ivec4(m00.y, m10.y, m01.y, m11.y), ivec4(2))));
 		color = mix(color, deep_water_color, deep * 0.85);
+		float painted_water = dot(w, vec4(mat_painted[m00.x] * mat_water[m00.x], mat_painted[m10.x] * mat_water[m10.x],
+			mat_painted[m01.x] * mat_water[m01.x], mat_painted[m11.x] * mat_water[m11.x]));
 		if (water > 0.0) {
 			// Two layers of the ripple drift in different directions and scales, so the glints move and do not repeat at once.
 			vec3 n1 = texture(tex_water_normal, p / 12.0 + TIME * vec2(0.02, 0.011)).xyz * 2.0 - 1.0;
 			vec3 n2 = texture(tex_water_normal, p / 7.0 - TIME * vec2(0.014, 0.022) + vec2(0.37, 0.61)).xyz * 2.0 - 1.0;
 			vec2 tilt = 0.5 * (n1.xy + n2.xy);
+			if (painted_water > 0.0) {
+				// Painted water (RA2's) has small waves: three layers of the ripple a cell or two across, turned against each other
+				// and at scales that never line up, so neither blotches nor the tiles of the ripple show.
+				vec2 a = mat2(vec2(0.80, 0.60), vec2(-0.60, 0.80)) * p;
+				vec2 b = mat2(vec2(0.39, -0.92), vec2(0.92, 0.39)) * p;
+				vec3 s1 = texture(tex_water_normal, a * 0.43 + TIME * vec2(0.05, 0.03)).xyz * 2.0 - 1.0;
+				vec3 s2 = texture(tex_water_normal, b * 0.71 - TIME * vec2(0.04, 0.06) + vec2(0.37, 0.61)).xyz * 2.0 - 1.0;
+				vec3 s3 = texture(tex_water_normal, p * 0.29 + TIME * vec2(-0.03, 0.02) + vec2(0.71, 0.13)).xyz * 2.0 - 1.0;
+				tilt = mix(tilt, (s1.xy + s2.xy + s3.xy) / 3.0, painted_water);
+			}
 			vec3 to_sun = normalize(-sun_direction);
 			// Brightness from how far the ripple tilts towards the sun, against flat water.
 			float facing = dot(normalize(vec3(tilt.x, 1.0, tilt.y)), to_sun) - to_sun.y;
-			color *= mix(1.0, clamp(1.0 + facing * 2.5, 0.8, 1.2), water);
+			float swing = mix(0.2, 0.07, painted_water);
+			color *= mix(1.0, clamp(1.0 + facing * 2.5, 1.0 - swing, 1.0 + swing), water);
 
 			// Foam along the shore: the water fraction falls from 1 to 0 over the cell edge, so the foam sits where it is near half.
 			float edge = dot(w_bilinear, vec4(mat_water[m00.x], mat_water[m10.x], mat_water[m01.x], mat_water[m11.x]));
@@ -159,7 +199,8 @@ void fragment() {
 
 			// Light moving over the bottom of the shallow part of the water.
 			float shallow = clamp(water - deep, 0.0, 1.0);
-			color += caustic_strength * caustic(p * 1.3, TIME) * shallow * vec3(0.8, 0.95, 1.0);
+			// Painted water (RA2's) keeps a faint trace of it only.
+			color += caustic_strength * mix(1.0, 0.3, painted_water) * caustic(p * 1.3, TIME) * shallow * vec3(0.8, 0.95, 1.0);
 		}
 
 		// The walls of the cliffs: rock from the side on every steep face, less of it as the face levels out.
@@ -171,7 +212,14 @@ void fragment() {
 			float tiling = mat_tiling[cliff_slot];
 			vec3 along_x = texture(ground_albedo, vec3(vec2(world_position.x, world_position.y / cliff_stretch) / tiling, float(cliff_slot))).rgb;
 			vec3 along_z = texture(ground_albedo, vec3(vec2(world_position.z, world_position.y / cliff_stretch) / tiling, float(cliff_slot))).rgb;
-			vec3 rock = (along_x * side.y + along_z * side.x) * mat_tint[cliff_slot];
+			vec3 grain = along_x * side.y + along_z * side.x;
+			vec3 rock = grain * mat_tint[cliff_slot];
+			if (mat_painted[cliff_slot] > 0.5) {
+				// A painted rock (the desert's orange sandstone, RA2) keeps only the photograph's crevices and ledges.
+				vec3 luma = vec3(0.3, 0.59, 0.11);
+				float mean = dot(textureLod(ground_albedo, vec3(0.5, 0.5, float(cliff_slot)), 16.0).rgb, luma);
+				rock = mat_color[cliff_slot] * clamp(1.0 + 1.3 * (dot(grain, luma) / max(mean, 0.001) - 1.0), 0.35, 1.8);
+			}
 			color = mix(color, rock, steep);
 			roughness = mix(roughness, mat_roughness[cliff_slot], steep);
 		}
