@@ -1,11 +1,12 @@
 """Ore drill ore_source: a tower with a turning drill head (docs/map_elements/06_ore/prompts.md).
 
-One cell footprint, about three cells tall, origin at the cell centre on the ground, budget 3000
-triangles. Two nodes: "tower" (base, pole, cabinet, hose) stays still, "drill" (screw and head)
+One cell footprint, 1.8 cells tall (three at first, lowered by 40% at the owner's word, 2026-10-30: V), origin at the cell centre
+on the ground, budget 3000 triangles. Two nodes: "tower" (base, pole, cabinet, hose) stays still, "drill" (screw and head)
 is turned by the game around the vertical axis through the origin. One model serves ore and gems:
 the game colours the head for the resource (docs/map_elements/06_ore/README.md, question 3), so the
 head has no colour of its own here. Glow and the flying ore are not in the model
-(generation_requirements.md, section 4; 06_ore prompts, section 4).
+(generation_requirements.md, section 4; 06_ore prompts, section 4): the game throws the ore out of the ground at the foot of the
+screw (game/scripts/Terrain/OreSources.cs).
 
 Texture 1024: the drill is a tall structure, not a small prop, so the 512 rule does not apply.
 The layout is our own. The reference picture gave the parts (pole with a screw, cap, cabinet,
@@ -23,8 +24,10 @@ import bmesh
 from mathutils import Vector
 
 import rts_common as rc
+from families import city_common as cc
 
 SIZE = 1024
+V = 0.6  # every height of the first drill, three cells tall, times this
 
 
 def _ring(radius, z, sides):
@@ -69,25 +72,25 @@ def _tube(bm, pts, half_a, half_b):
 
 def _tower_geometry():
     bm = bmesh.new()
-    add_frustum(bm, 0.42, 0.0, 0.42, 0.08)                       # concrete base plate
-    add_frustum(bm, 0.065, 0.08, 0.065, 2.5, sides=12)           # pole the screw turns around
-    rc.add_box(bm, (0.17, -0.16, 0.18), (0.46, 0.16, 1.05))      # cabinet on the side
-    rc.add_box(bm, (0.06, -0.025, 0.45), (0.18, 0.025, 0.50))    # bracket from the pole to the cabinet
-    ctrl = [Vector((0.30, 0.0, 1.10)), Vector((0.36, 0.0, 1.40)),
-            Vector((0.30, 0.0, 2.00)), Vector((0.22, 0.0, 2.30))]
+    add_frustum(bm, 0.42, 0.0, 0.42, 0.08 * V)                   # concrete base plate
+    add_frustum(bm, 0.065, 0.08 * V, 0.065, 2.5 * V, sides=12)   # pole the screw turns around
+    rc.add_box(bm, (0.17, -0.16, 0.18 * V), (0.46, 0.16, 1.05 * V))  # cabinet on the side
+    rc.add_box(bm, (0.06, -0.025, 0.45 * V), (0.18, 0.025, 0.50 * V))  # bracket from the pole to the cabinet
+    ctrl = [Vector((0.30, 0.0, 1.10 * V)), Vector((0.36, 0.0, 1.40 * V)),
+            Vector((0.30, 0.0, 2.00 * V)), Vector((0.22, 0.0, 2.30 * V))]
     _tube(bm, [_bezier(ctrl, i / 14) for i in range(15)], 0.03, 0.03)  # hose up to the head
     return bm
 
 
 def _drill_geometry():
     bm = bmesh.new()
-    _tube(bm, _helix(0.13, 0.22, 2.22, turns=8, per_turn=12), 0.03, 0.025)  # screw
-    add_frustum(bm, 0.24, 2.30, 0.24, 2.36)                      # flange under the funnel
-    add_frustum(bm, 0.24, 2.36, 0.16, 2.52)                      # funnel
-    add_frustum(bm, 0.16, 2.52, 0.16, 2.72)                      # drill housing
-    add_frustum(bm, 0.19, 2.72, 0.19, 2.78)                      # upper flange
-    add_frustum(bm, 0.14, 2.78, 0.14, 2.92)                      # motor cap
-    add_frustum(bm, 0.14, 2.92, 0.04, 3.00)                      # round top
+    _tube(bm, _helix(0.13, 0.22 * V, 2.22 * V, turns=5, per_turn=12), 0.03, 0.025)  # screw: fewer turns, the same pitch
+    add_frustum(bm, 0.24, 2.30 * V, 0.24, 2.36 * V)              # flange under the funnel
+    add_frustum(bm, 0.24, 2.36 * V, 0.16, 2.52 * V)              # funnel
+    add_frustum(bm, 0.16, 2.52 * V, 0.16, 2.72 * V)              # drill housing
+    add_frustum(bm, 0.19, 2.72 * V, 0.19, 2.78 * V)              # upper flange
+    add_frustum(bm, 0.14, 2.78 * V, 0.14, 2.92 * V)              # motor cap
+    add_frustum(bm, 0.14, 2.92 * V, 0.04, 3.00 * V)              # round top
     return bm
 
 
@@ -105,11 +108,11 @@ def _material():
     coord = g.object_coord()
     x = g.axis(coord, 'X')
     z = g.axis(coord, 'Z')
-    # Cabinet: x 0.17..0.46, z 0.18..1.05. Concrete: z below 0.08.
+    # Cabinet: x 0.17..0.46, z 0.18 V..1.05 V. Concrete: z below 0.08 V.
     cabinet = g.math('MULTIPLY', g.clamp01(g.math('MULTIPLY_ADD', x, 60.0, -10.2)),
-                     g.math('MULTIPLY', g.clamp01(g.math('MULTIPLY_ADD', z, -60.0, 63.0)),
-                            g.clamp01(g.math('MULTIPLY_ADD', z, 60.0, -10.8))))
-    concrete = g.clamp01(g.math('MULTIPLY_ADD', z, -60.0, 5.0))
+                     g.math('MULTIPLY', g.clamp01(g.math('MULTIPLY_ADD', z, -60.0, 63.0 * V)),
+                            g.clamp01(g.math('MULTIPLY_ADD', z, 60.0, -10.8 * V))))
+    concrete = g.clamp01(g.math('MULTIPLY_ADD', z, -60.0, 5.0 * V))
     steel = g.clamp01(g.math('MULTIPLY_ADD', g.clamp01(g.math('ADD', cabinet, concrete)), -1.0, 1.0))
     grain = g.noise(14.0, 4.0)
     steel_col = g.mix(grain, (0.36, 0.37, 0.39), (0.56, 0.58, 0.61))
@@ -126,6 +129,7 @@ def _material():
 
 
 def build():
+    cc.clear("ore_source", ("tower", "drill"))  # the parts of an earlier build, so the new ones keep their names
     tower = rc.make_object("ore_source_tower", _tower_geometry())
     drill = rc.make_object("ore_source_drill", _drill_geometry())
     rc.uv_smart(tower)

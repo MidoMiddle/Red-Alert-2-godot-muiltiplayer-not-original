@@ -6,7 +6,7 @@ namespace Rts.Client.Terrain;
 
 /// <summary>
 /// The ore of a match (docs/implementation/M3_base_economy.md, 4.12, step 9): on every cell of ore a cluster of golden stones, on every
-/// cell of gems one of blue gems (the models of the table, <c>ore/ore</c> and <c>ore/gems</c>: their files only), larger the higher the stage and turned by the cell
+/// cell of gems one of gems of many colours (the models of the table, <c>ore/ore</c> and <c>ore/gems</c>: their files only), larger the higher the stage and turned by the cell
 /// (<see cref="OreCrystals.ClusterScale"/>). Without the model files, yellow and blue diamonds as before, one to four a cell
 /// (<see cref="OreCrystals.Of"/>, step 13). Redrawn when the ore changes (<see cref="MapGrid.OreVersion"/>): it grows every 30 seconds,
 /// the drills throw it and the harvesters take it — at most every <see cref="RebuildPause"/> seconds on the same map, and only the pieces

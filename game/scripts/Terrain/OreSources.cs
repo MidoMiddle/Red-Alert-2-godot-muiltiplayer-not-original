@@ -9,8 +9,8 @@ namespace Rts.Client.Terrain;
 /// The ore and gem sources of the map (docs/implementation/M3_base_economy.md, 4.12, step 16): the drill tower of
 /// the model of the table (<c>object/ore_source</c>) — its still <c>tower</c> and its turning <c>drill</c>, the screw and the head, tinted in the colour of what it
 /// throws: gold for ore, blue for gems. Without the model file, a tower of boxes on a dark pad with a head of that colour. The drill turns
-/// slowly all the time; on <see cref="OreSourceErupted"/> it spins fast for <see cref="SpinSeconds"/> and a burst of crystals flies in an
-/// arc from the head to the cell that got the stage. In the editor there is no simulation, so the drills only turn. One view per source,
+/// slowly all the time; on <see cref="OreSourceErupted"/> it spins fast for <see cref="SpinSeconds"/> and a burst of crystals comes out of
+/// the ground at the foot of the screw and flies in an arc to the cell that got the stage: gold nuggets, or gems of many colours. In the editor there is no simulation, so the drills only turn. One view per source,
 /// made again only when the sources of the map change.
 /// </summary>
 public partial class OreSources : Node3D
@@ -22,16 +22,23 @@ public partial class OreSources : Node3D
     private const float EruptionSpin = 14f;
     private const float HeadHeight = 1.05f;
 
-    /// <summary>The drill tower (docs/assets_registry.md): 0.9 of a cell wide, the head 3 cells up, as modelled.</summary>
     /// <summary>The key of the drill's model in the table of models (docs/art/model_standards.md): its file only.</summary>
     public const string ModelKey = "object/ore_source";
 
-    // Where the crystals leave the model: by the head, under the top of the screw.
-    private const float ModelHeadHeight = 2.7f;
+    // Where the crystals leave the ground: the foot of the screw, just over the base plate (the model's drill tower is 0.9 of a cell
+    // wide and 1.8 cells tall, docs/assets_registry.md).
+    private const float FootHeight = 0.12f;
 
     // How much of the colour of the resource the drill of the model takes over its own texture.
     private const float ModelTint = 0.65f;
     private const float Gravity = 5f;
+
+    // The gems thrown, each of one of the colours of the gems on the ground (tools/blender/families/ore_clusters.py, GEM_COLOURS).
+    private static readonly Color[] GemColours =
+    [
+        new(0.92f, 0.10f, 0.14f), new(0.12f, 0.80f, 0.28f), new(0.14f, 0.38f, 1f), new(0.58f, 0.18f, 0.95f), new(0.10f, 0.85f, 0.92f),
+        new(1f, 0.40f, 0.72f),
+    ];
 
     private static readonly Color PadColor = new(0.22f, 0.23f, 0.25f);
     private static readonly Color TowerColor = new(0.5f, 0.52f, 0.56f);
@@ -141,7 +148,7 @@ public partial class OreSources : Node3D
             });
             root.AddChild(head);
             AddChild(root);
-            _views[source.Id] = new View(root, head, color, HeadHeight);
+            _views[source.Id] = new View(root, head, color, source.Kind == MapObjectKind.GemSource);
         }
 
         Place(map);
@@ -172,13 +179,13 @@ public partial class OreSources : Node3D
         }
 
         view.SpinLeft = SpinSeconds;
-        var from = view.Root.Position + new Vector3(0, view.EmitHeight + 0.1f, 0);
+        var from = view.Root.Position + new Vector3(0, FootHeight, 0);
         var to = new Vector3(erupted.Cell.X + 0.5f, terrain.HeightAt(erupted.Cell.X + 0.5f, erupted.Cell.Y + 0.5f), erupted.Cell.Y + 0.5f);
         var flat = new Vector3(to.X - from.X, 0, to.Z - from.Z);
         var distance = Mathf.Max(flat.Length(), 0.5f);
 
-        // Thrown at 45°: speed √(g·d) lands about d away after √(2d/g) seconds (a little short, as the cell lies below the head); the
-        // crystals live as long as the flight, so none falls on through the ground.
+        // Thrown at 45° from the ground: speed √(g·d) lands about d away after √(2d/g) seconds; the crystals live as long as the flight,
+        // so none falls on through the ground.
         var speed = Mathf.Sqrt(Gravity * distance);
         var flight = Mathf.Sqrt(2f * distance / Gravity);
         var burst = new CpuParticles3D
@@ -197,8 +204,14 @@ public partial class OreSources : Node3D
             Gravity = new Vector3(0, -Gravity, 0),
             ScaleAmountMin = 0.7f,
             ScaleAmountMax = 1.2f,
-            Mesh = new BoxMesh { Size = new Vector3(0.11f, 0.11f, 0.11f), Material = Material(view.Color) },
+            Mesh = new BoxMesh { Size = new Vector3(0.11f, 0.11f, 0.11f), Material = new StandardMaterial3D { VertexColorUseAsAlbedo = true } },
+            Color = view.Gems ? Colors.White : view.Color,
         };
+        if (view.Gems)
+        {
+            burst.ColorInitialRamp = GemRamp();
+        }
+
         AddChild(burst);
         burst.Emitting = true;
         GetTree().CreateTimer(burst.Lifetime + 0.5).Timeout += burst.QueueFree;
@@ -232,7 +245,7 @@ public partial class OreSources : Node3D
             mesh.MaterialOverride = tint;
         }
 
-        return new View(root, drill, color, ModelHeadHeight);
+        return new View(root, drill, color, kind == MapObjectKind.GemSource);
     }
 
     // The drill's own material with the colour of the resource over its texture, one per kind for every drill of it.
@@ -259,10 +272,22 @@ public partial class OreSources : Node3D
 
     private static StandardMaterial3D Material(Color color) => new() { AlbedoColor = color };
 
-    private sealed class View(Node3D root, Node3D head, Color color, float emitHeight)
+    // Each crystal of a burst of gems one of GemColours, picked at random: a ramp of steps, not a blend between them.
+    private static Gradient GemRamp()
     {
-        /// <summary>The height the crystals leave from.</summary>
-        public float EmitHeight { get; } = emitHeight;
+        var offsets = new float[GemColours.Length];
+        for (var i = 0; i < offsets.Length; i++)
+        {
+            offsets[i] = (float)i / offsets.Length;
+        }
+
+        return new Gradient { InterpolationMode = Gradient.InterpolationModeEnum.Constant, Offsets = offsets, Colors = GemColours };
+    }
+
+    private sealed class View(Node3D root, Node3D head, Color color, bool gems)
+    {
+        /// <summary>Whether it throws gems: crystals of many colours, not the one of <see cref="Color"/>.</summary>
+        public bool Gems { get; } = gems;
 
         public Node3D Root { get; } = root;
 
