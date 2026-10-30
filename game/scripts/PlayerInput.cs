@@ -1032,7 +1032,8 @@ public partial class PlayerInput : Node
             TargetBoards: target.Kind == PointerTargetKind.OwnUnit && !Selection.Contains(target.Unit) && EnterAt(target.Unit) is not null,
             OwnDefense: ground is { } spot ? DefenseAt(spot) : null,
             YardPacks: ground is { } over && FactoryAt(over) is { } yard && yard == SelectedFactory && IsYard(yard)
-                && _host.Simulation.World.Match is not { Options.McvRepacks: false });
+                && _host.Simulation.World.Match is not { Options.McvRepacks: false },
+            GroundEnters: !Selection.IsEmpty && ground is { } door && EnterAt(door) is not null);
     }
 
     // The building selected instead of units: one that produces (an order on the ground sets its rally point) or a defense.

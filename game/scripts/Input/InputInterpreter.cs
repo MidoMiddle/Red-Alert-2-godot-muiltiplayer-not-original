@@ -86,6 +86,11 @@ public readonly record struct ScreenPoint(float X, float Y)
 /// Whether the unit under the pointer is an own transport one of the selection can board (a helicopter, a landing craft, an IFV): a
 /// click is an order to board it, not a pick (the owner, 2026-10-25: «engineers sent into the helicopter did nothing»).
 /// </param>
+/// <param name="GroundEnters">
+/// Whether one of the selection can go into the own building under the pointer — more soldiers into a garrison or a bunker, a tesla
+/// trooper to its coil, an engineer to mend it: a click is that order, not a pick of the building (the owner, 2026-10-30: «one soldier
+/// in, and no more»).
+/// </param>
 public readonly record struct PointerContext(
     WorldPos? Ground,
     PointerTarget Target,
@@ -100,7 +105,8 @@ public readonly record struct PointerContext(
     EntityId? OwnFactory = null,
     bool TargetBoards = false,
     EntityId? OwnDefense = null,
-    bool YardPacks = false);
+    bool YardPacks = false,
+    bool GroundEnters = false);
 
 /// <summary>What the player wants. The game applies it; the interpreter knows nothing about units or the camera.</summary>
 public abstract record Intent;
@@ -520,14 +526,16 @@ public sealed class InputInterpreter
             return new Intent[] { new DeployUnit(yard) };
         }
 
-        if (context.Target.Kind == PointerTargetKind.Ground && context.OwnFactory is { } factory && !context.Shift)
+        // With soldiers that can go into the own building under the pointer, the click sends them in (as the cursor says).
+        var enters = context.GroundEnters && _scheme == ControlScheme.Classic;
+        if (context.Target.Kind == PointerTargetKind.Ground && context.OwnFactory is { } factory && !context.Shift && !enters)
         {
             // The barracks, the war factory, a shipyard, the air command: selected, for its rally point; a double click makes it the
             // primary one (RA2).
             return context.DoubleClick ? new Intent[] { new SelectBuilding(factory), new MakePrimary(factory) } : new Intent[] { new SelectBuilding(factory) };
         }
 
-        if (context.Target.Kind == PointerTargetKind.Ground && context.OwnDefense is { } defense && !context.Shift)
+        if (context.Target.Kind == PointerTargetKind.Ground && context.OwnDefense is { } defense && !context.Shift && !enters)
         {
             // A Prism Tower, a Pillbox, a garrisoned bunker: selected, for its range and its target (RA2).
             return new Intent[] { new SelectBuilding(defense) };

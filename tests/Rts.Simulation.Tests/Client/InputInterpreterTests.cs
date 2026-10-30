@@ -143,6 +143,27 @@ public sealed class InputInterpreterTests
         Assert.Equal(new Intent[] { new OrderAttack(enemy) }, order);
     }
 
+    [Theory]
+    [InlineData(ControlScheme.Classic)]
+    [InlineData(ControlScheme.Modern)]
+    public void Soldiers_that_can_go_into_an_own_held_building_are_sent_in_not_the_building_picked(ControlScheme scheme)
+    {
+        // The owner (2026-10-30): one soldier in a house — it fires, so it is a defense — and the next ones could not follow.
+        var input = new InputInterpreter(scheme, cameraDrag: true);
+        var house = new EntityId(31);
+        var held = Context(Ground, hasSelection: true) with { OwnDefense = house, GroundEnters = true };
+
+        var order = scheme == ControlScheme.Modern ? input.Press(PointerButton.Right, Here, held) : LeftClick(input, held);
+        Assert.Equal(new Intent[] { new OrderMove(Spot) }, order);
+        // The game sends a move onto a building the selection can go into as an order to go in.
+        Assert.Equal(new Intent[] { new OrderMove(Spot) },
+            scheme == ControlScheme.Modern
+                ? input.Press(PointerButton.Right, Here, held with { OwnDefense = null, OwnFactory = house })
+                : LeftClick(input, held with { OwnDefense = null, OwnFactory = house }));
+        // Without such soldiers a click still picks it.
+        Assert.Equal(new Intent[] { new SelectBuilding(house) }, LeftClick(input, held with { GroundEnters = false }));
+    }
+
     [Fact]
     public void ModernRightClickWithNothingSelectedDoesNothing()
     {
