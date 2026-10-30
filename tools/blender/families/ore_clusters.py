@@ -7,10 +7,12 @@ is not one specimen but a scatter of small pieces over the whole cell and a litt
 running into one field.
 No soil under it: the pieces lie on the ground of the map, a little sunk into it, so that they sit on a slope too.
 
-Ore is small gold nuggets, lumpy and rounded, most of them pebbles and a few bigger, in loose clumps; gold all over, darker in the
-hollows. Gems are small six-sided crystals with a pointed tip, alone or two or three from one point, leaning every way, each of its
-own colour: red, green, blue, violet, cyan and pink (the owner's choice, 2026-10-30). The colour is written per crystal on the mesh
-(the colour attribute GEM) and baked into the texture.
+Ore is gold nuggets, angular chunks with flat faces that catch the light, about a quarter of a soldier's height across (a tenth of a
+harvester's length), spread evenly with the grass between them and a few denser spots; light gold, darker in thin veins. Gems are
+six-sided crystals up to half a soldier's height with a pointed tip, alone or two or three from one point, leaning every way, each of
+its own colour: red, green, blue, violet, cyan and pink (the owner's choice, 2026-10-30). The colour is written per crystal on the
+mesh (the colour attribute GEM) and baked into the texture. The size and the spread follow a picture of RA2's ore the owner gave
+(2026-10-30): the pieces were three times smaller and read as dust, then twice as big and too big.
 The shapes are ours, not copied from any reference (generation_requirements.md, section 8).
 
 In Blender, after rts_common is on sys.path:
@@ -36,10 +38,10 @@ REACH = 0.56  # half the side of the square the pieces lie in: past the cell's e
 # overlap into one field at full size, however each is turned
 
 SPECS = {
-    "ore_cluster": dict(seed=31, clumps=4, pieces=49, radius=(0.022, 0.045), big=(0.05, 0.07), bigs=5,
-                        squash=(0.55, 0.8), elong=(1.0, 1.4)),
-    "gem_cluster": dict(seed=23, clumps=4, groups=32, length=(0.07, 0.14), long=(0.15, 0.21), longs=5,
-                        width=(0.019, 0.032), tilt=(0.0, 40.0)),
+    "ore_cluster": dict(seed=31, clumps=4, pieces=26, radius=(0.07, 0.095), big=(0.1, 0.115), bigs=6,
+                        squash=(0.7, 0.95), elong=(1.0, 1.35)),
+    "gem_cluster": dict(seed=23, clumps=4, groups=18, length=(0.14, 0.22), long=(0.26, 0.3), longs=5,
+                        width=(0.045, 0.065), tilt=(0.0, 40.0)),
 }
 
 # The colours of the gems, sRGB.
@@ -50,9 +52,9 @@ def _spot(rnd, clumps):
     """A place in the square of side 2 REACH: mostly anywhere in it, now and then near one of the clumps, so the field is even
     with a few denser spots."""
     while True:
-        if rnd.random() < 0.3:
+        if rnd.random() < 0.15:
             cx, cy = rnd.choice(clumps)
-            r, a = 0.12 * math.sqrt(rnd.random()), rnd.uniform(0.0, 2 * math.pi)
+            r, a = 0.18 * math.sqrt(rnd.random()), rnd.uniform(0.0, 2 * math.pi)
             x, y = cx + r * math.cos(a), cy + r * math.sin(a)
         else:
             x, y = rnd.uniform(-REACH, REACH), rnd.uniform(-REACH, REACH)
@@ -66,12 +68,12 @@ def _clumps(rnd, count):
 
 
 def _nugget(bm, rnd, spec, place, radius):
-    """One nugget: a lumpy, squashed and stretched icosahedron, sunk a third into the ground."""
+    """One nugget: a lumpy, squashed and stretched icosahedron, sunk a third into the ground, its faces flat."""
     squash = rnd.uniform(*spec["squash"])
     elong = rnd.uniform(*spec["elong"])
     centre = Vector((place[0], place[1], radius * squash * 0.35))
     turn = Matrix.Rotation(rnd.uniform(0.0, 2 * math.pi), 3, 'Z')
-    made = bmesh.ops.create_icosphere(bm, subdivisions=0, radius=1.0)  # 20 triangles: at this size a rounder one shows nothing more
+    made = bmesh.ops.create_icosphere(bm, subdivisions=0, radius=1.0)  # 20 triangles: a chunk with faces that catch the light
     for v in made["verts"]:
         d = v.co.normalized()
         k = radius * (1.0 + rnd.uniform(-0.2, 0.2))
@@ -127,7 +129,7 @@ def _gold_material(mat_name):
     ao = g.ao(0.05)
     grain = g.noise(40.0, 4.0)
     patches = g.noise(9.0, 2.0)
-    gold = g.mix(patches, lin((0.95, 0.68, 0.14)), lin((1.0, 0.86, 0.32)))
+    gold = g.mix(patches, lin((0.98, 0.80, 0.20)), lin((1.0, 0.92, 0.42)))
     vein = g.clamp01(g.math('MULTIPLY_ADD', g.math('ABSOLUTE', g.math('SUBTRACT', grain, 0.5)), -14.0, 1.0))
     albedo = g.mix(g.math('MULTIPLY', vein, 0.5), gold, lin((0.62, 0.40, 0.08)))  # thin darker veins
     rough = g.math('MULTIPLY_ADD', vein, 0.3, 0.3)
@@ -163,7 +165,7 @@ def build(name):
         _gems(bm, rnd, spec)
         mat, graph = _gem_material(name + "_mat")
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    obj = rc.make_object(name + "_body", bm, smooth=name == "ore_cluster")
+    obj = rc.make_object(name + "_body", bm, smooth=False)
     rc.uv_smart(obj)
     cc.repack([obj], 4.0 / SIZE)  # a gap between the islands, or one gem's colour bleeds into the next
     obj.data.materials.append(mat)
