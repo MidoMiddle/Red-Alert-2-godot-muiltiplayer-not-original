@@ -10,6 +10,7 @@
 #                   the holo tank's disguise too
 #   ore/<kind>      the clusters of a field: ore and gems (the file only: the field scales and turns them)
 #   crate/supply    a crate of a match (M11 a6): pivot at the centre of its cell on the ground
+#   <key>@<climate> the model of the same thing on the maps of one climate (urban, winter…): drawn there before the key's own
 # Fields: file — or files: [a list of kinds of it], each cell picks one — (one of the two is required), scale (1), yaw in degrees
 # (0), offset [x, y, z] in cells ([0, 0, 0]), jitter — the share the size of each varies either way, 0…0.5 (0), spin — each turned
 # any way (false), height in cells for the bars over a building (its look's when 0), climates — the climates it is drawn in (all
@@ -76,6 +77,21 @@ models:
                                 occupied: map/building_apartment_block_occupied/building_apartment_block_occupied.glb,
                                 abandoned: map/building_apartment_block_abandoned/building_apartment_block_abandoned.glb,
                                 ruins: map/building_apartment_block_ruins/building_apartment_block_ruins.glb }
+
+  # On the urban maps the house and the apartment block are the city's (docs/city_elements/01_small_house, 02_apartment_block): the
+  # same states, a storey to a cell squashed as the rest.
+  building/neutral_house_a@urban: { file: city/city_house_small/city_house_small.glb, height: 0.88, height_scale: 0.35,
+                                    damaged: city/city_house_small_damaged/city_house_small_damaged.glb,
+                                    damaged_occupied: city/city_house_small_damaged_occupied/city_house_small_damaged_occupied.glb,
+                                    occupied: city/city_house_small_occupied/city_house_small_occupied.glb,
+                                    abandoned: city/city_house_small_abandoned/city_house_small_abandoned.glb,
+                                    ruins: city/city_house_small_ruins/city_house_small_ruins.glb }
+  building/neutral_apartment@urban: { file: city/city_apartment_block/city_apartment_block.glb, height: 2.1, height_scale: 0.35,
+                                      damaged: city/city_apartment_block_damaged/city_apartment_block_damaged.glb,
+                                      damaged_occupied: city/city_apartment_block_damaged_occupied/city_apartment_block_damaged_occupied.glb,
+                                      occupied: city/city_apartment_block_occupied/city_apartment_block_occupied.glb,
+                                      abandoned: city/city_apartment_block_abandoned/city_apartment_block_abandoned.glb,
+                                      ruins: city/city_apartment_block_ruins/city_apartment_block_ruins.glb }
 
   # The civilian bunker of the map (docs/map_elements/11_civilian_buildings): the same states as the house; eight barrels out of its
   # slits when occupied.
@@ -182,9 +198,9 @@ models:
                                   abandoned: city/city_auto_repair_abandoned/city_auto_repair_abandoned.glb,
                                   ruins: city/city_auto_repair_ruins/city_auto_repair_ruins.glb }
 
-  # The oil pumpjack of the map (docs/map_elements/12_tech_buildings): the beam nods while it works, the ring on the tank takes the
-  # owner's colour, and its ruins stay where it fell.
-  building/tech_oil_derrick: { file: map/tech_oil_derrick/tech_oil_derrick.glb, height: 2.2,
+  # The oil pumpjack of the map (docs/map_elements/12_tech_buildings): the beam nods while it works, the band on the tank and the top
+  # of the shed's roof take the owner's colour, and its ruins stay where it fell.
+  building/tech_oil_derrick: { file: map/tech_oil_derrick/tech_oil_derrick.glb, height: 1.75,
                                abandoned: map/tech_oil_derrick_abandoned/tech_oil_derrick_abandoned.glb,
                                ruins: map/tech_oil_derrick_ruins/tech_oil_derrick_ruins.glb }
 

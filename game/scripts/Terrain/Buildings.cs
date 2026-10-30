@@ -27,6 +27,7 @@ public partial class Buildings : Node3D
     private static readonly Color Tech = new(0.45f, 0.58f, 0.6f);
 
     private object? _builtMap;
+    private string? _climate;  // the climate of the map drawn: a climate's own model of a building goes before the general one
     private int _builtVersion = -1;
     private long _builtOwners = -1;
     private SimulationHost? _host;
@@ -67,8 +68,10 @@ public partial class Buildings : Node3D
         var map = GetParent<TerrainBuilder>().Map;
         var world = GetNodeOrNull<SimulationHost>("../../SimulationHost")?.Simulation.World;
         var owners = Owners(world);
-        if (!ReferenceEquals(map, _builtMap) || map.LayoutVersion != _builtVersion || owners != _builtOwners)
+        var climate = GetParent<TerrainBuilder>().Climate?.Id;
+        if (!ReferenceEquals(map, _builtMap) || map.LayoutVersion != _builtVersion || owners != _builtOwners || climate != _climate)
         {
+            _climate = climate;
             _builtOwners = owners;
             Rebuild(map, world);
         }
@@ -203,8 +206,8 @@ public partial class Buildings : Node3D
         // The file of the state it is in, by its damage and its soldiers (BuildingStates); a state the table gives no file for is drawn
         // as the whole one, as before.
         var variant = Models.BuildingStates.Of(state, occupied);
-        var model = Models.ModelLibrary.Instantiate("building/" + type.Id, colour, cell: at, variant: variant)
-            ?? (variant == Models.ModelVariant.Intact ? null : Models.ModelLibrary.Instantiate("building/" + type.Id, colour, cell: at));
+        var model = Models.ModelLibrary.Instantiate("building/" + type.Id, colour, _climate, at, variant)
+            ?? (variant == Models.ModelVariant.Intact ? null : Models.ModelLibrary.Instantiate("building/" + type.Id, colour, _climate, at));
         if (model is not null)
         {
             // The model of the table (docs/art/model_standards.md); a taken tech building shows its owner in its team_mask.
@@ -217,7 +220,7 @@ public partial class Buildings : Node3D
             }
 
             // The smoke and the fire stand over the height the bars of the building stand over: the table's, else the placeholder's.
-            var modelHeight = Models.ModelLibrary.Find("building/" + type.Id)?.Height ?? 0f;
+            var modelHeight = Models.ModelLibrary.Find("building/" + type.Id, _climate)?.Height ?? 0f;
             BuildingBlaze.Add(this, model, new Vector3(centre.X, ground + (modelHeight > 0f ? modelHeight : height) + 0.1f, centre.Z),
                 type.Width, type.Height, state);
             return;
@@ -281,8 +284,8 @@ public partial class Buildings : Node3D
         var type = Rts.Client.App.DataFiles.Current.Rules.MapTypes.Get(ruin.Kind);
         var centre = new Vector3(ruin.Cell.X + type.Width / 2f, 0, ruin.Cell.Y + type.Height / 2f);
         var ground = WorldCoords.Terrain!.HeightAt(centre.X, centre.Z);
-        if (Models.ModelLibrary.Find("building/" + type.Id)?.Ruins is not null
-            && Models.ModelLibrary.Instantiate("building/" + type.Id, variant: Models.ModelVariant.Ruins) is { } model)
+        if (Models.ModelLibrary.Find("building/" + type.Id, _climate)?.Ruins is not null
+            && Models.ModelLibrary.Instantiate("building/" + type.Id, climate: _climate, variant: Models.ModelVariant.Ruins) is { } model)
         {
             model.Position += centre + new Vector3(0, ground, 0);
             AddChild(model);

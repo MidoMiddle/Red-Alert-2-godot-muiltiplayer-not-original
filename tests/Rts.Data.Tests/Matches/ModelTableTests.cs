@@ -30,7 +30,14 @@ public sealed class ModelTableTests
             Assert.All(entry.Files, file => Assert.True(File.Exists(Path.Combine(Root, "assets", "models", file)), $"{key}: no file {file}"));
             Assert.All(new[] { entry.Damaged, entry.DamagedOccupied, entry.Occupied, entry.Abandoned, entry.Ruins }.OfType<string>(),
                 file => Assert.True(File.Exists(Path.Combine(Root, "assets", "models", file)), $"{key}: no file {file}"));
-            var id = key[(key.IndexOf('/') + 1)..];
+            // A climate's own model (key@climate) names a climate of the game, and the thing the key names.
+            var at = key.IndexOf('@');
+            if (at >= 0)
+            {
+                Assert.True(Directory.Exists(Path.Combine(Root, "data", "climates", key[(at + 1)..])), $"{key}: no such climate");
+            }
+
+            var id = key[(key.IndexOf('/') + 1)..(at >= 0 ? at : key.Length)];
             var known = key[..key.IndexOf('/')] switch
             {
                 "building" => database.TryGetBuilding(id, out _) || GameDataFiles.Rules.MapTypes.TryGetBuilding(id, out _),
@@ -64,6 +71,21 @@ public sealed class ModelTableTests
         Assert.True(table["building/reactor"].DrawnIn("winter"));
         // RA2's civilian buildings are low: squashed upright, the footprint the same; 1 when unsaid.
         Assert.Equal((0.35f, 1f), (table["building/neutral_house_a"].HeightScale, table["building/reactor"].HeightScale));
+    }
+
+    [Fact]
+    public void A_climate_has_a_model_of_its_own_beside_the_general_one()
+    {
+        var table = ModelTable.Read("""
+            format: models/1
+            models:
+              building/neutral_house_a: { file: map/house/house.glb, height: 0.88 }
+              building/neutral_house_a@urban: { file: city/house/house.glb, height: 0.9, ruins: city/house_ruins/house_ruins.glb }
+            """);
+
+        Assert.Equal("map/house/house.glb", table["building/neutral_house_a"].File);
+        Assert.Equal(("city/house/house.glb", "city/house_ruins/house_ruins.glb"),
+            (table["building/neutral_house_a@urban"].File, table["building/neutral_house_a@urban"].Ruins));
     }
 
     [Fact]
@@ -134,6 +156,8 @@ public sealed class ModelTableTests
     [InlineData("format: models/1\nmodels:\n  tree/palm: { file: a/b.glb, height_scale: 0 }\n", "height_scale must be")]
     [InlineData("format: models/2\nmodels:\n", "the format")]
     [InlineData("format: models/1\nmodels:\n  tank/heavy: { file: a/b.glb }\n", "is not a key")]
+    [InlineData("format: models/1\nmodels:\n  building/neutral_house_a@: { file: a/b.glb }\n", "is not a key")]
+    [InlineData("format: models/1\nmodels:\n  building/neutral_house_a@Urban: { file: a/b.glb }\n", "is not a key")]
     [InlineData("format: models/1\nmodels:\n  unit/heavy_tank: { file: a/b.fbx }\n", "is not a .glb path")]
     [InlineData("format: models/1\nmodels:\n  unit/heavy_tank: { file: ../b.glb }\n", "is not a .glb path")]
     [InlineData("format: models/1\nmodels:\n  building/neutral_house_a: { file: a/b.glb, damaged: a/b.fbx }\n", "is not a .glb path")]

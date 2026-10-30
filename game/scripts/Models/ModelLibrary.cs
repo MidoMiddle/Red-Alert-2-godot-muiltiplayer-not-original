@@ -44,8 +44,14 @@ public static class ModelLibrary
         }
     }
 
-    /// <summary>The entry of <paramref name="key"/> with a file there, for a map of <paramref name="climate"/> (any when null).</summary>
+    /// <summary>
+    /// The entry of <paramref name="key"/> with a file there, for a map of <paramref name="climate"/> (any when null): the climate's own
+    /// (<c>key@climate</c>, such as the city's houses on an urban map) when the table has one, else the key's.
+    /// </summary>
     public static ModelEntry? Find(string key, string? climate = null) =>
+        (climate is null ? null : Usable(key + "@" + climate, climate)) ?? Usable(key, climate);
+
+    private static ModelEntry? Usable(string key, string? climate) =>
         Table.TryGetValue(key, out var entry) && (climate is null || entry.DrawnIn(climate)) && ScenesOf(entry).Count > 0 ? entry : null;
 
     /// <summary>The path of the model's first file there, for the renderers that load meshes themselves; null without one.</summary>
