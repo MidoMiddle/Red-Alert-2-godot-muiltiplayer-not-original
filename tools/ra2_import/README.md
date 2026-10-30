@@ -41,11 +41,31 @@
      --description "A town at night for eight: two elevated highways on concrete spans run across it over the streets, lit roads and brick pavements between the blocks, a seaport on the bay, gold by every base and many oil derricks to take. From The Light Of Night II (#2lightonight.mpr)."
    python3 tools/ra2_import/ra2_to_rtsmap.py <папка r66> game/data/maps/route-66.rtsmap --id route-66 --name "Route 66" \
      --author "Ejah (Red Alert 2, 2001); converted" --players 8 --raised-land \
-     --description "Eight island bases strung on one long dirt road: high concrete bridges carry it from island to island, and between every two starts lies a neutral island with oil derricks, a tech airfield or a power plant. Ore and gem fields on every island. From Route 66 by Ejah.mpr."
+     --description "Eight island bases strung on one long highway: high concrete bridges carry it from island to island, and between every two starts lies a neutral island with oil derricks, a tech airfield or a power plant. Ore and gem fields on every island. From Route 66 by Ejah.mpr."
    ```
 3. `render_rtsmap.py <карта.rtsmap> <out.ppm>` рисует карту в осях экрана, как превью RA2: так её удобно сравнить с оригиналом.
 
 После сборки: `dotnet run --project tools/Rts.MapTool -- share-gems <карта>`, затем `... -- canon <карта>` и `... -- check <карта>`.
+
+**Опоры высоких мостов** — `ra2_piers.py <карта.rtsmap> ...`: опора RA2 в две клетки (Route 66) импортом не опускается и проходит сквозь полотно. Скрипт опускает под пролётом каждого высокого моста всё, что достаёт до уровня полотна, к самому низкому углу под пролётом (вода или долина).
+
+**Виды дорог** ([04 Дороги](../../docs/map_elements/04_roads/README.md)) — `ra2_roads.py [--no-highway] [--dirt-road] <карта.rtsmap> ...`, после сборки, затем `canon` и `check`. Наборов тайлов RA2 у нас нет, поэтому вид дороги берётся по форме полосы асфальта:
+- полоса шириной 3–6 клеток и длиной от 8 — шоссе (`H`, текстура `highway`): главные дороги карт RA2 и проспекты города;
+- шире — площадь или стоянка, остаётся асфальтом;
+- в 1–2 клетки в городе — улочка (текстура `street`), вне города остаётся асфальтом;
+- `--dirt-road`: узкий асфальт рядом с грунтом — край грунтовки (`g`): грунтовка RA2 шириной в три клетки, на превью коричневая в середине и серая по краям;
+- `--no-highway`: без шоссе;
+- `--pave`: вся дорога — шоссе, и грунтовая, и асфальтовая. Route 66: к высоким бетонным мостам в три клетки грунтовка не ведёт (владелец, 2026-10-30).
+Отбойников нет: в RA2 их нет. 2026-10-30 применено так:
+
+```bash
+python3 tools/ra2_import/ra2_roads.py game/data/maps/light-of-night.rtsmap game/data/maps/facing-corners.rtsmap game/data/maps/stephs-high-ground.rtsmap
+python3 tools/ra2_import/ra2_piers.py game/data/maps/route-66.rtsmap
+python3 tools/ra2_import/ra2_roads.py --no-highway --dirt-road game/data/maps/route-66.rtsmap
+python3 tools/ra2_import/ra2_roads.py --pave game/data/maps/route-66.rtsmap
+```
+
+На Heaven и WAR Pro асфальтовых дорог нет.
 
 На Facing Corners бурильщики руды у стартов стоят там, куда их поставил прежний импортёр: новый при равных расстояниях выбирает другую клетку. При повторном импорте эти три бурильщика (и клетки руды под ними) возвращены на свои места, чтобы экономика карты не менялась.
 

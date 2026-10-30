@@ -403,6 +403,8 @@ public sealed class StateHasherTests
         // Caches of the layers above: their digest for the hash, a stamp for A* step costs (M2 step 15), and the speed of
         // every locomotor on every cell (M7 step 3).
         "_digest", "<Version>k__BackingField", "_passability",
+        // Where the land above has a highway, for the heuristic of the path search (the highway, 2026-10-30).
+        "_highwaySums",
         // The land speeds the cells above are read by: rules of the match, not state (M3 step 4); so are the kinds of the map (step 14a).
         "<Speeds>k__BackingField", "<Types>k__BackingField",
         // A counter of ore changes for the client to redraw (M3 step 9).

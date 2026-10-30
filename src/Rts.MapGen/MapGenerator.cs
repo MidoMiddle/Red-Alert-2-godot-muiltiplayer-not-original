@@ -123,7 +123,8 @@ public static class MapGenerator
         var description = $"Generated from seed {seed}: {settings.Players} players, {settings.Symmetry}, {settings.Relief}, " +
                           $"water {settings.Water}{(settings.SeaPercent > 0 ? $" {settings.SeaPercent}%" : "")}, " +
                           $"forest {settings.Forest}, resources {settings.Resources}.";
-        return map.ToDefinition(name, Drills.WithDrills(description, settings.Drills));
+        // Sand only where a vehicle comes down to the water; a cliff straight into it (the owner, 2026-10-30).
+        return Shorelines.Tidy(map.ToDefinition(name, Drills.WithDrills(description, settings.Drills)), map.Types);
     }
 
     // The drills of the settings (M8 step 10b) before the roads, which go round them; the ore under them goes. A field with no cell

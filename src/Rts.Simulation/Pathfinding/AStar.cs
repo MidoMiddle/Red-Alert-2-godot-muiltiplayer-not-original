@@ -43,12 +43,18 @@ public static class AStar
             || (map.CanEnter(new CellPos(from.X + dx, from.Y), locomotor) && map.CanEnter(new CellPos(from.X, from.Y + dy), locomotor));
     }
 
-    /// <summary>Octile distance on the cheapest steps of the locomotor: never more than the real cost of any path.</summary>
-    public static int Heuristic(LandSpeeds speeds, Locomotor locomotor, CellPos from, CellPos to)
+    /// <summary>How far round the start and the goal of a search a highway counts in its heuristic (<see cref="MapGrid.HighwayNear"/>).</summary>
+    public const int HighwayMargin = 16;
+
+    /// <summary>
+    /// Octile distance on the cheapest steps of the locomotor: never more than the real cost of a path, the highway counted when
+    /// <paramref name="highway"/> (a path far round by a highway may then be missed: it is never much cheaper).
+    /// </summary>
+    public static int Heuristic(LandSpeeds speeds, Locomotor locomotor, CellPos from, CellPos to, bool highway = false)
     {
         var dx = IntMath.Abs(from.X - to.X);
         var dy = IntMath.Abs(from.Y - to.Y);
-        var (straight, diagonal) = speeds.MinStepCosts(locomotor);
+        var (straight, diagonal) = speeds.MinStepCosts(locomotor, highway);
         return straight * (dx + dy) + (diagonal - 2 * straight) * IntMath.Min(dx, dy);
     }
 
@@ -242,6 +248,7 @@ public sealed class PathSearch
     private readonly int _goalIndex;
     private readonly int _goalDeckIndex;
     private readonly int[] _avoid;
+    private readonly bool _highway;
     private SearchBuffers? _buffers;
     private bool _started;
     private bool _stopped;
@@ -279,7 +286,9 @@ public sealed class PathSearch
         _goalDeckIndex = !groundGoal && map.DeckSlot(goal) is var goalSlot and >= 0 ? cells + goalSlot : -1;
         _avoid = avoid.IsDefaultOrEmpty ? [] : avoid.Where(map.Contains).Select(cell => cell.Y * map.Width + cell.X).Order().ToArray();
         _bestIndex = _startIndex;
-        _bestH = AStar.Heuristic(map.Speeds, locomotor, start, goal);
+        // The highway is the cheapest land: counted in the heuristic only near this search, so a map with one far off searches as fast.
+        _highway = map.HighwayNear(start, goal, AStar.HighwayMargin);
+        _bestH = AStar.Heuristic(map.Speeds, locomotor, start, goal, _highway);
     }
 
     /// <summary>Nodes expanded so far.</summary>
@@ -320,7 +329,7 @@ public sealed class PathSearch
         var costOf = b.Cost;
         var parent = b.Parent;
         var generation = b.Generation;
-        var (hStraight, hDiagonal) = _map.Speeds.MinStepCosts(_locomotor);
+        var (hStraight, hDiagonal) = _map.Speeds.MinStepCosts(_locomotor, _highway);
         var goalX = _goal.X;
         var goalY = _goal.Y;
         var expandedNow = 0;
@@ -469,7 +478,7 @@ public sealed class PathSearch
         b.Seen[nextIndex] = b.Generation;
         b.Cost[nextIndex] = nextCost;
         b.Parent[nextIndex] = parentIndex;
-        var h = AStar.Heuristic(_map.Speeds, _locomotor, cell, _goal);
+        var h = AStar.Heuristic(_map.Speeds, _locomotor, cell, _goal, _highway);
         b.Open.PushOrDecrease(new PathNode(nextCost + h, h, nextIndex));
     }
 

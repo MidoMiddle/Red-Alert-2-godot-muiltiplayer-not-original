@@ -75,10 +75,10 @@ public sealed class LandSpeedsTests
     public void Unknown_values_are_rejected()
     {
         Assert.False(LandSpeeds.IsKnown((LandType)0));
-        Assert.False(LandSpeeds.IsKnown((LandType)11));
+        Assert.False(LandSpeeds.IsKnown((LandType)12));
         Assert.False(LandSpeeds.IsKnown((Locomotor)0));
         Assert.False(LandSpeeds.IsKnown((Locomotor)7));
-        Assert.Throws<ArgumentOutOfRangeException>(() => LandSpeeds.Reference.SpeedPercent(Locomotor.Foot, (LandType)11));
+        Assert.Throws<ArgumentOutOfRangeException>(() => LandSpeeds.Reference.SpeedPercent(Locomotor.Foot, (LandType)12));
         Assert.Throws<ArgumentOutOfRangeException>(() => LandSpeeds.Reference.SpeedPercent((Locomotor)0, LandType.Clear));
         Assert.Throws<ArgumentOutOfRangeException>(() => LandSpeeds.Reference.SpeedPercent((Locomotor)7, LandType.Clear));
         Assert.Throws<ArgumentOutOfRangeException>(() => LandSpeeds.Reference.SlopeMultiplier((Locomotor)7));

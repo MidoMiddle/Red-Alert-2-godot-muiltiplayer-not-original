@@ -16,4 +16,7 @@ public enum LandType : byte
     Ice = 8,
     Track = 9,
     Path = 10,
+
+    // The highway (docs/map_elements/04_roads): three cells wide, faster than a road.
+    Highway = 11,
 }

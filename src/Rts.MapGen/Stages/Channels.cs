@@ -22,4 +22,7 @@ internal static class Channels
 
     // The coastline of the sea.
     public const int Sea = 13;
+
+    // Whether the highway of a big map has guardrails.
+    public const int Highway = 14;
 }

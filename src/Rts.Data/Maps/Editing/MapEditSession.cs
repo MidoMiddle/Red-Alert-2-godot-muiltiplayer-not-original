@@ -52,6 +52,9 @@ public sealed record EditOptions
 
     public LandType Water { get; init; } = LandType.Shallow;
 
+    /// <summary>The kind of road the road brush lays: the highway, the asphalt road, the unpaved road or the path (docs/map_elements/04_roads).</summary>
+    public LandType Road { get; init; } = LandType.Road;
+
     public int Ore { get; init; } = 5;
 
     public string ObjectType { get; init; } = "pine_tree";
@@ -314,7 +317,7 @@ public sealed class MapEditSession
                 break;
             case EditTool.Road:
                 // A road is as wide as the brush, square whatever its shape; it stops at water (bridges cross it).
-                PaintLand((_brush with { Shape = BrushShape.Square }).Cells(Map, cell).FindAll(c => !IsWater(Map.LandAt(c))), LandType.Road);
+                PaintLand((_brush with { Shape = BrushShape.Square }).Cells(Map, cell).FindAll(c => !IsWater(Map.LandAt(c))), _options.Road);
                 break;
             case EditTool.Water:
                 PaintWater(_brush.Cells(Map, cell));

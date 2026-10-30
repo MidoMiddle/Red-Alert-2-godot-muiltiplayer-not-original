@@ -115,6 +115,7 @@ public partial class MapObjects : Node3D
         var hedgehogs = new List<Spot>();
         var pipes = new List<Spot>();
         var drifts = new List<Spot>();
+        var guardrails = new List<Spot>();
         var props = new SortedDictionary<string, List<Spot>>(System.StringComparer.Ordinal);
         for (var y = 0; y < _map.Height; y++)
         {
@@ -141,6 +142,7 @@ public partial class MapObjects : Node3D
                 MapObjectKind.AntiTankHedgehog => hedgehogs,
                 MapObjectKind.Pipeline => pipes,
                 MapObjectKind.Snowdrift => drifts,
+                MapObjectKind.HighwayGuardrail => guardrails,
                 // Drawn and animated by OreSources.
                 MapObjectKind.OreSource or MapObjectKind.GemSource => null,
                 // The props of the element documents (PropLooks).
@@ -173,6 +175,7 @@ public partial class MapObjects : Node3D
         // The models of the table by the object's id (docs/art/model_standards.md), the primitives without one.
         AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f, "object/boulder");
         AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f, "object/fence_wood");
+        AddGuardrails(guardrails);
         AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f, "object/wall_stone");
         if (!AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f, "object/lamp_post"))
         {
@@ -213,6 +216,11 @@ public partial class MapObjects : Node3D
 
         // A bridge of one cell runs across the cells beside it.
         var alongX = bridge.From != bridge.To ? bridge.From.Y == bridge.To.Y : !System.Linq.Enumerable.Any(bridge.Segments[0].Cells, cell => cell.X != bridge.From.X);
+        if (AddWoodenBridge(bridge, alongX))
+        {
+            return;
+        }
+
         var decks = new List<Spot>();
         var rails = new List<Spot>();
         var side = alongX ? new Vector3(0, 0, 0.44f) : new Vector3(0.44f, 0, 0);
@@ -244,6 +252,74 @@ public partial class MapObjects : Node3D
         var rail = alongX ? new Vector3(1f, 0.1f, 0.04f) : new Vector3(0.04f, 0.1f, 1f);
         AddInstances(name + "Deck", new BoxMesh { Size = deck }, new Color(0.55f, 0.4f, 0.24f), decks, 0.03f);
         AddInstances(name + "Rails", new BoxMesh { Size = rail }, new Color(0.38f, 0.26f, 0.15f), rails, 0.1f);
+    }
+
+    /// <summary>
+    /// The low wooden bridge of the models, when the table has them (after RA2's, the owner, 2026-10-30): a piece a segment, three cells
+    /// across, turned along the bridge. A standing segment at a bank is its end, its ramp down onto the shore; one by a fallen segment
+    /// is torn on that side; the rest are spans. A fallen segment at a bank leaves its ramp on the shore; one in the middle leaves nothing,
+    /// no wood afloat in the way (the owner, 2026-10-30). False without the models: the planks and rails of before are drawn.
+    /// </summary>
+    private bool AddWoodenBridge(Bridge bridge, bool alongX)
+    {
+        if (Models.ModelLibrary.Find("bridge/wood_span", _builtClimate?.Id) is null)
+        {
+            return false;
+        }
+
+        // The direction from the first segment to the last, in cells: the bank of the first lies the other way.
+        var (dx, dz) = alongX ? (bridge.To.X >= bridge.From.X ? 1 : -1, 0) : (0, bridge.To.Y >= bridge.From.Y ? 1 : -1);
+        var pieces = new Dictionary<string, List<(Spot Spot, float Yaw)>>();
+        var count = bridge.Segments.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var segment = bridge.Segments[i];
+            var first = i == 0 && count > 1;
+            var last = i == count - 1 && count > 1;
+            var fallenBefore = i > 0 && !bridge.Segments[i - 1].IsIntact;
+            var fallenAfter = i < count - 1 && !bridge.Segments[i + 1].IsIntact;
+            var (piece, forward) = segment.IsIntact
+                ? first ? ("wood_end", false) : last ? ("wood_end", true)
+                : fallenAfter ? ("wood_broken", true) : fallenBefore ? ("wood_broken", false) : ("wood_span", true)
+                : first ? ("wood_end_broken", false) : last ? ("wood_end_broken", true) : ("", true);
+            if (piece.Length == 0)
+            {
+                continue;
+            }
+
+            var sign = forward ? 1 : -1;
+            // The model's +x turned to the direction: Godot turns +x towards -z for a positive yaw.
+            var yaw = Mathf.Atan2(-dz * sign, dx * sign);
+            if (!pieces.TryGetValue(piece, out var list))
+            {
+                pieces[piece] = list = [];
+            }
+
+            list.Add((new Spot(Ground(segment.Cell.X, segment.Cell.Y), 0), yaw));
+        }
+
+        foreach (var (piece, list) in pieces)
+        {
+            var spots = list.ConvertAll(item => item.Spot);
+            if (Models.ModelLibrary.Instances("bridge/" + piece, _builtClimate?.Id, PointsOf(spots)) is not { } groups)
+            {
+                continue;
+            }
+
+            for (var g = 0; g < groups.Count; g++)
+            {
+                var (mesh, places, points) = groups[g];
+                var placed = new List<Transform3D>(places.Count);
+                for (var n = 0; n < places.Count; n++)
+                {
+                    placed.Add(new Transform3D(new Basis(Vector3.Up, list[points[n]].Yaw) * places[n].Basis, places[n].Origin));
+                }
+
+                ChunkedInstances.Add(this, $"Bridge{bridge.Id}{piece}{g}", mesh, placed);
+            }
+        }
+
+        return true;
     }
 
     // The colours of a high bridge (owner 2026-10-26: "the bridge is concrete, asphalt on top").
@@ -361,6 +437,24 @@ public partial class MapObjects : Node3D
         return new Transform3D(Basis.Identity.Scaled(new Vector3(0.32f, tall, 0.32f)), new Vector3(foot.X, foot.Y - 0.1f + tall / 2, foot.Z));
     }
 
+    // Whether the cell or one of the eight round it is a bridge's.
+    private bool NearBridge(int x, int y)
+    {
+        for (var dy = -1; dy <= 1; dy++)
+        {
+            for (var dx = -1; dx <= 1; dx++)
+            {
+                var cell = new CellPos(x + dx, y + dy);
+                if (_map.Contains(cell) && (_map.IsDeck(cell) || _map.BridgeAt(cell) is not null))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static Vector3 Ground(int x, int y) => new(x + 0.5f, WorldCoords.Terrain!.HeightAt(x + 0.5f, y + 0.5f), y + 0.5f);
 
     /// <summary>
@@ -433,12 +527,13 @@ public partial class MapObjects : Node3D
     /// <summary>
     /// The stones along the rims and at the feet of the cliffs (<see cref="CliffRocks"/>): three lumpy shapes in the rock of the
     /// climate's cliffs, laid on from the side like the wall's (triplanar in world space), so a stone matches the wall above it.
-    /// None on a bridge's cells, where it would come through the deck.
+    /// None on a bridge's cells or next to them, where a stone on the rim of the cliff by its end stands at the level of the deck and
+    /// would come through it.
     /// </summary>
     private void AddCliffRocks()
     {
         var heights = GetParent<TerrainBuilder>().Heights;
-        var stones = CliffRocks.Place(heights, (x, y) => _map.IsDeck(new CellPos(x, y)) || _map.BridgeAt(new CellPos(x, y)) is not null);
+        var stones = CliffRocks.Place(heights, NearBridge);
         if (stones.Count == 0)
         {
             return;
@@ -496,6 +591,51 @@ public partial class MapObjects : Node3D
         tool.Deindex();
         tool.GenerateNormals();
         return tool.Commit();
+    }
+
+    /// <summary>
+    /// The guardrails along the highways: a section a cell, its model made along x; a section whose neighbours run along z (and none
+    /// along x) is turned a quarter, so the barrier follows the highway either way.
+    /// </summary>
+    private void AddGuardrails(List<Spot> spots)
+    {
+        var cells = new HashSet<(int X, int Z)>();
+        foreach (var spot in spots)
+        {
+            cells.Add(((int)Mathf.Floor(spot.At.X), (int)Mathf.Floor(spot.At.Z)));
+        }
+
+        var alongX = new List<Spot>();
+        var alongZ = new List<Spot>();
+        foreach (var spot in spots)
+        {
+            var (x, z) = ((int)Mathf.Floor(spot.At.X), (int)Mathf.Floor(spot.At.Z));
+            var acrossZ = cells.Contains((x, z - 1)) || cells.Contains((x, z + 1));
+            var acrossX = cells.Contains((x - 1, z)) || cells.Contains((x + 1, z));
+            (acrossZ && !acrossX ? alongZ : alongX).Add(spot);
+        }
+
+        var quarter = new Basis(Vector3.Up, Mathf.Pi / 2f);
+        foreach (var (name, list, turn) in new[] { ("GuardrailsX", alongX, Basis.Identity), ("GuardrailsZ", alongZ, quarter) })
+        {
+            if (list.Count == 0)
+            {
+                continue;
+            }
+
+            if (Models.ModelLibrary.Instances("object/highway_guardrail", _builtClimate?.Id, PointsOf(list)) is { } groups)
+            {
+                var turned = groups.ConvertAll(group => (group.Mesh,
+                    group.Places.ConvertAll(place => new Transform3D(turn * place.Basis, place.Origin)), group.Points));
+                AddModelInstances(name, turned, list, _copies);
+                continue;
+            }
+
+            var mesh = LowPoly.Of(new BoxMesh { Size = new Vector3(0.96f, 0.2f, 0.05f) });
+            mesh.Material = new StandardMaterial3D { AlbedoColor = new Color(0.72f, 0.74f, 0.76f) };
+            var places = list.ConvertAll(spot => new Transform3D(turn, spot.At + new Vector3(0, 0.1f, 0)));
+            ChunkedInstances.Add(this, name, mesh, places, (i, multiMesh, index) => Remember(_copies, list[i].Object, multiMesh, index, places[i]));
+        }
     }
 
     private void AddProps(string id, List<Spot> points)

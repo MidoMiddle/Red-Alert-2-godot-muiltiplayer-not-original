@@ -145,8 +145,8 @@ public sealed class GoldenValuesTests
             }
         }
 
-        Assert.Equal(15034282284834192112UL, hash.Value);
-        Assert.Equal([2829, 2869, 817, 4000, 3200], costs);
+        Assert.Equal(12756698046443402773UL, hash.Value);
+        Assert.Equal([2820, 2869, 817, 4000, 3200], costs);
     }
 
     [Fact]
@@ -401,6 +401,8 @@ public sealed class GoldenValuesTests
         // Rules v111 (the defenses of nobody fire at everybody; an engineer takes nobody's buildings of the data): the version only.
         // Rules v112 (one ore purifier per player): the version only.
         // Rules v113 (a high bridge comes down whole, only its piers stay; the owner's wish): the version only — no bridge here.
-        Assert.Equal((22270, 10525987360691120965UL), (bytes.Length, hash.Value));
+        // Rules v114 (the highway, wheels 130% and tracks 115%, and its guardrail; the owner's wish): the version only — no highway here.
+        // Rules v115 (a commando's C4 brings a low bridge down whole, from bank to bank; the owner's wish): the version only.
+        Assert.Equal((22270, 5299640065217670359UL), (bytes.Length, hash.Value));
     }
 }

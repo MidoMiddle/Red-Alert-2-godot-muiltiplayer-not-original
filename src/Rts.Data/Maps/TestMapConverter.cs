@@ -35,7 +35,7 @@ public static class TestMapConverter
 
     /// <summary>The legend of a map: the converter's, with the codes of the unpaved road and the footpath when the map has them.</summary>
     public static ImmutableArray<TextureEntry> LegendFor(bool roadKinds) =>
-        roadKinds ? [.. Legend, new TextureEntry('u', "track"), new TextureEntry('t', "path")] : Legend;
+        roadKinds ? [.. Legend, new TextureEntry('u', "track"), new TextureEntry('t', "path"), new TextureEntry('h', "highway")] : Legend;
 
     public static MapDefinition Convert(TestMap test, string id, string name)
     {
@@ -46,7 +46,7 @@ public static class TestMapConverter
         {
             for (var x = 0; x < grid.Width; x++)
             {
-                roads |= grid.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path;
+                roads |= grid.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path or LandType.Highway;
             }
         }
 
@@ -114,6 +114,7 @@ public static class TestMapConverter
         LandType.Ice => "ice",
         LandType.Track => "track",
         LandType.Path => "path",
+        LandType.Highway => "highway",
         _ => "snow",
     };
 

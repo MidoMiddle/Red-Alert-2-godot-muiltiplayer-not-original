@@ -82,11 +82,14 @@ public static class ModelTable
     /// <summary>The most files — kinds of one model — an entry may list.</summary>
     public const int MaxFiles = 64;
 
+    /// <summary>The pieces of the low wooden bridge (<c>bridge/&lt;piece&gt;</c>, tools/blender/families/bridge_wood.py).</summary>
+    public static readonly ImmutableArray<string> BridgePieces = ["wood_span", "wood_end", "wood_broken", "wood_end_broken"];
+
     /// <summary>The kinds of keys: what the first part of a key may be.</summary>
-    public static readonly ImmutableArray<string> Kinds = ["building", "unit", "object", "tree", "ore"];
+    public static readonly ImmutableArray<string> Kinds = ["building", "unit", "object", "tree", "ore", "bridge"];
 
     // A key may end in @<climate>: the model of the same thing on the maps of that climate, before the key without it.
-    private static readonly Regex KeyPattern = new("^(building|unit|object|tree|ore|crate)/[a-z0-9_]+(@[a-z]+)?$", RegexOptions.CultureInvariant);
+    private static readonly Regex KeyPattern = new("^(building|unit|object|tree|ore|crate|bridge)/[a-z0-9_]+(@[a-z]+)?$", RegexOptions.CultureInvariant);
     private static readonly Regex FilePattern = new("^[a-z0-9_]+(/[a-z0-9_]+)*\\.glb$", RegexOptions.CultureInvariant);
 
     public static IReadOnlyDictionary<string, ModelEntry> Read(string text)
@@ -128,7 +131,7 @@ public static class ModelTable
             var key = Text(pair.Key);
             if (!KeyPattern.IsMatch(key))
             {
-                throw Error(pair.Key, $"'{key}' is not a key such as building/<id>, unit/<id>, object/<id>, tree/<shape>, ore/<kind> or crate/supply, with @<climate> or without");
+                throw Error(pair.Key, $"'{key}' is not a key such as building/<id>, unit/<id>, object/<id>, tree/<shape>, ore/<kind>, bridge/<piece> or crate/supply, with @<climate> or without");
             }
 
             if (table.ContainsKey(key))

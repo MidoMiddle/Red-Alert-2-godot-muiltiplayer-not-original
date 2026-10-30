@@ -75,11 +75,16 @@ public sealed class BridgeDemolitionTests
 
         Assert.False(segment.IsIntact);
         Assert.False(world.Map.CanEnter(Middle, Locomotor.Track));
-        Assert.Equal(world.Map.Bridges[0].Segments.Count - 1, world.Map.Bridges[0].Segments.Count(standing => standing.IsIntact));
+        // Her C4 takes the bridge from bank to bank (the owner, 2026-10-30).
+        Assert.All(world.Map.Bridges[0].Segments, fallen => Assert.False(fallen.IsIntact));
         Assert.True(tanya.IsAlive);
         Assert.Null(tanya.TargetPoint);
         Assert.Empty(world.BridgeBombs);
         Assert.False(BridgeDemolition.CanBlow(world, tanya, Middle));
+
+        // She swims: the whole bridge fell under her, and a segment with someone afloat on it waits for them to go. Back to the shore.
+        simulation.Enqueue(new MoveCommand(Allied, simulation.CurrentTick, 0, [tanya.Id], new CellPos(24, 23).Center));
+        Run(simulation, 600, () => tanya.Position.ToCell() == new CellPos(24, 23));
 
         var hut = world.BuildingAt(Hut)!;
         var engineer = world.SpawnUnit(Allied, UnitType.AllianceEngineer, new CellPos(26, 25).Center, snapToSubcell: true);
@@ -107,7 +112,9 @@ public sealed class BridgeDemolitionTests
         Run(simulation, 900, () => !segment.IsIntact);
 
         Assert.False(segment.IsIntact);
-        Assert.True(ivan.IsAlive);
+        // A bomb takes the bridge from bank to bank (the owner, 2026-10-30): who planted it standing on the bridge falls with it.
+        Assert.All(world.Map.Bridges[0].Segments, fallen => Assert.False(fallen.IsIntact));
+        Assert.Equal(world.Map.BridgeAt(ivan.Position.ToCell()) is null, ivan.IsAlive);
     }
 
     [Fact]

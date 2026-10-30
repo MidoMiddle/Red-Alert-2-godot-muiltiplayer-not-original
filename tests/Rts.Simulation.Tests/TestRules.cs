@@ -125,8 +125,9 @@ internal static class TestRules
             [80, 90, 90, 100, 0, 100],      // Ice
             [100, 100, 110, 100, 0, 100],   // Track
             [100, 100, 100, 100, 0, 100],   // Path
+            [100, 115, 130, 100, 0, 100],   // Highway
         ];
-        for (var land = LandType.Clear; land <= LandType.Path; land++)
+        for (var land = LandType.Clear; land <= LandType.Highway; land++)
         {
             var row = ImmutableArray.CreateBuilder<LocomotorSpeed>(LandSpeeds.LocomotorCount);
             for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
@@ -139,7 +140,7 @@ internal static class TestRules
                 Id = LandSpeeds.IdOf(land),
                 Name = LandSpeeds.IdOf(land),
                 Code = TestMapParser.CodeOf(land),
-                Buildable = land is LandType.Clear or LandType.Rough or LandType.Road or LandType.Beach or LandType.Track or LandType.Path,
+                Buildable = land is LandType.Clear or LandType.Rough or LandType.Road or LandType.Beach or LandType.Track or LandType.Path or LandType.Highway,
                 Speed = row.MoveToImmutable().Sort((a, b) => string.CompareOrdinal(a.Locomotor, b.Locomotor)),
             });
         }

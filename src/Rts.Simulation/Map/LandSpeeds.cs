@@ -13,16 +13,17 @@ namespace Rts.Simulation.Map;
 public sealed class LandSpeeds
 {
     public const int LocomotorCount = 6;
-    public const int LandCount = 10;
+    public const int LandCount = 11;
 
     // The ids of the data files, in enum order.
     private static readonly string[] LocomotorIds = ["foot", "track", "wheel", "amphibious", "naval", "hover"];
-    private static readonly string[] LandIds = ["clear", "rough", "road", "beach", "shallow", "deep", "rock", "ice", "unpaved", "path"];
+    private static readonly string[] LandIds = ["clear", "rough", "road", "beach", "shallow", "deep", "rock", "ice", "unpaved", "path", "highway"];
 
     private readonly byte[] _percent;
     private readonly byte[] _slopePercent;
     private readonly int[] _stepCosts;
     private readonly (int Straight, int Diagonal)[] _minStepCosts;
+    private readonly (int Straight, int Diagonal)[] _minStepCostsWithHighway;
 
     /// <param name="percent">Rows by <see cref="LandType"/> 1…8, columns by <see cref="Locomotor"/> 1…6, each 0…255.</param>
     /// <param name="slopePercent">The multiplier of a slope for each <see cref="Locomotor"/> 1…6, 0…100.</param>
@@ -60,7 +61,8 @@ public sealed class LandSpeeds
         }
 
         _stepCosts = BuildStepCosts();
-        _minStepCosts = BuildMinStepCosts();
+        _minStepCosts = BuildMinStepCosts(highway: false);
+        _minStepCostsWithHighway = BuildMinStepCosts(highway: true);
     }
 
     /// <summary>
@@ -81,11 +83,12 @@ public sealed class LandSpeeds
             { 80, 90, 90, 100, 0, 100 },      // Ice
             { 100, 100, 110, 100, 0, 100 },   // Track: gravel, dirt and packed-snow roads; wheels only
             { 100, 100, 100, 100, 0, 100 },   // Path: footpaths and trails; the foot bonus waits for its own version step
+            { 100, 115, 130, 100, 0, 100 },   // Highway: wheels most, tracks less (docs/map_elements/04_roads)
         },
         // Foot 80 %, track 75 %, wheel 65 %; amphibious and hover as wheels; ships never meet a slope (water is flat).
         [80, 75, 65, 65, 100, 65]);
 
-    public static bool IsKnown(LandType land) => land >= LandType.Clear && land <= LandType.Path;
+    public static bool IsKnown(LandType land) => land >= LandType.Clear && land <= LandType.Highway;
 
     public static bool IsKnown(Locomotor locomotor) => locomotor >= Locomotor.Foot && locomotor <= Locomotor.Hover;
 
@@ -127,9 +130,13 @@ public sealed class LandSpeeds
     /// <summary>Path cost of entering flat <paramref name="land"/>, or 0 when the locomotor cannot (docs/implementation/M2_unit_control.md, 4.4).</summary>
     public int StepCost(Locomotor locomotor, LandType land, bool diagonal) => _stepCosts[Index(land, locomotor) * 2 + (diagonal ? 1 : 0)];
 
-    /// <summary>The cheapest straight and diagonal step of the locomotor on any land: the base of the path search heuristic.</summary>
-    public (int Straight, int Diagonal) MinStepCosts(Locomotor locomotor) => IsKnown(locomotor)
-        ? _minStepCosts[(int)locomotor - 1]
+    /// <summary>
+    /// The cheapest straight and diagonal step of the locomotor on any land: the base of the path search heuristic. The highway counts
+    /// only on a map that has one (<paramref name="highway"/>): it is the cheapest land of all, and on every other map it would only
+    /// weaken the heuristic, so the search would open more nodes than before for nothing (docs/map_elements/04_roads).
+    /// </summary>
+    public (int Straight, int Diagonal) MinStepCosts(Locomotor locomotor, bool highway = false) => IsKnown(locomotor)
+        ? (highway ? _minStepCostsWithHighway : _minStepCosts)[(int)locomotor - 1]
         : throw new ArgumentOutOfRangeException(nameof(locomotor), locomotor, "Unknown locomotor.");
 
     /// <summary>True when both tables hold the same speeds and slopes.</summary>
@@ -164,14 +171,14 @@ public sealed class LandSpeeds
         return costs;
     }
 
-    private (int, int)[] BuildMinStepCosts()
+    private (int, int)[] BuildMinStepCosts(bool highway)
     {
         var result = new (int, int)[LocomotorCount];
         for (var locomotor = Locomotor.Foot; locomotor <= Locomotor.Hover; locomotor++)
         {
             var straight = int.MaxValue;
             var diagonal = int.MaxValue;
-            for (var land = LandType.Clear; land <= LandType.Path; land++)
+            for (var land = LandType.Clear; land <= (highway ? LandType.Highway : LandType.Path); land++)
             {
                 var cost = StepCost(locomotor, land, diagonal: false);
                 if (cost > 0)

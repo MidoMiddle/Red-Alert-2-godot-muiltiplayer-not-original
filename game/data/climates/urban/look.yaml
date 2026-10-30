@@ -8,11 +8,14 @@ materials:
   slabs:   { albedo: concrete_slabs.png, tiling: 3, roughness: 0.85 }
   dirt:    { albedo: dirt_brown.png, tiling: 5, roughness: 0.95 }
   asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8, tint: "#c8c8cc" }
-  shore:   { albedo: coast_sand.png, tiling: 5, roughness: 0.9 }
+  shore:   { albedo: sand_shore.png, tiling: 5, roughness: 0.9 }
   rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9 }
   water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.2, tint: "#4a7488", water: true }
   track: { albedo: dirt_brown.png, tiling: 4, roughness: 0.9, tint: "#8a7358" }
   path:  { albedo: concrete_pavers.png, tiling: 3, roughness: 0.85 }
+  highway: { albedo: road_highway.png, tiling: 4, roughness: 0.75 }
+  street: { albedo: road_street.png, tiling: 4, roughness: 0.8 }
+  cobble: { albedo: road_street_cobble.png, tiling: 4, roughness: 0.85 }
 cliff: rock
 trees: broadleaf
 water_normal: water_normal.png

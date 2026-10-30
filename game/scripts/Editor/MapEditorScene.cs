@@ -586,6 +586,13 @@ public partial class MapEditorScene : Node3D, IMapSource
                     : ["snow"];
                 _toolOptions.AddChild(Choice([.. materials], Math.Max(0, materials.IndexOf(_options.Material)), i => _options = _options with { Material = materials[i] }));
                 break;
+            case EditTool.Road:
+                // The kinds of road of docs/map_elements/04_roads, widest first; the brush makes it as wide as itself.
+                LandType[] roads = [LandType.Highway, LandType.Road, LandType.Track, LandType.Path];
+                _toolOptions.AddChild(Choice(
+                    [Tr("UI_EDITOR_HIGHWAY"), Tr("UI_EDITOR_ROAD_ASPHALT"), Tr("UI_EDITOR_ROAD_UNPAVED"), Tr("UI_EDITOR_PATH")],
+                    Math.Max(0, Array.IndexOf(roads, _options.Road)), i => _options = _options with { Road = roads[i] }));
+                break;
             case EditTool.Water:
                 _toolOptions.AddChild(Choice(
                     [Tr("UI_EDITOR_SHALLOW"), Tr("UI_EDITOR_DEEP")], _options.Water == LandType.Deep ? 1 : 0,

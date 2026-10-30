@@ -46,6 +46,7 @@ public sealed class ModelTableTests
                 "tree" => TreeShapes.Contains(id),
                 "ore" => OreKinds.Contains(id),
                 "crate" => id == "supply",
+                "bridge" => ModelTable.BridgePieces.Contains(id),
                 _ => false,
             };
             Assert.True(known, $"{key} names nothing of the game");

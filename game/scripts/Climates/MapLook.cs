@@ -72,7 +72,7 @@ public sealed class MapLook
         {
             for (var x = 0; x < map.Width; x++)
             {
-                roadKinds |= map.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path;
+                roadKinds |= map.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path or LandType.Highway;
             }
         }
 

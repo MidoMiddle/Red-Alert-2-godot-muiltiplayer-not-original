@@ -55,12 +55,12 @@ public sealed class MapGeneratorTests
         // fifths of the way to the centre. 2026-10-25: the dressing of the climate (a farm and barbed wire in the snow); no building within
         // two cells of the ore zone, the oil derrick out of it. 2026-10-25 (roads): the main road is asphalt in a town and the unpaved
         // road of its climate elsewhere (docs/map_elements/04_roads). 2026-10-25 (origin): the header says the map is generated, and
-        // the drills keep the playable area.
+        // the drills keep the playable area. 2026-10-30: the legend of every climate has the highway (h): the cells are the same.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("1b416971e914a2ef8326845eed59cbbd210eda6f81f9366a62faad5c139f032f", MapHasher.Hash(map));
-        Assert.Equal("871509c48b3e70fd8f6363d406a868315087d918f424df3da5bf251356426979", MapHasher.Hash(none));
+        Assert.Equal("10440e9252e771744184219dd53e5376622bcabee09b9e0e979c8f32686931c2", MapHasher.Hash(map));
+        Assert.Equal("d95757a200b4ff272d4acaf7adccd1a48591a1ac4d79b1f5f26d9833f9f2e0be", MapHasher.Hash(none));
     }
 
     [Theory]

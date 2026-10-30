@@ -23,6 +23,7 @@ public static class LandColors
         LandType.Ice => (0.86f, 0.94f, 0.99f),
         LandType.Track => (0.55f, 0.47f, 0.36f),
         LandType.Path => (0.72f, 0.66f, 0.52f),
+        LandType.Highway => (0.22f, 0.22f, 0.24f),
         _ => throw new ArgumentOutOfRangeException(nameof(land), land, "Unknown land type."),
     };
 

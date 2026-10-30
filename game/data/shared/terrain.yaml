@@ -74,3 +74,11 @@ path:
   buildable: true
   # Footpaths and trails: the look only for now; a foot bonus is a version step of its own (docs/map_elements/04_roads).
   speed: { foot: 100%, track: 100%, wheel: 100%, amphibious: 100%, naval: 0%, hover: 100% }
+
+highway:
+  kind: terrain
+  name: Highway
+  code: "H"
+  buildable: true
+  # The highway, three cells wide: wheels fastest of all, tracks a little faster too (docs/map_elements/04_roads, the owner's word).
+  speed: { foot: 100%, track: 115%, wheel: 130%, amphibious: 100%, naval: 0%, hover: 100% }

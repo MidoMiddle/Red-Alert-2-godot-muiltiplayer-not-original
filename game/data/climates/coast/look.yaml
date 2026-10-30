@@ -1,6 +1,6 @@
 # The look of the coast climate (ours, after the plan of M11e: a bright warm summer day by the sea), as winter/look.yaml explains: the
 # materials of its ground by the ids the maps' legend uses (src/Rts.Data/Maps/ClimateGrounds.cs), the first the plain ground; its
-# trees; its light. Sunny seaside grass, light sand round the water and in patches, wet sand at the edge, clear turquoise shallows over
+# trees; its light. Sunny seaside grass, light sand round the water and in patches, clean light sand at the edge (sand_shore), clear turquoise shallows over
 # a deep blue sea. Visual only.
 format: climate/1
 id: coast
@@ -10,11 +10,12 @@ materials:
   meadow:  { albedo: grass_field.png, tiling: 6, roughness: 0.95, tint: "#c0dc98" }
   pebbles: { albedo: sand_gravel.png, tiling: 5, roughness: 0.9, tint: "#e8e0d0" }
   asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8, tint: "#d4d0c8" }
-  shore:   { albedo: sand_beach.png, tiling: 5, roughness: 0.6, tint: "#d8c8a8" }
+  shore:   { albedo: sand_shore.png, tiling: 5, roughness: 0.75 }
   rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9, tint: "#e0d8cc" }
   water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.15, tint: "#3fb0c0", water: true }
   track: { albedo: sand_gravel.png, tiling: 4, roughness: 0.9, tint: "#c7bda8" }
   path:  { albedo: coast_sand.png, tiling: 4, roughness: 0.9, tint: "#cfc4a6" }
+  highway: { albedo: road_highway.png, tiling: 4, roughness: 0.75 }
 cliff: rock
 trees: coast
 water_normal: water_normal.png

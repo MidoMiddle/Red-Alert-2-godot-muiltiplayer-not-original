@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Hashing;
+using Rts.Simulation.Math;
 
 namespace Rts.Simulation.Map;
 
@@ -63,6 +64,7 @@ public sealed class MapGrid
     private CornerHeightGrid _heights;
     private Passability _passability;
     private ulong? _digest;
+    private int[]? _highwaySums;
 
     /// <summary>
     /// A map of <paramref name="width"/> × <paramref name="height"/> clear cells. <paramref name="speeds"/> are the land speeds of
@@ -211,6 +213,44 @@ public sealed class MapGrid
 
     /// <summary>The land layer: under a bridge, the water it spans.</summary>
     public LandType LandAt(CellPos cell) => _land[IndexOf(cell)];
+
+    /// <summary>
+    /// Whether a cell of highway lies in the rectangle of <paramref name="a"/> and <paramref name="b"/> grown by <paramref name="margin"/>
+    /// cells: the path search counts the highway in its heuristic only then (<see cref="LandSpeeds.MinStepCosts"/>). A table of sums of
+    /// the highway cells, built once and again after the land changes, answers it in four reads.
+    /// </summary>
+    public bool HighwayNear(CellPos a, CellPos b, int margin)
+    {
+        var sums = _highwaySums ??= HighwaySums();
+        var x0 = IntMath.Max(0, IntMath.Min(a.X, b.X) - margin);
+        var y0 = IntMath.Max(0, IntMath.Min(a.Y, b.Y) - margin);
+        var x1 = IntMath.Min(Width, IntMath.Max(a.X, b.X) + margin + 1);
+        var y1 = IntMath.Min(Height, IntMath.Max(a.Y, b.Y) + margin + 1);
+        if (x0 >= x1 || y0 >= y1)
+        {
+            return false;
+        }
+
+        var row = Width + 1;
+        return sums[y1 * row + x1] - sums[y0 * row + x1] - sums[y1 * row + x0] + sums[y0 * row + x0] > 0;
+    }
+
+    // sums[(y + 1) * (Width + 1) + x + 1]: the highway cells with both coordinates up to x and y.
+    private int[] HighwaySums()
+    {
+        var row = Width + 1;
+        var sums = new int[row * (Height + 1)];
+        for (var y = 0; y < Height; y++)
+        {
+            for (var x = 0; x < Width; x++)
+            {
+                var here = _land[y * Width + x] == LandType.Highway ? 1 : 0;
+                sums[(y + 1) * row + x + 1] = here + sums[y * row + x + 1] + sums[(y + 1) * row + x] - sums[y * row + x];
+            }
+        }
+
+        return sums;
+    }
 
     /// <summary>
     /// The land a unit on the ground drives on (M7 step 6): a road over a standing low bridge segment, the land layer elsewhere —
@@ -443,6 +483,7 @@ public sealed class MapGrid
         _land[IndexOf(cell)] = land;
         _passability.Update(this, cell);
         _digest = null;
+        _highwaySums = null;
         Version++;
     }
 

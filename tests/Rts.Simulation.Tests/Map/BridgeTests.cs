@@ -131,6 +131,27 @@ public sealed class BridgeTests
     }
 
     [Fact]
+    public void A_commandos_bomb_brings_a_low_bridge_down_from_bank_to_bank_and_a_shell_only_its_span()
+    {
+        // The owner, 2026-10-30: Tanya's C4 takes the whole bridge; a vehicle's guns only the span they hit (above).
+        var world = new GameWorld(seed: 1, River(2, 6), TestRules.Standard);
+        var events = new List<SimEvent>();
+        var tank = world.SpawnUnit(Blue, UnitType.HeavyTank, new CellPos(8, 2).Center);
+        world.BridgeBombs.Add(new BridgeBomb(Blue, tank.Id, 1, 1, world.CurrentTick));
+
+        BridgeDemolition.Update(world, events);
+
+        Assert.All(world.Map.Bridges[0].Segments, segment => Assert.False(segment.IsIntact));
+        Assert.Equal(4, events.OfType<BridgeSegmentDestroyed>().Count());
+        Assert.False(tank.IsAlive);
+        Assert.All(world.Map.Bridges[1].Segments, segment => Assert.True(segment.IsIntact));
+
+        events.Clear();
+        Assert.True(world.DamageAtCell(new CellPos(7, 6), 600, events));
+        Assert.Equal(new[] { 600, 0, 600, 600 }, world.Map.Bridges[1].Segments.Select(s => s.Hp));
+    }
+
+    [Fact]
     public void A_unit_on_its_way_over_a_bridge_that_falls_takes_the_other_bridge()
     {
         var world = new GameWorld(seed: 1, River(4, 7), TestRules.Standard);

@@ -59,7 +59,7 @@ public sealed class SandboxMapTests
         // Golden value: the canonical text and SHA-256 must not depend on the OS or the runtime.
         var map = RtsMapReader.Read(File.ReadAllText(SampleMaps.SandboxPath));
 
-        Assert.Equal("81624928069d9a6cab3325abe3a923b0cc0f7c37a9bf69658ab2ce7aebc5d470", MapHasher.Hash(map));
+        Assert.Equal("af9d7d5db9deb21a54a51aa4871490f38a2bbc1522d5a9a87dd74e6ed4e4f83c", MapHasher.Hash(map));
     }
 
     [Fact]

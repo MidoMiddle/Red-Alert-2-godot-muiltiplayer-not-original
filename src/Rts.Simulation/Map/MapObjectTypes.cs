@@ -40,6 +40,9 @@ public enum MapObjectKind : byte
     Well = 31,
     BarbedWire = 32,
     FarmTractor = 33,
+
+    // The guardrail of a highway (docs/map_elements/04_roads), 2026-10-30.
+    HighwayGuardrail = 34,
 }
 
 /// <summary>
@@ -113,6 +116,7 @@ public static class MapObjectTypes
         "well",
         "barbed_wire",
         "farm_tractor",
+        "highway_guardrail",
     ];
 
     private static readonly MapObjectKind[] Kinds = System.Linq.Enumerable.ToArray(

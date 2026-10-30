@@ -326,6 +326,38 @@ if (args.Length >= 2 && args[0] == "add-huts")
     return failed == 0 ? 0 : 1;
 }
 
+// 2026-10-30: the shores of the maps made before (Shorelines): sand only where a vehicle comes down to the water, the cliffs straight
+// into it, the plateau's ground on their rims.
+if (args.Length >= 2 && args[0] == "tidy-shores")
+{
+    var failed = 0;
+    foreach (var path in args.Skip(1))
+    {
+        try
+        {
+            var map = RtsMapReader.Read(File.ReadAllText(path));
+            var tidy = Shorelines.Tidy(map, MapData.Types);
+            var errors = MapValidator.Check(tidy, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            if (errors.Count > 0)
+            {
+                throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
+            }
+
+            var drowned = Enumerable.Range(0, map.Land.Length).Count(i => map.Land[i] != tidy.Land[i] && tidy.Land[i] == LandType.Shallow);
+            var dried = Enumerable.Range(0, map.Land.Length).Count(i => map.Texture[i] != tidy.Texture[i] && tidy.Land[i] != LandType.Shallow);
+            File.WriteAllText(path, RtsMapWriter.Write(tidy));
+            Console.WriteLine($"{path}: {drowned} cells at the foot of cliffs under the water, {dried} rim cells dry · hash {MapHasher.Hash(tidy)}");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
+        {
+            Console.Error.WriteLine($"{path}: not changed — {e.Message}");
+            failed++;
+        }
+    }
+
+    return failed == 0 ? 0 : 1;
+}
+
 if (args.Length >= 2 && args[0] == "generate")
 {
     string Option(string name, string fallback)

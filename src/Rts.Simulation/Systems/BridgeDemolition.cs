@@ -161,7 +161,7 @@ public static class BridgeDemolition
         world.DamageBridgeSegment(segment, amount, events);
     }
 
-    /// <summary>The bombs whose time came bring their segments down, in the order planted.</summary>
+    /// <summary>The bombs whose time came bring their bridges down whole, from bank to bank (the owner, 2026-10-30), in the order planted.</summary>
     internal static void Update(GameWorld world, List<SimEvent>? events)
     {
         for (var i = 0; i < world.BridgeBombs.Count;)
@@ -178,7 +178,7 @@ public static class BridgeDemolition
             {
                 if (bridge.Id == bomb.Bridge && bridge.Segments[bomb.Segment] is { IsIntact: true } segment)
                 {
-                    world.DestroyBridgeSegment(segment, events);
+                    world.DestroyBridgeSegment(segment, events, whole: true);
                 }
             }
         }

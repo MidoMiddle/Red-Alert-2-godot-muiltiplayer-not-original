@@ -436,7 +436,7 @@ public sealed class MapScript
             for (var dx = -1; dx <= 1; dx++)
             {
                 var next = new CellPos(cell.X + dx, cell.Y + dy);
-                if (_session.Map.ContainsCell(next) && _session.Map.LandAt(next) is LandType.Road or LandType.Track or LandType.Path)
+                if (_session.Map.ContainsCell(next) && _session.Map.LandAt(next) is LandType.Road or LandType.Track or LandType.Path or LandType.Highway)
                 {
                     return true;
                 }

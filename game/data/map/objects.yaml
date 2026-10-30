@@ -209,3 +209,12 @@ farm_tractor:
   name: Farm tractor
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 400
+
+# The guardrail along a highway (docs/map_elements/04_roads, «Отбойник»): it stops only infantry; wheels and tracks drive over it
+# and flatten it, and fire breaks it.
+highway_guardrail:
+  kind: map_object
+  name: Highway guardrail
+  blocks: [foot]
+  hp: 120
+  crushed_by: [track, wheel]

@@ -33,7 +33,7 @@ internal sealed class GenMap
     public MapTypes Types => Settings.Types;
 
     /// <summary>Whether a land type is a road of any kind: the asphalt, the unpaved road and the footpath.</summary>
-    public static bool IsRoad(LandType land) => land is LandType.Road or LandType.Track or LandType.Path;
+    public static bool IsRoad(LandType land) => land is LandType.Road or LandType.Track or LandType.Path or LandType.Highway;
 
     public uint Seed { get; }
 

@@ -561,15 +561,16 @@ public sealed class GameWorld
     /// A bridge segment falls (docs/implementation/M7_maps.md, 4.6): its cell is water again, paths are rebuilt through
     /// <see cref="ChangeMap"/>, and the ground units on it drown. Who can stay on water (amphibious, hover) stays. A high bridge comes
     /// down whole (RA2; the owner, 2026-10-29): every standing segment of it falls with the one hit, only its piers stay, so no span is
-    /// left hanging between gaps. It kills everyone on its deck, and those under it stay (<see cref="Decks"/>). The dead keep their place
-    /// in the cell until the end of the tick, like every unit that dies.
+    /// left hanging between gaps. So does a low bridge under a commando's C4 (<paramref name="whole"/>; the owner, 2026-10-30: Tanya
+    /// takes it from bank to bank), while the guns of a vehicle bring down only the span they hit. It kills everyone on its deck, and
+    /// those under it stay (<see cref="Decks"/>). The dead keep their place in the cell until the end of the tick, like every unit that dies.
     /// </summary>
-    internal void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events)
+    internal void DestroyBridgeSegment(BridgeSegment segment, List<Events.SimEvent>? events, bool whole = false)
     {
         var bridge = segment.Bridge;
         var high = bridge.Type.High;
         var falling = new List<BridgeSegment> { segment };
-        if (high)
+        if (high || whole)
         {
             foreach (var other in bridge.Segments)
             {
