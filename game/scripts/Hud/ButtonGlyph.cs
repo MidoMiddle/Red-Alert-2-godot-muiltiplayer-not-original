@@ -19,8 +19,8 @@ public enum Glyph
 /// <summary>
 /// A picture in place of a button's text (the owner, 2026-10-30): the wrench of repair, the dollar of selling, a house, a shield, a
 /// soldier and a tank on the four tabs, as in RA2; three bars for the menu and a bar chart for the statistics, of our own. Laid over the
-/// whole button, it lets the clicks through and is drawn in the button's text colour, dimmed while the button is disabled; the button's
-/// name goes to its tooltip.
+/// whole button, it lets the clicks through and is drawn in the button's text colour, dimmed while the button is disabled — or, on a tab,
+/// gone: a tab shut for want of a factory is an empty square (the owner, 2026-10-30); the button's name goes to its tooltip.
 /// </summary>
 public partial class ButtonGlyph : Control
 {
@@ -31,22 +31,27 @@ public partial class ButtonGlyph : Control
     public const float Height = 31f;
 
     private readonly Glyph _glyph;
+    private readonly bool _hideWhenDisabled;
     private bool _dim;
 
-    public ButtonGlyph(Glyph glyph)
+    public ButtonGlyph(Glyph glyph, bool hideWhenDisabled = false)
     {
         _glyph = glyph;
+        _hideWhenDisabled = hideWhenDisabled;
         MouseFilter = MouseFilterEnum.Ignore;
     }
 
-    /// <summary>Puts <paramref name="glyph"/> on <paramref name="button"/>: its text becomes its tooltip.</summary>
-    public static void Put(Button button, Glyph glyph, string name)
+    /// <summary>
+    /// Puts <paramref name="glyph"/> on <paramref name="button"/>: its text becomes its tooltip. With
+    /// <paramref name="hideWhenDisabled"/> the picture is not drawn while the button is disabled.
+    /// </summary>
+    public static void Put(Button button, Glyph glyph, string name, bool hideWhenDisabled = false)
     {
         button.TooltipText = Tooltip(name, button.TooltipText);
         button.Text = string.Empty;
         // As tall as with its words.
         button.CustomMinimumSize = new Vector2(button.CustomMinimumSize.X, Math.Max(button.CustomMinimumSize.Y, Height));
-        var picture = new ButtonGlyph(glyph);
+        var picture = new ButtonGlyph(glyph, hideWhenDisabled);
         button.AddChild(picture);
         picture.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
     }
@@ -66,6 +71,11 @@ public partial class ButtonGlyph : Control
 
     public override void _Draw()
     {
+        if (_dim && _hideWhenDisabled)
+        {
+            return;
+        }
+
         var colour = _dim ? Dim : Light;
         // The picture stands in a square of 70% of the button's height, in its middle.
         var side = Math.Min(Size.X, Size.Y) * 0.7f;

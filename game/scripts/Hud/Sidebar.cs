@@ -90,7 +90,8 @@ public partial class Sidebar : Control
         for (var i = 0; i < _tabs.Length; i++)
         {
             var group = (BuildGroup)i;
-            ButtonGlyph.Put(_tabs[i], TabGlyphs[i], Tr(BuildGroups.LocalizationKey(group)));
+            // A tab without its factory is an empty square: no picture, no click (the owner, 2026-10-30).
+            ButtonGlyph.Put(_tabs[i], TabGlyphs[i], Tr(BuildGroups.LocalizationKey(group)), hideWhenDisabled: true);
             _tabs[i].AddThemeStyleboxOverride("pressed", _tabStyle);
             _tabs[i].AddThemeStyleboxOverride("hover_pressed", _tabStyle);
             _tabs[i].AddThemeStyleboxOverride("normal", _tabIdle);
