@@ -64,7 +64,7 @@ models:
   # 2026-10-26). Their models were made a storey to a cell: height_scale 0.35 squashes them upright, their footprints the same.
   # The civilian houses of the map (docs/map_elements/11_civilian_buildings): whole, damaged, abandoned (critically damaged, its soldiers
   # out) and ruins once it has fallen; with soldiers inside, the whole one (occupied) and the damaged one (damaged_occupied).
-  building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 0.88, height_scale: 0.35,
+  building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 1.0, height_scale: 0.35,
                               damaged: map/building_house_small_damaged/building_house_small_damaged.glb,
                               damaged_occupied: map/building_house_small_damaged_occupied/building_house_small_damaged_occupied.glb,
                               occupied: map/building_house_small_occupied/building_house_small_occupied.glb,

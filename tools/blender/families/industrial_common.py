@@ -20,8 +20,9 @@ from units.parts import lin
 FOLDER = "industrial"  # game/assets/models/industrial/<id>/, assets_src/models/industrial/<id>/
 
 
-def run(variant_id, meshes, mat, graph, size, fire_points=(), anchors=()):
-    """Bakes, puts the model in its place in the file, saves the .blend and exports the GLB; returns a report.
+def run(variant_id, meshes, mat, graph, size, fire_points=(), anchors=(), folder=FOLDER):
+    """Bakes, puts the model in its place in the file, saves the .blend and exports the GLB into folder (industrial, or map for the
+    civilian buildings of the map); returns a report.
 
     The GLB nodes are the meshes' names without the state's id, fire_1, fire_2… at fire_points and the empty nodes anchors: (name,
     point), where the game may stand smoke or steam."""
@@ -35,13 +36,13 @@ def run(variant_id, meshes, mat, graph, size, fire_points=(), anchors=()):
         bpy.context.scene.collection.objects.link(node)
         empties.append(node)
     report = [f"{variant_id}: triangles {sum(rc.tri_count(o) for o in meshes)}, size {tuple(round(v, 3) for v in meshes[0].dimensions)}"]
-    base = os.path.join(rc.SRC_ROOT, FOLDER, variant_id)
+    base = os.path.join(rc.SRC_ROOT, folder, variant_id)
     cc.repack(meshes, cc.ISLAND_GAP / size)
     imgs = rc.bake_material(meshes, graph, size, variant_id, os.path.join(base, "bake"))
     rc.wire_final(mat, imgs)
     objs = meshes + empties + nodes
     rc.arrange(objs, variant_id)
-    glb = os.path.join(rc.GLB_ROOT, FOLDER, variant_id, variant_id + ".glb")
+    glb = os.path.join(rc.GLB_ROOT, folder, variant_id, variant_id + ".glb")
     names = [o.name.split(".")[0][len(variant_id) + 1:] for o in meshes + empties] + rc.fire_names(nodes)
     with rc.node_names(objs, names):
         rc.save_blend(objs, mat, imgs, os.path.join(base, variant_id + ".blend"))

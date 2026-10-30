@@ -11,7 +11,7 @@
 
 | Ассет | Футпринт | Высота (ориентир) | Бюджет LOD0 | Гарнизон | Цвет команды |
 |---|---|---|---|---|---|
-| `building_house_small` | 2x2 | 2,5 | ≤ 8 000 | да, 3 | да (полоса над дверью) |
+| `building_house_small` | 2x2 | 2,5 | ≤ 8 000 | да, 3 | да (козырёк над крыльцом) |
 | `building_house_small_damaged` | 2x2 | 2,5 | ≤ 8 000 | — | да |
 | `building_house_ruins` | 2x2 | 0,8 | ≤ 4 000 | нет | нет |
 | `building_apartment_block` | 3x3 | 6 | ≤ 15 000 | да, 8 | да (полоса под карнизом) |
@@ -34,7 +34,7 @@ Concept art reference for a cold-war style city street in winter: a two-storey b
 ### 3.1. `building_house_small`
 
 ```text
-A small two-storey brick house with a steep pitched roof covered in snow, white window frames with curtains, a wooden porch with a small canopy, a low fence around a small front garden, and a narrow plain band on the wall above the door. Realistic physically based materials, clean readable silhouette, game-ready asset, slightly exaggerated proportions like a late-1990s strategy game rebuilt in modern graphics, cold winter setting, single isolated building on a plain light grey background.
+A small two-storey timber house, the upper storey under a steep gable roof of dark green sheet covered in thick snow, its gable to the street: ochre weatherboards on a stone plinth, white carved window frames with curtains, dark green shutters, a brick chimney, a wooden porch with a small gable roof over the door, a woodpile under a lean-to, a low dark picket fence with snow on its rail. Realistic physically based materials, clean readable silhouette, game-ready asset, slightly exaggerated proportions like a late-1990s strategy game rebuilt in modern graphics, cold winter setting, single isolated building on a plain light grey background.
 ```
 
 Нормализация: `--kind building --footprint 2x2`.
@@ -86,12 +86,12 @@ A stone monument on a stepped pedestal in a small square: a tall plain stele wit
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `building_house_small.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано |
-| `building_house_small_damaged.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, повреждено, пусто |
-| `building_house_small_abandoned.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, покинуто (сильно повреждено), `fire_1..3` |
-| `building_house_small_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, повреждён и занят пехотой |
-| `building_house_small_occupied.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, состояние «занято пехотой» |
-| `building_house_ruins.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, руины на месте разрушенного дома |
+| `building_house_small.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 2 656 треугольников |
+| `building_house_small_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 2 208 треугольников |
+| `building_house_small_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 1 698 треугольников |
+| `building_house_small_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 2 864 треугольников |
+| `building_house_small_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 3 312 треугольников |
+| `building_house_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 1 176 треугольников |
 | `building_apartment_block.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано |
 | `building_apartment_block_damaged.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, повреждено, пусто |
 | `building_apartment_block_abandoned.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, покинуто (сильно повреждено), `fire_1..4` |
