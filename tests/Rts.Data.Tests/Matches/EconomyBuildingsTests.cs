@@ -225,6 +225,30 @@ public sealed class EconomyBuildingsTests
         Assert.Equal(CameoState.Available, Square(world, world.Rules.Database.IndexOfBuilding("alliance_power_plant")).State);
     }
 
+    [Fact]
+    public void A_building_ready_to_place_marks_its_tab_and_the_tab_s_key_or_click_finds_it()
+    {
+        // The owner (2026-10-30): its tab blinks while another is shown; the tab takes it up for placing.
+        var simulation = Match();
+        var world = simulation.World;
+        Build(world, Allied, "alliance_construction_yard", 40, 40);
+        var plant = world.Rules.Database.IndexOfBuilding("alliance_power_plant");
+        Step(simulation, 2);
+        simulation.Enqueue(new ProduceCommand(Allied, simulation.CurrentTick, 0, ProductionKind.Building, plant, 1));
+        Step(simulation, 30);
+        Assert.False(SidebarModel.HasReadyToPlace(world, Allied, BuildGroup.Buildings));
+
+        var queue = world.Player(Allied).Queue(Rts.Simulation.Rules.ProductionCategory.Building);
+        for (var tick = 0; tick < 4000 && !queue[0].Ready; tick++)
+        {
+            simulation.Step();
+        }
+
+        Assert.True(SidebarModel.HasReadyToPlace(world, Allied, BuildGroup.Buildings));
+        Assert.False(SidebarModel.HasReadyToPlace(world, Allied, BuildGroup.Defense));
+        Assert.Equal(plant, SidebarModel.ReadyToPlace(SidebarModel.Cameos(world, Allied, BuildGroup.Buildings)));
+    }
+
     private static Cameo Square(GameWorld world, int building) =>
         SidebarModel.Cameos(world, Allied, BuildGroup.Buildings).Single(cameo => cameo.DefIndex == building);
 

@@ -1,3 +1,4 @@
+using Rts.Client.Hud;
 using Rts.Simulation;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
@@ -199,6 +200,18 @@ public sealed class TechBuildingTests
         simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 1, airfield.Id, near, near));
         Run(simulation, 1);
         Assert.Equal(0, command.ChargeLeft);
+
+        // The sidebar (the owner, 2026-10-30): both first on the Defense tab, which they open without a yard; the airfield's charging.
+        Assert.True(SidebarModel.TabOpen(world, Allied, BuildGroup.Defense));
+        var squares = SidebarModel.Cameos(world, Allied, BuildGroup.Defense);
+        Assert.Equal(
+            [("Paradrop", "Airfield", CameoState.Building, airfield.Id), ("Paradrop", "Air Command", CameoState.Ready, command.Id)],
+            squares.Take(2).Select(square => (square.Name, square.From, square.State, square.Superweapon!.Value)));
+        Assert.Equal(240, squares[0].SecondsLeft);
+        Assert.Equal(CameoActionKind.None, SidebarModel.LeftClick(squares[1], shift: false).Kind);
+        Assert.Null(SidebarModel.ReadyToPlace(squares));
+        Assert.DoesNotContain(SidebarModel.Cameos(world, Allied, BuildGroup.Buildings), square => square.Superweapon is not null);
+
         Assert.InRange(airfield.ChargeLeft, airfield.Type.Recharge - 1, airfield.Type.Recharge);
         simulation.Enqueue(new SuperweaponCommand(Allied, simulation.CurrentTick, 2, command.Id, far, far));
         Run(simulation, 1);

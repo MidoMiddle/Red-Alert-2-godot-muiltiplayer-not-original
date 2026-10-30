@@ -416,7 +416,6 @@ UI_EVA_CURTAIN_ACTIVATED,Bastion field activated
 UI_EVA_MISSILE_LAUNCHED,Warning: missile launched
 UI_EVA_GATE_ACTIVATED,Phase gate activated
 UI_EVA_STORM_CREATED,Warning: lightning storm created
-UI_SIDEBAR_SUPERWEAPON_READY,Ready
 UI_SIDEBAR_SUPERWEAPON_HINT,Click, then click the map to aim it; the Phase Gate takes two clicks: what to move, then where
 UI_EVA_REINFORCEMENTS,Reinforcements have arrived
 UI_EVA_BUILDING_CAPTURED,Building captured

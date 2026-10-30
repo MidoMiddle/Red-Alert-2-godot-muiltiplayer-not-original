@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Rts.Simulation;
 using Rts.Simulation.Rules;
 using Rts.Simulation.Systems;
 using Rts.Simulation.World;
@@ -59,6 +60,21 @@ public sealed record Cameo(
     /// </summary>
     public bool AtLimit { get; init; }
 
+    /// <summary>
+    /// The building whose superweapon the square is (the owner, 2026-10-30: on the Defense tab, first): charging while
+    /// <see cref="CameoState.Building"/>, fired by a click when <see cref="CameoState.Ready"/>; null for an item to build.
+    /// </summary>
+    public EntityId? Superweapon { get; init; }
+
+    /// <summary>The building of the superweapon by name, for the tooltip: Air Force Command, Airfield.</summary>
+    public string From { get; init; } = "";
+
+    /// <summary>The seconds the superweapon still charges, shown where an item shows its cost.</summary>
+    public int SecondsLeft { get; init; }
+
+    /// <summary>The superweapon is armed: the next click on the map aims it.</summary>
+    public bool Armed { get; init; }
+
     /// <summary>What it is for, by which the square takes its colour until there are icons (the owner's wish, 2026-10-24).</summary>
     public CameoRole Role { get; init; }
 
@@ -113,12 +129,18 @@ public static class SidebarModel
         _ => ProductionCategory.Vehicle,
     };
 
+    /// <summary>Whether a building of the tab is ready to place: the first of its queue, done (the tab blinks while not shown).</summary>
+    public static bool HasReadyToPlace(GameWorld world, PlayerId player, BuildGroup group) =>
+        group is BuildGroup.Buildings or BuildGroup.Defense
+        && world.Player(player).Queue(CategoryOf(group)) is [{ Ready: true, Kind: ProductionKind.Building }, ..];
+
     /// <summary>
     /// A tab is open while the player has a ready factory of its category, the way production needs one: the Vehicles tab with a war
     /// factory, a shipyard or an air command, as the ships and the aircraft stand in it (RA2).
     /// </summary>
     public static bool TabOpen(GameWorld world, PlayerId player, BuildGroup group) =>
         ProductionRules.HasFactory(world, player, CategoryOf(group))
+        || (group == BuildGroup.Defense && HasSuperweapon(world, player))
         || (group == BuildGroup.Vehicles
             && (ProductionRules.HasFactory(world, player, ProductionCategory.Naval) || ProductionRules.HasFactory(world, player, ProductionCategory.Aircraft)));
 
@@ -165,8 +187,48 @@ public static class SidebarModel
     /// prerequisites are missing is not there until they are, another country's own never — of its own faction and of the other, whose
     /// items a building taken from it opens (<see cref="TechTree"/>).
     /// </summary>
-    public static IReadOnlyList<Cameo> Cameos(GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null) =>
-        Squares(world, player, group, nameOf, everyFaction: true, availableOnly: true);
+    public static IReadOnlyList<Cameo> Cameos(
+        GameWorld world, PlayerId player, BuildGroup group, Func<string, string, string>? nameOf = null, string paradropName = "Paradrop") =>
+        group == BuildGroup.Defense
+            ? [.. Superweapons(world, player, nameOf, paradropName), .. Squares(world, player, group, nameOf, everyFaction: true, availableOnly: true)]
+            : Squares(world, player, group, nameOf, everyFaction: true, availableOnly: true);
+
+    /// <summary>
+    /// The superweapons of the player, first on the Defense tab (the owner, 2026-10-30), in the order their buildings stand in the world:
+    /// a square each, its clock the charge, Ready when it may be fired, On Hold without power. A paradrop is named Paradrop whichever building sends it — the
+    /// USA with a taken airfield has two — the tooltip names the building.
+    /// </summary>
+    public static IReadOnlyList<Cameo> Superweapons(
+        GameWorld world, PlayerId player, Func<string, string, string>? nameOf = null, string paradropName = "Paradrop")
+    {
+        var cameos = new List<Cameo>();
+        foreach (var entity in world.Entities)
+        {
+            if (entity is not Building { IsAlive: true, IsReady: true } building || building.Owner != player
+                || SuperweaponSystem.KindOf(world, building) is var kind && kind == SuperweaponKind.None)
+            {
+                continue;
+            }
+
+            var from = building.Def is { } def ? nameOf?.Invoke(def.Id, def.Name) ?? def.Name
+                : world.Rules.Database.TryGetMapBuilding(building.Type.Id, out var map) ? map.Name : building.Type.Id;
+            var name = kind == SuperweaponKind.Paradrop ? paradropName : from;
+            var recharge = Math.Max(1, SuperweaponSystem.RechargeOf(building));
+            var ready = building.ChargeLeft == 0;
+            // Without power it neither charges nor fires: On Hold, as in RA2.
+            var state = !Rts.Simulation.Combat.Defenses.IsOnline(world, building) ? CameoState.OnHold
+                : ready ? CameoState.Ready : CameoState.Building;
+            var seconds = (building.ChargeLeft + SimulationSettings.DefaultTicksPerSecond - 1) / SimulationSettings.DefaultTicksPerSecond;
+            cameos.Add(new Cameo(
+                ProductionKind.Building, -1, name, 0, state,
+                ready ? 1f : Math.Clamp(1f - building.ChargeLeft / (float)recharge, 0f, 1f), 0, "")
+            {
+                Superweapon = building.Id, From = from, SecondsLeft = seconds, Role = CameoRole.Superweapon, Code = CodeOf(name),
+            });
+        }
+
+        return cameos;
+    }
 
     /// <summary>
     /// Every square of a tab, in the order of RA2 (<see cref="Ra2Place"/>): every item of the player's faction in the tab's category, the
@@ -264,7 +326,7 @@ public static class SidebarModel
     /// A left click: a ready building goes to the placement mode, a paused item goes on (the order command resumes it), anything that
     /// can be ordered is ordered, one or, for units with Shift, five. Unavailable and busy squares do nothing.
     /// </summary>
-    public static CameoAction LeftClick(Cameo cameo, bool shift) => cameo.State switch
+    public static CameoAction LeftClick(Cameo cameo, bool shift) => cameo.Superweapon is not null ? CameoAction.None : cameo.State switch
     {
         CameoState.Ready => new CameoAction(CameoActionKind.Place, cameo.Kind, cameo.DefIndex),
         CameoState.OnHold => new CameoAction(CameoActionKind.Produce, cameo.Kind, cameo.DefIndex),
@@ -282,7 +344,7 @@ public static class SidebarModel
     {
         foreach (var cameo in cameos)
         {
-            if (cameo is { State: CameoState.Ready, Kind: ProductionKind.Building })
+            if (cameo is { State: CameoState.Ready, Kind: ProductionKind.Building, Superweapon: null })
             {
                 return cameo.DefIndex;
             }
@@ -295,7 +357,7 @@ public static class SidebarModel
     /// A right click, as in RA2: an item in work is put on hold; one on hold or ready is cancelled, the last of its kind, with the
     /// credits back.
     /// </summary>
-    public static CameoAction RightClick(Cameo cameo) => cameo.State switch
+    public static CameoAction RightClick(Cameo cameo) => cameo.Superweapon is not null ? CameoAction.None : cameo.State switch
     {
         CameoState.Building or CameoState.WaitingForFunds => new CameoAction(CameoActionKind.Pause, cameo.Kind, cameo.DefIndex),
         CameoState.OnHold or CameoState.Ready => new CameoAction(CameoActionKind.Cancel, cameo.Kind, cameo.DefIndex),
@@ -412,6 +474,20 @@ public static class SidebarModel
         }
 
         return string.Join(", ", names);
+    }
+
+    private static bool HasSuperweapon(GameWorld world, PlayerId player)
+    {
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Building { IsAlive: true, IsReady: true } building && building.Owner == player
+                && SuperweaponSystem.KindOf(world, building) != SuperweaponKind.None)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static HashSet<string> ReadyBuildings(GameWorld world, PlayerId player)

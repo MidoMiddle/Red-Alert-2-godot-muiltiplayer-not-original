@@ -96,7 +96,10 @@ public partial class BuildIcon : Control
         DrawRect(new Rect2(0f, 0f, 5f, Size.Y), role);
         DrawString(font, new Vector2(5f, 15f), cameo.Name, HorizontalAlignment.Center, Size.X - 5f, NameSize(font, cameo.Name), NameColor);
         DrawString(font, new Vector2(5f, 39f), cameo.Code, HorizontalAlignment.Center, Size.X - 5f, 22, role.Lightened(0.25f));
-        DrawString(font, new Vector2(9f, Size.Y - 5f), HudFormat.Credits(cameo.Cost), HorizontalAlignment.Left, Size.X - 14f, 12, CostColor);
+        // A superweapon shows the time it still charges where an item shows its cost.
+        var corner = cameo.Superweapon is null ? HudFormat.Credits(cameo.Cost)
+            : cameo.State == CameoState.Ready ? "" : $"{cameo.SecondsLeft / 60}:{cameo.SecondsLeft % 60:00}";
+        DrawString(font, new Vector2(9f, Size.Y - 5f), corner, HorizontalAlignment.Left, Size.X - 14f, 12, CostColor);
 
         if (cameo.State is CameoState.Building or CameoState.OnHold or CameoState.WaitingForFunds)
         {
@@ -126,7 +129,7 @@ public partial class BuildIcon : Control
             DrawString(font, new Vector2(0f, Size.Y / 2f + 12f), label, HorizontalAlignment.Center, Size.X, 17, StateColor);
         }
 
-        DrawRect(rect, cameo.State is CameoState.Unavailable ? EmptyFrame : _accent, false, 2f);
+        DrawRect(rect, cameo.Armed ? StateColor : cameo.State is CameoState.Unavailable ? EmptyFrame : _accent, false, cameo.Armed ? 3f : 2f);
     }
 
     /// <summary>The colour of a role: green infantry, blue vehicles, teal ships, purple aircraft; for buildings yellow power, orange
@@ -196,6 +199,11 @@ public partial class BuildIcon : Control
 
     private string Tooltip(Cameo cameo)
     {
+        if (cameo.Superweapon is not null)
+        {
+            return (cameo.From == cameo.Name ? cameo.Name : $"{cameo.Name} ({cameo.From})") + "\n" + Tr("UI_SIDEBAR_SUPERWEAPON_HINT");
+        }
+
         var text = cameo.Name + "\n" + string.Format(Tr("UI_SIDEBAR_COST"), HudFormat.Credits(cameo.Cost));
         if (cameo.AvailableLater)
         {

@@ -103,7 +103,7 @@ toggle_mode = true
 
 [node name="TabGrid" type="GridContainer" parent="Column"]
 layout_mode = 2
-columns = 2
+columns = 4
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 

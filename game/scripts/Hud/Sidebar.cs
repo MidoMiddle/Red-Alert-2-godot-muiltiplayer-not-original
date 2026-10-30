@@ -28,13 +28,22 @@ public partial class Sidebar : Control
     private Button _sell = null!;
     private PowerBar _power = null!;
 
-    // The superweapons of the player (stage 2d): a button each, above repair and sell.
-    private readonly Dictionary<EntityId, Button> _superweapons = new();
-    private VBoxContainer _superweaponColumn = null!;
     private StyleBoxFlat _tabStyle = null!;
+
+    // The tabs not shown are dark, the shown one filled with the faction's colour (the owner, 2026-10-30); a tab with a building ready
+    // to place, not shown, blinks between dark and a light fill.
+    private StyleBoxFlat _tabIdle = null!;
+    private StyleBoxFlat _tabBlink = null!;
+    private readonly bool[] _tabLit = new bool[4];
+
+    // A blink: lit and dark this long each.
+    private const ulong BlinkMs = 400;
     private SimulationHost? _host;
     private PlayerInput? _input;
     private BuildGroup _group = BuildGroup.Buildings;
+
+    // The pictures of the tabs, in the order of BuildGroup: a house, a shield, a soldier, a tank (as in RA2).
+    private static readonly Glyph[] TabGlyphs = [Glyph.House, Glyph.Shield, Glyph.Person, Glyph.Tank];
 
     // The rows of the tab scrolled past with the mouse wheel: a tab with the items of a faction taken too can be longer than the grid.
     private int _scroll;
@@ -58,22 +67,22 @@ public partial class Sidebar : Control
         ];
         // The pressed style of the theme, with its margins and borders; only the colour changes with the faction.
         _tabStyle = (StyleBoxFlat)GetThemeStylebox("pressed", "Button").Duplicate();
+        _tabIdle = (StyleBoxFlat)_tabStyle.Duplicate();
+        _tabIdle.BgColor = new Color("#2A2E35");
+        _tabBlink = (StyleBoxFlat)_tabStyle.Duplicate();
 
         var menu = GetNode<Button>("Column/MenuRow/MenuButton");
         var stats = GetNode<Button>("Column/MenuRow/StatsButton");
         _repair = GetNode<Button>("Column/SellRepairRow/RepairButton");
-        _superweaponColumn = new VBoxContainer { Name = "Superweapons" };
-        var column = GetNode<Control>("Column");
-        column.AddChild(_superweaponColumn);
-        column.MoveChild(_superweaponColumn, GetNode("Column/SellRepairRow").GetIndex());
         _sell = GetNode<Button>("Column/SellRepairRow/SellButton");
 
-        menu.Text = Tr("UI_BUTTON_MENU");
-        stats.Text = Tr("UI_BUTTON_STATS");
-        _repair.Text = Tr("UI_BUTTON_REPAIR");
-        _sell.Text = Tr("UI_BUTTON_SELL");
+        // Pictures in place of the words (the owner, 2026-10-30); the words go to the tooltips.
         _repair.TooltipText = Tr("UI_SIDEBAR_REPAIR_HINT");
         _sell.TooltipText = Tr("UI_SIDEBAR_SELL_HINT");
+        ButtonGlyph.Put(menu, Glyph.Menu, Tr("UI_BUTTON_MENU"));
+        ButtonGlyph.Put(stats, Glyph.Stats, Tr("UI_BUTTON_STATS"));
+        ButtonGlyph.Put(_repair, Glyph.Wrench, Tr("UI_BUTTON_REPAIR"));
+        ButtonGlyph.Put(_sell, Glyph.Dollar, Tr("UI_BUTTON_SELL"));
         _repair.AddThemeStyleboxOverride("pressed", _tabStyle);
         _sell.AddThemeStyleboxOverride("pressed", _tabStyle);
 
@@ -81,9 +90,13 @@ public partial class Sidebar : Control
         for (var i = 0; i < _tabs.Length; i++)
         {
             var group = (BuildGroup)i;
-            _tabs[i].Text = Tr(BuildGroups.LocalizationKey(group));
+            ButtonGlyph.Put(_tabs[i], TabGlyphs[i], Tr(BuildGroups.LocalizationKey(group)));
             _tabs[i].AddThemeStyleboxOverride("pressed", _tabStyle);
             _tabs[i].AddThemeStyleboxOverride("hover_pressed", _tabStyle);
+            _tabs[i].AddThemeStyleboxOverride("normal", _tabIdle);
+            _tabs[i].AddThemeStyleboxOverride("hover", _tabIdle);
+            // A click on a tab with a building ready takes it up for placing, as the tab's key does.
+            _tabs[i].Pressed += () => ArmReady(group);
             _tabs[i].Toggled += pressed =>
             {
                 if (pressed)
@@ -115,6 +128,7 @@ public partial class Sidebar : Control
         var accent = new Color(FactionPalette.AccentHex(faction));
         _credits.Text = HudFormat.Credits(credits);
         _tabStyle.BgColor = accent;
+        _tabBlink.BgColor = accent.Lightened(0.35f);
         Minimap.SetFrameColor(accent);
         foreach (var icon in _icons)
         {
@@ -134,13 +148,7 @@ public partial class Sidebar : Control
             }
 
             _tabs[tab].ButtonPressed = true;
-
-            // With a building of the tab ready, its key takes it up for placing, as a click on its square does.
-            if (_host is { IsPlayback: false } match && _input is { } placing
-                && SidebarModel.ReadyToPlace(SidebarModel.Cameos(match.Simulation.World, SimulationHost.LocalPlayer, (BuildGroup)tab, NameOf)) is { } ready)
-            {
-                placing.ArmPlacement(ready);
-            }
+            ArmReady((BuildGroup)tab);
         };
         _host = host;
         _input = input;
@@ -177,19 +185,21 @@ public partial class Sidebar : Control
         var names = AppSettings.Instance?.Values.Ra2Names ?? true;
         if (!ReferenceEquals(world, _cameosOf.World) || world.CurrentTick != _cameosOf.Tick || _group != _cameosOf.Group || names != _cameosOf.Names)
         {
-            _cameos = SidebarModel.Cameos(world, player, _group, NameOf);
+            _cameos = SidebarModel.Cameos(world, player, _group, NameOf, Tr("UI_SIDEBAR_PARADROP"));
             _cameosOf = (world, world.CurrentTick, _group, names);
         }
 
         var cameos = _cameos;
         _scroll = SidebarModel.ScrollRows(cameos.Count, _scroll);
         var first = _scroll * SidebarLayout.Columns;
+        // The superweapon armed for a click on the map: its square is lit.
+        var armed = _input.Tool == PointerTool.Superweapon ? _input.Superweapon.Building : EntityId.None;
         for (var i = 0; i < _icons.Count; i++)
         {
-            _icons[i].Cameo = first + i < cameos.Count && SidebarModel.TabOpen(world, player, _group) ? cameos[first + i] : null;
+            var cameo = first + i < cameos.Count && SidebarModel.TabOpen(world, player, _group) ? cameos[first + i] : null;
+            _icons[i].Cameo = cameo is { Superweapon: { } superweapon } && superweapon == armed ? cameo with { Armed = true } : cameo;
         }
 
-        UpdateSuperweapons(world, player);
         _sell.SetPressedNoSignal(_input.Tool == PointerTool.Sell);
         _repair.SetPressedNoSignal(_input.Tool == PointerTool.Repair);
         _sell.Disabled = _host.IsPlayback;
@@ -221,48 +231,19 @@ public partial class Sidebar : Control
     private readonly Dictionary<string, string> _names = new(System.StringComparer.Ordinal);
     private bool _namesRa2 = true;
 
-    /// <summary>
-    /// A button for every ready superweapon of the player (stage 2d): its name and the time it still charges, or Ready; pressed, it arms
-    /// the superweapon for a click on the map.
-    /// </summary>
-    private void UpdateSuperweapons(GameWorld world, PlayerId player)
+    /// <summary>With a building of the tab ready, its key or a click on it takes it up for placing, as a click on its square does.</summary>
+    private void ArmReady(BuildGroup group)
     {
-        var seen = new HashSet<EntityId>();
-        foreach (var entity in world.Entities)
+        if (_host is { IsPlayback: false } match && _input is { } placing
+            && SidebarModel.ReadyToPlace(SidebarModel.Cameos(match.Simulation.World, SimulationHost.LocalPlayer, group, NameOf)) is { } ready)
         {
-            if (entity is not Building { IsAlive: true, IsReady: true } building || building.Owner != player
-                || Rts.Simulation.Systems.SuperweaponSystem.KindOf(world, building) == Rts.Simulation.Rules.SuperweaponKind.None)
-            {
-                continue;
-            }
-
-            seen.Add(building.Id);
-            if (!_superweapons.TryGetValue(building.Id, out var button))
-            {
-                var id = building.Id;
-                button = new Button { ToggleMode = true, TooltipText = Tr("UI_SIDEBAR_SUPERWEAPON_HINT"), ClipText = true };
-                button.Pressed += () => _input?.ToggleSuperweapon(id);
-                _superweaponColumn.AddChild(button);
-                _superweapons.Add(id, button);
-            }
-
-            var ready = building.ChargeLeft == 0;
-            var seconds = (building.ChargeLeft + Rts.Simulation.SimulationSettings.DefaultTicksPerSecond - 1) / Rts.Simulation.SimulationSettings.DefaultTicksPerSecond;
-            var name = building.Def is { } named ? NameOf(named.Id, named.Name) : Tr("UI_SIDEBAR_PARADROP");
-            button.Text = $"{name}  {(ready ? Tr("UI_SIDEBAR_SUPERWEAPON_READY") : $"{seconds / 60}:{seconds % 60:00}")}";
-            button.Disabled = !ready || _host!.IsPlayback;
-            button.SetPressedNoSignal(_input!.Tool == PointerTool.Superweapon && _input.Superweapon.Building == building.Id);
-        }
-
-        foreach (var id in _superweapons.Keys.Where(id => !seen.Contains(id)).ToList())
-        {
-            _superweapons[id].QueueFree();
-            _superweapons.Remove(id);
+            placing.ArmPlacement(ready);
         }
     }
 
     /// <summary>
-    /// Greys out the tabs without a factory. When the shown tab closes, or none was open and one opens, the first open tab is shown.
+    /// Greys out the tabs without a factory. When the shown tab closes, or none was open and one opens, the first open tab is shown. A tab
+    /// not shown with a building ready to place blinks.
     /// </summary>
     private void UpdateTabs(GameWorld world, PlayerId player)
     {
@@ -281,12 +262,36 @@ public partial class Sidebar : Control
         {
             _tabs[firstOpen].ButtonPressed = true;
         }
+
+        // A building ready to place on a tab not shown: the tab blinks until it is shown (the owner, 2026-10-30).
+        var on = Time.GetTicksMsec() / BlinkMs % 2 == 0;
+        for (var i = 0; i < _tabs.Length; i++)
+        {
+            var lit = on && i != (int)_group && SidebarModel.HasReadyToPlace(world, player, (BuildGroup)i);
+            if (lit != _tabLit[i])
+            {
+                _tabLit[i] = lit;
+                _tabs[i].AddThemeStyleboxOverride("normal", lit ? _tabBlink : _tabIdle);
+                _tabs[i].AddThemeStyleboxOverride("hover", lit ? _tabBlink : _tabIdle);
+            }
+        }
     }
 
     private void OnIconClicked(Cameo cameo, bool right, bool shift)
     {
         if (_host is null || _input is null || _host.IsPlayback)
         {
+            return;
+        }
+
+        // A superweapon: a click when it is ready arms it for the map, another click (or the right button) puts it away.
+        if (cameo.Superweapon is { } building)
+        {
+            if (cameo.Armed || (!right && cameo.State == CameoState.Ready))
+            {
+                _input.ToggleSuperweapon(building);
+            }
+
             return;
         }
 
