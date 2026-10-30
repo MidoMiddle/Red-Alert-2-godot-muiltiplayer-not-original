@@ -10,7 +10,8 @@ namespace Rts.Client.Controls;
 /// move, a red crossed circle where nobody can go, a yellow and red sight for an attack-move, a green flag for a waypoint. For the
 /// base (M3 step 13): a yellow dollar to sell, a green wrench to repair, green arrows pointing out to deploy an MCV, and a yellow
 /// crystal between green arrows to send harvesters to ore. The cursors of RA2 (2026-10-25): orange arrows in for a forced move (Alt),
-/// red treads to crush, a yellow house with a green flag for an engineer to take, a yellow wrench for an engineer to mend, blue
+/// red treads to crush, three dark gold triangles pointing down to go in or to take a building (the owner, 2026-10-30), a yellow
+/// wrench for an engineer to mend, blue
 /// arrows in for a spy, a green cross to heal, a black bomb with a lit fuse to plant one; the sights of the superweapons — the
 /// radiation sign of the missile, a lightning bolt of the storm, the blue ring of the phase gate, the red shield of the field
 /// projector, a parachute of the paradrop.
@@ -28,6 +29,7 @@ public static class CursorSet
     private static readonly Color Orange = new(1f, 0.55f, 0.1f);
     private static readonly Color Blue = new(0.35f, 0.7f, 1f);
     private static readonly Color Dark = new(0.12f, 0.12f, 0.14f);
+    private static readonly Color DarkGold = new(0.72f, 0.53f, 0.04f);
 
     private static readonly Dictionary<CursorKind, Image> Images = new();
     private static CursorKind? _shown;
@@ -91,10 +93,10 @@ public static class CursorSet
             CursorKind.Repair => Wrench,
             CursorKind.Deploy => ArrowsOut,
             CursorKind.Harvest => Crystal,
-            CursorKind.Enter => ArrowsIn,
+            CursorKind.Enter => TrianglesDown,
             CursorKind.ForceMove => (x, y) => Recolor(ArrowsIn(x, y), Orange),
             CursorKind.Crush => Treads,
-            CursorKind.Capture => House,
+            CursorKind.Capture => TrianglesDown,
             CursorKind.EngineerRepair => (x, y) => Outlined(x, y, (px, py) => Wrench(px, py) is not null, Yellow),
             CursorKind.Infiltrate => (x, y) => Recolor(ArrowsIn(x, y), Blue),
             CursorKind.Heal => (x, y) => Outlined(x, y, (px, py) => (MathF.Abs(px - Middle) < 3.5f && MathF.Abs(py - Middle) < 11) || (MathF.Abs(py - Middle) < 3.5f && MathF.Abs(px - Middle) < 11), Green),
@@ -281,22 +283,23 @@ public static class CursorSet
         return (int)y % 4 == 0 ? Outline : Red;
     }
 
-    /// <summary>A yellow house — walls and a roof — with a green flag on it: take it.</summary>
-    private static Color? House(float x, float y)
+    /// <summary>
+    /// Three dark gold triangles one over another, pointing down: go in — soldiers into a building, an engineer to take one (the owner,
+    /// 2026-10-30).
+    /// </summary>
+    private static Color? TrianglesDown(float x, float y) => Outlined(x, y, (px, py) =>
     {
-        var flag = x >= 16 && x < 26 && y is > 2 and < 9 && x < 16 + 10 * (1 - MathF.Abs(y - 5.5f) / 3.5f);
-        if (flag)
+        for (var k = 0; k < 3; k++)
         {
-            return Green;
+            var top = 4f + k * 9f;
+            if (py >= top && py <= top + 7f && MathF.Abs(px - Middle) <= 9f * (1f - (py - top) / 7f))
+            {
+                return true;
+            }
         }
 
-        if (x is > 15 and < 17 && y is > 2 and < 14)
-        {
-            return Outline;
-        }
-
-        return Outlined(x, y, (px, py) => (px is > 8 and < 24 && py is > 18 and < 28) || (py is > 11 and <= 18 && MathF.Abs(px - Middle) < (py - 11) * 1.15f), Yellow);
-    }
+        return false;
+    }, DarkGold);
 
     /// <summary>A black round bomb with a fuse lit at its end.</summary>
     private static Color? Bomb(float x, float y)
