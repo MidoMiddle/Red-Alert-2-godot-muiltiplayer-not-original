@@ -14,7 +14,7 @@
 | `building_house_small` | 2x2 | 2,5 | ≤ 8 000 | да, 3 | да (козырёк над крыльцом) |
 | `building_house_small_damaged` | 2x2 | 2,5 | ≤ 8 000 | — | да |
 | `building_house_ruins` | 2x2 | 0,8 | ≤ 4 000 | нет | нет |
-| `building_apartment_block` | 3x3 | 6 | ≤ 15 000 | да, 8 | да (полоса под карнизом) |
+| `building_apartment_block` | 3x3 | 6 | ≤ 15 000 | да, 8 | да (парапет по верху крыши) |
 | `building_monument` | 2x2 | 3 | ≤ 5 000 | нет | нет |
 
 Остальные городские здания (школа, офис, церковь, магазин, киоск и др.) — в [городских элементах](../../city_elements/README.md). Их промты будут отдельно.
@@ -60,7 +60,7 @@ Ruins of a small brick house: low broken walls, rubble piles, charred roof beams
 ### 3.4. `building_apartment_block`
 
 ```text
-A five-storey apartment block with a flat roof, rows of identical windows, a central entrance with a canopy, a narrow plain colour band under the cornice, and snow along the roof edge. Realistic physically based materials, clean readable silhouette, game-ready asset, slightly exaggerated proportions like a late-1990s strategy game rebuilt in modern graphics, cold winter setting, single isolated building on a plain light grey background.
+A five-storey red brick apartment block on a grey concrete plinth with a flat roof under snow inside a plain parapet band, rows of identical windows in white frames, two entrances with concrete canopies and the small windows of the stairs above them, concrete balconies with pale fronts and snow on them, brick vent shafts and aerials on the roof. Realistic physically based materials, clean readable silhouette, game-ready asset, slightly exaggerated proportions like a late-1990s strategy game rebuilt in modern graphics, cold winter setting, single isolated building on a plain light grey background.
 ```
 
 Нормализация: `--kind building --footprint 3x3`.
@@ -76,7 +76,7 @@ A stone monument on a stepped pedestal in a small square: a tall plain stele wit
 ## 4. Наши требования
 
 - **Пивот** — центр футпринта, низ подложки на земле (M1, 4.7). Здание стоит на бетонной подложке (узел `base`); хижина без бетона — на участке земли или песка другого оттенка ([model_standards](../../art/model_standards.md), раздел 3, «Фундамент»).
-- **Узлы:** `body`, `roof`, `team_mask`, `base`; у покинутого здания — точки огня `fire_1…`. Маска — полоса над дверью у малого дома и под карнизом у многоэтажки. Полоса уже есть в модели, маска задаёт её цвет.
+- **Узлы:** `body`, `roof`, `team_mask`, `base`; у покинутого здания — точки огня `fire_1…`. Маска — козырёк над крыльцом у малого дома и парапет по верху крыши у многоэтажки: тонкую полосу на стене после сжатия по высоте не видно. Деталь уже есть в модели, маска задаёт её цвет.
 - **Гарнизон** — это поведение, не модель. Силуэты бойцов в окнах и вспышки делаем кодом и эффектами. Окна в модели должны быть видны, иначе здание не читается как здание с окнами (см. [appearance.md](appearance.md)).
 - **Шесть состояний** — отдельные модели: целое, занятое пехотой (`_occupied`), повреждённое (`_damaged`: от четверти до половины здоровья), повреждённое и занятое (`_damaged_occupied`), покинутое (`_abandoned`: меньше четверти здоровья, пехота вышла) и руины (`_ruins`) на месте разрушенного здания. Игра выбирает модель по здоровью и гарнизону: поля `damaged`, `damaged_occupied`, `occupied`, `abandoned`, `ruins` в [models.yaml](../../../game/data/visuals/models.yaml).
 - **Бюджеты** ниже лимита M1 для зданий (≤ 20 000). Малые здания не должны тратить лимит.
@@ -92,12 +92,12 @@ A stone monument on a stepped pedestal in a small square: a tall plain stele wit
 | `building_house_small_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 2 864 треугольников |
 | `building_house_small_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 3 312 треугольников |
 | `building_house_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_house.py`) | 2026-10-30 | сделано заново, 1 176 треугольников |
-| `building_apartment_block.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано |
-| `building_apartment_block_damaged.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, повреждено, пусто |
-| `building_apartment_block_abandoned.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, покинуто (сильно повреждено), `fire_1..4` |
-| `building_apartment_block_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, повреждена и занята пехотой |
-| `building_apartment_block_occupied.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, состояние «занято пехотой» |
-| `building_apartment_block_ruins.glb` | Blender 5.2.3, вручную (скрипт) | 2026-10-25 | сделано, руины на месте разрушенной многоэтажки |
+| `building_apartment_block.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 8 428 треугольников |
+| `building_apartment_block_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 7 468 треугольников |
+| `building_apartment_block_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 6 516 треугольников |
+| `building_apartment_block_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 7 984 треугольников |
+| `building_apartment_block_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 8 944 треугольников |
+| `building_apartment_block_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 1 340 треугольников |
 | `building_monument.glb` | | | |
 
 ## Открытые вопросы

@@ -72,7 +72,7 @@ models:
                               ruins: map/building_house_ruins/building_house_ruins.glb }
 
   # The apartment block of the map (docs/map_elements/11_civilian_buildings): the same states as the house.
-  building/neutral_apartment: { file: map/building_apartment_block/building_apartment_block.glb, height: 2.1, height_scale: 0.35,
+  building/neutral_apartment: { file: map/building_apartment_block/building_apartment_block.glb, height: 2.2, height_scale: 0.35,
                                 damaged: map/building_apartment_block_damaged/building_apartment_block_damaged.glb,
                                 damaged_occupied: map/building_apartment_block_damaged_occupied/building_apartment_block_damaged_occupied.glb,
                                 occupied: map/building_apartment_block_occupied/building_apartment_block_occupied.glb,
