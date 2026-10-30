@@ -100,7 +100,7 @@ public sealed class ClimateLookTests
     }
 
     [Fact]
-    public void Cells_take_the_slot_of_their_material_and_cliffs_the_cliff_material()
+    public void Cells_take_the_slot_of_their_material_and_cliffs_keep_theirs_for_above_and_below_the_wall()
     {
         // 8 x 8: corners from x = 4 at level 2, so the cells of column 3 are cliffs; a pond of deep water at (6, 1).
         const int size = 8;
@@ -127,7 +127,7 @@ public sealed class ClimateLookTests
         Assert.Equal(winter.SlotOf("grass"), Slot(0, 0));
         Assert.Equal(winter.SlotOf("snow"), Slot(1, 0));
         Assert.Equal(winter.SlotOf("snow"), Slot(2, 0));
-        Assert.Equal(winter.SlotOf("rock"), Slot(3, 5));
+        Assert.Equal(winter.SlotOf("snow"), Slot(3, 5));
         Assert.Equal(winter.SlotOf("water"), Slot(6, 1));
         Assert.Equal(2, cells[(1 * size + 6) * MaterialSlots.BytesPerCell + 1]);
         Assert.Equal(0, cells[1]);

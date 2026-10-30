@@ -61,7 +61,28 @@ public sealed class TerrainMeshTests
         }
 
         Assert.Equal(new[] { (0, 0), (32, 0), (64, 0), (0, 32), (32, 32), (64, 32) }, TerrainMesh.Chunks(70, 40));
-        Assert.Equal(71 * 41 + 70 * 40, vertices.Count);
+        foreach (var ((x, z), y) in vertices)
+        {
+            // Every point is on the surface, so the grid of a cliff cell lies on the straight edge of a cell beside it.
+            Assert.Equal(terrain.HeightAt(x, z), y, 4);
+        }
+    }
+
+    [Fact]
+    public void A_cliff_cell_is_a_grid_of_squares_and_the_other_cells_four_triangles()
+    {
+        // Relief's cliff runs down column 10: 32 cliff cells in the first chunk.
+        var terrain = TerrainHeights.FromRules(TerrainHeightsTests.Relief());
+        var mesh = TerrainMesh.BuildChunk(terrain, 0, 0);
+        const int steps = TerrainMesh.CliffSteps;
+
+        Assert.True(terrain.IsCliff(10, 5));
+        Assert.Equal(33 * 33 + 32 * 32 + 32 * (steps + 1) * (steps + 1), mesh.Positions.Length);
+        Assert.Equal((32 * 32 - 32) * 12 + 32 * steps * steps * 6, mesh.Indices.Length);
+        foreach (var position in mesh.Positions)
+        {
+            Assert.Equal(terrain.HeightAt(position.X, position.Z), position.Y, 4);
+        }
     }
 
     [Fact]

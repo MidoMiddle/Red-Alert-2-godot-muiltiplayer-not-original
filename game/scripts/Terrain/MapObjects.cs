@@ -13,7 +13,7 @@ namespace Rts.Client.Terrain;
 /// block for an anti-tank hedgehog, a thin dark pipe for a pipeline (ore and gem sources: <see cref="OreSources"/>), a tall
 /// stone block for a wall, a dark pole with a yellow lamp for a lamp post, a grey block for every rock cell, and for a low
 /// bridge a plank deck just above the water with a rail on each side, or charred stubs where a segment fell; a high bridge of concrete
-/// with an asphalt deck at its level (<see cref="AddHighBridge"/>). One MultiMesh
+/// with an asphalt deck at its level (<see cref="AddHighBridge"/>); stones along the cliffs (<see cref="AddCliffRocks"/>). One MultiMesh
 /// per shape (and per direction for bridges) — since 2026-10-26 one for every piece of the map holding copies of it
 /// (<see cref="ChunkedInstances"/>), so the pieces off the screen are not drawn. A snowdrift is a bush in summer and a dune in the desert. Rebuilt whenever the map changes
 /// (a bridge blown up, the editor) or its climate does (the editor), which is rare. An object destroyed in a match (a lamp post or a
@@ -168,6 +168,7 @@ public partial class MapObjects : Node3D
         }
 
         AddInstances("Rocks", new BoxMesh { Size = new Vector3(0.98f, RockHeight, 0.98f) }, new Color(0.45f, 0.45f, 0.48f), rocks, RockHeight / 2);
+        AddCliffRocks();
         AddStumps(stumps);
         // The models of the table by the object's id (docs/art/model_standards.md), the primitives without one.
         AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f, "object/boulder");
@@ -421,6 +422,74 @@ public partial class MapObjects : Node3D
     /// The props of one kind: its model of the table (<c>object/&lt;id&gt;</c>) when there is one for the climate, or else a MultiMesh
     /// for every part of its look (<see cref="PropLooks"/>) in the civilian colours.
     /// </summary>
+    /// <summary>
+    /// The stones along the rims and at the feet of the cliffs (<see cref="CliffRocks"/>): three lumpy shapes in the rock of the
+    /// climate's cliffs, laid on from the side like the wall's (triplanar in world space), so a stone matches the wall above it.
+    /// None on a bridge's cells, where it would come through the deck.
+    /// </summary>
+    private void AddCliffRocks()
+    {
+        var heights = GetParent<TerrainBuilder>().Heights;
+        var stones = CliffRocks.Place(heights, (x, y) => _map.IsDeck(new CellPos(x, y)) || _map.BridgeAt(new CellPos(x, y)) is not null);
+        if (stones.Count == 0)
+        {
+            return;
+        }
+
+        var material = new StandardMaterial3D { AlbedoColor = new Color(0.5f, 0.49f, 0.47f), Roughness = 0.95f };
+        if (_builtClimate is { } climate && System.Linq.Enumerable.FirstOrDefault(climate.Materials, m => m.Id == climate.Cliff) is { } rock
+            && GD.Load<Texture2D>(Climates.ClimateLooks.TextureFolder + rock.Albedo) is { } texture)
+        {
+            // A little lighter than the wall: the stones at its foot lie in its shade and must still show.
+            material.AlbedoColor = Climates.SceneLighting.Color(rock.Tint) * new Color(1.15f, 1.15f, 1.15f);
+            material.AlbedoTexture = texture;
+            material.Uv1Triplanar = true;
+            material.Uv1WorldTriplanar = true;
+            material.Uv1Scale = Vector3.One / rock.Tiling;
+        }
+
+        for (var variant = 0; variant < 3; variant++)
+        {
+            var places = new List<Transform3D>();
+            foreach (var stone in stones)
+            {
+                if (stone.Variant == variant)
+                {
+                    var basis = new Basis(Vector3.Up, stone.Turn).Scaled(Vector3.One * stone.Size);
+                    places.Add(new Transform3D(basis, new Vector3(stone.At.X, stone.At.Y, stone.At.Z)));
+                }
+            }
+
+            var mesh = StoneMesh(variant);
+            mesh.SurfaceSetMaterial(0, material);
+            ChunkedInstances.Add(this, $"CliffRocks{variant}", mesh, places);
+        }
+    }
+
+    /// <summary>A stone one unit across, flat-shaded: a low sphere whose points are pushed in and out, squat, its lower part under the ground.</summary>
+    private static ArrayMesh StoneMesh(int variant)
+    {
+        var sphere = new SphereMesh { Radius = 0.5f, Height = 1f, RadialSegments = 7, Rings = 3 };
+        var arrays = sphere.GetMeshArrays();
+        var points = (Vector3[])arrays[(int)Mesh.ArrayType.Vertex];
+        for (var i = 0; i < points.Length; i++)
+        {
+            // By the point itself, so the copies of a point on the seam and at the poles move together.
+            var p = points[i];
+            var bump = 0.75f + 0.5f * Mathf.PosMod(Mathf.Sin(p.X * 12.9898f + p.Y * 78.233f + p.Z * 37.719f + variant * 4.1f) * 43758.547f, 1f);
+            points[i] = new Vector3(p.X * bump, p.Y * bump * 0.65f + 0.08f, p.Z * bump);
+        }
+
+        arrays[(int)Mesh.ArrayType.Vertex] = points;
+        var built = new ArrayMesh();
+        built.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+        var tool = new SurfaceTool();
+        tool.CreateFrom(built, 0);
+        tool.Deindex();
+        tool.GenerateNormals();
+        return tool.Commit();
+    }
+
     private void AddProps(string id, List<Spot> points)
     {
         if (Models.ModelLibrary.Instances("object/" + id, _builtClimate?.Id, PointsOf(points)) is { } groups)

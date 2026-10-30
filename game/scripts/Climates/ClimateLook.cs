@@ -100,7 +100,7 @@ public sealed class ClimateLook
     /// <summary>In file order: the slot of a material in the ground shader is its index here.</summary>
     public ImmutableArray<ClimateMaterial> Materials { get; }
 
-    /// <summary>The material drawn on cliff cells, whatever the texture layer says.</summary>
+    /// <summary>The material of the cliffs' walls: the ground shader draws it on every steep face, from the side.</summary>
     public string Cliff { get; }
 
     public string WaterNormal { get; }

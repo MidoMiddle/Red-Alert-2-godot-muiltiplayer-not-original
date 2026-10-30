@@ -209,6 +209,7 @@ public partial class TerrainBuilder : Node3D
             tint[i] = new Vector3(linear.R, linear.G, linear.B);
         }
 
+        GroundMaterial.SetShaderParameter("cliff_slot", climate.SlotOf(climate.Cliff));
         GroundMaterial.SetShaderParameter("ground_albedo", textures.Albedo);
         GroundMaterial.SetShaderParameter("tex_water_normal", textures.WaterNormal);
         GroundMaterial.SetShaderParameter("mat_tiling", tiling);

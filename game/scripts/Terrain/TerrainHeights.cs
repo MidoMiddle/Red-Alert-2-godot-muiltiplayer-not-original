@@ -9,11 +9,26 @@ namespace Rts.Client.Terrain;
 /// drive on. The visual hills of M1 are gone since M7 step 9. Beyond the map lies the skirt (<see cref="MapSkirt"/>) when it is
 /// built with one: <see cref="Skirt"/> more corners on every side, in world coordinates, so the rays of the camera find what
 /// is drawn there. Pure math without Godot, so it is covered by xUnit.
+/// <para>
+/// A cliff cell (corners two levels apart or more, closed to every ground unit) is drawn as a wall, not a ramp
+/// (docs/map_elements/01_relief/README.md): its height keeps to the lower or the upper level and drops in a steep band
+/// round the middle that noise bends (<see cref="CliffHeight"/>). Nobody stands there, so only there the drawn height leaves
+/// the rules'. On every cell edge the height depends on the edge alone (<see cref="EdgeHeight"/>), so cells meet without gaps.
+/// </para>
 /// </summary>
 public sealed class TerrainHeights
 {
     /// <summary>Height of one level of the rules in Godot units: 104 leptons of 256 per cell (docs/implementation/M7_maps.md, 4.1).</summary>
     public const float LevelHeight = Rts.Simulation.Map.CornerHeightGrid.LevelHeight / (float)Rts.Simulation.Geometry.WorldPos.LeptonsPerCell;
+
+    /// <summary>Half the width of a cliff's wall, as a share of the drop across the cell: 0.14 makes a wall of about 80°.</summary>
+    public const float CliffWallHalfWidth = 0.14f;
+
+    /// <summary>How far noise moves a cliff's wall along the drop, as a share of it: the wall wanders up to a quarter cell.</summary>
+    public const float CliffWander = 0.25f;
+
+    /// <summary>Waves of the noise that bends a cliff's wall per cell.</summary>
+    private const float CliffNoiseScale = 1.3f;
 
     private const float RayStep = 0.05f;
     private const int BisectIterations = 24;
@@ -83,7 +98,10 @@ public sealed class TerrainHeights
         return _vertices[(z + Skirt) * (WidthCells + 2 * Skirt + 1) + x + Skirt];
     }
 
-    /// <summary>Height at any point: bilinear inside a cell, edge height beyond the skirt (beyond the map without one).</summary>
+    /// <summary>
+    /// Height at any point: bilinear inside a cell, a wall inside a cliff cell (<see cref="CliffHeight"/>), edge height beyond
+    /// the skirt (beyond the map without one).
+    /// </summary>
     public float HeightAt(float x, float z)
     {
         x = Math.Clamp(x, -Skirt, WidthCells + Skirt);
@@ -92,10 +110,128 @@ public sealed class TerrainHeights
         var cellZ = Math.Min((int)MathF.Floor(z), HeightCells + Skirt - 1);
         var fx = x - cellX;
         var fz = z - cellZ;
+        if (IsCliff(cellX, cellZ))
+        {
+            return CliffHeight(cellX, cellZ, fx, fz);
+        }
 
         var top = Lerp(VertexHeight(cellX, cellZ), VertexHeight(cellX + 1, cellZ), fx);
         var bottom = Lerp(VertexHeight(cellX, cellZ + 1), VertexHeight(cellX + 1, cellZ + 1), fx);
         return Lerp(top, bottom, fz);
+    }
+
+    /// <summary>True when the corners of the cell are two levels apart or more: a cliff of the rules, drawn as a wall.</summary>
+    public bool IsCliff(int cellX, int cellZ)
+    {
+        var (a, b, c, d) = Corners(cellX, cellZ);
+        return IsDrop(Math.Min(Math.Min(a, b), Math.Min(c, d)), Math.Max(Math.Max(a, b), Math.Max(c, d)));
+    }
+
+    /// <summary>
+    /// Height of a point of a cliff cell, <paramref name="fx"/> and <paramref name="fz"/> 0…1 inside it. On its edges it is
+    /// <see cref="EdgeHeight"/>. A cell of two levels only (a straight cliff, an outer or an inner corner) blends its corners and
+    /// pushes the blend to the lower or the upper level by <see cref="Wall"/>, so the wall follows the line where the blend is
+    /// half way. A cell of three levels or more keeps the blend but moves the point along every edge that drops the way that
+    /// edge's wall does, so its edges stay those of its neighbours.
+    /// </summary>
+    public float CliffHeight(int cellX, int cellZ, float fx, float fz)
+    {
+        var (a, b, c, d) = Corners(cellX, cellZ);
+        if (fz == 0f)
+        {
+            return EdgeHeight(a, b, fx, cellX + fx, cellZ);
+        }
+
+        if (fz == 1f)
+        {
+            return EdgeHeight(c, d, fx, cellX + fx, cellZ + 1);
+        }
+
+        if (fx == 0f)
+        {
+            return EdgeHeight(a, c, fz, cellX, cellZ + fz);
+        }
+
+        if (fx == 1f)
+        {
+            return EdgeHeight(b, d, fz, cellX + 1, cellZ + fz);
+        }
+
+        var low = Math.Min(Math.Min(a, b), Math.Min(c, d));
+        var high = Math.Max(Math.Max(a, b), Math.Max(c, d));
+        var (x, z) = (cellX + fx, cellZ + fz);
+        if (IsLowOrHigh(a) && IsLowOrHigh(b) && IsLowOrHigh(c) && IsLowOrHigh(d))
+        {
+            var blend = Lerp(Lerp(a, b, fx), Lerp(c, d, fx), fz);
+            return low + (high - low) * Wall((blend - low) / (high - low), x, z);
+        }
+
+        var u = Lerp(EdgeShift(a, b, fx, x, cellZ), EdgeShift(c, d, fx, x, cellZ + 1), fz);
+        var v = Lerp(EdgeShift(a, c, fz, cellX, z), EdgeShift(b, d, fz, cellX + 1, z), fx);
+        return Lerp(Lerp(a, b, u), Lerp(c, d, u), v);
+
+        bool IsLowOrHigh(float corner) => corner == low || corner == high;
+    }
+
+    /// <summary>
+    /// Height along a cell edge from corner height <paramref name="from"/> to <paramref name="to"/>, <paramref name="s"/> 0…1 from
+    /// the first, at world point (<paramref name="x"/>, <paramref name="z"/>): a straight line, or a wall where the edge drops two
+    /// levels or more. Both cells of the edge get the same numbers, so the same height.
+    /// </summary>
+    public static float EdgeHeight(float from, float to, float s, float x, float z) => Lerp(from, to, EdgeShift(from, to, s, x, z));
+
+    /// <summary>
+    /// The wall's push, 0…1, at <paramref name="t"/> 0…1 up the drop (0 at the lower level) at world point
+    /// (<paramref name="x"/>, <paramref name="z"/>): a smoothstep <see cref="CliffWallHalfWidth"/> wide round the middle, which
+    /// noise moves up to <see cref="CliffWander"/>. It keeps 0 and 1 where they are and never turns back.
+    /// </summary>
+    public static float Wall(float t, float x, float z)
+    {
+        var bent = t + CliffWander * 4f * t * (1f - t) * Noise(x * CliffNoiseScale, z * CliffNoiseScale);
+        var k = Math.Clamp((bent - 0.5f + CliffWallHalfWidth) / (2f * CliffWallHalfWidth), 0f, 1f);
+        return k * k * (3f - 2f * k);
+    }
+
+    // Where a point s of the way along an edge takes its height: the same s on a gentle edge, the wall's push on a drop.
+    private static float EdgeShift(float from, float to, float s, float x, float z)
+    {
+        if (!IsDrop(Math.Min(from, to), Math.Max(from, to)))
+        {
+            return s;
+        }
+
+        return from < to ? Wall(s, x, z) : 1f - Wall(1f - s, x, z);
+    }
+
+    // Two levels or more between two heights: half a level of slack against rounding.
+    private static bool IsDrop(float low, float high) => high - low > 1.5f * LevelHeight;
+
+    private (float A, float B, float C, float D) Corners(int cellX, int cellZ) =>
+        (VertexHeight(cellX, cellZ), VertexHeight(cellX + 1, cellZ), VertexHeight(cellX, cellZ + 1), VertexHeight(cellX + 1, cellZ + 1));
+
+    // Smooth value noise, -1…1, on a lattice of whole numbers: the same numbers give the same noise.
+    private static float Noise(float x, float z)
+    {
+        var ix = (int)MathF.Floor(x);
+        var iz = (int)MathF.Floor(z);
+        var fx = x - ix;
+        var fz = z - iz;
+        fx = fx * fx * (3f - 2f * fx);
+        fz = fz * fz * (3f - 2f * fz);
+        var top = Lerp(Hash(ix, iz), Hash(ix + 1, iz), fx);
+        var bottom = Lerp(Hash(ix, iz + 1), Hash(ix + 1, iz + 1), fx);
+        return Lerp(top, bottom, fz) * 2f - 1f;
+    }
+
+    // 0…1 from a lattice point.
+    private static float Hash(int x, int z)
+    {
+        unchecked
+        {
+            var h = (uint)x * 374761393u + (uint)z * 668265263u;
+            h = (h ^ (h >> 13)) * 1274126177u;
+            return ((h ^ (h >> 16)) & 0xFFFFFF) / (float)0xFFFFFF;
+        }
     }
 
     /// <summary>

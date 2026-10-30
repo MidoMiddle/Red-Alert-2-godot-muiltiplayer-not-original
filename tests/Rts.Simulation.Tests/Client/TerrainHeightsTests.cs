@@ -56,11 +56,124 @@ public sealed class TerrainHeightsTests
 
         Assert.Equal(6 * TerrainHeights.LevelHeight, terrain.VertexHeight(40, 24));
         Assert.Equal(104f / 256f, TerrainHeights.LevelHeight);
+        var checkedPoints = 0;
         for (var i = 0; i < 1000; i++)
         {
             var x = random.NextInt(MapSize * 256) / 256f;
             var z = random.NextInt(MapSize * 256) / 256f;
+            if (rules.ShapeAt(new CellPos((int)x, (int)z)) == CellShape.Cliff)
+            {
+                continue; // a wall, nobody stands there: see the cliff tests below
+            }
+
+            checkedPoints++;
             Assert.Equal(RulesHeight(rules, x, z), terrain.HeightAt(x, z), 4);
+        }
+
+        Assert.True(checkedPoints > 950);
+    }
+
+    /// <summary>16 x 8 cells: corners north of z = 4 at level 4, south of it level 0, so row 3 is a straight cliff.</summary>
+    private static TerrainHeights StraightCliff()
+    {
+        var levels = new byte[17 * 9];
+        for (var z = 0; z <= 8; z++)
+        {
+            for (var x = 0; x <= 16; x++)
+            {
+                levels[z * 17 + x] = (byte)(z <= 3 ? 4 : 0);
+            }
+        }
+
+        return TerrainHeights.FromRules(CornerHeightGrid.FromLayer(16, 8, levels));
+    }
+
+    [Fact]
+    public void A_cliff_is_a_steep_wall_with_the_plateau_above_it_and_the_ground_below()
+    {
+        var terrain = StraightCliff();
+        var top = 4 * TerrainHeights.LevelHeight;
+
+        Assert.True(terrain.IsCliff(5, 3));
+        Assert.False(terrain.IsCliff(5, 2));
+        Assert.False(terrain.IsCliff(5, 4));
+        for (var x = 0.05f; x < 16f; x += 0.1f)
+        {
+            // The noise moves the wall a little, never into the outer fifth of the cell.
+            Assert.Equal(top, terrain.HeightAt(x, 3.2f));
+            Assert.Equal(0f, terrain.HeightAt(x, 3.8f));
+
+            var steepest = 0f;
+            for (var z = 3f; z < 4f; z += 0.01f)
+            {
+                var drop = terrain.HeightAt(x, z) - terrain.HeightAt(x, z + 0.01f);
+                Assert.True(drop >= -0.0001f, $"the wall turns back up at ({x}, {z})");
+                steepest = MathF.Max(steepest, drop / 0.01f);
+            }
+
+            Assert.True(steepest > MathF.Tan(75f * MathF.PI / 180f), $"the wall at x = {x} is only {MathF.Atan(steepest) * 180f / MathF.PI:0}°");
+        }
+    }
+
+    [Fact]
+    public void The_wall_wanders_along_the_cliff_instead_of_running_straight()
+    {
+        var terrain = StraightCliff();
+        var middle = 2 * TerrainHeights.LevelHeight;
+
+        // Where the wall crosses half its height, column by column.
+        var crossings = new List<float>();
+        for (var x = 0.05f; x < 16f; x += 0.25f)
+        {
+            var z = 3f;
+            while (terrain.HeightAt(x, z) > middle)
+            {
+                z += 0.005f;
+            }
+
+            crossings.Add(z);
+        }
+
+        Assert.True(crossings.Max() - crossings.Min() > 0.1f, $"the wall runs between z = {crossings.Min()} and {crossings.Max()}");
+    }
+
+    [Fact]
+    public void Cliff_cells_meet_their_neighbours_without_a_step()
+    {
+        // Random corners 0…6: walls of every kind next to ramps and flat cells.
+        var random = new TestRandom(5);
+        var levels = new byte[41 * 41];
+        for (var i = 0; i < levels.Length; i++)
+        {
+            levels[i] = (byte)random.NextInt(7);
+        }
+
+        var terrain = TerrainHeights.FromRules(CornerHeightGrid.FromLayer(40, 40, levels));
+        for (var i = 0; i < 4000; i++)
+        {
+            // A point on a cell edge, read from both cells beside it.
+            var edge = 1 + random.NextInt(39);
+            var along = random.NextInt(40 * 64) / 64f;
+            Assert.InRange(terrain.HeightAt(edge - 0.00001f, along) - terrain.HeightAt(edge, along), -0.001f, 0.001f);
+            Assert.InRange(terrain.HeightAt(along, edge - 0.00001f) - terrain.HeightAt(along, edge), -0.001f, 0.001f);
+        }
+    }
+
+    [Fact]
+    public void A_click_on_a_cliff_finds_the_wall()
+    {
+        var terrain = StraightCliff();
+        var random = new TestRandom(9);
+
+        // The camera looks north-west, so it sees the cliff's south face.
+        for (var i = 0; i < 300; i++)
+        {
+            var x = 2f + random.NextInt(1200) / 100f;
+            var z = 3f + random.NextInt(100) / 100f;
+            var target = new Vector3(x, terrain.HeightAt(x, z), z);
+
+            Assert.True(terrain.TryIntersectRay(target - CameraDirection * 50f, CameraDirection, out var hit));
+            Assert.True(Vector3.Distance(target, hit) < 0.01f, $"hit {hit}, expected {target}");
         }
     }
 

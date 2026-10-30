@@ -8,7 +8,10 @@
 // of its land type from the simulation map (one texel per cell, cliffs in rock), with a faint line every cell, a stronger line
 // every 8 cells and a line at each height level: the symbolic look of docs/implementation/conventions.md, section 12. M7 step 9:
 // the normal is the face's own, so every plane of the relief reads apart and a cliff is a wall. The debug cell overlay (F7, M2
-// step 14) blends one RGBA texel per cell over the ground in both modes; bucket_lines adds the 4x4 index grid.
+// step 14) blends one RGBA texel per cell over the ground in both modes; bucket_lines adds the 4x4 index grid. The walls of
+// the cliffs (TerrainHeights.cs: a cliff cell is a steep wall between its two levels) take the climate's cliff material from
+// the side wherever the face is steep, projected on the planes that stand upright (triplanar without the top), so the rock is
+// not stretched down the wall; above and below the wall the cell keeps its own ground.
 shader_type spatial;
 
 const int MAX_MATERIALS = 16;
@@ -29,6 +32,10 @@ uniform float mat_roughness[MAX_MATERIALS];
 uniform vec3 mat_tint[MAX_MATERIALS];
 uniform float mat_water[MAX_MATERIALS];
 uniform float mat_frost[MAX_MATERIALS];
+// The slot of the climate's cliff material, for the walls; -1 without one.
+uniform int cliff_slot = -1;
+// The rock's grain runs down the wall: the texture is this much longer upright than across.
+uniform float cliff_stretch = 2.5;
 uniform vec3 frost_color : source_color = vec3(0.88, 0.91, 0.96);
 uniform sampler2D tex_water_normal : filter_linear_mipmap, repeat_enable;
 uniform vec3 deep_water_color : source_color = vec3(0.10, 0.24, 0.56);
@@ -153,6 +160,20 @@ void fragment() {
 			// Light moving over the bottom of the shallow part of the water.
 			float shallow = clamp(water - deep, 0.0, 1.0);
 			color += caustic_strength * caustic(p * 1.3, TIME) * shallow * vec3(0.8, 0.95, 1.0);
+		}
+
+		// The walls of the cliffs: rock from the side on every steep face, less of it as the face levels out.
+		vec3 face = normalize(cross(dFdy(world_position), dFdx(world_position)));
+		float steep = smoothstep(0.25, 0.5, 1.0 - abs(face.y));
+		if (cliff_slot >= 0 && steep > 0.0) {
+			vec2 side = abs(face.xz) + 0.001;
+			side /= side.x + side.y;
+			float tiling = mat_tiling[cliff_slot];
+			vec3 along_x = texture(ground_albedo, vec3(vec2(world_position.x, world_position.y / cliff_stretch) / tiling, float(cliff_slot))).rgb;
+			vec3 along_z = texture(ground_albedo, vec3(vec2(world_position.z, world_position.y / cliff_stretch) / tiling, float(cliff_slot))).rgb;
+			vec3 rock = (along_x * side.y + along_z * side.x) * mat_tint[cliff_slot];
+			color = mix(color, rock, steep);
+			roughness = mix(roughness, mat_roughness[cliff_slot], steep);
 		}
 	} else if (size.x > 1) {
 		color = texelFetch(land_map, cell, 0).rgb;

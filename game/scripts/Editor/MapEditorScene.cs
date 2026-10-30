@@ -68,6 +68,10 @@ public partial class MapEditorScene : Node3D, IMapSource
     private (int X, int Y, CellPos Cell)? _pointer;
     private CellPos? _pressedCell;
     private string _message = "";
+
+    // «--look-at X Y»: the cell the camera shows over the first frames, for a screenshot of one place of the map.
+    private Vector2? _lookAt;
+    private int _lookFrames;
     private (EditTool, Brush, (int, int, CellPos)?, CellPos?, int, EditOptions) _drawnCursor;
     private List<MapEntry> _maps = [];
 
@@ -117,13 +121,21 @@ public partial class MapEditorScene : Node3D, IMapSource
     public override void _EnterTree()
     {
         // Before the terrain and the camera are ready: they ask for the map at once. «-- --ui-editor --open NAME» opens a map of
-        // res://data/maps (to look at it, a screenshot of every climate).
+        // res://data/maps (to look at it, a screenshot of every climate); «--look-at X Y» shows one cell of it.
         Load(Kept ?? OpenedFromArguments() ?? new MapEditSession(EditableMap.NewWithArea(64, 2), DataFiles.Current.Rules.MapTypes));
     }
 
     public override void _Ready()
     {
         ScreenshotCapture.AttachIfRequested(this);
+        var args = OS.GetCmdlineUserArgs();
+        var lookIndex = Array.IndexOf(args, "--look-at");
+        if (lookIndex >= 0 && lookIndex + 2 < args.Length && int.TryParse(args[lookIndex + 1], out var lookX)
+            && int.TryParse(args[lookIndex + 2], out var lookY))
+        {
+            _lookAt = new Vector2(lookX + 0.5f, lookY + 0.5f);
+        }
+
         _camera = GetNode<RtsCamera>("CameraRig");
         _camera.ReservedRight = PanelWidth;
         _marks = new EditorMarks { Name = "EditorMarks" };
@@ -147,6 +159,12 @@ public partial class MapEditorScene : Node3D, IMapSource
 
     public override void _Process(double delta)
     {
+        if (_lookAt is { } look && _lookFrames++ < 10)
+        {
+            _camera.CenterOn(new Vector3(look.X, 0f, look.Y));
+            _camera.ZoomInFully();
+        }
+
         _pointer = PointerUnder(GetViewport().GetMousePosition());
         if (_painting && Input.IsMouseButtonPressed(MouseButton.Left) && _pointer is { } at)
         {

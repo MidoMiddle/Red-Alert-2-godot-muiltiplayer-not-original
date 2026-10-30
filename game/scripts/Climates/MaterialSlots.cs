@@ -6,8 +6,9 @@ namespace Rts.Client.Climates;
 /// <summary>
 /// The ground material of every cell for the ground shader (docs/implementation/M7_maps.md, 4.12), Godot-free: two bytes per
 /// cell, the slot of its material in the climate (<see cref="ClimateLook.Materials"/>) and its water (0 none, 1 shallow, 2 deep,
-/// by the land of the rules). Cliffs take the climate's cliff material whatever the texture says; a material the climate lacks
-/// falls back to the one of the cell's land in that climate (<see cref="Rts.Data.Maps.ClimateGrounds"/>), then to the first slot.
+/// by the land of the rules). A cliff cell keeps its own material too: it shows above and below the wall, and the shader puts the
+/// climate's cliff material on the wall itself (<see cref="ClimateLook.Cliff"/>). A material the climate lacks falls back to the
+/// one of the cell's land in that climate (<see cref="Rts.Data.Maps.ClimateGrounds"/>), then to the first slot.
 /// </summary>
 public static class MaterialSlots
 {
@@ -20,7 +21,6 @@ public static class MaterialSlots
             look = MapLook.FromLand(map);
         }
 
-        var cliff = (byte)climate.SlotOf(climate.Cliff);
         var cells = new byte[map.Width * map.Height * BytesPerCell];
         for (var y = 0; y < map.Height; y++)
         {
@@ -29,7 +29,7 @@ public static class MaterialSlots
                 var cell = new CellPos(x, y);
                 var index = y * map.Width + x;
                 var land = map.LandAt(cell);
-                cells[index * BytesPerCell] = map.Heights.ShapeAt(cell) == CellShape.Cliff ? cliff : SlotOf(look.MaterialAt(index), land, climate);
+                cells[index * BytesPerCell] = SlotOf(look.MaterialAt(index), land, climate);
                 cells[index * BytesPerCell + 1] = land switch
                 {
                     LandType.Shallow => 1,

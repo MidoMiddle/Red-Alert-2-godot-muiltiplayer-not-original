@@ -8,6 +8,7 @@ using Rts.Simulation;
 using Rts.Simulation.Benchmarks;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
@@ -362,7 +363,7 @@ public partial class Main : Node3D
 
     /// <summary>
     /// The ground drawn is the ground of the rules (docs/implementation/M7_maps.md, 4.12, step 9), and a click finds it: at
-    /// points spread over the map the height of the view equals the height of the simulation, and each point projected to
+    /// points spread over the map the height of the view equals the height of the simulation (but on a cliff's wall), and each point projected to
     /// the screen and clicked through the camera comes back within 0.05 cell (docs/implementation/M1_visual_spike.md, step 3).
     /// </summary>
     private bool CheckTerrain()
@@ -390,7 +391,12 @@ public partial class Main : Node3D
                 samples++;
                 var rules = map.Heights.HeightAt(new WorldPos((int)(x * WorldPos.LeptonsPerCell), (int)(z * WorldPos.LeptonsPerCell)));
                 var point = new Vector3(x, terrain.HeightAt(x, z), z);
-                worstHeight = Math.Max(worstHeight, Math.Abs(point.Y - rules.Raw / (float)Rts.Simulation.Math.Fixed.OneRaw / WorldPos.LeptonsPerCell));
+                // A cliff is drawn as a wall (TerrainHeights.CliffHeight): nobody stands there, so its height may leave the rules'.
+                if (map.Heights.ShapeAt(new CellPos((int)x, (int)z)) != CellShape.Cliff)
+                {
+                    worstHeight = Math.Max(worstHeight, Math.Abs(point.Y - rules.Raw / (float)Rts.Simulation.Math.Fixed.OneRaw / WorldPos.LeptonsPerCell));
+                }
+
                 // Only what the player can point at: a point on the screen that no higher hill hides from the camera.
                 var screen = camera.UnprojectPosition(point);
                 if (screen.X < view.Position.X || screen.Y < view.Position.Y || screen.X > view.End.X || screen.Y > view.End.Y)
