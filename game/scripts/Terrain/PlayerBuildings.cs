@@ -36,7 +36,7 @@ public partial class PlayerBuildings : Node3D
     private const float SpinSpeed = 1.2f;
 
     // How long the arm of a service depot takes to start working or to settle back, in seconds.
-    private const float ArmSettleSeconds = 0.6f;
+    internal const float ArmSettleSeconds = 0.6f;
 
     private static readonly Color Dark = new(0.25f, 0.26f, 0.29f);
     private static readonly Color Pad = new(0.95f, 0.8f, 0.15f);
@@ -366,7 +366,7 @@ public partial class PlayerBuildings : Node3D
     }
 
     // Where a defense's target is, in Godot's space; null when it has none.
-    private static Vector3? TargetPoint(GameWorld world, Building building)
+    internal static Vector3? TargetPoint(GameWorld world, Building building)
     {
         if (building.Target is not { } id || !world.TryGet(id, out var target))
         {
@@ -743,7 +743,7 @@ public partial class PlayerBuildings : Node3D
     /// The turret of a defense (docs/art/model_standards.md, section 4): it turns about its Y towards its target, its front along
     /// its -Z; its gatling_* nodes spin about their Z while it has a target, and run down after.
     /// </summary>
-    private sealed class Turret
+    internal sealed class Turret
     {
         private const float TurnSpeed = 4f;
         private const float SpinSpeed = 25f;
@@ -803,7 +803,7 @@ public partial class PlayerBuildings : Node3D
     }
 
     /// <summary>The moving parts of a service depot: at rest in the pose of the model, busy while the depot repairs.</summary>
-    private abstract class Machine
+    internal abstract class Machine
     {
         /// <summary>How much it works, 0 (at rest in the pose of the model) to 1.</summary>
         public float Work { get; set; }
@@ -821,7 +821,7 @@ public partial class PlayerBuildings : Node3D
     /// A jointed arm (the Alliance's depot): its base turns about its Y, the upper arm and the forearm about their Z, each from the
     /// pose of the model; at work they swing to and fro out of step, so it looks busy over the vehicle on the pad.
     /// </summary>
-    private sealed class Arm(Node3D bottom, Node3D upper, Node3D fore) : Machine
+    internal sealed class Arm(Node3D bottom, Node3D upper, Node3D fore) : Machine
     {
         private readonly Transform3D _bottom = bottom.Transform;
         private readonly Transform3D _upper = upper.Transform;

@@ -9,6 +9,7 @@
 #   tree/<shape>    a tree of a climate: pine (snow), broadleaf_small and broadleaf_big (temperate, urban), palm and cactus (desert);
 #                   the holo tank's disguise too
 #   ore/<kind>      the clusters of a field: ore and gems (the file only: the field scales and turns them)
+#   bridge/<piece>  a piece of the low wooden bridge, a segment three cells across, made along x (MapObjects.AddWoodenBridge)
 #   crate/supply    a crate of a match (M11 a6): pivot at the centre of its cell on the ground
 #   <key>@<climate> the model of the same thing on the maps of one climate (urban, winter…): drawn there before the key's own
 # Fields: file — or files: [a list of kinds of it], each cell picks one — (one of the two is required), scale (1), yaw in degrees
@@ -204,6 +205,25 @@ models:
                                abandoned: map/tech_oil_derrick_abandoned/tech_oil_derrick_abandoned.glb,
                                ruins: map/tech_oil_derrick_ruins/tech_oil_derrick_ruins.glb }
 
+  # The tech airfield of the map (docs/map_elements/12_tech_buildings): an engineer takes it and its owner gets a paradrop of
+  # infantry; the flag by its hangar and the rim of its tower's roof take the owner's colour.
+  building/tech_airfield: { file: map/tech_airfield/tech_airfield.glb, height: 1.95,
+                            abandoned: map/tech_airfield_abandoned/tech_airfield_abandoned.glb,
+                            ruins: map/tech_airfield_ruins/tech_airfield_ruins.glb }
+
+  # The tech outpost of the map (docs/ra2_buildings/tech/outpost): an engineer takes it, its launcher (turret) fires for the owner
+  # and turns to its target, its arm works over the repair pad while it mends a vehicle (Buildings); the pods' bands, a stripe round
+  # its upper tier and the flag take the owner's colour.
+  building/tech_outpost: { file: map/tech_outpost/tech_outpost.glb, height: 1.65,
+                           abandoned: map/tech_outpost_abandoned/tech_outpost_abandoned.glb,
+                           ruins: map/tech_outpost_ruins/tech_outpost_ruins.glb }
+
+  # The tech hospital of the map (docs/ra2_buildings/tech/hospital): an engineer takes it and a hurt soldier of its owner goes in to
+  # come out whole; its sign is a green cross on white (ours); the flag and a band under the entrance's cornice take the owner's colour.
+  building/tech_hospital: { file: map/tech_hospital/tech_hospital.glb, height: 2.0,
+                            abandoned: map/tech_hospital_abandoned/tech_hospital_abandoned.glb,
+                            ruins: map/tech_hospital_ruins/tech_hospital_ruins.glb }
+
   # The industrial buildings of the map (docs/industrial_elements).
   building/neutral_smokestack:     { file: industrial/smokestack/smokestack.glb, height: 2.1, height_scale: 0.35 }
   building/neutral_cooling_tower:  { file: industrial/cooling_tower/cooling_tower.glb, height: 1.75, height_scale: 0.35 }
@@ -214,6 +234,16 @@ models:
   # Map objects (docs/map_elements, docs/obstacle_elements). A fence and a pipe run along x, as their placeholders.
   object/ore_source:          { file: map/ore_source/ore_source.glb }
   object/fence_wood:          { file: map/fence_wood_section/fence_wood_section.glb }
+  # The low wooden bridge (docs/map_elements/05_bridges), after RA2's: a piece a segment, three cells across, turned along the bridge
+  # (MapObjects.AddWoodenBridge). Its spans, its ends with their ramps onto the banks, a span torn by a fallen one, what stays at a
+  # bank when its span fell; a fallen span of the middle leaves nothing on the water.
+  bridge/wood_span:           { file: map/bridge_wood_span/bridge_wood_span.glb }
+  bridge/wood_end:            { file: map/bridge_wood_end/bridge_wood_end.glb }
+  bridge/wood_broken:         { file: map/bridge_wood_broken/bridge_wood_broken.glb }
+  bridge/wood_end_broken:     { file: map/bridge_wood_end_broken/bridge_wood_end_broken.glb }
+
+  # The guardrail of a highway (docs/map_elements/04_roads): made along x, the game turns it along z by its neighbours.
+  object/highway_guardrail:   { file: map/highway_guardrail/highway_guardrail.glb }
   # The street stall of the city (docs/city_elements/08_street_stall), made at the size it is drawn; its damaged and destroyed files
   # wait for the client to draw a map object's states.
   object/street_stall:        { file: city/city_street_stall/city_street_stall.glb, spin: true }

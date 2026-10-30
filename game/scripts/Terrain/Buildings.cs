@@ -35,6 +35,8 @@ public partial class Buildings : Node3D
     private readonly List<Ruin> _ruins = [];
     // The beams of the working pumpjacks, and the clock they nod by.
     private readonly List<Node3D> _beams = [];
+    // The moving parts of the buildings of the match: the outpost's launcher and its arm.
+    private readonly List<Mover> _movers = [];
     private double _clock;
 
     public override void _Ready()
@@ -75,6 +77,23 @@ public partial class Buildings : Node3D
             _builtOwners = owners;
             Rebuild(map, world);
         }
+
+        if (world is not null)
+        {
+            foreach (var mover in _movers)
+            {
+                // The outpost's launcher turns to its target and its arm works while it mends a vehicle, as a defense's turret and a
+                // service depot's arm do (PlayerBuildings).
+                mover.Turret?.Step((float)delta, PlayerBuildings.TargetPoint(world, mover.Source));
+                if (mover.Machine is { } machine)
+                {
+                    var working = Rts.Simulation.Systems.RepairSystem.IsRepairing(world, mover.Source);
+                    machine.Work = Mathf.MoveToward(machine.Work, working ? 1f : 0f, (float)delta / PlayerBuildings.ArmSettleSeconds);
+                    machine.Clock += delta * machine.Work;
+                    machine.Pose(machine.Work, (float)machine.Clock);
+                }
+            }
+        }
     }
 
     // A digest of the buildings of the map — who owns them, how hurt they are, who is inside — to see one change.
@@ -103,6 +122,7 @@ public partial class Buildings : Node3D
     private void Rebuild(Rts.Simulation.Map.MapGrid map, GameWorld? world)
     {
         _beams.Clear();
+        _movers.Clear();
         foreach (var child in GetChildren())
         {
             child.QueueFree();
@@ -132,7 +152,7 @@ public partial class Buildings : Node3D
             if (entity is Building { IsAlive: true, Def: null } building)
             {
                 Add(building.Kind, building.Cell, building.Owner, building.Repairing,
-                    DamageStates.Of(building.Hp, building.MaxHp), building.Occupants.Count > 0);
+                    DamageStates.Of(building.Hp, building.MaxHp), building.Occupants.Count > 0, building);
             }
         }
 
@@ -170,7 +190,7 @@ public partial class Buildings : Node3D
     }
 
     private void Add(BuildingKind kind, Rts.Simulation.Geometry.CellPos cell, PlayerId owner, bool repairing = false,
-        DamageState state = DamageState.Healthy, bool occupied = false)
+        DamageState state = DamageState.Healthy, bool occupied = false, Building? source = null)
     {
         var type = Rts.Client.App.DataFiles.Current.Rules.MapTypes.Get(kind);
         var tech = type.Capturable;
@@ -217,6 +237,18 @@ public partial class Buildings : Node3D
             if (variant == Models.ModelVariant.Intact && FindNode(model, "beam") is { } beam)
             {
                 _beams.Add(beam);
+            }
+
+            // The outpost's launcher (turret) and its jointed arm (arm, arm_upper, arm_fore), in a match.
+            if (source is not null)
+            {
+                var turret = FindNode(model, "turret") is { } turretNode ? new PlayerBuildings.Turret(turretNode) : null;
+                var arm = FindNode(model, "arm") is { } bottom && FindNode(bottom, "arm_upper") is { } upper
+                    && FindNode(upper, "arm_fore") is { } fore ? new PlayerBuildings.Arm(bottom, upper, fore) : null;
+                if (turret is not null || arm is not null)
+                {
+                    _movers.Add(new Mover(source, turret, arm));
+                }
             }
 
             // The smoke and the fire stand over the height the bars of the building stand over: the table's, else the placeholder's.
@@ -333,6 +365,8 @@ public partial class Buildings : Node3D
     }
 
     private sealed record Ruin(GameWorld World, BuildingKind Kind, Rts.Simulation.Geometry.CellPos Cell);
+
+    private sealed record Mover(Building Source, PlayerBuildings.Turret? Turret, PlayerBuildings.Machine? Machine);
 
     // The node of that name below a node, the first one found.
     internal static Node3D? FindNode(Node node, string name)

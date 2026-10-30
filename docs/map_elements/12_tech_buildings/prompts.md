@@ -94,9 +94,10 @@ A small wooden repair booth with a sloped roof covered in snow, one window, a to
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
 | `building_oil_derrick.glb` (в игре `tech_oil_derrick.glb`) | Blender 5.2.3, вручную (скрипт `tools/blender/families/tech_derrick.py`) | 2026-10-30 | сделано: целая (качалка качается), повреждённая с огнём, руины; детализирована 2026-10-30 |
-| `building_hospital.glb` | | | |
+| `building_hospital.glb` (в игре `tech_hospital.glb`, футпринт 6×4 по данным) | Blender 5.2.3, вручную (скрипт `tools/blender/families/tech_hospital.py`) | 2026-10-30 | сделано: целый, покинутый с огнём, руины; знак — зелёный крест |
 | `building_workshop.glb` | | | |
-| `building_airport.glb` | | | |
+| `building_airport.glb` (в игре `tech_airfield.glb`, футпринт 3×3 по данным) | Blender 5.2.3, вручную (скрипт `tools/blender/families/tech_airfield.py`) | 2026-10-30 | сделано: целый, покинутый с огнём, руины |
+| `tech_outpost.glb` (аванпост, футпринт 4×3 по данным) | Blender 5.2.3, вручную (скрипт `tools/blender/families/tech_outpost.py`) | 2026-10-30 | сделано: целый (установка поворачивается, рука работает при ремонте), покинутый с огнём, руины |
 | `building_power_station.glb` | | | |
 | `building_bridge_booth.glb` | | | |
 
