@@ -43,7 +43,10 @@ A steel fuel tank about one unit across and two and a half units tall, standing 
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `fuel_tank.glb` | | | |
+| `fuel_tank.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_fuel_tank.py`) | 2026-10-30 | сделано, 2 398 треугольников |
+| `fuel_tank_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_fuel_tank.py`) | 2026-10-30 | сделано, 2 514 треугольников |
+| `fuel_tank_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_fuel_tank.py`) | 2026-10-30 | сделано, 2 522 треугольников |
+| `fuel_tank_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_fuel_tank.py`) | 2026-10-30 | сделано, 782 треугольников |
 
 ## Открытые вопросы
 

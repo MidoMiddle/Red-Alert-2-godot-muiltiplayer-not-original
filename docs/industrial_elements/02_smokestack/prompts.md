@@ -43,7 +43,10 @@ A tall industrial brick smokestack about one unit wide at the base and six units
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `smokestack.glb` | | | |
+| `smokestack.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_smokestack.py`) | 2026-10-30 | сделано, 2 670 треугольников |
+| `smokestack_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_smokestack.py`) | 2026-10-30 | сделано, 2 862 треугольников |
+| `smokestack_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_smokestack.py`) | 2026-10-30 | сделано, 1 842 треугольников |
+| `smokestack_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_smokestack.py`) | 2026-10-30 | сделано, 1 038 треугольников |
 
 ## Открытые вопросы
 

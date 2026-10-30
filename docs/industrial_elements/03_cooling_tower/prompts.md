@@ -43,7 +43,10 @@ A large concrete cooling tower about two units wide and five units tall, a hyper
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `cooling_tower.glb` | | | |
+| `cooling_tower.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_cooling_tower.py`) | 2026-10-30 | сделано, 3 836 треугольников |
+| `cooling_tower_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_cooling_tower.py`) | 2026-10-30 | сделано, 3 764 треугольников |
+| `cooling_tower_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_cooling_tower.py`) | 2026-10-30 | сделано, 3 932 треугольников |
+| `cooling_tower_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_cooling_tower.py`) | 2026-10-30 | сделано, 2 218 треугольников |
 
 ## Открытые вопросы
 

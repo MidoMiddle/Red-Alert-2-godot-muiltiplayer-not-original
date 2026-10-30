@@ -224,12 +224,33 @@ models:
                             abandoned: map/tech_hospital_abandoned/tech_hospital_abandoned.glb,
                             ruins: map/tech_hospital_ruins/tech_hospital_ruins.glb }
 
-  # The industrial buildings of the map (docs/industrial_elements).
-  building/neutral_smokestack:     { file: industrial/smokestack/smokestack.glb, height: 2.1, height_scale: 0.35 }
-  building/neutral_cooling_tower:  { file: industrial/cooling_tower/cooling_tower.glb, height: 1.75, height_scale: 0.35 }
-  building/neutral_factory_hall:   { file: industrial/factory_hall/factory_hall.glb, height: 1.75, height_scale: 0.35 }
-  building/neutral_boiler_house:   { file: industrial/boiler_house/boiler_house.glb, height: 1.22, height_scale: 0.35 }
-  building/neutral_fuel_tank:      { file: industrial/fuel_tank/fuel_tank.glb, height: 0.88, height_scale: 0.35 }
+  # The industrial buildings of the map (docs/industrial_elements, tools/blender/families/industrial_*.py): the hall and the boiler
+  # house hold soldiers, so they have the six states of the city's; the tank, the smokestack and the cooling tower whole, damaged,
+  # abandoned (burning, or broken off) and ruins.
+  building/neutral_smokestack: { file: industrial/smokestack/smokestack.glb, height: 2.1, height_scale: 0.35,
+                                 damaged: industrial/smokestack_damaged/smokestack_damaged.glb,
+                                 abandoned: industrial/smokestack_abandoned/smokestack_abandoned.glb,
+                                 ruins: industrial/smokestack_ruins/smokestack_ruins.glb }
+  building/neutral_cooling_tower: { file: industrial/cooling_tower/cooling_tower.glb, height: 1.75, height_scale: 0.35,
+                                    damaged: industrial/cooling_tower_damaged/cooling_tower_damaged.glb,
+                                    abandoned: industrial/cooling_tower_abandoned/cooling_tower_abandoned.glb,
+                                    ruins: industrial/cooling_tower_ruins/cooling_tower_ruins.glb }
+  building/neutral_factory_hall: { file: industrial/factory_hall/factory_hall.glb, height: 1.65, height_scale: 0.35,
+                                   damaged: industrial/factory_hall_damaged/factory_hall_damaged.glb,
+                                   damaged_occupied: industrial/factory_hall_damaged_occupied/factory_hall_damaged_occupied.glb,
+                                   occupied: industrial/factory_hall_occupied/factory_hall_occupied.glb,
+                                   abandoned: industrial/factory_hall_abandoned/factory_hall_abandoned.glb,
+                                   ruins: industrial/factory_hall_ruins/factory_hall_ruins.glb }
+  building/neutral_boiler_house: { file: industrial/boiler_house/boiler_house.glb, height: 1.55, height_scale: 0.35,
+                                   damaged: industrial/boiler_house_damaged/boiler_house_damaged.glb,
+                                   damaged_occupied: industrial/boiler_house_damaged_occupied/boiler_house_damaged_occupied.glb,
+                                   occupied: industrial/boiler_house_occupied/boiler_house_occupied.glb,
+                                   abandoned: industrial/boiler_house_abandoned/boiler_house_abandoned.glb,
+                                   ruins: industrial/boiler_house_ruins/boiler_house_ruins.glb }
+  building/neutral_fuel_tank: { file: industrial/fuel_tank/fuel_tank.glb, height: 0.95, height_scale: 0.35,
+                                damaged: industrial/fuel_tank_damaged/fuel_tank_damaged.glb,
+                                abandoned: industrial/fuel_tank_abandoned/fuel_tank_abandoned.glb,
+                                ruins: industrial/fuel_tank_ruins/fuel_tank_ruins.glb }
 
   # Map objects (docs/map_elements, docs/obstacle_elements). A fence and a pipe run along x, as their placeholders.
   object/ore_source:          { file: map/ore_source/ore_source.glb }

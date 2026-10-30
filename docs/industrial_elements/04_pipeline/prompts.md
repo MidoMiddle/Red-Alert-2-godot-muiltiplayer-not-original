@@ -49,7 +49,7 @@ A straight industrial steel pipe segment about one unit long and 0.6 units tall,
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `pipeline_straight.glb` | | | |
+| `pipeline_straight.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_pipeline.py`) | 2026-10-30 | сделано, 720 треугольников |
 | `pipeline_corner.glb` | | | |
 
 ## Открытые вопросы

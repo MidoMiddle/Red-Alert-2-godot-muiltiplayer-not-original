@@ -44,7 +44,12 @@ A long industrial factory hall about four units long, three units wide and five 
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `factory_hall.glb` | | | |
+| `factory_hall.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_factory_hall.py`) | 2026-10-30 | сделано, 5 474 треугольников |
+| `factory_hall_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_factory_hall.py`) | 2026-10-30 | сделано, 5 794 треугольников |
+| `factory_hall_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_factory_hall.py`) | 2026-10-30 | сделано, 5 004 треугольников |
+| `factory_hall_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_factory_hall.py`) | 2026-10-30 | сделано, 5 326 треугольников |
+| `factory_hall_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_factory_hall.py`) | 2026-10-30 | сделано, 4 124 треугольников |
+| `factory_hall_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_factory_hall.py`) | 2026-10-30 | сделано, 1 098 треугольников |
 
 ## Открытые вопросы
 

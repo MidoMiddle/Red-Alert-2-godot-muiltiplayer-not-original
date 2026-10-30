@@ -44,7 +44,12 @@ A small industrial brick boiler house about two units wide and two units long an
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `boiler_house.glb` | | | |
+| `boiler_house.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_boiler_house.py`) | 2026-10-30 | сделано, 3 426 треугольников |
+| `boiler_house_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_boiler_house.py`) | 2026-10-30 | сделано, 3 622 треугольников |
+| `boiler_house_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_boiler_house.py`) | 2026-10-30 | сделано, 3 378 треугольников |
+| `boiler_house_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_boiler_house.py`) | 2026-10-30 | сделано, 3 574 треугольников |
+| `boiler_house_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_boiler_house.py`) | 2026-10-30 | сделано, 3 126 треугольников |
+| `boiler_house_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/industrial_boiler_house.py`) | 2026-10-30 | сделано, 1 366 треугольников |
 
 ## Открытые вопросы
 
