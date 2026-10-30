@@ -3,6 +3,7 @@ using System.Linq;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
+using Rts.Simulation.Systems;
 using Rts.Simulation.World;
 
 namespace Rts.Data.Maps;
@@ -84,6 +85,8 @@ public static class MapValidator
         CheckArea(map, types, problems);
         CheckStarts(map, grid, problems);
         CheckOre(map, problems);
+        CheckOreOnRoads(map, problems);
+        CheckHuts(map, grid, problems);
         CheckDrills(map, problems);
         CheckDistances(map, problems);
         return problems;
@@ -120,6 +123,51 @@ public static class MapValidator
             {
                 problems.Add(new MapProblem(ProblemLevel.Error, $"Ore at {Text(cell)} is outside the playable area", cell));
                 break;
+            }
+        }
+    }
+
+    /// <summary>No ore on a road (<see cref="MapChecks.IsRoad"/>); the first such cell is named, with how many there are.</summary>
+    private static void CheckOreOnRoads(MapDefinition map, List<MapProblem> problems)
+    {
+        CellPos? first = null;
+        var count = 0;
+        for (var i = 0; i < map.Ore.Length; i++)
+        {
+            if (map.Ore[i] != 0 && MapChecks.IsRoad(map.Land[i]))
+            {
+                first ??= new CellPos(i % map.Width, i / map.Width);
+                count++;
+            }
+        }
+
+        if (first is { } cell)
+        {
+            problems.Add(new MapProblem(ProblemLevel.Error, $"Ore on the road at {Text(cell)} ({count} cells of road with ore)", cell));
+        }
+    }
+
+    /// <summary>
+    /// One repair hut a bridge, by one of its ends (the owner, 2026-10-30): a second hut of the same bridge is an error, a hut no bridge
+    /// is near (<see cref="BridgeRepair.HutReach"/>) a warning.
+    /// </summary>
+    private static void CheckHuts(MapDefinition map, MapGrid grid, List<MapProblem> problems)
+    {
+        var owned = new HashSet<int>();
+        foreach (var structure in map.Structures)
+        {
+            if (structure.Type != BridgeHuts.Hut)
+            {
+                continue;
+            }
+
+            if (BridgeRepair.BridgeOf(grid, structure.Cell) is not { } bridge)
+            {
+                problems.Add(new MapProblem(ProblemLevel.Warning, $"Repair hut at {Text(structure.Cell)} has no bridge within {BridgeRepair.HutReach} cells", structure.Cell));
+            }
+            else if (!owned.Add(bridge.Id))
+            {
+                problems.Add(new MapProblem(ProblemLevel.Error, $"Repair hut at {Text(structure.Cell)}: its bridge has a hut already", structure.Cell));
             }
         }
     }

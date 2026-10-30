@@ -26,6 +26,7 @@ public partial class TerrainBuilder : Node3D
     private int _builtVersion;
     private ImageTexture _landTexture = null!;
     private ImageTexture _materialTexture = null!;
+    private ImageTexture? _roadTexture;
     private System.Func<MapLook> _lookSource = null!;
     private MapLook? _builtLook;
     private ClimateLook? _climate;
@@ -169,6 +170,18 @@ public partial class TerrainBuilder : Node3D
             GroundMaterial.SetShaderParameter("map_origin", new Vector2(-_skirt.Skirt, -_skirt.Skirt));
         }
 
+        // The markings of the asphalt (RoadMarkings): one texel a cell of the map, no skirt.
+        var roads = Image.CreateFromData(map.Width, map.Height, false, Image.Format.Rgba8, RoadMarkings.Build(look, map));
+        if (sameSize && _roadTexture is not null)
+        {
+            _roadTexture.Update(roads);
+        }
+        else
+        {
+            _roadTexture = ImageTexture.CreateFromImage(roads);
+            GroundMaterial.SetShaderParameter("road_map", _roadTexture);
+        }
+
         if (climate is not null && (_builtLook?.Lighting != look.Lighting || _builtLook?.Climate != look.Climate))
         {
             var preset = climate.Light(look.Lighting);
@@ -221,6 +234,7 @@ public partial class TerrainBuilder : Node3D
         }
 
         GroundMaterial.SetShaderParameter("cliff_slot", climate.SlotOf(climate.Cliff));
+        GroundMaterial.SetShaderParameter("grass_slot", climate.SlotOf("grass"));
         GroundMaterial.SetShaderParameter("ground_albedo", textures.Albedo);
         GroundMaterial.SetShaderParameter("tex_water_normal", textures.WaterNormal);
         GroundMaterial.SetShaderParameter("mat_tiling", tiling);
@@ -242,14 +256,24 @@ public partial class TerrainBuilder : Node3D
         return new Vector3(linear.R, linear.G, linear.B);
     }
 
+    // The normal of the ground at a point from its heights half a cell to each side.
+    private Vector3 SmoothNormal(float x, float z)
+    {
+        const float reach = 0.5f;
+        var slopeX = (Heights.HeightAt(x + reach, z) - Heights.HeightAt(x - reach, z)) / (2f * reach);
+        var slopeZ = (Heights.HeightAt(x, z + reach) - Heights.HeightAt(x, z - reach)) / (2f * reach);
+        return new Vector3(-slopeX, 1f, -slopeZ).Normalized();
+    }
+
     private void BuildChunk((int X, int Z) start)
     {
         var data = TerrainMesh.BuildChunk(Heights, start.X, start.Z);
         var arrays = new Godot.Collections.Array();
         arrays.Resize((int)Mesh.ArrayType.Max);
         arrays[(int)Mesh.ArrayType.Vertex] = System.Array.ConvertAll(data.Positions, p => new Vector3(p.X, p.Y, p.Z));
-        // The shader lights every face by its own normal; the vertex normal only feeds the shadow bias.
-        arrays[(int)Mesh.ArrayType.Normal] = System.Array.ConvertAll(data.Positions, _ => Vector3.Up);
+        // The shader lights every face by its own normal, but the asphalt by these: the slope of the ground round the vertex, so a
+        // road up or down a hill reads as one even slope, not a row of facets (the owner, 2026-10-30). They feed the shadow bias too.
+        arrays[(int)Mesh.ArrayType.Normal] = System.Array.ConvertAll(data.Positions, p => SmoothNormal(p.X, p.Z));
         arrays[(int)Mesh.ArrayType.TexUV] = System.Array.ConvertAll(data.WorldUv, p => new Vector2(p.X, p.Y));
         arrays[(int)Mesh.ArrayType.TexUV2] = System.Array.ConvertAll(data.MapUv, p => new Vector2(p.X, p.Y));
         arrays[(int)Mesh.ArrayType.Index] = data.Indices;

@@ -68,6 +68,7 @@
     <Compile Include="../../game/scripts/Climates/ClimateLookReader.cs" Link="Client/ClimateLookReader.cs" />
     <Compile Include="../../game/scripts/Climates/MapLook.cs" Link="Client/MapLook.cs" />
     <Compile Include="../../game/scripts/Climates/MaterialSlots.cs" Link="Client/MaterialSlots.cs" />
+    <Compile Include="../../game/scripts/Terrain/RoadMarkings.cs" Link="Client/RoadMarkings.cs" />
   </ItemGroup>
 
 </Project>

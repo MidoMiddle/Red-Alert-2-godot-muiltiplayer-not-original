@@ -147,6 +147,63 @@ public sealed class MapValidatorTests
     }
 
     [Fact]
+    public void Ore_never_lies_on_a_road()
+    {
+        // The owner, 2026-10-30: the road takes the ore off its cells, the ore brush leaves it bare, and ore on a road is an error.
+        var session = Arena(2, (8, 8), (30, 30));
+        Stroke(session, EditTool.Ore, new Brush(BrushShape.Square, 3), null, (20, 20));
+        Stroke(session, EditTool.Road, Dot, null, (18, 20), (19, 20), (20, 20), (21, 20), (22, 20));
+        Stroke(session, EditTool.Ore, new Brush(BrushShape.Square, 3), null, (20, 20));
+
+        var map = session.Map.ToDefinition();
+        Assert.Equal(0, map.Ore[20 * map.Width + 20]);
+        Assert.NotEqual(0, map.Ore[21 * map.Width + 20]);
+        Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), p => p.Message.Contains("road"));
+
+        var ore = map.Ore.ToArray();
+        ore[20 * map.Width + 20] = 5;
+        var onRoad = new MapDefinition(map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players,
+            map.Starts, map.TextureLegend, map.Heights, map.Land, map.Texture, ore.ToImmutableArray(), map.Objects, map.Bridges, map.Structures);
+        Assert.Contains(MapValidator.Check(onRoad, GameDataFiles.Rules.MapTypes),
+            p => p.Level == ProblemLevel.Error && p.Cell == new CellPos(20, 20) && p.Message == "Ore on the road at 20,20 (1 cells of road with ore)");
+    }
+
+    [Fact]
+    public void A_bridge_has_one_repair_hut_and_a_hut_has_a_bridge()
+    {
+        // The owner, 2026-10-30: one hut a bridge, by one of its ends; a second is an error, one no bridge is near a warning.
+        var types = GameDataFiles.Rules.MapTypes;
+        var map = RtsMapReader.Read(File.ReadAllText(Path.Combine(SampleMaps.RepoRoot, "game", "data", "maps", "twin-rivers.rtsmap")));
+        var first = map.Bridges[0];
+        var hut = Assert.Single(map.Structures, s => s.Type == BridgeHuts.Hut && MapChecks.BridgeCells(first).Exists(c => Near(c, s.Cell)));
+        var ground = MapChecks.BaseGrid(map, types);
+        bool Free(CellPos cell) => map.Contains(cell) && map.Ore[cell.Y * map.Width + cell.X] == 0
+            && MapChecks.BuildingProblem(ground, new StructurePlacement(BridgeHuts.Hut, cell, 0, 0), [.. map.Structures]) is null;
+        var second = MapChecks.HutCandidates(first).First(cell => cell != hut.Cell && Free(cell));
+        var lone = Enumerable.Range(0, map.Width * map.Height).Select(i => new CellPos(i % map.Width, i / map.Width))
+            .First(cell => Free(cell) && map.Bridges.All(b => MapChecks.BridgeCells(b).All(c => !Near(c, cell) && Math.Max(Math.Abs(c.X - cell.X), Math.Abs(c.Y - cell.Y)) > 6)));
+        var crowded = new MapDefinition(map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players,
+            map.Starts, map.TextureLegend, map.Heights, map.Land, map.Texture, map.Ore, map.Objects, map.Bridges,
+            [.. map.Structures, new StructurePlacement(BridgeHuts.Hut, second, 0, 0), new StructurePlacement(BridgeHuts.Hut, lone, 0, 0)],
+            map.Lighting, map.Playable, map.Origin);
+
+        Assert.DoesNotContain(MapValidator.Check(map, types), p => p.Message.Contains("hut"));
+        var problems = MapValidator.Check(crowded, types);
+        Assert.Single(problems, p => p.Level == ProblemLevel.Error && p.Message.Contains("its bridge has a hut already"));
+        Assert.Single(problems, p => p.Level == ProblemLevel.Warning && p.Cell == lone && p.Message.Contains("has no bridge"));
+
+        // Trimmed, one hut stands by the first bridge again, the lone one is gone, and no bridge lacks one.
+        var trimmed = BridgeHuts.Trim(crowded, types);
+        Assert.DoesNotContain(MapValidator.Check(trimmed, types), p => p.Message.Contains("hut"));
+        Assert.Equal(map.Structures.Length, trimmed.Structures.Length);
+        Assert.Empty(BridgeHuts.For(trimmed, types));
+        Assert.Same(map, BridgeHuts.Trim(map, types));
+    }
+
+    private static bool Near(CellPos a, CellPos b) =>
+        Math.Max(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)) <= Rts.Simulation.Systems.BridgeRepair.HutReach;
+
+    [Fact]
     public void With_three_players_the_starts_should_be_about_as_far_from_their_neighbours()
     {
         Assert.DoesNotContain(Check(Arena(3, (6, 20), (30, 8), (30, 32))), p => p.Message.Contains("far"));

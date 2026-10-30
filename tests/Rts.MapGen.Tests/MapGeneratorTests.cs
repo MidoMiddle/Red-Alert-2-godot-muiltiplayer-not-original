@@ -55,12 +55,14 @@ public sealed class MapGeneratorTests
         // fifths of the way to the centre. 2026-10-25: the dressing of the climate (a farm and barbed wire in the snow); no building within
         // two cells of the ore zone, the oil derrick out of it. 2026-10-25 (roads): the main road is asphalt in a town and the unpaved
         // road of its climate elsewhere (docs/map_elements/04_roads). 2026-10-25 (origin): the header says the map is generated, and
-        // the drills keep the playable area. 2026-10-30: the legend of every climate has the highway (h): the cells are the same.
+        // the drills keep the playable area. 2026-10-30: the legend of every climate has the highway (h): the cells are the same. Later on
+        // 2026-10-30 (the owner's rules): one repair hut a bridge — both bridges are their own images, two huts instead of four — and
+        // no ore on a road.
         var (map, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1 });
         var (none, _) = MapGenerator.Generate(new MapGenSettings { Types = GameDataFiles.Rules.MapTypes, Seed = 1, Drills = DrillKind.None });
 
-        Assert.Equal("10440e9252e771744184219dd53e5376622bcabee09b9e0e979c8f32686931c2", MapHasher.Hash(map));
-        Assert.Equal("d95757a200b4ff272d4acaf7adccd1a48591a1ac4d79b1f5f26d9833f9f2e0be", MapHasher.Hash(none));
+        Assert.Equal("eb1457b9bdd78db4e47ad8248225c3bc29bb5e828e7d2f07ff73ef311c1c6ef2", MapHasher.Hash(map));
+        Assert.Equal("99c65e312909f6a51795482e61c126d7e5628357717efe872bf7f68010cb6fb6", MapHasher.Hash(none));
     }
 
     [Theory]
@@ -111,7 +113,9 @@ public sealed class MapGeneratorTests
             var symmetry = new Symmetry(settings.Symmetry, map.Width);
             var objects = map.Objects.Select(o => (o.Type, o.Cell)).ToHashSet();
             var bridgeCells = map.Bridges.SelectMany(MapChecks.BridgeCells).ToHashSet();
-            var buildingCells = map.Structures.SelectMany(structure => MapChecks.Footprint(structure, GameDataFiles.Rules.MapTypes)).ToHashSet();
+            var buildingCells = map.Structures.Where(structure => structure.Type != BridgeHuts.Hut)
+                .SelectMany(structure => MapChecks.Footprint(structure, GameDataFiles.Rules.MapTypes)).ToHashSet();
+            var huts = map.Structures.Where(structure => structure.Type == BridgeHuts.Hut).Select(structure => structure.Cell).ToHashSet();
             var starts = map.Starts.Select(s => s.Cell).ToHashSet();
             for (var k = 1; k < symmetry.Order; k++)
             {
@@ -140,6 +144,14 @@ public sealed class MapGeneratorTests
                         Assert.Equal(bridgeCells.Contains(cell), bridgeCells.Contains(image));
                         Assert.Equal(buildingCells.Contains(cell), buildingCells.Contains(image));
                     }
+                }
+
+                // One hut a bridge (2026-10-30): the image of a hut is a hut, but by a bridge that is its own image there is one only.
+                foreach (var hut in huts)
+                {
+                    var own = MapChecks.BridgeCells(map.Bridges.First(bridge => MapChecks.BridgeCells(bridge).Exists(cell =>
+                        Math.Max(Math.Abs(cell.X - hut.X), Math.Abs(cell.Y - hut.Y)) <= Rts.Simulation.Systems.BridgeRepair.HutReach)));
+                    Assert.True(huts.Contains(symmetry.Cell(k, hut)) || own.All(cell => own.Contains(symmetry.Cell(k, cell))), $"the hut at {hut} has no image");
                 }
 
                 Assert.Equal(map.Starts[k].Cell, symmetry.Cell(k, map.Starts[0].Cell));
@@ -264,7 +276,14 @@ public sealed class MapGeneratorTests
             Assert.Empty(BridgeHuts.For(map, GameDataFiles.Rules.MapTypes));
             Assert.All(map.Structures.Where(s => s.Type == BridgeHuts.Hut), hut => Assert.Contains(map.Bridges, bridge => MapChecks.BridgeCells(bridge).Exists(cell =>
                 Math.Max(Math.Abs(cell.X - hut.Cell.X), Math.Abs(cell.Y - hut.Cell.Y)) <= Rts.Simulation.Systems.BridgeRepair.HutReach)));
+
+            // 2026-10-30: one hut a bridge — the image of a hut by the same bridge (a bridge its own image) is left out.
+            Assert.True(map.Structures.Count(s => s.Type == BridgeHuts.Hut) <= map.Bridges.Length, $"{what}: more huts than bridges");
+            Assert.DoesNotContain(MapValidator.Check(map, GameDataFiles.Rules.MapTypes), p => p.Message.Contains("hut"));
         }
+
+        // 2026-10-30: no ore on a road; a road takes the ore off its cells.
+        Assert.False(Enumerable.Range(0, map.Ore.Length).Any(i => map.Ore[i] != 0 && MapChecks.IsRoad(map.Land[i])), $"{what}: ore on a road");
     }
 
     /// <summary>One ore drill in the home field of every start — and a gem drill in its contested field — with no ore under any.</summary>

@@ -41,6 +41,12 @@ public static class MapChecks
     }
 
     /// <summary>
+    /// Whether the land is a road of any kind — asphalt, highway, dirt road, path — on which no ore lies (the owner, 2026-10-30): a
+    /// field the road runs through ends at its edges.
+    /// </summary>
+    public static bool IsRoad(LandType land) => land is LandType.Road or LandType.Highway or LandType.Track or LandType.Path;
+
+    /// <summary>
     /// The cells of the middle line of a bridge, from <see cref="BridgePlacement.From"/> to <see cref="BridgePlacement.To"/>; none when it
     /// is not straight. The water beside it the bridge takes as well comes with the map (<see cref="BridgeSegment.Cells"/>).
     /// </summary>

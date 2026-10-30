@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Rts.Simulation.Events;
+using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.World;
@@ -18,7 +19,10 @@ public static class BridgeRepair
     public const int HutReach = 4;
 
     /// <summary>The bridge of a hut; null when none is near.</summary>
-    public static Bridge? BridgeOf(MapGrid map, Building hut)
+    public static Bridge? BridgeOf(MapGrid map, Building hut) => BridgeOf(map, hut.Cell);
+
+    /// <summary>The bridge a hut on <paramref name="hut"/> would belong to; null when none is near (the map checks, one hut a bridge).</summary>
+    public static Bridge? BridgeOf(MapGrid map, CellPos hut)
     {
         Bridge? best = null;
         var bestDistance = HutReach + 1;
@@ -28,7 +32,7 @@ public static class BridgeRepair
             {
                 foreach (var cell in segment.Cells)
                 {
-                    var distance = IntMath.Max(IntMath.Abs(cell.X - hut.Cell.X), IntMath.Abs(cell.Y - hut.Cell.Y));
+                    var distance = IntMath.Max(IntMath.Abs(cell.X - hut.X), IntMath.Abs(cell.Y - hut.Y));
                     if (distance < bestDistance)
                     {
                         (best, bestDistance) = (bridge, distance);

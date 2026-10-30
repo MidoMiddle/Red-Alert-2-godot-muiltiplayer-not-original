@@ -44,6 +44,11 @@ uniform int cliff_slot = -1;
 // The rock's grain runs down the wall: the texture is this much longer upright than across.
 uniform float cliff_stretch = 2.5;
 uniform vec3 frost_color : source_color = vec3(0.88, 0.91, 0.96);
+// The markings of the asphalt (RoadMarkings.cs: four bytes a cell of the map, no skirt), their paint, and the slot of the climate's
+// grass for the green strip down the middle of a wide road (-1: a plain green).
+uniform sampler2D road_map : filter_nearest;
+uniform vec3 marking_color : source_color = vec3(0.86, 0.85, 0.78);
+uniform int grass_slot = -1;
 uniform sampler2D tex_water_normal : filter_linear_mipmap, repeat_enable;
 uniform vec3 deep_water_color : source_color = vec3(0.10, 0.24, 0.56);
 // The foam along the shore, and how much light moves over shallow water.
@@ -96,6 +101,25 @@ float caustic(vec2 p, float t) {
 	return 1.0 - smoothstep(0.0, 0.1, d2 - d1);
 }
 
+// The neighbours of RoadMarkings.Directions, by bit: east first, y (here z) to the south.
+const vec2 ROAD_DIRECTIONS[8] = vec2[](vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0), vec2(-1.0, 1.0), vec2(-1.0, 0.0),
+	vec2(-1.0, -1.0), vec2(0.0, -1.0), vec2(1.0, -1.0));
+
+// 1 on a painted line of half the width half_width at the distance d from its middle, its edge smoothed over one pixel.
+float stripe(float d, float half_width) {
+	float pixel = fwidth(d);
+	return 1.0 - smoothstep(half_width - 0.5 * pixel, half_width + 0.5 * pixel, d);
+}
+
+// 1 for a marked cell of road of the map, 0 elsewhere and off the map.
+float road_at(ivec2 cell) {
+	ivec2 size = textureSize(road_map, 0);
+	if (any(lessThan(cell, ivec2(0))) || any(greaterThanEqual(cell, size))) {
+		return 0.0;
+	}
+	return step(0.5, texelFetch(road_map, cell, 0).r * 255.0);
+}
+
 // The slot (x) and the water (y: 0 none, 1 shallow, 2 deep) of a cell of the material map.
 ivec2 material_of(ivec2 cell, ivec2 size) {
 	vec2 texel = texelFetch(material_map, clamp(cell, ivec2(0), size - 1), 0).rg;
@@ -131,10 +155,16 @@ void fragment() {
 	bool on_map = all(greaterThanEqual(world_position.xz, vec2(0.0))) && all(lessThan(world_position.xz, vec2(size)));
 	vec3 color = fallback_color;
 	float roughness = 0.95;
+	// How much of the asphalt is here: it is lit by the smooth normal of the mesh, not by its face's.
+	float paved_light = 0.0;
 	if (use_textures) {
 		vec2 p = world_position.xz;
 		// The four cells around the point, by their centres; noise bends the borders between them.
 		vec2 warp = vec2(noise(p * 1.7), noise(p * 1.7 + vec2(17.3, 9.1))) - 0.5;
+		// A road keeps straight edges: by the asphalt the noise hardly bends the borders.
+		ivec2 straight = ivec2(floor(p - 0.5));
+		float by_road = max(max(road_at(straight), road_at(straight + ivec2(1, 0))), max(road_at(straight + ivec2(0, 1)), road_at(straight + ivec2(1, 1))));
+		warp *= mix(1.0, 0.12, by_road);
 		vec2 q = p - 0.5 + warp * 0.5;
 		ivec2 base = ivec2(floor(q - map_origin));
 		vec2 g = smoothstep(0.2, 0.8, fract(q));
@@ -144,6 +174,9 @@ void fragment() {
 		ivec2 m01 = material_of(base + ivec2(0, 1), materials);
 		ivec2 m11 = material_of(base + ivec2(1, 1), materials);
 		vec4 w = vec4((1.0 - g.x) * (1.0 - g.y), g.x * (1.0 - g.y), (1.0 - g.x) * g.y, g.x * g.y);
+		// The marked asphalt of the four cells (RoadMarkings.cs); the road map has no skirt.
+		ivec2 corner = base + ivec2(map_origin);
+		vec4 paved = vec4(road_at(corner), road_at(corner + ivec2(1, 0)), road_at(corner + ivec2(0, 1)), road_at(corner + ivec2(1, 1)));
 		// The plain blend across the cell edges, before the height blend sharpens it: the shore is soft here.
 		vec4 w_bilinear = w;
 		// Frost lies thicker in some places than in others.
@@ -154,19 +187,36 @@ void fragment() {
 		vec3 a11 = albedo_of(m11.x, p, frost_patches);
 		// Height blend: where two materials meet, the brighter texel (snow over dirt, stones over sand) wins a little.
 		vec3 luma = vec3(0.3, 0.59, 0.11);
-		vec4 h = w + 0.35 * vec4(dot(a00, luma), dot(a10, luma), dot(a01, luma), dot(a11, luma));
+		// The asphalt is dark but holds its whole cell: it wins the blend as the brightest would.
+		vec4 h = w + 0.35 * vec4(dot(a00, luma), dot(a10, luma), dot(a01, luma), dot(a11, luma)) + 0.35 * paved;
 		float top = max(max(h.x, h.y), max(h.z, h.w));
 		w = max(h - (top - 0.2), vec4(0.0));
 		w /= w.x + w.y + w.z + w.w;
+		// The shore is rounded (the owner, 2026-10-30: land does not go into the water in squares): the water of the four cells
+		// blended straight across, without the plateaus of g, is a smooth field, and the shore is where it crosses one half — a
+		// staircase of cells becomes a slanting line, the corner of a beach an arc, and a cell of the shore is land in part only.
+		// Its centre stays what it is: the rules see whole cells. Land and water each blend among their own cells.
+		vec4 wet = vec4(mat_water[m00.x], mat_water[m10.x], mat_water[m01.x], mat_water[m11.x]);
+		vec2 f = fract(q);
+		float level = dot(vec4((1.0 - f.x) * (1.0 - f.y), f.x * (1.0 - f.y), (1.0 - f.x) * f.y, f.x * f.y), wet);
+		level += (noise(p * 3.1 + vec2(5.3, 2.9)) - 0.5) * 0.12 * step(0.01, level) * step(level, 0.99);
+		float water = smoothstep(0.46, 0.54, level);
+		// A little of the plain blend in each half, so a half the height blend left empty still has a colour.
+		vec4 w_land = (w + 0.001 * w_bilinear) * (1.0 - wet);
+		vec4 w_water = (w + 0.001 * w_bilinear) * wet;
+		w_land /= max(w_land.x + w_land.y + w_land.z + w_land.w, 1e-6);
+		w_water /= max(w_water.x + w_water.y + w_water.z + w_water.w, 1e-6);
+		w = mix(w_land, w_water, water);
 		color = a00 * w.x + a10 * w.y + a01 * w.z + a11 * w.w;
 		roughness = dot(w, vec4(mat_roughness[m00.x], mat_roughness[m10.x], mat_roughness[m01.x], mat_roughness[m11.x]));
+		// The wet sand just above the water line.
+		color *= 1.0 - 0.14 * smoothstep(0.2, 0.46, level) * (1.0 - water);
 		// Large soft patches against the tiling of the photographs.
 		color *= mix(0.9, 1.08, noise(p * 0.11));
 
-		float water = dot(w, vec4(mat_water[m00.x], mat_water[m10.x], mat_water[m01.x], mat_water[m11.x]));
 		// The deep water over the plain blend of the cells, so shallow and deep cells side by side fade into each other instead
 		// of showing as blotches.
-		float deep = dot(w_bilinear, vec4(equal(ivec4(m00.y, m10.y, m01.y, m11.y), ivec4(2))));
+		float deep = dot(w_bilinear, vec4(equal(ivec4(m00.y, m10.y, m01.y, m11.y), ivec4(2)))) * water;
 		color = mix(color, deep_water_color, deep * 0.85);
 		float painted_water = dot(w, vec4(mat_painted[m00.x] * mat_water[m00.x], mat_painted[m10.x] * mat_water[m10.x],
 			mat_painted[m01.x] * mat_water[m01.x], mat_painted[m11.x] * mat_water[m11.x]));
@@ -191,9 +241,8 @@ void fragment() {
 			float swing = mix(0.2, 0.07, painted_water);
 			color *= mix(1.0, clamp(1.0 + facing * 2.5, 1.0 - swing, 1.0 + swing), water);
 
-			// Foam along the shore: the water fraction falls from 1 to 0 over the cell edge, so the foam sits where it is near half.
-			float edge = dot(w_bilinear, vec4(mat_water[m00.x], mat_water[m10.x], mat_water[m01.x], mat_water[m11.x]));
-			float shore = smoothstep(0.1, 0.5, edge) * (1.0 - smoothstep(0.5, 0.9, edge));
+			// Foam along the shore: a band on the water's side of the line where the water field crosses one half.
+			float shore = smoothstep(0.48, 0.54, level) * (1.0 - smoothstep(0.58, 0.8, level));
 			float churn = noise(p * 2.2 + TIME * vec2(0.20, -0.12)) * 0.6 + noise(p * 4.6 - TIME * vec2(0.31, 0.26)) * 0.4;
 			color = mix(color, foam_color, shore * smoothstep(0.45, 0.66, churn) * 0.9);
 
@@ -201,6 +250,55 @@ void fragment() {
 			float shallow = clamp(water - deep, 0.0, 1.0);
 			// Painted water (RA2's) keeps a faint trace of it only.
 			color += caustic_strength * mix(1.0, 0.3, painted_water) * caustic(p * 1.3, TIME) * shallow * vec3(0.8, 0.95, 1.0);
+		}
+
+		// The markings of the asphalt (RoadMarkings.cs; the owner, 2026-10-30, as in RA2): by the cell itself, faded out where the
+		// blend of the cells shows another ground. A road one cell wide has a dashed line along its middle, half a cell of paint
+		// across each border with its next cell; a band solid lines along its edges, and from three cells a narrow green strip down
+		// the middle with a dashed line in each half, from two a dashed line between its lanes.
+		if (on_map) {
+			float on_road = smoothstep(0.55, 0.85, dot(w, paved));
+			paved_light = smoothstep(0.2, 0.6, dot(w, paved));
+			vec4 mark = floor(texelFetch(road_map, cell, 0) * 255.0 + 0.5);
+			float stroke = 0.024;
+			float paint = 0.0;
+			float strip = 0.0;
+			if (on_road > 0.0 && mark.r == 1.0) {
+				vec2 local = fract(p) - 0.5;
+				int links = int(mark.g);
+				for (int bit = 0; bit < 8; bit++) {
+					if (((links >> bit) & 1) == 1) {
+						vec2 towards = normalize(ROAD_DIRECTIONS[bit]);
+						float reach = length(ROAD_DIRECTIONS[bit]) * 0.5;
+						float t = dot(local, towards);
+						float off = length(local - t * towards);
+						paint = max(paint, step(reach * 0.5, t) * step(t, reach) * stripe(off, stroke));
+					}
+				}
+			} else if (on_road > 0.0 && mark.r == 2.0) {
+				bool by_x = mark.g == 0.0;
+				float u = mark.b + (by_x ? fract(p.y) : fract(p.x));
+				float along = by_x ? p.x : p.y;
+				float width = mark.a;
+				float half_width = width * 0.5;
+				float dashes = step(fract(along), 0.5);
+				float edge = min(abs(u - 0.25), abs(u - (width - 0.25)));
+				paint = stripe(edge, stroke);
+				if (width >= 3.0) {
+					float middle = abs(u - half_width);
+					strip = stripe(middle, 0.12);
+					paint = max(paint, 0.6 * stripe(abs(middle - 0.14), 0.01));
+					float lane = 0.25 + (half_width - 0.42) * 0.5;
+					paint = max(paint, dashes * stripe(min(abs(u - lane), abs(u - (width - lane))), stroke));
+				} else {
+					paint = max(paint, dashes * stripe(abs(u - half_width), stroke));
+				}
+			}
+			if (strip > 0.0) {
+				vec3 median = grass_slot >= 0 ? albedo_of(grass_slot, p, frost_patches) : vec3(0.32, 0.42, 0.2);
+				color = mix(color, median, strip * on_road);
+			}
+			color = mix(color, marking_color * mix(0.85, 1.0, noise(p * 6.0)), paint * on_road * 0.9);
 		}
 
 		// The walls of the cliffs: rock from the side on every steep face, less of it as the face levels out.
@@ -247,7 +345,9 @@ void fragment() {
 			color *= mix(0.55, 1.0, clamp(to_line, 0.0, 1.0));
 		}
 	}
-	NORMAL = normalize(cross(dFdy(VERTEX), dFdx(VERTEX)));
+	// Every face by its own normal, so each plane of the relief reads apart; the asphalt by the smooth one (the owner, 2026-10-30:
+	// a road goes up and down a hill as an even slope, without the bumps of a dirt road).
+	NORMAL = normalize(mix(normalize(cross(dFdy(VERTEX), dFdx(VERTEX))), normalize(NORMAL), paved_light));
 	ALBEDO = color;
 	ROUGHNESS = roughness;
 }

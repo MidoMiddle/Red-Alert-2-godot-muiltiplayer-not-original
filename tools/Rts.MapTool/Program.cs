@@ -326,6 +326,52 @@ if (args.Length >= 2 && args[0] == "add-huts")
     return failed == 0 ? 0 : 1;
 }
 
+// 2026-10-30, the owner's rules: no ore on a road (the ore of a road cell goes) and one repair hut a bridge (BridgeHuts.Trim keeps the
+// one farthest from the starts), on the maps made before. A converted RA2 map first gets ra2_tidy.py, which gives its fields back the
+// ground the preview took for a road.
+if (args.Length >= 2 && args[0] == "tidy")
+{
+    var failed = 0;
+    foreach (var path in args.Skip(1))
+    {
+        try
+        {
+            var map = RtsMapReader.Read(File.ReadAllText(path));
+            var ore = map.Ore.ToArray();
+            var cleared = 0;
+            for (var i = 0; i < ore.Length; i++)
+            {
+                if (ore[i] != 0 && MapChecks.IsRoad(map.Land[i]))
+                {
+                    ore[i] = 0;
+                    cleared++;
+                }
+            }
+
+            var unpaved = new MapDefinition(
+                map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts,
+                map.TextureLegend, map.Heights, map.Land, map.Texture, [.. ore], map.Objects, map.Bridges, map.Structures,
+                map.Lighting, map.Playable, map.Origin);
+            var tidy = BridgeHuts.Trim(unpaved, MapData.Types);
+            var errors = MapValidator.Check(tidy, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            if (errors.Count > 0)
+            {
+                throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
+            }
+
+            File.WriteAllText(path, RtsMapWriter.Write(tidy));
+            Console.WriteLine($"{path}: ore off {cleared} road cells, {map.Structures.Length - tidy.Structures.Length} second or lone huts taken off");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException)
+        {
+            Console.Error.WriteLine($"{path}: not changed — {e.Message}");
+            failed++;
+        }
+    }
+
+    return failed == 0 ? 0 : 1;
+}
+
 // 2026-10-30: the shores of the maps made before (Shorelines): sand only where a vehicle comes down to the water, the cliffs straight
 // into it, the plateau's ground on their rims.
 if (args.Length >= 2 && args[0] == "tidy-shores")

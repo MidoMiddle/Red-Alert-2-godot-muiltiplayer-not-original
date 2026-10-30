@@ -326,7 +326,8 @@ public sealed class MapEditSession
                 var sources = SourceCells();
                 foreach (var under in _brush.Cells(Map, cell))
                 {
-                    if (!IsWaterOrRock(Map.LandAt(under)) && !sources.Contains(under))
+                    // No ore on a road (MapChecks.IsRoad): the field ends at its edges.
+                    if (!IsWaterOrRock(Map.LandAt(under)) && !MapChecks.IsRoad(Map.LandAt(under)) && !sources.Contains(under))
                     {
                         Set(EditLayer.Ore, Map.CellIndex(under), (byte)_options.Ore);
                     }
@@ -349,6 +350,11 @@ public sealed class MapEditSession
         {
             Set(EditLayer.Land, Map.CellIndex(under), (byte)land);
             Set(EditLayer.Texture, Map.CellIndex(under), code);
+            if (MapChecks.IsRoad(land))
+            {
+                // A road takes the ore off its cells.
+                Set(EditLayer.Ore, Map.CellIndex(under), 0);
+            }
         }
     }
 

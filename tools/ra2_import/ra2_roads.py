@@ -12,8 +12,15 @@ as the shorter of its two runs of asphalt along the axes:
 track): RA2's dirt road is three cells wide, brown in the middle and grey at its edges on the preview. Both for Route 66, one long dirt
 road whose grey bands are its edges and the ends of its bridges. --pave: every unpaved and asphalt cell becomes highway: Route 66, whose
 road leads to high concrete bridges three cells wide, which a dirt road does not (the owner, 2026-10-30).
+--wane N (after the others): off a town the asphalt lies in a few places only (the owner, 2026-10-30): the asphalt and the highway
+reach about N cells along the road from the ends of every bridge — one cell more or less from cell to cell, so the end is ragged —
+and further on the road goes into the ground as a dirt road (land g, texture track), like an abandoned road.
+--narrow-dirt: a dirt road is one cell wide, room for one vehicle (the owner, 2026-10-30): of a band of dirt road 2 to 6 cells
+across and at least 3 long only its middle line stays, the cells beside it are ground again (land ., the texture their unpaved
+neighbours have most, else grass).
 No guardrails: RA2's maps have none. Nothing else of the map changes. Afterwards: Rts.MapTool -- canon and check.
 """
+import collections
 import re
 import sys
 
@@ -113,5 +120,98 @@ def convert(path, highways, dirt_road, pave=False):
     print(f'{path}: {counts}')
 
 
-for map_path in (a for a in sys.argv[1:] if not a.startswith('--')):
-    convert(map_path, '--no-highway' not in sys.argv, '--dirt-road' in sys.argv, '--pave' in sys.argv)
+def wane(path, reach):
+    text = open(path, encoding='utf-8').read()
+    _, land = layer(text, 'land')
+    _, tex = layer(text, 'texture')
+    n = len(land)
+
+    def paved(x, y):
+        return 0 <= x < n and 0 <= y < n and land[y][x] in '=H'
+
+    ends = []
+    for b in re.finditer(r'type: bridge_\w+, from: \[(\d+), (\d+)\], to: \[(\d+), (\d+)\]', text):
+        x0, y0, x1, y1 = map(int, b.groups())
+        ends += [(x0, y0), (x1, y1)]
+    distance = {}
+    queue = collections.deque()
+    for ex, ey in ends:
+        for y in range(ey - 2, ey + 3):
+            for x in range(ex - 2, ex + 3):
+                if paved(x, y) and (x, y) not in distance:
+                    distance[(x, y)] = 0
+                    queue.append((x, y))
+    while queue:
+        x, y = queue.popleft()
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                q = (x + dx, y + dy)
+                if paved(*q) and q not in distance:
+                    distance[q] = distance[(x, y)] + 1
+                    queue.append(q)
+    text, track_code = legend_code(text, 'track', 'u')
+    waned = 0
+    for y in range(n):
+        for x in range(n):
+            ragged = reach - 1 + (x * 73856093 ^ y * 19349663) % 3
+            if paved(x, y) and distance.get((x, y), reach + 9) > ragged:
+                land[y][x] = 'g'
+                tex[y][x] = track_code
+                waned += 1
+    m, _ = layer(text, 'land')
+    text = put(text, m, land)
+    m, _ = layer(text, 'texture')
+    text = put(text, m, tex)
+    open(path, 'w', encoding='utf-8').write(text)
+    print(f'{path}: {waned} cells of asphalt and highway now a dirt road')
+
+
+def narrow(path):
+    text = open(path, encoding='utf-8').read()
+    _, land = layer(text, 'land')
+    _, tex = layer(text, 'texture')
+    n = len(land)
+    legend = dict(re.findall(r'    (\S+): (\S+)\n', re.search(r'^  texture:\n((?:    \S+: \S+\n)+)', text, re.M).group(1)))
+    grass = next((c for c, name in legend.items() if name == 'grass'), None)
+
+    def dirt(x, y):
+        return 0 <= x < n and 0 <= y < n and land[y][x] == 'g'
+
+    def run(x, y, dx, dy):
+        count = 0
+        while dirt(x + dx * (count + 1), y + dy * (count + 1)):
+            count += 1
+        return count
+
+    beside = []
+    for y in range(n):
+        for x in range(n):
+            if not dirt(x, y):
+                continue
+            west, east, north, south = run(x, y, -1, 0), run(x, y, 1, 0), run(x, y, 0, -1), run(x, y, 0, 1)
+            along_x, along_y = 1 + west + east, 1 + north + south
+            across = min(along_x, along_y)
+            if 2 <= across <= 6 and max(along_x, along_y) >= 3 and (north if along_x >= along_y else west) != across // 2:
+                beside.append((x, y))
+    for x, y in beside:
+        kinds = collections.Counter(tex[qy][qx] for qx in (x - 1, x, x + 1) for qy in (y - 1, y, y + 1)
+                                    if 0 <= qx < n and 0 <= qy < n and land[qy][qx] in '.,')
+        land[y][x] = '.'
+        tex[y][x] = kinds.most_common(1)[0][0] if kinds else grass or tex[y][x]
+    m, _ = layer(text, 'land')
+    text = put(text, m, land)
+    m, _ = layer(text, 'texture')
+    text = put(text, m, tex)
+    open(path, 'w', encoding='utf-8').write(text)
+    print(f'{path}: {len(beside)} cells beside the middle of a dirt road made ground')
+
+
+reach = int(sys.argv[sys.argv.index('--wane') + 1]) if '--wane' in sys.argv else None
+paths = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith('--') and sys.argv[i - 1] != '--wane']
+for map_path in paths:
+    if '--narrow-dirt' in sys.argv:
+        narrow(map_path)
+    elif reach is None:
+        convert(map_path, '--no-highway' not in sys.argv, '--dirt-road' in sys.argv, '--pave' in sys.argv)
+    else:
+        wane(map_path, reach)

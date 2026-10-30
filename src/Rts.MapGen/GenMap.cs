@@ -32,8 +32,8 @@ internal sealed class GenMap
     /// <summary>The kinds of the map of the data (<see cref="MapGenSettings.Types"/>).</summary>
     public MapTypes Types => Settings.Types;
 
-    /// <summary>Whether a land type is a road of any kind: the asphalt, the unpaved road and the footpath.</summary>
-    public static bool IsRoad(LandType land) => land is LandType.Road or LandType.Track or LandType.Path or LandType.Highway;
+    /// <summary>Whether a land type is a road of any kind: the asphalt, the highway, the unpaved road and the footpath.</summary>
+    public static bool IsRoad(LandType land) => MapChecks.IsRoad(land);
 
     public uint Seed { get; }
 
@@ -73,7 +73,15 @@ internal sealed class GenMap
 
     public LandType LandAt(CellPos cell) => Land[cell.Y * N + cell.X];
 
-    public void SetLand(CellPos cell, LandType land) => Land[cell.Y * N + cell.X] = land;
+    /// <summary>The land of the cell; a road takes the ore off it (no ore on a road, the owner, 2026-10-30).</summary>
+    public void SetLand(CellPos cell, LandType land)
+    {
+        Land[cell.Y * N + cell.X] = land;
+        if (IsRoad(land))
+        {
+            Ore[cell.Y * N + cell.X] = 0;
+        }
+    }
 
     public bool IsWater(CellPos cell) => LandAt(cell) is LandType.Shallow or LandType.Deep;
 
