@@ -44,7 +44,11 @@ A blue steel mailbox with a hinged flap and a slot, on a short concrete pedestal
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_mailbox.glb` | | | |
+| `city_mailbox.glb` | Blender, скрипт `tools/blender/families/city_mailbox.py` | 2026-10-29 | готово |
+| `city_mailbox_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_mailbox_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Три состояния по [appearance.md](appearance.md): целый, повреждённый (крышка погнута, замок выбит, краска содрана) и разрушенный (ящик на земле, от тумбы остался обрубок). Узлы `body` и `flap`. Высота 0,55, около полклетки, в размере, в котором ящик рисует игра. Номера дома и надписей нет: белая табличка пустая. В игре ящик — объект карты `mailbox` (`game/data/map/objects.yaml`); целая модель подключена к нему в `game/data/visuals/models.yaml`. Состояния объектов карты клиент пока не показывает.
 
 ## Открытые вопросы
 

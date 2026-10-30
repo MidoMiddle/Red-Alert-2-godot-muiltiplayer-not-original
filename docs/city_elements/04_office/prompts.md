@@ -45,7 +45,14 @@ A tall glass-and-concrete office building with a plain facade of horizontal wind
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_office.glb` | | | |
+| `city_office.glb` | Blender, скрипт `tools/blender/families/city_office.py` | 2026-10-29 | готово |
+| `city_office_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_office_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_office_damaged_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_office_abandoned.glb` | то же | 2026-10-29 | готово |
+| `city_office_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Высота до крыши 6,05, с парапетом 6,25: выше многоэтажки. Цвет владельца — парапет по краю крыши. Стекло запечено в общую текстуру и непрозрачное: отдельный прозрачный материал не делали. В игре офис — `neutral_office` (`game/data/neutral/civilian.yaml`); модели подключены к нему в `game/data/visuals/models.yaml` со всеми состояниями. В данных вместимость гарнизона 6, а в модели стволов 5, по этому документу.
 
 ## Открытые вопросы
 

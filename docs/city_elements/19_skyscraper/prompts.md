@@ -45,7 +45,14 @@ A slender glass-and-steel skyscraper about two units wide and nine units tall: v
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_skyscraper.glb` | | | |
+| `city_skyscraper.glb` | Blender, скрипт `tools/blender/families/city_skyscraper.py` | 2026-10-29 | готово |
+| `city_skyscraper_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_skyscraper_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_skyscraper_damaged_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_skyscraper_abandoned.glb` | то же | 2026-10-29 | готово |
+| `city_skyscraper_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Высота до крыши 8,5, с парапетом 8,75, антенна до 9,6: выше офиса (6). Узлы `body`, `roof` (машинное помещение), `antenna`, `team_mask` (парапет по краю крыши), `base` (площадь). Стекло запечено в общую текстуру и непрозрачное, как у офиса. Гарнизон: в модели десять стволов из верхних этажей, по документу; в данных вместимость 12. Покинутый: верхние этажи переднего правого угла срезаны, в проломе стальная рама, антенна упала. В игре небоскрёб — `neutral_skyscraper` (`game/data/neutral/civilian.yaml`); модели подключены к нему в `game/data/visuals/models.yaml` со всеми состояниями.
 
 ## Открытые вопросы
 

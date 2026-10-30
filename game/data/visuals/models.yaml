@@ -77,6 +77,111 @@ models:
                                 abandoned: map/building_apartment_block_abandoned/building_apartment_block_abandoned.glb,
                                 ruins: map/building_apartment_block_ruins/building_apartment_block_ruins.glb }
 
+  # The civilian bunker of the map (docs/map_elements/11_civilian_buildings): the same states as the house; eight barrels out of its
+  # slits when occupied.
+  building/neutral_civilian_bunker: { file: map/building_civilian_bunker/building_civilian_bunker.glb, height: 0.4, height_scale: 0.35,
+                                      damaged: map/building_civilian_bunker_damaged/building_civilian_bunker_damaged.glb,
+                                      damaged_occupied: map/building_civilian_bunker_damaged_occupied/building_civilian_bunker_damaged_occupied.glb,
+                                      occupied: map/building_civilian_bunker_occupied/building_civilian_bunker_occupied.glb,
+                                      abandoned: map/building_civilian_bunker_abandoned/building_civilian_bunker_abandoned.glb,
+                                      ruins: map/building_civilian_bunker_ruins/building_civilian_bunker_ruins.glb }
+
+  # The city school (docs/city_elements/03_school): the same states as the house; the canopy over its entrance takes the owner's
+  # colour, six barrels out of its upper windows when occupied.
+  building/neutral_school: { file: city/city_school/city_school.glb, height: 1.05, height_scale: 0.35,
+                             damaged: city/city_school_damaged/city_school_damaged.glb,
+                             damaged_occupied: city/city_school_damaged_occupied/city_school_damaged_occupied.glb,
+                             occupied: city/city_school_occupied/city_school_occupied.glb,
+                             abandoned: city/city_school_abandoned/city_school_abandoned.glb,
+                             ruins: city/city_school_ruins/city_school_ruins.glb }
+
+  # The city office (docs/city_elements/04_office): the same states; the parapet round its roof takes the owner's colour, five
+  # barrels out of its upper glass when occupied.
+  building/neutral_office: { file: city/city_office/city_office.glb, height: 2.2, height_scale: 0.35,
+                             damaged: city/city_office_damaged/city_office_damaged.glb,
+                             damaged_occupied: city/city_office_damaged_occupied/city_office_damaged_occupied.glb,
+                             occupied: city/city_office_occupied/city_office_occupied.glb,
+                             abandoned: city/city_office_abandoned/city_office_abandoned.glb,
+                             ruins: city/city_office_ruins/city_office_ruins.glb }
+
+  # The city skyscraper (docs/city_elements/19_skyscraper): the same states; the parapet round its roof takes the owner's colour, ten
+  # barrels out of its upper glass when occupied.
+  building/neutral_skyscraper: { file: city/city_skyscraper/city_skyscraper.glb, height: 3.1, height_scale: 0.35,
+                                 damaged: city/city_skyscraper_damaged/city_skyscraper_damaged.glb,
+                                 damaged_occupied: city/city_skyscraper_damaged_occupied/city_skyscraper_damaged_occupied.glb,
+                                 occupied: city/city_skyscraper_occupied/city_skyscraper_occupied.glb,
+                                 abandoned: city/city_skyscraper_abandoned/city_skyscraper_abandoned.glb,
+                                 ruins: city/city_skyscraper_ruins/city_skyscraper_ruins.glb }
+
+  # The city bank (docs/city_elements/23_bank): the same states; the tympanum of its pediment takes the owner's colour, four barrels
+  # out of its upper front windows when occupied.
+  building/neutral_bank: { file: city/city_bank/city_bank.glb, height: 1.7, height_scale: 0.35,
+                           damaged: city/city_bank_damaged/city_bank_damaged.glb,
+                           damaged_occupied: city/city_bank_damaged_occupied/city_bank_damaged_occupied.glb,
+                           occupied: city/city_bank_occupied/city_bank_occupied.glb,
+                           abandoned: city/city_bank_abandoned/city_bank_abandoned.glb,
+                           ruins: city/city_bank_ruins/city_bank_ruins.glb }
+
+  # The city hotel (docs/city_elements/24_hotel): the same states; the parapet round its roof takes the owner's colour, six barrels
+  # out of its upper front windows when occupied.
+  building/neutral_hotel: { file: city/city_hotel/city_hotel.glb, height: 2.85, height_scale: 0.35,
+                            damaged: city/city_hotel_damaged/city_hotel_damaged.glb,
+                            damaged_occupied: city/city_hotel_damaged_occupied/city_hotel_damaged_occupied.glb,
+                            occupied: city/city_hotel_occupied/city_hotel_occupied.glb,
+                            abandoned: city/city_hotel_abandoned/city_hotel_abandoned.glb,
+                            ruins: city/city_hotel_ruins/city_hotel_ruins.glb }
+
+  # The city fire station (docs/city_elements/25_fire_station): the same states; the band over its doors and the parapet of its hose
+  # tower take the owner's colour, four barrels out of its upper front windows when occupied, the doors are nodes of their own.
+  building/neutral_fire_station: { file: city/city_fire_station/city_fire_station.glb, height: 2.1, height_scale: 0.35,
+                                   damaged: city/city_fire_station_damaged/city_fire_station_damaged.glb,
+                                   damaged_occupied: city/city_fire_station_damaged_occupied/city_fire_station_damaged_occupied.glb,
+                                   occupied: city/city_fire_station_occupied/city_fire_station_occupied.glb,
+                                   abandoned: city/city_fire_station_abandoned/city_fire_station_abandoned.glb,
+                                   ruins: city/city_fire_station_ruins/city_fire_station_ruins.glb }
+
+  # The city church (docs/city_elements/05_church): the same states; the spire of its bell tower takes the owner's colour, four
+  # barrels out of its windows when occupied, the stump of the tower stands in its ruins.
+  building/neutral_church: { file: city/city_church/city_church.glb, height: 1.75, height_scale: 0.35,
+                             damaged: city/city_church_damaged/city_church_damaged.glb,
+                             damaged_occupied: city/city_church_damaged_occupied/city_church_damaged_occupied.glb,
+                             occupied: city/city_church_occupied/city_church_occupied.glb,
+                             abandoned: city/city_church_abandoned/city_church_abandoned.glb,
+                             ruins: city/city_church_ruins/city_church_ruins.glb }
+
+  # The city shop (docs/city_elements/06_shop): no soldiers go in, so whole, damaged, abandoned (its awning down) and ruins.
+  building/neutral_shop: { file: city/city_shop/city_shop.glb, height: 0.9, height_scale: 0.35,
+                           damaged: city/city_shop_damaged/city_shop_damaged.glb,
+                           abandoned: city/city_shop_abandoned/city_shop_abandoned.glb,
+                           ruins: city/city_shop_ruins/city_shop_ruins.glb }
+
+  # The city kiosk (docs/city_elements/07_kiosk): no soldiers go in, so whole, damaged, abandoned (skewed, its door hanging) and
+  # ruins.
+  building/neutral_kiosk: { file: city/city_kiosk/city_kiosk.glb, height: 0.5, height_scale: 0.35,
+                            damaged: city/city_kiosk_damaged/city_kiosk_damaged.glb,
+                            abandoned: city/city_kiosk_abandoned/city_kiosk_abandoned.glb,
+                            ruins: city/city_kiosk_ruins/city_kiosk_ruins.glb }
+
+  # The city fountain (docs/city_elements/09_fountain): made at the size it is drawn, not squashed; whole, damaged, abandoned (its
+  # column fallen, water spilled) and ruins. Its water is a node of its own, the jets are the client's.
+  building/neutral_fountain: { file: city/city_fountain/city_fountain.glb, height: 0.7,
+                               damaged: city/city_fountain_damaged/city_fountain_damaged.glb,
+                               abandoned: city/city_fountain_abandoned/city_fountain_abandoned.glb,
+                               ruins: city/city_fountain_ruins/city_fountain_ruins.glb }
+
+  # The city cafe (docs/city_elements/22_cafe): no soldiers go in, so whole, damaged, abandoned (burnt) and ruins.
+  building/neutral_cafe: { file: city/city_cafe/city_cafe.glb, height: 0.62, height_scale: 0.35,
+                           damaged: city/city_cafe_damaged/city_cafe_damaged.glb,
+                           abandoned: city/city_cafe_abandoned/city_cafe_abandoned.glb,
+                           ruins: city/city_cafe_ruins/city_cafe_ruins.glb }
+
+  # The city car repair garage (docs/city_elements/26_auto_repair): no soldiers go in, so whole, damaged, abandoned (burnt) and
+  # ruins; the doors of its bays are nodes of their own, two cars on its forecourt are in the model.
+  building/neutral_auto_repair: { file: city/city_auto_repair/city_auto_repair.glb, height: 0.61, height_scale: 0.35,
+                                  damaged: city/city_auto_repair_damaged/city_auto_repair_damaged.glb,
+                                  abandoned: city/city_auto_repair_abandoned/city_auto_repair_abandoned.glb,
+                                  ruins: city/city_auto_repair_ruins/city_auto_repair_ruins.glb }
+
   # The oil pumpjack of the map (docs/map_elements/12_tech_buildings): the beam nods while it works, the ring on the tank takes the
   # owner's colour, and its ruins stay where it fell.
   building/tech_oil_derrick: { file: map/tech_oil_derrick/tech_oil_derrick.glb, height: 2.2,
@@ -93,6 +198,23 @@ models:
   # Map objects (docs/map_elements, docs/obstacle_elements). A fence and a pipe run along x, as their placeholders.
   object/ore_source:          { file: map/ore_source/ore_source.glb }
   object/fence_wood:          { file: map/fence_wood_section/fence_wood_section.glb }
+  # The street stall of the city (docs/city_elements/08_street_stall), made at the size it is drawn; its damaged and destroyed files
+  # wait for the client to draw a map object's states.
+  object/street_stall:        { file: city/city_street_stall/city_street_stall.glb, spin: true }
+  object/bench:               { file: city/city_bench/city_bench.glb, spin: true }
+  object/trash_bin:           { file: city/city_trash_bin/city_trash_bin.glb, spin: true }
+  object/mailbox:             { file: city/city_mailbox/city_mailbox.glb, spin: true }
+  object/phone_booth:         { file: city/city_phone_booth/city_phone_booth.glb, spin: true }
+  # A bus stop faces the street the way it was made: not turned at random.
+  object/bus_stop:            { file: city/city_bus_stop/city_bus_stop.glb }
+  object/billboard:           { file: city/city_billboard/city_billboard.glb }
+  # Road signs of the city (docs/city_elements/16_road_sign): stop, yield and pedestrians; each cell picks one.
+  object/road_sign:           { files: [city/city_road_sign_stop/city_road_sign_stop.glb, city/city_road_sign_yield/city_road_sign_yield.glb,
+                                        city/city_road_sign_pedestrians/city_road_sign_pedestrians.glb], spin: true }
+  # The traffic light of the city (docs/city_elements/17_traffic_light): its lamps are nodes of their own, unlit; the client lights
+  # them in turn.
+  object/traffic_light:       { file: city/city_traffic_light/city_traffic_light.glb, spin: true }
+  object/flowerbed:           { file: city/city_flowerbed/city_flowerbed.glb, spin: true }
   object/pipeline:            { file: industrial/pipeline_straight/pipeline_straight.glb }
   object/anti_tank_hedgehog:  { file: obstacle/anti_tank_hedgehog/obstacle_anti_tank_hedgehog.glb }
   object/snowdrift:           { files: [map/snowdrift_01/snowdrift_01.glb, map/snowdrift_02/snowdrift_02.glb], jitter: 0.2, spin: true,

@@ -47,8 +47,14 @@ A five-storey apartment block with a flat roof, rows of identical windows, a cen
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_apartment_block.glb` | | | |
-| `city_apartment_block_damaged.glb` | | | |
+| `city_apartment_block.glb` | Blender, скрипт `tools/blender/families/city_apartment.py` | 2026-10-29 | готово |
+| `city_apartment_block_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_apartment_block_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_apartment_block_damaged_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_apartment_block_abandoned.glb` | то же | 2026-10-29 | готово |
+| `city_apartment_block_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Цвет владельца — весь карниз по верху здания: он выступает из стен и чуть поднимается над крышей, поэтому виден издалека и после сжатия по высоте. Файлы лежат в `game/assets/models/city/`. В `models.yaml` модели не подключены: городской многоэтажки нет в данных игры (`neutral_apartment` рисуется зимней).
 
 ## Открытые вопросы
 

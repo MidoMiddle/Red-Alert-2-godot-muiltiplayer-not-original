@@ -45,7 +45,11 @@ A street vendor cart on wheels with a striped umbrella on a pole above it, a woo
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_street_stall.glb` | | | |
+| `city_street_stall.glb` | Blender, скрипт `tools/blender/families/city_street_stall.py` | 2026-10-29 | готово |
+| `city_street_stall_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_street_stall_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Три состояния по [appearance.md](appearance.md): целая, повреждённая (зонтик порван, товары рассыпаны) и разрушенная (тележка на боку). Узлы `cart` и `umbrella`. Товары — простые цветные кучки, без узнаваемых продуктов. Высота не 1,2, а 0,84 до верха зонтика: объекты карты игра не сжимает по высоте, и при 1,2 лавка стояла бы выше сжатых домов. В игре лавка — объект карты `street_stall` (`game/data/map/objects.yaml`); целая модель подключена к нему в `game/data/visuals/models.yaml`. Состояния объектов карты клиент пока не показывает, поэтому повреждённая и разрушенная модели ждут этого.
 
 ## Открытые вопросы
 

@@ -47,8 +47,14 @@ A small two-storey brick house with a pitched dark tiled roof, white window fram
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_house_small.glb` | | | |
-| `city_house_small_damaged.glb` | | | |
+| `city_house_small.glb` | Blender, скрипт `tools/blender/families/city_house.py` | 2026-10-29 | готово |
+| `city_house_small_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_house_small_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_house_small_damaged_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_house_small_abandoned.glb` | то же | 2026-10-29 | готово |
+| `city_house_small_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Цвет владельца у неё на козырьке над дверью, а не полосой на стене: игра сжимает дом по высоте, и узкая полоса перестаёт читаться. Файлы лежат в `game/assets/models/city/`. В `models.yaml` модели не подключены: городского дома нет в данных игры (`neutral_house_a` рисуется зимним домом).
 
 ## Открытые вопросы
 

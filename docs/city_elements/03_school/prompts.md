@@ -48,7 +48,14 @@ A long two-storey school building with a row of classroom windows on both floors
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_school.glb` | | | |
+| `city_school.glb` | Blender, скрипт `tools/blender/families/city_school.py` | 2026-10-29 | готово |
+| `city_school_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_school_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_school_damaged_occupied.glb` | то же | 2026-10-29 | готово |
+| `city_school_abandoned.glb` | то же | 2026-10-29 | готово |
+| `city_school_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Двора и ограды в ней нет: секции забора берём из набора заборов. Флагштока тоже нет. Цвет владельца у школы на широком козырьке над входом, а не полосой: игра сжимает здание по высоте, и узкая полоса перестаёт читаться. Часы на фронтоне без цифр. Файлы лежат в `game/assets/models/city/`. В игре школа — `neutral_school` (`game/data/neutral/civilian.yaml`); модели подключены к ней в `game/data/visuals/models.yaml` со всеми состояниями. В данных вместимость гарнизона 9, а в модели стволов 6, по этому документу.
 
 ## Открытые вопросы
 

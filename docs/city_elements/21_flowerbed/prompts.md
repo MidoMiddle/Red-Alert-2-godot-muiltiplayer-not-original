@@ -43,7 +43,11 @@ A low rectangular flowerbed about one unit long and 0.4 units tall: a grey stone
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_flowerbed.glb` | | | |
+| `city_flowerbed.glb` | Blender, скрипт `tools/blender/families/city_flowerbed.py` | 2026-10-30 | готово |
+| `city_flowerbed_damaged.glb` | то же | 2026-10-30 | готово |
+| `city_flowerbed_ruins.glb` | то же | 2026-10-30 | готово |
+
+Модель сделана скриптом, без генератора. Три состояния по [appearance.md](appearance.md): целая, повреждённая (камень бордюра треснул и выдавлен, цветы с одного края смяты) и разрушенная (бордюр разбит, камни вокруг, земля высыпалась на тротуар, кусты примяты). Узлы `edge`, `soil`, `plants`. Размер 0,86 × 0,44, бордюр 0,12, кусты до 0,26: ниже скамейки, в размере, в котором её рисует игра. В игре клумба — объект карты `flowerbed` (`game/data/map/objects.yaml`); целая модель подключена к нему в `game/data/visuals/models.yaml`. Состояния объектов карты клиент пока не показывает.
 
 ## Открытые вопросы
 

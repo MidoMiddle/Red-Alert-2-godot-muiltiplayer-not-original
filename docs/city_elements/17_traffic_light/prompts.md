@@ -45,7 +45,11 @@ A traffic light on a tall grey pole about two units tall: a black housing with t
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_traffic_light.glb` | | | |
+| `city_traffic_light.glb` | Blender, скрипт `tools/blender/families/city_traffic_light.py` | 2026-10-29 | готово |
+| `city_traffic_light_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_traffic_light_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Три состояния по [appearance.md](appearance.md): целый, повреждённый (красная лампа разбита, коробка перекошена на кронштейне; жёлтая остаётся мигать) и разрушенный (столб согнут у основания, коробка лежит на земле, все лампы тёмные). Узлы во всех состояниях одни и те же: `post`, `housing`, `lamp_red`, `lamp_yellow`, `lamp_green`; лампы погашены, их зажигает клиент. Высота не 2, а 0,94 до верха коробки, в размере, в котором светофор рисует игра. В игре светофор — объект карты `traffic_light` (`game/data/map/objects.yaml`); целая модель подключена к нему в `game/data/visuals/models.yaml`. Цикла сигналов и состояний объектов карты в клиенте пока нет.
 
 ## Открытые вопросы
 

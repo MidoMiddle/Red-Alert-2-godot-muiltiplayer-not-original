@@ -43,7 +43,14 @@ A city fire station about three units wide, two units deep and six units tall: r
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_fire_station.glb` | | | |
+| `city_fire_station.glb` | Blender, скрипт `tools/blender/families/city_fire_station.py` | 2026-10-30 | готово |
+| `city_fire_station_occupied.glb` | то же | 2026-10-30 | готово |
+| `city_fire_station_damaged.glb` | то же | 2026-10-30 | готово |
+| `city_fire_station_damaged_occupied.glb` | то же | 2026-10-30 | готово |
+| `city_fire_station_abandoned.glb` | то же | 2026-10-30 | готово |
+| `city_fire_station_ruins.glb` | то же | 2026-10-30 | готово |
+
+Модель сделана скриптом, без генератора. Высокий этаж гаража и этаж казармы до крыши 3,5, башня для сушки шлангов в правом переднем углу до 6,05. Узлы `body`, `doors_left`, `doors_right` (ворота закрыты, открытый вопрос 1: отдельные узлы позволят их открыть), `tower`, `garrison_windows` (окна казармы), `team_mask`, `base`. Цвет владельца — широкая полоса над воротами и парапет на верху башни: игра сжимает здание по высоте, и узкая полоса одна перестаёт читаться. В повреждённой станции левые ворота сорваны и привалены к стене, правые выгнуты; в покинутой башня обломилась над крышей. Гарнизон: четыре ствола, по документу; в данных вместимость 9. В игре станция — `neutral_fire_station` (`game/data/neutral/civilian.yaml`); модели подключены к ней в `game/data/visuals/models.yaml` со всеми состояниями.
 
 ## Открытые вопросы
 

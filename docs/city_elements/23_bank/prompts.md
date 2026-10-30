@@ -43,7 +43,14 @@ A small stone bank building about three units wide, two units deep and five unit
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_bank.glb` | | | |
+| `city_bank.glb` | Blender, скрипт `tools/blender/families/city_bank.py` | 2026-10-30 | готово |
+| `city_bank_occupied.glb` | то же | 2026-10-30 | готово |
+| `city_bank_damaged.glb` | то же | 2026-10-30 | готово |
+| `city_bank_damaged_occupied.glb` | то же | 2026-10-30 | готово |
+| `city_bank_abandoned.glb` | то же | 2026-10-30 | готово |
+| `city_bank_ruins.glb` | то же | 2026-10-30 | готово |
+
+Модель сделана скриптом, без генератора. Два высоких этажа до карниза 3,9, вершина фронтона 4,8. Узлы `body`, `garrison_windows` (окна верхнего этажа), `columns`, `pediment`, `team_mask`, `steps`, `base`. Цвет владельца — тимпан фронтона (плоский треугольник в нём), а не полоса над фронтоном: игра сжимает здание по высоте, и узкая полоса перестаёт читаться. У покинутого тимпана нет: фронтон обрушился. Гарнизон: в модели четыре ствола из окон верхнего этажа, по документу; в данных вместимость 9. В игре банк — `neutral_bank` (`game/data/neutral/civilian.yaml`); модели подключены к нему в `game/data/visuals/models.yaml` со всеми состояниями.
 
 ## Открытые вопросы
 

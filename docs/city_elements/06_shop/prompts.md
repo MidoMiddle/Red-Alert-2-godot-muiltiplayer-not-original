@@ -45,7 +45,12 @@ A one-to-two storey shop building with a large full-width display window, a plai
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_shop.glb` | | | |
+| `city_shop.glb` | Blender, скрипт `tools/blender/families/city_shop.py` | 2026-10-29 | готово |
+| `city_shop_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_shop_abandoned.glb` | то же | 2026-10-29 | готово |
+| `city_shop_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Гарнизона нет, поэтому состояний четыре: целый, повреждённый, сильно повреждённый (навес обрушен) и руины. Навес — отдельный узел `awning`. Цвета команды нет. Товаров в витрине нет, стекло запечено непрозрачным, тёплое снизу. В игре магазин — `neutral_shop` (`game/data/neutral/civilian.yaml`); модели подключены к нему в `game/data/visuals/models.yaml`.
 
 ## Открытые вопросы
 

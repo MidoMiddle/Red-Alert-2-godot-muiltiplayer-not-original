@@ -43,7 +43,14 @@ A multi-storey city hotel about three units wide, two units deep and eight units
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_hotel.glb` | | | |
+| `city_hotel.glb` | Blender, скрипт `tools/blender/families/city_hotel.py` | 2026-10-30 | готово |
+| `city_hotel_occupied.glb` | то же | 2026-10-30 | готово |
+| `city_hotel_damaged.glb` | то же | 2026-10-30 | готово |
+| `city_hotel_damaged_occupied.glb` | то же | 2026-10-30 | готово |
+| `city_hotel_abandoned.glb` | то же | 2026-10-30 | готово |
+| `city_hotel_ruins.glb` | то же | 2026-10-30 | готово |
+
+Модель сделана скриптом, без генератора. Высокий первый этаж и восемь этажей до крыши 7,95, с парапетом 8,15. Узкий балкон вдоль фасада и задней стены на каждом этаже (открытый вопрос 1: балконы сплошные, окна над ними все видны). Узлы `body`, `garrison_windows` (окна верхних этажей), `balconies`, `awning`, `sign`, `team_mask`, `base`. Цвет владельца — парапет по краю крыши, как у офиса и небоскрёба, а не полоса над входом: игра сжимает здание по высоте, и узкая полоса перестаёт читаться. Гарнизон: шесть стволов, по документу; в данных вместимость 9. В игре гостиница — `neutral_hotel` (`game/data/neutral/civilian.yaml`); модели подключены к ней в `game/data/visuals/models.yaml` со всеми состояниями.
 
 ## Открытые вопросы
 

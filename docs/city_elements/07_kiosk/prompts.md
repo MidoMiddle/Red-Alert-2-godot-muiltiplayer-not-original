@@ -45,7 +45,12 @@ A small kiosk pavilion on a one unit square base: dark green wooden cladding, a 
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `city_kiosk.glb` | | | |
+| `city_kiosk.glb` | Blender, скрипт `tools/blender/families/city_kiosk.py` | 2026-10-29 | готово |
+| `city_kiosk_damaged.glb` | то же | 2026-10-29 | готово |
+| `city_kiosk_abandoned.glb` | то же | 2026-10-29 | готово |
+| `city_kiosk_ruins.glb` | то же | 2026-10-29 | готово |
+
+Модель сделана скриптом, без генератора. Гарнизона нет, поэтому состояний четыре: целый, повреждённый (стекло окошка разбито, навес порван), сильно повреждённый (павильон перекошен, дверь висит) и руины. Навес — отдельный узел `canopy`. Цвета команды нет, продавца в окошке нет. В игре киоск — `neutral_kiosk` (`game/data/neutral/civilian.yaml`); модели подключены к нему в `game/data/visuals/models.yaml`.
 
 ## Открытые вопросы
 
