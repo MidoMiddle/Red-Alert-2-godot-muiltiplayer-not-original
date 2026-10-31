@@ -442,6 +442,7 @@ ROWS = (
     "10. Город",
     "11. Дороги",
     "12. Инфраструктура",
+    "13. Море",
 )
 
 # Where each model stands: (row, place in the row). The key is the name of the model: its collection, its root and its file.
@@ -684,6 +685,7 @@ LAYOUT = {
     "helipad": (11, 3),
     "helipad_damaged": (11, 4),
     "helipad_ruins": (11, 5),
+    "shoal_sand": (12, 0),
 }
 
 

@@ -28,6 +28,33 @@ public sealed class ClimateGroundsTests
     }
 
     [Fact]
+    public void The_shallows_of_the_coast_lie_over_a_sandy_shoal_and_elsewhere_are_water()
+    {
+        Assert.Equal("shoal", ClimateGrounds.MaterialOf("coast", LandType.Shallow));
+        Assert.Equal("water", ClimateGrounds.MaterialOf("coast", LandType.Deep));
+        Assert.Equal("water", ClimateGrounds.MaterialOf("winter", LandType.Shallow));
+        Assert.Equal("water", ClimateGrounds.Translate("shoal", "coast", "temperate"));
+
+        // The editor takes a winter lake to the coast by its depth: the shallow over the shoal, the deep dark; and back to water.
+        var session = new MapEditSession(EditableMap.New(16, 16, 2), GameDataFiles.Rules.MapTypes);
+        var (shallow, deep) = (new Rts.Simulation.Geometry.CellPos(5, 5), new Rts.Simulation.Geometry.CellPos(9, 9));
+        var dot = new Brush(BrushShape.Square, 1);
+        session.BeginStroke(EditTool.Water, dot, new EditOptions { Water = LandType.Shallow });
+        session.Paint(shallow.X, shallow.Y, shallow);
+        session.EndStroke();
+        session.BeginStroke(EditTool.Water, dot, new EditOptions { Water = LandType.Deep });
+        session.Paint(deep.X, deep.Y, deep);
+        session.EndStroke();
+        Assert.Equal('w', session.Map.TextureAt(shallow));
+
+        session.SetClimate("coast");
+        Assert.Equal('q', session.Map.TextureAt(shallow));
+        Assert.Equal('w', session.Map.TextureAt(deep));
+        session.SetClimate("winter");
+        Assert.Equal('w', session.Map.TextureAt(shallow));
+    }
+
+    [Fact]
     public void The_editor_takes_a_winter_map_to_the_desert_role_by_role()
     {
         var session = new MapEditSession(EditableMap.New(16, 16, 2), GameDataFiles.Rules.MapTypes);

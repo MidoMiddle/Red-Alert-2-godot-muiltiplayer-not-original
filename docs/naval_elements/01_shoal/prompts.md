@@ -39,7 +39,7 @@ Seamless tileable texture of pale yellow sea sand on a shallow seabed with small
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `shoal_sand.png` | | | |
+| `shoal_sand.png` | Blender 5.2.3 + numpy, вручную (скрипт `tools/blender/families/ground_textures.py`) | 2026-10-31 | сделано, материал `shoal` побережья (2026-11-01) |
 
 ## Открытые вопросы
 

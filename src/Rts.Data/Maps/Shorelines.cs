@@ -39,7 +39,7 @@ public static class Shorelines
         var legend = map.TextureLegend.ToList();
         var ground = ClimateGrounds.Of(map.Climate);
         var shoreCodes = legend.Where(e => e.Material == ground.Shore).Select(e => e.Code).ToHashSet();
-        var waterCode = Code(legend, ground.Water);
+        var waterCode = Code(legend, ground.Shoal) ?? Code(legend, ground.Water);
         var kept = Kept(map, types);
 
         bool Inside(int x, int y) => x >= 0 && y >= 0 && x < w && y < h;

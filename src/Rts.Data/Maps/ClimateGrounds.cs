@@ -9,7 +9,8 @@ namespace Rts.Data.Maps;
 /// What the ground of a climate is made of, by role (the climates of RA2: winter — its Snow —, temperate, urban, desert; and our coast,
 /// a warm summer seaside): the plain
 /// ground, two kinds of patches over it, rough land, the road and the pavement beside it in a town, the shore, the rock, the water and
-/// the ice, the road kinds of 04_roads (track, path, highway, the town's street and its cobbles). The generator paints by these roles, a map takes its climate's legend, the editor carries the texture over to another
+/// the ice, the road kinds of 04_roads (track, path, highway, the town's street and its cobbles), the bottom of shallow water (the coast's
+/// sandy shoal, docs/naval_elements/01_shoal; plain water elsewhere). The generator paints by these roles, a map takes its climate's legend, the editor carries the texture over to another
 /// climate role by role. The materials are the ids of <c>game/data/climates/&lt;id&gt;/look.yaml</c>. Visual only.
 /// </summary>
 public sealed record ClimateGround(
@@ -29,6 +30,7 @@ public sealed record ClimateGround(
     string Highway,
     string Street,
     string Cobble,
+    string Shoal,
     ImmutableArray<TextureEntry> Legend)
 {
     /// <summary>The material of a role, in the order of <see cref="ClimateGrounds.Roles"/>.</summary>
@@ -49,6 +51,7 @@ public sealed record ClimateGround(
         12 => Highway,
         13 => Street,
         14 => Cobble,
+        15 => Shoal,
         _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown role."),
     };
 }
@@ -56,7 +59,7 @@ public sealed record ClimateGround(
 public static class ClimateGrounds
 {
     /// <summary>The number of roles of a ground (<see cref="ClimateGround.Of"/>).</summary>
-    internal const int Roles = 15;
+    internal const int Roles = 16;
 
     public const string Winter = "winter";
     public const string Temperate = "temperate";
@@ -70,35 +73,36 @@ public static class ClimateGrounds
     private static readonly Dictionary<string, ClimateGround> Grounds = new(StringComparer.Ordinal)
     {
         [Winter] = new(Winter, "snow", "dirt", "grass", "dirt", "asphalt", "asphalt", "shore", "rock", "water", "ice", "track", "path",
-            "highway", "asphalt", "asphalt",
+            "highway", "asphalt", "asphalt", "water",
         [
             .. TestMapConverter.Legend,
             new('t', "path"), new('u', "track"), new('h', "highway"),
         ]),
         [Temperate] = new(Temperate, "grass", "dirt", "field", "dirt", "asphalt", "asphalt", "shore", "rock", "water", "water", "track", "path",
-            "highway", "asphalt", "asphalt",
+            "highway", "asphalt", "asphalt", "water",
         [
             new('a', "asphalt"), new('b', "shore"), new('d', "dirt"), new('f', "field"), new('g', "grass"), new('k', "rock"), new('w', "water"),
             new('t', "path"), new('u', "track"), new('h', "highway"),
         ]),
         [Urban] = new(Urban, "grass", "dirt", "pavers", "dirt", "asphalt", "slabs", "shore", "rock", "water", "water", "track", "path",
-            "highway", "street", "cobble",
+            "highway", "street", "cobble", "water",
         [
             new('a', "asphalt"), new('b', "shore"), new('d', "dirt"), new('g', "grass"), new('k', "rock"), new('l', "slabs"), new('p', "pavers"),
             new('w', "water"), new('t', "path"), new('u', "track"), new('h', "highway"), new('e', "street"), new('o', "cobble"),
         ]),
         [Desert] = new(Desert, "sand", "clay", "gravel", "gravel", "asphalt", "asphalt", "shore", "rock", "water", "water", "track", "path",
-            "highway", "asphalt", "asphalt",
+            "highway", "asphalt", "asphalt", "water",
         [
             new('a', "asphalt"), new('b', "shore"), new('c', "clay"), new('k', "rock"), new('n', "sand"), new('v', "gravel"), new('w', "water"),
             new('t', "path"), new('u', "track"), new('h', "highway"),
         ]),
-        // Dry seaside grass with patches of sand and of greener meadow, pebbles for rough land, wet sand at the water.
+        // Dry seaside grass with patches of sand and of greener meadow, pebbles for rough land, wet sand at the water, a sandy bottom
+        // under the shallow water (the shoal) and the dark sea beyond it.
         [Coast] = new(Coast, "grass", "sand", "meadow", "pebbles", "asphalt", "asphalt", "shore", "rock", "water", "water", "track", "path",
-            "highway", "asphalt", "asphalt",
+            "highway", "asphalt", "asphalt", "shoal",
         [
             new('a', "asphalt"), new('b', "shore"), new('g', "grass"), new('k', "rock"), new('m', "meadow"), new('n', "sand"), new('v', "pebbles"),
-            new('w', "water"), new('t', "path"), new('u', "track"), new('h', "highway"),
+            new('w', "water"), new('t', "path"), new('u', "track"), new('h', "highway"), new('q', "shoal"),
         ]),
     };
 
@@ -116,7 +120,8 @@ public static class ClimateGrounds
             LandType.Rough => ground.Rough,
             LandType.Road => ground.Road,
             LandType.Beach => ground.Shore,
-            LandType.Shallow or LandType.Deep => ground.Water,
+            LandType.Shallow => ground.Shoal,
+            LandType.Deep => ground.Water,
             LandType.Rock => ground.Rock,
             LandType.Ice => ground.Ice,
             LandType.Track => ground.Track,

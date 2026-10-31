@@ -194,9 +194,17 @@ public sealed class EditableMap
             codes[entry.Code] = ground.Legend.First(target => target.Material == material).Code;
         }
 
+        // The water by its depth: the shallow takes the bottom of the new climate's shallows (the coast's shoal), the deep its water.
+        var old = ClimateGrounds.Of(Climate);
         for (var i = 0; i < _texture.Length; i++)
         {
-            if (codes.TryGetValue(_texture[i], out var code))
+            var material = _legend.Find(entry => entry.Code == _texture[i])?.Material;
+            if (_land[i] is LandType.Shallow or LandType.Deep && (material == old.Water || material == old.Shoal))
+            {
+                var water = ClimateGrounds.MaterialOf(climate, _land[i]);
+                _texture[i] = ground.Legend.First(target => target.Material == water).Code;
+            }
+            else if (codes.TryGetValue(_texture[i], out var code))
             {
                 _texture[i] = code;
             }
