@@ -79,7 +79,7 @@ python3 tools/ra2_import/ra2_roads.py --pave game/data/maps/route-66.rtsmap
 python3 tools/ra2_import/ra2_roads.py --wane 6 game/data/maps/route-66.rtsmap game/data/maps/facing-corners.rtsmap game/data/maps/stephs-high-ground.rtsmap
 ```
 
-- `--narrow-dirt`: грунтовка шириной в одну клетку (владелец, 2026-10-30). У полосы грунтовки в 2–6 клеток (длиной от 3) остаётся средняя линия, клетки по сторонам снова земля с текстурой соседей. Применено к пяти картам RA2 не города: `route-66`, `facing-corners`, `stephs-high-ground`, `heaven`, `war-pro`.
+- `--narrow-dirt`: грунтовка шириной в одну клетку (владелец, 2026-10-30). Сначала обрывок асфальта внутри грунтовки (вокруг него не больше двух клеток асфальта) сам становится грунтовкой, иначе колеи обошли бы его кольцом. Затем, пока карта меняется, у полосы грунтовки в 2–6 клеток (длиной от 3) остаётся средняя линия, клетки по сторонам снова земля с текстурой соседей. Применено к пяти картам RA2 не города: `route-66`, `facing-corners`, `stephs-high-ground`, `heaven`, `war-pro`.
 
 После `--wane` и `--narrow-dirt` пути танков меняются: на этих трёх картах заново запущены `share-gems` и `tidy`. После `--narrow-dirt` на всех пяти картах заново запущены `share-gems` и `tidy`.
 

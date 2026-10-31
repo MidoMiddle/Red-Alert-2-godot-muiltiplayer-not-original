@@ -15,7 +15,8 @@ road leads to high concrete bridges three cells wide, which a dirt road does not
 --wane N (after the others): off a town the asphalt lies in a few places only (the owner, 2026-10-30): the asphalt and the highway
 reach about N cells along the road from the ends of every bridge — one cell more or less from cell to cell, so the end is ragged —
 and further on the road goes into the ground as a dirt road (land g, texture track), like an abandoned road.
---narrow-dirt: a dirt road is one cell wide, room for one vehicle (the owner, 2026-10-30): of a band of dirt road 2 to 6 cells
+--narrow-dirt: a dirt road is one cell wide, room for one vehicle (the owner, 2026-10-30). A scrap of asphalt left in it (two
+cells of asphalt round it at most) becomes dirt road first; then, again until nothing changes, of a band of dirt road 2 to 6 cells
 across and at least 3 long only its middle line stays, the cells beside it are ground again (land ., the texture their unpaved
 neighbours have most, else grass).
 No guardrails: RA2's maps have none. Nothing else of the map changes. Afterwards: Rts.MapTool -- canon and check.
@@ -183,27 +184,44 @@ def narrow(path):
             count += 1
         return count
 
-    beside = []
-    for y in range(n):
-        for x in range(n):
-            if not dirt(x, y):
-                continue
-            west, east, north, south = run(x, y, -1, 0), run(x, y, 1, 0), run(x, y, 0, -1), run(x, y, 0, 1)
-            along_x, along_y = 1 + west + east, 1 + north + south
-            across = min(along_x, along_y)
-            if 2 <= across <= 6 and max(along_x, along_y) >= 3 and (north if along_x >= along_y else west) != across // 2:
-                beside.append((x, y))
-    for x, y in beside:
-        kinds = collections.Counter(tex[qy][qx] for qx in (x - 1, x, x + 1) for qy in (y - 1, y, y + 1)
-                                    if 0 <= qx < n and 0 <= qy < n and land[qy][qx] in '.,')
-        land[y][x] = '.'
-        tex[y][x] = kinds.most_common(1)[0][0] if kinds else grass or tex[y][x]
+    # A scrap of asphalt the ragged end of --wane left in the dirt road (two cells of asphalt round it at most) is dirt road too:
+    # else the ruts would ring it.
+    text, track_code = legend_code(text, 'track', 'u')
+    scraps = [(x, y) for y in range(n) for x in range(n) if land[y][x] in '=H'
+              and sum(1 for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx or dy) and 0 <= x + dx < n and 0 <= y + dy < n and land[y + dy][x + dx] in '=H') <= 2
+              and any(dirt(x + dx, y + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))]
+    for x, y in scraps:
+        land[y][x] = 'g'
+        tex[y][x] = track_code
+
+    # Again until nothing changes: a crossing of bands too wide at first is a block of 3 x 3 after the first round.
+    total = 0
+    while True:
+        beside = []
+        for y in range(n):
+            for x in range(n):
+                if not dirt(x, y):
+                    continue
+                west, east, north, south = run(x, y, -1, 0), run(x, y, 1, 0), run(x, y, 0, -1), run(x, y, 0, 1)
+                along_x, along_y = 1 + west + east, 1 + north + south
+                across = min(along_x, along_y)
+                if 2 <= across <= 6 and max(along_x, along_y) >= 3 and (north if along_x >= along_y else west) != across // 2:
+                    beside.append((x, y))
+        if not beside:
+            break
+        total += len(beside)
+        for x, y in beside:
+            kinds = collections.Counter(tex[qy][qx] for qx in (x - 1, x, x + 1) for qy in (y - 1, y, y + 1)
+                                        if 0 <= qx < n and 0 <= qy < n and land[qy][qx] in '.,')
+            land[y][x] = '.'
+            tex[y][x] = kinds.most_common(1)[0][0] if kinds else grass or tex[y][x]
+    beside = range(total)
     m, _ = layer(text, 'land')
     text = put(text, m, land)
     m, _ = layer(text, 'texture')
     text = put(text, m, tex)
     open(path, 'w', encoding='utf-8').write(text)
-    print(f'{path}: {len(beside)} cells beside the middle of a dirt road made ground')
+    print(f'{path}: {len(scraps)} scraps of asphalt made dirt road, {len(beside)} cells beside the middle of a dirt road made ground')
 
 
 reach = int(sys.argv[sys.argv.index('--wane') + 1]) if '--wane' in sys.argv else None
