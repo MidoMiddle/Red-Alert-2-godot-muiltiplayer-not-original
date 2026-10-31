@@ -8,7 +8,9 @@ namespace Rts.Client.Climates;
 /// cell, the slot of its material in the climate (<see cref="ClimateLook.Materials"/>) and its water (0 none, 1 shallow, 2 deep,
 /// by the land of the rules). A cliff cell keeps its own material too: it shows above and below the wall, and the shader puts the
 /// climate's cliff material on the wall itself (<see cref="ClimateLook.Cliff"/>). A material the climate lacks falls back to the
-/// one of the cell's land in that climate (<see cref="Rts.Data.Maps.ClimateGrounds"/>), then to the first slot.
+/// one of the cell's land in that climate (<see cref="Rts.Data.Maps.ClimateGrounds"/>), then to the first slot. A dirt road or a path
+/// is no strip of its own material but the ground of its neighbours, the most common of them (else the climate's clear ground):
+/// the shader wears ruts into it (<c>RoadMarkings.Ruts</c>; the owner, 2026-10-30).
 /// </summary>
 public static class MaterialSlots
 {
@@ -39,7 +41,44 @@ public static class MaterialSlots
             }
         }
 
+        for (var y = 0; y < map.Height; y++)
+        {
+            for (var x = 0; x < map.Width; x++)
+            {
+                if (map.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path)
+                {
+                    cells[(y * map.Width + x) * BytesPerCell] = GroundAround(map, cells, x, y, climate);
+                }
+            }
+        }
+
         return cells;
+    }
+
+    // The most common material of the open ground round the cell (the first of a tie, east first), else the climate's clear ground.
+    private static byte GroundAround(MapGrid map, byte[] cells, int x, int y, ClimateLook climate)
+    {
+        System.Span<int> counts = stackalloc int[256];
+        var best = -1;
+        for (var dy = -1; dy <= 1; dy++)
+        {
+            for (var dx = -1; dx <= 1; dx++)
+            {
+                var near = new CellPos(x + dx, y + dy);
+                if (!map.Contains(near) || map.LandAt(near) is not (LandType.Clear or LandType.Rough or LandType.Beach or LandType.Ice))
+                {
+                    continue;
+                }
+
+                var slot = cells[(near.Y * map.Width + near.X) * BytesPerCell];
+                if (++counts[slot] > (best < 0 ? 0 : counts[best]))
+                {
+                    best = slot;
+                }
+            }
+        }
+
+        return best >= 0 ? (byte)best : SlotOf(null, LandType.Clear, climate);
     }
 
     private static byte SlotOf(string? material, LandType land, ClimateLook climate)

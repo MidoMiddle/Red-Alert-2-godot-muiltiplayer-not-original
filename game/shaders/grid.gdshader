@@ -49,6 +49,8 @@ uniform vec3 frost_color : source_color = vec3(0.88, 0.91, 0.96);
 uniform sampler2D road_map : filter_nearest;
 uniform vec3 marking_color : source_color = vec3(0.86, 0.85, 0.78);
 uniform int grass_slot = -1;
+// The slot of the climate's dirt road, the earth of the ruts worn into the ground (-1: a plain brown).
+uniform int rut_slot = -1;
 uniform sampler2D tex_water_normal : filter_linear_mipmap, repeat_enable;
 uniform vec3 deep_water_color : source_color = vec3(0.10, 0.24, 0.56);
 // The foam along the shore, and how much light moves over shallow water.
@@ -111,13 +113,21 @@ float stripe(float d, float half_width) {
 	return 1.0 - smoothstep(half_width - 0.5 * pixel, half_width + 0.5 * pixel, d);
 }
 
-// 1 for a marked cell of road of the map, 0 elsewhere and off the map.
+// How far the point is from the segment from a to b.
+float segment_distance(vec2 point, vec2 a, vec2 b) {
+	vec2 ab = b - a;
+	float along = clamp(dot(point - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+	return length(point - a - ab * along);
+}
+
+// 1 for a cell of asphalt of the map (RoadMarkings 1 to 3), 0 elsewhere — the ruts of a dirt road too — and off the map.
 float road_at(ivec2 cell) {
 	ivec2 size = textureSize(road_map, 0);
 	if (any(lessThan(cell, ivec2(0))) || any(greaterThanEqual(cell, size))) {
 		return 0.0;
 	}
-	return step(0.5, texelFetch(road_map, cell, 0).r * 255.0);
+	float kind = texelFetch(road_map, cell, 0).r * 255.0;
+	return step(0.5, kind) * step(kind, 3.5);
 }
 
 // The slot (x) and the water (y: 0 none, 1 shallow, 2 deep) of a cell of the material map.
@@ -293,6 +303,51 @@ void fragment() {
 				} else {
 					paint = max(paint, dashes * stripe(abs(u - half_width), stroke));
 				}
+			}
+			if (mark.r == 4.0) {
+				// A dirt road is the ground with two ruts worn into it and its middle a little trodden, a path one narrow trodden
+				// line (the owner, 2026-10-30). The ruts follow the line from the cell's first neighbour through its centre to its
+				// second, each offset to one side, and turn where the two offset lines meet, so a bend has no crossing ruts; they
+				// wander a little and are broken here and there.
+				vec2 local = fract(p) - 0.5 + (noise(p * 2.3 + vec2(4.1, 7.7)) - 0.5) * 0.06;
+				int links = int(mark.g);
+				int first = -1;
+				int second = -1;
+				for (int bit = 0; bit < 8; bit++) {
+					if (((links >> bit) & 1) == 1) {
+						if (first < 0) {
+							first = bit;
+						} else {
+							second = bit;
+						}
+					}
+				}
+				vec2 a = normalize(ROAD_DIRECTIONS[first]);
+				vec2 end_a = ROAD_DIRECTIONS[first] * 0.5;
+				vec2 b = second >= 0 ? normalize(ROAD_DIRECTIONS[second]) : -a;
+				vec2 end_b = second >= 0 ? ROAD_DIRECTIONS[second] * 0.5 : vec2(0.0);
+				float worn = max(stripe(segment_distance(local, vec2(0.0), end_a), 0.24), stripe(segment_distance(local, vec2(0.0), end_b), 0.24));
+				float rut = 0.0;
+				if (mark.b == 1.0) {
+					rut = max(stripe(segment_distance(local, vec2(0.0), end_a), 0.045), stripe(segment_distance(local, vec2(0.0), end_b), 0.045));
+					worn = 0.0;
+				} else {
+					for (int k = 0; k < 2; k++) {
+						float off = k == 0 ? 0.17 : -0.17;
+						vec2 side_a = off * vec2(a.y, -a.x);
+						vec2 side_b = off * vec2(-b.y, b.x);
+						float turn = -a.x * b.y + a.y * b.x;
+						vec2 meet = abs(turn) < 0.001 ? side_a
+							: side_a - a * (((side_b - side_a).x * b.y - (side_b - side_a).y * b.x) / turn);
+						rut = max(rut, stripe(segment_distance(local, meet, end_a + side_a), 0.045));
+						if (second >= 0) {
+							rut = max(rut, stripe(segment_distance(local, meet, end_b + side_b), 0.045));
+						}
+					}
+				}
+				vec3 earth = rut_slot >= 0 ? albedo_of(rut_slot, p, frost_patches) : vec3(0.42, 0.3, 0.2);
+				color = mix(color, mix(color, earth, 0.5), worn * 0.35);
+				color = mix(color, earth * 0.7, rut * mix(0.6, 1.0, noise(p * 4.3)));
 			}
 			if (strip > 0.0) {
 				vec3 median = grass_slot >= 0 ? albedo_of(grass_slot, p, frost_patches) : vec3(0.32, 0.42, 0.2);

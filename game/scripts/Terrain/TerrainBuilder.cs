@@ -235,6 +235,7 @@ public partial class TerrainBuilder : Node3D
 
         GroundMaterial.SetShaderParameter("cliff_slot", climate.SlotOf(climate.Cliff));
         GroundMaterial.SetShaderParameter("grass_slot", climate.SlotOf("grass"));
+        GroundMaterial.SetShaderParameter("rut_slot", climate.SlotOf(Rts.Data.Maps.ClimateGrounds.MaterialOf(climate.Id, Rts.Simulation.Map.LandType.Track)));
         GroundMaterial.SetShaderParameter("ground_albedo", textures.Albedo);
         GroundMaterial.SetShaderParameter("tex_water_normal", textures.WaterNormal);
         GroundMaterial.SetShaderParameter("mat_tiling", tiling);

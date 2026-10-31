@@ -21,6 +21,8 @@ public sealed class RoadMarkingsTests
                 {
                     '=' => (byte)LandType.Road,
                     'H' => (byte)LandType.Highway,
+                    'g' => (byte)LandType.Track,
+                    'p' => (byte)LandType.Path,
                     _ => (byte)LandType.Clear,
                 };
             }
@@ -76,6 +78,25 @@ public sealed class RoadMarkingsTests
         Assert.Equal((RoadMarkings.Band, (byte)0, (byte)2, (byte)3), At(marks, 4, 3));
         Assert.Equal((RoadMarkings.Band, (byte)1, (byte)0, (byte)2), At(marks, 2, 6));
         Assert.Equal((RoadMarkings.Band, (byte)1, (byte)1, (byte)2), At(marks, 3, 6));
+    }
+
+    [Fact]
+    public void A_dirt_road_and_a_path_are_ruts_that_run_on_into_the_asphalt_they_meet()
+    {
+        // The owner, 2026-10-30: ruts worn into the ground, not a strip of mud.
+        var marks = Marks(
+            "................",
+            ".ggg====........",
+            ".p..............",
+            ".p..............");
+
+        // A bend into the path: east and south; the last cell of dirt road runs on into the asphalt: west and east.
+        Assert.Equal((RoadMarkings.Ruts, (byte)0b0000_0101, (byte)0, (byte)0), At(marks, 1, 1));
+        Assert.Equal((RoadMarkings.Ruts, (byte)0b0001_0001, (byte)0, (byte)0), At(marks, 3, 1));
+        Assert.Equal((RoadMarkings.Ruts, (byte)0b0100_0100, (byte)1, (byte)0), At(marks, 1, 2));
+        // The last path cell has one link only: nothing paved lies beyond it.
+        Assert.Equal((RoadMarkings.Ruts, (byte)0b0100_0000, (byte)1, (byte)0), At(marks, 1, 3));
+        Assert.Equal(RoadMarkings.Line, At(marks, 5, 1).Kind);
     }
 
     [Fact]

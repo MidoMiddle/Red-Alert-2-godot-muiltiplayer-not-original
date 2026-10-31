@@ -18,7 +18,10 @@ namespace Rts.Client.Terrain;
 /// edges, and on a band of 3 or more a green strip down the middle with a dashed line in each half; on a band of 2 a dashed line
 /// between the lanes.</item>
 /// </list>
-/// Every other cell of that asphalt is <see cref="Plain"/>. Only a picture: the rules never see it.
+/// Every other cell of that asphalt is <see cref="Plain"/>. A dirt road or a path (<see cref="Ruts"/>) is no strip of mud but the
+/// ground of its neighbours (<c>MaterialSlots</c>) with ruts worn into it (the owner, 2026-10-30): links as for <see cref="Line"/>,
+/// among the cells of dirt road and path, on into the road it ends at; byte 2 is 0 for the two ruts of a dirt road, 1 for the
+/// one trodden line of a path. Only a picture: the rules never see it.
 /// </summary>
 public static class RoadMarkings
 {
@@ -28,6 +31,9 @@ public static class RoadMarkings
 
     /// <summary>Asphalt without markings: a crossing, a square, a ragged end of a highway — lit smooth like the rest of the asphalt.</summary>
     public const byte Plain = 3;
+
+    /// <summary>A dirt road (two ruts) or a path (one trodden line) over the ground.</summary>
+    public const byte Ruts = 4;
 
     /// <summary>The neighbours by bit, from bit 0: east, south-east, south, south-west, west, north-west, north, north-east (y south).</summary>
     public static readonly (int Dx, int Dy)[] Directions = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)];
@@ -52,6 +58,9 @@ public static class RoadMarkings
         }
 
         bool On(int x, int y) => x >= 0 && y >= 0 && x < width && y < height && marked[y * width + x];
+        bool Inside(int x, int y) => x >= 0 && y >= 0 && x < width && y < height;
+        bool Unpaved(int x, int y) => Inside(x, y) && map.LandAt(new CellPos(x, y)) is LandType.Track or LandType.Path;
+        bool Paved(int x, int y) => Inside(x, y) && map.LandAt(new CellPos(x, y)) is LandType.Road or LandType.Highway;
 
         int Run(int x, int y, int dx, int dy)
         {
@@ -69,12 +78,35 @@ public static class RoadMarkings
         {
             for (var x = 0; x < width; x++)
             {
+                var at = (y * width + x) * BytesPerCell;
+                if (Unpaved(x, y))
+                {
+                    var (ruts, ends) = Links(x, y, Unpaved);
+                    // The last cell of a dirt road runs on into the road it meets, so the ruts reach the asphalt.
+                    for (var bit = 0; ends == 1 && bit < Directions.Length; bit += 2)
+                    {
+                        var opposite = (bit + 4) % 8;
+                        if ((ruts & (1 << opposite)) != 0 && Paved(x + Directions[bit].Dx, y + Directions[bit].Dy))
+                        {
+                            (ruts, ends) = (ruts | (1 << bit), 2);
+                        }
+                    }
+
+                    if (ends is >= 1 and <= 2)
+                    {
+                        cells[at] = Ruts;
+                        cells[at + 1] = (byte)ruts;
+                        cells[at + 2] = (byte)(map.LandAt(new CellPos(x, y)) == LandType.Path ? 1 : 0);
+                    }
+
+                    continue;
+                }
+
                 if (!On(x, y))
                 {
                     continue;
                 }
 
-                var at = (y * width + x) * BytesPerCell;
                 cells[at] = Plain;
                 var (west, east) = (Run(x, y, -1, 0), Run(x, y, 1, 0));
                 var (north, south) = (Run(x, y, 0, -1), Run(x, y, 0, 1));
@@ -100,18 +132,7 @@ public static class RoadMarkings
                     continue;
                 }
 
-                var links = 0;
-                var count = 0;
-                for (var bit = 0; bit < Directions.Length; bit++)
-                {
-                    var (dx, dy) = Directions[bit];
-                    if (On(x + dx, y + dy) && (dx == 0 || dy == 0 || (!On(x + dx, y) && !On(x, y + dy))))
-                    {
-                        links |= 1 << bit;
-                        count++;
-                    }
-                }
-
+                var (links, count) = Links(x, y, On);
                 if (count is >= 1 and <= 2)
                 {
                     cells[at] = Line;
@@ -121,5 +142,23 @@ public static class RoadMarkings
         }
 
         return cells;
+    }
+
+    // The neighbours of the cell the predicate takes, by bit, and how many: a diagonal one is left out when the two cells also
+    // meet through a cell beside both, so a staircase of cells is one line.
+    private static (int Links, int Count) Links(int x, int y, System.Func<int, int, bool> on)
+    {
+        var (links, count) = (0, 0);
+        for (var bit = 0; bit < Directions.Length; bit++)
+        {
+            var (dx, dy) = Directions[bit];
+            if (on(x + dx, y + dy) && (dx == 0 || dy == 0 || (!on(x + dx, y) && !on(x, y + dy))))
+            {
+                links |= 1 << bit;
+                count++;
+            }
+        }
+
+        return (links, count);
     }
 }
