@@ -109,7 +109,8 @@ public sealed class GameDataTests
         // The units' weapons of rules.ini (the owner, 2026-10-31): AP, SSA, SSAB, FlakTWH, HARVWH, HE and HollowPoint2, the dug-in
         // Rifleman's 25, the Elite Commando's ROF 5, the IFV's guns, the Flak Track's ROF 25, the squid's slap of 100, Yuri Prime's range
         // 7, the shells and missiles of their speeds.
-        Assert.Equal(0x3195c6d85ad6b9b1UL, GameDataFiles.Current.Hash);
+        // The units' speeds of rules.ini: the Elite Commando 36 (Speed=6), the Night Hawk 54 (JumpjetSpeed=30, as the Jetpack Trooper).
+        Assert.Equal(0xa80de14f864f0195UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

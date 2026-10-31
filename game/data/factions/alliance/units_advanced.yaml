@@ -96,7 +96,7 @@ alliance_tanya:  # hero: one shot kills a soldier (stage 3a), C4 brings a buildi
   hp: 125
   threat: 30
   armor: flak
-  speed: 30
+  speed: 36  # RA2 TANY Speed=6
   sight: 8
   locomotor: amphibious  # RA2 SpeedType=Amphibious: she swims, at the same speed as on land
   prerequisites: [alliance_barracks, alliance_battle_lab]
@@ -200,7 +200,7 @@ alliance_nighthawk:  # carries five soldiers, a machine gun at the ground when o
   hp: 175
   threat: 10
   armor: light
-  speed: 84
+  speed: 54  # RA2 SHAD flies at JumpjetSpeed=30, as the Jetpack Trooper does: the same 54 (its Speed=14 is not used in flight)
   sight: 7
   turret: false
   locomotor: hover

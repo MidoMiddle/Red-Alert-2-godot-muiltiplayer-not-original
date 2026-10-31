@@ -409,6 +409,7 @@ public sealed class GoldenValuesTests
         // Rules v115 (a commando's C4 brings a low bridge down whole, from bank to bank; the owner's wish): the version only.
         // Rules v116 (the Kirov slow as in RA2, the cruiser's missiles of RA2, soldiers go in at the wall; the owner's wish): the version only.
         // Rules v117 (the weapons and warheads of rules.ini): the version, and the run that AP and the flak of RA2 change.
-        Assert.Equal((22270, 903363576667833966UL), (bytes.Length, hash.Value));
+        // Rules v118 (Tanya's speed of RA2, the Night Hawk at the Jetpack Trooper's speed): the version only.
+        Assert.Equal((22270, 12900080065413481713UL), (bytes.Length, hash.Value));
     }
 }
