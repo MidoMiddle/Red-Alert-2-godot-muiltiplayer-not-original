@@ -681,6 +681,9 @@ LAYOUT = {
     "gate": (11, 0),
     "gate_damaged": (11, 1),
     "gate_ruins": (11, 2),
+    "helipad": (11, 3),
+    "helipad_damaged": (11, 4),
+    "helipad_ruins": (11, 5),
 }
 
 
