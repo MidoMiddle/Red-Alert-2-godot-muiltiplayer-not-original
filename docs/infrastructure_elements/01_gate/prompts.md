@@ -11,7 +11,7 @@
 
 | Ассет | Тип | Футпринт | Высота (ориентир) | Бюджет LOD0 | Гарнизон | Цвет команды |
 |---|---|---|---|---|---|---|
-| `gate` | средний объект | 1x1 | 2,5 | ≤ 3 000 | нет | да (полоса на столбе, если ворота владельца) |
+| `gate` | средний объект | 1x1 | 0,9 (столбы), створки 0,62 | ≤ 3 000 | нет | да (полоса вокруг верха столбов) |
 
 ## 2. Картинка-референс (ChatGPT)
 
@@ -28,15 +28,15 @@ Concept art reference for a wall gate section in an industrial base fence: two c
 ### 3.1. `gate`
 
 ```text
-A wall gate section one unit wide and two and a half units tall: two concrete posts and between them a pair of closed metal gate leaves in grey mesh and dark green paint, a sliding latch bar in the middle, rust at the hinges, a narrow colour band on top of one post. Realistic physically based materials, clean readable silhouette, slightly exaggerated proportions like a late-1990s strategy game rebuilt in modern graphics, neutral daylight, single isolated object on a plain light grey background.
+A wall gate section one unit wide and about one unit tall: two concrete posts and between them a pair of closed metal gate leaves in grey mesh and dark green paint, a sliding latch bar in the middle, rust at the hinges, a narrow colour band round the top of each post. Realistic physically based materials, clean readable silhouette, slightly exaggerated proportions like a late-1990s strategy game rebuilt in modern graphics, neutral daylight, single isolated object on a plain light grey background.
 ```
 
 Нормализация: `--kind prop --footprint 1x1`.
 
 ## 4. Наши требования
 
-- Узлы: `post_left`, `post_right` (столбы), `leaf_left`, `leaf_right` (створки; пивот на петле, чтобы анимация открытия работала), `latch` (засов), `team_mask` (полоса на столбе).
-- Пивот в центре клетки на земле, высота 2,5.
+- Узлы: `post_left`, `post_right` (столбы), `leaf_left`, `leaf_right` (створки; пивот на петле, чтобы анимация открытия работала), `latch` (засов), `team_mask` (полоса вокруг верха столбов), `base` (фундаменты и порог). У разбитых — `body` и `base`.
+- Пивот в центре клетки на земле. Размер игры, без сжатия: столбы до 0,9, створки 0,62. Столбы на концах клетки, между ними 0,84.
 - Текстуры 1024². Бюджет ≤ 3 000 треугольников.
 - Цвет команды через `team_mask` (R-канал или вершинный цвет, M1 4.6). Нейтральные ворота полосу не получают.
 
@@ -44,7 +44,9 @@ A wall gate section one unit wide and two and a half units tall: two concrete po
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `gate.glb` | | | |
+| `gate.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/infrastructure_gate.py`) | 2026-10-31 | сделано, 1 222 треугольника |
+| `gate_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/infrastructure_gate.py`) | 2026-10-31 | сделано, 1 150 треугольников |
+| `gate_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/infrastructure_gate.py`) | 2026-10-31 | сделано, 1 330 треугольников |
 
 ## Открытые вопросы
 

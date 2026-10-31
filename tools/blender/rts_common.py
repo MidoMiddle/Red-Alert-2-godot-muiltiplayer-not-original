@@ -441,6 +441,7 @@ ROWS = (
     "9. Здания игроков",
     "10. Город",
     "11. Дороги",
+    "12. Инфраструктура",
 )
 
 # Where each model stands: (row, place in the row). The key is the name of the model: its collection, its root and its file.
@@ -677,6 +678,9 @@ LAYOUT = {
     "city_auto_repair_damaged": (9, 114),
     "city_auto_repair_abandoned": (9, 115),
     "city_auto_repair_ruins": (9, 116),
+    "gate": (11, 0),
+    "gate_damaged": (11, 1),
+    "gate_ruins": (11, 2),
 }
 
 
