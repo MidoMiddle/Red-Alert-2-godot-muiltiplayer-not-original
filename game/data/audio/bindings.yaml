@@ -70,3 +70,11 @@ buildings:
 bridges:
   bridge_wood_low: {span: snd_bridge_wood_span, whole: snd_bridge_wood_all}
   bridge_concrete_high: {span: snd_bridge_concrete, whole: snd_bridge_concrete}
+
+# The loop a flier plays while it flies, by the id of the unit (MovementSounds.cs): the rotor of the helicopter, the engine of the
+# jets. It dies away as the flier sets down and is silent on the ground.
+movement:
+  alliance_nighthawk: snd_rotor
+  alliance_harrier: snd_jet
+  alliance_black_eagle: snd_jet
+  alliance_hornet: snd_jet

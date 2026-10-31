@@ -54,6 +54,7 @@ public partial class Main : Node3D
         AddChild(new Effects.CrateViews { Name = "CrateViews" });
         AddChild(new Effects.IntentLines { Name = "IntentLines" });
         AddChild(new Audio.CombatSounds { Name = "CombatSounds" });
+        AddChild(new Audio.MovementSounds { Name = "MovementSounds" });
         AddChild(new Terrain.FogOfWar { Name = "FogOfWar" });
         // The health bars lie under the HUD (M4 step 13).
         var bars = new CanvasLayer { Name = "Bars", Layer = 0 };

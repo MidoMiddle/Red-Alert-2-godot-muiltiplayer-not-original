@@ -605,6 +605,79 @@ def concrete_building(seed):
     return echo(pad(saturate(mix(*layers), 1.8), 0.3), [(0.13, 0.3, 1400), (0.27, 0.18, 900), (0.44, 0.1, 550)])
 
 
+def blip(seconds, start_hz, end_hz, decay_rate):
+    """A blip of a screen: a sine gliding from start_hz to end_hz with a little of its octave, so it sounds electronic, not pure."""
+    octave = tone(seconds, start_hz * 2.0, end_hz * 2.0, decay_rate * 1.5)
+    return mix((tone(seconds, start_hz, end_hz, decay_rate), 1.0), (octave, 0.25))
+
+
+def key(rnd, body_hz):
+    """A key of a console pressed: the clack of the plastic, the thunk of the key going down, a faint ring of its spring."""
+    clack = envelope(biquad(noise(0.05, rnd), "high", 2500, 0.8), 0.0003, 160.0)
+    thunk = tone(0.1, body_hz, body_hz * 0.7, 45.0)
+    spring = metal(0.1, [(1650, 1.0, 60.0), (2470, 0.6, 75.0)])
+    return mix((clack, 0.7), (thunk, 0.8), (spring, 0.08))
+
+
+def ui_hover(seed):
+    """Over a button: a short soft blip, quiet enough to run the mouse along a menu."""
+    rnd = random.Random(seed)
+    return mix((blip(0.06, 1750, 1950, 55.0), 1.0), (envelope(biquad(noise(0.02, rnd), "high", 6000), 0.0003, 250.0), 0.15))
+
+
+def ui_click(seed):
+    """A button pressed: a key of the console, and a short blip from its screen answering."""
+    rnd = random.Random(seed)
+    return mix((key(rnd, 210), 1.0), (delay(blip(0.07, 1300, 1300, 45.0), 0.012), 0.35))
+
+
+def ui_back(seed):
+    """Back, cancel: the key, and two blips falling, the screen stepping down."""
+    rnd = random.Random(seed)
+    first, second = delay(blip(0.06, 1200, 1150, 50.0), 0.01), delay(blip(0.08, 820, 780, 40.0), 0.075)
+    return mix((key(rnd, 190), 0.9), (first, 0.4), (second, 0.4))
+
+
+def ui_start(seed):
+    """The match starts: a firm key, three blips rising, and a short glassy shimmer ringing after them."""
+    rnd = random.Random(seed)
+    layers = [(key(rnd, 170), 1.0)]
+    for k, hz in enumerate((660, 880, 1320)):
+        layers.append((delay(blip(0.12, hz, hz, 22.0), 0.02 + 0.07 * k), 0.4))
+    layers.append((delay(shimmer(0.5, [(1320, 1.0), (1980, 0.5), (2640, 0.3)], 0.004, 7.0), 0.16), 0.12))
+    return mix(*layers)
+
+
+def ui_toggle(seed, on):
+    """A box ticked or cleared: the key, and a blip going up for on, down for off."""
+    rnd = random.Random(seed)
+    glide = blip(0.07, 1400, 1750, 45.0) if on else blip(0.07, 1400, 1100, 45.0)
+    return mix((key(rnd, 230), 0.8), (delay(glide, 0.01), 0.4))
+
+
+def ui_select(seed):
+    """A choice made in a list: a double tick, the second higher."""
+    rnd = random.Random(seed)
+    first, second = delay(blip(0.04, 1500, 1500, 70.0), 0.01), delay(blip(0.05, 2000, 2000, 60.0), 0.06)
+    return mix((key(rnd, 240), 0.6), (first, 0.35), (second, 0.35))
+
+
+def ui_tab(seed):
+    """Another tab: a slide of a shutter, noise rising from dull to bright, ending on the key."""
+    rnd = random.Random(seed)
+    length = 0.09
+    count = int(length * RATE)
+    slide = lowpass_sweep(noise(length, rnd), [800 + 6000 * i / count for i in range(count)])
+    slide = [x * math.sin(math.pi * i / count) for i, x in enumerate(slide)]
+    return mix((slide, 0.5), (delay(key(rnd, 220), 0.07), 0.7))
+
+
+def ui_tick(seed):
+    """A notch of a slider: a tiny dry tick, for every step of the value."""
+    rnd = random.Random(seed)
+    return mix((envelope(biquad(noise(0.02, rnd), "band", 3000, 1.5), 0.0002, 300.0), 1.0), (tone(0.02, 2400, 2400, 250.0), 0.3))
+
+
 def main():
     write("sfx/shot_01.wav", shot(101, 2500, 120, 0.35))
     write("sfx/shot_02.wav", shot(102, 3200, 100, 0.40))
@@ -650,10 +723,16 @@ def main():
     write("sfx/building_brick_02.wav", trim(brick_building(2002)))
     write("sfx/building_concrete_01.wav", trim(concrete_building(2101)))
     write("sfx/building_concrete_02.wav", trim(concrete_building(2102)))
-    # The interface: a soft high tick over a button, a short firm click on it.
-    write("ui/hover_01.wav", mix((tone(0.05, 1500, 1400, 60.0), 1.0)))
-    rnd = random.Random(501)
-    write("ui/click_01.wav", mix((tone(0.08, 900, 600, 45.0), 1.0), (envelope(highpass(noise(0.08, rnd), 3000), 0.0005, 90.0), 0.4)))
+    # The interface, a console of the Cold War: keys that clack, blips of its screen.
+    write("ui/hover_01.wav", ui_hover(501))
+    write("ui/click_01.wav", ui_click(502))
+    write("ui/back_01.wav", ui_back(503))
+    write("ui/start_01.wav", ui_start(504))
+    write("ui/toggle_on_01.wav", ui_toggle(505, on=True))
+    write("ui/toggle_off_01.wav", ui_toggle(506, on=False))
+    write("ui/select_01.wav", ui_select(507))
+    write("ui/tab_01.wav", ui_tab(508))
+    write("ui/tick_01.wav", ui_tick(509))
 
 
 if __name__ == "__main__":

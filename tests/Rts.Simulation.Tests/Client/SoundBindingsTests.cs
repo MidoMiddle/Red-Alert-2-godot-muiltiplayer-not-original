@@ -5,7 +5,7 @@ using YamlDotNet.RepresentationModel;
 namespace Rts.Simulation.Tests.Client;
 
 /// <summary>
-/// <c>game/data/audio/bindings.yaml</c>: which sound plays for each weapon, building and bridge. Every id it names is in the rules and
+/// <c>game/data/audio/bindings.yaml</c>: which sound plays for each weapon, building, bridge and flier. Every id it names is in the rules and
 /// every sound it names is in <c>sounds.yaml</c>, so a typo does not leave a weapon silent; a mistake in a line leaves out only that line.
 /// </summary>
 public sealed class SoundBindingsTests
@@ -31,7 +31,8 @@ public sealed class SoundBindingsTests
         var bindings = SoundBindings.Parse(Shipped("bindings.yaml"), BindingsFile, []);
 
         var named = bindings.Weapons.Values.Concat(bindings.Buildings.Values).Append(bindings.BuildingDefault)
-            .Concat(bindings.Bridges.Values.SelectMany(bridge => new[] { bridge.Span, bridge.Whole })).Append(SoundBindings.ShotDefault);
+            .Concat(bindings.Bridges.Values.SelectMany(bridge => new[] { bridge.Span, bridge.Whole })).Concat(bindings.Movement.Values)
+            .Append(SoundBindings.ShotDefault);
         Assert.All(named, sound => Assert.Contains(sound, sounds.Keys));
     }
 
@@ -44,6 +45,8 @@ public sealed class SoundBindingsTests
         Assert.All(bindings.Weapons.Keys, id => Assert.True(kinds.TryGetValue(id, out var kind) && kind == "weapon", id));
         Assert.All(bindings.Buildings.Keys, id => Assert.True(kinds.TryGetValue(id, out var kind) && kind is "building" or "map_building", id));
         Assert.All(bindings.Bridges.Keys, id => Assert.True(BridgeTypes.TryGetKind(id, out _), id));
+        Assert.All(bindings.Movement.Keys, id => Assert.True(kinds.TryGetValue(id, out var kind) && kind == "unit", id));
+        Assert.NotEmpty(bindings.Movement);
     }
 
     [Fact]

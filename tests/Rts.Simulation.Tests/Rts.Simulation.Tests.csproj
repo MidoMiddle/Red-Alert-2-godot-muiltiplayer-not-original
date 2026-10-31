@@ -110,6 +110,7 @@
     <Compile Include="../../game/scripts/Audio/ScreenPlacement.cs" Link="Client/Audio/ScreenPlacement.cs" />
     <Compile Include="../../game/scripts/Audio/SoundLibrary.cs" Link="Client/Audio/SoundLibrary.cs" />
     <Compile Include="../../game/scripts/Audio/SoundBindings.cs" Link="Client/Audio/SoundBindings.cs" />
+    <Compile Include="../../game/scripts/Audio/InterfaceSounds.cs" Link="Client/Audio/InterfaceSounds.cs" />
   </ItemGroup>
 
 </Project>

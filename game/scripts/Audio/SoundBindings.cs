@@ -10,13 +10,14 @@ public sealed record BridgeSounds(string Span, string Whole);
 
 /// <summary>
 /// Which sound plays for what (<c>game/data/audio/bindings.yaml</c>): the shot of each weapon, the fall of each building and of each
-/// bridge, all by their ids in the rules. Only the client reads it.
+/// bridge, the loop of each flier (its rotor, its engine), all by their ids in the rules. Only the client reads it.
 /// </summary>
 public sealed record SoundBindings(
     IReadOnlyDictionary<string, string> Weapons,
     IReadOnlyDictionary<string, string> Buildings,
     string BuildingDefault,
-    IReadOnlyDictionary<string, BridgeSounds> Bridges)
+    IReadOnlyDictionary<string, BridgeSounds> Bridges,
+    IReadOnlyDictionary<string, string> Movement)
 {
     /// <summary>What a weapon not in the file fires.</summary>
     public const string ShotDefault = "snd_shot";
@@ -24,10 +25,10 @@ public sealed record SoundBindings(
     /// <summary>The key of <c>buildings</c> for every building not named there.</summary>
     public const string DefaultKey = "default";
 
-    private static readonly string[] Sections = ["weapons", "buildings", "bridges"];
+    private static readonly string[] Sections = ["weapons", "buildings", "bridges", "movement"];
 
     public static readonly SoundBindings Empty = new(new Dictionary<string, string>(), new Dictionary<string, string>(), string.Empty,
-        new Dictionary<string, BridgeSounds>());
+        new Dictionary<string, BridgeSounds>(), new Dictionary<string, string>());
 
     /// <summary>The sound of a shot of the weapon <paramref name="id"/>.</summary>
     public string ShotOf(string id) => Weapons.TryGetValue(id, out var sound) ? sound : ShotDefault;
@@ -95,7 +96,7 @@ public sealed record SoundBindings(
             }
         }
 
-        return new SoundBindings(weapons, buildings, buildingDefault, bridges);
+        return new SoundBindings(weapons, buildings, buildingDefault, bridges, Names(root, "movement", fileName, errors));
     }
 
     /// <summary>A section of ids, each with the name of a sound.</summary>

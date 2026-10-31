@@ -57,8 +57,73 @@ sounds:
     maxConcurrent: 2
     cooldownMs: 60
     positional: false
+  # The rest of the menus (InterfaceSounds.cs): back and cancel, the start of a match, a box ticked or cleared, a choice from a
+  # list, a tab, a notch of a slider.
+  snd_ui_back:
+    files: [ui/back_01.wav]
+    bus: UI
+    volume: -9
+    pitch: [0.98, 1.02]
+    priority: 70
+    maxConcurrent: 2
+    cooldownMs: 60
+    positional: false
+  snd_ui_start:
+    files: [ui/start_01.wav]
+    bus: UI
+    volume: -7
+    pitch: [1.0, 1.0]
+    priority: 70
+    maxConcurrent: 1
+    cooldownMs: 300
+    positional: false
+  snd_ui_toggle_on:
+    files: [ui/toggle_on_01.wav]
+    bus: UI
+    volume: -10
+    pitch: [0.98, 1.02]
+    priority: 70
+    maxConcurrent: 2
+    cooldownMs: 60
+    positional: false
+  snd_ui_toggle_off:
+    files: [ui/toggle_off_01.wav]
+    bus: UI
+    volume: -10
+    pitch: [0.98, 1.02]
+    priority: 70
+    maxConcurrent: 2
+    cooldownMs: 60
+    positional: false
+  snd_ui_select:
+    files: [ui/select_01.wav]
+    bus: UI
+    volume: -10
+    pitch: [0.98, 1.02]
+    priority: 70
+    maxConcurrent: 2
+    cooldownMs: 60
+    positional: false
+  snd_ui_tab:
+    files: [ui/tab_01.wav]
+    bus: UI
+    volume: -10
+    pitch: [0.98, 1.02]
+    priority: 70
+    maxConcurrent: 1
+    cooldownMs: 80
+    positional: false
+  snd_ui_tick:
+    files: [ui/tick_01.wav]
+    bus: UI
+    volume: -14
+    pitch: [0.95, 1.05]
+    priority: 70
+    maxConcurrent: 1
+    cooldownMs: 35
+    positional: false
   # The weapons by kind and the helicopter rotor. Which weapon fires which is in bindings.yaml; one not there fires snd_shot. The
-  # rotor has no player yet.
+  # rotor is the helicopter's loop (MovementSounds.cs, by the movement of bindings.yaml).
   snd_pistol:
     files: [sfx/pistol_01.wav, sfx/pistol_02.wav]
     bus: SFX
@@ -95,8 +160,8 @@ sounds:
     maxConcurrent: 4
     cooldownMs: 80
     positional: true
-  # A loop (edit/loop_mode in its .import): it plays until stopped, so it wants a player of movement sounds that stops it, and
-  # pitch is where the rotor speeds up or slows down.
+  # A loop (edit/loop_mode in its .import), played by MovementSounds.cs while the helicopter flies, slower and quieter as it sets
+  # down; maxConcurrent is how many helicopters are heard at once, the loudest.
   snd_rotor:
     files: [sfx/rotor_loop_01.wav]
     bus: SFX
@@ -155,8 +220,8 @@ sounds:
     maxConcurrent: 4
     cooldownMs: 80
     positional: true
-  # The fighter jet: the engine as a loop (edit/loop_mode in its .import; like the rotor, it wants a player that stops it) and a
-  # pass overhead, for a plane that flies over. Nothing plays them yet: they want a player of the sounds of movement.
+  # The fighter jet: the engine as a loop (edit/loop_mode in its .import), played by MovementSounds.cs like the rotor, and a pass
+  # overhead, for a plane that flies over; nothing plays the pass yet.
   snd_jet:
     files: [sfx/jet_loop_01.wav]
     bus: SFX

@@ -26,15 +26,13 @@ public partial class AudioManager : Node
     /// <summary>Godot cuts a 2D sound beyond this distance from the listener; far beyond any screen, the placement decides instead.</summary>
     private const float NoDistanceLimit = 1000000f;
 
-    private const string HoverSound = "snd_ui_hover";
-    private const string ClickSound = "snd_ui_click";
-
     private readonly Random _random = new();
     private readonly HashSet<string> _reported = new();
     private readonly Dictionary<string, AudioStream[]> _streams = new();
     private readonly VoicePool _pool = new(PlayerCount);
     private readonly AudioStreamPlayer2D[] _players = new AudioStreamPlayer2D[PlayerCount];
     private IReadOnlyDictionary<string, SoundDefinition> _sounds = new Dictionary<string, SoundDefinition>();
+    private float _panning = DefaultPanningStrength;
 
     /// <summary>The running manager. Set when the autoload is ready.</summary>
     public static AudioManager? Instance { get; private set; }
@@ -46,7 +44,7 @@ public partial class AudioManager : Node
         // 2D sounds are panned by their offset from the listener; with no listener of its own the viewport uses the centre of the
         // screen, so the viewport must count as a listener. The pan of a sound at the edge of the screen is set by the panning strength.
         GetViewport().SetAsAudioListener2D(true);
-        var panning = ScreenPlacement.PanningStrength(ProjectSettings.GetSetting(PanningSetting, DefaultPanningStrength).AsSingle());
+        var panning = _panning = ScreenPlacement.PanningStrength(ProjectSettings.GetSetting(PanningSetting, DefaultPanningStrength).AsSingle());
         for (var slot = 0; slot < PlayerCount; slot++)
         {
             var index = slot;
@@ -142,6 +140,40 @@ public partial class AudioManager : Node
         return true;
     }
 
+    /// <summary>The definition of the sound <paramref name="name"/>, or null when there is none.</summary>
+    public SoundDefinition? Definition(string name) => _sounds.TryGetValue(name, out var definition) ? definition : null;
+
+    /// <summary>
+    /// A player of its own, outside the pool, for the sound <paramref name="name"/> that runs on until it is stopped: the rotor of a
+    /// helicopter, the engine of a jet (<see cref="MovementSounds"/>). On the bus of the sound and panned like the pool's; the caller
+    /// places it, sets its volume and frees it. Null when the sound is unknown or has no file.
+    /// </summary>
+    public AudioStreamPlayer2D? NewLoopPlayer(string name, out SoundDefinition? definition)
+    {
+        definition = _sounds.TryGetValue(name, out var found) ? found : null;
+        if (definition is null)
+        {
+            Report($"there is no sound '{name}' in {DefinitionsPath}");
+            return null;
+        }
+
+        if (Pick(definition) is not { } stream)
+        {
+            return null;
+        }
+
+        var player = new AudioStreamPlayer2D
+        {
+            Attenuation = 0f,
+            MaxDistance = NoDistanceLimit,
+            PanningStrength = _panning,
+            Stream = stream,
+            Bus = BusOf(definition.Bus),
+        };
+        AddChild(player);
+        return player;
+    }
+
     /// <summary>A random file of the definition, loaded on first use. Files that are not there yet are reported once.</summary>
     private AudioStream? Pick(SoundDefinition definition)
     {
@@ -175,23 +207,58 @@ public partial class AudioManager : Node
         return MasterBus;
     }
 
-    /// <summary>The buttons sound when they are pointed at and pressed, on the UI bus, whatever screen they are on.</summary>
+    /// <summary>
+    /// The controls of the menus sound on the UI bus, whatever screen they are on (<see cref="InterfaceSounds"/>): a button when it is
+    /// pointed at and pressed (the start of a match, back and cancel each their own), a box ticked or cleared, a choice from a list, a
+    /// tab clicked, a slider moved. Only what the player does sounds: a value the screen sets itself is silent.
+    /// </summary>
     private void OnNodeAdded(Node node)
     {
-        if (node is not BaseButton button)
+        switch (node)
         {
-            return;
-        }
+            // A list opens with a click; a choice from it is a select.
+            case OptionButton list:
+                Hover(list);
+                list.Pressed += () => Play(InterfaceSounds.Click);
+                list.ItemSelected += _ => Play(InterfaceSounds.Select);
+                break;
 
-        button.Pressed += () => Play(ClickSound);
+            // Pressed, unlike Toggled, is the player's click only, and comes when the box has its new state.
+            case BaseButton { ToggleMode: true } toggle:
+                Hover(toggle);
+                toggle.Pressed += () => Play(toggle.ButtonPressed ? InterfaceSounds.ToggleOn : InterfaceSounds.ToggleOff);
+                break;
+
+            case BaseButton button:
+                Hover(button);
+                button.Pressed += () => Play(InterfaceSounds.OfPress(button.Name, (button as Button)?.Text ?? string.Empty, key => Tr(key)));
+                break;
+
+            case TabContainer tabs:
+                tabs.TabClicked += _ => Play(InterfaceSounds.Tab);
+                break;
+
+            // A slider in the player's hands has the focus; the cooldown of the sound keeps a fast drag from rattling.
+            case Slider slider:
+                slider.ValueChanged += _ =>
+                {
+                    if (slider.HasFocus())
+                    {
+                        Play(InterfaceSounds.Tick);
+                    }
+                };
+                break;
+        }
+    }
+
+    private void Hover(BaseButton button) =>
         button.MouseEntered += () =>
         {
             if (!button.Disabled)
             {
-                Play(HoverSound);
+                Play(InterfaceSounds.Hover);
             }
         };
-    }
 
     /// <summary>Prints a problem once, not on every sound that hits it.</summary>
     private void Report(string message)
