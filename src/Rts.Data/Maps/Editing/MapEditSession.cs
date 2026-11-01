@@ -420,7 +420,8 @@ public sealed class MapEditSession
 
     /// <summary>
     /// Press on one shore, let go on the other, in a straight line with only water between: a bridge over that water. A high bridge
-    /// goes from one plateau to the other over whatever lies between (water or a valley); the load rules check the rest.
+    /// goes from one plateau to the other over whatever lies between (water or a valley); a pier from the shore pressed on out to the
+    /// water let go on, its last cell; the load rules check the rest.
     /// </summary>
     private void PlaceBridge(CellPos from, CellPos to)
     {
@@ -442,6 +443,18 @@ public sealed class MapEditSession
             }
 
             AddBridge(new BridgePlacement(_options.BridgeType, start, end));
+            return;
+        }
+
+        if (Types.TryGetBridge(_options.BridgeType, out var pier) && pier.Pier)
+        {
+            if (IsWater(Map.LandAt(from)) || !IsWater(Map.LandAt(to)))
+            {
+                Message = "press on the shore and let go on the water where the pier ends";
+                return;
+            }
+
+            AddBridge(new BridgePlacement(_options.BridgeType, start, to));
             return;
         }
 

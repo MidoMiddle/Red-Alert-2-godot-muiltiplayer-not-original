@@ -768,6 +768,30 @@ objects:
   - { type: beach_umbrella, cell: [60, 62], variant: 0 }
   - { type: beach_umbrella, cell: [121, 119], variant: 0 }
   - { type: beach_umbrella, cell: [62, 121], variant: 0 }
+  - { type: breakwater, cell: [69, 63], variant: 0 }
+  - { type: breakwater, cell: [69, 64], variant: 1 }
+  - { type: breakwater, cell: [69, 65], variant: 2 }
+  - { type: breakwater, cell: [116, 69], variant: 1 }
+  - { type: breakwater, cell: [117, 69], variant: 2 }
+  - { type: breakwater, cell: [118, 69], variant: 3 }
+  - { type: breakwater, cell: [94, 86], variant: 0 }
+  - { type: breakwater, cell: [86, 87], variant: 1 }
+  - { type: breakwater, cell: [87, 87], variant: 2 }
+  - { type: breakwater, cell: [88, 87], variant: 3 }
+  - { type: breakwater, cell: [94, 87], variant: 1 }
+  - { type: breakwater, cell: [94, 88], variant: 2 }
+  - { type: breakwater, cell: [87, 93], variant: 0 }
+  - { type: breakwater, cell: [87, 94], variant: 1 }
+  - { type: breakwater, cell: [93, 94], variant: 3 }
+  - { type: breakwater, cell: [94, 94], variant: 0 }
+  - { type: breakwater, cell: [95, 94], variant: 1 }
+  - { type: breakwater, cell: [87, 95], variant: 2 }
+  - { type: breakwater, cell: [63, 112], variant: 3 }
+  - { type: breakwater, cell: [64, 112], variant: 0 }
+  - { type: breakwater, cell: [65, 112], variant: 1 }
+  - { type: breakwater, cell: [112, 116], variant: 0 }
+  - { type: breakwater, cell: [112, 117], variant: 1 }
+  - { type: breakwater, cell: [112, 118], variant: 2 }
   - { type: buoy, cell: [70, 43], variant: 1 }
   - { type: buoy, cell: [69, 45], variant: 2 }
   - { type: buoy, cell: [65, 46], variant: 3 }
@@ -988,6 +1012,14 @@ objects:
   - { type: reef_rocks, cell: [131, 141], variant: 2 }
   - { type: reef_rocks, cell: [117, 144], variant: 1 }
   - { type: reef_rocks, cell: [87, 172], variant: 3 }
+  - { type: slipway, cell: [66, 51], variant: 0 }
+  - { type: slipway, cell: [71, 54], variant: 0 }
+  - { type: slipway, cell: [130, 66], variant: 0 }
+  - { type: slipway, cell: [127, 71], variant: 0 }
+  - { type: slipway, cell: [54, 110], variant: 0 }
+  - { type: slipway, cell: [51, 115], variant: 0 }
+  - { type: slipway, cell: [110, 127], variant: 0 }
+  - { type: slipway, cell: [115, 130], variant: 0 }
   - { type: sun_lounger, cell: [58, 55], variant: 0 }
   - { type: sun_lounger, cell: [126, 58], variant: 0 }
   - { type: sun_lounger, cell: [55, 123], variant: 0 }
@@ -1008,7 +1040,15 @@ objects:
   - { type: volleyball_net, cell: [126, 123], variant: 0 }
   - { type: volleyball_net, cell: [58, 126], variant: 0 }
   - { type: volleyball_net, cell: [113, 126], variant: 0 }
-bridges: []
+bridges:
+  - { type: pier_wood, from: [65, 49], to: [62, 49] }
+  - { type: pier_wood, from: [73, 55], to: [73, 58] }
+  - { type: pier_wood, from: [132, 65], to: [132, 62] }
+  - { type: pier_wood, from: [126, 73], to: [123, 73] }
+  - { type: pier_wood, from: [55, 108], to: [58, 108] }
+  - { type: pier_wood, from: [49, 116], to: [49, 119] }
+  - { type: pier_wood, from: [108, 126], to: [108, 123] }
+  - { type: pier_wood, from: [116, 132], to: [119, 132] }
 structures:
   - { type: neutral_beach_bar, cell: [92, 18], owner: neutral, facing: 5 }
   - { type: neutral_beach_bar, cell: [75, 30], owner: neutral, facing: 5 }

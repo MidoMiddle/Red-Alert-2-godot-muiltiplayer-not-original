@@ -9,7 +9,7 @@ using Rts.Simulation.Systems;
 namespace Rts.Data.Maps;
 
 /// <summary>
-/// The bridge repair huts of a map (loose ends, stage 2): two by every bridge, one by each of its ends, so each bank has its own (the
+/// The bridge repair huts of a map (loose ends, stage 2): two by every bridge but a pier (none mends one), one by each of its ends, so each bank has its own (the
 /// owner, 2026-10-30). A hut belongs to the bridge nearest it (<see cref="BridgeRepair.BridgeOf(MapGrid, CellPos)"/>) and to the end of
 /// it nearer to it (<see cref="EndOf"/>); it goes on the first free cell off ore by that end (<see cref="MapChecks.HutCandidates(BridgePlacement, int)"/>)
 /// that belongs to that bridge and end, with its images (the generator's symmetry, given as a function) by the images of the bridge —

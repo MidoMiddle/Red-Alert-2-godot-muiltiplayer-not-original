@@ -609,6 +609,18 @@ objects:
   - { type: billboard, cell: [68, 73], variant: 0 }
   - { type: billboard, cell: [47, 75], variant: 0 }
   - { type: billboard, cell: [88, 75], variant: 0 }
+  - { type: breakwater, cell: [18, 57], variant: 3 }
+  - { type: breakwater, cell: [19, 57], variant: 0 }
+  - { type: breakwater, cell: [20, 57], variant: 1 }
+  - { type: breakwater, cell: [115, 57], variant: 0 }
+  - { type: breakwater, cell: [116, 57], variant: 1 }
+  - { type: breakwater, cell: [117, 57], variant: 2 }
+  - { type: breakwater, cell: [54, 117], variant: 3 }
+  - { type: breakwater, cell: [81, 117], variant: 2 }
+  - { type: breakwater, cell: [54, 118], variant: 0 }
+  - { type: breakwater, cell: [81, 118], variant: 3 }
+  - { type: breakwater, cell: [54, 119], variant: 1 }
+  - { type: breakwater, cell: [81, 119], variant: 0 }
   - { type: buoy, cell: [61, 16], variant: 1 }
   - { type: buoy, cell: [74, 16], variant: 1 }
   - { type: buoy, cell: [44, 30], variant: 2 }
@@ -1063,6 +1075,8 @@ objects:
   - { type: quay_edge, cell: [90, 106], variant: 0 }
   - { type: road_sign, cell: [45, 72], variant: 0 }
   - { type: road_sign, cell: [90, 72], variant: 0 }
+  - { type: slipway, cell: [18, 75], variant: 0 }
+  - { type: slipway, cell: [117, 75], variant: 0 }
   - { type: sun_lounger, cell: [67, 15], variant: 0 }
   - { type: sun_lounger, cell: [68, 15], variant: 0 }
   - { type: sun_lounger, cell: [26, 55], variant: 0 }
@@ -1081,7 +1095,11 @@ objects:
   - { type: volleyball_net, cell: [121, 66], variant: 0 }
   - { type: volleyball_net, cell: [40, 94], variant: 0 }
   - { type: volleyball_net, cell: [95, 94], variant: 0 }
-bridges: []
+bridges:
+  - { type: pier_wood, from: [12, 68], to: [9, 68] }
+  - { type: pier_wood, from: [123, 68], to: [126, 68] }
+  - { type: pier_wood, from: [17, 77], to: [14, 77] }
+  - { type: pier_wood, from: [118, 77], to: [121, 77] }
 structures:
   - { type: neutral_beach_cabin, cell: [65, 19], owner: neutral, facing: 4 }
   - { type: neutral_beach_cabin, cell: [70, 19], owner: neutral, facing: 4 }

@@ -165,5 +165,14 @@ public static class PropLooks
         ["ice_floe"] = [Cyl(0.9f, 0.13f, 0, 0, 0, LookTint.White), Box(0.3f, 0.12f, 0.12f, -0.15f, 0.13f, 0.2f, LookTint.White, 0f, 30f)],
         // A buoy (docs/beach_elements/13_buoy): a red float, a mast and its light.
         ["buoy"] = [Cone(0.22f, 0.22f, 0, 0, 0, LookTint.Red), Cyl(0.03f, 0.2f, 0, 0.22f, 0, LookTint.Metal), Cyl(0.06f, 0.05f, 0, 0.42f, 0, LookTint.Glow)],
+        // A breakwater (docs/beach_elements/16_breakwater): grey stone blocks heaped out of the water.
+        ["breakwater"] =
+        [
+            Box(0.42f, 0.3f, 0.4f, -0.22f, 0, -0.15f, LookTint.Concrete, 0f, 15f),
+            Box(0.4f, 0.28f, 0.42f, 0.22f, 0, 0.12f, LookTint.Concrete, 0f, -20f),
+            Box(0.36f, 0.26f, 0.34f, 0.2f, 0, -0.26f, LookTint.Dark, 0f, 40f),
+            Box(0.34f, 0.24f, 0.36f, -0.18f, 0, 0.28f, LookTint.Dark, 0f, -35f),
+            Box(0.38f, 0.26f, 0.36f, 0, 0.26f, 0, LookTint.Concrete, 8f, 30f),
+        ],
     };
 }

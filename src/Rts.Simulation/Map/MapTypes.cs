@@ -90,7 +90,7 @@ public sealed class MapTypes
         {
             if (BridgeTypes.TryGetKind(definition.Id, out var kind))
             {
-                bridges[(int)kind - 1] = new BridgeType(kind, definition.Id, definition.SegmentHp, definition.Width, definition.High);
+                bridges[(int)kind - 1] = new BridgeType(kind, definition.Id, definition.SegmentHp, definition.Width, definition.High, definition.Pier);
             }
         }
 

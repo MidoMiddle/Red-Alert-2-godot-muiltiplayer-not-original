@@ -416,6 +416,7 @@ public sealed class GoldenValuesTests
         // Rules v121 (the civilians of the maps live, run and hide, only in a match with the option): the version only.
         // Rules v122 (the animals and the parked cars of the maps, only in a match with civilians): the version only.
         // Rules v123 (the buoy, a map object on the water that stops nobody; the owner's wish): the version only — no buoy here.
-        Assert.Equal((22270, 9824937092272772371UL), (bytes.Length, hash.Value));
+        // Rules v124 (the pier, a low bridge out into the water; the slipway and the breakwater): the version only — none of them here.
+        Assert.Equal((22270, 9957725303402113096UL), (bytes.Length, hash.Value));
     }
 }

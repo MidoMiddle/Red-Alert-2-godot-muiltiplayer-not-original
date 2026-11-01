@@ -11,15 +11,19 @@ public enum BridgeKind : byte
 
     /// <summary>A high bridge of concrete, asphalt on top, between two plateaus (2026-10-26): ships and the valley pass under it.</summary>
     ConcreteHigh = 2,
+
+    /// <summary>A wooden pier from a beach out into the water (docs/beach_elements/14_pier), 2026-11-01.</summary>
+    PierWood = 3,
 }
 
 /// <summary>
 /// What a kind of bridge is (docs/implementation/M7_maps.md, 4.6; map_elements/05_bridges), as the data defines it
 /// (<see cref="Rules.BridgeDef"/>; M3 step 14a): hit points of each segment and how many
 /// cells wide it is across — three tanks side by side on a low bridge (the owner's wish, 2026-10-24). A <paramref name="High"/>
-/// bridge has a deck at the level of the plateaus it joins, over whatever lies below (<see cref="Decks"/>).
+/// bridge has a deck at the level of the plateaus it joins, over whatever lies below (<see cref="Decks"/>). A <paramref name="Pier"/>
+/// is a low bridge with a shore at its first end only: it runs from there out into the water, and no repair hut mends it.
 /// </summary>
-public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp, int Width, bool High = false);
+public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp, int Width, bool High = false, bool Pier = false);
 
 /// <summary>
 /// The kinds of bridges the engine knows (docs/implementation/M3_base_economy.md, step 14a): each number with its data id. What a kind
@@ -29,9 +33,9 @@ public sealed record BridgeType(BridgeKind Kind, string Id, int SegmentHp, int W
 public static class BridgeTypes
 {
     // The ids by number, from 1.
-    private static readonly string[] Ids = ["bridge_wood_low", "bridge_concrete_high"];
+    private static readonly string[] Ids = ["bridge_wood_low", "bridge_concrete_high", "pier_wood"];
 
-    private static readonly BridgeKind[] Kinds = [BridgeKind.WoodLow, BridgeKind.ConcreteHigh];
+    private static readonly BridgeKind[] Kinds = [BridgeKind.WoodLow, BridgeKind.ConcreteHigh, BridgeKind.PierWood];
 
     /// <summary>Every kind, in the order of its number.</summary>
     public static IReadOnlyList<BridgeKind> All => Kinds;
@@ -39,7 +43,7 @@ public static class BridgeTypes
     /// <summary>The highest number of a kind the engine knows.</summary>
     public static int Highest => Ids.Length;
 
-    public static bool IsKnown(BridgeKind kind) => kind is >= BridgeKind.WoodLow and <= BridgeKind.ConcreteHigh;
+    public static bool IsKnown(BridgeKind kind) => kind is >= BridgeKind.WoodLow and <= BridgeKind.PierWood;
 
     /// <summary>The data id of a kind, such as <c>bridge_wood_low</c>.</summary>
     public static string IdOf(BridgeKind kind) => IsKnown(kind)

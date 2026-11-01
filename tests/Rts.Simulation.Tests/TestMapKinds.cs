@@ -50,9 +50,12 @@ internal static class TestMapKinds
         builder.Add(new MapObjectDef { Id = "reef_rocks", Name = "Reef", Blocks = ["amphibious", "hover", "naval"], Hp = 3000, CrushedBy = [], Stump = false, Speeds = [], Water = true });
         builder.Add(new MapObjectDef { Id = "ice_floe", Name = "Ice floe", Blocks = ["naval"], Hp = 800, CrushedBy = [], Stump = false, Speeds = [], Water = true });
         builder.Add(new MapObjectDef { Id = "buoy", Name = "Buoy", Blocks = [], Hp = 50, CrushedBy = [], Stump = false, Speeds = [], Water = true });
+        builder.Add(new MapObjectDef { Id = "slipway", Name = "Slipway", Blocks = [], Hp = 2000, CrushedBy = [], Stump = false, Speeds = [] });
+        builder.Add(new MapObjectDef { Id = "breakwater", Name = "Breakwater", Blocks = ["amphibious", "hover", "naval"], Hp = 2500, CrushedBy = [], Stump = false, Speeds = [], Water = true });
 
         builder.Add(new BridgeDef { Id = "bridge_wood_low", Name = "Low wooden bridge", SegmentHp = 600, Width = 3, High = false });
         builder.Add(new BridgeDef { Id = "bridge_concrete_high", Name = "High concrete bridge", SegmentHp = 1500, Width = 3, High = true });
+        builder.Add(new BridgeDef { Id = "pier_wood", Name = "Pier", SegmentHp = 400, Width = 1, High = false, Pier = true });
 
         builder.Add(new MapBuildingDef { Id = "neutral_shed", Name = "Shed", Footprint = new CellSize(1, 1), Hp = 300 });
         builder.Add(new MapBuildingDef { Id = "neutral_house_a", Name = "House", Footprint = new CellSize(2, 2), Hp = 800, Garrison = 3, Shelter = true });

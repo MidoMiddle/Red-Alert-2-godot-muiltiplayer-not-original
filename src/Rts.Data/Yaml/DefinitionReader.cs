@@ -53,7 +53,7 @@ internal static class DefinitionReader
 
     private static readonly string[] MapObjectKeys = ["name", "blocks", "hp", "crushed_by", "stump", "speed", "water"];
 
-    private static readonly string[] BridgeKeys = ["name", "segment_hp", "width", "high"];
+    private static readonly string[] BridgeKeys = ["name", "segment_hp", "width", "high", "pier"];
 
     private static readonly string[] MapBuildingKeys =
     [
@@ -417,6 +417,7 @@ internal static class DefinitionReader
             SegmentHp = fields.Required("segment_hp", Scalars.Int, 0),
             Width = fields.Required("width", Scalars.Int, 0),
             High = fields.Optional("high", Scalars.Flag, false),
+            Pier = fields.Optional("pier", Scalars.Flag, false),
         };
     }
 

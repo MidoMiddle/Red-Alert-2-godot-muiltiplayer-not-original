@@ -812,6 +812,30 @@ objects:
   - { type: billboard, cell: [67, 90], variant: 0 }
   - { type: billboard, cell: [114, 91], variant: 0 }
   - { type: billboard, cell: [90, 114], variant: 0 }
+  - { type: breakwater, cell: [102, 23], variant: 1 }
+  - { type: breakwater, cell: [103, 23], variant: 2 }
+  - { type: breakwater, cell: [104, 23], variant: 3 }
+  - { type: breakwater, cell: [110, 32], variant: 2 }
+  - { type: breakwater, cell: [111, 32], variant: 3 }
+  - { type: breakwater, cell: [112, 32], variant: 0 }
+  - { type: breakwater, cell: [32, 69], variant: 1 }
+  - { type: breakwater, cell: [32, 70], variant: 2 }
+  - { type: breakwater, cell: [32, 71], variant: 3 }
+  - { type: breakwater, cell: [23, 77], variant: 0 }
+  - { type: breakwater, cell: [23, 78], variant: 1 }
+  - { type: breakwater, cell: [23, 79], variant: 2 }
+  - { type: breakwater, cell: [158, 102], variant: 0 }
+  - { type: breakwater, cell: [158, 103], variant: 1 }
+  - { type: breakwater, cell: [158, 104], variant: 2 }
+  - { type: breakwater, cell: [149, 110], variant: 3 }
+  - { type: breakwater, cell: [149, 111], variant: 0 }
+  - { type: breakwater, cell: [149, 112], variant: 1 }
+  - { type: breakwater, cell: [69, 149], variant: 2 }
+  - { type: breakwater, cell: [70, 149], variant: 3 }
+  - { type: breakwater, cell: [71, 149], variant: 0 }
+  - { type: breakwater, cell: [77, 158], variant: 3 }
+  - { type: breakwater, cell: [78, 158], variant: 0 }
+  - { type: breakwater, cell: [79, 158], variant: 1 }
   - { type: buoy, cell: [87, 15], variant: 2 }
   - { type: buoy, cell: [94, 18], variant: 0 }
   - { type: buoy, cell: [81, 21], variant: 2 }
@@ -1408,7 +1432,19 @@ objects:
   - { type: volleyball_net, cell: [52, 119], variant: 0 }
   - { type: volleyball_net, cell: [119, 129], variant: 0 }
   - { type: volleyball_net, cell: [70, 142], variant: 0 }
-bridges: []
+bridges:
+  - { type: pier_wood, from: [91, 17], to: [91, 14] }
+  - { type: pier_wood, from: [74, 33], to: [74, 30] }
+  - { type: pier_wood, from: [62, 44], to: [62, 41] }
+  - { type: pier_wood, from: [137, 62], to: [140, 62] }
+  - { type: pier_wood, from: [148, 74], to: [151, 74] }
+  - { type: pier_wood, from: [17, 90], to: [14, 90] }
+  - { type: pier_wood, from: [164, 91], to: [167, 91] }
+  - { type: pier_wood, from: [33, 107], to: [30, 107] }
+  - { type: pier_wood, from: [44, 119], to: [41, 119] }
+  - { type: pier_wood, from: [119, 137], to: [119, 140] }
+  - { type: pier_wood, from: [107, 148], to: [107, 151] }
+  - { type: pier_wood, from: [90, 164], to: [90, 167] }
 structures:
   - { type: neutral_auto_repair, cell: [91, 80], owner: neutral, facing: 2 }
   - { type: neutral_auto_repair, cell: [80, 89], owner: neutral, facing: 2 }

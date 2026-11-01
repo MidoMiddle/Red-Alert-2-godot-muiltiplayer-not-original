@@ -53,6 +53,10 @@ public enum MapObjectKind : byte
 
     // A buoy on the water (docs/beach_elements/13_buoy), 2026-11-01.
     Buoy = 38,
+
+    // The slipway and the breakwater of the beach (docs/beach_elements, 15 and 16), 2026-11-01.
+    Slipway = 39,
+    Breakwater = 40,
 }
 
 /// <summary>
@@ -132,6 +136,8 @@ public static class MapObjectTypes
         "reef_rocks",
         "ice_floe",
         "buoy",
+        "slipway",
+        "breakwater",
     ];
 
     private static readonly MapObjectKind[] Kinds = System.Linq.Enumerable.ToArray(

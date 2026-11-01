@@ -432,6 +432,11 @@ public static class DataHasher
             hash.Add(bridge.SegmentHp);
             hash.Add(bridge.Width);
             hash.Add(bridge.High ? 1 : 0);
+            if (bridge.Pier)
+            {
+                // Rules v124: a pier (docs/beach_elements/14_pier), only when it is one, so the other kinds hash as before.
+                hash.Add(2);
+            }
         }
 
         hash.Add(rules.MapBuildings.Length);

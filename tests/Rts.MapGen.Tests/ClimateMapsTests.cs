@@ -251,6 +251,7 @@ public sealed class ClimateMapsTests
         var pieces = map.Structures.Where(s => s.Type is "tech_offshore_platform" or "neutral_cargo_ship" or "neutral_ferry" or "neutral_fishing_boat")
             .Select(s => (s.Type, Cells: MapChecks.Footprint(s, types)))
             .Concat(map.Objects.Where(o => o.Type is "reef_rocks" or "ice_floe").Select(o => (o.Type, Cells: new List<Rts.Simulation.Geometry.CellPos> { o.Cell })))
+            .Concat(Chains(map.Objects.Where(o => o.Type == "breakwater").Select(o => o.Cell)).Select(chain => (Type: "breakwater", Cells: chain)))
             .ToList();
         var blocked = pieces.SelectMany(p => p.Cells).ToHashSet();
 
@@ -262,6 +263,23 @@ public sealed class ClimateMapsTests
         var buoys = map.Objects.Where(o => o.Type == "buoy").ToList();
         Assert.Equal(climate != "winter", buoys.Count > 0);
         Assert.All(buoys, buoy => Assert.True(Wet(grid, buoy.Cell), $"a buoy at {buoy.Cell.X},{buoy.Cell.Y} is not on the water"));
+        // The beach's own (docs/beach_elements, 14–16): piers out from the sand with open water beyond, a slipway on the sand by the
+        // water, breakwaters in the water (their rings checked below with the rest).
+        var piers = map.Bridges.Where(b => b.Type == "pier_wood").ToList();
+        Assert.Equal(climate != "winter", piers.Count > 0);
+        Assert.Equal(climate != "winter", pieces.Any(p => p.Type == "breakwater"));
+        Assert.All(piers, pier =>
+        {
+            var (dx, dy) = (Math.Sign(pier.To.X - pier.From.X), Math.Sign(pier.To.Y - pier.From.Y));
+            Assert.Equal(LandType.Beach, grid.LandAt(new Rts.Simulation.Geometry.CellPos(pier.From.X - dx, pier.From.Y - dy)));
+            Assert.True(Wet(grid, new Rts.Simulation.Geometry.CellPos(pier.To.X + 3 * dx, pier.To.Y + 3 * dy)));
+            Assert.Contains(piers, other => MapChecks.BridgeCells(other).Contains(sym.Cell(1, pier.From)));
+        });
+        Assert.All(map.Objects.Where(o => o.Type == "slipway"), slipway =>
+        {
+            Assert.Equal(LandType.Beach, grid.LandAt(slipway.Cell));
+            Assert.Contains(new[] { (1, 0), (-1, 0), (0, 1), (0, -1) }, side => Wet(grid, new Rts.Simulation.Geometry.CellPos(slipway.Cell.X + side.Item1, slipway.Cell.Y + side.Item2)));
+        });
         Assert.All(pieces, piece =>
         {
             foreach (var cell in piece.Cells)
@@ -295,13 +313,38 @@ public sealed class ClimateMapsTests
         var islands = new MapGenSettings { Types = types, Seed = 326, Size = 64, Symmetry = MapSymmetry.Rotate180, Climate = "coast", Water = WaterKind.Islands };
         var (isles, _) = MapGenerator.Generate(islands);
         var more = MapGenerator.AddSea(isles, islands);
-        var sea = new[] { "reef_rocks", "tech_offshore_platform", "neutral_ferry", "neutral_fishing_boat", "buoy" };
+        var sea = new[] { "reef_rocks", "tech_offshore_platform", "neutral_ferry", "neutral_fishing_boat", "buoy", "slipway", "breakwater" };
         Assert.True(isles.Land.SequenceEqual(more.Land) && isles.Heights.SequenceEqual(more.Heights) && isles.Texture.SequenceEqual(more.Texture));
         Assert.All(isles.Objects, o => Assert.Contains(o, more.Objects));
         Assert.All(isles.Structures, s => Assert.Contains(s, more.Structures));
         Assert.All(more.Objects.Except(isles.Objects), o => Assert.Contains(o.Type, sea));
         Assert.All(more.Structures.Except(isles.Structures), s => Assert.Contains(s.Type, sea));
         Assert.DoesNotContain(MapValidator.Check(more, types), p => p.Level == ProblemLevel.Error);
+    }
+
+    // The chains of the breakwater: its blocks that touch, each chain one piece.
+    private static List<List<Rts.Simulation.Geometry.CellPos>> Chains(IEnumerable<Rts.Simulation.Geometry.CellPos> blocks)
+    {
+        var left = blocks.ToHashSet();
+        var chains = new List<List<Rts.Simulation.Geometry.CellPos>>();
+        while (left.Count > 0)
+        {
+            var first = left.First();
+            left.Remove(first);
+            var chain = new List<Rts.Simulation.Geometry.CellPos> { first };
+            for (var i = 0; i < chain.Count; i++)
+            {
+                foreach (var next in left.Where(b => Math.Abs(b.X - chain[i].X) <= 1 && Math.Abs(b.Y - chain[i].Y) <= 1).ToList())
+                {
+                    left.Remove(next);
+                    chain.Add(next);
+                }
+            }
+
+            chains.Add(chain);
+        }
+
+        return chains;
     }
 
     private static bool Wet(MapGrid grid, Rts.Simulation.Geometry.CellPos cell) =>

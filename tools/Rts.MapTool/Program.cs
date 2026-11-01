@@ -10,8 +10,8 @@ using Rts.Simulation.Map;
 // dotnet run --project tools/Rts.MapTool -- generate <out.rtsmap> [--seed N] [--size 64|96|128|160] [--players 2|4]
 //     [--symmetry mirror|rotate180|rotate90] [--relief flat|hilly|mountainous] [--water none|rivers|lakes]
 //     [--forest low|medium|high] [--resources low|medium|high]       a random map (step 13)
-// dotnet run --project tools/Rts.MapTool -- add-sea <map.rtsmap>… [--buoys]   the harbour and the sea pieces of the generator on generated maps
-//     (--buoys: only the buoys, for a map that has the rest)
+// dotnet run --project tools/Rts.MapTool -- add-sea <map.rtsmap>… [--buoys|--beach]   the harbour and the sea pieces of the generator on generated maps
+//     (--buoys: only the buoys, --beach: only the piers, slipways and breakwaters, for a map that has the rest)
 // dotnet run --project tools/Rts.MapTool -- ready-maps game/data/maps        write the four ready maps of step 14
 // dotnet run --project tools/Rts.MapTool -- economy [map] [minutes]               the end-to-end run of M3 step 14 on game/data: MCV, base,
 //     ten tanks; prints the timeline, credits and income by the minute
@@ -257,8 +257,9 @@ if (args.Length >= 2 && args[0] == "add-tech")
 if (args.Length >= 2 && args[0] == "add-sea")
 {
     var failed = 0;
-    var buoysOnly = args.Contains("--buoys");  // only the buoys, for a map that got the rest before them
-    foreach (var path in args.Skip(1).Where(arg => arg != "--buoys"))
+    // Only the buoys or only the beach's pieces, for a map that got the rest before them.
+    var pieces = args.Contains("--buoys") ? Rts.MapGen.Stages.SeaPieces.Buoys : args.Contains("--beach") ? Rts.MapGen.Stages.SeaPieces.Beach : Rts.MapGen.Stages.SeaPieces.All;
+    foreach (var path in args.Skip(1).Where(arg => arg is not ("--buoys" or "--beach")))
     {
         try
         {
@@ -281,7 +282,7 @@ if (args.Length >= 2 && args[0] == "add-sea")
                 Climate = map.Climate,
                 Lighting = map.Lighting,
             };
-            var sea = Rts.MapGen.MapGenerator.AddSea(map, settings, buoysOnly);
+            var sea = Rts.MapGen.MapGenerator.AddSea(map, settings, pieces);
             var errors = MapValidator.Check(sea, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
             if (errors.Count > 0)
             {
@@ -510,7 +511,7 @@ if (args.Length >= 2 && args[0] == "generate")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | add-drills <map.rtsmap>… [--drills ore|gems] | add-tech <map.rtsmap>… | add-sea <map.rtsmap>… [--buoys] | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | add-drills <map.rtsmap>… [--drills ore|gems] | add-tech <map.rtsmap>… | add-sea <map.rtsmap>… [--buoys|--beach] | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

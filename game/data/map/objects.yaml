@@ -248,3 +248,19 @@ buoy:
   name: Buoy
   hp: 50
   water: true
+
+# A slipway (docs/beach_elements/15_slipway): a ribbed concrete ramp on the beach down into the water, where boats are let down; it
+# stops nobody, and amphibians come ashore on it as anywhere. Concrete, hard to break.
+slipway:
+  kind: map_object
+  name: Slipway
+  hp: 2000
+
+# A breakwater (docs/beach_elements/16_breakwater): stone blocks heaped in the water off a beach or a harbour; nothing on the water
+# passes it. Heavy weapons break a block, and the water is open again.
+breakwater:
+  kind: map_object
+  name: Breakwater
+  blocks: [amphibious, hover, naval]
+  hp: 2500
+  water: true

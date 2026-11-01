@@ -15,3 +15,12 @@ bridge_concrete_high:
   segment_hp: 1500
   width: 3
   high: true
+
+# A wooden pier (docs/beach_elements/14_pier): a deck a cell wide from a beach out into the water, a road for ground units and closed
+# to ships as a low bridge is; a fallen segment is water again and sinks those on it. No repair hut mends it. Wood of middle strength.
+pier_wood:
+  kind: bridge
+  name: Pier
+  segment_hp: 400
+  width: 1
+  pier: true

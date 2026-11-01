@@ -541,7 +541,8 @@ public sealed class MapGrid
     /// <summary>
     /// Adds a bridge (docs/implementation/M7_maps.md, 4.6) and returns null, or returns what is wrong with it and adds nothing:
     /// it must run along X or along Y over water cells (shallow or deep) that no other bridge takes, with a shore beyond both
-    /// ends, a cell on the map that is not water; a bridge of one cell needs that along X or along Y. Hit points are per segment,
+    /// ends, a cell on the map that is not water; a bridge of one cell needs that along X or along Y; a pier has its shore beyond
+    /// its first end only (<see cref="TryAddPier"/>). Hit points are per segment,
     /// 0 (destroyed) up to the type's.
     /// </summary>
     internal string? TryAddBridge(BridgeState state)
@@ -593,6 +594,11 @@ public sealed class MapGrid
             }
         }
 
+        if (Types.Get(state.Kind).Pier)
+        {
+            return TryAddPier(state, dx, dy, length);
+        }
+
         var (alongX, alongY) = length > 1 ? (dx, dy) : (1, 0);
         var shore = ShoreProblem(from, to, alongX, alongY);
         if (shore is not null && length == 1 && ShoreProblem(from, to, 0, 1) is null)
@@ -604,6 +610,43 @@ public sealed class MapGrid
         {
             return shore;
         }
+
+        return Add(state, alongX, alongY);
+    }
+
+    /// <summary>
+    /// A pier (docs/beach_elements/14_pier): a low bridge of two cells or more from a shore out into the water — the cell before
+    /// <see cref="BridgeState.From"/> is dry land, the one after <see cref="BridgeState.To"/> is water.
+    /// </summary>
+    private string? TryAddPier(BridgeState state, int dx, int dy, int length)
+    {
+        var (from, to) = (state.From, state.To);
+        if (length < 2)
+        {
+            return $"a pier runs two cells or more, {Text(from)} to {Text(to)} is {length}";
+        }
+
+        var shore = new CellPos(from.X - dx, from.Y - dy);
+        if (!Contains(shore) || IsWater(_land[IndexOf(shore)]))
+        {
+            return $"no shore at {Text(shore)}, a pier runs from a shore into the water";
+        }
+
+        var beyond = new CellPos(to.X + dx, to.Y + dy);
+        if (!Contains(beyond) || !IsWater(_land[IndexOf(beyond)]))
+        {
+            return $"no water at {Text(beyond)}, a pier ends in the water";
+        }
+
+        return Add(state, dx, dy);
+    }
+
+    // The low bridge or pier, checked, along (alongX, alongY): its segments and their cells.
+    private string? Add(BridgeState state, int alongX, int alongY)
+    {
+        var (from, to) = (state.From, state.To);
+        var (dx, dy) = Bridge.Step(from, to);
+        var length = Bridge.Length(from, to);
 
         // The spans across: the middle cell, and beside it the water cells no bridge takes, as wide as the type.
         var (acrossX, acrossY) = (alongY, alongX);

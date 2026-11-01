@@ -117,6 +117,7 @@ public partial class MapObjects : Node3D
         var drifts = new List<Spot>();
         var guardrails = new List<Spot>();
         var quays = new List<Spot>();
+        var slipways = new List<Spot>();
         var props = new SortedDictionary<string, List<Spot>>(System.StringComparer.Ordinal);
         for (var y = 0; y < _map.Height; y++)
         {
@@ -145,6 +146,7 @@ public partial class MapObjects : Node3D
                 MapObjectKind.Snowdrift => drifts,
                 MapObjectKind.HighwayGuardrail => guardrails,
                 MapObjectKind.QuayEdge => quays,
+                MapObjectKind.Slipway => slipways,
                 // Drawn and animated by OreSources.
                 MapObjectKind.OreSource or MapObjectKind.GemSource => null,
                 // The props of the element documents (PropLooks).
@@ -179,6 +181,7 @@ public partial class MapObjects : Node3D
         AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f, "object/fence_wood");
         AddGuardrails(guardrails);
         AddQuayEdges(quays);
+        AddSlipways(slipways);
         AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f, "object/wall_stone");
         if (!AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f, "object/lamp_post"))
         {
@@ -214,6 +217,12 @@ public partial class MapObjects : Node3D
         if (bridge.Type.High)
         {
             AddHighBridge(bridge);
+            return;
+        }
+
+        if (bridge.Type.Pier)
+        {
+            AddPier(bridge);
             return;
         }
 
@@ -323,6 +332,81 @@ public partial class MapObjects : Node3D
         }
 
         return true;
+    }
+
+    // The colours of a pier (docs/beach_elements/14_pier/appearance.md): faded light planks, dark wet piles, low grey rails.
+    private static readonly Color PierPlanks = new(0.72f, 0.64f, 0.5f);
+    private static readonly Color PierPiles = new(0.25f, 0.2f, 0.15f);
+    private static readonly Color PierRails = new(0.78f, 0.78f, 0.75f);
+
+    /// <summary>
+    /// A pier (docs/beach_elements/14_pier): a segment a cell, its model of the table made along x (<c>bridge/pier_span</c>,
+    /// <c>bridge/pier_end</c> for the last one out in the water, <c>bridge/pier_broken</c> for a fallen one: its piles), or else a
+    /// plank deck just above the water on four piles with a low rail on each side. A fallen segment leaves its piles standing.
+    /// </summary>
+    private void AddPier(Bridge bridge)
+    {
+        var alongX = bridge.From.Y == bridge.To.Y;
+        var (dx, dz) = alongX ? (bridge.To.X >= bridge.From.X ? 1 : -1, 0) : (0, bridge.To.Y >= bridge.From.Y ? 1 : -1);
+        var yaw = Mathf.Atan2(-dz, dx);
+        var name = $"Bridge{bridge.Id}";
+        if (Models.ModelLibrary.Find("bridge/pier_span", _builtClimate?.Id) is not null)
+        {
+            var pieces = new Dictionary<string, List<Spot>>();
+            foreach (var segment in bridge.Segments)
+            {
+                var piece = !segment.IsIntact ? "pier_broken" : segment.Index == bridge.Segments.Count - 1 ? "pier_end" : "pier_span";
+                if (!pieces.TryGetValue(piece, out var list))
+                {
+                    pieces[piece] = list = [];
+                }
+
+                list.Add(new Spot(Ground(segment.Cell.X, segment.Cell.Y), 0));
+            }
+
+            foreach (var (piece, spots) in pieces)
+            {
+                if (Models.ModelLibrary.Instances("bridge/" + piece, _builtClimate?.Id, PointsOf(spots)) is not { } groups)
+                {
+                    continue;
+                }
+
+                for (var g = 0; g < groups.Count; g++)
+                {
+                    var (mesh, places, _) = groups[g];
+                    ChunkedInstances.Add(this, $"{name}{piece}{g}", mesh, places.ConvertAll(place => new Transform3D(new Basis(Vector3.Up, yaw) * place.Basis, place.Origin)));
+                }
+            }
+
+            return;
+        }
+
+        var decks = new List<Spot>();
+        var rails = new List<Spot>();
+        var piles = new List<Spot>();
+        var side = alongX ? new Vector3(0, 0, 0.36f) : new Vector3(0.36f, 0, 0);
+        var along = alongX ? new Vector3(0.38f, 0, 0) : new Vector3(0, 0, 0.38f);
+        foreach (var segment in bridge.Segments)
+        {
+            var at = Ground(segment.Cell.X, segment.Cell.Y);
+            foreach (var corner in (System.ReadOnlySpan<Vector3>)[side + along, side - along, -side + along, -side - along])
+            {
+                piles.Add(new Spot(at + corner, 0));
+            }
+
+            if (segment.IsIntact)
+            {
+                decks.Add(new Spot(at, 0));
+                rails.Add(new Spot(at + side, 0));
+                rails.Add(new Spot(at - side, 0));
+            }
+        }
+
+        var deck = alongX ? new Vector3(1f, 0.05f, 0.8f) : new Vector3(0.8f, 0.05f, 1f);
+        var rail = alongX ? new Vector3(1f, 0.04f, 0.03f) : new Vector3(0.03f, 0.04f, 1f);
+        AddInstances(name + "Deck", new BoxMesh { Size = deck }, PierPlanks, decks, 0.12f);
+        AddInstances(name + "Rails", new BoxMesh { Size = rail }, PierRails, rails, 0.26f);
+        AddInstances(name + "Piles", new CylinderMesh { TopRadius = 0.05f, BottomRadius = 0.06f, Height = 0.4f }, PierPiles, piles, 0.08f);
     }
 
     // The colours of a high bridge (owner 2026-10-26: "the bridge is concrete, asphalt on top").
@@ -703,6 +787,56 @@ public partial class MapObjects : Node3D
         }
 
         ChunkedInstances.Add(this, "QuayEdges", bar, copings, (i, multiMesh, index) => Remember(_copies, placed[i].Object, multiMesh, index, copings[i]));
+    }
+
+    /// <summary>
+    /// The slipways (docs/beach_elements/15_slipway): each on its cell of the beach, turned to the water beside it (its model made
+    /// running down towards +Z), the ramp reaching half a cell out over the water. Without the model a sloping slab of concrete.
+    /// </summary>
+    private void AddSlipways(List<Spot> spots)
+    {
+        if (spots.Count == 0)
+        {
+            return;
+        }
+
+        var yaws = new List<float>(spots.Count);
+        foreach (var spot in spots)
+        {
+            var (x, z) = ((int)Mathf.Floor(spot.At.X), (int)Mathf.Floor(spot.At.Z));
+            var down = Vector3.Back;
+            foreach (var (nx, nz) in (System.ReadOnlySpan<(int, int)>)[(0, 1), (1, 0), (0, -1), (-1, 0)])
+            {
+                var cell = new CellPos(x + nx, z + nz);
+                if (_map.Contains(cell) && _map.LandAt(cell) is LandType.Shallow or LandType.Deep)
+                {
+                    down = new Vector3(nx, 0f, nz);
+                    break;
+                }
+            }
+
+            yaws.Add(Mathf.Atan2(down.X, down.Z));
+        }
+
+        if (Models.ModelLibrary.Instances("object/slipway", _builtClimate?.Id, PointsOf(spots)) is { } groups)
+        {
+            var turned = groups.ConvertAll(group => (group.Mesh,
+                group.Places.Select((place, n) => new Transform3D(new Basis(Vector3.Up, yaws[group.Points[n]]) * place.Basis, place.Origin)).ToList(),
+                group.Points));
+            AddModelInstances("Slipways", turned, spots, _copies);
+            return;
+        }
+
+        var slab = LowPoly.Of(new BoxMesh { Size = new Vector3(0.8f, 0.06f, 1.4f) });
+        slab.Material = new StandardMaterial3D { AlbedoColor = new Color(0.62f, 0.62f, 0.6f) };
+        var places = new List<Transform3D>(spots.Count);
+        for (var i = 0; i < spots.Count; i++)
+        {
+            var basis = new Basis(Vector3.Up, yaws[i]) * new Basis(Vector3.Right, 0.12f);
+            places.Add(new Transform3D(basis, spots[i].At + new Basis(Vector3.Up, yaws[i]) * new Vector3(0f, 0f, 0.2f)));
+        }
+
+        ChunkedInstances.Add(this, "Slipways", slab, places, (i, multiMesh, index) => Remember(_copies, spots[i].Object, multiMesh, index, places[i]));
     }
 
     private void AddProps(string id, List<Spot> points)

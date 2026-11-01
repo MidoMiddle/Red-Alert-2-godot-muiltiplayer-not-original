@@ -21,13 +21,21 @@ public static class BridgeRepair
     /// <summary>The bridge of a hut; null when none is near.</summary>
     public static Bridge? BridgeOf(MapGrid map, Building hut) => BridgeOf(map, hut.Cell);
 
-    /// <summary>The bridge a hut on <paramref name="hut"/> would belong to; null when none is near (the map checks, a hut by each end of a bridge).</summary>
+    /// <summary>
+    /// The bridge a hut on <paramref name="hut"/> would belong to; null when none is near (the map checks, a hut by each end of a bridge).
+    /// Never a pier: no hut mends one (docs/beach_elements/14_pier).
+    /// </summary>
     public static Bridge? BridgeOf(MapGrid map, CellPos hut)
     {
         Bridge? best = null;
         var bestDistance = HutReach + 1;
         foreach (var bridge in map.Bridges)
         {
+            if (bridge.Type.Pier)
+            {
+                continue;
+            }
+
             foreach (var segment in bridge.Segments)
             {
                 foreach (var cell in segment.Cells)

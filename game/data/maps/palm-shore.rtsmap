@@ -607,6 +607,18 @@ objects:
   - { type: beached_boat, cell: [77, 114], variant: 0 }
   - { type: beached_boat, cell: [62, 118], variant: 0 }
   - { type: beached_boat, cell: [73, 118], variant: 0 }
+  - { type: breakwater, cell: [35, 37], variant: 0 }
+  - { type: breakwater, cell: [36, 37], variant: 1 }
+  - { type: breakwater, cell: [37, 37], variant: 2 }
+  - { type: breakwater, cell: [98, 37], variant: 3 }
+  - { type: breakwater, cell: [99, 37], variant: 0 }
+  - { type: breakwater, cell: [100, 37], variant: 1 }
+  - { type: breakwater, cell: [21, 54], variant: 3 }
+  - { type: breakwater, cell: [114, 54], variant: 0 }
+  - { type: breakwater, cell: [21, 55], variant: 0 }
+  - { type: breakwater, cell: [114, 55], variant: 1 }
+  - { type: breakwater, cell: [21, 56], variant: 1 }
+  - { type: breakwater, cell: [114, 56], variant: 2 }
   - { type: buoy, cell: [52, 25], variant: 1 }
   - { type: buoy, cell: [83, 25], variant: 1 }
   - { type: buoy, cell: [33, 43], variant: 0 }
@@ -875,6 +887,8 @@ objects:
   - { type: reef_rocks, cell: [122, 61], variant: 2 }
   - { type: reef_rocks, cell: [6, 67], variant: 1 }
   - { type: reef_rocks, cell: [129, 67], variant: 1 }
+  - { type: slipway, cell: [27, 86], variant: 0 }
+  - { type: slipway, cell: [108, 86], variant: 0 }
   - { type: sun_lounger, cell: [27, 53], variant: 0 }
   - { type: sun_lounger, cell: [108, 53], variant: 0 }
   - { type: sun_lounger, cell: [26, 55], variant: 0 }
@@ -893,7 +907,11 @@ objects:
   - { type: volleyball_net, cell: [83, 107], variant: 0 }
   - { type: volleyball_net, cell: [64, 118], variant: 0 }
   - { type: volleyball_net, cell: [71, 118], variant: 0 }
-bridges: []
+bridges:
+  - { type: pier_wood, from: [29, 49], to: [26, 49] }
+  - { type: pier_wood, from: [106, 49], to: [109, 49] }
+  - { type: pier_wood, from: [29, 87], to: [29, 90] }
+  - { type: pier_wood, from: [106, 87], to: [106, 90] }
 structures:
   - { type: neutral_beach_bar, cell: [45, 95], owner: neutral, facing: 1 }
   - { type: neutral_beach_bar, cell: [88, 95], owner: neutral, facing: 1 }

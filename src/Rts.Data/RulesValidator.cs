@@ -585,6 +585,11 @@ internal static class RulesValidator
             {
                 Error(bridge.Id, "width", $"'width' of '{bridge.Id}' must be 1 to 5");
             }
+
+            if (bridge.Pier && bridge.High)
+            {
+                Error(bridge.Id, "pier", $"'{bridge.Id}' is a pier and a high bridge: a pier is low");
+            }
         }
 
         // The buildings of the map (M3 step 14a): a footprint of 1 to 6 cells a side, hit points, weapons and armor of the data.

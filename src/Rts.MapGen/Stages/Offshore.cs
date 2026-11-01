@@ -15,10 +15,13 @@ namespace Rts.MapGen.Stages;
 /// <item>an offshore platform out in the open sea, its income as an oil derrick's, taken by an engineer a helicopter sets down;</item>
 /// <item>a ferry off the coast, fishing boats off the beaches and buoys marking the swimmers' water — on every climate but the snow,
 /// where the sea freezes;</item>
-/// <item>reef rocks off the coast (the coast climate), ice floes on the sea of the snow.</item>
+/// <item>reef rocks off the coast (the coast climate), ice floes on the sea of the snow;</item>
+/// <item>the beach's own (docs/beach_elements, 14–16), on every climate but the snow: wooden piers out from the beaches, a slipway on
+/// the sand beside a pier, and breakwaters, short chains of stone blocks along the coast a little off a beach.</item>
 /// </list>
-/// Every piece but the buoy stops ships, and so goes where it closes no way (the buoy keeps the same room, so ships pass it too): all of it on water, and a ring of water a cell wide round it that
-/// nothing else stands on — a fleet goes round. It goes with its images under the symmetry or not at all; a building whose images
+/// Every piece but the buoy and the slipway stops ships, and so goes where it closes no way (the buoy keeps the same room, so ships
+/// pass it too): all of it on water, and a ring of water a cell wide round it that nothing else stands on — a fleet goes round; a
+/// pier has its ring on both sides and open water beyond its end, its root on the beach. It goes with its images under the symmetry or not at all; a building whose images
 /// would lie across (a long ship under a quarter turn) does not go. Nothing within the bay of an oil derrick on its islet, where
 /// an engineer lands, nor before a quay.
 /// </summary>
@@ -34,8 +37,17 @@ internal static class Offshore
     // How far off a beach the buoys float, at most.
     private const int BuoyOff = 3;
 
-    /// <summary>What stands in the sea; with <paramref name="buoysOnly"/> only the buoys (a map that has the rest already).</summary>
-    public static void Place(GenMap map, bool buoysOnly = false)
+    // How many cells a pier runs out into the water, and how far apart the roots of two piers keep at least.
+    private const int PierLength = 4;
+    private const int PierSpacing = 8;
+
+    // How far off a beach a breakwater lies: no nearer than the first, no farther than the second; the blocks of one.
+    private const int BreakwaterNear = 3;
+    private const int BreakwaterFar = 5;
+    private const int BreakwaterBlocks = 3;
+
+    /// <summary>What stands in the sea; with <paramref name="pieces"/> only some of it (a map that has the rest already).</summary>
+    public static void Place(GenMap map, SeaPieces pieces = SeaPieces.All)
     {
         if (map.Settings.Water is not (WaterKind.Sea or WaterKind.Islands))
         {
@@ -45,11 +57,11 @@ internal static class Offshore
         var sea = new Sea(map);
         var climate = map.Settings.Climate;
         var frozen = climate == ClimateGrounds.Winter;
-        if (buoysOnly)
+        if (pieces != SeaPieces.All)
         {
             if (!frozen)
             {
-                Buoys(map, sea);
+                (pieces == SeaPieces.Buoys ? (System.Action<GenMap, Sea>)Buoys : Beach)(map, sea);
             }
 
             return;
@@ -71,6 +83,7 @@ internal static class Offshore
         {
             sea.Place(2, 1, cell => sea.Near(cell, Inshore, LandType.Clear, LandType.Beach), cell => sea.Building("neutral_ferry", cell, 0));
             sea.Place(3, 2, cell => sea.Near(cell, Inshore, LandType.Beach), cell => sea.Building("neutral_fishing_boat", cell, 0));
+            Beach(map, sea);
             Buoys(map, sea);
         }
 
@@ -89,6 +102,68 @@ internal static class Offshore
     private static void Buoys(GenMap map, Sea sea) =>
         sea.Place(6, map.N / 16, cell => sea.Near(cell, BuoyOff, LandType.Beach) && !sea.Near(cell, 1, LandType.Beach, LandType.Clear),
             cell => sea.Object("buoy", cell, cell.X + cell.Y));
+
+    // The beach's own (docs/beach_elements, 14–16): the piers, each with a slipway beside it where the sand has room, and the
+    // breakwaters. The piers first, so the buoys of a map float round them.
+    private static void Beach(GenMap map, Sea sea)
+    {
+        sea.Place(7, IntMath.Max(1, map.N / 48), cell => Root(map, cell) is not null, cell => sea.Pier(cell, Root(map, cell)!.Value, PierLength, PierSpacing));
+        sea.Place(8, IntMath.Max(1, map.N / 64),
+            cell => sea.Near(cell, BreakwaterFar, LandType.Beach) && !sea.Near(cell, BreakwaterNear - 1, LandType.Beach, LandType.Clear),
+            cell => sea.Chain("breakwater", cell, AlongCoast(map, cell), BreakwaterBlocks));
+    }
+
+    // The way from the beach out to sea for a pier rooted on the cell beside it: the one side of a water cell that is beach, with dry
+    // land behind it, the water ahead; null for any other cell.
+    private static (int Dx, int Dy)? Root(GenMap map, CellPos cell)
+    {
+        (int, int)? found = null;
+        foreach (var (dx, dy) in (System.ReadOnlySpan<(int, int)>)[(1, 0), (-1, 0), (0, 1), (0, -1)])
+        {
+            var (shore, behind, ahead) = (new CellPos(cell.X - dx, cell.Y - dy), new CellPos(cell.X - 2 * dx, cell.Y - 2 * dy), new CellPos(cell.X + dx, cell.Y + dy));
+            if (!map.Contains(behind) || !map.Contains(ahead))
+            {
+                continue;
+            }
+
+            if (map.LandAt(shore) == LandType.Beach && !map.IsWater(behind) && map.IsWater(ahead))
+            {
+                if (found is not null)
+                {
+                    return null;
+                }
+
+                found = (dx, dy);
+            }
+            else if (!map.IsWater(shore))
+            {
+                return null;
+            }
+        }
+
+        return found;
+    }
+
+    // Along the coast at the cell: across the way to the nearest beach.
+    private static (int Dx, int Dy) AlongCoast(GenMap map, CellPos cell)
+    {
+        for (var reach = 1; reach <= BreakwaterFar; reach++)
+        {
+            for (var d = -reach; d <= reach; d++)
+            {
+                foreach (var (x, y, alongX) in (System.ReadOnlySpan<(int, int, bool)>)[(d, -reach, true), (d, reach, true), (-reach, d, false), (reach, d, false)])
+                {
+                    var near = new CellPos(cell.X + x, cell.Y + y);
+                    if (map.Contains(near) && map.LandAt(near) == LandType.Beach)
+                    {
+                        return alongX ? (1, 0) : (0, 1);
+                    }
+                }
+            }
+        }
+
+        return (1, 0);
+    }
 
     // The north-west cell of a ship <paramref name="length"/> cells along the wall of a quay from (u, v) on.
     private static CellPos Corner(Quay quay, int u, int v, int length)
@@ -247,6 +322,135 @@ internal static class Offshore
             return true;
         }
 
+        /// <summary>A chain of <paramref name="count"/> objects from the cell on along (dx, dy), and its images, when each fits.</summary>
+        public bool Chain(string id, CellPos cell, (int Dx, int Dy) along, int count)
+        {
+            var images = new List<List<CellPos>>();
+            for (var k = 0; k < _map.Symmetry.Order; k++)
+            {
+                var image = new List<CellPos>(count);
+                for (var i = 0; i < count; i++)
+                {
+                    image.Add(_map.Symmetry.Cell(k, new CellPos(cell.X + along.Dx * i, cell.Y + along.Dy * i)));
+                }
+
+                images.Add(image);
+            }
+
+            if (!Fits(images))
+            {
+                return false;
+            }
+
+            foreach (var image in Distinct(images))
+            {
+                foreach (var block in image)
+                {
+                    _map.Objects.Add(new MapObjectPlacement(id, block, ((block.X + block.Y) % 4 + 4) % 4));
+                    _taken.Add(block);
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// A pier from the water cell <paramref name="root"/> on (beside the beach) out along <paramref name="way"/>, <paramref name="length"/>
+        /// cells, and its images, when each fits: the water on both sides of it and beyond its end free, a ring as round the other pieces,
+        /// and three cells of open water beyond the end, its root <paramref name="spacing"/> cells or more from another pier's. A slipway goes
+        /// on the sand two cells to one side of its root, where there is one.
+        /// </summary>
+        public bool Pier(CellPos root, (int Dx, int Dy) way, int length, int spacing)
+        {
+            var images = new List<(List<CellPos> Deck, CellPos Shore)>();
+            for (var k = 0; k < _map.Symmetry.Order; k++)
+            {
+                var deck = new List<CellPos>(length);
+                for (var i = 0; i < length; i++)
+                {
+                    deck.Add(_map.Symmetry.Cell(k, new CellPos(root.X + way.Dx * i, root.Y + way.Dy * i)));
+                }
+
+                images.Add((deck, _map.Symmetry.Cell(k, new CellPos(root.X - way.Dx, root.Y - way.Dy))));
+            }
+
+            var distinct = new List<(List<CellPos> Deck, CellPos Shore)>();
+            var cells = new HashSet<CellPos>();
+            foreach (var image in images)
+            {
+                if (distinct.Exists(other => other.Deck[0] == image.Deck[0]))
+                {
+                    continue;
+                }
+
+                if (!PierFits(image.Deck, image.Shore, cells)
+                    || _map.Bridges.Exists(other => IntMath.Max(IntMath.Abs(other.From.X - image.Deck[0].X), IntMath.Abs(other.From.Y - image.Deck[0].Y)) < spacing))
+                {
+                    return false;
+                }
+
+                distinct.Add(image);
+                cells.UnionWith(image.Deck);
+            }
+
+            foreach (var (deck, shore) in distinct)
+            {
+                _map.Bridges.Add(new BridgePlacement("pier_wood", deck[0], deck[^1]));
+                _taken.UnionWith(deck);
+                var (dx, dy) = (deck[1].X - deck[0].X, deck[1].Y - deck[0].Y);
+                foreach (var side in (System.ReadOnlySpan<int>)[2, -2])
+                {
+                    var sand = new CellPos(shore.X + dy * side, shore.Y + dx * side);
+                    var water = new CellPos(sand.X + dx, sand.Y + dy);
+                    if (_map.Contains(sand) && _map.Contains(water) && _map.LandAt(sand) == LandType.Beach && _map.IsWater(water)
+                        && !_taken.Contains(sand) && _map.Ore[sand.Y * _map.N + sand.X] == 0)
+                    {
+                        _map.Objects.Add(new MapObjectPlacement("slipway", sand, 0));
+                        _taken.Add(sand);
+                        break;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // The deck on water in the playable area, its root by the shore, nothing taken on it nor round it but the beach behind; three
+        // cells of water beyond its end, and none of it beside another image's.
+        private bool PierFits(List<CellPos> deck, CellPos shore, HashSet<CellPos> others)
+        {
+            var (dx, dy) = (deck[1].X - deck[0].X, deck[1].Y - deck[0].Y);
+            var tip = deck[^1];
+            if (!_map.Contains(shore) || _map.LandAt(shore) != LandType.Beach || _taken.Contains(shore) || !Clear(new CellPos(tip.X + 2 * dx, tip.Y + 2 * dy), 1))
+            {
+                return false;
+            }
+
+            for (var i = 0; i < deck.Count; i++)
+            {
+                var cell = deck[i];
+                if (!_map.Area.Contains(cell) || !_map.IsWater(cell) || _reserved.Contains(cell))
+                {
+                    return false;
+                }
+
+                for (var a = -1; a <= 1; a++)
+                {
+                    for (var b = (i == 0 ? 0 : -1); b <= 1; b++)
+                    {
+                        // a across, b along: the cells beside, and before the root only the beach.
+                        var ring = new CellPos(cell.X + dy * a + dx * b, cell.Y + dx * a + dy * b);
+                        if (!_map.Contains(ring) || !_map.IsWater(ring) || _taken.Contains(ring) || others.Contains(ring))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>The building with its north-west cell on <paramref name="corner"/> and its images, when each fits and none lies across.</summary>
         public bool Building(string id, CellPos corner, int facing)
         {
@@ -333,4 +537,16 @@ internal static class Offshore
             return true;
         }
     }
+}
+
+/// <summary>Which of what stands in the sea the generator lays (<see cref="MapGenerator.AddSea"/>): all of it, or one part for a map that has the rest.</summary>
+public enum SeaPieces
+{
+    All,
+
+    /// <summary>The buoys off the beaches (docs/beach_elements/13_buoy).</summary>
+    Buoys,
+
+    /// <summary>The piers, slipways and breakwaters (docs/beach_elements, 14–16).</summary>
+    Beach,
 }
