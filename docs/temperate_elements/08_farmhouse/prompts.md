@@ -45,8 +45,12 @@ A wooden farmhouse about two and a half units tall: pale whitewashed timber wall
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `temperate_farmhouse.glb` | | | |
-| `temperate_farmhouse_damaged.glb` | | | |
+| `farmhouse.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_farmhouse.py`) | 2026-11-01 | сделано, 2532 треугольника, дым из трубы `smoke_anchor` |
+| `farmhouse_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_farmhouse.py`) | 2026-11-01 | сделано, 2728 треугольников, стволы в окнах, мешки на веранде |
+| `farmhouse_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_farmhouse.py`) | 2026-11-01 | сделано, 2136 треугольников |
+| `farmhouse_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_farmhouse.py`) | 2026-11-01 | сделано, 2332 треугольника |
+| `farmhouse_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_farmhouse.py`) | 2026-11-01 | сделано, 1828 треугольников, огонь `fire_1..3` |
+| `farmhouse_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_farmhouse.py`) | 2026-11-01 | сделано, 500 треугольников |
 
 ## Открытые вопросы
 

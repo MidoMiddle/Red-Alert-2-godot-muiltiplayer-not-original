@@ -45,7 +45,10 @@ A farm windmill about four units tall: a white plastered tower with a dark conic
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `temperate_windmill.glb` | | | |
+| `temperate_windmill.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_windmill.py`) | 2026-11-01 | сделано, 1386 треугольников, лопасти — узел `sails` |
+| `temperate_windmill_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_windmill.py`) | 2026-11-01 | сделано, 1482 треугольника |
+| `temperate_windmill_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_windmill.py`) | 2026-11-01 | сделано, 1662 треугольника |
+| `temperate_windmill_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_windmill.py`) | 2026-11-01 | сделано, 1202 треугольника |
 
 ## Открытые вопросы
 

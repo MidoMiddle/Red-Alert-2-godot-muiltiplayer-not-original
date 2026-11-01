@@ -43,7 +43,10 @@ A tall grain silo about five units tall: a light grey concrete cylinder with dar
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `temperate_silo.glb` | | | |
+| `temperate_silo.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_silo.py`) | 2026-11-01 | сделано, 1966 треугольников |
+| `temperate_silo_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_silo.py`) | 2026-11-01 | сделано, 2284 треугольника |
+| `temperate_silo_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_silo.py`) | 2026-11-01 | сделано, 2368 треугольников |
+| `temperate_silo_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_silo.py`) | 2026-11-01 | сделано, 1062 треугольника |
 
 ## Открытые вопросы
 

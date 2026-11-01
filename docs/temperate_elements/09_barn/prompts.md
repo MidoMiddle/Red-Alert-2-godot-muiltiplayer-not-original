@@ -43,7 +43,11 @@ A large wooden barn about three units long, two units wide and three units tall:
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `temperate_barn.glb` | | | |
+| `barn.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_barn.py`) | 2026-11-01 | сделано, 1412 треугольников, ворота закрыты |
+| `barn_open.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_barn.py`) | 2026-11-01 | сделано, 1520 треугольников, ворота открыты |
+| `barn_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_barn.py`) | 2026-11-01 | сделано, 1722 треугольника |
+| `barn_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_barn.py`) | 2026-11-01 | сделано, 1400 треугольников, огонь `fire_1..3` |
+| `barn_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_barn.py`) | 2026-11-01 | сделано, 698 треугольников |
 
 ## Открытые вопросы
 

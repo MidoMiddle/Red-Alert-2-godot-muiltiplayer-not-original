@@ -44,7 +44,7 @@ A round grey stone village well about one unit tall with a wooden roof on two po
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `well.glb` | | | |
+| `well.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 964 треугольника, узлы `body`, `roof`, `winch` |
 
 ## Открытые вопросы
 

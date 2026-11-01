@@ -43,7 +43,8 @@ A compact farm tractor about one unit long and one unit tall: a bright red body,
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `civ_tractor.glb` | | | |
+| `farm_tractor.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 2732 треугольника, красный; файлы названы по объекту карты `farm_tractor` |
+| `farm_tractor_blue.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 2732 треугольника, синий |
 
 ## Открытые вопросы
 

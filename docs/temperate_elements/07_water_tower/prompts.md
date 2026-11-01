@@ -44,7 +44,11 @@ A steel water tower about four units tall: a round tank on four tall legs with c
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `water_tower.glb` | | | |
+| `water_tower.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_water_tower.py`) | 2026-11-01 | сделано, 2978 треугольников |
+| `water_tower_rusty.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_water_tower.py`) | 2026-11-01 | сделано, 2978 треугольников, ржавая |
+| `water_tower_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_water_tower.py`) | 2026-11-01 | сделано, 3050 треугольников |
+| `water_tower_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_water_tower.py`) | 2026-11-01 | сделано, 2922 треугольника |
+| `water_tower_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_water_tower.py`) | 2026-11-01 | сделано, 906 треугольников |
 
 ## Открытые вопросы
 

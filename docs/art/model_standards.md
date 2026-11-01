@@ -193,6 +193,15 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 | `building/neutral_lifeguard_tower` | вышка спасателей 2×2: целая, занятая, повреждённая (и занятая), горящая, руины; этаж на клетку, сжатие 0,35 (скрипт `tools/blender/families/beach_lifeguard.py`, 2026-11-01) |
 | `building/neutral_lighthouse` | маяк 2×2 с домиком смотрителя: целый, занятый, повреждённый (и занятый), покинутый, руины; в размере игры, без сжатия, до 2,6 (скрипт `tools/blender/families/beach_lighthouse.py`, 2026-11-01) |
 | `object/buoy` | буй на воде, красный с белым поясом или белый с красным, узлы `body`, `light` (скрипт `tools/blender/families/beach_buoy.py`, 2026-11-01) |
+| `object/hedge` | живая изгородь: блок стриженого кустарника на всю клетку, края на одной высоте 0,56 — стыкуется с соседями со всех сторон; три вида (ровная, округлая, лохматая), без поворота (скрипт `tools/blender/families/farm_props.py`, 2026-11-01) |
+| `object/hay_bale` | сено: круглый тюк, штабель квадратных тюков или копна на рассыпанной соломе, с поворотом (скрипт `tools/blender/families/farm_props.py`, 2026-11-01) |
+| `object/well` | колодец: каменный сруб с водой, крыша на двух столбах, ворот с бадьёй; узлы `body`, `roof`, `winch` (скрипт `tools/blender/families/farm_props.py`, 2026-11-01) |
+| `object/farm_tractor` | трактор, красный или синий, узлы `hull`, `wheel_rear`, `wheel_front` с опорными точками на осях (скрипт `tools/blender/families/farm_props.py`, 2026-11-01) |
+| `building/neutral_farmhouse` | фермерский дом 2×2: целый, занятый, повреждённый (и занятый), горящий, руины; этаж на клетку, сжатие 0,35; крыша веранды — `team_mask`, дым из трубы — `smoke_anchor` (скрипт `tools/blender/families/farm_farmhouse.py`, 2026-11-01) |
+| `building/neutral_barn` | амбар 3×2: целый с закрытыми или открытыми воротами, повреждённый, горящий, руины; этаж на клетку, сжатие 0,35; ворота — узел `gate` (скрипт `tools/blender/families/farm_barn.py`, 2026-11-01) |
+| `building/neutral_silo` | силос 1×1: целый, треснувший, накренившийся, руины; в размере игры, без сжатия (скрипт `tools/blender/families/farm_silo.py`, 2026-11-01) |
+| `building/neutral_windmill` | ветряк 2×2: целый, повреждённый, горящий, руины; в размере игры, без сжатия; лопасти — узел `sails`, опорная точка на оси ступицы (скрипт `tools/blender/families/farm_windmill.py`, 2026-11-01) |
+| `building/neutral_water_tower` | водонапорная башня 1×1: целая чистая или ржавая, пробитая, накренившаяся, рухнувшая; в размере игры, без сжатия (скрипт `tools/blender/families/farm_water_tower.py`, 2026-11-01) |
 | `tree/palm` | пальма побережья и оазисов пустыни, три разновидности с поворотом и разбросом ±15 %, ≤ 300 треугольников (скрипт `tools/blender/families/beach_palm.py`, 2026-11-01) |
 | `ore/ore`, `ore/gems` | кластеры руды и самоцветов |
 | `building/neutral_house_a`, `building/neutral_apartment` | дом и многоэтажка карты на бетонной подложке: целые, занятые, повреждённые (с пехотой и без), покинутые и руины; дым у повреждённых, огонь у покинутых ([BuildingBlaze.cs](../../game/scripts/Terrain/BuildingBlaze.cs)) |

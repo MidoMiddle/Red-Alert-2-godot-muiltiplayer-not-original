@@ -46,7 +46,9 @@ A round hay bale about one unit tall, golden straw wrapped in light brown twine,
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `hay_bale.glb` | | | |
+| `hay_bale.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 386 треугольников, круглый тюк |
+| `hay_bale_square.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 900 треугольников, штабель квадратных тюков |
+| `hay_bale_heap.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 362 треугольника, копна |
 
 ## Открытые вопросы
 

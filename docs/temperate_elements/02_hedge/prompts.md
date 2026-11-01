@@ -45,7 +45,9 @@ A straight clipped hedge section one unit long and eight tenths of a unit tall, 
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `hedge_section.glb` | | | |
+| `hedge_section.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 356 треугольников, ровная |
+| `hedge_section_rounded.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 344 треугольника, округлая |
+| `hedge_section_ragged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/farm_props.py`) | 2026-11-01 | сделано, 448 треугольников, лохматая |
 
 ## Открытые вопросы
 

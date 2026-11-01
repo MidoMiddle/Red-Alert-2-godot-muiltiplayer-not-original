@@ -48,6 +48,18 @@ models:
   # The volleyball net (docs/beach_elements/09_volleyball_net): its posts and the court's tapes, and the net, its mesh in strings.
   object/volleyball_net:      { file: beach/beach_volleyball_net/beach_volleyball_net.glb, spin: true }
 
+  # The farm (docs/temperate_elements). The hedge (02_hedge): a block of clipped hedge filling its cell, its edges straight at one
+  # height so neighbours join on every side; three kinds, each cell picks one, not turned.
+  object/hedge:               { files: [farm/hedge_section/hedge_section.glb, farm/hedge_section_rounded/hedge_section_rounded.glb,
+                                        farm/hedge_section_ragged/hedge_section_ragged.glb] }
+  # Hay (05_hay_bale): a round bale, a stack of square bales or a haystack on loose straw; each cell picks one, turned any way.
+  object/hay_bale:            { files: [farm/hay_bale/hay_bale.glb, farm/hay_bale_square/hay_bale_square.glb,
+                                        farm/hay_bale_heap/hay_bale_heap.glb], spin: true, jitter: 0.06 }
+  # The village well (06_well): a stone ring with water, a shingled roof on two posts, a winch with a bucket; nodes body, roof, winch.
+  object/well:                { file: farm/well/well.glb, spin: true }
+  # The farm tractor (12_farm_tractor): red or blue, each cell picks one, parked any way; its wheels are nodes wheel_rear and wheel_front.
+  object/farm_tractor:        { files: [farm/farm_tractor/farm_tractor.glb, farm/farm_tractor_blue/farm_tractor_blue.glb], spin: true }
+
   # The buildings of the players (docs/ra2_buildings). The team_mask nodes take the owner's colour.
   building/tesla_coil: { file: building/tesla_coil/tesla_coil.glb, height: 3 }
   building/barracks:   { file: building/barracks/barracks.glb, height: 3.6 }
@@ -231,6 +243,47 @@ models:
                                  damaged_occupied: beach/beach_lighthouse_damaged_occupied/beach_lighthouse_damaged_occupied.glb,
                                  abandoned: beach/beach_lighthouse_abandoned/beach_lighthouse_abandoned.glb,
                                  ruins: beach/beach_lighthouse_ruins/beach_lighthouse_ruins.glb }
+
+  # The farmhouse (docs/temperate_elements/08_farmhouse): a storey to a cell, squashed as the houses of the map; its soldiers' barrels
+  # out of the upper front windows and sandbags on the veranda when occupied, smoke_anchor on the chimney while whole, fire_1..3 when
+  # burning. The veranda's roof is its team_mask.
+  building/neutral_farmhouse: { file: farm/farmhouse/farmhouse.glb, height: 0.95, height_scale: 0.35,
+                                occupied: farm/farmhouse_occupied/farmhouse_occupied.glb,
+                                damaged: farm/farmhouse_damaged/farmhouse_damaged.glb,
+                                damaged_occupied: farm/farmhouse_damaged_occupied/farmhouse_damaged_occupied.glb,
+                                abandoned: farm/farmhouse_abandoned/farmhouse_abandoned.glb,
+                                ruins: farm/farmhouse_ruins/farmhouse_ruins.glb }
+
+  # The barn (docs/temperate_elements/09_barn): a storey to a cell, squashed as the buildings of the map; whole with the gate shut or
+  # open (each cell picking one), damaged (a leaf torn off, the roof holed), burning (fire_1..3) and burnt down.
+  building/neutral_barn: { files: [farm/barn/barn.glb, farm/barn_open/barn_open.glb], height: 1.2, height_scale: 0.35,
+                           damaged: farm/barn_damaged/barn_damaged.glb,
+                           abandoned: farm/barn_abandoned/barn_abandoned.glb,
+                           ruins: farm/barn_ruins/barn_ruins.glb }
+
+  # The silo (docs/temperate_elements/10_silo): made at the size it is drawn, not squashed — a cylinder squashed upright would be a drum;
+  # cracked with grain running out when damaged, leaning with the crack torn open and grain smouldering (fire_1..2) when abandoned, a
+  # stump full of grain with its dome fallen in for its ruins.
+  building/neutral_silo: { file: farm/temperate_silo/temperate_silo.glb, height: 2.5,
+                           damaged: farm/temperate_silo_damaged/temperate_silo_damaged.glb,
+                           abandoned: farm/temperate_silo_abandoned/temperate_silo_abandoned.glb,
+                           ruins: farm/temperate_silo_ruins/temperate_silo_ruins.glb }
+
+  # The windmill (docs/temperate_elements/11_windmill): made at the size it is drawn, not squashed, as the sails (a node of their own,
+  # sails, its origin on the hub, turning about the axis out of the front) may be turned; a sail broken off and one torn when damaged,
+  # the canvas burnt and the door burnt open (fire_1..3) when abandoned, the tower slumped with its cap and sails on the ground in ruins.
+  building/neutral_windmill: { file: farm/temperate_windmill/temperate_windmill.glb, height: 2.35,
+                               damaged: farm/temperate_windmill_damaged/temperate_windmill_damaged.glb,
+                               abandoned: farm/temperate_windmill_abandoned/temperate_windmill_abandoned.glb,
+                               ruins: farm/temperate_windmill_ruins/temperate_windmill_ruins.glb }
+
+  # The water tower (docs/temperate_elements/07_water_tower): made at the size it is drawn, not squashed; whole clean or rusting, each
+  # cell picking one; holed and running when damaged, leaning over a buckled leg (fire_1..2) when abandoned, the tank fallen on its
+  # side in its ruins.
+  building/neutral_water_tower: { files: [farm/water_tower/water_tower.glb, farm/water_tower_rusty/water_tower_rusty.glb], height: 2.35,
+                                  damaged: farm/water_tower_damaged/water_tower_damaged.glb,
+                                  abandoned: farm/water_tower_abandoned/water_tower_abandoned.glb,
+                                  ruins: farm/water_tower_ruins/water_tower_ruins.glb }
 
   building/neutral_kiosk: { file: city/city_kiosk/city_kiosk.glb, height: 0.5, height_scale: 0.35,
                             damaged: city/city_kiosk_damaged/city_kiosk_damaged.glb,
