@@ -152,13 +152,13 @@ A small dog with a thick coat, standing pose, realistic and game-ready. Realisti
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `civ_man.glb` | | | |
-| `civ_woman.glb` | | | |
-| `civ_winter_man.glb` | | | |
-| `civ_winter_woman.glb` | | | |
-| `civ_farmer.glb` | | | |
-| `civ_desert_man.glb` | | | |
-| `civ_desert_woman.glb` | | | |
+| `civ_man.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 600 треугольников, анимирован |
+| `civ_woman.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 672 треугольников, анимирован |
+| `civ_winter_man.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 672 треугольников, анимирован |
+| `civ_winter_woman.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 756 треугольников, анимирован |
+| `civ_farmer.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 712 треугольников, анимирован |
+| `civ_desert_man.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 728 треугольников, анимирован |
+| `civ_desert_woman.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 728 треугольников, анимирован |
 | `civ_lifeguard.glb` | | | |
 | `civ_car_sedan.glb` | | | |
 | `civ_bus.glb` | | | |

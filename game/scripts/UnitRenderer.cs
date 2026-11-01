@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using Rts.Client.Units;
+using Rts.Simulation.Events;
 using Rts.Simulation.World;
 
 namespace Rts.Client;
@@ -9,7 +10,8 @@ namespace Rts.Client;
 /// Draws every unit with its symbolic <see cref="UnitView"/>, interpolated between the previous and the current tick so that
 /// 15 ticks per second still look smooth at 60+ frames per second: position along a line, hull and turret along the
 /// shorter arc. Views are pooled per unit type. Selected units glow; the unit under the pointer glows faintly (M2 step 13). A unit of
-/// another player is drawn only while the local player sees it (<see cref="Terrain.FogOfWar.Shows"/>, M4 step 12).
+/// another player is drawn only while the local player sees it (<see cref="Terrain.FogOfWar.Shows"/>, M4 step 12). A person with a
+/// skeleton (<see cref="UnitView.Human"/>) plays its clips, and falls when killed: its view stays a while after the unit is gone.
 /// </summary>
 public partial class UnitRenderer : Node3D
 {
@@ -18,6 +20,10 @@ public partial class UnitRenderer : Node3D
     private readonly HashSet<EntityId> _alive = new();
     private readonly List<EntityId> _gone = new();
     private readonly Dictionary<(int Owner, Glow Glow), StandardMaterial3D> _materials = new();
+    private readonly List<(UnitView View, float Left)> _falling = new();
+
+    /// <summary>How long a fallen person lies after its fall has played, before its view goes back to the pool.</summary>
+    private const float LyingSeconds = 2f;
 
     private SimulationHost _host = null!;
     private PlayerInput _input = null!;
@@ -33,6 +39,21 @@ public partial class UnitRenderer : Node3D
     {
         _host = GetNode<SimulationHost>("../SimulationHost");
         _input = GetNode<PlayerInput>("../PlayerInput");
+        _host.EventRaised += OnEvent;
+    }
+
+    public override void _ExitTree() => _host.EventRaised -= OnEvent;
+
+    // A person with a skeleton killed: its view leaves the unit's and plays the fall where it stands.
+    private void OnEvent(SimEvent simEvent)
+    {
+        if (simEvent is UnitKilled killed && _views.TryGetValue(killed.Unit, out var view) && view.Visible && view.Human is { } human)
+        {
+            _views.Remove(killed.Unit);
+            Units.UnitAltitude.Forget(killed.Unit);
+            Units.SoldierSpots.Forget(killed.Unit);
+            _falling.Add((view, human.Die() + LyingSeconds));
+        }
     }
 
     public override void _Process(double delta)
@@ -86,6 +107,7 @@ public partial class UnitRenderer : Node3D
                     .Lerp(WorldCoords.ToGodotOnUnit(unit, Units.SoldierSpots.Drawn(unit, current.Position), altitude), alpha),
                 UnitFacing.InterpolatedYaw(previous.Facing, current.Facing, alpha),
                 UnitFacing.InterpolatedYaw(previous.TurretFacing, current.TurretFacing, alpha));
+            view.Animate(unit.Civilian?.State, (float)delta);
             _alive.Add(unit.Id);
         }
 
@@ -104,6 +126,21 @@ public partial class UnitRenderer : Node3D
             Units.UnitAltitude.Forget(id);
             Units.SoldierSpots.Forget(id);
             _views.Remove(id);
+        }
+
+        for (var i = _falling.Count - 1; i >= 0; i--)
+        {
+            var (fallen, left) = _falling[i];
+            left -= (float)delta;
+            if (left > 0f)
+            {
+                _falling[i] = (fallen, left);
+            }
+            else
+            {
+                ReturnView(fallen);
+                _falling.RemoveAt(i);
+            }
         }
 
         foreach (var (id, tree) in _trees)
@@ -156,6 +193,7 @@ public partial class UnitRenderer : Node3D
         if (_pool.TryGetValue(archetype.Type, out var pool) && pool.TryPop(out var view))
         {
             view.Visible = true;
+            view.Reuse();
             return view;
         }
 

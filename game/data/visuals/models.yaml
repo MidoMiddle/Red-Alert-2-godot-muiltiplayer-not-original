@@ -337,3 +337,12 @@ models:
   unit/alliance_light_tank:  { file: unit/alliance_light_tank/alliance_light_tank.glb, scale: 1.4 }
   unit/alliance_harvester:   { file: unit/alliance_harvester/alliance_harvester.glb, scale: 1.4 }
   unit/harvester:            { file: unit/harvester/harvester.glb, scale: 1.4 }
+  # The civilians of the map with a skeleton (docs/map_elements/13_civilians, docs/art/mixamo.md): every look skinned to the Mixamo
+  # skeleton, the clips of assets/models/unit/human_clips on all of them (Units/HumanAnimator.cs).
+  unit/civ_man:              { file: unit/civ_man/civ_man.glb }
+  unit/civ_woman:            { file: unit/civ_woman/civ_woman.glb }
+  unit/civ_winter_man:       { file: unit/civ_winter_man/civ_winter_man.glb }
+  unit/civ_winter_woman:     { file: unit/civ_winter_woman/civ_winter_woman.glb }
+  unit/civ_farmer:           { file: unit/civ_farmer/civ_farmer.glb }
+  unit/civ_desert_man:       { file: unit/civ_desert_man/civ_desert_man.glb }
+  unit/civ_desert_woman:     { file: unit/civ_desert_woman/civ_desert_woman.glb }

@@ -43,8 +43,13 @@ public partial class UnitView : Node3D
     private List<MeshInstance3D>? _teamMeshes;
     private MeshInstance3D? _turretBody;
     private Node3D? _sandbags;
+    private Vector3? _drawnAt;
+    private float _speed;
 
     public UnitType Type { get; private set; }
+
+    /// <summary>The clips of a person with a skeleton (docs/art/mixamo.md); null for every other model and for the placeholders.</summary>
+    public HumanAnimator? Human { get; private set; }
 
     /// <summary>
     /// How much bigger than they were drawn the placeholder shapes are shown (the owner, 2026-10-26, measured against RA2's buildings):
@@ -67,6 +72,7 @@ public partial class UnitView : Node3D
             _turret = model.FindChild("turret", true, false) as Node3D;
             _teamMeshes = [];
             CollectTeam(model, false, _teamMeshes);
+            Human = HumanAnimator.Attach(model, archetype.Id);
             return;
         }
 
@@ -89,6 +95,38 @@ public partial class UnitView : Node3D
             BuildVehicle(archetype);
         }
     }
+
+    /// <summary>The view taken from the pool for another unit: a person standing again, nothing measured of how fast it goes.</summary>
+    public void Reuse()
+    {
+        _drawnAt = null;
+        _speed = 0f;
+        Human?.Restart();
+    }
+
+    /// <summary>
+    /// Plays the clip of a person by what it is doing (a civilian's <paramref name="state"/>, null for others) and how fast it is seen
+    /// to go between this frame and the last; called after <see cref="SetPose"/>.
+    /// </summary>
+    public void Animate(CivilianState? state, float delta)
+    {
+        if (Human is null || delta <= 0f)
+        {
+            return;
+        }
+
+        var seen = _drawnAt is { } at ? new Vector2(Position.X - at.X, Position.Z - at.Z).Length() / delta : 0f;
+        _drawnAt = Position;
+        // Smoothed: the drawn position steps along a line from tick to tick, a frame may fall on either side of a step.
+        _speed = Mathf.Lerp(_speed, seen, 1f - Mathf.Exp(-delta * 12f));
+        var motion = _speed > MovingSpeed
+            ? state == CivilianState.Flee ? HumanMotion.Run : HumanMotion.Walk
+            : state == CivilianState.Cover ? HumanMotion.Cover : HumanMotion.Stand;
+        Human.Step(motion, _speed, delta);
+    }
+
+    /// <summary>How fast (units a second) a person is seen to go before it walks: below, it stands.</summary>
+    private const float MovingSpeed = 0.08f;
 
     /// <summary>Shows or hides the ring of sandbags of a soldier dug in; made the first time it is shown.</summary>
     public void SetSandbags(bool shown)

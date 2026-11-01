@@ -1,0 +1,27 @@
+# The clips of the people (docs/art/mixamo.md), written by tools/blender/units/civilians.py (run_clips): whether a clip loops,
+# its length in seconds, and for a walk or a run its stride, how far it carries in a second at its own speed (game units; the
+# game plays it faster or slower to match the feet to the ground). The clips themselves: assets/models/unit/human_clips.
+clips:
+  idle_0: { loop: true, length: 8.367 }
+  idle_1: { loop: true, length: 9.933 }
+  idle_2: { loop: true, length: 2.933 }
+  idle_3: { loop: true, length: 2.800 }
+  idle_4: { loop: true, length: 7.000 }
+  walk_0: { loop: true, length: 0.967, stride: 0.490 }
+  walk_1: { loop: true, length: 1.033, stride: 0.488 }
+  walk_2: { loop: true, length: 1.433, stride: 0.284 }
+  walk_3: { loop: true, length: 1.233, stride: 0.340 }
+  walk_woman_0: { loop: true, length: 1.200, stride: 0.303 }
+  run_0: { loop: true, length: 0.733, stride: 0.916 }
+  run_1: { loop: true, length: 0.533, stride: 1.656 }
+  run_2: { loop: true, length: 0.633, stride: 0.723 }
+  crouch_down: { loop: false, length: 4.067 }
+  crouch: { loop: true, length: 2.500 }
+  crouch_up: { loop: false, length: 2.567 }
+  crouch_sprint: { loop: false, length: 0.500, stride: 0.847 }
+  die_0: { loop: false, length: 4.600 }
+  die_1: { loop: false, length: 3.900 }
+  prone: { loop: true, length: 2.133 }
+# The clips only these people take (unit ids); the others are everyone's.
+only:
+  walk_woman_0: [civ_woman, civ_winter_woman, civ_desert_woman, civ_beach_woman]
