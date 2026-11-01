@@ -23,6 +23,7 @@ internal static class DefinitionReader
         "placement", "turret", "turret_turn_rate", "threat", "stance", "crusher", "crushable", "prerequisites", "primary", "secondary", "model", "icon", "harvest_capacity", "harvest_time", "unload_rate", "available_later", "ability_later", "jumpjet",
         "engineer", "infiltrator", "disguised", "detects_disguise", "passive", "death_weapon", "teleports", "teleports_home", "deploy_weapon", "radiation_immune", "build_limit", "undeploy_delay", "requires_stolen", "occupier", "occupy_weapon", "charges_coils", "psionic_immune", "deploy_once", "disguise_when_still",
         "passengers", "passenger_size", "size", "passenger_weapon", "ifv_weapon", "submerged", "sensors", "ammo", "self_heal", "spawns", "spawn_count", "spawn_regen", "spawned", "trainable", "countries", "forbidden_countries", "deployed_weapon",
+        "civilian", "homes", "gathers_at", "climates",
     ];
 
     private static readonly string[] BuildingKeys =
@@ -57,7 +58,7 @@ internal static class DefinitionReader
     private static readonly string[] MapBuildingKeys =
     [
         "name", "footprint", "hp", "garrison", "capturable", "superweapon", "recharge", "weapon", "armor", "sight", "repairs_vehicles",
-        "extends_base", "death_weapon", "water", "ruins",
+        "extends_base", "death_weapon", "water", "ruins", "shelter",
     ];
 
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester", "starting_infantry", "paradrop", "paradrop_count", "default"];
@@ -102,11 +103,17 @@ internal static class DefinitionReader
     public static UnitDef Unit(RawDefinition definition, bool complete)
     {
         var fields = new FieldReader(definition, complete, UnitKeys);
+        // A civilian of the map belongs to no faction (docs/map_elements/13_civilians).
+        var civilian = fields.Optional("civilian", Scalars.Flag, false);
         return new UnitDef
         {
             Id = definition.Id,
             Name = fields.Required("name", Scalars.Text, ""),
-            Faction = fields.Required("faction", Scalars.Id, ""),
+            Faction = civilian ? fields.Optional("faction", Scalars.Id, "") : fields.Required("faction", Scalars.Id, ""),
+            Civilian = civilian,
+            Homes = fields.Optional("homes", Scalars.IdList, ImmutableArray<string>.Empty),
+            GathersAt = fields.Optional("gathers_at", Scalars.IdList, ImmutableArray<string>.Empty),
+            Climates = fields.Optional("climates", Scalars.IdList, ImmutableArray<string>.Empty),
             Category = fields.Required("category", UnitCategoryOf, UnitCategory.Infantry),
             Queue = fields.Maybe("queue", UnitQueueOf),
             Cost = fields.Required("cost", Scalars.Int, 0),
@@ -433,6 +440,7 @@ internal static class DefinitionReader
             DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
             Water = fields.Optional("water", Scalars.Flag, false),
             Ruins = fields.Optional("ruins", Scalars.Flag, true),
+            Shelter = fields.Optional("shelter", Scalars.Flag, false),
         };
     }
 

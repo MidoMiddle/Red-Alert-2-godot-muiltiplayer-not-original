@@ -47,4 +47,10 @@ public sealed record MapBuildingDef : IDefinition
 
     /// <summary>Whether it leaves ruins that close its cells for good when it falls (RA2); a ship sinks and leaves none.</summary>
     public bool Ruins { get; init; } = true;
+
+    /// <summary>
+    /// A house civilians hide in when in danger and come out of at the start (docs/map_elements/13_civilians, 4.4): they take no seat of
+    /// the soldiers' garrison.
+    /// </summary>
+    public bool Shelter { get; init; }
 }

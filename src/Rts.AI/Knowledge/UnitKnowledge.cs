@@ -387,6 +387,7 @@ public sealed class UnitKnowledge
     private static (UnitUse Use, string Reason) UseOf(UnitDef unit, HashSet<string> mcvs) => unit switch
     {
         { Spawned: true } => (UnitUse.NeverBuilt, "launched by another unit or brought by a paradrop"),
+        { Civilian: true } => (UnitUse.NeverBuilt, "a civilian of the map, of nobody"),
         { HarvestCapacity: > 0 } => (UnitUse.Harvester, ""),
         _ when mcvs.Contains(unit.Id) => (UnitUse.Mcv, ""),
         { Engineer: true } => (UnitUse.Engineer, ""),

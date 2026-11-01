@@ -428,6 +428,7 @@ public sealed class GameRules
         | (unit.RadiationImmune ? UnitTalents.RadiationImmune : 0) | (unit.DisguiseWhenStill ? UnitTalents.StillDisguise : 0)
         | (unit.PassengerWeapon ? UnitTalents.PassengerWeapon : 0)
         | (unit.Submerged ? UnitTalents.Submerged : 0) | (unit.Spawned ? UnitTalents.Spawned : 0)
+        | (unit.Civilian ? UnitTalents.Civilian : 0)
         | (unit.Trainable ? 0 : UnitTalents.Untrainable)
         | (unit.PsionicImmune ? UnitTalents.PsionicImmune : 0) | (unit.DeployOnce ? UnitTalents.DeployOnce : 0)
         | (unit.ChargesCoils ? UnitTalents.ChargesCoils : 0) | (unit.Occupier ? UnitTalents.Occupier : 0);

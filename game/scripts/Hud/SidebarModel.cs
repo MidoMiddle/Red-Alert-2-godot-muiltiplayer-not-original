@@ -279,7 +279,7 @@ public static class SidebarModel
                 var shown = category == ProductionCategory.Infantry
                     ? def.Category == UnitCategory.Infantry
                     : def.Category is UnitCategory.Vehicle or UnitCategory.Naval or UnitCategory.Aircraft;
-                if ((everyFaction || def.Faction == state.Faction.Id) && shown && !def.Spawned && UnitTypes.TryGetById(def.Id, out _)
+                if ((everyFaction || def.Faction == state.Faction.Id) && shown && !def.Spawned && !def.Civilian && UnitTypes.TryGetById(def.Id, out _)
                     && state.Queue(ProductionRules.CategoryOf(rules, ProductionKind.Unit, i)) is var own
                     && (state.CanBuildUnit(i) || !availableOnly || Queued(own, ProductionKind.Unit, i)))
                 {

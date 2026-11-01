@@ -58,4 +58,7 @@ public enum UnitTalents
 
     /// <summary>A harvester that jumps home to its refinery (<see cref="Rules.UnitDef.TeleportsHome"/>).</summary>
     TeleportsHome = 131072,
+
+    /// <summary>A civilian of the map, of nobody, never built (<see cref="Rules.UnitDef.Civilian"/>).</summary>
+    Civilian = 262144,
 }

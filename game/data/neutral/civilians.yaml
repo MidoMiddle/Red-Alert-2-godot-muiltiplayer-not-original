@@ -1,0 +1,97 @@
+# The civilians of the maps (docs/map_elements/13_civilians): people of nobody, of no faction, never built. They come out of their houses
+# (`homes`, buildings of the map with `shelter: true`) at the start of a match, rest by the gathering points of their place (`gathers_at`,
+# objects and buildings of the map), stroll between them, run from danger and hide in houses (CivilianSystem). Only on maps of their
+# `climates`. The numbers of RA2's civilians (CIV1-3, CIVB*, CIVS*): 50 hit points, no armor, speed 4 (24), sight 2; crushed by vehicles.
+
+base_civilian:
+  kind: unit
+  abstract: true
+  inherits: base_infantry
+  civilian: true
+  prerequisites: []
+  cost: 0
+  build_time: 0s
+  hp: 50
+  sight: 2
+  threat: 0
+  trainable: false
+
+civ_man:  # a passer-by in town clothes
+  kind: unit
+  inherits: base_civilian
+  name: Civilian
+  climates: [urban, temperate, coast, desert]
+  homes: [neutral_house_a, neutral_apartment, neutral_office, neutral_hotel, neutral_shop, neutral_cafe, neutral_school, neutral_church]
+  gathers_at: [bench, bus_stop, street_stall, flowerbed, phone_booth, neutral_shop, neutral_kiosk, neutral_cafe, neutral_fountain, neutral_school, neutral_church, neutral_office, neutral_hotel, neutral_bank]
+
+civ_woman:  # a passer-by in town clothes
+  kind: unit
+  inherits: base_civilian
+  name: Civilian
+  climates: [urban, temperate, coast, desert]
+  homes: [neutral_house_a, neutral_apartment, neutral_office, neutral_hotel, neutral_shop, neutral_cafe, neutral_school, neutral_church]
+  gathers_at: [bench, bus_stop, street_stall, flowerbed, phone_booth, neutral_shop, neutral_kiosk, neutral_cafe, neutral_fountain, neutral_school, neutral_church, neutral_office, neutral_hotel, neutral_bank]
+
+civ_winter_man:  # a villager in a puffer jacket, a knitted hat and a scarf (RA2 CIVSFM, CIVSTM)
+  kind: unit
+  inherits: base_civilian
+  name: Civilian
+  climates: [winter]
+  homes: [neutral_house_a, neutral_apartment, neutral_office, neutral_hotel, neutral_shop, neutral_cafe, neutral_school, neutral_church, neutral_farmhouse]
+  gathers_at: [bench, bus_stop, street_stall, well, neutral_shop, neutral_kiosk, neutral_cafe, neutral_fountain, neutral_school, neutral_church, neutral_office, neutral_hotel, neutral_bank, neutral_farmhouse]
+
+civ_winter_woman:  # a villager in a long winter coat (RA2 CIVSF)
+  kind: unit
+  inherits: base_civilian
+  name: Civilian
+  climates: [winter]
+  homes: [neutral_house_a, neutral_apartment, neutral_office, neutral_hotel, neutral_shop, neutral_cafe, neutral_school, neutral_church, neutral_farmhouse]
+  gathers_at: [bench, bus_stop, street_stall, well, neutral_shop, neutral_kiosk, neutral_cafe, neutral_fountain, neutral_school, neutral_church, neutral_office, neutral_hotel, neutral_bank, neutral_farmhouse]
+
+civ_beach_man:  # a beachgoer in shorts (RA2 CIVBFM, CIVBTM; docs/beach_elements/10_beachgoers)
+  kind: unit
+  inherits: base_civilian
+  name: Beachgoer
+  climates: [coast]
+  homes: [neutral_beach_cabin, neutral_hotel]
+  gathers_at: [sun_lounger, beach_umbrella, beach_shower, volleyball_net, neutral_beach_bar, neutral_lifeguard_tower]
+
+civ_beach_woman:  # a beachgoer in a sundress or a swimsuit (RA2 CIVBF)
+  kind: unit
+  inherits: base_civilian
+  name: Beachgoer
+  climates: [coast]
+  homes: [neutral_beach_cabin, neutral_hotel]
+  gathers_at: [sun_lounger, beach_umbrella, beach_shower, volleyball_net, neutral_beach_bar, neutral_lifeguard_tower]
+
+civ_lifeguard:  # stands by the lifeguard tower
+  kind: unit
+  inherits: base_civilian
+  name: Lifeguard
+  climates: [coast]
+  homes: [neutral_beach_cabin]
+  gathers_at: [neutral_lifeguard_tower]
+
+civ_farmer:  # overalls, a checked shirt, rubber boots
+  kind: unit
+  inherits: base_civilian
+  name: Farmer
+  climates: [temperate]
+  homes: [neutral_farmhouse]
+  gathers_at: [well, hay_bale, farm_tractor, neutral_farmhouse, neutral_barn, neutral_silo, neutral_windmill, neutral_water_tower]
+
+civ_desert_man:  # a long light robe and a head scarf
+  kind: unit
+  inherits: base_civilian
+  name: Villager
+  climates: [desert]
+  homes: [neutral_adobe_house]
+  gathers_at: [well, neutral_adobe_house, neutral_ancient_ruins]
+
+civ_desert_woman:  # a long loose dress and a light head scarf
+  kind: unit
+  inherits: base_civilian
+  name: Villager
+  climates: [desert]
+  homes: [neutral_adobe_house]
+  gathers_at: [well, neutral_adobe_house, neutral_ancient_ruins]

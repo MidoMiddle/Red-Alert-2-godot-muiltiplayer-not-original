@@ -92,7 +92,8 @@ public sealed record BuildingType(
     bool ExtendsBase = false,
     string DeathWeapon = "",
     bool Water = false,
-    bool LeavesRuins = true);
+    bool LeavesRuins = true,
+    bool Shelter = false);
 
 /// <summary>
 /// The kinds of buildings of the map the engine knows (docs/implementation/M3_base_economy.md, step 14a): each number with its data id.

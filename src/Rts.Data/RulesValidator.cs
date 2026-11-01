@@ -148,9 +148,14 @@ internal static class RulesValidator
     {
         public void Unit(UnitDef unit)
         {
-            Positive(unit.Id, "cost", unit.Cost);
+            // A civilian is never built: no price, no time.
+            if (!unit.Civilian)
+            {
+                Positive(unit.Id, "cost", unit.Cost);
+                Positive(unit.Id, "build_time", unit.BuildTime);
+            }
+
             Positive(unit.Id, "hp", unit.Hp);
-            Positive(unit.Id, "build_time", unit.BuildTime);
             NotNegative(unit.Id, "speed", unit.Speed);
             NotNegative(unit.Id, "turn_rate", unit.TurnRate);
             NotNegative(unit.Id, "turret_turn_rate", unit.TurretTurnRate ?? 0);
@@ -177,7 +182,14 @@ internal static class RulesValidator
                 Positive(unit.Id, "harvest_time", unit.HarvestTime);
                 Positive(unit.Id, "unload_rate", unit.UnloadRate);
             }
-            FactionOf(unit.Id, unit.Faction);
+            if (unit.Civilian)
+            {
+                Civilian(unit);
+            }
+            else
+            {
+                FactionOf(unit.Id, unit.Faction);
+            }
             CountriesOf(unit.Id, "countries", unit.Countries);
             CountriesOf(unit.Id, "forbidden_countries", unit.ForbiddenCountries);
             if (!rules.TryGetLocomotor(unit.Locomotor, out _))
@@ -951,6 +963,47 @@ internal static class RulesValidator
             if (weapon.Length > 0 && !rules.TryGetWeapon(weapon, out _))
             {
                 Error(id, key, Missing(id, "weapon", weapon));
+            }
+        }
+
+        // A civilian of the map (docs/map_elements/13_civilians): of no faction, unarmed, never built, its houses and gathering points
+        // things of the map.
+        private void Civilian(UnitDef unit)
+        {
+            if (unit.Faction.Length > 0)
+            {
+                Error(unit.Id, "faction", $"'{unit.Id}' is a civilian: it belongs to no faction");
+            }
+
+            if (unit.Primary.Length > 0 || unit.DeathWeapon.Length > 0 || unit.DeployWeapon.Length > 0)
+            {
+                Error(unit.Id, "primary", $"'{unit.Id}' is a civilian: it carries no weapon");
+            }
+
+            if (unit.Prerequisites.Length > 0 || unit.Category != UnitCategory.Infantry)
+            {
+                Error(unit.Id, "prerequisites", $"'{unit.Id}' is a civilian: a person, never built");
+            }
+
+            foreach (var home in unit.Homes)
+            {
+                if (!rules.TryGetMapBuilding(home, out var house) || !house.Shelter)
+                {
+                    Error(unit.Id, "homes", $"'{unit.Id}' comes out of '{home}', which is no house of the map ('shelter: true')");
+                }
+            }
+
+            foreach (var point in unit.GathersAt)
+            {
+                if (!rules.TryGetMapBuilding(point, out _) && !rules.TryGetMapObject(point, out _))
+                {
+                    Error(unit.Id, "gathers_at", $"'{unit.Id}' gathers by '{point}', which is no object or building of the map");
+                }
+            }
+
+            if (unit.Climates.Length == 0)
+            {
+                Error(unit.Id, "climates", $"'{unit.Id}' is a civilian: it needs the climates it lives in");
             }
         }
 

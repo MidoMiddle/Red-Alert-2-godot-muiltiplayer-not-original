@@ -116,7 +116,8 @@ public sealed class MapTypes
                     definition.ExtendsBase,
                     definition.DeathWeapon,
                     definition.Water,
-                    definition.Ruins);
+                    definition.Ruins,
+                    definition.Shelter);
             }
         }
 

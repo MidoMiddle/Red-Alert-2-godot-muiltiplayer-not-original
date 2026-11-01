@@ -39,7 +39,9 @@ public sealed class GameDataTests
         // The carrier's Hornet; the paradrop plane (loose ends, stage 1); the destroyer's Osprey (stage 4). The robot tank of Yuri's
         // Revenge was taken out (2026-10-25).
         Assert.Equal(28, database.Units.Count(unit => unit.Faction == "alliance"));
-        Assert.Equal(54, database.Units.Length);
+        // The ten civilians of the maps (docs/map_elements/13_civilians), of no faction.
+        Assert.Equal(10, database.Units.Count(unit => unit.Civilian && unit.Faction.Length == 0));
+        Assert.Equal(64, database.Units.Length);
         Assert.Equal(18, database.Buildings.Count(building => building.Faction == "union"));
         Assert.Equal(19, database.Buildings.Count(building => building.Faction == "alliance"));
         Assert.Equal(6, database.Locomotors.Length);
@@ -113,7 +115,8 @@ public sealed class GameDataTests
         // The naval set (the owner, 2026-11-01): the quay's edge, a map object that stops nobody; the reef and the ice floe on the
         // water (the map objects' key water); the offshore platform and the ships of nobody, buildings of the map on the water (keys
         // water and ruins).
-        Assert.Equal(0x1594119d88fc5adeUL, GameDataFiles.Current.Hash);
+        // The ten civilians of the maps (game/data/neutral/civilians.yaml) and the houses they hide in (shelter: true).
+        Assert.Equal(0xab1a6d5db79db629UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

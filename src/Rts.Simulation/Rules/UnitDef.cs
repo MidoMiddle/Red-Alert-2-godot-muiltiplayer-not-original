@@ -226,6 +226,21 @@ public sealed record UnitDef : IDefinition
     /// <summary>It is launched by another unit and never built (a Hornet).</summary>
     public bool Spawned { get; init; }
 
+    /// <summary>
+    /// A civilian of the map (docs/map_elements/13_civilians): of nobody, of no faction, never built; it rests by the gathering points of
+    /// its place, strolls between them, runs from danger and hides in houses (<c>CivilianSystem</c>). RA2 <c>Civilian=yes</c>.
+    /// </summary>
+    public bool Civilian { get; init; }
+
+    /// <summary>The ids of the buildings of the map a civilian comes out of at the start of a match (its houses).</summary>
+    public ImmutableArray<string> Homes { get; init; } = ImmutableArray<string>.Empty;
+
+    /// <summary>The ids of the objects and buildings of the map a civilian gathers by: a bench, a bus stop, a sun lounger, a well.</summary>
+    public ImmutableArray<string> GathersAt { get; init; } = ImmutableArray<string>.Empty;
+
+    /// <summary>The climates of the maps a civilian lives on (<c>winter</c>, <c>coast</c>, <c>urban</c> …).</summary>
+    public ImmutableArray<string> Climates { get; init; } = ImmutableArray<string>.Empty;
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

@@ -126,6 +126,10 @@ public static class DataHasher
             hash.Add(unit.SpawnRegen);
             hash.Add(unit.Spawned);
             hash.Add(unit.AvailableLater);
+            hash.Add(unit.Civilian);
+            Add(hash, unit.Homes);
+            Add(hash, unit.GathersAt);
+            Add(hash, unit.Climates);
         }
 
         hash.Add(rules.Buildings.Length);
@@ -448,6 +452,7 @@ public static class DataHasher
             Add(hash, building.DeathWeapon);
             hash.Add(building.Water ? 1 : 0);
             hash.Add(building.Ruins ? 1 : 0);
+            hash.Add(building.Shelter ? 1 : 0);
         }
 
         return hash.Value;

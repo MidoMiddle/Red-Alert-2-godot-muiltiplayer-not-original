@@ -70,7 +70,7 @@ public static class TechTree
                 var unit = rules.Units[i];
                 var own = unit.Faction == faction;
                 units[i] = (own || Taken(unit.Faction, unit.ProducedIn, unit.Countries, unit.RequiresStolen.Length > 0, factories))
-                    && !unit.AvailableLater && !unit.Spawned && AllOwned(unit.Prerequisites, owned)
+                    && !unit.AvailableLater && !unit.Spawned && !unit.Civilian && AllOwned(unit.Prerequisites, owned)
                     && (unit.RequiresStolen.Length == 0 || player.StolenTech.Contains(unit.RequiresStolen))
                     && (!own || Allowed(player.Country, unit.Countries, unit.ForbiddenCountries));
             }

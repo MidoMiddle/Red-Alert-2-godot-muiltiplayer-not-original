@@ -46,6 +46,38 @@ public sealed class RulesValidatorTests
     private static RulesError Fails(string fileName, string text, string replacement) =>
         Assert.Single(Errors(Edited(Dataset(), fileName, text, replacement)));
 
+    /// <summary>The dataset with a civilian of the map (docs/map_elements/13_civilians) added, its body changed by <paramref name="edit"/>.</summary>
+    private static List<(string FileName, string Text)> WithCivilian(Func<string, string> edit)
+    {
+        const string civilian = "civ_test:\n  kind: unit\n  armor: none\n  name: Civilian\n  civilian: true\n  category: infantry\n  placement: subcell\n"
+            + "  locomotor: foot\n  cost: 0\n  build_time: 0s\n  hp: 50\n  speed: 24\n  turn_rate: 0\n  sight: 2\n  turret: false\n  climates: [winter]\n";
+        return [.. Dataset(), ("neutral/civilians.yaml", edit(civilian))];
+    }
+
+    [Fact]
+    public void A_civilian_belongs_to_no_faction_and_costs_nothing()
+    {
+        var rules = RulesLoader.Load(WithCivilian(body => body));
+
+        Assert.True(rules.TryGetUnit("civ_test", out var civilian));
+        Assert.True(civilian.Civilian);
+        Assert.Equal(("", 0), (civilian.Faction, civilian.Cost));
+        Assert.Equal("winter", Assert.Single(civilian.Climates));
+    }
+
+    [Theory]
+    [InlineData("  name: Civilian\n", "  name: Civilian\n  faction: union\n", "'civ_test' is a civilian: it belongs to no faction")]
+    [InlineData("  sight: 2\n", "  sight: 2\n  primary: heavy_tank_cannon\n", "'civ_test' is a civilian: it carries no weapon")]
+    [InlineData("  sight: 2\n", "  sight: 2\n  homes: [nowhere]\n", "'civ_test' comes out of 'nowhere', which is no house of the map ('shelter: true')")]
+    [InlineData("  sight: 2\n", "  sight: 2\n  gathers_at: [nowhere]\n", "'civ_test' gathers by 'nowhere', which is no object or building of the map")]
+    [InlineData("  climates: [winter]\n", "", "'civ_test' is a civilian: it needs the climates it lives in")]
+    public void A_civilian_is_unarmed_of_no_faction_and_lives_by_things_of_the_map(string text, string replacement, string reason)
+    {
+        var error = Assert.Single(Errors(WithCivilian(body => body.Replace(text, replacement))));
+
+        Assert.Equal(reason, error.Reason);
+    }
+
     [Theory]
     // M3 step 14a: the kinds of the map are checked like the rest.
     [InlineData("map_object", "blocks: [foot, legs]", "'rock' refers to locomotor 'legs', which is not defined")]

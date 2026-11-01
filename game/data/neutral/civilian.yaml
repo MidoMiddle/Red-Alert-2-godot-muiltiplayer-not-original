@@ -19,6 +19,7 @@ neutral_house_a:
   footprint: [2, 2]
   hp: 800
   garrison: 3
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_apartment:
   kind: map_building
@@ -26,6 +27,7 @@ neutral_apartment:
   footprint: [3, 3]
   hp: 1500
   garrison: 12
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_fuel_tank:
   kind: map_building
@@ -65,6 +67,7 @@ neutral_school:
   footprint: [3, 2]
   hp: 1500
   garrison: 9
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_office:
   kind: map_building
@@ -72,6 +75,7 @@ neutral_office:
   footprint: [2, 2]
   hp: 1500
   garrison: 6
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_church:
   kind: map_building
@@ -79,12 +83,14 @@ neutral_church:
   footprint: [2, 3]
   hp: 1000
   garrison: 6
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_shop:
   kind: map_building
   name: Shop
   footprint: [2, 2]
   hp: 800
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_kiosk:
   kind: map_building
@@ -104,6 +110,7 @@ neutral_cafe:
   name: Cafe
   footprint: [2, 1]
   hp: 600
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_bank:
   kind: map_building
@@ -118,6 +125,7 @@ neutral_hotel:
   footprint: [3, 2]
   hp: 1800
   garrison: 9
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_fire_station:
   kind: map_building
@@ -143,6 +151,7 @@ neutral_beach_cabin:
   name: Beach cabin
   footprint: [1, 1]
   hp: 300
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_beach_bar:
   kind: map_building
@@ -176,6 +185,7 @@ neutral_adobe_house:
   footprint: [2, 2]
   hp: 600
   garrison: 3
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_ancient_ruins:
   kind: map_building
@@ -226,6 +236,7 @@ neutral_farmhouse:
   footprint: [2, 2]
   hp: 700
   garrison: 3
+  shelter: true  # civilians hide in it, taking no seat (docs/map_elements/13_civilians, 4.4)
 
 neutral_barn:
   kind: map_building

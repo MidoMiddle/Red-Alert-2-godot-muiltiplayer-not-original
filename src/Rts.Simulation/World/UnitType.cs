@@ -76,4 +76,16 @@ public enum UnitType : byte
     ChronoIvan = 53,
     AlliancePsiCommando = 54,
     YuriPrime = 55,
+
+    // The civilians of the maps (docs/map_elements/13_civilians): of nobody, never built.
+    CivMan = 56,
+    CivWoman = 57,
+    CivWinterMan = 58,
+    CivWinterWoman = 59,
+    CivBeachMan = 60,
+    CivBeachWoman = 61,
+    CivLifeguard = 62,
+    CivFarmer = 63,
+    CivDesertMan = 64,
+    CivDesertWoman = 65,
 }
