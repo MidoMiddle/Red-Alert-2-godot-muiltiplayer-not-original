@@ -22,7 +22,8 @@ public readonly record struct LookColor(float R, float G, float B)
 /// colour left out; the tint is not used then. Snowy grass is snow with patches of green over a third of it, as in RA2.
 /// <paramref name="Wall"/>, another material of the climate, dresses the walls of the cliffs of a cell of this one instead of the
 /// climate's cliff material, laid from the side unstretched, and those walls stand straight: a quay's concrete
-/// (docs/naval_elements/09_quay_wall).
+/// (docs/naval_elements/09_quay_wall). <paramref name="Wet"/>, another material of the climate, is what a cell of this one turns to
+/// along the water line, in the band the shore is rounded over: the wet sand of a beach (docs/beach_elements/01_sand_dunes).
 /// </summary>
 public sealed record ClimateMaterial(
     string Id,
@@ -35,7 +36,8 @@ public sealed record ClimateMaterial(
     LookColor? Color = null,
     LookColor? Patches = null,
     float PatchesShare = 0.5f,
-    string? Wall = null);
+    string? Wall = null,
+    string? Wet = null);
 
 /// <summary>
 /// A time of day of a climate (docs/map_elements/18_lighting/README.md): the sun (or the moon) and the environment. The sun's
@@ -101,6 +103,7 @@ public sealed class ClimateLook
         Require(materials.Select(m => m.Id).Distinct(StringComparer.Ordinal).Count() == materials.Length, "every material once");
         Require(materials.Any(m => m.Id == cliff), $"the cliff material '{cliff}' is none of the materials");
         Require(materials.All(m => m.Wall is null || materials.Any(other => other.Id == m.Wall)), "every wall material is one of the materials");
+        Require(materials.All(m => m.Wet is null || materials.Any(other => other.Id == m.Wet)), "every wet material is one of the materials");
         Require(MapLighting.Ids.All(preset => lighting.Count(l => l.Id == preset) == 1), "every time of day once");
         Id = id;
         Materials = materials;

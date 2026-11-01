@@ -609,6 +609,22 @@ objects:
   - { type: billboard, cell: [68, 73], variant: 0 }
   - { type: billboard, cell: [47, 75], variant: 0 }
   - { type: billboard, cell: [88, 75], variant: 0 }
+  - { type: buoy, cell: [61, 16], variant: 1 }
+  - { type: buoy, cell: [74, 16], variant: 1 }
+  - { type: buoy, cell: [44, 30], variant: 2 }
+  - { type: buoy, cell: [47, 30], variant: 1 }
+  - { type: buoy, cell: [88, 30], variant: 1 }
+  - { type: buoy, cell: [91, 30], variant: 2 }
+  - { type: buoy, cell: [26, 50], variant: 0 }
+  - { type: buoy, cell: [109, 50], variant: 0 }
+  - { type: buoy, cell: [15, 61], variant: 0 }
+  - { type: buoy, cell: [120, 61], variant: 0 }
+  - { type: buoy, cell: [14, 63], variant: 1 }
+  - { type: buoy, cell: [121, 63], variant: 1 }
+  - { type: buoy, cell: [12, 70], variant: 2 }
+  - { type: buoy, cell: [123, 70], variant: 2 }
+  - { type: buoy, cell: [33, 92], variant: 1 }
+  - { type: buoy, cell: [102, 92], variant: 1 }
   - { type: driftwood, cell: [27, 53], variant: 0 }
   - { type: driftwood, cell: [108, 53], variant: 0 }
   - { type: driftwood, cell: [63, 118], variant: 0 }

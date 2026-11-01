@@ -415,6 +415,7 @@ public sealed class GoldenValuesTests
         // Replay format v32 (the option Civilians and the climate of the map in the setup): the version only — no match here.
         // Rules v121 (the civilians of the maps live, run and hide, only in a match with the option): the version only.
         // Rules v122 (the animals and the parked cars of the maps, only in a match with civilians): the version only.
-        Assert.Equal((22270, 480085331833897910UL), (bytes.Length, hash.Value));
+        // Rules v123 (the buoy, a map object on the water that stops nobody; the owner's wish): the version only — no buoy here.
+        Assert.Equal((22270, 9824937092272772371UL), (bytes.Length, hash.Value));
     }
 }

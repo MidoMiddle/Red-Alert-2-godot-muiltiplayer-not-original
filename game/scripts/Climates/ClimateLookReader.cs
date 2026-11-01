@@ -70,12 +70,15 @@ public static class ClimateLookReader
             materials.Add(Material(material, pair.Value));
         }
 
-        // A material's wall is another material of the climate.
+        // A material's wall and wet one are other materials of the climate.
         foreach (var pair in materialMap)
         {
-            if (pair.Value is YamlMappingNode fields && fields.Children.TryGetValue(new YamlScalarNode("wall"), out var wallNode) && !seen.Contains(Text(wallNode)))
+            foreach (var key in new[] { "wall", "wet" })
             {
-                throw Error(wallNode, $"the wall material '{Text(wallNode)}' is none of the materials");
+                if (pair.Value is YamlMappingNode fields && fields.Children.TryGetValue(new YamlScalarNode(key), out var other) && !seen.Contains(Text(other)))
+                {
+                    throw Error(other, $"the {key} material '{Text(other)}' is none of the materials");
+                }
             }
         }
 
@@ -116,7 +119,7 @@ public static class ClimateLookReader
 
     private static ClimateMaterial Material(string id, YamlNode node)
     {
-        var fields = Entries(node, ["albedo", "tiling", "roughness", "tint", "frost", "water", "color", "patches", "patches_share", "wall"], $"material '{id}'");
+        var fields = Entries(node, ["albedo", "tiling", "roughness", "tint", "frost", "water", "color", "patches", "patches_share", "wall", "wet"], $"material '{id}'");
         var color = Optional(fields, "color") is { } painted ? Color(painted) : (LookColor?)null;
         if (color is null && (Optional(fields, "patches") ?? Optional(fields, "patches_share")) is { } lonely)
         {
@@ -134,7 +137,8 @@ public static class ClimateLookReader
             color,
             Optional(fields, "patches") is { } patches ? Color(patches) : color,
             Optional(fields, "patches_share") is { } share ? Number(share, 0f, 1f, "patches_share") : 0.5f,
-            Optional(fields, "wall") is { } wall ? Id(wall) : null);
+            Optional(fields, "wall") is { } wall ? Id(wall) : null,
+            Optional(fields, "wet") is { } wet ? Id(wet) : null);
     }
 
     private static LightPreset Light(string id, YamlNode node)

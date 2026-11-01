@@ -228,10 +228,12 @@ public partial class TerrainBuilder : Node3D
         var patches = new Vector3[ClimateLook.MaxMaterials];
         var share = new float[ClimateLook.MaxMaterials];
         var wall = new float[ClimateLook.MaxMaterials];
+        var wet = new float[ClimateLook.MaxMaterials];
         for (var i = 0; i < ClimateLook.MaxMaterials; i++)
         {
             var material = climate.Materials[System.Math.Min(i, climate.Materials.Length - 1)];
             wall[i] = material.Wall is { } wallMaterial ? climate.SlotOf(wallMaterial) : -1f;
+            wet[i] = material.Wet is { } wetMaterial ? climate.SlotOf(wetMaterial) : -1f;
             tiling[i] = material.Tiling;
             roughness[i] = material.Roughness;
             water[i] = material.Water ? 1f : 0f;
@@ -263,6 +265,7 @@ public partial class TerrainBuilder : Node3D
         GroundMaterial.SetShaderParameter("mat_patches", patches);
         GroundMaterial.SetShaderParameter("mat_patches_share", share);
         GroundMaterial.SetShaderParameter("mat_wall", wall);
+        GroundMaterial.SetShaderParameter("mat_wet", wet);
         GroundMaterial.SetShaderParameter("deep_water_color", SceneLighting.Color(climate.DeepWater));
     }
 

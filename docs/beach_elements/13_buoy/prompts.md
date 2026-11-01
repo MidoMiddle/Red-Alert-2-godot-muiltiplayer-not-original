@@ -47,7 +47,8 @@ A floating navigation buoy: a bright red conical body about one unit wide and ei
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `prop_buoy.glb` | | | |
+| `buoy_red.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_buoy.py`) | 2026-11-01 | сделано, 358 треугольников, красный (вместо `prop_buoy`) |
+| `buoy_white.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_buoy.py`) | 2026-11-01 | сделано, 358 треугольников, белый |
 
 ## Открытые вопросы
 

@@ -627,6 +627,22 @@ objects:
   - { type: beached_boat, cell: [85, 110], variant: 0 }
   - { type: beached_boat, cell: [66, 122], variant: 0 }
   - { type: beached_boat, cell: [69, 122], variant: 0 }
+  - { type: buoy, cell: [58, 12], variant: 2 }
+  - { type: buoy, cell: [77, 12], variant: 2 }
+  - { type: buoy, cell: [42, 26], variant: 0 }
+  - { type: buoy, cell: [93, 26], variant: 0 }
+  - { type: buoy, cell: [35, 35], variant: 2 }
+  - { type: buoy, cell: [100, 35], variant: 2 }
+  - { type: buoy, cell: [30, 38], variant: 0 }
+  - { type: buoy, cell: [105, 38], variant: 0 }
+  - { type: buoy, cell: [20, 50], variant: 2 }
+  - { type: buoy, cell: [115, 50], variant: 2 }
+  - { type: buoy, cell: [14, 55], variant: 1 }
+  - { type: buoy, cell: [121, 55], variant: 1 }
+  - { type: buoy, cell: [26, 91], variant: 1 }
+  - { type: buoy, cell: [109, 91], variant: 1 }
+  - { type: buoy, cell: [44, 108], variant: 0 }
+  - { type: buoy, cell: [91, 108], variant: 0 }
   - { type: driftwood, cell: [56, 18], variant: 0 }
   - { type: driftwood, cell: [79, 18], variant: 0 }
   - { type: driftwood, cell: [50, 24], variant: 0 }

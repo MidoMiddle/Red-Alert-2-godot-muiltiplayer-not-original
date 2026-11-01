@@ -163,5 +163,7 @@ public static class PropLooks
             Cone(0.26f, 0.24f, -0.28f, 0, -0.22f, LookTint.Dark),
         ],
         ["ice_floe"] = [Cyl(0.9f, 0.13f, 0, 0, 0, LookTint.White), Box(0.3f, 0.12f, 0.12f, -0.15f, 0.13f, 0.2f, LookTint.White, 0f, 30f)],
+        // A buoy (docs/beach_elements/13_buoy): a red float, a mast and its light.
+        ["buoy"] = [Cone(0.22f, 0.22f, 0, 0, 0, LookTint.Red), Cyl(0.03f, 0.2f, 0, 0.22f, 0, LookTint.Metal), Cyl(0.06f, 0.05f, 0, 0.42f, 0, LookTint.Glow)],
     };
 }

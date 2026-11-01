@@ -584,6 +584,22 @@ objects:
   - { type: beach_umbrella, cell: [95, 76], variant: 0 }
   - { type: beach_umbrella, cell: [96, 76], variant: 0 }
   - { type: beach_umbrella, cell: [67, 97], variant: 0 }
+  - { type: buoy, cell: [69, 35], variant: 0 }
+  - { type: buoy, cell: [65, 38], variant: 3 }
+  - { type: buoy, cell: [50, 43], variant: 1 }
+  - { type: buoy, cell: [55, 43], variant: 2 }
+  - { type: buoy, cell: [66, 46], variant: 0 }
+  - { type: buoy, cell: [44, 56], variant: 0 }
+  - { type: buoy, cell: [52, 56], variant: 0 }
+  - { type: buoy, cell: [58, 56], variant: 2 }
+  - { type: buoy, cell: [77, 79], variant: 2 }
+  - { type: buoy, cell: [83, 79], variant: 0 }
+  - { type: buoy, cell: [91, 79], variant: 0 }
+  - { type: buoy, cell: [69, 89], variant: 0 }
+  - { type: buoy, cell: [80, 92], variant: 2 }
+  - { type: buoy, cell: [85, 92], variant: 1 }
+  - { type: buoy, cell: [70, 97], variant: 3 }
+  - { type: buoy, cell: [66, 100], variant: 0 }
   - { type: driftwood, cell: [44, 58], variant: 0 }
   - { type: driftwood, cell: [91, 77], variant: 0 }
   - { type: gem_source, cell: [77, 61], variant: 0 }

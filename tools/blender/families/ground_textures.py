@@ -10,6 +10,10 @@
                  the formwork's ties two by two to a panel (a few filled) with rusty streaks running down from them, weathered patches,
                  small light chips; no algae (it would come back in a band on
                  every tile up the wall)
+    beach_wet_sand the wet sand of a beach by the water (docs/beach_elements/01_sand_dunes): the shore's sand darkened and packed
+                 by the waves, grey-brown and cool; the swash lines of spent waves across it — thin wavy lines of fine dark grains and
+                 a pale fringe of dried foam — the rills of the backwash running down between them, small pits of air holes, a few
+                 light shell fragments; smooth, no wind ripples (the waves flatten them)
 Files: game/assets/textures/terrain/<name>.png, 1024x1024 RGB, seamless.
 
 In Blender, after tools/blender is on sys.path:
@@ -21,8 +25,8 @@ import numpy as np
 
 from families import road_textures as rt
 
-NAMES = ("sand_shore", "shoal_sand", "quay_concrete")
-SEEDS = {"sand_shore": 61, "shoal_sand": 67, "quay_concrete": 71}
+NAMES = ("sand_shore", "shoal_sand", "quay_concrete", "beach_wet_sand")
+SEEDS = {"sand_shore": 61, "shoal_sand": 67, "quay_concrete": 71, "beach_wet_sand": 73}
 
 
 def draw(name):
@@ -32,6 +36,8 @@ def draw(name):
         return _shoal(rng, u, v)
     if name == "quay_concrete":
         return _quay(rng, u, v)
+    if name == "beach_wet_sand":
+        return _wet(rng, u, v)
     # Ripples across the texture, bent by a slow noise; whole numbers of them across, so they wrap.
     bend = rt._fbm(rng, 3, 3)
     ripple = 0.5 + 0.5 * np.sin(2 * np.pi * (24 * u + 8 * v + 3 * bend))
@@ -55,6 +61,32 @@ def _shoal(rng, u, v):
     rgb = base[None, None, :] * (1.0 + tone[..., None])
     algae = np.clip((rt._fbm(rng, 6, 3) - 0.64) * 5.0, 0.0, 1.0)[..., None] * 0.2
     return np.clip(rgb * (1 - algae) + np.array([0.46, 0.52, 0.32])[None, None, :] * algae, 0, 1)
+
+
+def _wet(rng, u, v):
+    """The swash lines run along u (along the water), each wavy in its own way and broken; the backwash rills run across them."""
+    def wavy(periods, phases, amp):
+        # A wave of whole periods along u, so it wraps.
+        return sum(a * np.sin(2 * np.pi * (k * u + ph)) for k, ph, a in zip(periods, phases, amp))
+
+    swash = np.zeros_like(u)
+    fringe = np.zeros_like(u)
+    for at in (0.08, 0.31, 0.47, 0.74):
+        bend = wavy((1, 2, 3), rng.random(3), (0.035, 0.03, 0.012)) + 0.05 * (rt._fbm(rng, 6, 3) - 0.5)
+        d = np.mod(v - at - bend + 0.5, 1.0) - 0.5  # signed distance across the line, wrapped
+        keep = np.clip((rt._fbm(rng, 8, 3) - 0.38) * 4.0, 0.0, 1.0)  # the line fades out in places
+        width = 0.0018 + 0.0018 * rt._fbm(rng, 16, 2)
+        swash = np.maximum(swash, keep * np.clip(1.0 - np.abs(d) / width, 0.0, 1.0))
+        fringe = np.maximum(fringe, keep * np.clip(1.0 - np.abs(d + 0.006) / 0.006, 0.0, 1.0) * (d < -0.001))
+    # Rills of the backwash: faint fine grooves down the slope, a little slanted, in patches.
+    groove = 0.5 + 0.5 * np.sin(2 * np.pi * (60 * u + 4 * v) + 3.0 * rt._fbm(rng, 6, 2))
+    rills = np.clip((rt._fbm(rng, 5, 3) - 0.5) * 3.0, 0.0, 1.0) * groove ** 6
+    wet = rt._fbm(rng, 3, 3) - 0.5  # wetter and drier stretches
+    tone = 0.07 * wet + 0.035 * (rt._fbm(rng, 32, 3) - 0.5) + 0.05 * (rt._noise(rng, 512) - 0.5)
+    tone = tone - 0.06 * rills - 0.22 * swash * (0.7 + 0.3 * rt._noise(rng, 256)) + 0.07 * fringe
+    tone = tone - 0.22 * rt._grit(rng, 0.003) + 0.15 * rt._grit(rng, 0.003, 2)  # air holes, shell fragments
+    base = np.array([0.62, 0.56, 0.47])
+    return np.clip(base[None, None, :] * (1.0 + tone[..., None]), 0, 1)
 
 
 def _quay(rng, u, v):

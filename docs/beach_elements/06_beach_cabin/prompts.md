@@ -44,7 +44,12 @@ A small wooden beach changing cabin with light blue painted walls, a single-pitc
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_cabin.glb` | | | |
+| `beach_cabin.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_cabin.py`) | 2026-11-01 | сделано, 178 треугольников, голубая |
+| `beach_cabin_white.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_cabin.py`) | 2026-11-01 | сделано, 178 треугольников, белая |
+| `beach_cabin_yellow.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_cabin.py`) | 2026-11-01 | сделано, 178 треугольников, жёлтая |
+| `beach_cabin_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_cabin.py`) | 2026-11-01 | сделано, 212 треугольников |
+| `beach_cabin_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_cabin.py`) | 2026-11-01 | сделано, 178 треугольников, огонь `fire_1..2` |
+| `beach_cabin_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_cabin.py`) | 2026-11-01 | сделано, 128 треугольников |
 
 ## Открытые вопросы
 

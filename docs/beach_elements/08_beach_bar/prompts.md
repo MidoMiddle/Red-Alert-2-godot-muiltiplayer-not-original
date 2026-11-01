@@ -45,7 +45,10 @@ An open-air beach bar: a light wooden counter, a striped fabric awning on dark w
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_bar.glb` | | | |
+| `beach_bar.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_bar.py`) | 2026-11-01 | сделано, 1 355 треугольников |
+| `beach_bar_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_bar.py`) | 2026-11-01 | сделано, 1 359 треугольников |
+| `beach_bar_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_bar.py`) | 2026-11-01 | сделано, 722 треугольников, огонь `fire_1..3` |
+| `beach_bar_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_bar.py`) | 2026-11-01 | сделано, 200 треугольников |
 
 ## Открытые вопросы
 

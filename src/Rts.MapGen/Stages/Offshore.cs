@@ -13,10 +13,11 @@ namespace Rts.MapGen.Stages;
 /// <item>a cargo ship off every quay (<see cref="Harbour"/>), or fishing boats where the turn of the symmetry would lay the ship
 /// across;</item>
 /// <item>an offshore platform out in the open sea, its income as an oil derrick's, taken by an engineer a helicopter sets down;</item>
-/// <item>a ferry off the coast, fishing boats off the beaches — on every climate but the snow, where the sea freezes;</item>
+/// <item>a ferry off the coast, fishing boats off the beaches and buoys marking the swimmers' water — on every climate but the snow,
+/// where the sea freezes;</item>
 /// <item>reef rocks off the coast (the coast climate), ice floes on the sea of the snow.</item>
 /// </list>
-/// Every piece stops ships, and so goes where it closes no way: all of it on water, and a ring of water a cell wide round it that
+/// Every piece but the buoy stops ships, and so goes where it closes no way (the buoy keeps the same room, so ships pass it too): all of it on water, and a ring of water a cell wide round it that
 /// nothing else stands on — a fleet goes round. It goes with its images under the symmetry or not at all; a building whose images
 /// would lie across (a long ship under a quarter turn) does not go. Nothing within the bay of an oil derrick on its islet, where
 /// an engineer lands, nor before a quay.
@@ -30,7 +31,11 @@ internal static class Offshore
     private const int Inshore = 4;
     private const int ReefOffshore = 2;
 
-    public static void Place(GenMap map)
+    // How far off a beach the buoys float, at most.
+    private const int BuoyOff = 3;
+
+    /// <summary>What stands in the sea; with <paramref name="buoysOnly"/> only the buoys (a map that has the rest already).</summary>
+    public static void Place(GenMap map, bool buoysOnly = false)
     {
         if (map.Settings.Water is not (WaterKind.Sea or WaterKind.Islands))
         {
@@ -40,6 +45,16 @@ internal static class Offshore
         var sea = new Sea(map);
         var climate = map.Settings.Climate;
         var frozen = climate == ClimateGrounds.Winter;
+        if (buoysOnly)
+        {
+            if (!frozen)
+            {
+                Buoys(map, sea);
+            }
+
+            return;
+        }
+
         foreach (var quay in map.Quays)
         {
             // Off the wall, a cell of water between: the cargo ship lies along it, else two fishing boats.
@@ -56,6 +71,7 @@ internal static class Offshore
         {
             sea.Place(2, 1, cell => sea.Near(cell, Inshore, LandType.Clear, LandType.Beach), cell => sea.Building("neutral_ferry", cell, 0));
             sea.Place(3, 2, cell => sea.Near(cell, Inshore, LandType.Beach), cell => sea.Building("neutral_fishing_boat", cell, 0));
+            Buoys(map, sea);
         }
 
         if (climate == ClimateGrounds.Coast)
@@ -68,6 +84,11 @@ internal static class Offshore
             sea.Place(5, map.N / 12, cell => sea.Clear(cell, 1), cell => sea.Object("ice_floe", cell, cell.X + cell.Y));
         }
     }
+
+    // Buoys a little off the beaches, marking the swimmers' water; they stop nobody.
+    private static void Buoys(GenMap map, Sea sea) =>
+        sea.Place(6, map.N / 16, cell => sea.Near(cell, BuoyOff, LandType.Beach) && !sea.Near(cell, 1, LandType.Beach, LandType.Clear),
+            cell => sea.Object("buoy", cell, cell.X + cell.Y));
 
     // The north-west cell of a ship <paramref name="length"/> cells along the wall of a quay from (u, v) on.
     private static CellPos Corner(Quay quay, int u, int v, int length)

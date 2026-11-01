@@ -49,8 +49,8 @@ Seamless tileable texture of wet dark sand with a glossy sheen and small pebbles
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_sand.png` | | | |
-| `beach_wet_sand.png` | | | |
+| `beach_sand.png` | не нужен: сухой песок пляжа — уже готовые `sand_shore.png` (песок у воды, материал `shore`) и `coast_sand.png` (пятна песка, материал `sand`) климата «Побережье» | — | есть |
+| `beach_wet_sand.png` | Blender 5.2.3 + numpy, вручную (скрипт `tools/blender/families/ground_textures.py`) | 2026-11-01 | сделано, подключена (полоса у воды, шейдер) |
 
 ## Открытые вопросы
 

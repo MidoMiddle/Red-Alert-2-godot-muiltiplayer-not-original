@@ -49,6 +49,7 @@ internal static class TestMapKinds
         builder.Add(new MapObjectDef { Id = "quay_edge", Name = "Quay edge", Blocks = [], Hp = 0, CrushedBy = [], Stump = false, Speeds = [] });
         builder.Add(new MapObjectDef { Id = "reef_rocks", Name = "Reef", Blocks = ["amphibious", "hover", "naval"], Hp = 3000, CrushedBy = [], Stump = false, Speeds = [], Water = true });
         builder.Add(new MapObjectDef { Id = "ice_floe", Name = "Ice floe", Blocks = ["naval"], Hp = 800, CrushedBy = [], Stump = false, Speeds = [], Water = true });
+        builder.Add(new MapObjectDef { Id = "buoy", Name = "Buoy", Blocks = [], Hp = 50, CrushedBy = [], Stump = false, Speeds = [], Water = true });
 
         builder.Add(new BridgeDef { Id = "bridge_wood_low", Name = "Low wooden bridge", SegmentHp = 600, Width = 3, High = false });
         builder.Add(new BridgeDef { Id = "bridge_concrete_high", Name = "High concrete bridge", SegmentHp = 1500, Width = 3, High = true });

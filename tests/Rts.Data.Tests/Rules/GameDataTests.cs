@@ -118,7 +118,8 @@ public sealed class GameDataTests
         // water and ruins).
         // The ten civilians of the maps (game/data/neutral/civilians.yaml) and the houses they hide in (shelter: true).
         // The animals and the parked cars of the maps (civ_cow, civ_sheep, civ_camel, civ_car, civ_bus, civ_truck).
-        Assert.Equal(0x44cc622462cf7fc1UL, GameDataFiles.Current.Hash);
+        // The buoy (docs/beach_elements/13_buoy), a map object on the water that stops nobody.
+        Assert.Equal(0xd55532b97f9a1b50UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

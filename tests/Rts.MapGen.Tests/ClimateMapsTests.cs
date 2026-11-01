@@ -258,6 +258,10 @@ public sealed class ClimateMapsTests
         Assert.Equal(climate == "coast", pieces.Any(p => p.Type == "reef_rocks"));
         Assert.Equal(climate == "winter", pieces.Any(p => p.Type == "ice_floe"));
         Assert.Equal(climate != "winter", pieces.Any(p => p.Type == "neutral_fishing_boat"));
+        // Buoys off the beaches (docs/beach_elements/13_buoy), on the water; they stop nobody.
+        var buoys = map.Objects.Where(o => o.Type == "buoy").ToList();
+        Assert.Equal(climate != "winter", buoys.Count > 0);
+        Assert.All(buoys, buoy => Assert.True(Wet(grid, buoy.Cell), $"a buoy at {buoy.Cell.X},{buoy.Cell.Y} is not on the water"));
         Assert.All(pieces, piece =>
         {
             foreach (var cell in piece.Cells)
@@ -291,7 +295,7 @@ public sealed class ClimateMapsTests
         var islands = new MapGenSettings { Types = types, Seed = 326, Size = 64, Symmetry = MapSymmetry.Rotate180, Climate = "coast", Water = WaterKind.Islands };
         var (isles, _) = MapGenerator.Generate(islands);
         var more = MapGenerator.AddSea(isles, islands);
-        var sea = new[] { "reef_rocks", "tech_offshore_platform", "neutral_ferry", "neutral_fishing_boat" };
+        var sea = new[] { "reef_rocks", "tech_offshore_platform", "neutral_ferry", "neutral_fishing_boat", "buoy" };
         Assert.True(isles.Land.SequenceEqual(more.Land) && isles.Heights.SequenceEqual(more.Heights) && isles.Texture.SequenceEqual(more.Texture));
         Assert.All(isles.Objects, o => Assert.Contains(o, more.Objects));
         Assert.All(isles.Structures, s => Assert.Contains(s, more.Structures));

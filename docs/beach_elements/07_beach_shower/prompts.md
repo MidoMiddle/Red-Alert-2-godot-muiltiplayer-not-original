@@ -46,7 +46,7 @@ A beach outdoor shower: a tall grey metal pipe about two and a fifth units tall 
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_shower.glb` | | | |
+| `beach_shower.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_shower.py`) | 2026-11-01 | сделано, 278 треугольников |
 
 ## Открытые вопросы
 

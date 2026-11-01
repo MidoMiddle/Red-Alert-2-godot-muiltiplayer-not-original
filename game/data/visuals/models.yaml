@@ -25,6 +25,29 @@ models:
   # The crates of a match (M11 a6): the supply crate of the map's props.
   crate/supply:               { file: map/prop_supply_crate/prop_supply_crate.glb }
 
+  # The palm of the coast and of the desert's oases (docs/beach_elements/02_palm): three kinds, each cell picks one, turned any way and
+  # a little bigger or smaller; made at the size the game draws a tree. Felled, it leaves the stump every tree leaves.
+  tree/palm:                  { files: [beach/tree_palm_01/tree_palm_01.glb, beach/tree_palm_02/tree_palm_02.glb,
+                                        beach/tree_palm_03/tree_palm_03.glb], spin: true, jitter: 0.15 }
+  # What the sea throws up on a beach (docs/beach_elements/03_driftwood): a bleached trunk, a forked branch or a heap of planks, a
+  # canister and seaweed — the map object driftwood, which stops nobody; each cell picks one, turned any way.
+  object/driftwood:           { files: [beach/prop_driftwood/prop_driftwood.glb, beach/prop_driftwood_branch/prop_driftwood_branch.glb,
+                                        beach/prop_beach_debris/prop_beach_debris.glb], spin: true, jitter: 0.1 }
+  # The beach umbrella (docs/beach_elements/04_beach_umbrella): one shape in three colourings, red and white, yellow and blue, green
+  # and white; each cell picks one. Its canopy is a node of its own (canopy), to sway.
+  object/beach_umbrella:      { files: [beach/beach_umbrella/beach_umbrella.glb, beach/beach_umbrella_yellow/beach_umbrella_yellow.glb,
+                                        beach/beach_umbrella_green/beach_umbrella_green.glb], spin: true, jitter: 0.08 }
+  # The sun lounger (docs/beach_elements/05_sun_lounger): one shape in three fabrics, blue and white stripes, turquoise, yellow; each
+  # cell picks one.
+  object/sun_lounger:         { files: [beach/beach_sun_lounger/beach_sun_lounger.glb,
+                                        beach/beach_sun_lounger_turquoise/beach_sun_lounger_turquoise.glb,
+                                        beach/beach_sun_lounger_yellow/beach_sun_lounger_yellow.glb], spin: true }
+  # The beach shower (docs/beach_elements/07_beach_shower): its pipe, its head and the pad under it; water_anchor under the head for the
+  # water to fall from.
+  object/beach_shower:        { file: beach/beach_shower/beach_shower.glb, spin: true }
+  # The volleyball net (docs/beach_elements/09_volleyball_net): its posts and the court's tapes, and the net, its mesh in strings.
+  object/volleyball_net:      { file: beach/beach_volleyball_net/beach_volleyball_net.glb, spin: true }
+
   # The buildings of the players (docs/ra2_buildings). The team_mask nodes take the owner's colour.
   building/tesla_coil: { file: building/tesla_coil/tesla_coil.glb, height: 3 }
   building/barracks:   { file: building/barracks/barracks.glb, height: 3.6 }
@@ -174,6 +197,41 @@ models:
 
   # The city kiosk (docs/city_elements/07_kiosk): no soldiers go in, so whole, damaged, abandoned (skewed, its door hanging) and
   # ruins.
+  # The beach cabin (docs/beach_elements/06_beach_cabin): a storey to a cell, squashed as the city's kiosk; whole in three paints (light
+  # blue, white, yellow), each cell picking one; damaged and burning with the paint peeled to grey wood (fire_1..2 on the burning one),
+  # and its burnt ruins.
+  building/neutral_beach_cabin: { files: [beach/beach_cabin/beach_cabin.glb, beach/beach_cabin_white/beach_cabin_white.glb,
+                                          beach/beach_cabin_yellow/beach_cabin_yellow.glb], height: 0.47, height_scale: 0.35,
+                                  damaged: beach/beach_cabin_damaged/beach_cabin_damaged.glb,
+                                  abandoned: beach/beach_cabin_abandoned/beach_cabin_abandoned.glb,
+                                  ruins: beach/beach_cabin_ruins/beach_cabin_ruins.glb }
+
+  # The beach bar (docs/beach_elements/08_beach_bar): a storey to a cell, squashed as the city's cafe; whole, damaged (the awning torn),
+  # burning (fire_1..3) and burnt down.
+  building/neutral_beach_bar: { file: beach/beach_bar/beach_bar.glb, height: 0.62, height_scale: 0.35,
+                                damaged: beach/beach_bar_damaged/beach_bar_damaged.glb,
+                                abandoned: beach/beach_bar_abandoned/beach_bar_abandoned.glb,
+                                ruins: beach/beach_bar_ruins/beach_bar_ruins.glb }
+
+  # The lifeguard tower (docs/beach_elements/11_lifeguard_tower): a storey to a cell, squashed as the buildings of the map; its three
+  # soldiers' barrels out of the cabin's windows when occupied, fire_1..2 when burning, the cabin fallen on the sand in its ruins.
+  building/neutral_lifeguard_tower: { file: beach/beach_lifeguard_tower/beach_lifeguard_tower.glb, height: 0.9, height_scale: 0.35,
+                                      occupied: beach/beach_lifeguard_tower_occupied/beach_lifeguard_tower_occupied.glb,
+                                      damaged: beach/beach_lifeguard_tower_damaged/beach_lifeguard_tower_damaged.glb,
+                                      damaged_occupied: beach/beach_lifeguard_tower_damaged_occupied/beach_lifeguard_tower_damaged_occupied.glb,
+                                      abandoned: beach/beach_lifeguard_tower_abandoned/beach_lifeguard_tower_abandoned.glb,
+                                      ruins: beach/beach_lifeguard_tower_ruins/beach_lifeguard_tower_ruins.glb }
+
+  # The lighthouse (docs/beach_elements/12_lighthouse): made at the size it is drawn, not squashed — the tallest thing of the coast; its
+  # soldiers' barrels out of the tower's and the keeper's house's windows when occupied, the tower leaning and the house's roof burning
+  # (fire_1..2) when abandoned, its top in pieces on the sand in its ruins. The lantern's core is a node of its own (lantern) to light.
+  building/neutral_lighthouse: { file: beach/beach_lighthouse/beach_lighthouse.glb, height: 2.6,
+                                 occupied: beach/beach_lighthouse_occupied/beach_lighthouse_occupied.glb,
+                                 damaged: beach/beach_lighthouse_damaged/beach_lighthouse_damaged.glb,
+                                 damaged_occupied: beach/beach_lighthouse_damaged_occupied/beach_lighthouse_damaged_occupied.glb,
+                                 abandoned: beach/beach_lighthouse_abandoned/beach_lighthouse_abandoned.glb,
+                                 ruins: beach/beach_lighthouse_ruins/beach_lighthouse_ruins.glb }
+
   building/neutral_kiosk: { file: city/city_kiosk/city_kiosk.glb, height: 0.5, height_scale: 0.35,
                             damaged: city/city_kiosk_damaged/city_kiosk_damaged.glb,
                             abandoned: city/city_kiosk_abandoned/city_kiosk_abandoned.glb,
@@ -305,6 +363,8 @@ models:
   # On the water (docs/naval_elements, 02 and 03): their pivot on the water's surface, each turned any way. Their damaged files wait
   # for the client to draw a map object's states.
   object/reef_rocks:          { file: naval/reef_rocks/reef_rocks.glb, spin: true }
+  # The buoy (docs/beach_elements/13_buoy): red with a white band or white with a red one, each cell picks one; its light a node of its own.
+  object/buoy:                { files: [beach/buoy_red/buoy_red.glb, beach/buoy_white/buoy_white.glb], spin: true }
   object/ice_floe:            { file: naval/ice_floe/ice_floe.glb, spin: true, jitter: 0.1 }
   # The street stall of the city (docs/city_elements/08_street_stall), made at the size it is drawn; its damaged and destroyed files
   # wait for the client to draw a map object's states.
@@ -346,3 +406,8 @@ models:
   unit/civ_farmer:           { file: unit/civ_farmer/civ_farmer.glb }
   unit/civ_desert_man:       { file: unit/civ_desert_man/civ_desert_man.glb }
   unit/civ_desert_woman:     { file: unit/civ_desert_woman/civ_desert_woman.glb }
+  # The beachgoers of the coast (docs/beach_elements/10_beachgoers), civilians of nobody: static figures standing, as the infantry for
+  # now, two looks each for the man and the woman (a unit picks one), and the lifeguard with his float.
+  unit/civ_beach_man:        { files: [beach/civ_beach_man/civ_beach_man.glb, beach/civ_beach_man_b/civ_beach_man_b.glb] }
+  unit/civ_beach_woman:      { files: [beach/civ_beach_woman/civ_beach_woman.glb, beach/civ_beach_woman_b/civ_beach_woman_b.glb] }
+  unit/civ_lifeguard:        { file: beach/civ_lifeguard/civ_lifeguard.glb }

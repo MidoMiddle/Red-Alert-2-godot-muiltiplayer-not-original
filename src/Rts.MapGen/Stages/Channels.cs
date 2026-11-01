@@ -26,6 +26,6 @@ internal static class Channels
     // Whether the highway of a big map has guardrails.
     public const int Highway = 14;
 
-    /// <summary>What stands in the sea (Offshore): its streams are Offshore × 16 + 1…5.</summary>
+    /// <summary>What stands in the sea (Offshore): its streams are Offshore × 16 + 1…6.</summary>
     public const int Offshore = 15;
 }

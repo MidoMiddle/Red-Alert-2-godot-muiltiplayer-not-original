@@ -813,6 +813,50 @@ objects:
   - { type: beached_boat, cell: [56, 126], variant: 0 }
   - { type: beached_boat, cell: [65, 131], variant: 0 }
   - { type: beached_boat, cell: [76, 148], variant: 0 }
+  - { type: buoy, cell: [81, 22], variant: 3 }
+  - { type: buoy, cell: [99, 23], variant: 2 }
+  - { type: buoy, cell: [75, 25], variant: 0 }
+  - { type: buoy, cell: [105, 28], variant: 1 }
+  - { type: buoy, cell: [106, 30], variant: 0 }
+  - { type: buoy, cell: [67, 34], variant: 1 }
+  - { type: buoy, cell: [62, 40], variant: 2 }
+  - { type: buoy, cell: [60, 43], variant: 3 }
+  - { type: buoy, cell: [58, 47], variant: 1 }
+  - { type: buoy, cell: [122, 52], variant: 2 }
+  - { type: buoy, cell: [125, 52], variant: 1 }
+  - { type: buoy, cell: [52, 56], variant: 1 }
+  - { type: buoy, cell: [134, 58], variant: 1 }
+  - { type: buoy, cell: [52, 59], variant: 2 }
+  - { type: buoy, cell: [138, 60], variant: 3 }
+  - { type: buoy, cell: [141, 62], variant: 2 }
+  - { type: buoy, cell: [147, 67], variant: 1 }
+  - { type: buoy, cell: [30, 75], variant: 0 }
+  - { type: buoy, cell: [156, 75], variant: 0 }
+  - { type: buoy, cell: [28, 76], variant: 1 }
+  - { type: buoy, cell: [159, 81], variant: 3 }
+  - { type: buoy, cell: [23, 82], variant: 2 }
+  - { type: buoy, cell: [158, 99], variant: 2 }
+  - { type: buoy, cell: [22, 100], variant: 3 }
+  - { type: buoy, cell: [153, 105], variant: 1 }
+  - { type: buoy, cell: [25, 106], variant: 0 }
+  - { type: buoy, cell: [151, 106], variant: 0 }
+  - { type: buoy, cell: [34, 114], variant: 1 }
+  - { type: buoy, cell: [40, 119], variant: 2 }
+  - { type: buoy, cell: [43, 121], variant: 3 }
+  - { type: buoy, cell: [129, 122], variant: 2 }
+  - { type: buoy, cell: [47, 123], variant: 1 }
+  - { type: buoy, cell: [129, 125], variant: 1 }
+  - { type: buoy, cell: [56, 129], variant: 1 }
+  - { type: buoy, cell: [59, 129], variant: 2 }
+  - { type: buoy, cell: [123, 134], variant: 1 }
+  - { type: buoy, cell: [121, 138], variant: 3 }
+  - { type: buoy, cell: [119, 141], variant: 2 }
+  - { type: buoy, cell: [114, 147], variant: 1 }
+  - { type: buoy, cell: [75, 151], variant: 0 }
+  - { type: buoy, cell: [76, 153], variant: 1 }
+  - { type: buoy, cell: [106, 156], variant: 0 }
+  - { type: buoy, cell: [82, 158], variant: 2 }
+  - { type: buoy, cell: [100, 159], variant: 3 }
   - { type: driftwood, cell: [100, 27], variant: 0 }
   - { type: driftwood, cell: [27, 81], variant: 0 }
   - { type: driftwood, cell: [154, 100], variant: 0 }

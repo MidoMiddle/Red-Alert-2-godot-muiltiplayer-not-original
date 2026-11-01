@@ -44,6 +44,8 @@ uniform int cliff_slot = -1;
 // The slot of the material that dresses the walls of a material's cells instead (ClimateMaterial.Wall: a quay's concrete); -1: the
 // climate's cliff.
 uniform float mat_wall[MAX_MATERIALS];
+// The slot of the material a material's cells turn to along the water line (ClimateMaterial.Wet: a beach's wet sand); -1: none.
+uniform float mat_wet[MAX_MATERIALS];
 // The rock's grain runs down the wall: the texture is this much longer upright than across.
 uniform float cliff_stretch = 2.5;
 uniform vec3 frost_color : source_color = vec3(0.88, 0.91, 0.96);
@@ -222,7 +224,17 @@ void fragment() {
 		w = mix(w_land, w_water, water);
 		color = a00 * w.x + a10 * w.y + a01 * w.z + a11 * w.w;
 		roughness = dot(w, vec4(mat_roughness[m00.x], mat_roughness[m10.x], mat_roughness[m01.x], mat_roughness[m11.x]));
-		// The wet sand just above the water line.
+		// Along the water line a material with a wet one turns to it (a beach's wet sand), over the land side of the band the shore
+		// is rounded in, and as glossy.
+		vec4 soaked = vec4(mat_wet[m00.x], mat_wet[m10.x], mat_wet[m01.x], mat_wet[m11.x]);
+		float soaked_share = dot(w_land, step(0.0, soaked));
+		float wet_band = smoothstep(0.0, 0.18, level + (noise(p * 2.3 + vec2(3.7, 8.1)) - 0.5) * 0.08 * step(0.001, level)) * (1.0 - water) * soaked_share;
+		if (wet_band > 0.0) {
+			int wet_slot = int(max(max(soaked.x, soaked.y), max(soaked.z, soaked.w)) + 0.5);
+			color = mix(color, albedo_of(wet_slot, p, frost_patches), wet_band);
+			roughness = mix(roughness, mat_roughness[wet_slot], wet_band);
+		}
+		// The wet ground just above the water line.
 		color *= 1.0 - 0.14 * smoothstep(0.2, 0.46, level) * (1.0 - water);
 		// Large soft patches against the tiling of the photographs.
 		color *= mix(0.9, 1.08, noise(p * 0.11));

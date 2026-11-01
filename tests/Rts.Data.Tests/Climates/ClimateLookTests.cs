@@ -114,6 +114,11 @@ public sealed class ClimateLookTests
         "  dirt:    { albedo: dirt_snow.png, tiling: 5, roughness: 0.95, patches: \"#5c6e28\" }",
         74,
         "patches need a color")]
+    [InlineData(
+        "  dirt:    { albedo: dirt_snow.png, tiling: 5, roughness: 0.95 }",
+        "  dirt:    { albedo: dirt_snow.png, tiling: 5, roughness: 0.95, wet: mud }",
+        70,
+        "the wet material 'mud' is none of the materials")]
     public void A_mistake_in_a_climate_points_at_its_place(string line, string replacement, int column, string reason)
     {
         var lines = File.ReadAllText(Path.Combine(ClimateFolder, "winter", "look.yaml")).Replace("\r\n", "\n").Split('\n');
@@ -125,6 +130,16 @@ public sealed class ClimateLookTests
 
         Assert.Equal((index + 1, column), (error.Line, error.Column));
         Assert.Contains(reason, error.Reason);
+    }
+
+    [Fact]
+    public void The_sand_of_the_coast_turns_to_wet_sand_along_the_water()
+    {
+        // docs/beach_elements/01_sand_dunes: the shore's sand takes the wet sand in the band along the water line; nothing else does.
+        var coast = ClimateLookReader.Read(File.ReadAllText(Path.Combine(ClimateFolder, "coast", "look.yaml")));
+        Assert.Equal("wet_sand", coast.Materials.Single(m => m.Id == "shore").Wet);
+        Assert.Contains(coast.Materials, m => m.Id == "wet_sand" && m.Albedo == "beach_wet_sand.png" && m.Roughness < 0.5f);
+        Assert.Single(coast.Materials, m => m.Wet is not null);
     }
 
     [Fact]

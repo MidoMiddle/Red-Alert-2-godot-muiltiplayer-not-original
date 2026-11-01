@@ -58,8 +58,11 @@ The same woman, now in beach clothes: a yellow sundress and a wide-brimmed sun h
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `civ_beach_man` (перекраска) | | | |
-| `civ_beach_woman` (перекраска) | | | |
+| `civ_beach_man.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_people.py`) | 2026-11-01 | сделано, 536 треугольников, статичная фигура |
+| `civ_beach_man_b.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_people.py`) | 2026-11-01 | сделано, 548 треугольников, статичная фигура |
+| `civ_beach_woman.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_people.py`) | 2026-11-01 | сделано, 660 треугольников, статичная фигура |
+| `civ_beach_woman_b.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_people.py`) | 2026-11-01 | сделано, 604 треугольников, статичная фигура |
+| `civ_lifeguard.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_people.py`) | 2026-11-01 | сделано, 656 треугольников, статичная фигура |
 
 Клип `prone` — из библиотеки Mixamo, лицензию фиксируем в реестре (M1, 4.13).
 

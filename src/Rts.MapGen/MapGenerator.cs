@@ -134,13 +134,14 @@ public static class MapGenerator
     /// <summary>
     /// The harbour and what stands in the sea (<see cref="Harbour"/>, <see cref="Offshore"/>) added to a map the generator made before
     /// with these settings, the rest of it as it is (the owner, 2026-11-01: the ready maps get them too). A town's old harbour by the
-    /// water gives way to the quay's. The ground of a new kind gets a letter of the legend.
+    /// water gives way to the quay's. The ground of a new kind gets a letter of the legend. With <paramref name="buoysOnly"/> only the
+    /// buoys, for a map that got the rest before them (docs/beach_elements/13_buoy).
     /// </summary>
-    public static MapDefinition AddSea(MapDefinition map, MapGenSettings settings)
+    public static MapDefinition AddSea(MapDefinition map, MapGenSettings settings, bool buoysOnly = false)
     {
         settings.Check();
         var gen = GenMap.From(map, settings, settings.Seed);
-        if (settings.Climate is ClimateGrounds.Urban or ClimateGrounds.Coast && settings.Water == WaterKind.Sea)
+        if (!buoysOnly && settings.Climate is ClimateGrounds.Urban or ClimateGrounds.Coast && settings.Water == WaterKind.Sea)
         {
             var old = gen.Structures.FindAll(s => Array.IndexOf(Dressing.HarbourBuildings, s.Type) >= 0);
             gen.Structures.RemoveAll(old.Contains);
@@ -154,7 +155,7 @@ public static class MapGenerator
             }
         }
 
-        Offshore.Place(gen);
+        Offshore.Place(gen, buoysOnly);
         var legend = new List<TextureEntry>(map.TextureLegend);
         var texture = new char[map.Width * map.Height];
         for (var i = 0; i < texture.Length; i++)

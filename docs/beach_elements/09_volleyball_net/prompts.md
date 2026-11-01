@@ -47,7 +47,7 @@ A beach volleyball net: two grey metal posts about one unit tall at the ends of 
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_volleyball_net.glb` | | | |
+| `beach_volleyball_net.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_volleyball.py`) | 2026-11-01 | сделано, 400 треугольников |
 
 ## Открытые вопросы
 

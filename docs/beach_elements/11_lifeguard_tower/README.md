@@ -34,7 +34,7 @@
 
 ## 4. Данные
 
-Файл `game/data/neutral/`: размер 2x2, прочность класса «средняя», `garrisonable: true`, `garrison_capacity: 2`, `capturable: false`, горит.
+Нейтральное здание карты `neutral_lifeguard_tower` в `game/data/neutral/civilian.yaml`: футпринт 2×2, 500 HP, `garrison: 3` — в данных трое, а не двое, как предлагалось выше. Модель — `building/neutral_lifeguard_tower` в `game/data/visuals/models.yaml` (2026-11-01): шесть состояний — целая, занятая (стволы из окон кабины), повреждённая, повреждённая и занятая, горящая (`fire_1..2`), руины; этаж на клетку, сжатие по высоте 0,35. Вышка — точка сбора отдыхающих и спасателя (`game/data/neutral/civilians.yaml`). Генератор ставит вышки на пляж (`src/Rts.MapGen/Stages/Dressing.cs`).
 
 ## 5. Взаимодействия
 

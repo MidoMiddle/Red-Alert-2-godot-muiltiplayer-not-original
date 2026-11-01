@@ -33,7 +33,7 @@
 
 ## 4. Данные
 
-Файл `game/data/climates/beach/civilians.yaml` (по образцу [13_civilians](../../map_elements/13_civilians/README.md)): типы, позы, радиусы блуждания, поведение при угрозе.
+Мирные жители побережья в `game/data/neutral/civilians.yaml` ([13_civilians](../../map_elements/13_civilians/README.md)): `civ_beach_man`, `civ_beach_woman` и `civ_lifeguard` (климат `coast`), их дома — кабинка и отель, точки сбора — шезлонг, зонтик, душ, сетка, бар и вышка спасателей. Поведение (прогулка, бегство, укрытие) — `CivilianSystem`. Модели — `unit/civ_beach_man`, `unit/civ_beach_woman`, `unit/civ_lifeguard` в `game/data/visuals/models.yaml` (2026-11-01): статичные фигуры стоя, как вся пехота пока ([unit_models_plan](../../art/unit_models_plan.md)); у мужчины и женщины по два вида, каждый житель берёт свой. Позы сидя и лёжа, ходьба и бег ждут скелета пехоты: пока фигура скользит стоя.
 
 ## 5. Взаимодействия
 

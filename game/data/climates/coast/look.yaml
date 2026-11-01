@@ -10,7 +10,9 @@ materials:
   meadow:  { albedo: grass_field.png, tiling: 6, roughness: 0.95, tint: "#c0dc98" }
   pebbles: { albedo: sand_gravel.png, tiling: 5, roughness: 0.9, tint: "#e8e0d0" }
   asphalt: { albedo: asphalt.png, tiling: 4, roughness: 0.8, tint: "#d4d0c8" }
-  shore:   { albedo: sand_shore.png, tiling: 5, roughness: 0.75 }
+  # The shore's sand turns to the wet sand along the water line (docs/beach_elements/01_sand_dunes): darker, packed, glossy.
+  shore:   { albedo: sand_shore.png, tiling: 5, roughness: 0.75, wet: wet_sand }
+  wet_sand: { albedo: beach_wet_sand.png, tiling: 5, roughness: 0.35 }
   rock:    { albedo: rock_ground.png, tiling: 4, roughness: 0.9, tint: "#e0d8cc" }
   water:   { albedo: frozen_water.png, tiling: 12, roughness: 0.15, tint: "#3fb0c0", water: true }
   shoal:   { albedo: shoal_sand.png, tiling: 5, roughness: 0.15, tint: "#7fd6d6", water: true }

@@ -61,10 +61,10 @@ A short palm stump in the sand about half a unit tall, cut surface with a ring p
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `tree_palm_01.glb` | | | |
-| `tree_palm_02.glb` | | | |
-| `tree_palm_03.glb` | | | |
-| `tree_palm_stump.glb` | | | |
+| `tree_palm_01.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_palm.py`) | 2026-11-01 | сделано, 298 треугольников |
+| `tree_palm_02.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_palm.py`) | 2026-11-01 | сделано, 298 треугольников |
+| `tree_palm_03.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_palm.py`) | 2026-11-01 | сделано, 284 треугольника |
+| `tree_palm_stump.glb` | — | — | не сделано: пень у срубленного дерева клиент рисует один на все деревья (`MapObjects.AddStumps`), своего пня у формы дерева пока нет |
 
 ## Открытые вопросы
 

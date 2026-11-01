@@ -47,7 +47,12 @@ A tall tapering lighthouse about seven units tall: a white tower with horizontal
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_lighthouse.glb` | | | |
+| `beach_lighthouse.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lighthouse.py`) | 2026-11-01 | сделано, 766 треугольников |
+| `beach_lighthouse_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lighthouse.py`) | 2026-11-01 | сделано, 814 треугольников |
+| `beach_lighthouse_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lighthouse.py`) | 2026-11-01 | сделано, 750 треугольников |
+| `beach_lighthouse_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lighthouse.py`) | 2026-11-01 | сделано, 798 треугольников |
+| `beach_lighthouse_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lighthouse.py`) | 2026-11-01 | сделано, 682 треугольников |
+| `beach_lighthouse_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lighthouse.py`) | 2026-11-01 | сделано, 376 треугольников |
 
 ## Открытые вопросы
 

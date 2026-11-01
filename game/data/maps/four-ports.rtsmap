@@ -812,6 +812,50 @@ objects:
   - { type: billboard, cell: [67, 90], variant: 0 }
   - { type: billboard, cell: [114, 91], variant: 0 }
   - { type: billboard, cell: [90, 114], variant: 0 }
+  - { type: buoy, cell: [87, 15], variant: 2 }
+  - { type: buoy, cell: [94, 18], variant: 0 }
+  - { type: buoy, cell: [81, 21], variant: 2 }
+  - { type: buoy, cell: [100, 23], variant: 3 }
+  - { type: buoy, cell: [104, 26], variant: 2 }
+  - { type: buoy, cell: [66, 38], variant: 0 }
+  - { type: buoy, cell: [114, 38], variant: 0 }
+  - { type: buoy, cell: [120, 41], variant: 1 }
+  - { type: buoy, cell: [118, 42], variant: 0 }
+  - { type: buoy, cell: [59, 50], variant: 1 }
+  - { type: buoy, cell: [126, 54], variant: 0 }
+  - { type: buoy, cell: [54, 55], variant: 0 }
+  - { type: buoy, cell: [131, 59], variant: 1 }
+  - { type: buoy, cell: [41, 61], variant: 1 }
+  - { type: buoy, cell: [42, 63], variant: 0 }
+  - { type: buoy, cell: [143, 66], variant: 0 }
+  - { type: buoy, cell: [38, 67], variant: 0 }
+  - { type: buoy, cell: [26, 77], variant: 2 }
+  - { type: buoy, cell: [23, 81], variant: 3 }
+  - { type: buoy, cell: [160, 81], variant: 2 }
+  - { type: buoy, cell: [18, 87], variant: 0 }
+  - { type: buoy, cell: [166, 87], variant: 2 }
+  - { type: buoy, cell: [15, 94], variant: 2 }
+  - { type: buoy, cell: [163, 94], variant: 0 }
+  - { type: buoy, cell: [21, 100], variant: 2 }
+  - { type: buoy, cell: [158, 100], variant: 3 }
+  - { type: buoy, cell: [155, 104], variant: 2 }
+  - { type: buoy, cell: [143, 114], variant: 0 }
+  - { type: buoy, cell: [38, 115], variant: 0 }
+  - { type: buoy, cell: [139, 118], variant: 0 }
+  - { type: buoy, cell: [140, 120], variant: 1 }
+  - { type: buoy, cell: [50, 122], variant: 1 }
+  - { type: buoy, cell: [127, 126], variant: 0 }
+  - { type: buoy, cell: [55, 127], variant: 0 }
+  - { type: buoy, cell: [122, 131], variant: 1 }
+  - { type: buoy, cell: [63, 139], variant: 0 }
+  - { type: buoy, cell: [61, 140], variant: 1 }
+  - { type: buoy, cell: [67, 143], variant: 0 }
+  - { type: buoy, cell: [115, 143], variant: 0 }
+  - { type: buoy, cell: [77, 155], variant: 2 }
+  - { type: buoy, cell: [81, 158], variant: 3 }
+  - { type: buoy, cell: [100, 160], variant: 2 }
+  - { type: buoy, cell: [87, 163], variant: 0 }
+  - { type: buoy, cell: [94, 166], variant: 2 }
   - { type: bus_stop, cell: [92, 60], variant: 2 }
   - { type: bus_stop, cell: [60, 89], variant: 2 }
   - { type: bus_stop, cell: [121, 92], variant: 2 }

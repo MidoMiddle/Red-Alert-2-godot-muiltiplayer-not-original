@@ -44,7 +44,9 @@ A beach sun lounger: a light metal frame on four short legs, a reclined back and
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_sun_lounger.glb` | | | |
+| `beach_sun_lounger.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lounger.py`) | 2026-11-01 | сделано, 204 треугольника, сине-белая полоса |
+| `beach_sun_lounger_turquoise.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lounger.py`) | 2026-11-01 | сделано, 204 треугольника, бирюзовая |
+| `beach_sun_lounger_yellow.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lounger.py`) | 2026-11-01 | сделано, 204 треугольника, жёлтая |
 
 ## Открытые вопросы
 

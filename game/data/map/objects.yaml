@@ -240,3 +240,11 @@ ice_floe:
   blocks: [naval]
   hp: 800
   water: true
+
+# A buoy (docs/beach_elements/13_buoy): a float with a light that marks the swimmers' water off a beach; it stops nobody, ships and
+# amphibians pass it, and a shot sinks it.
+buoy:
+  kind: map_object
+  name: Buoy
+  hp: 50
+  water: true

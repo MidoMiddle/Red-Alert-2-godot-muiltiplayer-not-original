@@ -54,8 +54,9 @@ A small pile of weathered wooden planks, a faded plastic canister and a few dark
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `prop_driftwood.glb` | | | |
-| `prop_beach_debris.glb` | | | |
+| `prop_driftwood.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_driftwood.py`) | 2026-11-01 | сделано, 304 треугольника |
+| `prop_driftwood_branch.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_driftwood.py`) | 2026-11-01 | сделано, 168 треугольников (вторая разновидность коряги) |
+| `prop_beach_debris.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_driftwood.py`) | 2026-11-01 | сделано, 194 треугольника (третья разновидность объекта `driftwood`) |
 
 ## Открытые вопросы
 

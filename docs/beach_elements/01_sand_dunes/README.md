@@ -32,7 +32,8 @@
 
 - Тип земли `b` — уже в `game/data/shared/terrain.yaml`.
 - Дюны — слой высот карты ([M7](../../implementation/M7_maps.md), раздел 4.1).
-- Текстуры песка — слой `texture`, по ним в климате «Побережье» видно, где сухо, где мокро.
+- Текстуры песка — слой `texture`: песок берега (`shore`) и пятна песка (`sand`) климата «Побережье».
+- Мокрый песок у воды — не клетки карты, а полоса, которую рисует шейдер земли: у материала `shore` ключ `wet: wet_sand` в `game/data/climates/coast/look.yaml` (`ClimateMaterial.Wet` в `game/scripts/Climates/ClimateLook.cs`). Карты и правила он не меняет.
 
 ## 5. Взаимодействия
 

@@ -45,7 +45,12 @@ A wooden lifeguard tower on four light wooden legs about three units tall, a lad
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_lifeguard_tower.glb` | | | |
+| `beach_lifeguard_tower.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lifeguard.py`) | 2026-11-01 | сделано, 596 треугольников |
+| `beach_lifeguard_tower_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lifeguard.py`) | 2026-11-01 | сделано, 632 треугольников |
+| `beach_lifeguard_tower_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lifeguard.py`) | 2026-11-01 | сделано, 548 треугольников |
+| `beach_lifeguard_tower_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lifeguard.py`) | 2026-11-01 | сделано, 584 треугольников |
+| `beach_lifeguard_tower_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lifeguard.py`) | 2026-11-01 | сделано, 596 треугольников |
+| `beach_lifeguard_tower_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_lifeguard.py`) | 2026-11-01 | сделано, 224 треугольников |
 
 ## Открытые вопросы
 

@@ -47,7 +47,9 @@ A beach umbrella: a round striped canopy about one unit across with a dark under
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_umbrella.glb` | | | |
+| `beach_umbrella.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_umbrella.py`) | 2026-11-01 | сделано, 278 треугольников, красно-белый |
+| `beach_umbrella_yellow.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_umbrella.py`) | 2026-11-01 | сделано, 278 треугольников, жёлто-синий |
+| `beach_umbrella_green.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_umbrella.py`) | 2026-11-01 | сделано, 278 треугольников, зелёно-белый |
 
 ## Открытые вопросы
 
