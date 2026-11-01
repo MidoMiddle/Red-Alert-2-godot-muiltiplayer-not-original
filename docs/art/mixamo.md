@@ -18,7 +18,7 @@
 
 **Что пишет скрипт** (`civilians.run_all()` в Blender):
 
-- `game/assets/models/unit/<id>/<id>.glb` — фигура: узел `rig` со скелетом и `body` под ним. Сейчас это `civ_man`, `civ_woman`, `civ_winter_man`, `civ_winter_woman`, `civ_farmer`, `civ_desert_man`, `civ_desert_woman`.
+- `game/assets/models/unit/<id>/<id>.glb` — фигура: узел `rig` со скелетом и `body` под ним. Сейчас это `civ_man`, `civ_woman`, `civ_winter_man`, `civ_winter_woman`, `civ_farmer`, `civ_desert_man`, `civ_desert_woman`. Отдыхающие и спасатель — тот же скрипт, но файлы в `game/assets/models/beach/<id>/`, где раньше стояли их статичные фигуры: `civ_beach_man`, `civ_beach_man_b`, `civ_beach_woman`, `civ_beach_woman_b`, `civ_lifeguard` (только они — `run_beach()`).
 - `game/assets/models/unit/human_clips/human_clips.glb` — все клипы на том же скелете, без меша. Ходьба и бег сделаны «на месте»: юнита двигает симуляция.
 - `game/data/visuals/human_clips.yaml` — таблица клипов: зацикленный ли, длина, и у ходьбы и бега — шаг (сколько клип проходит за секунду). По шагу игра ускоряет или замедляет клип, чтобы ноги не скользили. Там же — клипы только для некоторых жителей (`only`).
 

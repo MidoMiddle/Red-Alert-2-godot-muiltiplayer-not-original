@@ -189,7 +189,7 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 | `object/beach_shower` | пляжный душ: труба с «гусаком», лейка, площадка с решёткой, точка `water_anchor` для воды (скрипт `tools/blender/families/beach_shower.py`, 2026-11-01) |
 | `building/neutral_beach_bar` | пляжный бар 3×2: целый, повреждённый, горящий, руины; этаж на клетку, сжатие 0,35 (скрипт `tools/blender/families/beach_bar.py`, 2026-11-01) |
 | `object/volleyball_net` | волейбольная сетка: стойки с растяжками, ячейки — тонкие шнуры, ленты разметки площадки (скрипт `tools/blender/families/beach_volleyball.py`, 2026-11-01) |
-| `unit/civ_beach_man`, `unit/civ_beach_woman`, `unit/civ_lifeguard` | отдыхающие и спасатель: статичные фигуры стоя, как пехота пока; по два вида у мужчины и женщины (скрипт `tools/blender/families/beach_people.py`, 2026-11-01) |
+| `unit/civ_beach_man`, `unit/civ_beach_woman`, `unit/civ_lifeguard` | отдыхающие и спасатель: на скелете Mixamo с клипами, как остальные жители; по два вида у мужчины и женщины; файлы в `beach/` (скрипт `tools/blender/units/civilians.py`, 2026-11-01) |
 | `building/neutral_lifeguard_tower` | вышка спасателей 2×2: целая, занятая, повреждённая (и занятая), горящая, руины; этаж на клетку, сжатие 0,35 (скрипт `tools/blender/families/beach_lifeguard.py`, 2026-11-01) |
 | `building/neutral_lighthouse` | маяк 2×2 с домиком смотрителя: целый, занятый, повреждённый (и занятый), покинутый, руины; в размере игры, без сжатия, до 2,6 (скрипт `tools/blender/families/beach_lighthouse.py`, 2026-11-01) |
 | `object/buoy` | буй на воде, красный с белым поясом или белый с красным, узлы `body`, `light` (скрипт `tools/blender/families/beach_buoy.py`, 2026-11-01) |

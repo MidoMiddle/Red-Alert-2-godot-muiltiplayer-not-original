@@ -1,8 +1,8 @@
 """The civilians of the map with a skeleton (docs/map_elements/13_civilians): people rigged on the Mixamo skeleton (M1, 4.13).
 
-Made at the size of the beachgoers (families/beach_people.py, 0.56 tall) and painted the same way, but standing in a T-pose: the arms
-straight out to the sides, palms down, the feet a little apart, the pose of the Mixamo skeleton. Origin at the centre on the ground, the
-front to +Y in Blender (-Z in Godot). One GLB per look:
+Made at the size of the infantry's stand-in (0.56 tall), standing in a T-pose: the arms straight out to the sides, palms down, the feet a
+little apart, the pose of the Mixamo skeleton. Origin at the centre on the ground, the front to +Y in Blender (-Z in Godot). One GLB per
+look:
     civ_man            a light casual jacket over a white shirt, jeans, white sneakers
     civ_woman          a knee-length coat over a dress, flat shoes, long hair
     civ_winter_man     a puffer jacket, a knitted hat and a scarf, jeans, winter boots
@@ -10,6 +10,14 @@ front to +Y in Blender (-Z in Godot). One GLB per look:
     civ_farmer         denim overalls over a checked shirt, rubber boots, a cap
     civ_desert_man     a long light robe and a head scarf, sandals
     civ_desert_woman   a long loose dress in earth tones and a light head scarf
+and the beach's (docs/beach_elements/10_beachgoers), into the beach's folder, where their static figures stood before; the game
+picks one of a unit's looks:
+    civ_beach_man      a white t-shirt, blue shorts, flip-flops
+    civ_beach_man_b    no shirt, red board shorts, dark glasses, tanned
+    civ_beach_woman    a yellow sundress, a straw sun hat, sandals
+    civ_beach_woman_b  a blue swimsuit, an orange wrap round the hips, long hair
+    civ_lifeguard      a red vest and red shorts, an orange cap, a whistle on a cord, the orange rescue float slung on the back
+                       (orange, so it shows on the red vest)
 No text, no logos, no team colour (nobody's). Nodes: "rig" (the skeleton) and "body" under it. Budget 1500 triangles, texture 512.
 
 The skeleton is the one Mixamo put into civ_man (docs/art/mixamo.md): its bones come from a clip downloaded on it, and every look is
@@ -22,6 +30,7 @@ In Blender, after tools/blender is on sys.path:
     import units.civilians as civilians
     print(civilians.upload("civ_man"))   # the file for mixamo.com, once
     print(civilians.run_all())           # the clips and every look
+    print(civilians.run_beach())         # only the beach's looks
 """
 
 import math
@@ -67,8 +76,8 @@ ONLY = {
 (SKIN, HAIR, TOP, BOTTOM, SHOE, ACCENT, DARK, WHITE) = (cc.part(i) for i in range(8))
 PARTS = 8
 
-# The look of each: skin, hair, top (the jacket, the coat, the robe), bottom (the trousers, the dress), shoe and accent (the shirt, the
-# hat, the scarf) colours, and what is worn.
+# The look of each: skin, hair, top (the jacket, the coat, the robe; None: bare), bottom (the trousers, the dress), shoe and accent (the
+# shirt, the hat, the scarf) colours, what is worn, and the folder of the beach's.
 VARIANTS = {
     "civ_man": dict(skin=(0.82, 0.62, 0.48), hair=(0.25, 0.17, 0.11), top=(0.70, 0.62, 0.46), bottom=(0.22, 0.30, 0.48),
                     shoe=(0.86, 0.86, 0.84), accent=(0.93, 0.93, 0.91), wear=("shirt",)),
@@ -84,7 +93,21 @@ VARIANTS = {
                            shoe=(0.46, 0.32, 0.20), accent=(0.84, 0.82, 0.74), wear=("robe", "head_scarf")),
     "civ_desert_woman": dict(skin=(0.60, 0.42, 0.30), hair=(0.12, 0.10, 0.08), top=(0.62, 0.42, 0.28), bottom=(0.62, 0.42, 0.28),
                              shoe=(0.40, 0.28, 0.18), accent=(0.88, 0.80, 0.62), wear=("robe", "head_scarf")),
+    "civ_beach_man": dict(skin=(0.82, 0.62, 0.48), hair=(0.22, 0.15, 0.10), top=(0.94, 0.94, 0.92), bottom=(0.18, 0.36, 0.72),
+                          shoe=(0.15, 0.15, 0.16), accent=(0.5, 0.5, 0.5), wear=("tshirt", "shorts"), folder="beach"),
+    "civ_beach_man_b": dict(skin=(0.64, 0.45, 0.32), hair=(0.12, 0.10, 0.08), top=None, bottom=(0.82, 0.16, 0.12),
+                            shoe=(0.20, 0.20, 0.22), accent=(0.5, 0.5, 0.5), wear=("shorts", "glasses"), folder="beach"),
+    "civ_beach_woman": dict(skin=(0.86, 0.68, 0.56), hair=(0.55, 0.38, 0.20), top=(0.96, 0.80, 0.22), bottom=(0.96, 0.80, 0.22),
+                            shoe=(0.60, 0.42, 0.26), accent=(0.86, 0.76, 0.52), wear=("dress", "hat"), folder="beach"),
+    "civ_beach_woman_b": dict(skin=(0.58, 0.40, 0.29), hair=(0.10, 0.08, 0.07), top=(0.16, 0.42, 0.78), bottom=(0.16, 0.42, 0.78),
+                              shoe=(0.20, 0.20, 0.22), accent=(0.95, 0.52, 0.16), wear=("swimsuit", "wrap", "long_hair"), folder="beach"),
+    "civ_lifeguard": dict(skin=(0.70, 0.50, 0.36), hair=(0.20, 0.14, 0.10), top=(0.84, 0.12, 0.10), bottom=(0.84, 0.12, 0.10),
+                          shoe=(0.15, 0.15, 0.16), accent=(0.96, 0.46, 0.10), wear=("vest", "shorts", "cap", "float", "whistle"),
+                          folder="beach"),
 }
+
+# The looks of the beach, made on their own by run_beach.
+BEACH = [v for v, look in VARIANTS.items() if look.get("folder") == "beach"]
 
 KNEE, HIP, WAIST, CHEST, SHOULDER, NECK = 0.15, 0.27, 0.315, 0.39, 0.435, 0.455
 HEAD, HEAD_R = 0.5, 0.042
@@ -116,14 +139,16 @@ def skirt(p, stations, part):
         p.loft([ring((0.0, 0.0, z0), rx0, ry0, 10), ring((0.0, 0.0, z1), rx1, ry1, 10)], part)
 
 
-def _figure(p, wear):
+def _figure(p, wear, bare=False):
     puff = 1.15 if "puffer" in wear else 1.0
-    # Legs a little apart, as the skeleton stands: thighs and shins in the trousers (the shins bare under a coat), the shoes on a dark
-    # sole; boots come up the shin.
-    shin = SKIN if "coat" in wear else BOTTOM
+    swimsuit = "swimsuit" in wear
+    # Legs a little apart, as the skeleton stands: thighs and shins in the trousers (the shins bare under a coat or in shorts, the legs
+    # bare under a dress or a swimsuit), the shoes on a dark sole; boots come up the shin.
+    shin = SKIN if any(w in wear for w in ("coat", "shorts", "dress", "swimsuit")) else BOTTOM
+    thigh = SKIN if ("dress" in wear or swimsuit) else BOTTOM
     for side in (-1, 1):
         limb(p, [(0.024 * side, 0.0, HIP), (0.027 * side, 0.004, (HIP + KNEE) / 2), (0.03 * side, 0.006, KNEE), (0.034 * side, 0.0, 0.025)],
-             [0.024, 0.02, 0.016, 0.013], [BOTTOM, BOTTOM, shin])
+             [0.024, 0.02, 0.016, 0.013], [thigh, thigh if "shorts" not in wear else SKIN, shin])
         x = 0.034 * side
         p.box((x - 0.012, -0.01, 0.004), (x + 0.012, 0.036, 0.016), SHOE)
         p.box((x - 0.0125, -0.0105, 0.0), (x + 0.0125, 0.0365, 0.004), DARK)
@@ -131,9 +156,13 @@ def _figure(p, wear):
             limb(p, [(x, 0.002, 0.012), (0.032 * side, 0.004, 0.09)], [0.016, 0.016], [SHOE])
     # The hips, the top from its hem up to the shoulders, the neck.
     p.loft([ring((0.0, 0.0, HIP - 0.01), 0.044, 0.028), ring((0.0, 0.0, HIP + 0.012), 0.042, 0.027)], BOTTOM)
+    # Bare above the shorts, or in a swimsuit: the skin, the swimsuit's top a band over the chest.
+    torso = SKIN if (bare or swimsuit) else TOP
     stations = [(HIP + 0.008, 0.047, 0.030), (WAIST, 0.042, 0.028), (CHEST, 0.048, 0.030), (SHOULDER, 0.055, 0.027)]
     for (z0, rx0, ry0), (z1, rx1, ry1) in zip(stations, stations[1:]):
-        p.loft([ring((0.0, 0.0, z0), rx0 * puff, ry0 * puff), ring((0.0, 0.0, z1), rx1 * puff, ry1 * puff)], TOP)
+        p.loft([ring((0.0, 0.0, z0), rx0 * puff, ry0 * puff), ring((0.0, 0.0, z1), rx1 * puff, ry1 * puff)], torso)
+    if swimsuit:
+        p.loft([ring((0.0, 0.0, CHEST - 0.03), 0.046, 0.029), ring((0.0, 0.0, CHEST + 0.012), 0.05, 0.031)], TOP)
     if "shirt" in wear:  # the shirt between the open lapels
         p.box((-0.012, 0.024, CHEST - 0.035), (0.012, 0.032, SHOULDER - 0.004), ACCENT)
     if "bib" in wear:  # the overalls' bib over the shirt, its straps over the shoulders
@@ -146,13 +175,31 @@ def _figure(p, wear):
         skirt(p, [(WAIST, 0.045, 0.03), (HIP, 0.052, 0.036), (KNEE - 0.03, 0.062, 0.046)], TOP)
     if "robe" in wear:  # a long loose robe down to the ankles
         skirt(p, [(WAIST, 0.046, 0.031), (HIP, 0.056, 0.038), (KNEE, 0.064, 0.046), (0.03, 0.07, 0.05)], TOP)
+    if "dress" in wear:  # a sundress: a flared skirt from the waist to the knees
+        skirt(p, [(WAIST, 0.045, 0.03), (HIP, 0.052, 0.036), (KNEE + 0.02, 0.066, 0.05)], BOTTOM)
+    if "wrap" in wear:  # a wrap round the hips, down to the mid thigh
+        skirt(p, [(HIP + 0.01, 0.048, 0.032), ((HIP + KNEE) / 2 + 0.01, 0.058, 0.042)], ACCENT)
+    if "vest" in wear:  # the vest's white piping down its front, no letters
+        p.box((-0.004, 0.028, WAIST + 0.01), (0.004, 0.033, SHOULDER - 0.01), WHITE)
+    if "whistle" in wear:  # on a white cord round the neck
+        p.bar((-0.02, 0.022, NECK - 0.005), (0.0, 0.032, CHEST + 0.005), 0.0025, WHITE)
+        p.bar((0.02, 0.022, NECK - 0.005), (0.0, 0.032, CHEST + 0.005), 0.0025, WHITE)
+        p.box((-0.006, 0.028, CHEST - 0.005), (0.006, 0.042, CHEST + 0.007), DARK)
+    if "float" in wear:  # the red rescue float slung on the back, its strap over the left shoulder to the right hip
+        p.box((-0.012, -0.052, 0.29), (0.012, -0.032, 0.42), ACCENT)
+        p.bar((0.0, -0.04, 0.42), (0.03, 0.026, SHOULDER - 0.012), 0.004, DARK)
     p.loft([ring((0.0, 0.0, SHOULDER), 0.03, 0.022), ring((0.0, 0.0, NECK + 0.01), 0.014, 0.014)], SKIN)
     if "scarf" in wear:
         p.loft([ring((0.0, 0.0, SHOULDER - 0.004), 0.034, 0.027), ring((0.0, 0.0, NECK + 0.004), 0.024, 0.022)], ACCENT)
-    # Arms straight out to the sides, palms down: the sleeves, the hands.
+    # Arms straight out to the sides, palms down: the sleeves (a t-shirt's short, none on bare arms), the hands.
+    upper, fore = TOP, TOP
+    if "tshirt" in wear:
+        fore = SKIN
+    if bare or any(w in wear for w in ("dress", "swimsuit", "vest")):
+        upper, fore = SKIN, SKIN
     for side in (-1, 1):
         limb(p, [(0.05 * side, 0.0, ARM), (0.128 * side, 0.0, ARM), (0.198 * side, 0.0, ARM), (0.232 * side, 0.0, ARM)],
-             [0.016 * puff, 0.013 * puff, 0.011, 0.009], [TOP, TOP, SKIN])
+             [0.016 * puff, 0.013 * puff, 0.011, 0.009], [upper, fore, SKIN])
     # The head, the hair or what covers it, the nose.
     p.sphere((0.0, 0.0, HEAD), 'Z', HEAD_R, SKIN, sides=10, rings=6)
     if "head_scarf" in wear:  # a scarf over the head and down the back of the neck
@@ -167,6 +214,11 @@ def _figure(p, wear):
     if "cap" in wear:
         p.cylinder((0.0, -0.004, HEAD + 0.03), 'Z', 0.044, 0.016, ACCENT, sides=10)
         p.box((-0.03, 0.03, HEAD + 0.018), (0.03, 0.075, HEAD + 0.024), ACCENT)  # its peak, to the front
+    if "hat" in wear:  # a straw sun hat: a wide brim and a low crown
+        p.cylinder((0.0, 0.0, HEAD + 0.03), 'Z', 0.085, 0.004, ACCENT, sides=12)
+        p.cylinder((0.0, 0.0, HEAD + 0.042), 'Z', 0.04, 0.012, ACCENT, sides=10)
+    if "glasses" in wear:
+        p.box((-0.03, HEAD_R - 0.012, HEAD + 0.004), (0.03, HEAD_R + 0.004, HEAD + 0.016), DARK)
     p.box((-0.004, HEAD_R - 0.002, HEAD - 0.004), (0.004, HEAD_R + 0.006, HEAD + 0.008), SKIN)  # the nose
 
 
@@ -177,7 +229,7 @@ def _material(name, look):
     mask = cc.part_masks(g, PARTS)
     grain = g.noise(60.0, 2.0)
     shade = lambda c, k=0.12: g.mix(g.math('MULTIPLY', grain, k), lin(c), lin(tuple(v * 0.8 for v in c)))
-    albedo = cc.paint(g, mask, (shade(look["skin"], 0.08), shade(look["hair"]), shade(look["top"]), shade(look["bottom"]),
+    albedo = cc.paint(g, mask, (shade(look["skin"], 0.08), shade(look["hair"]), shade(look["top"] or look["skin"]), shade(look["bottom"]),
                                lin(look["shoe"]), shade(look["accent"]), lin((0.04, 0.04, 0.05)), lin((0.94, 0.94, 0.92))))
     rough = cc.weighted(g, mask, (0.6, 0.7, 0.85, 0.85, 0.7, 0.75, 0.6, 0.8))
     g.finish(albedo, g.bump(grain, 0.03, 0.002), g.combine(ao, rough, 0.0))
@@ -188,7 +240,7 @@ def build(variant_id):
     look = VARIANTS[variant_id]
     cc.clear(variant_id, ("body",))
     body = Parts()
-    _figure(body, look["wear"])
+    _figure(body, look["wear"], bare=look["top"] is None)
     return cc.finish(variant_id, [(body, "body")], 0.0, _material(variant_id + "_mat", look))
 
 
@@ -347,20 +399,22 @@ def export_rigged(objs, path, animations=False, root=None):
                               export_frame_step=1, export_anim_single_armature=True)
 
 
-def run(variant_id):
-    """Builds and bakes a look, skins it to the Mixamo skeleton, saves its .blend and exports its GLB; returns a report."""
+def run(variant_id, height=None):
+    """Builds and bakes a look, skins it to the Mixamo skeleton (at <height>, else the figure's own), saves its .blend and exports its
+    GLB into its folder; returns a report."""
     meshes, mat, graph = build(variant_id)
     body = meshes[0]
-    height = max(v.co.z for v in body.data.vertices)
+    folder = VARIANTS[variant_id].get("folder", FOLDER)
+    height = height or max(v.co.z for v in body.data.vertices)
     report = [f"{variant_id}: triangles {sum(rc.tri_count(o) for o in meshes)}, size {tuple(round(v, 3) for v in body.dimensions)}"]
-    base = os.path.join(rc.SRC_ROOT, FOLDER, variant_id)
+    base = os.path.join(rc.SRC_ROOT, folder, variant_id)
     cc.repack(meshes, cc.ISLAND_GAP / SIZE)
     imgs = rc.bake_material(meshes, graph, SIZE, variant_id, os.path.join(base, "bake"))
     rc.wire_final(mat, imgs)
     arm = skeleton(variant_id, height)
     report.append(skin(body, arm))
     objs = [arm, body]
-    glb = os.path.join(rc.GLB_ROOT, FOLDER, variant_id, variant_id + ".glb")
+    glb = os.path.join(rc.GLB_ROOT, folder, variant_id, variant_id + ".glb")
     with rc.node_names(objs, ["rig", "body"]):
         save_blend(objs, mat, imgs, os.path.join(base, variant_id + ".blend"))
         export_rigged(objs, glb)
@@ -434,6 +488,14 @@ def run_clips(height=None):
 
 
 def run_all():
-    reports = [run(variant_id) for variant_id in VARIANTS]
+    reports = [run(variant_id) for variant_id in VARIANTS if variant_id not in BEACH]
     height = max(v.co.z for v in bpy.data.objects["civ_man_body"].data.vertices)
+    reports += [run(variant_id, height) for variant_id in BEACH]
     return "\n".join([run_clips(height)] + reports)
+
+
+def run_beach():
+    """The beach's looks alone, on the skeleton at civ_man's height (a sun hat would raise it), the clips as they are."""
+    meshes, _, _ = build("civ_man")
+    height = max(v.co.z for v in meshes[0].data.vertices)
+    return "\n".join(run(variant_id, height) for variant_id in BEACH)
