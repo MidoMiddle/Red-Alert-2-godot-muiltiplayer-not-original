@@ -38,6 +38,11 @@ Thumbs.db
 
 # Blender autosaves
 *.blend1
+
+# Downloads from Mixamo (docs/art/mixamo.md, section 4): its license allows them in the game, not as files to hand out
+assets_src/models/**/mixamo/*
+!assets_src/models/**/mixamo/*_upload.fbx
+assets_src/models/unit/mixamo_clips/
 *.blend2
 
 # Original RA2 files must never be committed (see docs/00_concept.md, block 15)
