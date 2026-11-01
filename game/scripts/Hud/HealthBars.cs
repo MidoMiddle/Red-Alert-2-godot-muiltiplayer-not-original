@@ -101,9 +101,9 @@ public partial class HealthBars : Control
                 DrawBomb(camera, entity, world.CurrentTick);
             }
 
-            if (entity is Unit { Civilian: not null })
+            if (entity is Unit person && person.Archetype.Has(UnitTalents.Civilian))
             {
-                // A civilian of the map (docs/map_elements/13_civilians) shows no bar.
+                // A civilian of the map, an animal or a parked car (docs/map_elements/13_civilians) shows no bar.
                 continue;
             }
 

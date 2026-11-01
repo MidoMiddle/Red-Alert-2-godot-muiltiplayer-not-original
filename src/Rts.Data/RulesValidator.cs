@@ -189,6 +189,10 @@ internal static class RulesValidator
             else
             {
                 FactionOf(unit.Id, unit.Faction);
+                if (unit.Animal)
+                {
+                    Error(unit.Id, "animal", $"'{unit.Id}' is an animal of the map: it must be a civilian ('civilian: true')");
+                }
             }
             CountriesOf(unit.Id, "countries", unit.Countries);
             CountriesOf(unit.Id, "forbidden_countries", unit.ForbiddenCountries);
@@ -980,9 +984,19 @@ internal static class RulesValidator
                 Error(unit.Id, "primary", $"'{unit.Id}' is a civilian: it carries no weapon");
             }
 
-            if (unit.Prerequisites.Length > 0 || unit.Category != UnitCategory.Infantry)
+            if (unit.Prerequisites.Length > 0 || unit.Category is not (UnitCategory.Infantry or UnitCategory.Vehicle))
             {
-                Error(unit.Id, "prerequisites", $"'{unit.Id}' is a civilian: a person, never built");
+                Error(unit.Id, "prerequisites", $"'{unit.Id}' is a civilian: a person, an animal or a parked car, never built");
+            }
+
+            if (unit.Category == UnitCategory.Vehicle && (unit.Homes.Length > 0 || unit.Animal))
+            {
+                Error(unit.Id, "homes", $"'{unit.Id}' is a parked car: it lives in no house and is no animal");
+            }
+
+            if (unit.Animal && unit.Homes.Length > 0)
+            {
+                Error(unit.Id, "homes", $"'{unit.Id}' is an animal: it hides in no house");
             }
 
             foreach (var home in unit.Homes)

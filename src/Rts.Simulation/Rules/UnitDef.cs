@@ -241,6 +241,12 @@ public sealed record UnitDef : IDefinition
     /// <summary>The climates of the maps a civilian lives on (<c>winter</c>, <c>coast</c>, <c>urban</c> …).</summary>
     public ImmutableArray<string> Climates { get; init; } = ImmutableArray<string>.Empty;
 
+    /// <summary>
+    /// An animal of the map (a cow, a sheep, a camel; docs/map_elements/13_civilians, 4.7): a civilian that grazes by its points, runs
+    /// twice as fast when frightened and hides in no house.
+    /// </summary>
+    public bool Animal { get; init; }
+
     /// <summary>Id of the main weapon (RA2 <c>Primary</c>); empty for a unit that does not fight.</summary>
     public string Primary { get; init; } = "";
 

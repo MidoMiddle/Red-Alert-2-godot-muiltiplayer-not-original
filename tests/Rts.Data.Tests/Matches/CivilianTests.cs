@@ -25,6 +25,7 @@ public sealed class CivilianTests
     private static readonly CellPos OtherHouse = new(30, 40);
     private static readonly CellPos Bench = new(34, 30);
     private static readonly CellPos OtherBench = new(36, 30);
+    private const int Road = 28;
 
     private static GameSimulation Match(bool civilians = true, string climate = "urban", ulong seed = 13) =>
         new(SimulationSettings.ForMatch(
@@ -49,6 +50,12 @@ public sealed class CivilianTests
         types.TryGetObject("bench", out var bench);
         var land = new byte[64 * 64];
         System.Array.Fill(land, (byte)LandType.Clear);
+        // A road along the north of the first house: the cars park beside it.
+        for (var x = 20; x < 44; x++)
+        {
+            land[(Road * 64) + x] = (byte)LandType.Road;
+        }
+
         return MapGrid.FromLayers(64, 64, land, new byte[land.Length], default,
             [MapObjectState.New(bench, Bench, 0), MapObjectState.New(bench, OtherBench, 0)], [],
             [new BuildingState(BuildingKind.NeutralHouseA, House, PlayerId.Neutral, 0), new BuildingState(BuildingKind.NeutralHouseA, OtherHouse, PlayerId.Neutral, 0)],
@@ -216,6 +223,53 @@ public sealed class CivilianTests
         simulation.Enqueue(new MoveCommand(Union, simulation.CurrentTick, 1, [tank.Id], new CellPos(58, 30).Center));
         Step(simulation, CivilianSystem.CoverTicks + 60, () => civilian.Civilian!.State != CivilianState.Cover);
         Assert.NotEqual(CivilianState.Cover, civilian.Civilian!.State);
+    }
+
+    [Fact]
+    public void Cars_park_beside_the_road_by_their_points_never_drive_and_burn_when_shot()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var cars = world.Entities.OfType<Unit>().Where(unit => unit.IsAlive && unit.Archetype.Category == UnitCategory.Vehicle && unit.Owner.IsNeutral).ToList();
+
+        // One by each house whose footprint has a road within its reach: the first house, by the road.
+        var car = Assert.Single(cars);
+        Assert.Equal(UnitType.CivCar, car.Type);
+        Assert.Null(car.Civilian);
+        var cell = car.Position.ToCell();
+        Assert.NotEqual(LandType.Road, world.Map.LandAt(cell));
+        Assert.Equal(Road + 1, cell.Y);
+
+        var at = car.Position;
+        var tank = world.SpawnUnit(Union, UnitType.HeavyTank, new CellPos(24, 33).Center);
+        Step(simulation, 300);
+        Assert.Equal(at, car.Position);
+        Assert.Null(tank.Target);
+
+        simulation.Enqueue(new ForceAttackCommand(Union, simulation.CurrentTick, 0, [tank.Id], car.Id, car.Position));
+        Step(simulation, 600, () => !car.IsAlive);
+        Assert.False(car.IsAlive);
+    }
+
+    [Fact]
+    public void A_frightened_animal_runs_twice_as_fast_and_hides_in_no_house()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        OnlyCivilianAt(world, new CellPos(10, 50));
+        var cow = CivilianSystem.Spawn(world, UnitType.CivCow, new CellPos(34, 34));
+        cow.Civilian!.Timer = 10_000;
+        var tank = world.SpawnUnit(Union, UnitType.HeavyTank, new CellPos(38, 34).Center);
+
+        simulation.Enqueue(new MoveCommand(Union, simulation.CurrentTick, 0, [tank.Id], new CellPos(36, 34).Center));
+        Step(simulation, 30, () => cow.Civilian.State == CivilianState.Flee);
+        Assert.Equal(CivilianState.Flee, cow.Civilian.State);
+        Assert.Equal(cow.Archetype.Speed * 2, cow.Speed);
+        // The house is 3 cells off, but a cow does not go in.
+        Assert.Null(cow.Civilian.Shelter);
+        Step(simulation, 300, () => cow.Civilian.State == CivilianState.Cover);
+        Assert.True(cow.IsAlive);
+        Assert.Empty(HouseAt(world, House).Sheltered);
     }
 
     [Fact]

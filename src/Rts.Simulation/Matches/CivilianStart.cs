@@ -11,7 +11,9 @@ namespace Rts.Simulation.Matches;
 /// climate (<see cref="MatchSetup.Climate"/>), up to <see cref="PerHouse"/> out of every house of the map they call home and up to
 /// <see cref="PerPoint"/> by every gathering point of theirs, at most <see cref="Most"/> in all, none within <see cref="StartCells"/>
 /// cells of a start. Houses and points in an order the simulation's generator shuffles, round by round — one out of each, then a second —
-/// so the civilians spread over the map before the most is reached. Made by the world as it is built, as the starting units are.
+/// so the civilians spread over the map before the most is reached. The animals graze by their points as the people stand by theirs. The
+/// parked cars (4.6) take a cell of open ground beside a road near a point of theirs, one by a point, at most <see cref="MostCars"/>.
+/// Made by the world as it is built, as the starting units are.
 /// </summary>
 internal static class CivilianStart
 {
@@ -19,6 +21,10 @@ internal static class CivilianStart
     public const int PerPoint = 3;
     public const int Most = 40;
     public const int StartCells = 12;
+    public const int MostCars = 10;
+
+    /// <summary>How far from the footprint of its point a parked car may stand, in cells.</summary>
+    public const int CurbCells = 3;
 
     public static void Place(GameWorld world, MatchSetup setup)
     {
@@ -76,6 +82,7 @@ internal static class CivilianStart
 
         Shuffle(world, houses);
         Shuffle(world, points);
+        Park(world, points);
         var placed = 0;
         for (var round = 0; round < PerPoint && placed < Most; round++)
         {
@@ -92,7 +99,13 @@ internal static class CivilianStart
 
             for (var i = 0; i < points.Count && placed < Most; i++)
             {
-                var (point, building, gathering) = points[i];
+                var (point, building, all) = points[i];
+                var gathering = all.FindAll(kind => world.Rules.Unit(kind).Category != UnitCategory.Vehicle);
+                if (gathering.Count == 0)
+                {
+                    continue;
+                }
+
                 var type = gathering[world.Random.NextInt(gathering.Count)];
                 var archetype = world.Rules.Unit(type);
                 var cell = building is not null ? ProductionSystem.ExitAround(world, building, archetype) : Beside(world, point, archetype);
@@ -104,6 +117,60 @@ internal static class CivilianStart
             }
         }
     }
+
+    // The parked cars: by every point some car parks by, in the shuffled order, one car on the first open cell beside a road.
+    private static void Park(GameWorld world, List<(CellPos Cell, Building? Building, List<UnitType> Kinds)> points)
+    {
+        var parked = 0;
+        foreach (var (point, building, all) in points)
+        {
+            var cars = all.FindAll(kind => world.Rules.Unit(kind).Category == UnitCategory.Vehicle);
+            if (cars.Count == 0)
+            {
+                continue;
+            }
+
+            if (parked >= MostCars)
+            {
+                return;
+            }
+
+            var type = cars[world.Random.NextInt(cars.Count)];
+            var (near, far) = building is not null ? (building.Cell, building.FarCell) : (point, point);
+            if (Curb(world, near, far, world.Rules.Unit(type)) is { } cell)
+            {
+                world.SpawnUnit(PlayerId.Neutral, type, cell.Center);
+                parked++;
+            }
+        }
+    }
+
+    // The first cell within CurbCells of the footprint, ring by ring, that is open ground a car stands on beside asphalt: not the road.
+    private static CellPos? Curb(GameWorld world, CellPos near, CellPos far, UnitArchetype car)
+    {
+        for (var ring = 1; ring <= CurbCells; ring++)
+        {
+            for (var y = near.Y - ring; y <= far.Y + ring; y++)
+            {
+                for (var x = near.X - ring; x <= far.X + ring; x++)
+                {
+                    var cell = new CellPos(x, y);
+                    var outside = IntMath.Max(IntMath.Max(near.X - x, x - far.X), IntMath.Max(near.Y - y, y - far.Y));
+                    if (outside == ring && world.Map.Contains(cell) && !Road(world, cell) && Open(world, cell)
+                        && world.Map.CanEnter(cell, car.Locomotor) && world.Reservations.HasRoomFor(cell, car.Placement, EntityId.None)
+                        && (Road(world, new CellPos(x + 1, y)) || Road(world, new CellPos(x - 1, y)) || Road(world, new CellPos(x, y + 1)) || Road(world, new CellPos(x, y - 1))))
+                    {
+                        return cell;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static bool Road(GameWorld world, CellPos cell) =>
+        world.Map.Contains(cell) && world.Map.LandAt(cell) is Map.LandType.Road or Map.LandType.Highway;
 
     // The kinds that call the thing of the map home, or gather by it.
     private static List<UnitType> Of(List<(UnitType Type, Rules.UnitDef Def)> kinds, string id, bool homes)

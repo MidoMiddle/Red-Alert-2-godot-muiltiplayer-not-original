@@ -95,3 +95,83 @@ civ_desert_woman:  # a long loose dress and a light head scarf
   climates: [desert]
   homes: [neutral_adobe_house]
   gathers_at: [well, neutral_adobe_house, neutral_ancient_ruins]
+
+# The animals of the maps (docs/map_elements/13_civilians, 4.7; docs/temperate_elements/13_livestock, docs/desert_elements/11_camels_vultures):
+# they graze by their points, run twice as fast when frightened and hide in no house. RA2 COW: 150 hit points, speed 4 (24), not
+# crushed; CAML: 200, speed 6 (36), not crushed. RA2 has no sheep: ours, smaller than a cow.
+
+civ_cow:
+  kind: unit
+  inherits: base_civilian
+  name: Cow
+  animal: true
+  hp: 150
+  sight: 4
+  crushable: false
+  climates: [temperate]
+  gathers_at: [hay_bale, well, neutral_barn, neutral_farmhouse, neutral_silo, neutral_windmill]
+
+civ_sheep:
+  kind: unit
+  inherits: base_civilian
+  name: Sheep
+  animal: true
+  hp: 60
+  climates: [temperate]
+  gathers_at: [hay_bale, well, neutral_barn, neutral_farmhouse, neutral_windmill]
+
+civ_camel:
+  kind: unit
+  inherits: base_civilian
+  name: Camel
+  animal: true
+  hp: 200
+  speed: 36
+  crushable: false
+  climates: [desert]
+  gathers_at: [well, neutral_adobe_house, neutral_ancient_ruins]
+
+# The parked cars of the towns (docs/map_elements/13_civilians, 4.6): at the curb by the buildings and points of their place, they
+# never drive; destroyed, they burn out and hurt nobody (RA2 has no death weapon for them). RA2 CAR, BUS, TAXI, COP: 100 hit points;
+# TRUCKA: 200; light armor; speed 8 (48), unused.
+
+base_civilian_car:
+  kind: unit
+  abstract: true
+  inherits: base_vehicle
+  civilian: true
+  prerequisites: []
+  cost: 0
+  build_time: 0s
+  armor: light
+  speed: 48
+  sight: 2
+  threat: 0
+  turret: false
+  crusher: false
+  locomotor: wheel
+  trainable: false
+
+civ_car:  # a sedan: a taxi, a police car or an ambulance are its colours
+  kind: unit
+  inherits: base_civilian_car
+  name: Car
+  hp: 100
+  climates: [urban, temperate, winter, coast, desert]
+  gathers_at: [neutral_house_a, neutral_apartment, neutral_office, neutral_shop, neutral_cafe, neutral_hotel, neutral_bank, neutral_school, neutral_church, neutral_farmhouse, neutral_beach_bar]
+
+civ_bus:
+  kind: unit
+  inherits: base_civilian_car
+  name: Bus
+  hp: 100
+  climates: [urban, winter, coast]
+  gathers_at: [bus_stop, neutral_school]
+
+civ_truck:
+  kind: unit
+  inherits: base_civilian_car
+  name: Truck
+  hp: 200
+  climates: [urban, temperate, desert, winter]
+  gathers_at: [neutral_shop, neutral_barn, neutral_farmhouse, neutral_auto_repair, neutral_port_warehouse, neutral_adobe_house]

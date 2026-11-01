@@ -22,7 +22,8 @@ public static class UnitTypes
          "alliance_aegis_cruiser", "alliance_aircraft_carrier", null, "alliance_hornet",
          "paradrop_plane", "alliance_osprey", "yuri",
          "alliance_chrono_commando", "chrono_ivan", "alliance_psi_commando", "yuri_prime",
-         "civ_man", "civ_woman", "civ_winter_man", "civ_winter_woman", "civ_beach_man", "civ_beach_woman", "civ_lifeguard", "civ_farmer", "civ_desert_man", "civ_desert_woman"];
+         "civ_man", "civ_woman", "civ_winter_man", "civ_winter_woman", "civ_beach_man", "civ_beach_woman", "civ_lifeguard", "civ_farmer", "civ_desert_man", "civ_desert_woman",
+         "civ_car", "civ_bus", "civ_truck", "civ_cow", "civ_sheep", "civ_camel"];
 
     private static readonly UnitType[] Types =
     [
@@ -40,6 +41,7 @@ public static class UnitTypes
         UnitType.AllianceHornet, UnitType.ParadropPlane, UnitType.AllianceOsprey, UnitType.Yuri,
         UnitType.AllianceChronoCommando, UnitType.ChronoIvan, UnitType.AlliancePsiCommando, UnitType.YuriPrime,
         UnitType.CivMan, UnitType.CivWoman, UnitType.CivWinterMan, UnitType.CivWinterWoman, UnitType.CivBeachMan, UnitType.CivBeachWoman, UnitType.CivLifeguard, UnitType.CivFarmer, UnitType.CivDesertMan, UnitType.CivDesertWoman,
+        UnitType.CivCar, UnitType.CivBus, UnitType.CivTruck, UnitType.CivCow, UnitType.CivSheep, UnitType.CivCamel,
     ];
 
     /// <summary>Every unit type, in <see cref="UnitType"/> order.</summary>

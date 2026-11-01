@@ -165,7 +165,7 @@ public sealed class UnitKnowledgeTests
         ["PassengerWeapon"] = "later: whom the IFV carries", ["IfvWeapon"] = "later: whom the IFV carries", ["Submerged"] = "used", ["Sensors"] = "later: submarines",
         ["Ammo"] = "used", ["SelfHeal"] = "no need: it heals by itself", ["Trainable"] = "no need: veterancy",
         ["Spawns"] = "used", ["SpawnCount"] = "used", ["SpawnRegen"] = "no need: the carrier replaces them", ["Spawned"] = "used", ["Civilian"] = "used: a civilian is never built",
-        ["Homes"] = "no need: civilians are of nobody", ["GathersAt"] = "no need: civilians are of nobody", ["Climates"] = "no need: civilians are of nobody",
+        ["Homes"] = "no need: civilians are of nobody", ["GathersAt"] = "no need: civilians are of nobody", ["Climates"] = "no need: civilians are of nobody", ["Animal"] = "no need: civilians are of nobody",
         ["Primary"] = "used", ["Secondary"] = "used", ["Model"] = "no need: the client", ["Icon"] = "no need: the client",
         ["AvailableLater"] = "used", ["AbilityLater"] = "no need: no unit has it",
     };

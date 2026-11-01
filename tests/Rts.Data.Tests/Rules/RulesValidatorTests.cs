@@ -78,6 +78,17 @@ public sealed class RulesValidatorTests
         Assert.Equal(reason, error.Reason);
     }
 
+    [Fact]
+    public void An_animal_hides_in_no_house_and_a_parked_car_lives_in_none()
+    {
+        var animal = Errors(WithCivilian(body => body.Replace("  sight: 2\n", "  sight: 2\n  animal: true\n  homes: [nowhere]\n")));
+        Assert.Contains(animal, error => error.Reason == "'civ_test' is an animal: it hides in no house");
+
+        var car = Errors(WithCivilian(body => body.Replace("  category: infantry\n  placement: subcell\n", "  category: vehicle\n  placement: cell\n")
+            .Replace("  sight: 2\n", "  sight: 2\n  homes: [nowhere]\n")));
+        Assert.Contains(car, error => error.Reason == "'civ_test' is a parked car: it lives in no house and is no animal");
+    }
+
     [Theory]
     // M3 step 14a: the kinds of the map are checked like the rest.
     [InlineData("map_object", "blocks: [foot, legs]", "'rock' refers to locomotor 'legs', which is not defined")]

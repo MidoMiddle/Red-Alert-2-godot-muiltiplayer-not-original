@@ -17,7 +17,8 @@ namespace Rts.Simulation.Systems;
 /// of the map (<c>shelter</c>) within <see cref="ShelterCells"/> that no soldiers hold, where they go in at the wall and leave the map,
 /// or away from the danger, where they crouch for 15 s. They hide without taking a seat of the garrison (<see cref="Building.Sheltered"/>,
 /// the owner, 2026-11-01): after 20 s with no shot near the house they come out one a second; soldiers moving in send them all out
-/// running; a house that falls kills them. Random draws only in such a match, so every other keeps its states.
+/// running; a house that falls kills them. An animal (<see cref="Rules.UnitDef.Animal"/>) runs twice as fast and hides in no house; a
+/// parked car has no mind and stands. Random draws only in such a match, so every other keeps its states.
 /// </summary>
 public static class CivilianSystem
 {
@@ -213,13 +214,14 @@ public static class CivilianSystem
         }
     }
 
-    // Frightened: half again as fast, to a house near or away; those near it are frightened too.
+    // Frightened: half again as fast, to a house near or away; those near it are frightened too. An animal runs twice as fast, away.
     private static void Run(GameWorld world, Unit civilian, CivilianMind mind, WorldPos danger)
     {
+        var animal = Animal(world, civilian);
         mind.State = CivilianState.Flee;
-        civilian.Speed = civilian.Archetype.Speed * 3 / 2;
+        civilian.Speed = animal ? civilian.Archetype.Speed * 2 : civilian.Archetype.Speed * 3 / 2;
         Frighten(world, civilian.Position, (long)SpreadCells * WorldPos.LeptonsPerCell);
-        if (HouseNear(world, civilian) is { } house)
+        if (!animal && HouseNear(world, civilian) is { } house)
         {
             mind.Shelter = house.Id;
             UnitOrders.MoveTo(world, civilian, EntrySystem.Door(world, house, civilian));
@@ -465,6 +467,9 @@ public static class CivilianSystem
     }
 
     private static bool Idle(Unit unit) => unit.MoveTarget is null && !unit.PathPending;
+
+    private static bool Animal(GameWorld world, Unit civilian) =>
+        world.Rules.Database.Units[world.Rules.Database.IndexOfUnit(civilian.Archetype.Id)].Animal;
 
     private static int Outside(Building building, CellPos cell) => EntrySystem.Outside(building, cell);
 

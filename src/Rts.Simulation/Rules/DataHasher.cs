@@ -130,6 +130,7 @@ public static class DataHasher
             Add(hash, unit.Homes);
             Add(hash, unit.GathersAt);
             Add(hash, unit.Climates);
+            hash.Add(unit.Animal);
         }
 
         hash.Add(rules.Buildings.Length);

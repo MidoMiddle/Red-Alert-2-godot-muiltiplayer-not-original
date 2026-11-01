@@ -88,4 +88,12 @@ public enum UnitType : byte
     CivFarmer = 63,
     CivDesertMan = 64,
     CivDesertWoman = 65,
+
+    // The parked cars and the animals of the maps (docs/map_elements/13_civilians, 4.6 and 4.7).
+    CivCar = 66,
+    CivBus = 67,
+    CivTruck = 68,
+    CivCow = 69,
+    CivSheep = 70,
+    CivCamel = 71,
 }

@@ -1018,9 +1018,11 @@ public partial class PlayerInput : Node
     {
         var target = PickTarget(at);
         var ground = GroundAt(at);
-        if (!ctrl && target.Kind == PointerTargetKind.OtherUnit && _host.Simulation.World.TryGet(target.Unit, out var other) && other is Unit { Civilian: not null })
+        if (!ctrl && target.Kind == PointerTargetKind.OtherUnit && _host.Simulation.World.TryGet(target.Unit, out var other) && other is Unit civilian
+            && civilian.Archetype.Has(UnitTalents.Civilian))
         {
-            // A civilian of the map (docs/map_elements/13_civilians) is no enemy: without Ctrl the order goes to the ground under it.
+            // A civilian of the map, an animal or a parked car (docs/map_elements/13_civilians) is no enemy: without Ctrl the order goes
+            // to the ground under it.
             target = new PointerTarget(PointerTargetKind.Ground);
         }
 

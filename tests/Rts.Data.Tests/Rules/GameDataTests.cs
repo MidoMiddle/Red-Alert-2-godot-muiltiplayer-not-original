@@ -39,9 +39,10 @@ public sealed class GameDataTests
         // The carrier's Hornet; the paradrop plane (loose ends, stage 1); the destroyer's Osprey (stage 4). The robot tank of Yuri's
         // Revenge was taken out (2026-10-25).
         Assert.Equal(28, database.Units.Count(unit => unit.Faction == "alliance"));
-        // The ten civilians of the maps (docs/map_elements/13_civilians), of no faction.
-        Assert.Equal(10, database.Units.Count(unit => unit.Civilian && unit.Faction.Length == 0));
-        Assert.Equal(64, database.Units.Length);
+        // The civilians of the maps (docs/map_elements/13_civilians), of no faction: ten people, three animals, three parked cars.
+        Assert.Equal(16, database.Units.Count(unit => unit.Civilian && unit.Faction.Length == 0));
+        Assert.Equal(3, database.Units.Count(unit => unit.Animal));
+        Assert.Equal(70, database.Units.Length);
         Assert.Equal(18, database.Buildings.Count(building => building.Faction == "union"));
         Assert.Equal(19, database.Buildings.Count(building => building.Faction == "alliance"));
         Assert.Equal(6, database.Locomotors.Length);
@@ -116,7 +117,8 @@ public sealed class GameDataTests
         // water (the map objects' key water); the offshore platform and the ships of nobody, buildings of the map on the water (keys
         // water and ruins).
         // The ten civilians of the maps (game/data/neutral/civilians.yaml) and the houses they hide in (shelter: true).
-        Assert.Equal(0xab1a6d5db79db629UL, GameDataFiles.Current.Hash);
+        // The animals and the parked cars of the maps (civ_cow, civ_sheep, civ_camel, civ_car, civ_bus, civ_truck).
+        Assert.Equal(0x44cc622462cf7fc1UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]
