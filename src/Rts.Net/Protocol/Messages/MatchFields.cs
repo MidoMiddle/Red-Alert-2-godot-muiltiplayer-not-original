@@ -13,7 +13,8 @@ internal static class MatchFields
 {
     /// <summary>
     /// <c>i32 startingCredits | u8 shortGame | u8 gameSpeed | u8 fogOfWar | u8 mcvRepacks | u8 superweapons | u8 destroyableBridges |
-    /// u8 startingUnits | u8 crates</c> (the fog since protocol 2, the next three since 6, the units since 10, the crates since 11).
+    /// u8 startingUnits | u8 crates | u8 civilians</c> (the fog since protocol 2, the next three since 6, the units since 10, the crates since
+    /// 11, the civilians since 13).
     /// </summary>
     public static void WriteOptions(MessageWriter writer, MatchOptions options)
     {
@@ -26,13 +27,15 @@ internal static class MatchFields
         writer.WriteBool(options.DestroyableBridges);
         writer.WriteSmall(options.StartingUnits, nameof(options.StartingUnits));
         writer.WriteBool(options.Crates);
+        writer.WriteBool(options.Civilians);
     }
 
     public static MatchOptions ReadOptions(ref MessageReader reader) =>
-        new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool());
+        new(reader.ReadInt32(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadBool(), reader.ReadByte(), reader.ReadBool(), reader.ReadBool());
 
     /// <summary>
-    /// <c>string mapId | u64 seed | options | u8 playerCount | players | u8 startCount | (i32 x | i32 y) × startCount</c>, a player being
+    /// <c>string mapId | u64 seed | options | u8 playerCount | players | u8 startCount | (i32 x | i32 y) × startCount | string climate</c>
+    /// (the climate since protocol 13), a player being
     /// <c>u8 slot | u8 kind | u8 difficulty | string faction | string country | u8 colour | u8 team | u8 startIndex | i32 x | i32 y</c>.
     /// </summary>
     public static void WriteSetup(MessageWriter writer, MatchSetup setup)
@@ -59,6 +62,8 @@ internal static class MatchFields
         {
             WriteCell(writer, start);
         }
+
+        writer.WriteString(setup.Climate);
     }
 
     public static MatchSetup ReadSetup(ref MessageReader reader)
@@ -88,7 +93,7 @@ internal static class MatchFields
             starts.Add(ReadCell(ref reader));
         }
 
-        return new MatchSetup(mapId, seed, options, players.MoveToImmutable(), starts.MoveToImmutable());
+        return new MatchSetup(mapId, seed, options, players.MoveToImmutable(), starts.MoveToImmutable()) { Climate = reader.ReadString() };
     }
 
     public static PlayerKind ReadKind(ref MessageReader reader)

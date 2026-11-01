@@ -187,6 +187,7 @@ UI_OPTION_UNITS,Starting units
 UI_OPTION_SHORT_GAME,Short Game
 UI_OPTION_SUPERWEAPONS,Superweapons
 UI_OPTION_CRATES,Crates Appear
+UI_OPTION_CIVILIANS,Civilians
 UI_OPTION_FOG_OF_WAR,Fog of war
 UI_OPTION_FOG_OF_WAR_HINT,On: you see only what your units see now · Off: everything you have explored stays in sight
 UI_CREDITS_5000,5000
@@ -719,6 +720,7 @@ UI_PAUSE_RESTART_TEXT,Start this match over? It begins again from the start.
 UI_SETTINGS_KEYS_FROM_MENU,The keys are changed from the main menu.
 UI_EVA_RADAR_ONLINE,Radar online
 UI_EVA_RADAR_OFFLINE,Radar offline
+UI_OPTION_CIVILIANS_HINT,People walk the streets and the beaches: they run from shots and hide in their houses; a tank crushes them.
 UI_OPTION_CRATES_HINT,Crates lie on the map; a unit that drives onto one gets money, healing, a promotion, the map, armor, firepower, speed or a unit.
 UI_EVA_CRATE_MONEY,Money crate
 UI_EVA_CRATE_HEAL,Units repaired

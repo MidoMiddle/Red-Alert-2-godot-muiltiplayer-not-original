@@ -44,11 +44,11 @@ namespace Rts.Simulation.Replays;
 /// of the match after its setup: u8 0, or u8 1 | u16 length + UTF-8 game version | u64 mapHash | u8 count, then u8 player | u16 length +
 /// UTF-8 name each; v28 (M6 step 8) adds u8 startingUnits after destroyableBridges; v29 (M11 a6) u8 crates after it; v30 command format v14 (SetPrimary);
 /// v31 (rules v110) a building of the start of kind 0 — a building of a faction's data — is followed by u8 width | u8 height | u8 length +
-/// ASCII id of its definition.
+/// ASCII id of its definition; v32 (rules v121) u8 civilians after crates, and u16 length + UTF-8 climate of the map after the starts.
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 31;
+    public const ushort FormatVersion = 32;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;
@@ -406,6 +406,7 @@ public static class ReplayFormat
         bytes.Add(setup.Options.DestroyableBridges ? (byte)1 : (byte)0);
         bytes.Add((byte)setup.Options.StartingUnits);
         bytes.Add(setup.Options.Crates ? (byte)1 : (byte)0);
+        bytes.Add(setup.Options.Civilians ? (byte)1 : (byte)0);
         bytes.Add((byte)setup.Players.Length);
         foreach (var player in setup.Players)
         {
@@ -429,6 +430,7 @@ public static class ReplayFormat
             AddUInt16(bytes, (ushort)start.Y);
         }
 
+        AddText(bytes, setup.Climate);
         return bytes.ToArray();
     }
 
@@ -447,7 +449,7 @@ public static class ReplayFormat
         }
 
         var mapId = ReadText(source, ref offset);
-        Require(source[offset..], 9);
+        Require(source[offset..], 10);
         var shortGame = source[offset];
         var speed = source[offset + 1];
         var fog = source[offset + 2];
@@ -456,11 +458,12 @@ public static class ReplayFormat
         var bridges = source[offset + 5];
         var units = source[offset + 6];
         var crates = source[offset + 7];
-        var count = source[offset + 8];
-        offset += 9;
-        if (repacks > 1 || superweapons > 1 || bridges > 1 || crates > 1)
+        var civilians = source[offset + 8];
+        var count = source[offset + 9];
+        offset += 10;
+        if (repacks > 1 || superweapons > 1 || bridges > 1 || crates > 1 || civilians > 1)
         {
-            throw new InvalidDataException($"Invalid option flags {repacks}, {superweapons}, {bridges}, {crates}.");
+            throw new InvalidDataException($"Invalid option flags {repacks}, {superweapons}, {bridges}, {crates}, {civilians}.");
         }
 
         if (shortGame > 1)
@@ -510,9 +513,13 @@ public static class ReplayFormat
             offset += 4;
         }
 
+        var climate = ReadText(source, ref offset);
         return new MatchSetup(
-            mapId, seed, new MatchOptions(credits, shortGame == 1, speed, fog == 1, repacks == 1, superweapons == 1, bridges == 1, units, crates == 1), players.MoveToImmutable(),
-            starts.MoveToImmutable());
+            mapId, seed, new MatchOptions(credits, shortGame == 1, speed, fog == 1, repacks == 1, superweapons == 1, bridges == 1, units, crates == 1, civilians == 1),
+            players.MoveToImmutable(), starts.MoveToImmutable())
+        {
+            Climate = climate,
+        };
     }
 
     private static byte[] WriteNetwork(ReplayNetwork? network)

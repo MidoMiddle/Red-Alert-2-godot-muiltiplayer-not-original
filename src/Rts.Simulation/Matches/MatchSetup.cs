@@ -42,6 +42,10 @@ public enum AiDifficulty : byte
 /// The units every player gets beside its MCV (RA2 «Unit Count», M6 step 8): 0–<see cref="MaxStartingUnits"/> of its starting infantry.
 /// </param>
 /// <param name="Crates">Crates lie on the map and a unit that takes one gets a bonus (RA2 «Crates Appear», M11 a6; <c>CrateSystem</c>).</param>
+/// <param name="Civilians">
+/// The civilians of the map come out of their houses at the start and live by their gathering points (docs/map_elements/13_civilians;
+/// <c>CivilianStart</c>, <c>CivilianSystem</c>). Off by default here, so a match of before keeps its states; the skirmish screen has it on.
+/// </param>
 public sealed record MatchOptions(
     int StartingCredits = SimulationSettings.DefaultStartingCredits,
     bool ShortGame = false,
@@ -51,7 +55,8 @@ public sealed record MatchOptions(
     bool Superweapons = true,
     bool DestroyableBridges = true,
     int StartingUnits = MatchOptions.DefaultStartingUnits,
-    bool Crates = false)
+    bool Crates = false,
+    bool Civilians = false)
 {
     /// <summary>Three soldiers, as every match had before the option (M5, decision 1).</summary>
     public const int DefaultStartingUnits = 3;
@@ -97,6 +102,12 @@ public sealed record MatchPlayer(
 /// </summary>
 public sealed record MatchSetup(string MapId, ulong Seed, MatchOptions Options, ImmutableArray<MatchPlayer> Players, ImmutableArray<CellPos> MapStarts)
 {
+    /// <summary>
+    /// The climate of the map (<c>winter</c>, <c>coast</c>, <c>urban</c> …), from its file: which civilians live on it
+    /// (docs/map_elements/13_civilians). Empty when not known; then no civilian comes out.
+    /// </summary>
+    public string Climate { get; init; } = "";
+
     public const int MaxColors = 8;
     public const int MinGameSpeed = 1;
     public const int MaxGameSpeed = 6;

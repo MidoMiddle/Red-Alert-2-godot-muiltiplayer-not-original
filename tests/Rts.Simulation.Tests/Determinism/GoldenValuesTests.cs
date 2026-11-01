@@ -412,6 +412,7 @@ public sealed class GoldenValuesTests
         // Rules v118 (Tanya's speed of RA2, the Night Hawk at the Jetpack Trooper's speed): the version only.
         // Rules v119 (the naval set: the quay's edge, a map object; the owner's wish): the version only — no quay here.
         // Rules v120 (the civilians of the maps: ten types of nobody, never built; the shelter houses): the version only.
-        Assert.Equal((22270, 11112630539207875887UL), (bytes.Length, hash.Value));
+        // Replay format v32 (the option Civilians and the climate of the map in the setup): the version only — no match here.
+        Assert.Equal((22270, 5132636018359786316UL), (bytes.Length, hash.Value));
     }
 }

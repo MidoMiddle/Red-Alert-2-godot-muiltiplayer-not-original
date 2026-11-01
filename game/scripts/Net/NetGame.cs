@@ -142,7 +142,7 @@ public partial class NetGame : Node
     // The host of a game takes seat 1 of its lobby.
     private static HostSession NewHost(ITransport transport, string playerName, MapEntry map)
     {
-        var lobby = new LobbyState(map.Map.Id, HashOf(map), new MatchOptions(FogOfWar: true),
+        var lobby = new LobbyState(map.Map.Id, HashOf(map), new MatchOptions(FogOfWar: true, Civilians: true),
             [new LobbySlot(1, PlayerKind.Human, AiDifficulty.Medium, playerName, DataFiles.Current.Rules.DefaultFaction.Id, "", 0, 1, LobbySlot.RandomStart, false)]);
         return new HostSession(transport, Identity, lobby, new PlayerId(1),
             new HostSettings { MaxPlayers = map.Map.Players, DefaultFaction = DataFiles.Current.Rules.DefaultFaction.Id });
@@ -223,7 +223,7 @@ public partial class NetGame : Node
             free.Remove(index);
             return new MatchPlayer(slot.Slot, slot.Kind, slot.Difficulty, slot.Faction, slot.Color, slot.Team, index, starts[index]) { Country = slot.Country };
         }).ToList();
-        var setup = new MatchSetup(map.Map.Id, seed, host.Lobby.Options, [.. players], [.. starts]);
+        var setup = new MatchSetup(map.Map.Id, seed, host.Lobby.Options, [.. players], [.. starts]) { Climate = map.Map.Climate };
         host.Start(new StartGame(setup, SimulationSettings.DefaultTicksPerSecond, 15, HashOf(map), 3));
     }
 

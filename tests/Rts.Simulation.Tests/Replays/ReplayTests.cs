@@ -91,6 +91,20 @@ public sealed class ReplayTests
     }
 
     [Fact]
+    public void The_civilians_and_the_climate_of_the_map_are_kept_in_the_replay()
+    {
+        // Format 32 (docs/map_elements/13_civilians): the option and the climate pick the civilians, so a replay needs both.
+        var setup = Matches.MatchSetupTests.OneOnOne() with { Options = new Rts.Simulation.Matches.MatchOptions(Civilians: true), Climate = "coast" };
+        var replay = new Replay(
+            SimulationVersion.Current, DataHasher.NoData, SimulationSettings.ForMatch(setup, new Rts.Simulation.Map.MapGrid(64, 64)), 0, [], []);
+
+        var read = ReplayFormat.Read(ReplayFormat.Write(replay), TestRules.Standard.MapTypes).Settings.Match!;
+
+        Assert.Equal((true, "coast"), (read.Options.Civilians, read.Climate));
+        Assert.Equal(setup, read);
+    }
+
+    [Fact]
     public void The_personalities_of_the_players_are_kept_in_the_replay()
     {
         // Format 20 (M8 step 13): a random one as it is — the bots run again draw it the same way.

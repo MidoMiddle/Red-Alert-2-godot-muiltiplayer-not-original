@@ -93,6 +93,7 @@ public partial class SkirmishSetup : Control
     private Label _speedValue = null!;
     private HSlider _units = null!;
     private CheckBox _crates = null!;
+    private CheckBox _civilians = null!;
     private Label _unitsValue = null!;
     private HSlider _credits = null!;
     private Label _creditsValue = null!;
@@ -351,7 +352,8 @@ public partial class SkirmishSetup : Control
     }
 
     /// <summary>
-    /// The options of RA2 in its order: on the left Short Game, MCV Repacks, Crates, Superweapons, Destroyable Bridges; in the middle
+    /// The options of RA2 in its order: on the left Short Game, MCV Repacks, Crates, Superweapons, Destroyable Bridges, then our
+    /// Civilians (docs/map_elements/13_civilians); in the middle
     /// Multi Engineer, Instant Capture, No Dog Engineer Kills, Delayed Oils and our fog of war; on the right the game speed, the credits,
     /// the starting units (M6 step 8) and Build Off Ally ConYards. What has no rules yet is locked with "Coming soon".
     /// </summary>
@@ -367,6 +369,8 @@ public partial class SkirmishSetup : Control
         _crates.TooltipText = Tr("UI_OPTION_CRATES_HINT");
         _superweapons = Check(left, "UI_OPTION_SUPERWEAPONS", on => Apply(_config with { Superweapons = on }));
         _bridges = Check(left, "UI_OPTION_DESTROYABLE_BRIDGES", on => Apply(_config with { DestroyableBridges = on }));
+        _civilians = Check(left, "UI_OPTION_CIVILIANS", on => Apply(_config with { Civilians = on }));
+        _civilians.TooltipText = Tr("UI_OPTION_CIVILIANS_HINT");
 
         var middle = Column(grid);
         Locked(middle, "UI_OPTION_MULTI_ENGINEER", false);
@@ -477,6 +481,7 @@ public partial class SkirmishSetup : Control
         _superweapons.SetPressedNoSignal(_config.Superweapons);
         _bridges.SetPressedNoSignal(_config.DestroyableBridges);
         _crates.SetPressedNoSignal(_config.Crates);
+        _civilians.SetPressedNoSignal(_config.Civilians);
         _fog.SetPressedNoSignal(_config.FogOfWar);
         _speed.SetValueNoSignal(_config.GameSpeed);
         _speedValue.Text = _config.GameSpeed.ToString(CultureInfo.InvariantCulture);

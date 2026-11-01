@@ -34,12 +34,12 @@ public static class MatchSetups
         return new MatchSetup(
             map.Id,
             seed,
-            new MatchOptions(FogOfWar: false),
+            new MatchOptions(FogOfWar: false, Civilians: true),
             [
                 new MatchPlayer(1, PlayerKind.Human, AiDifficulty.Medium, faction, Color: 0, Team: 1, person.Slot, person.Cell),
                 new MatchPlayer(2, PlayerKind.Ai, AiDifficulty.Medium, faction, Color: 1, Team: 2, bot.Slot, bot.Cell),
             ],
-            [.. map.Starts.Select(start => start.Cell)]).WithCountries(countries);
+            [.. map.Starts.Select(start => start.Cell)]) { Climate = map.Climate }.WithCountries(countries);
     }
 
     /// <summary>Whether <paramref name="map"/> can be played two against two: it has four starts or more.</summary>
@@ -59,7 +59,7 @@ public static class MatchSetups
         return new MatchSetup(
             map.Id,
             seed,
-            new MatchOptions(FogOfWar: false),
+            new MatchOptions(FogOfWar: false, Civilians: true),
             [
                 .. map.Starts.Take(4).Select((start, i) => new MatchPlayer(
                     i + 1,
@@ -71,7 +71,7 @@ public static class MatchSetups
                     start.Slot,
                     start.Cell)),
             ],
-            [.. map.Starts.Select(start => start.Cell)]).WithCountries(countries);
+            [.. map.Starts.Select(start => start.Cell)]) { Climate = map.Climate }.WithCountries(countries);
     }
 
     // Every player a country of its faction, drawn from the seed of the match; none without countries.

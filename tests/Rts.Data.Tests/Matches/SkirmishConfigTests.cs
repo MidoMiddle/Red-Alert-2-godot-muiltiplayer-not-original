@@ -69,8 +69,9 @@ public sealed class SkirmishConfigTests
 
         var grid = map.ToMapGrid(GameDataFiles.Rules.MapTypes);
         Assert.Null(setup.Problem(grid.Width, grid.Height, GameDataFiles.Rules.Database));
-        // Crates on by default, as in RA2 (M11 a6).
-        Assert.Equal(new MatchOptions(20_000, ShortGame: true, FogOfWar: false, Crates: true), setup.Options);
+        // Crates on by default, as in RA2 (M11 a6); the civilians too (docs/map_elements/13_civilians), and the climate of the map.
+        Assert.Equal(new MatchOptions(20_000, ShortGame: true, FogOfWar: false, Crates: true, Civilians: true), setup.Options);
+        Assert.Equal(map.Climate, setup.Climate);
         Assert.Equal([1, 2, 3, 4], setup.Players.Select(player => player.Slot));
         Assert.Equal([PlayerKind.Human, PlayerKind.Ai, PlayerKind.Ai, PlayerKind.Ai], setup.Players.Select(player => player.Kind));
         Assert.Equal(
@@ -217,6 +218,7 @@ public sealed class SkirmishConfigTests
             GameSpeed = 6,
             StartingUnits = 10,
             Crates = false,
+            Civilians = false,
             MapId = "four-corners",
         };
 
@@ -227,10 +229,13 @@ public sealed class SkirmishConfigTests
             (loaded.McvRepacks, loaded.Superweapons, loaded.DestroyableBridges, loaded.GameSpeed, loaded.StartingUnits, loaded.MapId));
         Assert.False(options.Crates);
         Assert.False(loaded.Crates);
+        Assert.False(options.Civilians);
+        Assert.False(loaded.Civilians);
 
         // A config of before has them on, at speed 4, with three soldiers.
         var old = SkirmishConfig.Load("slot=human,1,random,0,0,-1\nslot=bot,1,random,1,0,-1\n")!;
         Assert.Equal((true, true, true, 4, 3), (old.McvRepacks, old.Superweapons, old.DestroyableBridges, old.GameSpeed, old.StartingUnits));
         Assert.True(old.Crates);
+        Assert.True(old.Civilians);
     }
 }
