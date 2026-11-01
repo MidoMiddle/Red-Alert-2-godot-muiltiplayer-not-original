@@ -23,6 +23,9 @@ public partial class Buildings : Node3D
     private const float NodSpeed = 1.6f;
     private const float NodAngle = 0.25f;
 
+    // A windmill's sails turn slowly about their hub, radians a second, while it stands (docs/temperate_elements/11_windmill).
+    private const float SailSpeed = 0.6f;
+
     private static readonly Color Civilian = new(0.78f, 0.7f, 0.55f);
     private static readonly Color Tech = new(0.45f, 0.58f, 0.6f);
 
@@ -35,6 +38,8 @@ public partial class Buildings : Node3D
     private readonly List<Ruin> _ruins = [];
     // The beams of the working pumpjacks, and the clock they nod by.
     private readonly List<Node3D> _beams = [];
+    // The sails of the windmills, whole or damaged: their node sails, its origin on the hub, its Z out of the front.
+    private readonly List<Node3D> _sails = [];
     // The moving parts of the buildings of the match: the outpost's launcher and its arm.
     private readonly List<Mover> _movers = [];
     private double _clock;
@@ -64,6 +69,11 @@ public partial class Buildings : Node3D
         {
             // Turned about the node's origin, which is the pivot of the beam.
             beam.Rotation = new Vector3(0f, 0f, Mathf.Sin((float)_clock * NodSpeed) * NodAngle);
+        }
+
+        foreach (var sails in _sails)
+        {
+            sails.RotateObjectLocal(Vector3.Back, (float)delta * SailSpeed);
         }
 
         // The map of the terrain: a match's, or the editor's (M7 step 12), which has no world and shows its start buildings.
@@ -122,6 +132,7 @@ public partial class Buildings : Node3D
     private void Rebuild(Rts.Simulation.Map.MapGrid map, GameWorld? world)
     {
         _beams.Clear();
+        _sails.Clear();
         _movers.Clear();
         foreach (var child in GetChildren())
         {
@@ -237,6 +248,12 @@ public partial class Buildings : Node3D
             if (variant == Models.ModelVariant.Intact && FindNode(model, "beam") is { } beam)
             {
                 _beams.Add(beam);
+            }
+
+            // A windmill's sails turn while it is whole or damaged; burning, their canvas is gone and they stand.
+            if (state != DamageState.Critical && FindNode(model, "sails") is { } sails)
+            {
+                _sails.Add(sails);
             }
 
             // The outpost's launcher (turret) and its jointed arm (arm, arm_upper, arm_fore), in a match.
