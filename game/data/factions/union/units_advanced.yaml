@@ -108,6 +108,7 @@ yuri:  # RA2 Yuri (YURI): takes one enemy unit at a time for his owner; deployed
   primary: yuri_mind_control
   deploy_weapon: yuri_psi_wave
   deploy_once: true  # RA2 UndeployDelay: one wave, then he stands up
+  ifv_weapon: ifv_psi_pulse  # RA2 IFV with Yuri: CRMindControl, a pulse, not mind control
   detects_disguise: true
   psionic_immune: true
 

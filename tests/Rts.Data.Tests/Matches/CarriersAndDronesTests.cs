@@ -194,6 +194,13 @@ public sealed class CarriersAndDronesTests
         ifv.Passengers.Add(new Occupant(rules.Unit(UnitType.AllianceSniper), 125));
         Assert.Equal(rules.Database.IndexOfWeapon("ifv_sniper"), rules.WeaponsOf(ifv)[0]);
 
+        // Yuri inside (a taken one): RA2 CRMindControl, a psychic pulse, not mind control.
+        ifv.Passengers.Clear();
+        ifv.Passengers.Add(new Occupant(rules.Unit(UnitType.Yuri), 100));
+        Assert.Equal(rules.Database.IndexOfWeapon("ifv_psi_pulse"), rules.WeaponsOf(ifv)[0]);
+        ifv.Passengers.Clear();
+        ifv.Passengers.Add(new Occupant(rules.Unit(UnitType.AllianceSniper), 125));
+
         var engineer = Spawn(world, Union, UnitType.Engineer, 32, 20);
         Run(simulation, 120, () => !engineer.IsAlive);
         Assert.False(engineer.IsAlive);

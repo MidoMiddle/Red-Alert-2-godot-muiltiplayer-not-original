@@ -1163,6 +1163,13 @@ public partial class PlayerInput : Node
             ? id
             : null;
 
+    /// <summary>The player's own building selected, whatever it does; null when none is, or it is gone or taken.</summary>
+    public EntityId? SelectedBuilding =>
+        _building is { } id && _host.Simulation.World.TryGet(id, out var entity) && entity is Building { IsAlive: true } building
+        && building.Owner == SimulationHost.LocalPlayer
+            ? id
+            : null;
+
     /// <summary>The player's own ready building that fires at <paramref name="point"/>, if any (not one that produces).</summary>
     private EntityId? DefenseAt(WorldPos point) =>
         _host.Simulation.World.BuildingAt(point.ToCell()) is { IsAlive: true } building && building.Owner == SimulationHost.LocalPlayer

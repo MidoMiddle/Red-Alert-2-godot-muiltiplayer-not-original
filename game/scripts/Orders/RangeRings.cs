@@ -10,7 +10,8 @@ namespace Rts.Client.Orders;
 /// <summary>
 /// The range of a defense on the ground (RA2; the owner, 2026-10-26: «when I click a Prism Tower or a Pillbox I should see its range»):
 /// a ring at the longest range of the selected defense, a dashed one at its least range when it has one (the Grand Cannon), and the
-/// same rings around a defense being placed. The rings follow the hills; drawn again only when what they show changes.
+/// same rings around a defense being placed. A sensor's reach shows the same way (RA2 HasRadialIndicator: the psychic sensor), in
+/// violet. The rings follow the hills; drawn again only when what they show changes.
 /// </summary>
 public partial class RangeRings : Node3D
 {
@@ -25,6 +26,7 @@ public partial class RangeRings : Node3D
     private static readonly Color RangeColor = new(1f, 0.15f, 0.1f, 0.95f);
     private static readonly Color NearColor = new(1f, 0.8f, 0.05f, 0.95f);
     private static readonly Color PlacingColor = new(0.95f, 0.95f, 0.95f, 0.65f);
+    private static readonly Color SensorColor = new(0.7f, 0.35f, 1f, 0.9f);
 
     private readonly ImmediateMesh _mesh = new();
     private SimulationHost _host = null!;
@@ -54,7 +56,8 @@ public partial class RangeRings : Node3D
     {
         using var frameTimer = Rts.Client.Debug.PerfLog.Time("RangeRings.process");
         var (centre, reach, placing) = Shown();
-        var state = (centre, reach, placing);
+        var (sensorCentre, sensor, sensorPlacing) = Sensor();
+        var state = (centre, reach, placing, sensorCentre, sensor);
         if (Equals(state, _drawn))
         {
             return;
@@ -62,16 +65,24 @@ public partial class RangeRings : Node3D
 
         _drawn = state;
         _mesh.ClearSurfaces();
-        if (reach is not { } shown || WorldCoords.Terrain is null)
+        if ((reach is null && sensor is null) || WorldCoords.Terrain is null)
         {
             return;
         }
 
         _mesh.SurfaceBegin(Mesh.PrimitiveType.Triangles);
-        Ring(centre, shown.Max, placing ? PlacingColor : RangeColor, dashed: false);
-        if (shown.Min > 0)
+        if (reach is { } shown)
         {
-            Ring(centre, shown.Min, placing ? PlacingColor : NearColor, dashed: true);
+            Ring(centre, shown.Max, placing ? PlacingColor : RangeColor, dashed: false);
+            if (shown.Min > 0)
+            {
+                Ring(centre, shown.Min, placing ? PlacingColor : NearColor, dashed: true);
+            }
+        }
+
+        if (sensor is { } radius)
+        {
+            Ring(sensorCentre, radius, sensorPlacing ? PlacingColor : SensorColor, dashed: false);
         }
 
         _mesh.SurfaceEnd();
@@ -93,6 +104,28 @@ public partial class RangeRings : Node3D
             && WeaponReach.Of(world, building) is { } reach)
         {
             return (Aim.CentreOf(building), reach, false);
+        }
+
+        return (default, null, false);
+    }
+
+    /// <summary>The reach of a sensor (in leptons) being placed or selected, the longest of what it senses; null for none.</summary>
+    private (WorldPos Centre, int? Radius, bool Placing) Sensor()
+    {
+        var world = _host.Simulation.World;
+        static int Of(Rts.Simulation.Rules.BuildingDef def) =>
+            Math.Max(def.Sensors, Math.Max(def.DetectsDisguiseRadius, def.RevealsIntentRadius)) * WorldPos.LeptonsPerCell;
+        if (_input.BuildArmed && _host.BuildIndex >= 0 && _input.PointerGround is { } pointer
+            && _host.Data.Database.Buildings[_host.BuildIndex] is var placed && Of(placed) > 0)
+        {
+            var corner = PlacementPreview.CornerOf(placed.Footprint, pointer);
+            return (WeaponReach.Centre(corner, placed.Footprint.Width, placed.Footprint.Height), Of(placed), true);
+        }
+
+        if (_input.SelectedBuilding is { } id && world.TryGet(id, out var entity) && entity is Building { IsReady: true, Def: { } def } building
+            && Of(def) > 0)
+        {
+            return (Aim.CentreOf(building), Of(def), false);
         }
 
         return (default, null, false);

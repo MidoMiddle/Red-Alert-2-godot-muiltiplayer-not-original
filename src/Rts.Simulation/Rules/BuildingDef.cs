@@ -178,6 +178,12 @@ public sealed record BuildingDef : IDefinition
     /// <summary>The most towers that support one shot.</summary>
     public int ChainMax { get; init; }
 
+    /// <summary>
+    /// How fast a defense turns its gun to a target, in BAngle a tick (RA2 ROT, 410 to a point: the Grand Cannon's ROT=1); it fires once
+    /// it points at it. 0: a defense aims at once.
+    /// </summary>
+    public int TurretTurnRate { get; init; }
+
     /// <summary>Whether an engineer of another player takes it (stage 3b, RA2 <c>Capturable</c>): not a defense, wall or superweapon.</summary>
     public bool Capturable { get; init; } = true;
 

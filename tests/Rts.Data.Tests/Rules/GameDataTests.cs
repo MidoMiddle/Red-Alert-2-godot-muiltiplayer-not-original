@@ -121,7 +121,8 @@ public sealed class GameDataTests
         // The buoy (docs/beach_elements/13_buoy), a map object on the water that stops nobody.
         // The pier (a bridge with the key pier), the slipway and the breakwater (docs/beach_elements, 14–16).
         // The dog of the towns (civ_dog); the beachgoers gather by the pier too.
-        Assert.Equal(0x81b14c01b4fdfc0UL, GameDataFiles.Current.Hash);
+        // The Grand Cannon's slow gun (turret_turn_rate, RA2 ROT=1); Yuri's psychic pulse in the IFV (RA2 CRMindControl).
+        Assert.Equal(0x5dce494c388f0983UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

@@ -460,6 +460,12 @@ public static class StateHasher
 
                 // Rules v56 (stage 2d): the charge of a superweapon.
                 hash.Add(building.ChargeLeft);
+                if (building.TurretFacing.Value != 0)
+                {
+                    // Rules v126: where the gun of a defense that turns it points (the Grand Cannon).
+                    hash.Add(7);
+                    hash.Add(building.TurretFacing.Value);
+                }
 
                 // Rules v57 (loose ends, stage 1): the income of a taken oil derrick.
                 hash.Add(building.CashTimer);

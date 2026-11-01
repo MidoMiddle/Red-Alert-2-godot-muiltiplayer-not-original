@@ -418,6 +418,7 @@ public sealed class GoldenValuesTests
         // Rules v123 (the buoy, a map object on the water that stops nobody; the owner's wish): the version only — no buoy here.
         // Rules v124 (the pier, a low bridge out into the water; the slipway and the breakwater): the version only — none of them here.
         // Rules v125 (the civilians' wrecks, the dog, the sidewalks, the pier): the version only — no civilians here.
-        Assert.Equal((22270, 9126793862970489493UL), (bytes.Length, hash.Value));
+        // Rules v126 (the Grand Cannon turns its gun slowly; Yuri's pulse in the IFV): the version only — neither here.
+        Assert.Equal((22270, 5493749208966777810UL), (bytes.Length, hash.Value));
     }
 }

@@ -3,6 +3,7 @@ using Rts.Simulation.Combat;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
+using Rts.Simulation.Math;
 using Rts.Simulation.Matches;
 using Rts.Simulation.Rules;
 using Rts.Simulation.Systems;
@@ -63,6 +64,27 @@ public sealed class NeutralDefenseTests
         {
             simulation.Step();
         }
+    }
+
+    [Fact]
+    public void The_grand_cannon_turns_its_gun_slowly_and_fires_only_once_it_points_at_the_target()
+    {
+        // RA2 ROT=1 (410 a tick): from north round to the south, half a turn, takes 80 ticks before the first shell.
+        var simulation = Match();
+        var world = simulation.World;
+        var cannon = Nobody(world, "alliance_grand_cannon", 30, 20);
+        var tank = Spawn(world, Union, UnitType.HeavyTank, 31, 30);
+        Assert.Equal(0, cannon.TurretFacing.Value);
+
+        var start = simulation.CurrentTick;
+        Run(simulation, 300, () => cannon.Target is not null);
+        var aimed = simulation.CurrentTick;
+        Run(simulation, 300, () => tank.Hp < tank.MaxHp);
+
+        Assert.True(tank.Hp < tank.MaxHp, "the cannon never fired");
+        Assert.True(simulation.CurrentTick - aimed >= 75, $"it fired {simulation.CurrentTick - aimed} ticks after taking the target");
+        Assert.True(System.Math.Abs(BAngle.Difference(cannon.TurretFacing, BAngle.FromUnits(BAngle.FullTurn / 2))) <= 2048);
+        Assert.True(start <= aimed);
     }
 
     [Fact]

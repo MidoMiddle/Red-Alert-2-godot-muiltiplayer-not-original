@@ -204,6 +204,11 @@ public static class DataHasher
             hash.Add(building.Recharge);
             Add(hash, building.SuperweaponWeapon);
             hash.Add(building.BuildLimit);
+            if (building.TurretTurnRate > 0)
+            {
+                // Rules v126: a defense that turns its gun (the Grand Cannon), only then, so the others hash as before.
+                hash.Add(building.TurretTurnRate);
+            }
         }
 
         hash.Add(rules.Factions.Length);

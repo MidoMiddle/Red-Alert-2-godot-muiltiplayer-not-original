@@ -208,6 +208,15 @@ ifv_sniper:  # what the Marksman gives the IFV, RA2 AWPE
   projectile: bullet
   warhead: hollow_point
 
+ifv_psi_pulse:  # what Yuri gives the IFV, RA2 CRMindControl: no mind control, a psychic pulse of 200 at the soldiers within 3 cells of the target (PsiPulse), ROF 10
+  kind: weapon
+  name: IFV Psychic Pulse
+  damage: 200
+  reload: 0.67s
+  range: 1
+  projectile: bullet
+  warhead: psi_wave
+
 ifv_neutron_rifle:  # what the Time Trooper gives the IFV, RA2 CRNeutronRifle
   kind: weapon
   name: IFV Neutron Rifle

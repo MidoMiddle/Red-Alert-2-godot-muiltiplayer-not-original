@@ -30,7 +30,7 @@ internal static class DefinitionReader
     [
         "name", "faction", "category", "cost", "build_time", "hp", "footprint", "power", "build_up", "exit_cell", "adjacent", "extends_base", "produces", "dock_cell", "radar", "armor", "primary", "threat", "wall", "powered", "sight",
         "prerequisites", "model", "icon", "ability_later", "water", "repairs_vehicles", "income_bonus", "clones_infantry", "sell_value", "provides", "detects_disguise", "sensors", "reveals_intent", "death_weapon", "overcharge_weapon",
-        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit",
+        "reveals_map", "veil_radius", "garrison", "chain_bonus", "chain_max", "capturable", "spy_effect", "rearms_aircraft", "aircraft_docks", "superweapon", "recharge", "superweapon_weapon", "build_limit", "turret_turn_rate",
         "countries", "forbidden_countries", "superweapon_countries", "paradrop", "paradrop_count",
     ];
 
@@ -231,6 +231,7 @@ internal static class DefinitionReader
             GarrisonCapacity = fields.Optional("garrison", Scalars.Int, 0),
             ChainBonusPercent = WholePercent(fields.Optional("chain_bonus", Scalars.Percent, Fixed.Zero)),
             ChainMax = fields.Optional("chain_max", Scalars.Int, 0),
+            TurretTurnRate = fields.Optional("turret_turn_rate", Scalars.Int, 0),
             Capturable = fields.Optional("capturable", Scalars.Flag, true),
             SpyEffect = fields.Optional("spy_effect", SpyEffectOf, SpyEffect.None),
             RearmsAircraft = fields.Optional("rearms_aircraft", Scalars.Flag, false),

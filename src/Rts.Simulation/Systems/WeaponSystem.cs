@@ -195,12 +195,20 @@ public static class WeaponSystem
             return;
         }
 
-        // A defense aims at once.
+        // A defense aims at once, but one that turns its gun (the Grand Cannon, RA2 ROT=1) fires once the gun points at the target.
         var centre = Aim.CentreOf(building);
         var aimAt = Aim.NearestPoint(target, centre);
+        var aimed = true;
+        if (building.Def is { TurretTurnRate: > 0 } turning)
+        {
+            var wanted = FixedMath.Angle(aimAt.X - centre.X, aimAt.Y - centre.Y);
+            building.TurretFacing = Turn(building.TurretFacing, wanted, turning.TurretTurnRate);
+            aimed = PointsAt(building.TurretFacing, wanted);
+        }
+
         var distance = DamageCalculator.Distance(centre, aimAt);
         var slots = Defenses.WeaponsOf(world, building);
-        if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed: true, TargetingSystem.LayerOf(target), events, target) is { } weapon)
+        if (Fire(world, rules, building.Id, target.Id, building.Weapons, slots, distance, aimed, TargetingSystem.LayerOf(target), events, target) is { } weapon)
         {
             var bonus = building.Def is { ChainBonusPercent: > 0 } def ? Support(world, building, def, events) * def.ChainBonusPercent : 0;
             shots.Add(new Shot(building.Owner, building.Id, weapon, target.Id, centre, aimAt, bonus));

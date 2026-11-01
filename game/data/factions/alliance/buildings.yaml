@@ -307,6 +307,7 @@ alliance_grand_cannon:  # long-range artillery defence
   sight: 10
   threat: 45
   primary: alliance_siege_shell
+  turret_turn_rate: 410  # RA2 ROT=1: a very slow gun; it fires once it points at the target
   footprint: [2, 2]
   power: -100
   prerequisites: [radar]

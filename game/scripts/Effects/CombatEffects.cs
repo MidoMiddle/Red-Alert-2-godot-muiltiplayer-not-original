@@ -25,6 +25,9 @@ public partial class CombatEffects : Node3D
     private const float FlashLife = 0.08f;
     private const float TracerLife = 0.1f;
     private const float BoltLife = 0.2f;
+
+    // How often a tesla trooper charging its coil sends a spark into it, in seconds (RA2: the trooper zaps the coil while it charges).
+    private const float ChargeSparkSeconds = 0.15f;
     private const float BlastLife = 0.4f;
     private const float StainLife = 2f;
 
@@ -106,6 +109,7 @@ public partial class CombatEffects : Node3D
 
         Remember(_host.Simulation.World);
         var step = (float)delta;
+        Sparks(_host.Simulation.World, step);
         for (var i = _balls.Count - 1; i >= 0; i--)
         {
             var ball = _balls[i];
@@ -291,6 +295,31 @@ public partial class CombatEffects : Node3D
         };
         AddChild(mesh);
         _balls.Add(new Ball(mesh, material, from, to, life, flat));
+    }
+
+    private float _sparkLeft;
+
+    /// <summary>
+    /// The sparks of the tesla troopers charging their coils (M11, the coil's charged shot): every <see cref="ChargeSparkSeconds"/> a short
+    /// blue lightning from each trooper standing by its coil (<see cref="Unit.Charging"/>) up into the top of the coil, while it is seen.
+    /// </summary>
+    private void Sparks(GameWorld world, float step)
+    {
+        _sparkLeft -= step;
+        if (_sparkLeft > 0f)
+        {
+            return;
+        }
+
+        _sparkLeft = ChargeSparkSeconds;
+        foreach (var entity in world.Entities)
+        {
+            if (entity is Unit { IsAlive: true, Charging: { } coil } trooper && _known.TryGetValue(trooper.Id, out var from)
+                && _known.TryGetValue(coil, out var to) && Terrain.FogOfWar.Shows(world, trooper))
+            {
+                _lineEffects.Add(new Line(Zigzag(from.Gun, to.Gun + new Vector3(0f, 0.4f, 0f)), BoltColor, BoltLife * 0.6f));
+            }
+        }
     }
 
     /// <summary>A lightning from <paramref name="from"/> to <paramref name="to"/>: eight pieces, the middle ones pushed aside at random.</summary>

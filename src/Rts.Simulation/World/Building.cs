@@ -1,4 +1,5 @@
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
 
 namespace Rts.Simulation.World;
@@ -80,6 +81,12 @@ public sealed class Building : Entity
 
     /// <summary>The ticks the superweapon still charges (stage 2d); 0 when it is ready to fire. State: hashed.</summary>
     public int ChargeLeft { get; internal set; }
+
+    /// <summary>
+    /// Where the gun of a defense that turns it points (<see cref="Rules.BuildingDef.TurretTurnRate"/>: the Grand Cannon). State: hashed
+    /// while not 0.
+    /// </summary>
+    public BAngle TurretFacing { get; internal set; }
 
     /// <summary>
     /// It was built for a country that may have its superweapon (<see cref="Rules.BuildingDef.SuperweaponCountries"/>: the USA's Air Force

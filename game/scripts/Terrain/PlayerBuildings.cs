@@ -149,8 +149,10 @@ public partial class PlayerBuildings : Node3D
 
             if (view.Turret is { } turret)
             {
-                // A defense's turret turns to its target and spins its gatlings while it has one; a ghost's stands still.
-                turret.Step((float)delta, ghost || growth < 1f ? null : TargetPoint(world, building));
+                // A defense's turret turns to its target and spins its gatlings while it has one; a ghost's stands still. One that
+                // turns its gun in the rules (the Grand Cannon) shows where the rules point it.
+                turret.Step((float)delta, ghost || growth < 1f ? null
+                    : building.Def is { TurretTurnRate: > 0 } && building.Target is not null ? GunPoint(building) : TargetPoint(world, building));
             }
 
             if (view.Glow is { } glow)
@@ -380,6 +382,17 @@ public partial class PlayerBuildings : Node3D
             _ => (Rts.Simulation.Geometry.WorldPos?)null,
         };
         return point is { } at ? WorldCoords.ToGodot(at) : null;
+    }
+
+    // A point a few cells out along the gun of a defense that turns it in the rules (BuildingDef.TurretTurnRate).
+    private static Vector3 GunPoint(Building building)
+    {
+        var centre = Rts.Simulation.Combat.Aim.CentreOf(building);
+        var (x, y) = Rts.Simulation.Math.FixedMath.Direction(building.TurretFacing);
+        const long Reach = 4L * Rts.Simulation.Geometry.WorldPos.LeptonsPerCell;
+        return WorldCoords.ToGodot(new Rts.Simulation.Geometry.WorldPos(
+            centre.X + (int)((x.Raw * Reach) >> Rts.Simulation.Math.Fixed.FractionalBits),
+            centre.Y + (int)((y.Raw * Reach) >> Rts.Simulation.Math.Fixed.FractionalBits)));
     }
 
     // Whether a factory works now: the first item of one of the queues it builds for (a construction yard's buildings and

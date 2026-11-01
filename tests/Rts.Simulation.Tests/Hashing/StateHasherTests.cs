@@ -431,7 +431,7 @@ public sealed class StateHasherTests
     {
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
         "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField", "<Primary>k__BackingField",
-        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<TargetOrder>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
+        "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<TargetOrder>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField", "<TurretFacing>k__BackingField",
         "<Sheltered>k__BackingField", "<ShelterQuiet>k__BackingField",
         "<CashTimer>k__BackingField", "<CountryWeapon>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
