@@ -36,6 +36,7 @@ A flat irregular floating ice floe about one unit across and a fifth of a unit t
 ## 4. Наши требования
 
 - Узел: `body`. Трещины — текстура. Покачивание — код.
+- Пивот в центре клетки на поверхности воды; лёд уходит под воду до −0,12.
 - Блокирует флот. Цвета команды нет.
 - Бюджет ≤ 800 треугольников, текстуры 1024².
 
@@ -43,7 +44,9 @@ A flat irregular floating ice floe about one unit across and a fifth of a unit t
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `ice_floe.glb` | | | |
+| `ice_floe.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_ice_floe.py`) | 2026-11-01 | сделано, 244 треугольника |
+| `ice_floe_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_ice_floe.py`) | 2026-11-01 | сделано, 420 треугольников |
+| `ice_floe_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_ice_floe.py`) | 2026-11-01 | сделано, 385 треугольников |
 
 ## Открытые вопросы
 

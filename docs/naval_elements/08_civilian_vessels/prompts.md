@@ -11,11 +11,11 @@
 
 | Ассет | Тип | Футпринт | Высота (ориентир) | Бюджет LOD0 | Блокирует |
 |---|---|---|---|---|---|
-| `civ_ferry` | судно | 2x1 | 1,2 | ≤ 8 000 | флот |
-| `civ_cargo_ship` | судно | 4x1 | 1,5 | ≤ 8 000 | флот |
-| рыбацкая лодка | судно | 1x1 | 0,6 | — | флот |
+| `civ_ferry` | судно | 2x1 | 0,95 (труба) | ≤ 8 000 | флот |
+| `civ_cargo_ship` | судно | 4x1 | 1,1 (труба) | ≤ 8 000 | флот |
+| `civ_fishing_boat` | судно | 1x1 | 0,62 (мачта) | ≤ 1 500 | флот |
 
-Рыбацкую лодку берём из [beached_boat](../../beach_elements/17_beached_boat/prompts.md): корпус тот же, плавучесть и покачивание добавляем в коде.
+Рыбацкая лодка сделана первой (2026-11-01): `civ_fishing_boat`. Её корпус — основа будущей лодки на песке [beached_boat](../../beach_elements/17_beached_boat/prompts.md). Покачивание добавляем в коде.
 
 ## 2. Картинка-референс (ChatGPT)
 
@@ -47,7 +47,9 @@ A long grey cargo ship about four units long and one unit wide: a dark red hull,
 
 ## 4. Наши требования
 
-- Узлы: `hull` (корпус, именование как у техники, M1 4.7), `cabin` (надстройка), `funnel` (труба, дымит).
+- Узлы: `hull` (корпус, именование как у техники, M1 4.7), `cabin` (надстройка), `funnel` (труба, дымит), `smoke_anchor` (верх трубы, у целых), `fire_1`, `fire_2` (у повреждённых).
+- Размер игры: паром 1,9 × 0,6, грузовое 3,8 × 0,76, лодка 0,9 × 0,34. Нос к +x.
+- Состояния: целое и повреждённое (горит). Тонет — код игры кренит и погружает повреждённое.
 - Пивот — центр футпринта на уровне воды.
 - Надписей, флагов и военных признаков нет.
 - Цвета команды нет: суда нейтральные.
@@ -57,8 +59,12 @@ A long grey cargo ship about four units long and one unit wide: a dark red hull,
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `civ_ferry.glb` | | | |
-| `civ_cargo_ship.glb` | | | |
+| `civ_ferry.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_vessels.py`) | 2026-11-01 | сделано, 1 662 треугольников |
+| `civ_ferry_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_vessels.py`) | 2026-11-01 | сделано, 1 698 треугольников |
+| `civ_cargo_ship.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_vessels.py`) | 2026-11-01 | сделано, 1 150 треугольников |
+| `civ_cargo_ship_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_vessels.py`) | 2026-11-01 | сделано, 1 294 треугольников |
+| `civ_fishing_boat.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_vessels.py`) | 2026-11-01 | сделано, 398 треугольников |
+| `civ_fishing_boat_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_vessels.py`) | 2026-11-01 | сделано, 446 треугольников |
 
 ## Открытые вопросы
 

@@ -218,3 +218,25 @@ highway_guardrail:
   blocks: [foot]
   hp: 120
   crushed_by: [track, wheel]
+
+# The edge of a quay (docs/naval_elements/09_quay_wall): its coping, bollards, fenders and now and then a ladder down to the water, on
+# the cliff cell of a quay's wall. It stands where nobody goes (a cliff), so it stops nobody, and nothing breaks it.
+quay_edge:
+  kind: map_object
+  name: Quay edge
+
+# On the water (docs/naval_elements): the rocks of a reef just out of the sea stop all that moves on it, ships, amphibians and hovers,
+# and only heavy fire breaks them; an ice floe of the winter sea stops the ships, an amphibian climbs over it.
+reef_rocks:
+  kind: map_object
+  name: Reef
+  blocks: [amphibious, hover, naval]
+  hp: 3000
+  water: true
+
+ice_floe:
+  kind: map_object
+  name: Ice floe
+  blocks: [naval]
+  hp: 800
+  water: true

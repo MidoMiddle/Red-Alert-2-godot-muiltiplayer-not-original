@@ -411,6 +411,7 @@ public static class DataHasher
             hash.Add(mapObject.Hp);
             Add(hash, mapObject.CrushedBy);
             hash.Add(mapObject.Stump ? 1 : 0);
+            hash.Add(mapObject.Water ? 1 : 0);
             hash.Add(mapObject.Speeds.Length);
             foreach (var speed in mapObject.Speeds)
             {
@@ -445,6 +446,8 @@ public static class DataHasher
             hash.Add(building.RepairsVehicles ? 1 : 0);
             hash.Add(building.ExtendsBase ? 1 : 0);
             Add(hash, building.DeathWeapon);
+            hash.Add(building.Water ? 1 : 0);
+            hash.Add(building.Ruins ? 1 : 0);
         }
 
         return hash.Value;

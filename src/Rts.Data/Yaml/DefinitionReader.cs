@@ -50,14 +50,14 @@ internal static class DefinitionReader
 
     private static readonly string[] CountryKeys = ["name", "faction"];
 
-    private static readonly string[] MapObjectKeys = ["name", "blocks", "hp", "crushed_by", "stump", "speed"];
+    private static readonly string[] MapObjectKeys = ["name", "blocks", "hp", "crushed_by", "stump", "speed", "water"];
 
     private static readonly string[] BridgeKeys = ["name", "segment_hp", "width", "high"];
 
     private static readonly string[] MapBuildingKeys =
     [
         "name", "footprint", "hp", "garrison", "capturable", "superweapon", "recharge", "weapon", "armor", "sight", "repairs_vehicles",
-        "extends_base", "death_weapon",
+        "extends_base", "death_weapon", "water", "ruins",
     ];
 
     private static readonly string[] FactionKeys = ["name", "mcv", "construction_yard", "refinery", "harvester", "starting_infantry", "paradrop", "paradrop_count", "default"];
@@ -395,6 +395,7 @@ internal static class DefinitionReader
             CrushedBy = fields.Optional("crushed_by", Scalars.IdList, ImmutableArray<string>.Empty),
             Stump = fields.Optional("stump", Scalars.Flag, false),
             Speeds = fields.Optional("speed", Scalars.Speeds, ImmutableArray<LocomotorSpeed>.Empty),
+            Water = fields.Optional("water", Scalars.Flag, false),
         };
     }
 
@@ -430,6 +431,8 @@ internal static class DefinitionReader
             RepairsVehicles = fields.Optional("repairs_vehicles", Scalars.Flag, false),
             ExtendsBase = fields.Optional("extends_base", Scalars.Flag, false),
             DeathWeapon = fields.Optional("death_weapon", Scalars.Id, ""),
+            Water = fields.Optional("water", Scalars.Flag, false),
+            Ruins = fields.Optional("ruins", Scalars.Flag, true),
         };
     }
 

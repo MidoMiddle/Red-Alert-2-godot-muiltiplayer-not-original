@@ -15,6 +15,7 @@ legend:
   texture:
     a: asphalt
     b: shore
+    c: quay
     d: dirt
     g: grass
     k: rock
@@ -121,16 +122,16 @@ layers:
     00000000000000000000000000000000000000000112222212222333333334444443334444443333333322221222221100000000000000000000000000000000000000000
     00000000000000000000000000000000000000000011222112222333333334444443334444443333333322221122211000000000000000000000000000000000000000000
     00000000000000000000000000000000000000000001122222222333333334444443334444443333333322222222110000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000111222222333333334444444344444443333333322222211100000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000001222222333333333444444344444433333333322222210000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000001122222233333333444444344444433333333222222110000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000112222233333333444444344444433333333222221100000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000011222333333333444444344444433333333322211000000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000001122333333333444443334444433333333322110000000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000000112233333333344433333444333333333221100000000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000000011233333333333333333333333333333211000000000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000000001223333333333333333333333333332210000000000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000000001122333333333333333333333333322110000000000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222222333333334444444344444443333333322222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222222333333333444444344444433333333322222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222222233333333444444344444433333333222222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222222233333333444444344444433333333222222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222222333333333444444344444433333333322222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222222333333333444443334444433333333322222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222212233333333344433333444333333333221222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222211233333333333333333333333333333211222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222211223333333333333333333333333332211222220000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000000000002222211122333333333333333333333333322111222220000000000000000000000000000000000000000000000
     00000000000000000000000000000000000000000000000000000112223333333333333333333332221100000000000000000000000000000000000000000000000000000
     00000000000000000000000000000000000000000000000000000011222233333333333333333222211000000000000000000000000000000000000000000000000000000
     00000000000000000000000000000000000000000000000000000001112223333333333333332221110000000000000000000000000000000000000000000000000000000
@@ -259,16 +260,16 @@ layers:
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb....................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bbb............................................bbb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~b............................................b~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..........................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb........................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb......................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb....................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~b................................b~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..............................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~~..............................................~~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~..............................................~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~..............................................~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..............................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..............................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..............................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..............................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..............................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..............................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW......bb..............................bb......WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb............................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..........................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bbb......................bbb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
@@ -395,17 +396,17 @@ layers:
     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggpppggggggggggggggggggggggggggggggggggggpppggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbgppppppggggggggggpppggggggggggggpppggggggggggppppppgbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbppppppggggggggggppppggggggggggppppggggggggggppppppbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbpppggggggggggggpppggggggggggggpppggggggggggggpppbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbbggggggggggggggggggggggggggggggggggggggggggggbbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbgggggggggpppggggggggggggggggggggpppgggggggggbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggggpppggggggggggggggggggggpppggggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbgggggggpppggggggggggggggggggggpppgggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggppggggggggggggggggggggggppggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggpggggggggggggggggggggggpggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggggggggggggggggggggggggggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggggggggggggggggggggggggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbggggggggggggggggggggggggggggggggbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggggggggggggggggggggggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbpcpggggggggggggpppggggggggggggpppggggggggggggpcpbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccggggggggggggggggggggggggggggggggggggcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccgggggpppggggggggggggggggggggpppgggggcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccgggggpppggggggggggggggggggggpppgggggcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccgggggpppggggggggggggggggggggpppgggggcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccgggggppggggggggggggggggggggggppgggggcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccggggggpggggggggggggggggggggggpggggggcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccggggggggggggggggggggggggggggggggggccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccggggggggggggggggggggggggggggggggggccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccggggggggggggggggggggggggggggggggggggcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+    wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccbbggggggggggggggggggggggggggggggbbccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggggggggggggggggggggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbggggggggggggggggggggggggggbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbbbggggggggggggggggggggggbbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
@@ -592,8 +593,6 @@ objects:
   - { type: beach_umbrella, cell: [121, 69], variant: 0 }
   - { type: beach_umbrella, cell: [41, 96], variant: 0 }
   - { type: beach_umbrella, cell: [94, 96], variant: 0 }
-  - { type: beach_umbrella, cell: [45, 99], variant: 0 }
-  - { type: beach_umbrella, cell: [90, 99], variant: 0 }
   - { type: beach_umbrella, cell: [62, 117], variant: 0 }
   - { type: beach_umbrella, cell: [73, 117], variant: 0 }
   - { type: beached_boat, cell: [60, 21], variant: 0 }
@@ -1028,6 +1027,24 @@ objects:
   - { type: pine_tree, cell: [67, 129], variant: 1 }
   - { type: pine_tree, cell: [68, 129], variant: 1 }
   - { type: pine_tree, cell: [69, 129], variant: 1 }
+  - { type: quay_edge, cell: [45, 98], variant: 0 }
+  - { type: quay_edge, cell: [90, 98], variant: 0 }
+  - { type: quay_edge, cell: [45, 99], variant: 0 }
+  - { type: quay_edge, cell: [90, 99], variant: 0 }
+  - { type: quay_edge, cell: [45, 100], variant: 0 }
+  - { type: quay_edge, cell: [90, 100], variant: 0 }
+  - { type: quay_edge, cell: [45, 101], variant: 0 }
+  - { type: quay_edge, cell: [90, 101], variant: 0 }
+  - { type: quay_edge, cell: [45, 102], variant: 0 }
+  - { type: quay_edge, cell: [90, 102], variant: 0 }
+  - { type: quay_edge, cell: [45, 103], variant: 0 }
+  - { type: quay_edge, cell: [90, 103], variant: 0 }
+  - { type: quay_edge, cell: [45, 104], variant: 0 }
+  - { type: quay_edge, cell: [90, 104], variant: 0 }
+  - { type: quay_edge, cell: [45, 105], variant: 0 }
+  - { type: quay_edge, cell: [90, 105], variant: 0 }
+  - { type: quay_edge, cell: [45, 106], variant: 0 }
+  - { type: quay_edge, cell: [90, 106], variant: 0 }
   - { type: road_sign, cell: [45, 72], variant: 0 }
   - { type: road_sign, cell: [90, 72], variant: 0 }
   - { type: sun_lounger, cell: [67, 15], variant: 0 }
@@ -1036,8 +1053,6 @@ objects:
   - { type: sun_lounger, cell: [109, 55], variant: 0 }
   - { type: sun_lounger, cell: [16, 65], variant: 0 }
   - { type: sun_lounger, cell: [119, 65], variant: 0 }
-  - { type: sun_lounger, cell: [50, 105], variant: 0 }
-  - { type: sun_lounger, cell: [85, 105], variant: 0 }
   - { type: traffic_light, cell: [60, 70], variant: 0 }
   - { type: traffic_light, cell: [75, 70], variant: 0 }
   - { type: traffic_light, cell: [64, 73], variant: 0 }
@@ -1062,14 +1077,20 @@ structures:
   - { type: neutral_beach_cabin, cell: [106, 53], owner: neutral, facing: 0 }
   - { type: neutral_boat_shed, cell: [61, 21], owner: neutral, facing: 7 }
   - { type: neutral_boat_shed, cell: [73, 21], owner: neutral, facing: 7 }
-  - { type: neutral_container_stack, cell: [66, 17], owner: neutral, facing: 5 }
-  - { type: neutral_container_stack, cell: [68, 17], owner: neutral, facing: 5 }
-  - { type: neutral_container_stack, cell: [66, 18], owner: neutral, facing: 3 }
-  - { type: neutral_container_stack, cell: [68, 18], owner: neutral, facing: 3 }
-  - { type: neutral_container_stack, cell: [57, 26], owner: neutral, facing: 7 }
-  - { type: neutral_container_stack, cell: [77, 26], owner: neutral, facing: 7 }
-  - { type: neutral_container_stack, cell: [35, 48], owner: neutral, facing: 7 }
-  - { type: neutral_container_stack, cell: [99, 48], owner: neutral, facing: 7 }
+  - { type: neutral_container_stack, cell: [48, 99], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [86, 99], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [48, 101], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [86, 101], owner: neutral, facing: 0 }
+  - { type: neutral_ferry, cell: [64, 11], owner: neutral, facing: 0 }
+  - { type: neutral_ferry, cell: [70, 11], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [22, 89], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [113, 89], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [30, 90], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [105, 90], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [43, 100], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [92, 100], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [43, 104], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [92, 104], owner: neutral, facing: 0 }
   - { type: neutral_fountain, cell: [63, 69], owner: neutral, facing: 3 }
   - { type: neutral_fountain, cell: [71, 69], owner: neutral, facing: 3 }
   - { type: neutral_fountain, cell: [65, 73], owner: neutral, facing: 7 }
@@ -1086,14 +1107,18 @@ structures:
   - { type: neutral_kiosk, cell: [68, 72], owner: neutral, facing: 6 }
   - { type: neutral_lighthouse, cell: [31, 49], owner: neutral, facing: 0 }
   - { type: neutral_lighthouse, cell: [103, 49], owner: neutral, facing: 0 }
-  - { type: neutral_port_crane, cell: [63, 20], owner: neutral, facing: 2 }
-  - { type: neutral_port_crane, cell: [72, 20], owner: neutral, facing: 2 }
-  - { type: neutral_port_crane, cell: [36, 89], owner: neutral, facing: 6 }
-  - { type: neutral_port_crane, cell: [99, 89], owner: neutral, facing: 6 }
+  - { type: neutral_port_crane, cell: [46, 100], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [89, 100], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [46, 104], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [89, 104], owner: neutral, facing: 0 }
+  - { type: neutral_port_warehouse, cell: [47, 103], owner: neutral, facing: 0 }
+  - { type: neutral_port_warehouse, cell: [86, 103], owner: neutral, facing: 0 }
   - { type: neutral_shop, cell: [61, 69], owner: neutral, facing: 7 }
   - { type: neutral_shop, cell: [73, 69], owner: neutral, facing: 7 }
   - { type: neutral_skyscraper, cell: [65, 66], owner: neutral, facing: 4 }
   - { type: neutral_skyscraper, cell: [69, 66], owner: neutral, facing: 4 }
+  - { type: tech_offshore_platform, cell: [20, 49], owner: neutral, facing: 0 }
+  - { type: tech_offshore_platform, cell: [114, 49], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [53, 76], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [81, 76], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [66, 126], owner: neutral, facing: 0 }

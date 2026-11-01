@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Rts.Data.Maps;
 using Rts.MapGen.Stages;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 
 namespace Rts.MapGen;
 
@@ -16,8 +18,9 @@ public sealed class MapGenException(string message, IReadOnlyList<MapProblem> pr
 /// The random map generator (docs/implementation/M7_maps.md, 4.14). Integers and hashes only, so one seed and the same settings
 /// give the same map on every system. Stages: heights (<see cref="Relief"/>), <see cref="Starts"/>, water
 /// (<see cref="Water"/>), then smoothing — the whole map for hills, ramps, starts and river banks for mountains — lakes and
-/// shores, <see cref="Bridges"/>, <see cref="Ore"/>, the drills of the fields (<see cref="Drills"/>, M8 step 10b), <see cref="Roads"/>, an oil derrick by the contested ore, rough patches
-/// and the forest (<see cref="Features"/>). The map is symmetric by construction (<see cref="Symmetry"/>). A map with errors
+/// shores, <see cref="Bridges"/>, <see cref="Ore"/>, the drills of the fields (<see cref="Drills"/>, M8 step 10b), <see cref="Roads"/>, an oil derrick by the contested ore, rough patches,
+/// the dressing of the climate (<see cref="Dressing"/>, with a harbour on the sea, <see cref="Harbour"/>), what stands in the sea
+/// (<see cref="Offshore"/>), and the forest (<see cref="Features"/>). The map is symmetric by construction (<see cref="Symmetry"/>). A map with errors
 /// of <see cref="MapValidator"/> is made again from seed + 1, at most <see cref="Attempts"/> times; the seed used is in the
 /// map's id (<c>random-SEED</c>) and description.
 /// </summary>
@@ -115,6 +118,7 @@ public static class MapGenerator
         Bridges.Huts(map);
         Features.Town(map);
         Dressing.Place(map);
+        Offshore.Place(map);
         Features.Rough(map);
         Features.Forest(map);
         Features.Ground(map);
@@ -125,6 +129,92 @@ public static class MapGenerator
                           $"forest {settings.Forest}, resources {settings.Resources}.";
         // Sand only where a vehicle comes down to the water; a cliff straight into it (the owner, 2026-10-30).
         return Shorelines.Tidy(map.ToDefinition(name, Drills.WithDrills(description, settings.Drills)), map.Types);
+    }
+
+    /// <summary>
+    /// The harbour and what stands in the sea (<see cref="Harbour"/>, <see cref="Offshore"/>) added to a map the generator made before
+    /// with these settings, the rest of it as it is (the owner, 2026-11-01: the ready maps get them too). A town's old harbour by the
+    /// water gives way to the quay's. The ground of a new kind gets a letter of the legend.
+    /// </summary>
+    public static MapDefinition AddSea(MapDefinition map, MapGenSettings settings)
+    {
+        settings.Check();
+        var gen = GenMap.From(map, settings, settings.Seed);
+        if (settings.Climate is ClimateGrounds.Urban or ClimateGrounds.Coast && settings.Water == WaterKind.Sea)
+        {
+            var old = gen.Structures.FindAll(s => Array.IndexOf(Dressing.HarbourBuildings, s.Type) >= 0);
+            gen.Structures.RemoveAll(old.Contains);
+            if (Harbour.Build(gen, clearing: true))
+            {
+                Dressing.PlaceDocks(gen);
+            }
+            else
+            {
+                gen.Structures.AddRange(old);
+            }
+        }
+
+        Offshore.Place(gen);
+        var legend = new List<TextureEntry>(map.TextureLegend);
+        var texture = new char[map.Width * map.Height];
+        for (var i = 0; i < texture.Length; i++)
+        {
+            var material = gen.Paint[i] ?? ClimateGrounds.MaterialOf(settings.Climate, gen.Land[i]);
+            if (legend.Find(e => e.Material == material) is not { } entry)
+            {
+                entry = new TextureEntry("abcdefghijklmnopqrstuvwxyz0123456789".First(c => !legend.Exists(e => e.Code == c)), material);
+                legend.Add(entry);
+            }
+
+            texture[i] = entry.Code;
+        }
+
+        var heights = new byte[gen.Levels.Length];
+        for (var i = 0; i < heights.Length; i++)
+        {
+            heights[i] = (byte)gen.Levels[i];
+        }
+
+        var laid = new MapDefinition(
+            map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts, [.. legend],
+            [.. heights], [.. gen.Land], [.. texture], [.. gen.Ore], [.. gen.Objects], [.. gen.Bridges], [.. gen.Structures],
+            map.Lighting, map.Playable, map.Origin);
+
+        // The shores tidied only about the quay: the map was tidied once, and a second time would take another strip at the cliffs' feet.
+        var tidy = Shorelines.Tidy(laid, settings.Types);
+        var (land, tidied) = (laid.Land.ToArray(), laid.Texture.ToArray());
+        for (var y = 0; y < map.Height; y++)
+        {
+            for (var x = 0; x < map.Width; x++)
+            {
+                if (NearChange(map, laid, x, y, 3))
+                {
+                    (land[y * map.Width + x], tidied[y * map.Width + x]) = (tidy.Land[y * map.Width + x], tidy.Texture[y * map.Width + x]);
+                }
+            }
+        }
+
+        return new MapDefinition(
+            map.Id, map.Name, map.Author, map.Description, map.Width, map.Height, map.Climate, map.Players, map.Starts, tidy.TextureLegend,
+            laid.Heights, [.. land], [.. tidied], laid.Ore, laid.Objects, laid.Bridges, laid.Structures, map.Lighting, map.Playable, map.Origin);
+    }
+
+    // Whether the land or the corners of a cell within reach of this one differ between the two maps.
+    private static bool NearChange(MapDefinition before, MapDefinition after, int x, int y, int reach)
+    {
+        for (var ny = IntMath.Max(0, y - reach); ny <= IntMath.Min(before.Height - 1, y + reach); ny++)
+        {
+            for (var nx = IntMath.Max(0, x - reach); nx <= IntMath.Min(before.Width - 1, x + reach); nx++)
+            {
+                if (before.Land[ny * before.Width + nx] != after.Land[ny * before.Width + nx]
+                    || before.CornerHeight(nx, ny) != after.CornerHeight(nx, ny) || before.CornerHeight(nx + 1, ny + 1) != after.CornerHeight(nx + 1, ny + 1))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // The drills of the settings (M8 step 10b) before the roads, which go round them; the ore under them goes. A field with no cell

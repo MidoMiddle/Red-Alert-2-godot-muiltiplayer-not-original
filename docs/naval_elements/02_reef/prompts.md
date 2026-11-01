@@ -11,7 +11,7 @@
 
 | Ассет | Тип | Футпринт | Высота (ориентир) | Бюджет LOD0 | Блокирует |
 |---|---|---|---|---|---|
-| `reef_rocks` | объект на воде | 1x1 | 1,0 | ≤ 1 000 | флот и амфибии |
+| `reef_rocks` | объект на воде | 1x1 | 0,55 над водой | ≤ 1 000 | флот и амфибии |
 
 ## 2. Картинка-референс (ChatGPT)
 
@@ -36,6 +36,7 @@ A cluster of dark grey sea rock outcrops about one unit across and one unit tall
 ## 4. Наши требования
 
 - Узел: `body`. Пена — шейдер и частицы, в модели её нет.
+- Пивот в центре клетки на поверхности воды; камень уходит под воду до −0,15.
 - Блокирует флот и амфибий. Цвета команды нет.
 - Бюджет ≤ 1 000 треугольников, текстуры 1024².
 
@@ -43,7 +44,9 @@ A cluster of dark grey sea rock outcrops about one unit across and one unit tall
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `reef_rocks.glb` | | | |
+| `reef_rocks.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_reef.py`) | 2026-11-01 | сделано, 406 треугольников |
+| `reef_rocks_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_reef.py`) | 2026-11-01 | сделано, 536 треугольников |
+| `reef_rocks_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_reef.py`) | 2026-11-01 | сделано, 550 треугольников |
 
 ## Открытые вопросы
 

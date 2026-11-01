@@ -12,6 +12,7 @@
 | Ассет | Тип | Размер | Назначение |
 |---|---|---|---|
 | `quay_concrete` | текстура, бесшовная | 1024² | бетонная стенка (триплоскостная проекция, как обрывы) |
+| `quay_edge`, `quay_edge_plain`, `quay_edge_damaged` | объект на краю стенки | 1x1 | отбойник, тумбы, кранцы; трап у `quay_edge` |
 
 ## 2. Картинка-референс (ChatGPT)
 
@@ -32,14 +33,17 @@ Seamless tileable texture of light grey concrete panels with thin dark joints, s
 ## 4. Наши требования
 
 - Текстура бесшовная по обеим осям: стенка накладывается триплоскостной проекцией, как обрывы ([M7](../../implementation/M7_maps.md), раздел 4.12).
-- Кольца и ступени — отдельные мелкие модели или часть текстуры (решим на визуальной пробе).
+- Кольца и ступени — отдельные мелкие модели (решено 2026-11-01): край причала `quay_edge` с тумбами, кранцами и трапом, без трапа — `quay_edge_plain`. Узел `body`, бюджет 1 500 треугольников, текстура 1024².
 - Цвета команды нет.
 
 ## 5. Реестр
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `quay_concrete.png` | | | |
+| `quay_concrete.png` | Blender 5.2.3 + numpy, вручную (скрипт `tools/blender/families/ground_textures.py`) | 2026-11-01 | сделано |
+| `quay_edge.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_quay_edge.py`) | 2026-11-01 | сделано, 1 028 треугольников |
+| `quay_edge_plain.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_quay_edge.py`) | 2026-11-01 | сделано, 800 треугольников |
+| `quay_edge_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_quay_edge.py`) | 2026-11-01 | сделано, 984 треугольника |
 
 ## Открытые вопросы
 

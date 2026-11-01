@@ -41,6 +41,9 @@ uniform vec3 mat_patches[MAX_MATERIALS];
 uniform float mat_patches_share[MAX_MATERIALS];
 // The slot of the climate's cliff material, for the walls; -1 without one.
 uniform int cliff_slot = -1;
+// The slot of the material that dresses the walls of a material's cells instead (ClimateMaterial.Wall: a quay's concrete); -1: the
+// climate's cliff.
+uniform float mat_wall[MAX_MATERIALS];
 // The rock's grain runs down the wall: the texture is this much longer upright than across.
 uniform float cliff_stretch = 2.5;
 uniform vec3 frost_color : source_color = vec3(0.88, 0.91, 0.96);
@@ -356,25 +359,29 @@ void fragment() {
 			color = mix(color, marking_color * mix(0.85, 1.0, noise(p * 6.0)), paint * on_road * 0.9);
 		}
 
-		// The walls of the cliffs: rock from the side on every steep face, less of it as the face levels out.
+		// The walls of the cliffs: rock from the side on every steep face, less of it as the face levels out. A cell whose material
+		// has a wall of its own (a quay) takes that one instead, unstretched: cast concrete has no grain running down.
 		vec3 face = normalize(cross(dFdy(world_position), dFdx(world_position)));
 		float steep = smoothstep(0.25, 0.5, 1.0 - abs(face.y));
-		if (cliff_slot >= 0 && steep > 0.0) {
+		int own = material_of(ivec2(floor(p - map_origin)), materials).x;
+		int wall_slot = mat_wall[own] >= 0.0 ? int(mat_wall[own] + 0.5) : cliff_slot;
+		float stretch = mat_wall[own] >= 0.0 ? 1.0 : cliff_stretch;
+		if (wall_slot >= 0 && steep > 0.0) {
 			vec2 side = abs(face.xz) + 0.001;
 			side /= side.x + side.y;
-			float tiling = mat_tiling[cliff_slot];
-			vec3 along_x = texture(ground_albedo, vec3(vec2(world_position.x, world_position.y / cliff_stretch) / tiling, float(cliff_slot))).rgb;
-			vec3 along_z = texture(ground_albedo, vec3(vec2(world_position.z, world_position.y / cliff_stretch) / tiling, float(cliff_slot))).rgb;
+			float tiling = mat_tiling[wall_slot];
+			vec3 along_x = texture(ground_albedo, vec3(vec2(world_position.x, world_position.y / stretch) / tiling, float(wall_slot))).rgb;
+			vec3 along_z = texture(ground_albedo, vec3(vec2(world_position.z, world_position.y / stretch) / tiling, float(wall_slot))).rgb;
 			vec3 grain = along_x * side.y + along_z * side.x;
-			vec3 rock = grain * mat_tint[cliff_slot];
-			if (mat_painted[cliff_slot] > 0.5) {
+			vec3 rock = grain * mat_tint[wall_slot];
+			if (mat_painted[wall_slot] > 0.5) {
 				// A painted rock (the desert's orange sandstone, RA2) keeps only the photograph's crevices and ledges.
 				vec3 luma = vec3(0.3, 0.59, 0.11);
-				float mean = dot(textureLod(ground_albedo, vec3(0.5, 0.5, float(cliff_slot)), 16.0).rgb, luma);
-				rock = mat_color[cliff_slot] * clamp(1.0 + 1.3 * (dot(grain, luma) / max(mean, 0.001) - 1.0), 0.35, 1.8);
+				float mean = dot(textureLod(ground_albedo, vec3(0.5, 0.5, float(wall_slot)), 16.0).rgb, luma);
+				rock = mat_color[wall_slot] * clamp(1.0 + 1.3 * (dot(grain, luma) / max(mean, 0.001) - 1.0), 0.35, 1.8);
 			}
 			color = mix(color, rock, steep);
-			roughness = mix(roughness, mat_roughness[cliff_slot], steep);
+			roughness = mix(roughness, mat_roughness[wall_slot], steep);
 		}
 	} else if (size.x > 1) {
 		color = texelFetch(land_map, cell, 0).rgb;

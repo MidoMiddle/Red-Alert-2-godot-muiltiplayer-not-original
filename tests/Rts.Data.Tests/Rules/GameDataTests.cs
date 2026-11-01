@@ -110,7 +110,10 @@ public sealed class GameDataTests
         // Rifleman's 25, the Elite Commando's ROF 5, the IFV's guns, the Flak Track's ROF 25, the squid's slap of 100, Yuri Prime's range
         // 7, the shells and missiles of their speeds.
         // The units' speeds of rules.ini: the Elite Commando 36 (Speed=6), the Night Hawk 54 (JumpjetSpeed=30, as the Jetpack Trooper).
-        Assert.Equal(0xa80de14f864f0195UL, GameDataFiles.Current.Hash);
+        // The naval set (the owner, 2026-11-01): the quay's edge, a map object that stops nobody; the reef and the ice floe on the
+        // water (the map objects' key water); the offshore platform and the ships of nobody, buildings of the map on the water (keys
+        // water and ruins).
+        Assert.Equal(0x1594119d88fc5adeUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

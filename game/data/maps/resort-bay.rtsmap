@@ -16,6 +16,7 @@ legend:
   texture:
     a: asphalt
     b: shore
+    c: quay
     g: grass
     k: rock
     m: meadow
@@ -91,16 +92,16 @@ layers:
     00000000000001122332211000000000000112222233333333333333322222111111211111122222333333333333333222221100000000000011223322110000000000000
     00000000000011222222110000000000000011222233333333333333322222111111211111122222333333333333333222211000000000000001122222211000000000000
     00000000000112233221100000000000000001122223333333333333322222111111211111122222333333333333332222110000000000000000112233221100000000000
-    00000000001122332211000000000000000000112223333333333333222222211111211111222222233333333333332221100000000000000000011223322110000000000
-    00000000011223332110000000000000000000011223333444333333222222211111111111222222233333344433332211000000000000000000001123332211000000000
-    00000000112233332100000000000000000000001223333444333333222222222111211122222222233333344433332210000000000000000000000123333221100000000
-    00000000011223322100000000000000000000001223333444333333222222221111211112222222233333344433332210000000000000000000000122332211000000000
-    00000000001122321100000000000000000000001123333333333333322222211112221111222222333333333333332110000000000000000000000112322110000000000
-    00000000000112221000000000000000000000000123333333333333332222211112221111222223333333333333332100000000000000000000000012221100000000000
-    00000000000011221000000000000000000000000123333333333333333222221122222112222233333333333333332100000000000000000000000012211000000000000
-    00000000000001121000000000000000000000000123333333333333333322222222222222222333333333333333332100000000000000000000000012110000000000000
-    00000000000000111000000000000000000000000123333333333333333322222222222222222333333333333333332100000000000000000000000011100000000000000
-    00000000000000011000000000000000000000000123333333344333333322222222222222222333333344333333332100000000000000000000000011000000000000000
+    00000000022222332211000000000000000000112223333333333333222222211111211111222222233333333333332221100000000000000000011223322222000000000
+    00000000022222332110000000000000000000011223333444333333222222211111111111222222233333344433332211000000000000000000001123322222000000000
+    00000000022222332100000000000000000000001223333444333333222222222111211122222222233333344433332210000000000000000000000123322222000000000
+    00000000022222322100000000000000000000001223333444333333222222221111211112222222233333344433332210000000000000000000000122322222000000000
+    00000000022222321100000000000000000000001123333333333333322222211112221111222222333333333333332110000000000000000000000112322222000000000
+    00000000022222221000000000000000000000000123333333333333332222211112221111222223333333333333332100000000000000000000000012222222000000000
+    00000000022222221000000000000000000000000123333333333333333222221122222112222233333333333333332100000000000000000000000012222222000000000
+    00000000022222121000000000000000000000000123333333333333333322222222222222222333333333333333332100000000000000000000000012122222000000000
+    00000000022222111000000000000000000000000123333333333333333322222222222222222333333333333333332100000000000000000000000011122222000000000
+    00000000022222111000000000000000000000000123333333344333333322222222222222222333333344333333332100000000000000000000000011122222000000000
     00000000000000001000000000000000000000000123333344444443333333333332223333333333334444444333332100000000000000000000000010000000000000000
     00000000000000001100000000000000000000001123333334444444433333333333333333333333444444443333332110000000000000000000000110000000000000000
     00000000000000001100000000000000000000001223333333444444444333333333333333333344444444433333332210000000000000000000000110000000000000000
@@ -228,17 +229,17 @@ layers:
     ~WWWWWWWWWW~bb............................................................................................................bb~WWWWWWWWWW~
     ~WWWWWWWWW~bb..............................................................................................................bb~WWWWWWWWW~
     ~WWWWWWWW~bb................................................................................................................bb~WWWWWWWW~
-    ~WWWWWWW~bb..................................................................................................................bb~WWWWWWW~
-    ~WWWWWW~bb....................................................................................................................bb~WWWWWW~
-    ~WWWWW~bb......................................................................................................................bb~WWWWW~
-    ~WWWWW~bb.........................................................====.........................................................bb~WWWWW~
-    ~WWWWWW~bb.......................................................=....=.......................................................bb~WWWWWW~
-    ~WWWWWWW~bb....................................................==......==....................................................bb~WWWWWWW~
-    ~WWWWWWWW~bb.................................................==..........==.................................................bb~WWWWWWWW~
-    ~WWWWWWWWW~bb...............................................=..............=...............................................bb~WWWWWWWWW~
-    ~WWWWWWWWWW~bb..............================================................================================..............bb~WWWWWWWWWW~
-    ~WWWWWWWWWWW~bb..........................................................................................................bb~WWWWWWWWWWW~
-    ~WWWWWWWWWWWW~bb........................................................................................................bb~WWWWWWWWWWWW~
+    ~WWWWWWW........................................................................................................................WWWWWWW~
+    ~WWWWWW~........................................................................................................................~WWWWWW~
+    ~WWWWW~~........................................................................................................................~~WWWWW~
+    ~WWWWW~~..........................................................====..........................................................~~WWWWW~
+    ~WWWWWW~.........................................................=....=.........................................................~WWWWWW~
+    ~WWWWWWW.......................................................==......==.......................................................WWWWWWW~
+    ~WWWWWWW.....................................................==..........==.....................................................WWWWWWW~
+    ~WWWWWWW....................................................=..............=....................................................WWWWWWW~
+    ~WWWWWWW....................================================................================================....................WWWWWWW~
+    ~WWWWWWW........................................................................................................................WWWWWWW~
+    ~WWWWWWW......bb........................................................................................................bb......WWWWWWW~
     ~WWWWWWWWWWWWW~b........................................................................................................b~WWWWWWWWWWWWW~
     ~WWWWWWWWWWWWW~b........................................................................................................b~WWWWWWWWWWWWW~
     ~WWWWWWWWWWWWW~bb......................................................................................................bb~WWWWWWWWWWWWW~
@@ -365,17 +366,17 @@ layers:
     qwwwwwwwwwwqbbgggggggggggggggggggggggggggggggggggggggggggggggnnnnnnnnnnnnnngggggggggggggggggggggggggggggggggggggggggggggggbbqwwwwwwwwwwq
     qwwwwwwwwwqbbggggggggggggggggggggggggggggggggggggggggggggggggnnnnnnnnnnnnnnggggggggggggggggggggggggggggggggggggggggggggggggbbqwwwwwwwwwq
     qwwwwwwwwqbbgggggggggggggggggggggggggggggggggggggggggggggggggnnnnnnnnnnnnnngggggggggggggggggggggggggggggggggggggggggggggggggbbqwwwwwwwwq
-    qwwwwwwwqbbgggggggggggggggggggggggggggggggggggggggggggggggggggnnnnnnnnnnnngggggggggggggggggggggggggggggggggggggggggggggggggggbbqwwwwwwwq
-    qwwwwwwqbbggggggggggggggggggggggggggggggggggggggggggggggggggggnnnnnnnnnnnnggggggggggggggggggggggggggggggggggggggggggggggggggggbbqwwwwwwq
-    qwwwwwqbbggggggggggggggggggggggggggggggggggggggggggggggggggggggnnnnggnnnnggggggggggggggggggggggggggggggggggggggggggggggggggggggbbqwwwwwq
-    qwwwwwqbbgggggggggggggggggggggggnggggggggggggggggggggggggggggggnnnaaaannnggggggggggggggggggggggggggggggngggggggggggggggggggggggbbqwwwwwq
-    qwwwwwwqbbgggggggggggggggggggggnnnggggggggggggggggggggggggggggggnagggganggggggggggggggggggggggggggggggnnngggggggggggggggggggggbbqwwwwwwq
-    qwwwwwwwqbbggggggggggggggggggggnnngggggggggggggggggggggggggggggaaggggggaagggggggggggggggggggggggggggggnnnggggggggggggggggggggbbqwwwwwwwq
-    qwwwwwwwwqbbgggggggggggggggnnnnnnggggggggggggggggggggggggggggaaggggggggggaaggggggggggggggggggggggggggggnnnnnngggggggggggggggbbqwwwwwwwwq
-    qwwwwwwwwwqbbgggngggnngggggnnnnnngggggggggggggggggggggggggggaggggggggggggggagggggggggggggggggggggggggggnnnnnngggggnngggngggbbqwwwwwwwwwq
-    qwwwwwwwwwwqbbggnngnnngggggnaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaggggggggggggggggaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaangggggnnngnnggbbqwwwwwwwwwwq
-    qwwwwwwwwwwwqbbnnngnnnngmmmmmggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggmmmmmgnnnngnnnbbqwwwwwwwwwwwq
-    qwwwwwwwwwwwwqbbnnnnnnmmmmmmmmggggggnggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggnggggggmmmmmmmmnnnnnnbbqwwwwwwwwwwwwq
+    qwwwwwwwcccgggggggggggggggggggggggggggggggggggggggggggggggggggnnnnnnnnnnnngggggggggggggggggggggggggggggggggggggggggggggggggggcccwwwwwwwq
+    qwwwwwwqcccccgggggggggggggggggggggggggggggggggggggggggggggggggnnnnnnnnnnnngggggggggggggggggggggggggggggggggggggggggggggggggcccccqwwwwwwq
+    qwwwwwqqcccccggggggggggggggggggggggggggggggggggggggggggggggggggnnnnggnnnnggggggggggggggggggggggggggggggggggggggggggggggggggcccccqqwwwwwq
+    qwwwwwqqcccccgggggggggggggggggggnggggggggggggggggggggggggggggggnnnaaaannnggggggggggggggggggggggggggggggngggggggggggggggggggcccccqqwwwwwq
+    qwwwwwwqcccccggggggggggggggggggnnnggggggggggggggggggggggggggggggnagggganggggggggggggggggggggggggggggggnnnggggggggggggggggggcccccqwwwwwwq
+    qwwwwwwwcccccggggggggggggggggggnnngggggggggggggggggggggggggggggaaggggggaagggggggggggggggggggggggggggggnnnggggggggggggggggggcccccwwwwwwwq
+    qwwwwwwwcccccggggggggggggggnnnnnnggggggggggggggggggggggggggggaaggggggggggaaggggggggggggggggggggggggggggnnnnnnggggggggggggggcccccwwwwwwwq
+    qwwwwwwwcccccgggngggnngggggnnnnnngggggggggggggggggggggggggggaggggggggggggggagggggggggggggggggggggggggggnnnnnngggggnngggngggcccccwwwwwwwq
+    qwwwwwwwccccccggnngnnngggggnaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaggggggggggggggggaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaangggggnnngnnggccccccwwwwwwwq
+    qwwwwwwwccccccgnnngnnnngmmmmmggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggmmmmmgnnnngnnngccccccwwwwwwwq
+    qwwwwwwwccccccbbnnnnnnmmmmmmmmggggggnggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggnggggggmmmmmmmmnnnnnnbbccccccwwwwwwwq
     qwwwwwwwwwwwwwqbnnnnnnmmmmmmmmmmggmgnggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggngmggmmmmmmmmmmnnnnnnbqwwwwwwwwwwwwwq
     qwwwwwwwwwwwwwqbnnnnnmmmmmmmmmmmmmmmmggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggmmmmmmmmmmmmmmmmnnnnnbqwwwwwwwwwwwwwq
     qwwwwwwwwwwwwwqbbnnnggmmmmmmmmmmmmmmmggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggmmmmmmmmmmmmmmmggnnnbbqwwwwwwwwwwwwwq
@@ -600,10 +601,6 @@ objects:
   - { type: beach_umbrella, cell: [116, 55], variant: 0 }
   - { type: beach_umbrella, cell: [11, 63], variant: 0 }
   - { type: beach_umbrella, cell: [124, 63], variant: 0 }
-  - { type: beach_umbrella, cell: [7, 67], variant: 0 }
-  - { type: beach_umbrella, cell: [128, 67], variant: 0 }
-  - { type: beach_umbrella, cell: [12, 73], variant: 0 }
-  - { type: beach_umbrella, cell: [123, 73], variant: 0 }
   - { type: beach_umbrella, cell: [31, 92], variant: 0 }
   - { type: beach_umbrella, cell: [104, 92], variant: 0 }
   - { type: beach_umbrella, cell: [33, 93], variant: 0 }
@@ -624,8 +621,6 @@ objects:
   - { type: beached_boat, cell: [110, 50], variant: 0 }
   - { type: beached_boat, cell: [17, 57], variant: 0 }
   - { type: beached_boat, cell: [118, 57], variant: 0 }
-  - { type: beached_boat, cell: [8, 69], variant: 0 }
-  - { type: beached_boat, cell: [127, 69], variant: 0 }
   - { type: beached_boat, cell: [32, 93], variant: 0 }
   - { type: beached_boat, cell: [103, 93], variant: 0 }
   - { type: beached_boat, cell: [50, 110], variant: 0 }
@@ -640,10 +635,6 @@ objects:
   - { type: driftwood, cell: [92, 31], variant: 0 }
   - { type: driftwood, cell: [43, 32], variant: 0 }
   - { type: driftwood, cell: [92, 32], variant: 0 }
-  - { type: driftwood, cell: [8, 66], variant: 0 }
-  - { type: driftwood, cell: [127, 66], variant: 0 }
-  - { type: driftwood, cell: [12, 72], variant: 0 }
-  - { type: driftwood, cell: [123, 72], variant: 0 }
   - { type: driftwood, cell: [14, 75], variant: 0 }
   - { type: driftwood, cell: [121, 75], variant: 0 }
   - { type: driftwood, cell: [63, 122], variant: 0 }
@@ -798,8 +789,6 @@ objects:
   - { type: pine_tree, cell: [71, 37], variant: 2 }
   - { type: pine_tree, cell: [64, 38], variant: 3 }
   - { type: pine_tree, cell: [71, 38], variant: 3 }
-  - { type: pine_tree, cell: [13, 72], variant: 1 }
-  - { type: pine_tree, cell: [122, 72], variant: 1 }
   - { type: pine_tree, cell: [14, 73], variant: 2 }
   - { type: pine_tree, cell: [121, 73], variant: 2 }
   - { type: pine_tree, cell: [47, 76], variant: 3 }
@@ -916,6 +905,34 @@ objects:
   - { type: pine_tree, cell: [100, 94], variant: 3 }
   - { type: pine_tree, cell: [36, 95], variant: 2 }
   - { type: pine_tree, cell: [99, 95], variant: 2 }
+  - { type: quay_edge, cell: [8, 66], variant: 0 }
+  - { type: quay_edge, cell: [127, 66], variant: 0 }
+  - { type: quay_edge, cell: [8, 67], variant: 0 }
+  - { type: quay_edge, cell: [127, 67], variant: 0 }
+  - { type: quay_edge, cell: [8, 68], variant: 0 }
+  - { type: quay_edge, cell: [127, 68], variant: 0 }
+  - { type: quay_edge, cell: [8, 69], variant: 0 }
+  - { type: quay_edge, cell: [127, 69], variant: 0 }
+  - { type: quay_edge, cell: [8, 70], variant: 0 }
+  - { type: quay_edge, cell: [127, 70], variant: 0 }
+  - { type: quay_edge, cell: [8, 71], variant: 0 }
+  - { type: quay_edge, cell: [127, 71], variant: 0 }
+  - { type: quay_edge, cell: [8, 72], variant: 0 }
+  - { type: quay_edge, cell: [127, 72], variant: 0 }
+  - { type: quay_edge, cell: [8, 73], variant: 0 }
+  - { type: quay_edge, cell: [127, 73], variant: 0 }
+  - { type: quay_edge, cell: [8, 74], variant: 0 }
+  - { type: quay_edge, cell: [127, 74], variant: 0 }
+  - { type: reef_rocks, cell: [64, 5], variant: 1 }
+  - { type: reef_rocks, cell: [71, 5], variant: 1 }
+  - { type: reef_rocks, cell: [38, 30], variant: 0 }
+  - { type: reef_rocks, cell: [97, 30], variant: 0 }
+  - { type: reef_rocks, cell: [31, 99], variant: 2 }
+  - { type: reef_rocks, cell: [104, 99], variant: 2 }
+  - { type: reef_rocks, cell: [49, 117], variant: 2 }
+  - { type: reef_rocks, cell: [51, 117], variant: 0 }
+  - { type: reef_rocks, cell: [84, 117], variant: 0 }
+  - { type: reef_rocks, cell: [86, 117], variant: 2 }
   - { type: sun_lounger, cell: [64, 10], variant: 0 }
   - { type: sun_lounger, cell: [71, 10], variant: 0 }
   - { type: sun_lounger, cell: [63, 11], variant: 0 }
@@ -994,6 +1011,20 @@ structures:
   - { type: neutral_cafe, cell: [96, 46], owner: neutral, facing: 5 }
   - { type: neutral_cafe, cell: [48, 52], owner: neutral, facing: 0 }
   - { type: neutral_cafe, cell: [86, 52], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [11, 67], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [123, 67], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [11, 69], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [123, 69], owner: neutral, facing: 0 }
+  - { type: neutral_ferry, cell: [46, 23], owner: neutral, facing: 0 }
+  - { type: neutral_ferry, cell: [88, 23], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [33, 37], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [102, 37], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [6, 68], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [129, 68], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [6, 72], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [129, 72], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [38, 106], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [97, 106], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [44, 46], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [89, 46], owner: neutral, facing: 0 }
   - { type: neutral_kiosk, cell: [52, 44], owner: neutral, facing: 6 }
@@ -1005,6 +1036,12 @@ structures:
   - { type: neutral_lifeguard_tower, cell: [57, 23], owner: neutral, facing: 2 }
   - { type: neutral_lifeguard_tower, cell: [77, 23], owner: neutral, facing: 2 }
   - { type: neutral_lighthouse, cell: [67, 9], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [9, 68], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [126, 68], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [9, 72], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [126, 72], owner: neutral, facing: 0 }
+  - { type: neutral_port_warehouse, cell: [10, 71], owner: neutral, facing: 0 }
+  - { type: neutral_port_warehouse, cell: [123, 71], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [52, 76], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [82, 76], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [66, 130], owner: neutral, facing: 0 }

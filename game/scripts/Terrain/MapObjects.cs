@@ -116,6 +116,7 @@ public partial class MapObjects : Node3D
         var pipes = new List<Spot>();
         var drifts = new List<Spot>();
         var guardrails = new List<Spot>();
+        var quays = new List<Spot>();
         var props = new SortedDictionary<string, List<Spot>>(System.StringComparer.Ordinal);
         for (var y = 0; y < _map.Height; y++)
         {
@@ -143,6 +144,7 @@ public partial class MapObjects : Node3D
                 MapObjectKind.Pipeline => pipes,
                 MapObjectKind.Snowdrift => drifts,
                 MapObjectKind.HighwayGuardrail => guardrails,
+                MapObjectKind.QuayEdge => quays,
                 // Drawn and animated by OreSources.
                 MapObjectKind.OreSource or MapObjectKind.GemSource => null,
                 // The props of the element documents (PropLooks).
@@ -176,6 +178,7 @@ public partial class MapObjects : Node3D
         AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f, "object/boulder");
         AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f, "object/fence_wood");
         AddGuardrails(guardrails);
+        AddQuayEdges(quays);
         AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f, "object/wall_stone");
         if (!AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f, "object/lamp_post"))
         {
@@ -528,12 +531,12 @@ public partial class MapObjects : Node3D
     /// The stones along the rims and at the feet of the cliffs (<see cref="CliffRocks"/>): three lumpy shapes in the rock of the
     /// climate's cliffs, laid on from the side like the wall's (triplanar in world space), so a stone matches the wall above it.
     /// None on a bridge's cells or next to them, where a stone on the rim of the cliff by its end stands at the level of the deck and
-    /// would come through it.
+    /// would come through it; none on a quay's straight concrete (TerrainHeights.Straighten).
     /// </summary>
     private void AddCliffRocks()
     {
         var heights = GetParent<TerrainBuilder>().Heights;
-        var stones = CliffRocks.Place(heights, NearBridge);
+        var stones = CliffRocks.Place(heights, (x, y) => NearBridge(x, y) || heights.IsStraight(x, y));
         // The climate's stones over the free level ground (ClimateLook.Stones): plain land, no slope, nothing standing there, no ore.
         stones.AddRange(CliffRocks.Scatter(heights, _builtClimate?.Stones ?? 0f, (x, y) =>
         {
@@ -647,6 +650,59 @@ public partial class MapObjects : Node3D
             var places = list.ConvertAll(spot => new Transform3D(turn, spot.At + new Vector3(0, 0.1f, 0)));
             ChunkedInstances.Add(this, name, mesh, places, (i, multiMesh, index) => Remember(_copies, list[i].Object, multiMesh, index, places[i]));
         }
+    }
+
+    /// <summary>
+    /// The edges of the quays (docs/naval_elements/09_quay_wall): each on its cliff cell at the upper level, turned to face down the
+    /// drop (its model made facing +Z), its origin on the upper edge of the cell, so its face meets the straight wall in the middle of
+    /// the cell (TerrainHeights.Straighten). The model of each cell is one of the table's, with or without its ladder.
+    /// </summary>
+    private void AddQuayEdges(List<Spot> spots)
+    {
+        if (spots.Count == 0)
+        {
+            return;
+        }
+
+        var placed = new List<Spot>(spots.Count);
+        var yaws = new List<float>(spots.Count);
+        foreach (var spot in spots)
+        {
+            var (x, z) = ((int)Mathf.Floor(spot.At.X), (int)Mathf.Floor(spot.At.Z));
+            var heights = _map.Heights;
+            var (a, b, c, d) = (heights.CornerLevel(x, z), heights.CornerLevel(x + 1, z), heights.CornerLevel(x, z + 1), heights.CornerLevel(x + 1, z + 1));
+            var (downX, downZ) = (a + c - b - d, a + b - c - d);
+            var down = System.Math.Abs(downX) >= System.Math.Abs(downZ) ? new Vector3(System.Math.Sign(downX), 0f, 0f) : new Vector3(0f, 0f, System.Math.Sign(downZ));
+            if (down == Vector3.Zero)
+            {
+                down = Vector3.Back;
+            }
+
+            var top = System.Math.Max(System.Math.Max(a, b), System.Math.Max(c, d)) * TerrainHeights.LevelHeight;
+            placed.Add(new Spot(new Vector3(x + 0.5f, top, z + 0.5f) - down * 0.5f, spot.Object));
+            yaws.Add(Mathf.Atan2(down.X, down.Z));
+        }
+
+        if (Models.ModelLibrary.Instances("object/quay_edge", _builtClimate?.Id, PointsOf(placed)) is { } groups)
+        {
+            var turned = groups.ConvertAll(group => (group.Mesh,
+                group.Places.Select((place, n) => new Transform3D(new Basis(Vector3.Up, yaws[group.Points[n]]) * place.Basis, place.Origin)).ToList(),
+                group.Points));
+            AddModelInstances("QuayEdges", turned, placed, _copies);
+            return;
+        }
+
+        // Without the model: the coping, a light grey bar along the edge.
+        var bar = LowPoly.Of(new BoxMesh { Size = new Vector3(0.96f, 0.04f, 0.1f) });
+        bar.Material = new StandardMaterial3D { AlbedoColor = new Color(0.66f, 0.66f, 0.63f) };
+        var copings = new List<Transform3D>(placed.Count);
+        for (var i = 0; i < placed.Count; i++)
+        {
+            var basis = new Basis(Vector3.Up, yaws[i]);
+            copings.Add(new Transform3D(basis, placed[i].At + basis * new Vector3(0f, 0.02f, 0.45f)));
+        }
+
+        ChunkedInstances.Add(this, "QuayEdges", bar, copings, (i, multiMesh, index) => Remember(_copies, placed[i].Object, multiMesh, index, copings[i]));
     }
 
     private void AddProps(string id, List<Spot> points)

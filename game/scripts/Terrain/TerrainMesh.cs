@@ -171,7 +171,7 @@ public static class TerrainMesh
         {
             for (var x = startX; x <= endX; x++)
             {
-                if (before.VertexHeight(x, z) != after.VertexHeight(x, z))
+                if (before.VertexHeight(x, z) != after.VertexHeight(x, z) || before.IsStraight(x, z) != after.IsStraight(x, z))
                 {
                     return true;
                 }

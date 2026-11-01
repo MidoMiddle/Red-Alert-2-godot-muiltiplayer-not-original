@@ -705,6 +705,36 @@ public static class BuildingLooks
             Box(1.6f, 0.12f, 0.15f, 1.0f, 1.25f, -1.3f, LookTint.Metal),
         ],
 
+        // On the water (docs/naval_elements): the platform on its legs, the ships of nobody along x.
+        ["tech_offshore_platform"] =
+        [
+            Cyl(0.2f, 0.5f, -0.62f, 0, -0.62f, LookTint.White),
+            Cyl(0.2f, 0.5f, 0.62f, 0, -0.62f, LookTint.White),
+            Cyl(0.2f, 0.5f, -0.62f, 0, 0.62f, LookTint.White),
+            Cyl(0.2f, 0.5f, 0.62f, 0, 0.62f, LookTint.White),
+            Box(1.7f, 0.12f, 1.7f, 0, 0.5f, 0, LookTint.Dark),
+            Box(0.4f, 1.4f, 0.4f, -0.42f, 0.62f, -0.42f, LookTint.Metal),
+            Box(0.6f, 0.45f, 0.5f, 0.45f, 0.62f, 0.55f, LookTint.White),
+        ],
+        ["neutral_ferry"] =
+        [
+            Box(1.9f, 0.18f, 0.6f, 0, 0, 0, LookTint.White),
+            Box(1.2f, 0.42f, 0.54f, -0.15f, 0.18f, 0, LookTint.White),
+            Cyl(0.14f, 0.35f, -0.4f, 0.6f, 0, LookTint.Blue),
+        ],
+        ["neutral_cargo_ship"] =
+        [
+            Box(3.8f, 0.24f, 0.76f, 0, 0, 0, LookTint.Red),
+            Box(0.58f, 0.6f, 0.66f, -1.5f, 0.24f, 0, LookTint.White),
+            Box(1.2f, 0.24f, 0.5f, 0, 0.24f, 0, LookTint.Accent),
+        ],
+        ["neutral_fishing_boat"] =
+        [
+            Box(0.9f, 0.1f, 0.34f, 0, 0, 0, LookTint.Blue),
+            Box(0.24f, 0.2f, 0.22f, -0.24f, 0.1f, 0, LookTint.White),
+            Cyl(0.03f, 0.5f, 0.1f, 0.1f, 0, LookTint.Wood),
+        ],
+
         // The Soviets.
         ["construction_yard"] =
         [

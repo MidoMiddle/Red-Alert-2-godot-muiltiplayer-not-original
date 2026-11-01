@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using Rts.Client.Climates;
 
@@ -59,7 +60,7 @@ public partial class TerrainBuilder : Node3D
         GroundMaterial.SetShaderParameter("land_map", _landTexture);
         GroundMaterial.SetShaderParameter("level_height", TerrainHeights.LevelHeight);
         SetLook(look, map, sameSize: false);
-        Heights = TerrainHeights.FromRules(map.Heights, _skirt!);
+        Heights = TerrainHeights.FromRules(map.Heights, _skirt!).Straighten(StraightWalls(look, map));
         WorldCoords.Terrain = Heights;
         WorldCoords.Map = map;
         foreach (var chunk in TerrainMesh.Chunks(Heights))
@@ -96,7 +97,7 @@ public partial class TerrainBuilder : Node3D
         // The same map changed, or a new match (R) started on a map of the same size: rebuild what differs. Another size: all.
         var sameSize = map.Width == Heights.WidthCells && map.Height == Heights.HeightCells;
         SetLook(look, map, sameSize);
-        var heights = TerrainHeights.FromRules(map.Heights, _skirt!);
+        var heights = TerrainHeights.FromRules(map.Heights, _skirt!).Straighten(StraightWalls(look, map));
         var changed = sameSize ? TerrainMesh.ChangedChunks(Heights, heights) : [.. TerrainMesh.Chunks(heights)];
         if (sameSize)
         {
@@ -190,6 +191,18 @@ public partial class TerrainBuilder : Node3D
         }
     }
 
+    /// <summary>The cells whose material dresses its walls itself (ClimateMaterial.Wall, a quay): their walls stand straight.</summary>
+    private System.Func<int, int, bool> StraightWalls(MapLook look, Rts.Simulation.Map.MapGrid map)
+    {
+        if (_climate is not { } climate || look.Width != map.Width || look.Height != map.Height)
+        {
+            return (_, _) => false;
+        }
+
+        var walled = climate.Materials.Where(m => m.Wall is not null).Select(m => m.Id).ToHashSet();
+        return (x, z) => walled.Count > 0 && look.MaterialAt(z * map.Width + x) is { } material && walled.Contains(material);
+    }
+
     /// <summary>The materials the skirt paints far from the edge: the first of the climate as plain ground, its grass and dirt.</summary>
     private static SkirtSlots SkirtSlotsOf(ClimateLook? climate) => climate is null
         ? new SkirtSlots(0, -1, -1, -1, -1)
@@ -214,9 +227,11 @@ public partial class TerrainBuilder : Node3D
         var color = new Vector3[ClimateLook.MaxMaterials];
         var patches = new Vector3[ClimateLook.MaxMaterials];
         var share = new float[ClimateLook.MaxMaterials];
+        var wall = new float[ClimateLook.MaxMaterials];
         for (var i = 0; i < ClimateLook.MaxMaterials; i++)
         {
             var material = climate.Materials[System.Math.Min(i, climate.Materials.Length - 1)];
+            wall[i] = material.Wall is { } wallMaterial ? climate.SlotOf(wallMaterial) : -1f;
             tiling[i] = material.Tiling;
             roughness[i] = material.Roughness;
             water[i] = material.Water ? 1f : 0f;
@@ -247,6 +262,7 @@ public partial class TerrainBuilder : Node3D
         GroundMaterial.SetShaderParameter("mat_color", color);
         GroundMaterial.SetShaderParameter("mat_patches", patches);
         GroundMaterial.SetShaderParameter("mat_patches_share", share);
+        GroundMaterial.SetShaderParameter("mat_wall", wall);
         GroundMaterial.SetShaderParameter("deep_water_color", SceneLighting.Color(climate.DeepWater));
     }
 

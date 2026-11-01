@@ -148,6 +148,27 @@ public sealed class MapEditingToolsTests
     }
 
     [Fact]
+    public void A_reef_and_an_ice_floe_go_only_on_the_water()
+    {
+        // The lake of WithLake is 5 x 5 round (12, 12); the brush of 7 x 7 covers it and its shore.
+        var session = WithLake();
+        var square = new Brush(BrushShape.Square, 4);
+        Stroke(session, EditTool.Objects, square, new EditOptions { ObjectType = "reef_rocks", Density = 100 }, (12, 12));
+        Assert.Equal(25, session.Map.Objects.Count);
+        Assert.All(session.Map.Objects, o => Assert.True(session.Map.LandAt(o.Cell) is Rts.Simulation.Map.LandType.Shallow or Rts.Simulation.Map.LandType.Deep));
+
+        // A stroke from the lake out over the land: the floes on its cells in the water, none on the land.
+        var floes = WithLake();
+        Stroke(floes, EditTool.Objects, Dot, new EditOptions { ObjectType = "ice_floe", Density = 100 }, (12, 12), (20, 20));
+        Assert.Equal([new CellPos(12, 12), new CellPos(13, 13), new CellPos(14, 14)], floes.Map.Objects.Select(o => o.Cell));
+        Assert.Equal(3, floes.Map.ToDefinition().ToMapGrid(GameDataFiles.Rules.MapTypes).Objects.Count);
+
+        // A boulder keeps to the land.
+        Stroke(floes, EditTool.Objects, square, new EditOptions { ObjectType = "boulder", Density = 100 }, (12, 12));
+        Assert.All(floes.Map.Objects.Where(o => o.Type == "boulder"), o => Assert.Equal(Rts.Simulation.Map.LandType.Beach, floes.Map.LandAt(o.Cell)));
+    }
+
+    [Fact]
     public void A_bridge_goes_from_shore_to_shore_over_water_or_not_at_all()
     {
         var session = WithLake();

@@ -252,6 +252,39 @@ models:
                                 abandoned: industrial/fuel_tank_abandoned/fuel_tank_abandoned.glb,
                                 ruins: industrial/fuel_tank_ruins/fuel_tank_ruins.glb }
 
+  # The harbour (docs/naval_elements, 05–07): the warehouse holds soldiers and is made a storey to a cell, as the city's buildings; the
+  # crane and the containers are made at the size the game draws them. The crane's boom turns on its tower (its node "boom"), the stack
+  # is one of two layouts by its cell, and its fallen top container is what stays when it falls.
+  building/neutral_port_warehouse: { file: naval/port_warehouse/port_warehouse.glb, height: 1.0, height_scale: 0.35,
+                                     damaged: naval/port_warehouse_damaged/port_warehouse_damaged.glb,
+                                     damaged_occupied: naval/port_warehouse_damaged_occupied/port_warehouse_damaged_occupied.glb,
+                                     occupied: naval/port_warehouse_occupied/port_warehouse_occupied.glb,
+                                     abandoned: naval/port_warehouse_abandoned/port_warehouse_abandoned.glb,
+                                     ruins: naval/port_warehouse_ruins/port_warehouse_ruins.glb }
+  building/neutral_port_crane: { file: naval/port_crane/port_crane.glb, height: 2.8,
+                                 damaged: naval/port_crane_damaged/port_crane_damaged.glb,
+                                 abandoned: naval/port_crane_damaged/port_crane_damaged.glb,
+                                 ruins: naval/port_crane_ruins/port_crane_ruins.glb }
+  building/neutral_container_stack: { files: [naval/container_stack/container_stack.glb, naval/container_stack_b/container_stack_b.glb],
+                                      height: 1.5,
+                                      damaged: naval/container_stack_damaged/container_stack_damaged.glb,
+                                      abandoned: naval/container_stack_damaged/container_stack_damaged.glb,
+                                      ruins: naval/container_stack_fallen/container_stack_fallen.glb }
+  # On the water (docs/naval_elements, 04 and 08): the platform, the oil derrick of the sea, and the ships of nobody, made at the size
+  # the game draws them, along x; a damaged ship burns, a sunk one leaves nothing (its data's ruins: false).
+  building/tech_offshore_platform: { file: naval/offshore_platform/offshore_platform.glb, height: 2.2,
+                                     abandoned: naval/offshore_platform_abandoned/offshore_platform_abandoned.glb,
+                                     ruins: naval/offshore_platform_ruins/offshore_platform_ruins.glb }
+  building/neutral_ferry: { file: naval/civ_ferry/civ_ferry.glb, height: 1.0,
+                            damaged: naval/civ_ferry_damaged/civ_ferry_damaged.glb,
+                            abandoned: naval/civ_ferry_damaged/civ_ferry_damaged.glb }
+  building/neutral_cargo_ship: { file: naval/civ_cargo_ship/civ_cargo_ship.glb, height: 1.1,
+                                 damaged: naval/civ_cargo_ship_damaged/civ_cargo_ship_damaged.glb,
+                                 abandoned: naval/civ_cargo_ship_damaged/civ_cargo_ship_damaged.glb }
+  building/neutral_fishing_boat: { file: naval/civ_fishing_boat/civ_fishing_boat.glb, height: 0.7,
+                                   damaged: naval/civ_fishing_boat_damaged/civ_fishing_boat_damaged.glb,
+                                   abandoned: naval/civ_fishing_boat_damaged/civ_fishing_boat_damaged.glb }
+
   # Map objects (docs/map_elements, docs/obstacle_elements). A fence and a pipe run along x, as their placeholders.
   object/ore_source:          { file: map/ore_source/ore_source.glb }
   object/fence_wood:          { file: map/fence_wood_section/fence_wood_section.glb }
@@ -265,6 +298,14 @@ models:
 
   # The guardrail of a highway (docs/map_elements/04_roads): made along x, the game turns it along z by its neighbours.
   object/highway_guardrail:   { file: map/highway_guardrail/highway_guardrail.glb }
+  # The edge of a quay (docs/naval_elements/09_quay_wall): made facing +Z (the water), the game stands it on the upper edge of the quay's
+  # cliff cell turned to the drop; a ladder in about one cell of three.
+  object/quay_edge:           { files: [naval/quay_edge/quay_edge.glb, naval/quay_edge_plain/quay_edge_plain.glb,
+                                        naval/quay_edge_plain/quay_edge_plain.glb] }
+  # On the water (docs/naval_elements, 02 and 03): their pivot on the water's surface, each turned any way. Their damaged files wait
+  # for the client to draw a map object's states.
+  object/reef_rocks:          { file: naval/reef_rocks/reef_rocks.glb, spin: true }
+  object/ice_floe:            { file: naval/ice_floe/ice_floe.glb, spin: true, jitter: 0.1 }
   # The street stall of the city (docs/city_elements/08_street_stall), made at the size it is drawn; its damaged and destroyed files
   # wait for the client to draw a map object's states.
   object/street_stall:        { file: city/city_street_stall/city_street_stall.glb, spin: true }

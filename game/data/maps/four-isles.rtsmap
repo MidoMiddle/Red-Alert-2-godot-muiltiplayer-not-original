@@ -916,6 +916,34 @@ objects:
   - { type: pine_tree, cell: [102, 158], variant: 2 }
   - { type: pine_tree, cell: [103, 158], variant: 3 }
   - { type: pine_tree, cell: [101, 159], variant: 2 }
+  - { type: reef_rocks, cell: [94, 9], variant: 3 }
+  - { type: reef_rocks, cell: [64, 37], variant: 1 }
+  - { type: reef_rocks, cell: [50, 40], variant: 2 }
+  - { type: reef_rocks, cell: [141, 50], variant: 2 }
+  - { type: reef_rocks, cell: [52, 51], variant: 3 }
+  - { type: reef_rocks, cell: [130, 52], variant: 3 }
+  - { type: reef_rocks, cell: [144, 64], variant: 1 }
+  - { type: reef_rocks, cell: [108, 71], variant: 3 }
+  - { type: reef_rocks, cell: [84, 72], variant: 0 }
+  - { type: reef_rocks, cell: [71, 73], variant: 3 }
+  - { type: reef_rocks, cell: [89, 83], variant: 0 }
+  - { type: reef_rocks, cell: [109, 84], variant: 0 }
+  - { type: reef_rocks, cell: [9, 87], variant: 3 }
+  - { type: reef_rocks, cell: [98, 89], variant: 0 }
+  - { type: reef_rocks, cell: [83, 92], variant: 0 }
+  - { type: reef_rocks, cell: [172, 94], variant: 3 }
+  - { type: reef_rocks, cell: [72, 97], variant: 0 }
+  - { type: reef_rocks, cell: [92, 98], variant: 0 }
+  - { type: reef_rocks, cell: [110, 108], variant: 3 }
+  - { type: reef_rocks, cell: [97, 109], variant: 0 }
+  - { type: reef_rocks, cell: [73, 110], variant: 3 }
+  - { type: reef_rocks, cell: [37, 117], variant: 1 }
+  - { type: reef_rocks, cell: [51, 129], variant: 3 }
+  - { type: reef_rocks, cell: [129, 130], variant: 3 }
+  - { type: reef_rocks, cell: [40, 131], variant: 2 }
+  - { type: reef_rocks, cell: [131, 141], variant: 2 }
+  - { type: reef_rocks, cell: [117, 144], variant: 1 }
+  - { type: reef_rocks, cell: [87, 172], variant: 3 }
   - { type: sun_lounger, cell: [58, 55], variant: 0 }
   - { type: sun_lounger, cell: [126, 58], variant: 0 }
   - { type: sun_lounger, cell: [55, 123], variant: 0 }
@@ -1006,6 +1034,14 @@ structures:
   - { type: neutral_cafe, cell: [125, 103], owner: neutral, facing: 4 }
   - { type: neutral_cafe, cell: [79, 122], owner: neutral, facing: 2 }
   - { type: neutral_cafe, cell: [77, 125], owner: neutral, facing: 4 }
+  - { type: neutral_fishing_boat, cell: [64, 54], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [127, 64], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [89, 81], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [100, 89], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [81, 92], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [92, 100], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [54, 117], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [117, 127], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [108, 59], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [59, 71], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [121, 108], owner: neutral, facing: 0 }
@@ -1030,6 +1066,10 @@ structures:
   - { type: neutral_lifeguard_tower, cell: [94, 120], owner: neutral, facing: 6 }
   - { type: neutral_lifeguard_tower, cell: [104, 154], owner: neutral, facing: 2 }
   - { type: neutral_lifeguard_tower, cell: [100, 156], owner: neutral, facing: 2 }
+  - { type: tech_offshore_platform, cell: [61, 39], owner: neutral, facing: 0 }
+  - { type: tech_offshore_platform, cell: [141, 61], owner: neutral, facing: 0 }
+  - { type: tech_offshore_platform, cell: [39, 119], owner: neutral, facing: 0 }
+  - { type: tech_offshore_platform, cell: [119, 141], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [93, 63], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [81, 78], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [102, 81], owner: neutral, facing: 0 }

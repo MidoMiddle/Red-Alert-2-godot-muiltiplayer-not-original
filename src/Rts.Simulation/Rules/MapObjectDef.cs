@@ -27,4 +27,7 @@ public sealed record MapObjectDef : IDefinition
 
     /// <summary>The speed it gives a locomotor on its cell, below 100 %; those not named go at full speed.</summary>
     public required ImmutableArray<LocomotorSpeed> Speeds { get; init; }
+
+    /// <summary>It stands on the water (a reef, an ice floe: docs/naval_elements), and only there; the others only on land.</summary>
+    public bool Water { get; init; }
 }

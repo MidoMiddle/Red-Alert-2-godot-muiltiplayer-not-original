@@ -11,7 +11,7 @@
 
 | Ассет | Тип | Футпринт | Высота (ориентир) | Бюджет LOD0 | Узлы | Блокирует |
 |---|---|---|---|---|---|---|
-| `container_stack` | объект | 2x1 | 2,5 | ≤ 3 000 | `box_bottom`, `box_top` | наземных |
+| `container_stack` | объект | 2x1 | 1,45 (три яруса) | ≤ 3 000 | `box_bottom`, `box_top` | наземных |
 
 ## 2. Картинка-референс (ChatGPT)
 
@@ -35,7 +35,8 @@ A stack of two steel shipping containers about two units long and two and a half
 
 ## 4. Наши требования
 
-- Расцветки — варианты текстуры (красный, синий, зелёный, серый). Одна модель.
+- Расцветки: каждый контейнер своего цвета (красный, синий, зелёный, серый, оранжевый), две раскладки — `container_stack` и `container_stack_b`. Состояния: `container_stack_damaged`, `container_stack_fallen`.
+- Размер игры: контейнер 1,9 × 0,44 × 0,48, пивот в центре футпринта 2×1 на земле, длинная сторона вдоль x.
 - Надписи и логотипы не делаем.
 - Блокирует наземных. Цвета команды нет.
 - Бюджет ≤ 3 000 треугольников, текстуры 1024².
@@ -44,7 +45,10 @@ A stack of two steel shipping containers about two units long and two and a half
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `container_stack.glb` | | | |
+| `container_stack.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_containers.py`) | 2026-11-01 | сделано, 1 108 треугольников |
+| `container_stack_b.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_containers.py`) | 2026-11-01 | сделано, 1 108 треугольников |
+| `container_stack_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_containers.py`) | 2026-11-01 | сделано, 1 108 треугольников |
+| `container_stack_fallen.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_containers.py`) | 2026-11-01 | сделано, 1 108 треугольников |
 
 ## Открытые вопросы
 

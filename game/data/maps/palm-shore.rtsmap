@@ -16,6 +16,7 @@ legend:
   texture:
     a: asphalt
     b: shore
+    c: quay
     g: grass
     k: rock
     m: meadow
@@ -118,16 +119,16 @@ layers:
     00000000000000000000000000000000000011222222222222222222222222211112221111222222222222222222222222211000000000000000000000000000000000000
     00000000000000000000000000000000000001122222222222222222222222222222222222222222222222222222222222110000000000000000000000000000000000000
     00000000000000000000000000000000000000112222222222222222222222222222222222222222222222222222222221100000000000000000000000000000000000000
-    00000000000000000000000000000000000000011222222222222222222222222222222222222222222222222222222211000000000000000000000000000000000000000
-    00000000000000000000000000000000000000001222222222222222222222222222222222222222222222222222222210000000000000000000000000000000000000000
-    00000000000000000000000000000000000000001122222222222223332222222222222222222223332222222222222110000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000112222222222223332222222222222222222223332222222222221100000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000011222222222223332222222222222222222223332222222222211000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000001112222222222222222222222222222222222222222222221110000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000011111222222222222222222222222222222222222211111000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000001111222222222222222222222222222222222222211110000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000111122222222222222222222222222222222222111100000000000000000000000000000000000000000000000
-    00000000000000000000000000000000000000000000000011111111111122222222222222222111111111111000000000000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222222222222222222222222222222222222222222222222222222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222222222222222222222222222222222222222222222222222222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222222222222223332222222222222222222223332222222222222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222222222222223332222222222222222222223332222222222222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222222222222223332222222222222222222223332222222222222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222212222222222222222222222222222222222222222222221222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222211111222222222222222222222222222222222222211111222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222211111222222222222222222222222222222222222211111222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222200111122222222222222222222222222222222222111100222220000000000000000000000000000000000000000
+    00000000000000000000000000000000000000002222200011111111111122222222222222222111111111111000222220000000000000000000000000000000000000000
     00000000000000000000000000000000000000000000000001111111111112222222122222221111111111110000000000000000000000000000000000000000000000000
     00000000000000000000000000000000000000000000000000111111111111222221112222211111111111100000000000000000000000000000000000000000000000000
     00000000000000000000000000000000000000000000000000011111111111122211111222111111111111000000000000000000000000000000000000000000000000000
@@ -256,16 +257,16 @@ layers:
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~bb..............................................................bb~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb............................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..........................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb........................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~b........................................................b~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb......................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb....................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..................................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bbb..............................................bbb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~bb............................................bb~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..........................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb........................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
-    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb......................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~~..........................................................~~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~..........................................................~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~..........................................................~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..........................................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..........................................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..........................................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW..........................................................WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW......bb..........................................bb......WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW......~bb........................................bb~......WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
+    ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW......W~bb......................................bb~W......WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb....................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb..................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
     ~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~bb................................bb~WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW~
@@ -392,17 +393,17 @@ layers:
     qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbbgggggggmmmmmmmmmmmggggggggggggggggggggggggggggmmmmmmmmmmmgggggggbbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
     qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqqbbggggggmmmmmmmmmmmggggggggggggggggggggggggggggmmmmmmmmmmmggggggbbqqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
     qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbgggggmmmmmmmmmmmggggggggggggggggggggggggggggmmmmmmmmmmmgggggbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbggggmmmmmmmmmmmmggggggggggggggggggggggggggmmmmmmmmmmmmggggbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbggggmmmmmmmmmmggggggggggggggggggggggggggggmmmmmmmmmmggggbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbggggmmmmmmmmmggggggggggggggggggggggggggggggmmmmmmmmmggggbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbgggmmmmmmmmggggggggggggggggggggggggggggggggmmmmmmmmgggbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbggmmmmmmmmggggggggggggggggggggggggggggggggmmmmmmmmggbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbgmmmmmmmmggggggggggggggggggggggggggggggggmmmmmmmmgbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbbmmmmmmggggggggggggggggggggggggggggggggggmmmmmmbbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqqbbnnnmggggggggggggggggggggggggggggggggggggmnnnbbqqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbnnggggggggggggggggggggggggggggggggggggggnnbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbnnggggggggggggggggggggggggggggggggggggnnbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
-    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbnnnnggggggggggggggggggggggggggggggnnnnbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbcgggmmmmmmmmmmmmggggggggggggggggggggggggggmmmmmmmmmmmmgggcbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqqcccccmmmmmmmmmmggggggggggggggggggggggggggggmmmmmmmmmmcccccqqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqcccccmmmmmmmmmggggggggggggggggggggggggggggggmmmmmmmmmcccccqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqcccccmmmmmmmmggggggggggggggggggggggggggggggggmmmmmmmmcccccqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccmmmmmmmmggggggggggggggggggggggggggggggggmmmmmmmmcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwcccccmmmmmmmmggggggggggggggggggggggggggggggggmmmmmmmmcccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccmmmmmmggggggggggggggggggggggggggggggggggmmmmmmccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccmnnnmggggggggggggggggggggggggggggggggggggmnnnmccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccbbnnggggggggggggggggggggggggggggggggggggggnnbbccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccqbbnnggggggggggggggggggggggggggggggggggggnnbbqccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
+    qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwccccccwqbbnnnnggggggggggggggggggggggggggggggnnnnbbqwccccccwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
     qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbnnnnggggggggggggggggggggggggggggnnnnbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
     qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbnnnggggggggggggggggggggggggggggnnnbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
     qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqbbnnnggggggggggggggggggggggggggnnnbbqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwq
@@ -596,8 +597,6 @@ objects:
   - { type: beach_umbrella, cell: [102, 46], variant: 0 }
   - { type: beach_umbrella, cell: [30, 51], variant: 0 }
   - { type: beach_umbrella, cell: [105, 51], variant: 0 }
-  - { type: beach_umbrella, cell: [42, 97], variant: 0 }
-  - { type: beach_umbrella, cell: [93, 97], variant: 0 }
   - { type: beach_umbrella, cell: [45, 100], variant: 0 }
   - { type: beach_umbrella, cell: [90, 100], variant: 0 }
   - { type: beach_umbrella, cell: [50, 105], variant: 0 }
@@ -780,8 +779,6 @@ objects:
   - { type: pine_tree, cell: [80, 94], variant: 2 }
   - { type: pine_tree, cell: [81, 94], variant: 1 }
   - { type: pine_tree, cell: [82, 94], variant: 2 }
-  - { type: pine_tree, cell: [41, 95], variant: 0 }
-  - { type: pine_tree, cell: [42, 95], variant: 1 }
   - { type: pine_tree, cell: [52, 95], variant: 3 }
   - { type: pine_tree, cell: [53, 95], variant: 1 }
   - { type: pine_tree, cell: [54, 95], variant: 3 }
@@ -796,9 +793,6 @@ objects:
   - { type: pine_tree, cell: [81, 95], variant: 3 }
   - { type: pine_tree, cell: [82, 95], variant: 1 }
   - { type: pine_tree, cell: [83, 95], variant: 3 }
-  - { type: pine_tree, cell: [93, 95], variant: 1 }
-  - { type: pine_tree, cell: [94, 95], variant: 0 }
-  - { type: pine_tree, cell: [42, 96], variant: 0 }
   - { type: pine_tree, cell: [52, 96], variant: 3 }
   - { type: pine_tree, cell: [53, 96], variant: 0 }
   - { type: pine_tree, cell: [54, 96], variant: 1 }
@@ -813,7 +807,6 @@ objects:
   - { type: pine_tree, cell: [81, 96], variant: 1 }
   - { type: pine_tree, cell: [82, 96], variant: 0 }
   - { type: pine_tree, cell: [83, 96], variant: 3 }
-  - { type: pine_tree, cell: [93, 96], variant: 0 }
   - { type: pine_tree, cell: [56, 97], variant: 2 }
   - { type: pine_tree, cell: [67, 97], variant: 1 }
   - { type: pine_tree, cell: [68, 97], variant: 1 }
@@ -838,6 +831,34 @@ objects:
   - { type: pine_tree, cell: [71, 106], variant: 1 }
   - { type: pine_tree, cell: [64, 107], variant: 2 }
   - { type: pine_tree, cell: [71, 107], variant: 2 }
+  - { type: quay_edge, cell: [39, 93], variant: 0 }
+  - { type: quay_edge, cell: [96, 93], variant: 0 }
+  - { type: quay_edge, cell: [39, 94], variant: 0 }
+  - { type: quay_edge, cell: [96, 94], variant: 0 }
+  - { type: quay_edge, cell: [39, 95], variant: 0 }
+  - { type: quay_edge, cell: [96, 95], variant: 0 }
+  - { type: quay_edge, cell: [39, 96], variant: 0 }
+  - { type: quay_edge, cell: [96, 96], variant: 0 }
+  - { type: quay_edge, cell: [39, 97], variant: 0 }
+  - { type: quay_edge, cell: [96, 97], variant: 0 }
+  - { type: quay_edge, cell: [39, 98], variant: 0 }
+  - { type: quay_edge, cell: [96, 98], variant: 0 }
+  - { type: quay_edge, cell: [39, 99], variant: 0 }
+  - { type: quay_edge, cell: [96, 99], variant: 0 }
+  - { type: quay_edge, cell: [39, 100], variant: 0 }
+  - { type: quay_edge, cell: [96, 100], variant: 0 }
+  - { type: quay_edge, cell: [39, 101], variant: 0 }
+  - { type: quay_edge, cell: [96, 101], variant: 0 }
+  - { type: reef_rocks, cell: [34, 34], variant: 0 }
+  - { type: reef_rocks, cell: [101, 34], variant: 0 }
+  - { type: reef_rocks, cell: [33, 37], variant: 2 }
+  - { type: reef_rocks, cell: [102, 37], variant: 2 }
+  - { type: reef_rocks, cell: [31, 41], variant: 0 }
+  - { type: reef_rocks, cell: [104, 41], variant: 0 }
+  - { type: reef_rocks, cell: [13, 61], variant: 2 }
+  - { type: reef_rocks, cell: [122, 61], variant: 2 }
+  - { type: reef_rocks, cell: [6, 67], variant: 1 }
+  - { type: reef_rocks, cell: [129, 67], variant: 1 }
   - { type: sun_lounger, cell: [27, 53], variant: 0 }
   - { type: sun_lounger, cell: [108, 53], variant: 0 }
   - { type: sun_lounger, cell: [26, 55], variant: 0 }
@@ -850,10 +871,6 @@ objects:
   - { type: volleyball_net, cell: [98, 44], variant: 0 }
   - { type: volleyball_net, cell: [37, 91], variant: 0 }
   - { type: volleyball_net, cell: [98, 91], variant: 0 }
-  - { type: volleyball_net, cell: [37, 92], variant: 0 }
-  - { type: volleyball_net, cell: [98, 92], variant: 0 }
-  - { type: volleyball_net, cell: [44, 98], variant: 0 }
-  - { type: volleyball_net, cell: [91, 98], variant: 0 }
   - { type: volleyball_net, cell: [46, 101], variant: 0 }
   - { type: volleyball_net, cell: [89, 101], variant: 0 }
   - { type: volleyball_net, cell: [52, 107], variant: 0 }
@@ -891,6 +908,20 @@ structures:
   - { type: neutral_cafe, cell: [67, 17], owner: neutral, facing: 1 }
   - { type: neutral_cafe, cell: [62, 23], owner: neutral, facing: 4 }
   - { type: neutral_cafe, cell: [72, 23], owner: neutral, facing: 4 }
+  - { type: neutral_container_stack, cell: [42, 94], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [92, 94], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [42, 96], owner: neutral, facing: 0 }
+  - { type: neutral_container_stack, cell: [92, 96], owner: neutral, facing: 0 }
+  - { type: neutral_ferry, cell: [50, 23], owner: neutral, facing: 0 }
+  - { type: neutral_ferry, cell: [84, 23], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [40, 36], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [95, 36], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [21, 89], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [114, 89], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [37, 95], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [98, 95], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [37, 99], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [98, 99], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [64, 21], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [69, 21], owner: neutral, facing: 0 }
   - { type: neutral_kiosk, cell: [67, 25], owner: neutral, facing: 0 }
@@ -909,6 +940,14 @@ structures:
   - { type: neutral_lifeguard_tower, cell: [70, 116], owner: neutral, facing: 2 }
   - { type: neutral_lighthouse, cell: [33, 48], owner: neutral, facing: 0 }
   - { type: neutral_lighthouse, cell: [101, 48], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [40, 95], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [95, 95], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [40, 99], owner: neutral, facing: 0 }
+  - { type: neutral_port_crane, cell: [95, 99], owner: neutral, facing: 0 }
+  - { type: neutral_port_warehouse, cell: [41, 98], owner: neutral, facing: 0 }
+  - { type: neutral_port_warehouse, cell: [92, 98], owner: neutral, facing: 0 }
+  - { type: tech_offshore_platform, cell: [54, 120], owner: neutral, facing: 0 }
+  - { type: tech_offshore_platform, cell: [80, 120], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [52, 63], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [82, 63], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [66, 126], owner: neutral, facing: 0 }

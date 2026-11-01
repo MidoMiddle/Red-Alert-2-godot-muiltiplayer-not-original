@@ -36,9 +36,10 @@ public sealed class BuildingLooksTests
                 $"{type.Id}: a part at {part.X}, {part.Z} sticks out of {type.Width}x{type.Height}"));
         }
 
-        // The highway's guardrail is drawn by MapObjects too, turned along its neighbours (2026-10-30).
+        // The highway's guardrail is drawn by MapObjects too, turned along its neighbours (2026-10-30), and the quay's edge, turned to
+        // the water (2026-11-01).
         string[] olderObjects = ["pine_tree", "boulder", "fence_wood", "wall_stone", "lamp_post", "anti_tank_hedgehog", "pipeline", "snowdrift", "ore_source", "gem_source",
-            "highway_guardrail"];
+            "highway_guardrail", "quay_edge"];
         foreach (var type in GameDataFiles.Rules.MapTypes.Objects.Where(type => !olderObjects.Contains(type.Id)))
         {
             Assert.True(PropLooks.Known(type.Id), type.Id);

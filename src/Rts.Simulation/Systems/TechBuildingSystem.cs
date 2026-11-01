@@ -5,9 +5,9 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Systems;
 
 /// <summary>
-/// What the tech buildings of the map give the player who took them (loose ends, stage 1; numbers of RA2): an oil derrick
-/// <see cref="DerrickStartup"/> credits when taken from the neutral side, then <see cref="DerrickCash"/> every
-/// <see cref="DerrickDelay"/> ticks without power; the hospital heals the soldiers that go in (<see cref="EntrySystem"/>); the airfield
+/// What the tech buildings of the map give the player who took them (loose ends, stage 1; numbers of RA2): an oil derrick — and the
+/// offshore platform, the derrick of the sea (docs/naval_elements/04_offshore_platform) — <see cref="DerrickStartup"/> credits when
+/// taken from the neutral side, then <see cref="DerrickCash"/> every <see cref="DerrickDelay"/> ticks without power; the hospital heals the soldiers that go in (<see cref="EntrySystem"/>); the airfield
 /// charges its paradrop (<see cref="SuperweaponSystem"/>).
 /// </summary>
 public static class TechBuildingSystem
@@ -26,8 +26,8 @@ public static class TechBuildingSystem
     {
         foreach (var entity in world.Entities)
         {
-            if (entity is Building { IsAlive: true, Kind: BuildingKind.TechOilDerrick, CashTimer: > 0 } derrick && !derrick.Owner.IsNeutral
-                && --derrick.CashTimer == 0)
+            if (entity is Building { IsAlive: true, Kind: BuildingKind.TechOilDerrick or BuildingKind.TechOffshorePlatform, CashTimer: > 0 } derrick
+                && !derrick.Owner.IsNeutral && --derrick.CashTimer == 0)
             {
                 world.Player(derrick.Owner).Credits += DerrickCash;
                 derrick.CashTimer = DerrickDelay;
@@ -45,7 +45,7 @@ public static class TechBuildingSystem
             return;
         }
 
-        if (building.Kind == BuildingKind.TechOilDerrick)
+        if (building.Kind is BuildingKind.TechOilDerrick or BuildingKind.TechOffshorePlatform)
         {
             if (from.IsNeutral)
             {

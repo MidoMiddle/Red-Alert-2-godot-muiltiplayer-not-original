@@ -46,6 +46,9 @@ internal static class TestMapKinds
         builder.Add(new MapObjectDef { Id = "barbed_wire", Name = "Barbed wire", Blocks = ["amphibious", "foot", "hover", "naval", "wheel"], Hp = 100, CrushedBy = ["track"], Stump = false, Speeds = [] });
         builder.Add(new MapObjectDef { Id = "farm_tractor", Name = "Farm tractor", Blocks = ["amphibious", "foot", "hover", "naval", "track", "wheel"], Hp = 400, CrushedBy = [], Stump = false, Speeds = [] });
         builder.Add(new MapObjectDef { Id = "highway_guardrail", Name = "Highway guardrail", Blocks = ["foot"], Hp = 120, CrushedBy = ["track", "wheel"], Stump = false, Speeds = [] });
+        builder.Add(new MapObjectDef { Id = "quay_edge", Name = "Quay edge", Blocks = [], Hp = 0, CrushedBy = [], Stump = false, Speeds = [] });
+        builder.Add(new MapObjectDef { Id = "reef_rocks", Name = "Reef", Blocks = ["amphibious", "hover", "naval"], Hp = 3000, CrushedBy = [], Stump = false, Speeds = [], Water = true });
+        builder.Add(new MapObjectDef { Id = "ice_floe", Name = "Ice floe", Blocks = ["naval"], Hp = 800, CrushedBy = [], Stump = false, Speeds = [], Water = true });
 
         builder.Add(new BridgeDef { Id = "bridge_wood_low", Name = "Low wooden bridge", SegmentHp = 600, Width = 3, High = false });
         builder.Add(new BridgeDef { Id = "bridge_concrete_high", Name = "High concrete bridge", SegmentHp = 1500, Width = 3, High = true });
@@ -92,6 +95,10 @@ internal static class TestMapKinds
         builder.Add(new MapBuildingDef { Id = "tech_hospital", Name = "Hospital", Footprint = new CellSize(6, 4), Hp = 800, Capturable = true, ExtendsBase = true });
         builder.Add(new MapBuildingDef { Id = "tech_airfield", Name = "Airfield", Footprint = new CellSize(3, 3), Hp = 800, Capturable = true, Superweapon = SuperweaponKind.Paradrop, Recharge = 240 * SimulationSettings.DefaultTicksPerSecond, ExtendsBase = true });
         builder.Add(new MapBuildingDef { Id = "tech_bridge_repair_hut", Name = "Bridge repair hut", Footprint = new CellSize(1, 1), Hp = 2000 });
+        builder.Add(new MapBuildingDef { Id = "tech_offshore_platform", Name = "Offshore oil platform", Footprint = new CellSize(2, 2), Hp = 1000, Capturable = true, DeathWeapon = "oil_explosion", Water = true });
+        builder.Add(new MapBuildingDef { Id = "neutral_ferry", Name = "Ferry", Footprint = new CellSize(2, 1), Hp = 600, Water = true, Ruins = false });
+        builder.Add(new MapBuildingDef { Id = "neutral_cargo_ship", Name = "Cargo ship", Footprint = new CellSize(4, 1), Hp = 900, Water = true, Ruins = false });
+        builder.Add(new MapBuildingDef { Id = "neutral_fishing_boat", Name = "Fishing boat", Footprint = new CellSize(1, 1), Hp = 200, Water = true, Ruins = false });
         builder.Add(new MapBuildingDef { Id = "tech_outpost", Name = "Tech outpost", Footprint = new CellSize(4, 3), Hp = 2000, Capturable = true, Weapon = "alliance_ifv_missiles", Armor = "concrete", Sight = 6, RepairsVehicles = true, ExtendsBase = true });
     }
 

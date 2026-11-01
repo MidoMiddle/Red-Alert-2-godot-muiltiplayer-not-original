@@ -14,6 +14,8 @@ namespace Rts.Client.Terrain;
 /// (docs/map_elements/01_relief/README.md): its height keeps to the lower or the upper level and drops in a steep band
 /// round the middle that noise bends (<see cref="CliffHeight"/>). Nobody stands there, so only there the drawn height leaves
 /// the rules'. On every cell edge the height depends on the edge alone (<see cref="EdgeHeight"/>), so cells meet without gaps.
+/// The cells of a quay (<see cref="Straighten"/>) keep their walls straight: the noise fades out over them, by the point of the world
+/// alone, so the cells still meet.
 /// </para>
 /// </summary>
 public sealed class TerrainHeights
@@ -34,6 +36,9 @@ public sealed class TerrainHeights
     private const int BisectIterations = 24;
 
     private readonly float[] _vertices;
+
+    // Per cell, the skirt's too: 1 where a cliff's wall stands straight (a quay), 0 where noise bends it; null: none straight.
+    private float[]? _straight;
 
     private TerrainHeights(int widthCells, int heightCells, int skirt = 0)
     {
@@ -88,6 +93,29 @@ public sealed class TerrainHeights
         }
 
         return terrain;
+    }
+
+    /// <summary>
+    /// Keeps the walls of the cells <paramref name="straight"/> names (map cells) straight: a quay's concrete
+    /// (docs/naval_elements/09_quay_wall). Their wall stands in the middle of the cell, as every cliff's does, without the noise's
+    /// bends; the noise fades in again over the next half cell.
+    /// </summary>
+    public TerrainHeights Straighten(Func<int, int, bool> straight)
+    {
+        var width = WidthCells + 2 * Skirt;
+        _straight = new float[width * (HeightCells + 2 * Skirt)];
+        for (var z = 0; z < HeightCells; z++)
+        {
+            for (var x = 0; x < WidthCells; x++)
+            {
+                if (straight(x, z))
+                {
+                    _straight[(z + Skirt) * width + x + Skirt] = 1f;
+                }
+            }
+        }
+
+        return this;
     }
 
     /// <summary>Height at a cell corner, in world coordinates; corners beyond the skirt take its nearest edge.</summary>
@@ -178,22 +206,47 @@ public sealed class TerrainHeights
     /// the first, at world point (<paramref name="x"/>, <paramref name="z"/>): a straight line, or a wall where the edge drops two
     /// levels or more. Both cells of the edge get the same numbers, so the same height.
     /// </summary>
-    public static float EdgeHeight(float from, float to, float s, float x, float z) => Lerp(from, to, EdgeShift(from, to, s, x, z));
+    public float EdgeHeight(float from, float to, float s, float x, float z) => Lerp(from, to, EdgeShift(from, to, s, x, z));
 
     /// <summary>
     /// The wall's push, 0…1, at <paramref name="t"/> 0…1 up the drop (0 at the lower level) at world point
     /// (<paramref name="x"/>, <paramref name="z"/>): a smoothstep <see cref="CliffWallHalfWidth"/> wide round the middle, which
-    /// noise moves up to <see cref="CliffWander"/>. It keeps 0 and 1 where they are and never turns back.
+    /// noise moves up to <see cref="CliffWander"/>, less over a quay (<see cref="Straighten"/>). It keeps 0 and 1 where they are and
+    /// never turns back.
     /// </summary>
-    public static float Wall(float t, float x, float z)
+    public float Wall(float t, float x, float z)
     {
-        var bent = t + CliffWander * 4f * t * (1f - t) * Noise(x * CliffNoiseScale, z * CliffNoiseScale);
+        var wander = CliffWander * (1f - StraightAt(x, z));
+        var bent = t + wander * 4f * t * (1f - t) * Noise(x * CliffNoiseScale, z * CliffNoiseScale);
         var k = Math.Clamp((bent - 0.5f + CliffWallHalfWidth) / (2f * CliffWallHalfWidth), 0f, 1f);
         return k * k * (3f - 2f * k);
     }
 
+    /// <summary>True when the walls of the cell stand straight (<see cref="Straighten"/>).</summary>
+    public bool IsStraight(int cellX, int cellZ) => StraightAt(cellX + 0.5f, cellZ + 0.5f) > 0.5f;
+
+    // How straight the walls stand at a point of the world, 0…1: the cells' marks blended between their centres.
+    private float StraightAt(float x, float z)
+    {
+        if (_straight is null)
+        {
+            return 0f;
+        }
+
+        var width = WidthCells + 2 * Skirt;
+        var height = HeightCells + 2 * Skirt;
+        var gx = x - 0.5f + Skirt;
+        var gz = z - 0.5f + Skirt;
+        var ix = (int)MathF.Floor(gx);
+        var iz = (int)MathF.Floor(gz);
+        float At(int cx, int cz) => _straight[Math.Clamp(cz, 0, height - 1) * width + Math.Clamp(cx, 0, width - 1)];
+        var fx = gx - ix;
+        var fz = gz - iz;
+        return Lerp(Lerp(At(ix, iz), At(ix + 1, iz), fx), Lerp(At(ix, iz + 1), At(ix + 1, iz + 1), fx), fz);
+    }
+
     // Where a point s of the way along an edge takes its height: the same s on a gentle edge, the wall's push on a drop.
-    private static float EdgeShift(float from, float to, float s, float x, float z)
+    private float EdgeShift(float from, float to, float s, float x, float z)
     {
         if (!IsDrop(Math.Min(from, to), Math.Max(from, to)))
         {

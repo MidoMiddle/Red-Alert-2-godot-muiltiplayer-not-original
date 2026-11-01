@@ -12,6 +12,8 @@ namespace Rts.MapGen.Stages;
 /// <list type="bullet">
 /// <item>the town (urban): street things by the roads — benches, bins, mailboxes, bus stops, signs, flowerbeds, lamps beside the road,
 /// phone booths, billboards, traffic lights and stalls a cell further — and a harbour by the water: warehouses, cranes, containers;</item>
+/// <item>a harbour on the sea of the town and of the coast (the owner, 2026-11-01): a quay (<see cref="Harbour"/>) with cranes by its
+/// wall, containers and a warehouse on its apron; the town on a map without one keeps its harbour by any water;</item>
 /// <item>farms (temperate, and fewer in the snow): a farmhouse, a barn, a silo, a windmill or a water tower, a well, hay bales, a
 /// tractor and a hedge;</item>
 /// <item>villages (desert): adobe houses round a well; ruins, mesas and an arch; dry shrubs;</item>
@@ -33,16 +35,31 @@ internal static class Dressing
     private static readonly string[] BeachThings =
         ["beach_umbrella", "sun_lounger", "beach_umbrella", "beach_shower", "volleyball_net", "driftwood", "fishing_nets", "beached_boat"];
     private static readonly string[] BeachBuildings = ["neutral_beach_cabin", "neutral_beach_bar", "neutral_lifeguard_tower", "neutral_boat_shed"];
-    private static readonly string[] Harbour = ["neutral_port_warehouse", "neutral_container_stack", "neutral_port_crane", "neutral_container_stack"];
+    public static readonly string[] HarbourBuildings = ["neutral_port_warehouse", "neutral_container_stack", "neutral_port_crane", "neutral_container_stack"];
+
+    // The buildings on the apron of a quay (Harbour): where along the wall and how far inland the first cell of each lies. Cranes by
+    // the wall, containers and a warehouse behind them.
+    private static readonly (string Id, int U, int V)[] Docks =
+    [
+        ("neutral_port_crane", 2, 1), ("neutral_port_crane", 6, 1), ("neutral_container_stack", 1, 3), ("neutral_container_stack", 3, 3),
+        ("neutral_port_warehouse", 5, 2),
+    ];
 
     public static void Place(GenMap map)
     {
-        var site = new Site(map);
         var climate = map.Settings.Climate;
+        // A harbour with its quay on the sea of a town and of the coast, first: the rest of the dressing goes round it.
+        var harbour = climate is ClimateGrounds.Urban or ClimateGrounds.Coast && map.Settings.Water == WaterKind.Sea && Harbour.Build(map);
+        PlaceDocks(map);
+        var site = new Site(map);
+
         if (climate == ClimateGrounds.Urban)
         {
             Street(map, site);
-            Shore(map, site, Harbour, [], 6, 0);
+            if (!harbour)
+            {
+                Shore(map, site, HarbourBuildings, [], 6, 0);
+            }
         }
 
         if (climate == ClimateGrounds.Temperate || climate == ClimateGrounds.Winter)
@@ -70,6 +87,42 @@ internal static class Dressing
         {
             Wire(map, site);
         }
+    }
+
+    /// <summary>The buildings of the harbour on the apron of every quay (<see cref="Harbour"/>).</summary>
+    public static void PlaceDocks(GenMap map)
+    {
+        var site = new Site(map);
+        foreach (var quay in map.Quays)
+        {
+            foreach (var (id, u, v) in Docks)
+            {
+                Dock(map, site, quay, id, u, v);
+            }
+        }
+    }
+
+    // A building on the apron of a quay: its footprint from the cell (u, v) of the quay on, along the wall and inland.
+    private static void Dock(GenMap map, Site site, Quay quay, string id, int u, int v)
+    {
+        var (width, height) = (0, 0);
+        foreach (var cell in MapChecks.Footprint(new StructurePlacement(id, new CellPos(0, 0), 0, 0), map.Types))
+        {
+            (width, height) = (IntMath.Max(width, cell.X + 1), IntMath.Max(height, cell.Y + 1));
+        }
+
+        var (along, inland) = quay.AlongX != 0 ? (width, height) : (height, width);
+        var (minX, minY) = (int.MaxValue, int.MaxValue);
+        for (var dv = 0; dv < inland; dv++)
+        {
+            for (var du = 0; du < along; du++)
+            {
+                var cell = quay.Cell(u + du, v + dv);
+                (minX, minY) = (IntMath.Min(minX, cell.X), IntMath.Min(minY, cell.Y));
+            }
+        }
+
+        site.Structure(id, new CellPos(minX, minY), 0, paved: true);
     }
 
     // Street things on the cells beside a road, blockers a cell further.
@@ -374,10 +427,10 @@ internal static class Dressing
             }
         }
 
-        /// <summary>Whether a thing may stand on the cell: what stops movers keeps a cell off the roads.</summary>
-        public bool Free(CellPos cell, bool blocking) =>
+        /// <summary>Whether a thing may stand on the cell: what stops movers keeps a cell off the roads; on a harbour's paving only its docks.</summary>
+        public bool Free(CellPos cell, bool blocking, bool paved = false) =>
             _map.Contains(cell) && _map.Area.Contains(cell) && _map.LandAt(cell) is LandType.Clear or LandType.Rough or LandType.Beach
-            && !_map.IsCliff(cell) && !_taken.Contains(cell) && !_map.NearOre(cell, 0)
+            && !_map.IsCliff(cell) && !_taken.Contains(cell) && !_map.NearOre(cell, 0) && (paved || !_map.Paved[cell.Y * _map.N + cell.X])
             && _map.StartDistanceSquared(cell) > (Starts.FlatRadius + 2) * (Starts.FlatRadius + 2)
             && (!blocking || !Roads(_map, cell, 1));
 
@@ -409,7 +462,7 @@ internal static class Dressing
         }
 
         /// <summary>The building with its north-west cell on <paramref name="corner"/> and its images, when every one fits.</summary>
-        public bool Structure(string id, CellPos corner, int facing)
+        public bool Structure(string id, CellPos corner, int facing, bool paved = false)
         {
             var images = new List<StructurePlacement>();
             for (var k = 0; k < _map.Symmetry.Order; k++)
@@ -434,7 +487,7 @@ internal static class Dressing
             {
                 var footprint = MapChecks.Footprint(placement, _map.Types);
                 // A building blocks: none of its cells by a road, as for a blocking thing, nor near the ore (GenMap.OreClearance).
-                if (!footprint.TrueForAll(cell => Free(cell, blocking: true) && !_map.NearOre(cell, GenMap.OreClearance))
+                if (!footprint.TrueForAll(cell => Free(cell, blocking: true, paved) && !_map.NearOre(cell, GenMap.OreClearance))
                     || MapChecks.BuildingProblem(_ground, placement, placed) is not null)
                 {
                     return false;

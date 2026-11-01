@@ -80,7 +80,8 @@ public sealed class MapTypes
                     definition.Hp,
                     MaskOf(definition.CrushedBy),
                     definition.Stump,
-                    SpeedsOf(definition.Speeds));
+                    SpeedsOf(definition.Speeds),
+                    definition.Water);
             }
         }
 
@@ -113,7 +114,9 @@ public sealed class MapTypes
                     definition.Sight,
                     definition.RepairsVehicles,
                     definition.ExtendsBase,
-                    definition.DeathWeapon);
+                    definition.DeathWeapon,
+                    definition.Water,
+                    definition.Ruins);
             }
         }
 

@@ -11,6 +11,17 @@ tech_oil_derrick:
   extends_base: true
   death_weapon: oil_explosion
 
+# The oil derrick of the sea (docs/naval_elements/04_offshore_platform): its owner's income as the derrick's, on the water; an engineer
+# takes it from a helicopter that sets down on it.
+tech_offshore_platform:
+  kind: map_building
+  name: Offshore oil platform
+  footprint: [2, 2]
+  hp: 1000
+  capturable: true
+  death_weapon: oil_explosion
+  water: true
+
 # RA2: 6 x 4, 800.
 tech_hospital:
   kind: map_building

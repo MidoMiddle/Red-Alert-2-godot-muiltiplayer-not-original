@@ -46,6 +46,12 @@ public enum EntryAction
 
     /// <summary>An engineer takes the bomb off its own or an ally's unit or building, and is not spent (RA2).</summary>
     Defuse,
+
+    /// <summary>
+    /// A transport helicopter sets down on a building of the water nobody walks to (the offshore platform) and the engineer it carries
+    /// takes it (the owner, 2026-11-01; docs/naval_elements/04_offshore_platform).
+    /// </summary>
+    DropEngineer,
 }
 
 /// <summary>
@@ -57,7 +63,9 @@ public enum EntryAction
 /// building of a player outside its team and blacks out its owner's power for <see cref="BlackoutTicks"/> ticks, makes it forget its map,
 /// or takes half its credits. The engineer and the infiltrator are spent (they leave the map without a death). The tech buildings of the
 /// map (loose ends, stage 1): an engineer takes one of the neutral side or an enemy, or mends its own; a hurt soldier is healed whole
-/// at its own hospital and stays outside. An engineer going into a bridge repair hut mends its bridge and is spent (stage 2). An engineer sent to its own or an ally's unit or building with a bomb on it takes the bomb off and is not spent (RA2). A soldier
+/// at its own hospital and stays outside. A transport helicopter with an engineer aboard sent to a building of the water that can be taken
+/// (the offshore platform) flies onto it, sets down in its middle, and its first engineer takes it and is spent (the owner, 2026-11-01).
+/// An engineer going into a bridge repair hut mends its bridge and is spent (stage 2). An engineer sent to its own or an ally's unit or building with a bomb on it takes the bomb off and is not spent (RA2). A soldier
 /// going into its owner's cloning vats leaves for half its price (RA2). One that stopped farther off, or can no longer do it, forgets the order; so does one given
 /// another order.
 /// </summary>
@@ -93,6 +101,14 @@ public static class EntrySystem
             return TransportSystem.CanBoard(world, unit, transport) ? EntryAction.Board : EntryAction.None;
         }
 
+        // A transport helicopter sets its engineer down on a building of the water, which no soldier walks to.
+        if (unit.Archetype.Flies && target is Building { IsAlive: true, IsReady: true, Def: null } onWater && onWater.Type.Water
+            && onWater.Type.Capturable && onWater.Owner != unit.Owner && (onWater.Owner.IsNeutral || !world.AreAllies(unit.Owner, onWater.Owner))
+            && EngineerAboard(world, unit) >= 0)
+        {
+            return EntryAction.DropEngineer;
+        }
+
         if (target is not Building { IsAlive: true, IsReady: true } building || unit.Archetype.Category != UnitCategory.Infantry
             || unit.Archetype.Flies)
         {
@@ -103,6 +119,12 @@ public static class EntrySystem
         var enemy = !building.Owner.IsNeutral && !world.AreAllies(unit.Owner, building.Owner);
         if (building.Def is not { } def)
         {
+            // A building of the water: no soldier walks to it (a helicopter brings the engineer, above).
+            if (building.Type.Water)
+            {
+                return EntryAction.None;
+            }
+
             // A building of the map: an engineer takes a tech building of the neutral side or an enemy, or mends its own; a hurt soldier
             // is healed at its own hospital.
             // RA2: the commando's C4 on a bridge repair hut brings its bridge down.
@@ -227,6 +249,11 @@ public static class EntrySystem
                     Capture(world, building!, unit.Owner, events);
                     unit.MarkDead();
                     break;
+                case EntryAction.DropEngineer:
+                    // The engineer steps off onto the deck and takes it; the helicopter stays over it.
+                    unit.Passengers.RemoveAt(EngineerAboard(world, unit));
+                    Capture(world, building!, unit.Owner, events);
+                    break;
                 case EntryAction.Mend:
                     world.SetHp(building!, building!.MaxHp, events);
                     events?.Add(new BuildingMended(world.CurrentTick, building.Id));
@@ -297,6 +324,20 @@ public static class EntrySystem
                 unit.Charging = null;
             }
         }
+    }
+
+    /// <summary>The place of the first engineer among the passengers of <paramref name="transport"/>; -1 without one.</summary>
+    public static int EngineerAboard(GameWorld world, Unit transport)
+    {
+        for (var i = 0; i < transport.Passengers.Count; i++)
+        {
+            if (world.Rules.Unit(transport.Passengers[i].Type).Has(UnitTalents.Engineer))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /// <summary>What a soldier going into its owner's cloning vats leaves for: half its price, rounded down.</summary>
@@ -398,6 +439,14 @@ public static class EntrySystem
     /// <summary>The cell of the ring around the footprint nearest to the soldier that it can enter; the footprint's corner without one.</summary>
     private static WorldPos Door(GameWorld world, Entity target, Unit soldier)
     {
+        // A helicopter sets down in the middle of the building of the water it brings an engineer to.
+        if (soldier.Archetype.Flies && target is Building deck)
+        {
+            return new WorldPos(
+                (deck.Cell.X * WorldPos.LeptonsPerCell) + (deck.Width * WorldPos.LeptonsPerCell / 2),
+                (deck.Cell.Y * WorldPos.LeptonsPerCell) + (deck.Height * WorldPos.LeptonsPerCell / 2));
+        }
+
         var from = soldier.Position.ToCell();
         var (near, far) = target is Building building ? (building.Cell, building.FarCell) : (((Unit)target).Position.ToCell(), ((Unit)target).Position.ToCell());
         CellPos? best = null;

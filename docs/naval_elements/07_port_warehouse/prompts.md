@@ -11,7 +11,7 @@
 
 | Ассет | Тип | Футпринт | Высота (ориентир) | Бюджет LOD0 | Гарнизон | Цвет команды |
 |---|---|---|---|---|---|---|
-| `port_warehouse` | здание | 3x3 | 4 | ≤ 12 000 | да, 4 | да (полоса над воротами) |
+| `port_warehouse` | здание | 3x3 | 2,7 в модели, ×0,35 в игре | ≤ 12 000 | да, 4 | да (полоса над воротами) |
 
 ## 2. Картинка-референс (ChatGPT)
 
@@ -35,7 +35,8 @@ A large port warehouse about three units wide, three units long and four units t
 
 ## 4. Наши требования
 
-- Узлы: `body` (ангар), `roof`, `office` (контора, гарнизон), `gate` (ворота), `team_mask` (полоса над воротами).
+- Узлы: `body` (ангар), `roof`, `office` (контора, гарнизон), `gate` (ворота), `team_mask` (полоса над воротами), `base` (площадка); `fire_1..3` у покинутого.
+- «Этаж на клетку», игра сжимает по высоте (`height_scale: 0,35`), как здания с гарнизоном городского и промышленного наборов. Шесть состояний: целый, занятый, повреждённый, повреждённый и занятый, покинутый, руины.
 - Гарнизон 4: бойцы в конторе — код, окна видны в модели.
 - Текстуры 2048² (большое здание). Бюджет ≤ 12 000 треугольников.
 
@@ -43,7 +44,12 @@ A large port warehouse about three units wide, three units long and four units t
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `port_warehouse.glb` | | | |
+| `port_warehouse.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_warehouse.py`) | 2026-11-01 | сделано, 1 814 треугольников |
+| `port_warehouse_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_warehouse.py`) | 2026-11-01 | сделано, 1 982 треугольников |
+| `port_warehouse_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_warehouse.py`) | 2026-11-01 | сделано, 1 958 треугольников |
+| `port_warehouse_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_warehouse.py`) | 2026-11-01 | сделано, 2 126 треугольников |
+| `port_warehouse_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_warehouse.py`) | 2026-11-01 | сделано, 1 834 треугольников |
+| `port_warehouse_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/naval_warehouse.py`) | 2026-11-01 | сделано, 718 треугольников |
 
 ## Открытые вопросы
 

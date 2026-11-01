@@ -43,6 +43,13 @@ public enum MapObjectKind : byte
 
     // The guardrail of a highway (docs/map_elements/04_roads), 2026-10-30.
     HighwayGuardrail = 34,
+
+    // The edge of a quay (docs/naval_elements/09_quay_wall), 2026-11-01.
+    QuayEdge = 35,
+
+    // On the water (docs/naval_elements, 02 and 03), 2026-11-01.
+    ReefRocks = 36,
+    IceFloe = 37,
 }
 
 /// <summary>
@@ -58,7 +65,8 @@ public sealed record MapObjectType(
     int MaxHp,
     byte CrushMask,
     bool LeavesStump,
-    IReadOnlyDictionary<Locomotor, int>? Speeds = null)
+    IReadOnlyDictionary<Locomotor, int>? Speeds = null,
+    bool OnWater = false)
 {
     public bool Destructible => MaxHp > 0;
 
@@ -77,7 +85,7 @@ public sealed record MapObjectType(
 /// </summary>
 public static class MapObjectTypes
 {
-    /// <summary>Every ground mover; ships never stand where map objects are.</summary>
+    /// <summary>Every mover; the ships meet only the objects that stand on the water (a reef, an ice floe).</summary>
     public const byte AllMovers = 0b111111;
 
     // The ids by number, from 1.
@@ -117,6 +125,9 @@ public static class MapObjectTypes
         "barbed_wire",
         "farm_tractor",
         "highway_guardrail",
+        "quay_edge",
+        "reef_rocks",
+        "ice_floe",
     ];
 
     private static readonly MapObjectKind[] Kinds = System.Linq.Enumerable.ToArray(

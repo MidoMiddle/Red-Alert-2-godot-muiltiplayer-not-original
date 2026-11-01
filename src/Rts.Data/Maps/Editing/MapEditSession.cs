@@ -385,7 +385,8 @@ public sealed class MapEditSession
     /// <summary>
     /// Objects of the chosen type on the free cells under the brush, each cell with a chance of the density; which cells and
     /// which model come from a hash of the cell and the stroke number, so the same stroke always gives the same wood. An ore or gem
-    /// source takes the ore off its cell: no harvester would reach it there.
+    /// source takes the ore off its cell: no harvester would reach it there. A reef or an ice floe goes only on the water, every other
+    /// object only on land (not rock).
     /// </summary>
     private void PlaceObjects(List<CellPos> cells)
     {
@@ -400,7 +401,7 @@ public sealed class MapEditSession
         {
             var hash = Hash(under, _strokes);
             if (!_touchedThisStroke.Add(Map.CellIndex(under)) || (int)(hash % 100) >= _options.Density || taken.Contains(under)
-                || IsWaterOrRock(Map.LandAt(under)))
+                || (type.OnWater ? !IsWater(Map.LandAt(under)) : IsWaterOrRock(Map.LandAt(under))))
             {
                 continue;
             }

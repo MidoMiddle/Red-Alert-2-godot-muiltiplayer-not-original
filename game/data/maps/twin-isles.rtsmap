@@ -694,6 +694,16 @@ objects:
   - { type: pine_tree, cell: [40, 105], variant: 1 }
   - { type: pine_tree, cell: [41, 105], variant: 0 }
   - { type: pine_tree, cell: [42, 105], variant: 1 }
+  - { type: reef_rocks, cell: [82, 17], variant: 3 }
+  - { type: reef_rocks, cell: [23, 49], variant: 0 }
+  - { type: reef_rocks, cell: [115, 61], variant: 0 }
+  - { type: reef_rocks, cell: [62, 62], variant: 0 }
+  - { type: reef_rocks, cell: [129, 67], variant: 0 }
+  - { type: reef_rocks, cell: [6, 68], variant: 0 }
+  - { type: reef_rocks, cell: [73, 73], variant: 0 }
+  - { type: reef_rocks, cell: [20, 74], variant: 0 }
+  - { type: reef_rocks, cell: [112, 86], variant: 0 }
+  - { type: reef_rocks, cell: [53, 118], variant: 3 }
   - { type: sun_lounger, cell: [68, 39], variant: 0 }
   - { type: sun_lounger, cell: [67, 96], variant: 0 }
   - { type: volleyball_net, cell: [67, 43], variant: 0 }
@@ -720,6 +730,12 @@ structures:
   - { type: neutral_boat_shed, cell: [102, 62], owner: neutral, facing: 7 }
   - { type: neutral_boat_shed, cell: [32, 72], owner: neutral, facing: 7 }
   - { type: neutral_boat_shed, cell: [56, 98], owner: neutral, facing: 3 }
+  - { type: neutral_ferry, cell: [41, 55], owner: neutral, facing: 0 }
+  - { type: neutral_ferry, cell: [93, 80], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [61, 43], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [47, 54], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [88, 81], owner: neutral, facing: 0 }
+  - { type: neutral_fishing_boat, cell: [74, 92], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [85, 65], owner: neutral, facing: 0 }
   - { type: neutral_hotel, cell: [48, 69], owner: neutral, facing: 0 }
   - { type: neutral_kiosk, cell: [82, 66], owner: neutral, facing: 2 }
@@ -730,6 +746,8 @@ structures:
   - { type: neutral_lifeguard_tower, cell: [34, 70], owner: neutral, facing: 2 }
   - { type: neutral_lifeguard_tower, cell: [55, 94], owner: neutral, facing: 6 }
   - { type: neutral_lifeguard_tower, cell: [37, 102], owner: neutral, facing: 6 }
+  - { type: tech_offshore_platform, cell: [36, 50], owner: neutral, facing: 0 }
+  - { type: tech_offshore_platform, cell: [98, 84], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [55, 49], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [76, 54], owner: neutral, facing: 0 }
   - { type: tech_oil_derrick, cell: [58, 80], owner: neutral, facing: 0 }

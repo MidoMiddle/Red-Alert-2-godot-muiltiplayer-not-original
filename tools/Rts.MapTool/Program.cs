@@ -10,6 +10,7 @@ using Rts.Simulation.Map;
 // dotnet run --project tools/Rts.MapTool -- generate <out.rtsmap> [--seed N] [--size 64|96|128|160] [--players 2|4]
 //     [--symmetry mirror|rotate180|rotate90] [--relief flat|hilly|mountainous] [--water none|rivers|lakes]
 //     [--forest low|medium|high] [--resources low|medium|high]       a random map (step 13)
+// dotnet run --project tools/Rts.MapTool -- add-sea <map.rtsmap>…     the harbour and the sea pieces of the generator on generated maps
 // dotnet run --project tools/Rts.MapTool -- ready-maps game/data/maps        write the four ready maps of step 14
 // dotnet run --project tools/Rts.MapTool -- economy [map] [minutes]               the end-to-end run of M3 step 14 on game/data: MCV, base,
 //     ten tanks; prints the timeline, credits and income by the minute
@@ -250,6 +251,57 @@ if (args.Length >= 2 && args[0] == "add-tech")
     return failed == 0 ? 0 : 1;
 }
 
+// The harbour and what stands in the sea of the generator (docs/naval_elements) added to generated maps of the sea and of islands,
+// the rest of each as it is: the settings come from its description.
+if (args.Length >= 2 && args[0] == "add-sea")
+{
+    var failed = 0;
+    foreach (var path in args.Skip(1))
+    {
+        try
+        {
+            var map = RtsMapReader.Read(File.ReadAllText(path));
+            var made = System.Text.RegularExpressions.Regex.Match(map.Description, @"^Generated from seed (\d+): (\d) players, (\w+), (\w+), water (\w+)");
+            if (!made.Success)
+            {
+                throw new ArgumentException("its description does not give the settings: it was not made by the generator");
+            }
+
+            var settings = new Rts.MapGen.MapGenSettings
+            {
+                Types = MapData.Types,
+                Seed = uint.Parse(made.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture),
+                Size = Rts.MapGen.MapGenSettings.Sizes.First(size => Rts.MapGen.MapGenSettings.GridSize(size) == map.Width),
+                Players = int.Parse(made.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture),
+                Symmetry = Enum.Parse<Rts.MapGen.MapSymmetry>(made.Groups[3].Value),
+                Relief = Enum.Parse<Rts.MapGen.ReliefKind>(made.Groups[4].Value),
+                Water = Enum.Parse<Rts.MapGen.WaterKind>(made.Groups[5].Value),
+                Climate = map.Climate,
+                Lighting = map.Lighting,
+            };
+            var sea = Rts.MapGen.MapGenerator.AddSea(map, settings);
+            var errors = MapValidator.Check(sea, MapData.Types).Where(problem => problem.Level == ProblemLevel.Error).ToList();
+            if (errors.Count > 0)
+            {
+                throw new ArgumentException(string.Join("; ", errors.Select(problem => $"{problem.Message} [{problem.Cell}]")));
+            }
+
+            File.WriteAllText(path, RtsMapWriter.Write(sea));
+            var added = sea.Objects.Select(o => o.Type).Concat(sea.Structures.Select(s => s.Type)).GroupBy(type => type)
+                .Select(group => (group.Key, Count: group.Count() - map.Objects.Count(o => o.Type == group.Key) - map.Structures.Count(s => s.Type == group.Key)))
+                .Where(change => change.Count != 0);
+            Console.WriteLine($"{path}: {string.Join(", ", added.Select(change => $"{change.Key} {change.Count:+0;-0}"))} · {MapValidator.Check(sea, MapData.Types).Count} warnings");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidDataException or IOException or InvalidOperationException)
+        {
+            Console.Error.WriteLine($"{path}: not changed — {e.Message}");
+            failed++;
+        }
+    }
+
+    return failed == 0 ? 0 : 1;
+}
+
 // One gem drill in the middle ground of a map from RA2 instead of one by every start (Drills.ShareGems); run after ra2_to_rtsmap.py.
 if (args.Length >= 2 && args[0] == "share-gems")
 {
@@ -456,7 +508,7 @@ if (args.Length >= 2 && args[0] == "generate")
     return 0;
 }
 
-Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | add-drills <map.rtsmap>… [--drills ore|gems] | add-tech <map.rtsmap>… | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
+Console.Error.WriteLine("usage: check <map.rtsmap> | canon <map.rtsmap> | shapes <map.rtsmap> | passability <map.rtsmap> <type> | convert <test.txt> <out.rtsmap> | relief-test <out.rtsmap> | generate <out.rtsmap> [options] | add-drills <map.rtsmap>… [--drills ore|gems] | add-tech <map.rtsmap>… | add-sea <map.rtsmap>… | ready-maps <dir> | rules [folder] | economy [map] [minutes]");
 return 2;
 
 static IEnumerable<Rts.Simulation.Geometry.CellPos> Cells(MapDefinition map) =>

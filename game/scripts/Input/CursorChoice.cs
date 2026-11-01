@@ -197,7 +197,7 @@ public static class CursorChoice
         {
             return spot.Entry switch
             {
-                Rts.Simulation.Systems.EntryAction.Capture => CursorKind.Capture,
+                Rts.Simulation.Systems.EntryAction.Capture or Rts.Simulation.Systems.EntryAction.DropEngineer => CursorKind.Capture,
                 Rts.Simulation.Systems.EntryAction.Mend or Rts.Simulation.Systems.EntryAction.RepairBridge or Rts.Simulation.Systems.EntryAction.Defuse
                     => CursorKind.EngineerRepair,
                 Rts.Simulation.Systems.EntryAction.Infiltrate => CursorKind.Infiltrate,

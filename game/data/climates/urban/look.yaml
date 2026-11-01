@@ -16,6 +16,9 @@ materials:
   highway: { albedo: road_highway.png, tiling: 4, roughness: 0.75 }
   street: { albedo: road_street.png, tiling: 4, roughness: 0.8 }
   cobble: { albedo: road_street_cobble.png, tiling: 4, roughness: 0.85 }
+  # The quay of a harbour (docs/naval_elements/09_quay_wall): concrete slabs on top, cast concrete down its walls, which stand straight.
+  quay:      { albedo: concrete_slabs.png, tiling: 3, roughness: 0.85, tint: "#e4e2dc", wall: quay_wall }
+  quay_wall: { albedo: quay_concrete.png, tiling: 1, roughness: 0.85 }
 cliff: rock
 trees: broadleaf
 water_normal: water_normal.png

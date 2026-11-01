@@ -154,5 +154,14 @@ public static class PropLooks
             Box(0.05f, 0.4f, 0.05f, 0.42f, 0, 0, LookTint.Wood),
             Tube(0.28f, 0.9f, 0, 0.16f, 0, LookTint.Metal, 90f, 90f),
         ],
+
+        // On the water (docs/naval_elements): a reef's rocks out of the sea, an ice floe flat on it.
+        ["reef_rocks"] =
+        [
+            Cone(0.5f, 0.55f, -0.08f, 0, 0.06f, LookTint.Dark),
+            Cone(0.34f, 0.36f, 0.22f, 0, -0.12f, LookTint.Dark),
+            Cone(0.26f, 0.24f, -0.28f, 0, -0.22f, LookTint.Dark),
+        ],
+        ["ice_floe"] = [Cyl(0.9f, 0.13f, 0, 0, 0, LookTint.White), Box(0.3f, 0.12f, 0.12f, -0.15f, 0.13f, 0.2f, LookTint.White, 0f, 30f)],
     };
 }

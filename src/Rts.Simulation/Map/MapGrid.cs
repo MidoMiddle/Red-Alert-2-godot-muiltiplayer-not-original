@@ -834,6 +834,9 @@ public sealed class MapGrid
             return $"{id} at {Text(state.Cell)} reaches outside the {Width}x{Height} map";
         }
 
+        // A building of the water (the offshore platform, a ship: docs/naval_elements) stands on the water, every cell of it; the
+        // others on flat land at one level.
+        var water = !state.IsOfData && Types.Get(state.Kind).Water;
         var level = _heights.CellLevel(state.Cell);
         for (var y = state.Cell.Y; y <= far.Y; y++)
         {
@@ -841,12 +844,18 @@ public sealed class MapGrid
             {
                 var cell = new CellPos(x, y);
                 var index = IndexOf(cell);
-                if (_heights.ShapeAt(cell) != CellShape.Flat || _heights.CellLevel(cell) != level)
+                if (water)
+                {
+                    if (!IsWater(_land[index]))
+                    {
+                        return $"cell {Text(cell)} is {_land[index]}, not water";
+                    }
+                }
+                else if (_heights.ShapeAt(cell) != CellShape.Flat || _heights.CellLevel(cell) != level)
                 {
                     return $"cell {Text(cell)} is not flat ground at the level of the rest";
                 }
-
-                if (IsWater(_land[index]) || _land[index] == LandType.Rock)
+                else if (IsWater(_land[index]) || _land[index] == LandType.Rock)
                 {
                     return $"cell {Text(cell)} is {_land[index]}";
                 }

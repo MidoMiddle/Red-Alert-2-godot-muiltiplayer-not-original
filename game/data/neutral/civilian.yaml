@@ -256,3 +256,29 @@ neutral_civilian_bunker:
   garrison: 8
   armor: steel
   sight: 6
+
+# The ships of nobody (docs/naval_elements/08_civilian_vessels): they stand on the water in the fleet's way, along x, and sink when they
+# fall, leaving the water open.
+neutral_ferry:
+  kind: map_building
+  name: Ferry
+  footprint: [2, 1]
+  hp: 600
+  water: true
+  ruins: false
+
+neutral_cargo_ship:
+  kind: map_building
+  name: Cargo ship
+  footprint: [4, 1]
+  hp: 900
+  water: true
+  ruins: false
+
+neutral_fishing_boat:
+  kind: map_building
+  name: Fishing boat
+  footprint: [1, 1]
+  hp: 200
+  water: true
+  ruins: false

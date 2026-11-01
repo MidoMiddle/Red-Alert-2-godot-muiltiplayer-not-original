@@ -581,9 +581,10 @@ public partial class MapEditorScene : Node3D, IMapSource
                 _toolOptions.AddChild(Choice(Array.ConvertAll(lands, l => l.ToString()), Array.IndexOf(lands, _options.Land), i => _options = _options with { Land = lands[i] }));
                 break;
             case EditTool.Texture:
-                // The materials of the climate, but water: painted on dry land it would look like water one cannot sail.
+                // The materials of the climate, but water — painted on dry land it would look like water one cannot sail — and those
+                // that only dress another's walls (the quay's concrete).
                 var materials = Rts.Client.Climates.ClimateLooks.Get(_session.Map.Climate) is { } climate
-                    ? climate.Materials.Where(m => !m.Water).Select(m => m.Id).ToList()
+                    ? climate.Materials.Where(m => !m.Water && !climate.Materials.Any(other => other.Wall == m.Id)).Select(m => m.Id).ToList()
                     : ["snow"];
                 _toolOptions.AddChild(Choice([.. materials], Math.Max(0, materials.IndexOf(_options.Material)), i => _options = _options with { Material = materials[i] }));
                 break;

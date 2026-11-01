@@ -174,7 +174,7 @@ internal static class Features
             {
                 var cell = new CellPos(x, y);
                 var canonical = map.Symmetry.CanonicalCell(cell);
-                if (map.LandAt(cell) == LandType.Clear && map.IsFlat(cell) && map.Ore[y * map.N + x] == 0
+                if (map.LandAt(cell) == LandType.Clear && map.IsFlat(cell) && map.Ore[y * map.N + x] == 0 && !map.Paved[y * map.N + x]
                     && IntNoise.At(canonical.X, canonical.Y, map.Seed, Channels.Rough) > IntNoise.Max * (100 - RoughPercent) / 100)
                 {
                     map.SetLand(cell, LandType.Rough);
@@ -198,7 +198,7 @@ internal static class Features
             for (var x = 0; x < map.N; x++)
             {
                 var cell = new CellPos(x, y);
-                if (map.LandAt(cell) == LandType.Clear && !map.IsCliff(cell))
+                if (map.LandAt(cell) == LandType.Clear && !map.IsCliff(cell) && !map.Paved[y * map.N + x])
                 {
                     var canonical = map.Symmetry.CanonicalCell(cell);
                     clear.Add((cell, IntNoise.At(canonical.X, canonical.Y, map.Seed, Channels.Dirt), IntNoise.At(canonical.X, canonical.Y, map.Seed, Channels.Grass)));
@@ -296,7 +296,7 @@ internal static class Features
                 var cell = new CellPos(x, y);
                 var canonical = map.Symmetry.CanonicalCell(cell);
                 if (IntNoise.At(canonical.X, canonical.Y, map.Seed, Channels.Forest) <= IntNoise.Max * threshold / 100
-                    || map.LandAt(cell) is not (LandType.Clear or LandType.Rough) || map.IsCliff(cell) || built.Contains(cell)
+                    || map.LandAt(cell) is not (LandType.Clear or LandType.Rough) || map.IsCliff(cell) || built.Contains(cell) || map.Paved[y * map.N + x]
                     || map.StartDistanceSquared(cell) < (Starts.FlatRadius + 2) * (Starts.FlatRadius + 2) || Near(ore, cell, ForestClearance)
                     || NextToRoad(map, cell))
                 {

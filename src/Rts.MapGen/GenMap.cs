@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Rts.Data.Maps;
 using Rts.Simulation.Geometry;
 using Rts.Simulation.Map;
@@ -25,6 +27,38 @@ internal sealed class GenMap
         System.Array.Fill(Land, LandType.Clear);
         Ore = new byte[N * N];
         Paint = new string?[N * N];
+        Paved = new bool[N * N];
+    }
+
+    /// <summary>
+    /// A map the generator made before, to add to (<see cref="MapGenerator.AddSea"/>): its heights, land, ore, ground, starts and what
+    /// stands on it; every cell's ground painted as it is.
+    /// </summary>
+    public static GenMap From(MapDefinition map, MapGenSettings settings, uint seed)
+    {
+        var gen = new GenMap(settings, seed);
+        if (gen.N != map.Width || gen.N != map.Height || (map.Playable is { } playable && playable != gen.Area))
+        {
+            throw new ArgumentException($"the map is {map.Width}x{map.Height}, not the {gen.N}x{gen.N} of a generated map of size {settings.Size}");
+        }
+
+        for (var i = 0; i < gen.Levels.Length; i++)
+        {
+            gen.Levels[i] = map.Heights[i];
+        }
+
+        for (var i = 0; i < gen.Land.Length; i++)
+        {
+            gen.Land[i] = map.Land[i];
+            gen.Ore[i] = map.Ore[i];
+            gen.Paint[i] = map.TextureLegend.First(e => e.Code == map.Texture[i]).Material;
+        }
+
+        gen.Starts.AddRange(map.Starts);
+        gen.Objects.AddRange(map.Objects);
+        gen.Bridges.AddRange(map.Bridges);
+        gen.Structures.AddRange(map.Structures);
+        return gen;
     }
 
     public MapGenSettings Settings { get; }
@@ -54,6 +88,9 @@ internal sealed class GenMap
     /// <summary>A texture material painted over the one of the cell's land (look only, <see cref="Stages.Features.Ground"/>), or null.</summary>
     public string?[] Paint { get; }
 
+    /// <summary>The cells a harbour paved (<see cref="Stages.Harbour"/>): no rough, no patches of ground, no trees on them.</summary>
+    public bool[] Paved { get; }
+
     public List<MapStart> Starts { get; } = new();
 
     public List<MapObjectPlacement> Objects { get; } = new();
@@ -61,6 +98,9 @@ internal sealed class GenMap
     public List<BridgePlacement> Bridges { get; } = new();
 
     public List<StructurePlacement> Structures { get; } = new();
+
+    /// <summary>The quays of the harbour (<see cref="Stages.Harbour"/>), the canonical ones: their images are on the map too.</summary>
+    public List<Stages.Quay> Quays { get; } = new();
 
     /// <summary>On a map of islands, the foot of the first ramp of the first player's island: its road leads there (Roads).</summary>
     public CellPos? Landing { get; set; }

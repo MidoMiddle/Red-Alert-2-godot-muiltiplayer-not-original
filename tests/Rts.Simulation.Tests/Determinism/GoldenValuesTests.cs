@@ -410,6 +410,7 @@ public sealed class GoldenValuesTests
         // Rules v116 (the Kirov slow as in RA2, the cruiser's missiles of RA2, soldiers go in at the wall; the owner's wish): the version only.
         // Rules v117 (the weapons and warheads of rules.ini): the version, and the run that AP and the flak of RA2 change.
         // Rules v118 (Tanya's speed of RA2, the Night Hawk at the Jetpack Trooper's speed): the version only.
-        Assert.Equal((22270, 12900080065413481713UL), (bytes.Length, hash.Value));
+        // Rules v119 (the naval set: the quay's edge, a map object; the owner's wish): the version only — no quay here.
+        Assert.Equal((22270, 17949655223598223876UL), (bytes.Length, hash.Value));
     }
 }

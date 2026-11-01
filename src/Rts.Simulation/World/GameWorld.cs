@@ -664,9 +664,12 @@ public sealed class GameWorld
         Wrecks.Clear();
     }
 
-    /// <summary>Whether a fallen building leaves ruins (RA2): one of the map, not the bridge repair hut, which nothing brings down.</summary>
+    /// <summary>
+    /// Whether a fallen building leaves ruins (RA2): one of the map, not the bridge repair hut, which nothing brings down, nor a ship,
+    /// which sinks (its data's <c>ruins: false</c>).
+    /// </summary>
     public static bool LeavesRuins(Building building) =>
-        building.Def is null && BuildingTypes.IsKnown(building.Kind) && building.Kind != BuildingKind.TechBridgeRepairHut;
+        building.Def is null && BuildingTypes.IsKnown(building.Kind) && building.Kind != BuildingKind.TechBridgeRepairHut && building.Type.LeavesRuins;
 
     /// <summary>
     /// The player sells a building (docs/implementation/M3_base_economy.md, 4.8): <paramref name="refund"/> credits come back, the

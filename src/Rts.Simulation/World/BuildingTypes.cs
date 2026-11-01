@@ -57,6 +57,13 @@ public enum BuildingKind : byte
 
     // The civilian bunker of RA2's maps (CABUNK01, CABUNK02), 2026-10-27: eight soldiers behind steel.
     NeutralCivilianBunker = 45,
+
+    // On the water (docs/naval_elements, 04 and 08), 2026-11-01: the oil derrick of the sea, and the ships of nobody that stand in the
+    // fleet's way and sink.
+    TechOffshorePlatform = 46,
+    NeutralFerry = 47,
+    NeutralCargoShip = 48,
+    NeutralFishingBoat = 49,
 }
 
 /// <summary>
@@ -83,7 +90,9 @@ public sealed record BuildingType(
     int Sight = 0,
     bool RepairsVehicles = false,
     bool ExtendsBase = false,
-    string DeathWeapon = "");
+    string DeathWeapon = "",
+    bool Water = false,
+    bool LeavesRuins = true);
 
 /// <summary>
 /// The kinds of buildings of the map the engine knows (docs/implementation/M3_base_economy.md, step 14a): each number with its data id.
@@ -138,6 +147,10 @@ public static class BuildingTypes
         [BuildingKind.NeutralWindmill] = "neutral_windmill",
         [BuildingKind.TechOutpost] = "tech_outpost",
         [BuildingKind.NeutralCivilianBunker] = "neutral_civilian_bunker",
+        [BuildingKind.TechOffshorePlatform] = "tech_offshore_platform",
+        [BuildingKind.NeutralFerry] = "neutral_ferry",
+        [BuildingKind.NeutralCargoShip] = "neutral_cargo_ship",
+        [BuildingKind.NeutralFishingBoat] = "neutral_fishing_boat",
     };
 
     private static readonly BuildingKind[] Kinds = System.Linq.Enumerable.ToArray(Ids.Keys);

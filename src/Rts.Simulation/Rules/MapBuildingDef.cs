@@ -41,4 +41,10 @@ public sealed record MapBuildingDef : IDefinition
 
     /// <summary>The weapon it fires where it falls (the oil derrick's blast), by id; empty for none.</summary>
     public string DeathWeapon { get; init; } = "";
+
+    /// <summary>It stands on the water, every cell of it (the offshore platform, a ship: docs/naval_elements); the others on flat land.</summary>
+    public bool Water { get; init; }
+
+    /// <summary>Whether it leaves ruins that close its cells for good when it falls (RA2); a ship sinks and leaves none.</summary>
+    public bool Ruins { get; init; } = true;
 }

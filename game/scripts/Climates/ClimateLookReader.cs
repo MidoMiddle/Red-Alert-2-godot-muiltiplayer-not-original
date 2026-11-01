@@ -70,6 +70,15 @@ public static class ClimateLookReader
             materials.Add(Material(material, pair.Value));
         }
 
+        // A material's wall is another material of the climate.
+        foreach (var pair in materialMap)
+        {
+            if (pair.Value is YamlMappingNode fields && fields.Children.TryGetValue(new YamlScalarNode("wall"), out var wallNode) && !seen.Contains(Text(wallNode)))
+            {
+                throw Error(wallNode, $"the wall material '{Text(wallNode)}' is none of the materials");
+            }
+        }
+
         var cliffNode = Required(values, "cliff", root);
         var cliff = Id(cliffNode);
         if (!seen.Contains(cliff))
@@ -107,7 +116,7 @@ public static class ClimateLookReader
 
     private static ClimateMaterial Material(string id, YamlNode node)
     {
-        var fields = Entries(node, ["albedo", "tiling", "roughness", "tint", "frost", "water", "color", "patches", "patches_share"], $"material '{id}'");
+        var fields = Entries(node, ["albedo", "tiling", "roughness", "tint", "frost", "water", "color", "patches", "patches_share", "wall"], $"material '{id}'");
         var color = Optional(fields, "color") is { } painted ? Color(painted) : (LookColor?)null;
         if (color is null && (Optional(fields, "patches") ?? Optional(fields, "patches_share")) is { } lonely)
         {
@@ -124,7 +133,8 @@ public static class ClimateLookReader
             Optional(fields, "water") is { } water && Bool(water),
             color,
             Optional(fields, "patches") is { } patches ? Color(patches) : color,
-            Optional(fields, "patches_share") is { } share ? Number(share, 0f, 1f, "patches_share") : 0.5f);
+            Optional(fields, "patches_share") is { } share ? Number(share, 0f, 1f, "patches_share") : 0.5f,
+            Optional(fields, "wall") is { } wall ? Id(wall) : null);
     }
 
     private static LightPreset Light(string id, YamlNode node)
