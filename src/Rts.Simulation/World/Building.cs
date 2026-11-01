@@ -69,6 +69,15 @@ public sealed class Building : Entity
     /// </summary>
     public System.Collections.Generic.List<Occupant> Occupants { get; } = [];
 
+    /// <summary>
+    /// The civilians hiding inside a house of the map (docs/map_elements/13_civilians, 4.4), in the order they went in: no garrison —
+    /// they take no seat of <see cref="Occupants"/>, fire nothing and change no owner. State: hashed.
+    /// </summary>
+    public System.Collections.Generic.List<Occupant> Sheltered { get; } = [];
+
+    /// <summary>The ticks with no danger near since the last civilian hid in it; they come out after 20 s of it. State: hashed.</summary>
+    public int ShelterQuiet { get; internal set; }
+
     /// <summary>The ticks the superweapon still charges (stage 2d); 0 when it is ready to fire. State: hashed.</summary>
     public int ChargeLeft { get; internal set; }
 

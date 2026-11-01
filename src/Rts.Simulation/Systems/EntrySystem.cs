@@ -428,7 +428,7 @@ public static class EntrySystem
     /// ring around it, and so on.
     /// </summary>
     // Within reach of the door counts on one level only: a unit on a high bridge's deck does not get into what stands below (Decks).
-    private static int Outside(Entity target, CellPos cell)
+    internal static int Outside(Entity target, CellPos cell)
     {
         var (near, far) = target is Building building ? (building.Cell, building.FarCell) : (((Unit)target).Position.ToCell(), ((Unit)target).Position.ToCell());
         return IntMath.Max(
@@ -437,7 +437,7 @@ public static class EntrySystem
     }
 
     /// <summary>The cell of the ring around the footprint nearest to the soldier that it can enter; the footprint's corner without one.</summary>
-    private static WorldPos Door(GameWorld world, Entity target, Unit soldier)
+    internal static WorldPos Door(GameWorld world, Entity target, Unit soldier)
     {
         // A helicopter sets down in the middle of the building of the water it brings an engineer to.
         if (soldier.Archetype.Flies && target is Building deck)

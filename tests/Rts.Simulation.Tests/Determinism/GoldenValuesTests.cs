@@ -413,6 +413,7 @@ public sealed class GoldenValuesTests
         // Rules v119 (the naval set: the quay's edge, a map object; the owner's wish): the version only — no quay here.
         // Rules v120 (the civilians of the maps: ten types of nobody, never built; the shelter houses): the version only.
         // Replay format v32 (the option Civilians and the climate of the map in the setup): the version only — no match here.
-        Assert.Equal((22270, 5132636018359786316UL), (bytes.Length, hash.Value));
+        // Rules v121 (the civilians of the maps live, run and hide, only in a match with the option): the version only.
+        Assert.Equal((22270, 9066030985874942649UL), (bytes.Length, hash.Value));
     }
 }

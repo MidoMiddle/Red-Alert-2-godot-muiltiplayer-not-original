@@ -34,6 +34,9 @@ internal static class MatchStart
                 PlaceInfantry(world, player.Id, player.Start, faction.ConstructionYard, infantry, setup.Options.StartingUnits);
             }
         }
+
+        // The civilians of the map, with the option (docs/map_elements/13_civilians).
+        CivilianStart.Place(world, setup);
     }
 
     /// <summary>

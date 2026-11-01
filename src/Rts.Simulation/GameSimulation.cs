@@ -141,12 +141,15 @@ public sealed class GameSimulation
         Probe?.Invoke("weapons");
         ProjectileSystem.Update(World, _events);
         Probe?.Invoke("projectiles");
+        // The civilians near the shots that landed are frightened, before the damage takes the hits (docs/map_elements/13_civilians).
+        CivilianSystem.Alarm(World);
         DamageSystem.Update(World, _events);
         ErasureSystem.Update(World, _events);
         RadiationSystem.Update(World, _events);
         SuperweaponSystem.Update(World, _events);
         ParasiteSystem.Update(World, _events);
         GarrisonSystem.Update(World, _events);
+        CivilianSystem.Update(World, _events);
         Probe?.Invoke("damage");
 
         // 4. Movement.

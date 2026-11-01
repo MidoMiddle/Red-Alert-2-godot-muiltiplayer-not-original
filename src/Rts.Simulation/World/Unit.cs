@@ -110,6 +110,9 @@ public sealed class Unit : Entity
     /// <summary>What a paradrop plane carries and where to; null for any other unit. State: hashed.</summary>
     public Paradrop? Drop { get; internal set; }
 
+    /// <summary>The mind of a civilian of the map (docs/map_elements/13_civilians); null for any other unit. State: hashed.</summary>
+    public CivilianMind? Civilian { get; internal set; }
+
     /// <summary>
     /// The worth of the enemies it killed (loose ends, stage 3), up to what makes it elite; its rank follows
     /// (<see cref="Systems.Veterancy.RankOf"/>). State: hashed.

@@ -66,6 +66,8 @@ public static class DeathSystem
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
         Veterancy.Credit(world, killer, building, events);
         GarrisonSystem.Evacuate(world, building, events);
+        // The civilians hiding in it die with it (docs/map_elements/13_civilians, 4.4).
+        CivilianSystem.Bury(building);
         // Of the data (the atomic plant) or of the map (RA2: the oil derrick).
         var deathWeapon = building.Def?.DeathWeapon ?? (BuildingTypes.IsKnown(building.Kind) ? building.Type.DeathWeapon : "");
         if (deathWeapon.Length > 0 && world.Rules.Database.IndexOfWeapon(deathWeapon) is >= 0 and var blast)
@@ -87,6 +89,8 @@ public static class DeathSystem
         events?.Add(new EntityDestroyed(world.CurrentTick, building.Id, killer, DeathCause.Weapon, weapon, killerOwner));
         Veterancy.Credit(world, killer, building, events);
         GarrisonSystem.Evacuate(world, building, events);
+        // The civilians hiding in it die with it (docs/map_elements/13_civilians, 4.4).
+        CivilianSystem.Bury(building);
     }
 
     /// <summary>The building falls without a shot — <see cref="DeathCause.Defeat"/> of its owner (M5 step 10): no killer, no weapon.</summary>

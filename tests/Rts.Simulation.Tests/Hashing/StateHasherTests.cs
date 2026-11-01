@@ -311,7 +311,7 @@ public sealed class StateHasherTests
         "<Deployed>k__BackingField", "<WarpTicks>k__BackingField",
         "<Passengers>k__BackingField", "<Parasite>k__BackingField", "<ParasiteOwner>k__BackingField", "<ParasiteHp>k__BackingField",
         "<ParasiteWeapon>k__BackingField", "<ParasiteTicks>k__BackingField", "<Ammo>k__BackingField", "<RearmTicks>k__BackingField",
-        "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField", "<Experience>k__BackingField",
+        "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField", "<Civilian>k__BackingField", "<Experience>k__BackingField",
         "<Upgrades>k__BackingField", "<ControlledBy>k__BackingField", "<ControlledFrom>k__BackingField", "<Controlling>k__BackingField",
         "<UndeployIn>k__BackingField", "<Charging>k__BackingField", "<Grounded>k__BackingField", "<ClimbTicks>k__BackingField",
         // On a high bridge's deck (rules v93): follows from the place it holds, the deck's places are hashed with the others.
@@ -431,6 +431,7 @@ public sealed class StateHasherTests
         "<Kind>k__BackingField", "<Cell>k__BackingField", "<Facing>k__BackingField", "<Hp>k__BackingField",
         "<DefIndex>k__BackingField", "<BuildUpLeft>k__BackingField", "<RallyPoint>k__BackingField", "<Repairing>k__BackingField", "<Primary>k__BackingField",
         "<RepairCarry>k__BackingField", "<Target>k__BackingField", "<TargetOrder>k__BackingField", "<Weapons>k__BackingField", "<Occupants>k__BackingField", "<ChargeLeft>k__BackingField",
+        "<Sheltered>k__BackingField", "<ShelterQuiet>k__BackingField",
         "<CashTimer>k__BackingField", "<CountryWeapon>k__BackingField",
         // From the kind or the definition (by DefIndex): rules, not state.
         "<Def>k__BackingField", "_type", "<Width>k__BackingField", "<Height>k__BackingField",
@@ -441,6 +442,7 @@ public sealed class StateHasherTests
     })]
     [InlineData(typeof(Occupant), new[] { "<Type>k__BackingField", "<Hp>k__BackingField", "<Weapons>k__BackingField", "<BombWeapon>k__BackingField", "<BombShooter>k__BackingField", "<BombOwner>k__BackingField" })]
     [InlineData(typeof(DeterministicRandom), new[] { "_state", "_increment" })]
+    [InlineData(typeof(CivilianMind), new[] { "<State>k__BackingField", "<Timer>k__BackingField", "<Anchor>k__BackingField", "<Shelter>k__BackingField", "<Danger>k__BackingField" })]
     public void Every_state_field_is_known_to_the_hasher(Type type, string[] hashedFields)
     {
         var actualFields = type

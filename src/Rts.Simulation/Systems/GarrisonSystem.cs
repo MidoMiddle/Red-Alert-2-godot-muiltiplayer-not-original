@@ -190,6 +190,8 @@ public static class GarrisonSystem
         }
 
         building.Occupants.Add(new Occupant(unit.Archetype, unit.Hp));
+        // The civilians hiding in it run out (docs/map_elements/13_civilians, 4.4).
+        CivilianSystem.Evict(world, building, events);
         unit.EnterTarget = null;
         unit.MarkDead();
         events?.Add(new UnitGarrisoned(world.CurrentTick, unit.Id, building.Id));

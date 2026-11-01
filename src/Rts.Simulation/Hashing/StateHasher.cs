@@ -384,6 +384,24 @@ public static class StateHasher
                     hash.Add(unit.ClimbTicks);
                 }
 
+                // Rules v121: the mind of a civilian of the map (docs/map_elements/13_civilians), only for one, so every other match keeps its
+                // hashes.
+                if (unit.Civilian is { } mind)
+                {
+                    hash.Add(6);
+                    hash.Add((byte)mind.State);
+                    hash.Add(mind.Timer);
+                    hash.Add(mind.Anchor.X);
+                    hash.Add(mind.Anchor.Y);
+                    hash.Add(mind.Shelter?.Value ?? 0);
+                    hash.Add(mind.Danger is not null);
+                    if (mind.Danger is { } danger)
+                    {
+                        hash.Add(danger.X);
+                        hash.Add(danger.Y);
+                    }
+                }
+
                 // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
                 hash.Add(unit.Drop is not null);
                 if (unit.Drop is { } drop)
@@ -458,6 +476,19 @@ public static class StateHasher
                     hash.Add((byte)occupant.Type);
                     hash.Add(occupant.Hp);
                     AddWeapons(hash, null, occupant.Weapons);
+                }
+
+                // Rules v121: the civilians hiding inside (docs/map_elements/13_civilians), only in a house that has had some.
+                if (building.Sheltered.Count > 0 || building.ShelterQuiet != 0)
+                {
+                    hash.Add(7);
+                    hash.Add(building.ShelterQuiet);
+                    hash.Add(building.Sheltered.Count);
+                    foreach (var civilian in building.Sheltered)
+                    {
+                        hash.Add((byte)civilian.Type);
+                        hash.Add(civilian.Hp);
+                    }
                 }
 
                 break;
