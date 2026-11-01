@@ -48,7 +48,7 @@ A straight section of barbed wire obstacle one unit long and half a unit tall: t
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `barbed_wire_section.glb` | | | |
+| `barbed_wire_section.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_props.py`) | 2026-11-01 | сделано, 504 треугольника |
 
 ## Открытые вопросы
 

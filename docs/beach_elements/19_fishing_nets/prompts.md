@@ -46,7 +46,7 @@ Fishing nets drying on two weathered wooden poles about one and a half units tal
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `fishing_nets.glb` | | | |
+| `fishing_nets.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_nets.py`) | 2026-11-01 | сделано, 679 треугольников |
 
 ## Открытые вопросы
 

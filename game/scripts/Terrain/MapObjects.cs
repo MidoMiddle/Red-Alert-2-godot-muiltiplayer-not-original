@@ -116,6 +116,7 @@ public partial class MapObjects : Node3D
         var pipes = new List<Spot>();
         var drifts = new List<Spot>();
         var guardrails = new List<Spot>();
+        var wires = new List<Spot>();
         var quays = new List<Spot>();
         var slipways = new List<Spot>();
         var props = new SortedDictionary<string, List<Spot>>(System.StringComparer.Ordinal);
@@ -145,6 +146,7 @@ public partial class MapObjects : Node3D
                 MapObjectKind.Pipeline => pipes,
                 MapObjectKind.Snowdrift => drifts,
                 MapObjectKind.HighwayGuardrail => guardrails,
+                MapObjectKind.BarbedWire => wires,
                 MapObjectKind.QuayEdge => quays,
                 MapObjectKind.Slipway => slipways,
                 // Drawn and animated by OreSources.
@@ -178,11 +180,13 @@ public partial class MapObjects : Node3D
         AddStumps(stumps);
         // The models of the table by the object's id (docs/art/model_standards.md), the primitives without one.
         AddInstances("Boulders", new SphereMesh { Radius = 0.36f, Height = 0.5f }, new Color(0.5f, 0.5f, 0.52f), boulders, 0.2f, "object/boulder");
-        AddInstances("Fences", new BoxMesh { Size = new Vector3(0.96f, 0.25f, 0.06f) }, new Color(0.5f, 0.35f, 0.2f), fences, 0.125f, "object/fence_wood");
-        AddGuardrails(guardrails);
+        // What runs in lines, a section a cell, turned along its neighbours (AddLines).
+        AddLines("Fences", "object/fence_wood", new Vector3(0.96f, 0.25f, 0.06f), new Color(0.5f, 0.35f, 0.2f), fences);
+        AddLines("Guardrails", "object/highway_guardrail", new Vector3(0.96f, 0.2f, 0.05f), new Color(0.72f, 0.74f, 0.76f), guardrails);
+        AddLines("Wires", "object/barbed_wire", new Vector3(0.96f, 0.3f, 0.12f), new Color(0.45f, 0.45f, 0.47f), wires);
         AddQuayEdges(quays);
         AddSlipways(slipways);
-        AddInstances("Walls", new BoxMesh { Size = new Vector3(0.98f, 0.6f, 0.98f) }, new Color(0.68f, 0.65f, 0.58f), walls, 0.3f, "object/wall_stone");
+        AddLines("Walls", "object/wall_stone", new Vector3(0.98f, 0.6f, 0.98f), new Color(0.68f, 0.65f, 0.58f), walls);
         if (!AddInstances("LampPosts", new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.03f, Height = 0.7f }, new Color(0.15f, 0.15f, 0.17f), posts, 0.35f, "object/lamp_post"))
         {
             AddInstances("Lamps", new SphereMesh { Radius = 0.06f, Height = 0.12f }, new Color(1f, 0.85f, 0.35f), posts, 0.72f);
@@ -692,10 +696,11 @@ public partial class MapObjects : Node3D
     }
 
     /// <summary>
-    /// The guardrails along the highways: a section a cell, its model made along x; a section whose neighbours run along z (and none
-    /// along x) is turned a quarter, so the barrier follows the highway either way.
+    /// What runs in lines, a section a cell, its model (or its placeholder box of <paramref name="size"/>) made along x: the guardrails
+    /// along the highways, fences, stone walls, barbed wire. A section whose neighbours of its kind run along z (and none along x) is
+    /// turned a quarter, so the line follows its cells either way.
     /// </summary>
-    private void AddGuardrails(List<Spot> spots)
+    private void AddLines(string name, string key, Vector3 size, Color color, List<Spot> spots)
     {
         var cells = new HashSet<(int X, int Z)>();
         foreach (var spot in spots)
@@ -714,25 +719,25 @@ public partial class MapObjects : Node3D
         }
 
         var quarter = new Basis(Vector3.Up, Mathf.Pi / 2f);
-        foreach (var (name, list, turn) in new[] { ("GuardrailsX", alongX, Basis.Identity), ("GuardrailsZ", alongZ, quarter) })
+        foreach (var (part, list, turn) in new[] { (name + "X", alongX, Basis.Identity), (name + "Z", alongZ, quarter) })
         {
             if (list.Count == 0)
             {
                 continue;
             }
 
-            if (Models.ModelLibrary.Instances("object/highway_guardrail", _builtClimate?.Id, PointsOf(list)) is { } groups)
+            if (Models.ModelLibrary.Instances(key, _builtClimate?.Id, PointsOf(list)) is { } groups)
             {
                 var turned = groups.ConvertAll(group => (group.Mesh,
                     group.Places.ConvertAll(place => new Transform3D(turn * place.Basis, place.Origin)), group.Points));
-                AddModelInstances(name, turned, list, _copies);
+                AddModelInstances(part, turned, list, _copies);
                 continue;
             }
 
-            var mesh = LowPoly.Of(new BoxMesh { Size = new Vector3(0.96f, 0.2f, 0.05f) });
-            mesh.Material = new StandardMaterial3D { AlbedoColor = new Color(0.72f, 0.74f, 0.76f) };
-            var places = list.ConvertAll(spot => new Transform3D(turn, spot.At + new Vector3(0, 0.1f, 0)));
-            ChunkedInstances.Add(this, name, mesh, places, (i, multiMesh, index) => Remember(_copies, list[i].Object, multiMesh, index, places[i]));
+            var mesh = LowPoly.Of(new BoxMesh { Size = size });
+            mesh.Material = new StandardMaterial3D { AlbedoColor = color };
+            var places = list.ConvertAll(spot => new Transform3D(turn, spot.At + new Vector3(0, size.Y / 2, 0)));
+            ChunkedInstances.Add(this, part, mesh, places, (i, multiMesh, index) => Remember(_copies, list[i].Object, multiMesh, index, places[i]));
         }
     }
 

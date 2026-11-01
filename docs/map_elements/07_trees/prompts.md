@@ -75,12 +75,12 @@ A burned spruce tree about two units tall, charred black trunk and bare blackene
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `tree_spruce_01.glb` | | | |
-| `tree_spruce_02.glb` | | | |
-| `tree_spruce_03.glb` | | | |
-| `tree_spruce_04.glb` | | | |
-| `tree_stump.glb` | | | |
-| `tree_spruce_burned.glb` | | | |
+| `tree_spruce_01.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_spruce.py`) | 2026-11-01 | сделано, 264 треугольника |
+| `tree_spruce_02.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_spruce.py`) | 2026-11-01 | сделано, 264 треугольника |
+| `tree_spruce_03.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_spruce.py`) | 2026-11-01 | сделано, 220 треугольников |
+| `tree_spruce_04.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_spruce.py`) | 2026-11-01 | сделано, 264 треугольника |
+| `tree_stump.glb` | — | — | не сделано: пень клиент рисует один на все деревья (`MapObjects.AddStumps`) |
+| `tree_spruce_burned.glb` | — | — | не сделано: горящего дерева клиент не рисует (состояний объектов карты нет) |
 
 ## Открытые вопросы
 

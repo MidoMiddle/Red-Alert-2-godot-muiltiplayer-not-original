@@ -101,8 +101,8 @@ An abandoned rusted sedan car about one unit long and half a unit tall, flat tyr
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `prop_boulder.glb` | | | |
-| `prop_lamp_post.glb` | | | |
+| `prop_boulder.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_props.py`) | 2026-11-01 | сделано, 82 треугольника; зимой `prop_boulder_snow.glb` |
+| `prop_lamp_post.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_props.py`) | 2026-11-01 | сделано, 200 треугольников |
 | `prop_telegraph_pole.glb` | | | |
 | `prop_road_sign.glb` | | | |
 | `prop_barrel_explosive.glb` | | | |

@@ -67,7 +67,8 @@ A straight section of a rough grey stone wall, one unit long and six tenths of a
 |---|---|---|---|
 | `fence_wood_section.glb` | | | |
 | `fence_mesh_section.glb` | | | |
-| `wall_stone_section.glb` | | | |
+| `wall_stone_section.glb` | Blender, скрипт `tools/blender/families/fences_walls.py` | 2026-10-24 | сделано, не подключено: заменено `prop_wall_stone` |
+| `prop_wall_stone.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_props.py`) | 2026-11-01 | сделано, 312 треугольников; зимой `prop_wall_stone_snow.glb` |
 
 ## Открытые вопросы
 

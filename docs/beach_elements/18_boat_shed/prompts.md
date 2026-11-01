@@ -44,7 +44,10 @@ A wooden boat shed on a beach: faded blue planked walls, a gabled grey roof, lar
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beach_boat_shed.glb` | | | |
+| `beach_boat_shed.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_boat_shed.py`) | 2026-11-01 | сделано, 264 треугольников |
+| `beach_boat_shed_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_boat_shed.py`) | 2026-11-01 | сделано, 324 треугольников |
+| `beach_boat_shed_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_boat_shed.py`) | 2026-11-01 | сделано, 244 треугольников |
+| `beach_boat_shed_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_boat_shed.py`) | 2026-11-01 | сделано, 138 треугольников |
 
 ## Открытые вопросы
 

@@ -25,6 +25,10 @@ models:
   # The crates of a match (M11 a6): the supply crate of the map's props.
   crate/supply:               { file: map/prop_supply_crate/prop_supply_crate.glb }
 
+  # The snowy spruce of the winter maps (docs/map_elements/07_trees): four kinds, each cell picks one, turned any way and a little bigger
+  # or smaller; made at the size the game draws a tree. Felled, it leaves the stump every tree leaves.
+  tree/pine:                  { files: [map/tree_spruce_01/tree_spruce_01.glb, map/tree_spruce_02/tree_spruce_02.glb,
+                                        map/tree_spruce_03/tree_spruce_03.glb, map/tree_spruce_04/tree_spruce_04.glb], spin: true, jitter: 0.15 }
   # The palm of the coast and of the desert's oases (docs/beach_elements/02_palm): three kinds, each cell picks one, turned any way and
   # a little bigger or smaller; made at the size the game draws a tree. Felled, it leaves the stump every tree leaves.
   tree/palm:                  { files: [beach/tree_palm_01/tree_palm_01.glb, beach/tree_palm_02/tree_palm_02.glb,
@@ -47,6 +51,12 @@ models:
   object/beach_shower:        { file: beach/beach_shower/beach_shower.glb, spin: true }
   # The volleyball net (docs/beach_elements/09_volleyball_net): its posts and the court's tapes, and the net, its mesh in strings.
   object/volleyball_net:      { file: beach/beach_volleyball_net/beach_volleyball_net.glb, spin: true }
+  # The boat drawn up on a beach (docs/beach_elements/17_beached_boat): blue, green or white, each cell picks one; its hull and the oar
+  # beside it nodes of their own.
+  object/beached_boat:        { files: [beach/beached_boat/beached_boat.glb, beach/beached_boat_green/beached_boat_green.glb,
+                                        beach/beached_boat_white/beached_boat_white.glb], spin: true }
+  # The fishing nets drying on poles (docs/beach_elements/19_fishing_nets): the poles and the net, its mesh in cords.
+  object/fishing_nets:        { file: beach/fishing_nets/fishing_nets.glb, spin: true }
 
   # The farm (docs/temperate_elements). The hedge (02_hedge): a block of clipped hedge filling its cell, its edges straight at one
   # height so neighbours join on every side; three kinds, each cell picks one, not turned.
@@ -99,6 +109,11 @@ models:
   # 2026-10-26). Their models were made a storey to a cell: height_scale 0.35 squashes them upright, their footprints the same.
   # The civilian houses of the map (docs/map_elements/11_civilian_buildings): whole, damaged, abandoned (critically damaged, its soldiers
   # out) and ruins once it has fallen; with soldiers inside, the whole one (occupied) and the damaged one (damaged_occupied).
+  # The shed of the map (docs/map_elements/11_civilian_buildings): a storey to a cell, squashed as the houses; whole, damaged, burning
+  # (fire_1..2) and burnt down.
+  building/neutral_shed: { file: map/shed/shed.glb, height: 0.5, height_scale: 0.35, damaged: map/shed_damaged/shed_damaged.glb,
+                           abandoned: map/shed_abandoned/shed_abandoned.glb, ruins: map/shed_ruins/shed_ruins.glb }
+
   building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 1.0, height_scale: 0.35,
                               damaged: map/building_house_small_damaged/building_house_small_damaged.glb,
                               damaged_occupied: map/building_house_small_damaged_occupied/building_house_small_damaged_occupied.glb,
@@ -285,6 +300,13 @@ models:
                                   abandoned: farm/water_tower_abandoned/water_tower_abandoned.glb,
                                   ruins: farm/water_tower_ruins/water_tower_ruins.glb }
 
+  # The boat shed (docs/beach_elements/18_boat_shed): a storey to a cell, squashed as the beach cabin; whole, damaged (a door leaf torn
+  # off), burning (fire_1..2) and burnt down.
+  building/neutral_boat_shed: { file: beach/beach_boat_shed/beach_boat_shed.glb, height: 0.7, height_scale: 0.35,
+                                damaged: beach/beach_boat_shed_damaged/beach_boat_shed_damaged.glb,
+                                abandoned: beach/beach_boat_shed_abandoned/beach_boat_shed_abandoned.glb,
+                                ruins: beach/beach_boat_shed_ruins/beach_boat_shed_ruins.glb }
+
   building/neutral_kiosk: { file: city/city_kiosk/city_kiosk.glb, height: 0.5, height_scale: 0.35,
                             damaged: city/city_kiosk_damaged/city_kiosk_damaged.glb,
                             abandoned: city/city_kiosk_abandoned/city_kiosk_abandoned.glb,
@@ -315,6 +337,11 @@ models:
   building/tech_oil_derrick: { file: map/tech_oil_derrick/tech_oil_derrick.glb, height: 1.75,
                                abandoned: map/tech_oil_derrick_abandoned/tech_oil_derrick_abandoned.glb,
                                ruins: map/tech_oil_derrick_ruins/tech_oil_derrick_ruins.glb }
+
+  # The bridge repair hut by every bridge (docs/ra2_buildings/tech/bridge_repair_hut): nobody's and never destroyed, so one look; made at
+  # the size it is drawn, its lamp a node of its own; on the winter maps with snow on its roof.
+  building/tech_bridge_repair_hut:        { file: map/bridge_repair_hut/bridge_repair_hut.glb, height: 0.6 }
+  building/tech_bridge_repair_hut@winter: { file: map/bridge_repair_hut_snow/bridge_repair_hut_snow.glb, height: 0.6 }
 
   # The tech airfield of the map (docs/map_elements/12_tech_buildings): an engineer takes it and its owner gets a paradrop of
   # infantry; the flag by its hangar and the rim of its tower's roof take the owner's colour.
@@ -399,6 +426,15 @@ models:
   # Map objects (docs/map_elements, docs/obstacle_elements). A fence and a pipe run along x, as their placeholders.
   object/ore_source:          { file: map/ore_source/ore_source.glb }
   object/fence_wood:          { file: map/fence_wood_section/fence_wood_section.glb }
+  # The small things of every map (docs/map_elements/09_props, 08_fences_walls, docs/obstacle_elements/01_barbed_wire): a boulder, a
+  # cast-iron street lamp (its lamp a node of its own, to light), a dry-stone wall and barbed wire, sections a cell long made along x
+  # that the game turns along their neighbours (MapObjects.AddLines); on the winter maps the boulder and the wall with snow on them.
+  object/boulder:             { file: map/prop_boulder/prop_boulder.glb, spin: true, jitter: 0.15 }
+  object/boulder@winter:      { file: map/prop_boulder_snow/prop_boulder_snow.glb, spin: true, jitter: 0.15 }
+  object/lamp_post:           { file: map/prop_lamp_post/prop_lamp_post.glb, spin: true }
+  object/wall_stone:          { file: map/prop_wall_stone/prop_wall_stone.glb }
+  object/wall_stone@winter:   { file: map/prop_wall_stone_snow/prop_wall_stone_snow.glb }
+  object/barbed_wire:         { file: map/barbed_wire_section/barbed_wire_section.glb }
   # The low wooden bridge (docs/map_elements/05_bridges), after RA2's: a piece a segment, three cells across, turned along the bridge
   # (MapObjects.AddWoodenBridge). Its spans, its ends with their ramps onto the banks, a span torn by a fallen one, what stays at a
   # bank when its span fell; a fallen span of the middle leaves nothing on the water.

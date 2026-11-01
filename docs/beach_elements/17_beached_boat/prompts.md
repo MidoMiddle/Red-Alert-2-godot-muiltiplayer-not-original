@@ -44,7 +44,9 @@ A small wooden fishing boat with a pointed bow and a flat stern, painted blue, l
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `beached_boat.glb` | | | |
+| `beached_boat.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_boat.py`) | 2026-11-01 | сделано, 284 треугольника, синий |
+| `beached_boat_green.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_boat.py`) | 2026-11-01 | сделано, 284 треугольника, зелёный |
+| `beached_boat_white.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_boat.py`) | 2026-11-01 | сделано, 284 треугольника, белый |
 
 ## Открытые вопросы
 

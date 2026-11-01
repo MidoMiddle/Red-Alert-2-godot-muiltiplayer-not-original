@@ -99,6 +99,10 @@ A stone monument on a stepped pedestal in a small square: a tall plain stele wit
 | `building_apartment_block_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 8 944 треугольников |
 | `building_apartment_block_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civil_block.py`) | 2026-10-30 | сделано заново, 1 340 треугольников |
 | `building_monument.glb` | | | |
+| `shed.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_shed.py`) | 2026-11-01 | сделано, 434 треугольников |
+| `shed_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_shed.py`) | 2026-11-01 | сделано, 470 треугольников |
+| `shed_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_shed.py`) | 2026-11-01 | сделано, 446 треугольников |
+| `shed_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_shed.py`) | 2026-11-01 | сделано, 226 треугольников |
 
 ## Открытые вопросы
 

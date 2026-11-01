@@ -202,6 +202,13 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 | `building/neutral_silo` | силос 1×1: целый, треснувший, накренившийся, руины; в размере игры, без сжатия (скрипт `tools/blender/families/farm_silo.py`, 2026-11-01) |
 | `building/neutral_windmill` | ветряк 2×2: целый, повреждённый, горящий, руины; в размере игры, без сжатия; лопасти — узел `sails`, опорная точка на оси ступицы (скрипт `tools/blender/families/farm_windmill.py`, 2026-11-01) |
 | `building/neutral_water_tower` | водонапорная башня 1×1: целая чистая или ржавая, пробитая, накренившаяся, рухнувшая; в размере игры, без сжатия (скрипт `tools/blender/families/farm_water_tower.py`, 2026-11-01) |
+| `object/beached_boat` | лодка на песке, синяя, зелёная или белая, узлы `hull`, `oars` (скрипт `tools/blender/families/beach_boat.py`, 2026-11-01) |
+| `building/neutral_boat_shed` | лодочный сарай 2×2: целый, повреждённый, горящий, руины; этаж на клетку, сжатие 0,35 (скрипт `tools/blender/families/beach_boat_shed.py`, 2026-11-01) |
+| `object/fishing_nets` | рыбацкие сети на трёх шестах, ячейки шнурами, пробки и грузила, ящик и бухта каната (скрипт `tools/blender/families/beach_nets.py`, 2026-11-01) |
+| `tree/pine` | заснеженная ель зимних карт, четыре вида с поворотом и разбросом ±15 %, ≤ 300 треугольников (скрипт `tools/blender/families/map_spruce.py`, 2026-11-01) |
+| `object/boulder`, `object/lamp_post`, `object/wall_stone`, `object/barbed_wire` | валун, чугунный фонарь (узел `lamp`), сухая каменная кладка и колючая проволока; у валуна и стены зимой свой файл со снегом (`@winter`); стена и проволока — секции вдоль x, клиент разворачивает их вдоль соседей (скрипт `tools/blender/families/map_props.py`, 2026-11-01) |
+| `building/tech_bridge_repair_hut` | будка ремонта моста, одна (неуязвима, состояний нет), зимой со снегом (`@winter`), лампа — узел `lamp` (скрипт `tools/blender/families/map_bridge_hut.py`, 2026-11-01) |
+| `building/neutral_shed` | сарай 1×1: целый, повреждённый, горящий, руины; этаж на клетку, сжатие 0,35 (скрипт `tools/blender/families/map_shed.py`, 2026-11-01) |
 | `tree/palm` | пальма побережья и оазисов пустыни, три разновидности с поворотом и разбросом ±15 %, ≤ 300 треугольников (скрипт `tools/blender/families/beach_palm.py`, 2026-11-01) |
 | `ore/ore`, `ore/gems` | кластеры руды и самоцветов |
 | `building/neutral_house_a`, `building/neutral_apartment` | дом и многоэтажка карты на бетонной подложке: целые, занятые, повреждённые (с пехотой и без), покинутые и руины; дым у повреждённых, огонь у покинутых ([BuildingBlaze.cs](../../game/scripts/Terrain/BuildingBlaze.cs)) |
@@ -212,7 +219,7 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 
 Здания карты из документов элементов (школа, церковь, маяк, ферма, саманный дом и другие) рисуются заглушками в [BuildingLooks.cs](../../game/scripts/Terrain/BuildingLooks.cs) гражданскими цветами, мелочь — в [PropLooks.cs](../../game/scripts/Terrain/PropLooks.cs); все они видны в галерее `-- --ui-units --props`.
 
-Моделей зданий игроков пока нет, из юнитов есть только основной танк и харвестер Альянса и харвестер Союза. Остальные рисуются заглушками ([BuildingLooks.cs](../../game/scripts/Terrain/BuildingLooks.cs), [UnitView.cs](../../game/scripts/Units/UnitView.cs)). Кто какую модель юнита делает (Haiku 5.5 или Opus 5.5) — в [unit_models_plan.md](unit_models_plan.md). Деревья тоже заглушки по климату ([TreeShapes.cs](../../game/scripts/Terrain/TreeShapes.cs)), кроме пальмы (`tree/palm`).
+Моделей зданий игроков пока нет, из юнитов есть только основной танк и харвестер Альянса и харвестер Союза. Остальные рисуются заглушками ([BuildingLooks.cs](../../game/scripts/Terrain/BuildingLooks.cs), [UnitView.cs](../../game/scripts/Units/UnitView.cs)). Кто какую модель юнита делает (Haiku 5.5 или Opus 5.5) — в [unit_models_plan.md](unit_models_plan.md). Деревья тоже заглушки по климату ([TreeShapes.cs](../../game/scripts/Terrain/TreeShapes.cs)), кроме пальмы (`tree/palm`) и ели (`tree/pine`).
 
 ---
 

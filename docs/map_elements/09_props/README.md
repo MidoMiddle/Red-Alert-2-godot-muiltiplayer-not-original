@@ -52,7 +52,10 @@
 | Где | Что |
 |---|---|
 | Файл карты, объекты | Тип, клетка, вариант модели |
-| `climates/*/map_objects.yaml` | HP, блокирует ли, оружие взрыва |
+| `game/data/map/objects.yaml` | `boulder` (держит всех), `lamp_post` (давят все, 50 HP) |
+| `game/data/visuals/models.yaml` | `object/boulder` (зимой `object/boulder@winter` — со снегом), `object/lamp_post` (2026-11-01) |
+
+Телеграфный столб, бочка, куст и разбитая машина — пока не объекты игры.
 
 ---
 

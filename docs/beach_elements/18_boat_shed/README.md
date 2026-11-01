@@ -32,7 +32,7 @@
 
 ## 4. Данные
 
-Файл `game/data/neutral/`: размер 2x2, прочность класса «средняя», `garrisonable: false`, `capturable: false`, горит.
+Нейтральное здание карты `neutral_boat_shed` в `game/data/neutral/civilian.yaml`: футпринт 2×2, 600 HP, без гарнизона и захвата. Модель — `building/neutral_boat_shed` в `game/data/visuals/models.yaml` (2026-11-01): целый, повреждённый, горящий (`fire_1..2`) и руины; этаж на клетку, сжатие по высоте 0,35, как у пляжной кабинки. Двери — отдельный узел `door`, в модели закрыты. Генератор ставит сараи на пляж (`src/Rts.MapGen/Stages/Dressing.cs`).
 
 ## 5. Взаимодействия
 
