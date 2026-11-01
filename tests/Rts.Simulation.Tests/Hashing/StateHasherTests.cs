@@ -337,6 +337,7 @@ public sealed class StateHasherTests
         "<Crates>k__BackingField", "<CrateTimer>k__BackingField", "<NextCrateId>k__BackingField",
         // The death weapons of a tick, launched in the same tick (stage 3b): never state.
         "<DeathBlasts>k__BackingField",
+        "<CarWrecks>k__BackingField",
         // The sensors of the moment (stage 3e), rebuilt from the units with the sight: derived.
         "<Sensors>k__BackingField",
         // The psychic sensors of the moment (RA2), rebuilt with the sight: derived.

@@ -96,4 +96,7 @@ public enum UnitType : byte
     CivCow = 69,
     CivSheep = 70,
     CivCamel = 71,
+
+    // The dog of the towns (docs/map_elements/13_civilians, 4.7), 2026-11-02.
+    CivDog = 72,
 }

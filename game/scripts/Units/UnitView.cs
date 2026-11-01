@@ -45,6 +45,15 @@ public partial class UnitView : Node3D
     private Node3D? _sandbags;
     private Vector3? _drawnAt;
     private float _speed;
+    private Node3D? _blaze;
+
+    // The char laid over a burning wreck: its own colours darkened, under the flames.
+    private static readonly StandardMaterial3D CharMaterial = new()
+    {
+        AlbedoColor = new Color(0.05f, 0.04f, 0.04f, 0.82f),
+        Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+        ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+    };
 
     public UnitType Type { get; private set; }
 
@@ -102,6 +111,48 @@ public partial class UnitView : Node3D
         _drawnAt = null;
         _speed = 0f;
         Human?.Restart();
+        SetWreck(false);
+    }
+
+    /// <summary>
+    /// Shows the burning wreck of a parked car (docs/map_elements/13_civilians, 4.6): the car charred, smoke and flames over it; or the
+    /// car as it was.
+    /// </summary>
+    public void SetWreck(bool wreck)
+    {
+        if (wreck == _blaze is not null)
+        {
+            return;
+        }
+
+        Char(this, wreck ? CharMaterial : null);
+        if (wreck)
+        {
+            _blaze = new Node3D { Name = "Blaze" };
+            AddChild(_blaze);
+            Terrain.BuildingBlaze.Add(_blaze, null, new Vector3(0f, 0.25f, 0f), 1, 1, Rts.Simulation.Combat.DamageState.Critical);
+        }
+        else
+        {
+            _blaze!.QueueFree();
+            _blaze = null;
+        }
+    }
+
+    private static void Char(Node node, Material? overlay)
+    {
+        if (node is GeometryInstance3D geometry)
+        {
+            geometry.MaterialOverlay = overlay;
+        }
+
+        foreach (var child in node.GetChildren())
+        {
+            if (child.Name != "Blaze")
+            {
+                Char(child, overlay);
+            }
+        }
     }
 
     /// <summary>

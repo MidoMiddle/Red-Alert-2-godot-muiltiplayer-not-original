@@ -69,7 +69,7 @@ public sealed class RulesValidatorTests
     [InlineData("  name: Civilian\n", "  name: Civilian\n  faction: union\n", "'civ_test' is a civilian: it belongs to no faction")]
     [InlineData("  sight: 2\n", "  sight: 2\n  primary: heavy_tank_cannon\n", "'civ_test' is a civilian: it carries no weapon")]
     [InlineData("  sight: 2\n", "  sight: 2\n  homes: [nowhere]\n", "'civ_test' comes out of 'nowhere', which is no house of the map ('shelter: true')")]
-    [InlineData("  sight: 2\n", "  sight: 2\n  gathers_at: [nowhere]\n", "'civ_test' gathers by 'nowhere', which is no object or building of the map")]
+    [InlineData("  sight: 2\n", "  sight: 2\n  gathers_at: [nowhere]\n", "'civ_test' gathers by 'nowhere', which is no object, building or bridge of the map")]
     [InlineData("  climates: [winter]\n", "", "'civ_test' is a civilian: it needs the climates it lives in")]
     public void A_civilian_is_unarmed_of_no_faction_and_lives_by_things_of_the_map(string text, string replacement, string reason)
     {

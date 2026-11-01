@@ -18,7 +18,9 @@ namespace Rts.Simulation.Systems;
 /// or away from the danger, where they crouch for 15 s. They hide without taking a seat of the garrison (<see cref="Building.Sheltered"/>,
 /// the owner, 2026-11-01): after 20 s with no shot near the house they come out one a second; soldiers moving in send them all out
 /// running; a house that falls kills them. An animal (<see cref="Rules.UnitDef.Animal"/>) runs twice as fast and hides in no house; a
-/// parked car has no mind and stands. Random draws only in such a match, so every other keeps its states.
+/// parked car has no mind and stands, and blown up leaves its burning wreck on its cell for <see cref="WreckTicks"/> (<see cref="Burn"/>).
+/// A stroll keeps off the asphalt (<see cref="Walk"/>): along the sidewalk, crossing a road where it must (the owner, 2026-11-02: no
+/// crossings); the beachgoers stroll out onto the piers too. Random draws only in such a match, so every other keeps its states.
 /// </summary>
 public static class CivilianSystem
 {
@@ -53,6 +55,20 @@ public static class CivilianSystem
     /// <summary>The ticks of quiet before the civilians come out of a house (20 s), and between two of them (1 s).</summary>
     public const int QuietTicks = 300;
     public const int ExitTicks = 15;
+
+    /// <summary>How long the burning wreck of a parked car holds its cell (4.6): 30 s.</summary>
+    public const int WreckTicks = 450;
+
+    // What a step costs a stroll: across, along a diagonal, and on the asphalt — three times as much, so a stroll goes round by the
+    // sidewalk unless the road is the only way.
+    private const int Step = 10;
+    private const int Diagonal = 14;
+    private const int OnRoad = 3;
+
+    // How far round the stroll's start and end the way is looked for, in cells; and the longest leg of it: the path between two legs
+    // is the movement's own, which likes the asphalt (it is quicker), so the legs are short enough to leave it no room to stray.
+    private const int WalkMargin = 4;
+    private const int WalkLeg = 3;
 
     /// <summary>The ticks between two looks for vehicles near, staggered by id, as targets are looked for.</summary>
     private const int LookPeriod = 4;
@@ -89,7 +105,7 @@ public static class CivilianSystem
         var vehicleRadius = (long)VehicleCells * WorldPos.LeptonsPerCell;
         foreach (var entity in world.Entities)
         {
-            if (entity is not Unit { IsAlive: true, Civilian: { Danger: null, State: not CivilianState.Flee } mind } civilian
+            if (entity is not Unit { IsAlive: true, Civilian: { Danger: null, State: not (CivilianState.Flee or CivilianState.Wreck) } mind } civilian
                 || (world.CurrentTick + civilian.Id.Value) % LookPeriod != 0)
             {
                 continue;
@@ -169,6 +185,17 @@ public static class CivilianSystem
 
     private static void Act(GameWorld world, Unit civilian, CivilianMind mind)
     {
+        if (mind.State == CivilianState.Wreck)
+        {
+            // Burnt out: the wreck is gone, without a death, and its cell is free at the end of the tick.
+            if (--mind.Timer <= 0)
+            {
+                civilian.MarkDead();
+            }
+
+            return;
+        }
+
         if (mind.Danger is { } danger)
         {
             mind.Danger = null;
@@ -219,6 +246,7 @@ public static class CivilianSystem
     {
         var animal = Animal(world, civilian);
         mind.State = CivilianState.Flee;
+        Forget(civilian);
         civilian.Speed = animal ? civilian.Archetype.Speed * 2 : civilian.Archetype.Speed * 3 / 2;
         Frighten(world, civilian.Position, (long)SpreadCells * WorldPos.LeptonsPerCell);
         if (!animal && HouseNear(world, civilian) is { } house)
@@ -299,6 +327,23 @@ public static class CivilianSystem
             }
         }
 
+        // Out onto a pier (docs/beach_elements/14_pier): a standing segment of it within reach.
+        foreach (var bridge in world.Map.Bridges)
+        {
+            if (!def.GathersAt.Contains(bridge.Type.Id))
+            {
+                continue;
+            }
+
+            foreach (var segment in bridge.Segments)
+            {
+                if (segment.IsIntact && Chebyshev(segment.Cell, mind.Anchor) <= WanderCells && Fits(world, segment.Cell, civilian))
+                {
+                    points.Add(segment.Cell);
+                }
+            }
+        }
+
         foreach (var entity in world.Entities)
         {
             if (entity is Building { IsAlive: true, Def: null } building && BuildingTypes.IsKnown(building.Kind)
@@ -325,7 +370,7 @@ public static class CivilianSystem
         if (target is { } to && to != civilian.Position.ToCell())
         {
             mind.State = CivilianState.Stroll;
-            UnitOrders.MoveTo(world, civilian, to.Center);
+            Walk(world, civilian, to);
         }
         else
         {
@@ -369,7 +414,7 @@ public static class CivilianSystem
         world.Spatial.QueryRadius(world, point, radius, near);
         foreach (var id in near)
         {
-            if (world.TryGet(id, out var found) && found is Unit { IsAlive: true, Civilian: { Danger: null, State: not CivilianState.Flee } mind })
+            if (world.TryGet(id, out var found) && found is Unit { IsAlive: true, Civilian: { Danger: null, State: not (CivilianState.Flee or CivilianState.Wreck) } mind })
             {
                 mind.Danger = point;
             }
@@ -446,11 +491,12 @@ public static class CivilianSystem
         return null;
     }
 
-    // Open ground a civilian may walk to: on the map, enterable, no ore, no water, not near a player's building.
+    // Open ground a civilian may walk to: on the map, enterable, no ore, no water (the deck of a low bridge or a pier is a road),
+    // not near a player's building.
     private static bool Fits(GameWorld world, CellPos cell, Unit civilian)
     {
         if (!world.Map.Contains(cell) || !world.Map.CanEnter(cell, civilian.Archetype.Locomotor) || !world.Map.OreAt(cell).IsEmpty
-            || world.Map.LandAt(cell) is LandType.Shallow or LandType.Deep)
+            || world.Map.SurfaceAt(cell) is LandType.Shallow or LandType.Deep)
         {
             return false;
         }
@@ -464,6 +510,145 @@ public static class CivilianSystem
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// After the tick's dead have left (<see cref="GameWorld.RemoveDead"/>): the parked cars blown up this tick leave their burning
+    /// wrecks where they stood, turned as they were (4.6).
+    /// </summary>
+    public static void Burn(GameWorld world)
+    {
+        foreach (var (type, position, facing) in world.CarWrecks)
+        {
+            var wreck = world.SpawnUnit(PlayerId.Neutral, type, position);
+            wreck.Facing = facing;
+            wreck.Civilian = new CivilianMind(position.ToCell(), WreckTicks) { State = CivilianState.Wreck };
+        }
+
+        world.CarWrecks.Clear();
+    }
+
+    /// <summary>Whether the unit is the burning wreck of a parked car: nothing hurts it.</summary>
+    public static bool IsWreck(Entity entity) => entity is Unit { Civilian.State: CivilianState.Wreck };
+
+    // A stroll to the cell, keeping off the asphalt: the cheapest way within the box round its start and end, where a step on a road
+    // costs three, as legs from turn to turn, WalkLeg cells at most; straight there when no road is near.
+    internal static void Walk(GameWorld world, Unit civilian, CellPos to)
+    {
+        Forget(civilian);
+        var map = world.Map;
+        var from = civilian.Position.ToCell();
+        var (x0, y0) = (IntMath.Max(0, IntMath.Min(from.X, to.X) - WalkMargin), IntMath.Max(0, IntMath.Min(from.Y, to.Y) - WalkMargin));
+        var (x1, y1) = (IntMath.Min(map.Width - 1, IntMath.Max(from.X, to.X) + WalkMargin), IntMath.Min(map.Height - 1, IntMath.Max(from.Y, to.Y) + WalkMargin));
+        var (w, h) = (x1 - x0 + 1, y1 - y0 + 1);
+        var road = false;
+        for (var y = y0; y <= y1 && !road; y++)
+        {
+            for (var x = x0; x <= x1 && !road; x++)
+            {
+                road = Asphalt(map, new CellPos(x, y));
+            }
+        }
+
+        if (!road)
+        {
+            UnitOrders.MoveTo(world, civilian, to.Center);
+            return;
+        }
+
+        var cost = new int[w * h];
+        var before = new int[w * h];
+        System.Array.Fill(cost, int.MaxValue);
+        int Index(CellPos cell) => ((cell.Y - y0) * w) + cell.X - x0;
+        bool Open(CellPos cell) => cell.X >= x0 && cell.X <= x1 && cell.Y >= y0 && cell.Y <= y1
+            && map.CanEnter(cell, civilian.Archetype.Locomotor) && map.SurfaceAt(cell) is not (LandType.Shallow or LandType.Deep);
+
+        // Dijkstra; the queue orders by cost, then by the cell, so equal ways always resolve alike.
+        var queue = new PriorityQueue<int, long>();
+        cost[Index(from)] = 0;
+        before[Index(from)] = -1;
+        queue.Enqueue(Index(from), Index(from));
+        while (queue.TryDequeue(out var at, out var key))
+        {
+            if (key / (w * h) != cost[at])
+            {
+                continue;
+            }
+
+            var cell = new CellPos(x0 + (at % w), y0 + (at / w));
+            if (cell == to)
+            {
+                break;
+            }
+
+            for (var dy = -1; dy <= 1; dy++)
+            {
+                for (var dx = -1; dx <= 1; dx++)
+                {
+                    var next = new CellPos(cell.X + dx, cell.Y + dy);
+                    if ((dx == 0 && dy == 0) || !Open(next)
+                        || (dx != 0 && dy != 0 && (!Open(new CellPos(cell.X + dx, cell.Y)) || !Open(new CellPos(cell.X, cell.Y + dy)))))
+                    {
+                        continue;
+                    }
+
+                    var step = (dx != 0 && dy != 0 ? Diagonal : Step) * (Asphalt(map, next) ? OnRoad : 1);
+                    var index = Index(next);
+                    if (cost[at] + step < cost[index])
+                    {
+                        cost[index] = cost[at] + step;
+                        before[index] = at;
+                        queue.Enqueue(index, ((long)cost[index] * w * h) + index);
+                    }
+                }
+            }
+        }
+
+        if (cost[Index(to)] == int.MaxValue)
+        {
+            UnitOrders.MoveTo(world, civilian, to.Center);
+            return;
+        }
+
+        // The way back from the end, kept at its turns.
+        var cells = new List<CellPos>();
+        for (var at = Index(to); at >= 0; at = before[at])
+        {
+            cells.Add(new CellPos(x0 + (at % w), y0 + (at / w)));
+        }
+
+        cells.Reverse();
+        var legs = System.Collections.Immutable.ImmutableArray.CreateBuilder<UnitOrder>();
+        var since = 0;
+        for (var i = 1; i < cells.Count; i++)
+        {
+            var last = i == cells.Count - 1;
+            if (last || ++since >= WalkLeg
+                || (cells[i + 1].X - cells[i].X, cells[i + 1].Y - cells[i].Y) != (cells[i].X - cells[i - 1].X, cells[i].Y - cells[i - 1].Y))
+            {
+                legs.Add(new UnitOrder(cells[i].Center, AttackMove: false));
+                since = 0;
+            }
+        }
+
+        if (legs.Count <= 1)
+        {
+            UnitOrders.MoveTo(world, civilian, to.Center);
+            return;
+        }
+
+        UnitOrders.GiveRoute(world, civilian, legs.ToImmutable(), loop: false, append: false);
+    }
+
+    // The asphalt of a road or a highway, not the deck of a bridge.
+    private static bool Asphalt(MapGrid map, CellPos cell) => map.LandAt(cell) is LandType.Road or LandType.Highway;
+
+    // The route of an earlier stroll forgotten, so a new way is not followed by the rest of the old.
+    private static void Forget(Unit civilian)
+    {
+        civilian.Orders = [];
+        civilian.OrderIndex = 0;
+        civilian.LoopOrders = false;
     }
 
     private static bool Idle(Unit unit) => unit.MoveTarget is null && !unit.PathPending;

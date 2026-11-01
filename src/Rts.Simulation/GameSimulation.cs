@@ -186,6 +186,7 @@ public sealed class GameSimulation
         World.Stats.Record(World, _events);
         Probe?.Invoke("statistics");
         World.RemoveDead();
+        CivilianSystem.Burn(World);
         Probe?.Invoke("remove dead");
 
         // The bots think: they read the world after tick T and give commands for T + 1 (M5 step 1). By index: no enumerator to box.

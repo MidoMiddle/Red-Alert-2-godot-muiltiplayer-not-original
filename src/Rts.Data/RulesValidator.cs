@@ -1014,9 +1014,9 @@ internal static class RulesValidator
 
             foreach (var point in unit.GathersAt)
             {
-                if (!rules.TryGetMapBuilding(point, out _) && !rules.TryGetMapObject(point, out _))
+                if (!rules.TryGetMapBuilding(point, out _) && !rules.TryGetMapObject(point, out _) && !rules.TryGetBridge(point, out _))
                 {
-                    Error(unit.Id, "gathers_at", $"'{unit.Id}' gathers by '{point}', which is no object or building of the map");
+                    Error(unit.Id, "gathers_at", $"'{unit.Id}' gathers by '{point}', which is no object, building or bridge of the map");
                 }
             }
 

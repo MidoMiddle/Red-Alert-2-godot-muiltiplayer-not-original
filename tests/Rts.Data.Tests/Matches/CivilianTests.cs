@@ -27,7 +27,7 @@ public sealed class CivilianTests
     private static readonly CellPos OtherBench = new(36, 30);
     private const int Road = 28;
 
-    private static GameSimulation Match(bool civilians = true, string climate = "urban", ulong seed = 13) =>
+    private static GameSimulation Match(bool civilians = true, string climate = "urban", ulong seed = 13, MapGrid? map = null) =>
         new(SimulationSettings.ForMatch(
             new MatchSetup(
                 "town",
@@ -41,8 +41,23 @@ public sealed class CivilianTests
             {
                 Climate = climate,
             },
-            Map()),
+            map ?? Map()),
             GameDataFiles.Rules);
+
+    // The coast: dry land west of column 20, the sea east of it, and a pier out from (20, 10) to (23, 10).
+    private static MapGrid Coast()
+    {
+        var types = GameDataFiles.Rules.MapTypes;
+        types.TryGetBridge("pier_wood", out var pier);
+        var land = new byte[64 * 64];
+        for (var i = 0; i < land.Length; i++)
+        {
+            land[i] = (byte)(i % 64 >= 20 ? LandType.Deep : LandType.Clear);
+        }
+
+        return MapGrid.FromLayers(64, 64, land, new byte[land.Length], default, [], [BridgeState.New(pier, new CellPos(20, 10), new CellPos(23, 10))], [],
+            types: types);
+    }
 
     private static MapGrid Map()
     {
@@ -101,7 +116,7 @@ public sealed class CivilianTests
         Assert.All(civilians, civilian =>
         {
             Assert.True(civilian.Owner.IsNeutral);
-            Assert.Contains(civilian.Type, new[] { UnitType.CivMan, UnitType.CivWoman });
+            Assert.Contains(civilian.Type, new[] { UnitType.CivMan, UnitType.CivWoman, UnitType.CivDog });
             Assert.True(System.Math.Max(System.Math.Abs(civilian.Position.ToCell().X - 6), System.Math.Abs(civilian.Position.ToCell().Y - 6)) >= CivilianStart.StartCells);
             Assert.Equal(CivilianState.Rest, civilian.Civilian!.State);
         });
@@ -109,7 +124,7 @@ public sealed class CivilianTests
         // Without the option, or on a map of a climate none of them lives in, there are none.
         Assert.Empty(Civilians(Match(civilians: false).World));
         Assert.Empty(Civilians(Match(climate: "").World));
-        Assert.All(Civilians(Match(climate: "winter").World), civilian => Assert.Contains(civilian.Type, new[] { UnitType.CivWinterMan, UnitType.CivWinterWoman }));
+        Assert.All(Civilians(Match(climate: "winter").World), civilian => Assert.Contains(civilian.Type, new[] { UnitType.CivWinterMan, UnitType.CivWinterWoman, UnitType.CivDog }));
     }
 
     [Fact]
@@ -249,6 +264,75 @@ public sealed class CivilianTests
         simulation.Enqueue(new ForceAttackCommand(Union, simulation.CurrentTick, 0, [tank.Id], car.Id, car.Position));
         Step(simulation, 600, () => !car.IsAlive);
         Assert.False(car.IsAlive);
+
+        // Its burning wreck holds the cell for 30 s, shots do it no harm, then it is gone and the cell is free (4.6).
+        var wreck = Assert.Single(world.Entities.OfType<Unit>(), unit => unit.IsAlive && unit.Type == UnitType.CivCar);
+        Assert.Equal(CivilianState.Wreck, wreck.Civilian!.State);
+        Assert.Equal(at, wreck.Position);
+        Assert.Equal(car.Facing, wreck.Facing);
+        simulation.Enqueue(new ForceAttackCommand(Union, simulation.CurrentTick, 0, [tank.Id], wreck.Id, wreck.Position));
+        Step(simulation, CivilianSystem.WreckTicks - 30);
+        Assert.True(wreck.IsAlive);
+        Assert.Equal(wreck.MaxHp, wreck.Hp);
+        Step(simulation, 40);
+        Assert.False(wreck.IsAlive);
+        Assert.DoesNotContain(world.Entities.OfType<Unit>(), unit => unit.IsAlive && unit.Type == UnitType.CivCar);
+        Assert.True(world.Reservations.HasRoomFor(cell, car.Archetype.Placement, EntityId.None));
+    }
+
+    [Fact]
+    public void A_stroll_keeps_to_the_sidewalk_and_crosses_the_road_straight_over()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        var civilian = OnlyCivilianAt(world, new CellPos(22, 29));
+        CivilianSystem.Walk(world, civilian, new CellPos(41, Road - 1));
+        var onRoad = new HashSet<CellPos>();
+        Step(simulation, 600, () =>
+        {
+            if (world.Map.LandAt(civilian.Position.ToCell()) == LandType.Road)
+            {
+                onRoad.Add(civilian.Position.ToCell());
+            }
+
+            return civilian.MoveTarget is null && !civilian.PathPending && civilian.Orders.Length == 0;
+        });
+
+        Assert.Equal(new CellPos(41, Road - 1), civilian.Position.ToCell());
+        // Across the road, not along it: the cell it crosses by (and one beside it, passed at a corner), not the length of the road.
+        Assert.InRange(onRoad.Count, 1, 3);
+    }
+
+    [Fact]
+    public void Beachgoers_stroll_out_onto_the_pier()
+    {
+        var simulation = Match(climate: "coast", map: Coast());
+        var world = simulation.World;
+        Assert.Empty(Civilians(world));
+        var beachgoer = CivilianSystem.Spawn(world, UnitType.CivBeachMan, new CellPos(17, 10));
+        beachgoer.Civilian!.Timer = 1;
+        Step(simulation, 600, () => beachgoer.Civilian.State == CivilianState.Rest && beachgoer.Position.ToCell().X >= 20);
+
+        Assert.InRange(beachgoer.Position.ToCell().X, 20, 23);
+        Assert.Equal(10, beachgoer.Position.ToCell().Y);
+        Assert.NotNull(world.Map.BridgeAt(beachgoer.Position.ToCell()));
+    }
+
+    [Fact]
+    public void A_frightened_dog_runs_twice_as_fast_and_hides_in_no_house()
+    {
+        var simulation = Match();
+        var world = simulation.World;
+        OnlyCivilianAt(world, new CellPos(10, 50));
+        var dog = CivilianSystem.Spawn(world, UnitType.CivDog, new CellPos(34, 34));
+        dog.Civilian!.Timer = 10_000;
+        var tank = world.SpawnUnit(Union, UnitType.HeavyTank, new CellPos(38, 34).Center);
+
+        simulation.Enqueue(new MoveCommand(Union, simulation.CurrentTick, 0, [tank.Id], new CellPos(36, 34).Center));
+        Step(simulation, 30, () => dog.Civilian.State == CivilianState.Flee);
+        Assert.Equal(CivilianState.Flee, dog.Civilian.State);
+        Assert.Equal(dog.Archetype.Speed * 2, dog.Speed);
+        Assert.Null(dog.Civilian.Shelter);
     }
 
     [Fact]

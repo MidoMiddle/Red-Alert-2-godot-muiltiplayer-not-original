@@ -193,6 +193,16 @@ sounds:
     maxConcurrent: 4
     cooldownMs: 80
     positional: true
+  # A parked car's alarm (docs/map_elements/13_civilians, 4.6): a shot landing by it (Effects/CarAlarms).
+  snd_car_alarm:
+    files: [sfx/car_alarm_01.wav]
+    bus: SFX
+    volume: -14
+    pitch: [0.97, 1.03]
+    priority: 50
+    maxConcurrent: 3
+    cooldownMs: 200
+    positional: true
   snd_prism_support:
     files: [sfx/prism_support_01.wav]
     bus: SFX

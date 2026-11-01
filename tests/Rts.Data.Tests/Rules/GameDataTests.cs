@@ -39,10 +39,10 @@ public sealed class GameDataTests
         // The carrier's Hornet; the paradrop plane (loose ends, stage 1); the destroyer's Osprey (stage 4). The robot tank of Yuri's
         // Revenge was taken out (2026-10-25).
         Assert.Equal(28, database.Units.Count(unit => unit.Faction == "alliance"));
-        // The civilians of the maps (docs/map_elements/13_civilians), of no faction: ten people, three animals, three parked cars.
-        Assert.Equal(16, database.Units.Count(unit => unit.Civilian && unit.Faction.Length == 0));
-        Assert.Equal(3, database.Units.Count(unit => unit.Animal));
-        Assert.Equal(70, database.Units.Length);
+        // The civilians of the maps (docs/map_elements/13_civilians), of no faction: ten people, four animals, three parked cars.
+        Assert.Equal(17, database.Units.Count(unit => unit.Civilian && unit.Faction.Length == 0));
+        Assert.Equal(4, database.Units.Count(unit => unit.Animal));
+        Assert.Equal(71, database.Units.Length);
         Assert.Equal(18, database.Buildings.Count(building => building.Faction == "union"));
         Assert.Equal(19, database.Buildings.Count(building => building.Faction == "alliance"));
         Assert.Equal(6, database.Locomotors.Length);
@@ -120,7 +120,8 @@ public sealed class GameDataTests
         // The animals and the parked cars of the maps (civ_cow, civ_sheep, civ_camel, civ_car, civ_bus, civ_truck).
         // The buoy (docs/beach_elements/13_buoy), a map object on the water that stops nobody.
         // The pier (a bridge with the key pier), the slipway and the breakwater (docs/beach_elements, 14–16).
-        Assert.Equal(0xd9f2ba6c13458fb7UL, GameDataFiles.Current.Hash);
+        // The dog of the towns (civ_dog); the beachgoers gather by the pier too.
+        Assert.Equal(0x81b14c01b4fdfc0UL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

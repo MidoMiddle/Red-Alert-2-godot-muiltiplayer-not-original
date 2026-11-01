@@ -108,6 +108,7 @@ public partial class UnitRenderer : Node3D
                 UnitFacing.InterpolatedYaw(previous.Facing, current.Facing, alpha),
                 UnitFacing.InterpolatedYaw(previous.TurretFacing, current.TurretFacing, alpha));
             view.Animate(unit.Civilian?.State, (float)delta);
+            view.SetWreck(unit.Civilian?.State == CivilianState.Wreck);
             _alive.Add(unit.Id);
         }
 

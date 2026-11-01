@@ -16,6 +16,9 @@ public enum CivilianState : byte
 
     /// <summary>Crouches where it ran to; strolls again when all is quiet.</summary>
     Cover = 3,
+
+    /// <summary>A parked car blown up: its burning wreck holds the cell until its time is up, then is gone (4.6). Nothing hurts it.</summary>
+    Wreck = 4,
 }
 
 /// <summary>
@@ -32,7 +35,7 @@ public sealed class CivilianMind
 
     public CivilianState State { get; internal set; }
 
-    /// <summary>The ticks left at rest or in cover.</summary>
+    /// <summary>The ticks left at rest, in cover or burning as a wreck.</summary>
     public int Timer { get; internal set; }
 
     /// <summary>The cell it came out at: it strolls within <see cref="Systems.CivilianSystem.WanderCells"/> of it.</summary>

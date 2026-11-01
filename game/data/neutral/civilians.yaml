@@ -54,7 +54,7 @@ civ_beach_man:  # a beachgoer in shorts (RA2 CIVBFM, CIVBTM; docs/beach_elements
   name: Beachgoer
   climates: [coast]
   homes: [neutral_beach_cabin, neutral_hotel]
-  gathers_at: [sun_lounger, beach_umbrella, beach_shower, volleyball_net, neutral_beach_bar, neutral_lifeguard_tower]
+  gathers_at: [sun_lounger, beach_umbrella, beach_shower, volleyball_net, neutral_beach_bar, neutral_lifeguard_tower, pier_wood]
 
 civ_beach_woman:  # a beachgoer in a sundress or a swimsuit (RA2 CIVBF)
   kind: unit
@@ -62,7 +62,7 @@ civ_beach_woman:  # a beachgoer in a sundress or a swimsuit (RA2 CIVBF)
   name: Beachgoer
   climates: [coast]
   homes: [neutral_beach_cabin, neutral_hotel]
-  gathers_at: [sun_lounger, beach_umbrella, beach_shower, volleyball_net, neutral_beach_bar, neutral_lifeguard_tower]
+  gathers_at: [sun_lounger, beach_umbrella, beach_shower, volleyball_net, neutral_beach_bar, neutral_lifeguard_tower, pier_wood]
 
 civ_lifeguard:  # stands by the lifeguard tower
   kind: unit
@@ -131,8 +131,23 @@ civ_camel:
   climates: [desert]
   gathers_at: [well, neutral_adobe_house, neutral_ancient_ruins]
 
+# The dog of the towns and the villages (docs/map_elements/13_civilians, 4.7; appearance.md: "small and quick, they scatter at
+# danger"): by the benches and the fountains, running twice as fast when frightened. RA2 has no civilian dog: ours, small, quick
+# (the speed of RA2's attack dog, 36) and frail.
+civ_dog:
+  kind: unit
+  inherits: base_civilian
+  name: Dog
+  animal: true
+  hp: 30
+  speed: 36
+  sight: 4
+  climates: [urban, winter, temperate]
+  gathers_at: [bench, neutral_fountain, flowerbed, well]
+
 # The parked cars of the towns (docs/map_elements/13_civilians, 4.6): at the curb by the buildings and points of their place, they
-# never drive; destroyed, they burn out and hurt nobody (RA2 has no death weapon for them). RA2 CAR, BUS, TAXI, COP: 100 hit points;
+# never drive (the owner, 2026-11-02: no traffic in a skirmish, as in RA2); destroyed, they hurt nobody (RA2 has no death weapon for
+# them) and their burning wreck holds the cell for 30 s (CivilianSystem). RA2 CAR, BUS, TAXI, COP: 100 hit points;
 # TRUCKA: 200; light armor; speed 8 (48), unused.
 
 base_civilian_car:

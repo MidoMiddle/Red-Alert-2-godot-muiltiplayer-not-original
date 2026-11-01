@@ -52,6 +52,8 @@ public partial class Main : Node3D
         AddChild(new Effects.RadiationView { Name = "RadiationView" });
         AddChild(new Effects.ProjectileViews { Name = "ProjectileViews" });
         AddChild(new Effects.CrateViews { Name = "CrateViews" });
+        AddChild(new Effects.CarAlarms { Name = "CarAlarms" });
+        AddChild(new Effects.Crows { Name = "Crows" });
         AddChild(new Effects.IntentLines { Name = "IntentLines" });
         AddChild(new Audio.CombatSounds { Name = "CombatSounds" });
         AddChild(new Audio.MovementSounds { Name = "MovementSounds" });

@@ -132,6 +132,12 @@ public sealed class GameWorld
     internal List<(PlayerId Owner, EntityId Shooter, int Weapon, WorldPos Point)> DeathBlasts { get; } = [];
 
     /// <summary>
+    /// The parked cars of the map blown up this tick (docs/map_elements/13_civilians, 4.6): their burning wrecks stand where they were
+    /// once the dead have left (<see cref="Systems.CivilianSystem.Burn"/>). Empty between ticks.
+    /// </summary>
+    internal List<(UnitType Type, WorldPos Position, Math.BAngle Facing)> CarWrecks { get; } = [];
+
+    /// <summary>
     /// The units with sensors (stage 3e: they find units under the water), their owner, place and reach in leptons; rebuilt by
     /// <see cref="Systems.VisibilitySystem"/> with the sight, so derived: not hashed.
     /// </summary>

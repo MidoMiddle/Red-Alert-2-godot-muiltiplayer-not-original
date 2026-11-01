@@ -31,6 +31,13 @@ public static class DeathSystem
             world.DeathBlasts.Add((unit.Owner, unit.Id, unit.Archetype.DeathWeapon, unit.Position));
         }
 
+        // A parked car of the map leaves its burning wreck (docs/map_elements/13_civilians, 4.6); a wreck leaves nothing.
+        if (unit.Owner.IsNeutral && unit.Archetype.Category == UnitCategory.Vehicle && unit.Archetype.Has(UnitTalents.Civilian)
+            && !CivilianSystem.IsWreck(unit) && CivilianSystem.Active(world))
+        {
+            world.CarWrecks.Add((unit.Type, unit.Position, unit.Facing));
+        }
+
         // The bombs its passengers carried in go off where it fell (RA2).
         foreach (var passenger in unit.Passengers)
         {

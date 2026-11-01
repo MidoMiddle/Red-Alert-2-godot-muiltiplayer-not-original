@@ -417,6 +417,7 @@ public sealed class GoldenValuesTests
         // Rules v122 (the animals and the parked cars of the maps, only in a match with civilians): the version only.
         // Rules v123 (the buoy, a map object on the water that stops nobody; the owner's wish): the version only — no buoy here.
         // Rules v124 (the pier, a low bridge out into the water; the slipway and the breakwater): the version only — none of them here.
-        Assert.Equal((22270, 9957725303402113096UL), (bytes.Length, hash.Value));
+        // Rules v125 (the civilians' wrecks, the dog, the sidewalks, the pier): the version only — no civilians here.
+        Assert.Equal((22270, 9126793862970489493UL), (bytes.Length, hash.Value));
     }
 }

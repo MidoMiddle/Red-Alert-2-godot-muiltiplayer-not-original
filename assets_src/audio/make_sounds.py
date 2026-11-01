@@ -678,6 +678,26 @@ def ui_tick(seed):
     return mix((envelope(biquad(noise(0.02, rnd), "band", 3000, 1.5), 0.0002, 300.0), 1.0), (tone(0.02, 2400, 2400, 250.0), 0.3))
 
 
+def car_alarm(seed, seconds):
+    """A parked car's alarm (docs/map_elements/13_civilians, 4.6): a horn hooting in pairs over a siren that sweeps up and down, a
+    little rough, as heard down the street."""
+    rnd = random.Random(seed)
+    count = int(seconds * RATE)
+    out, siren_phase, horn_phase = [], 0.0, 0.0
+    for i in range(count):
+        t = i / RATE
+        # The siren: 900 to 1500 Hz and back, four times a second.
+        hz = 1200.0 + 300.0 * math.sin(2.0 * math.pi * 4.0 * t)
+        siren_phase += 2.0 * math.pi * hz / RATE
+        siren = 0.5 if math.sin(siren_phase) >= 0 else -0.5
+        # The horn: two hoots of 0.12 s every 0.5 s, a low square.
+        horn_phase += 2.0 * math.pi * 420.0 / RATE
+        on = (t % 0.5) < 0.12 or 0.18 <= (t % 0.5) < 0.30
+        horn = (1.0 if math.sin(horn_phase) >= 0 else -1.0) if on else 0.0
+        out.append(siren * 0.45 + horn * 0.55 + (rnd.random() * 2.0 - 1.0) * 0.03)
+    return saturate(lowpass(out, 3500), 1.5)
+
+
 def main():
     write("sfx/shot_01.wav", shot(101, 2500, 120, 0.35))
     write("sfx/shot_02.wav", shot(102, 3200, 100, 0.40))
@@ -723,6 +743,8 @@ def main():
     write("sfx/building_brick_02.wav", trim(brick_building(2002)))
     write("sfx/building_concrete_01.wav", trim(concrete_building(2101)))
     write("sfx/building_concrete_02.wav", trim(concrete_building(2102)))
+    # A parked car's alarm (docs/map_elements/13_civilians, 4.6): three seconds.
+    write("sfx/car_alarm_01.wav", car_alarm(2201, 3.0))
     # The interface, a console of the Cold War: keys that clack, blips of its screen.
     write("ui/hover_01.wav", ui_hover(501))
     write("ui/click_01.wav", ui_click(502))
