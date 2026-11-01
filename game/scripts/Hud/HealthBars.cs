@@ -101,6 +101,12 @@ public partial class HealthBars : Control
                 DrawBomb(camera, entity, world.CurrentTick);
             }
 
+            if (entity is Unit { Civilian: not null })
+            {
+                // A civilian of the map (docs/map_elements/13_civilians) shows no bar.
+                continue;
+            }
+
             // Selected, or under the cursor: its bar and its room show.
             var selected = Focused(entity);
             if (entity is Unit { Archetype.PassengerSlots: > 0 } transport && selected && world.AreAllies(SimulationHost.LocalPlayer, transport.Owner))
