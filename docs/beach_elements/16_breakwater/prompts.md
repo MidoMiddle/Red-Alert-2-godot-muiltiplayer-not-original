@@ -44,7 +44,9 @@ A single large grey granite breakwater block about one unit wide and eight tenth
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `breakwater_block.glb` | | | |
+| `breakwater_block_01.glb` (вместо `breakwater_block.glb`) | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_shore_works.py`) | 2026-11-02 | сделано, 110 треугольников |
+| `breakwater_block_02.glb` (вместо `breakwater_block.glb`) | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_shore_works.py`) | 2026-11-02 | сделано, 120 треугольников |
+| `breakwater_block_03.glb` (вместо `breakwater_block.glb`) | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_shore_works.py`) | 2026-11-02 | сделано, 142 треугольников |
 
 ## Открытые вопросы
 

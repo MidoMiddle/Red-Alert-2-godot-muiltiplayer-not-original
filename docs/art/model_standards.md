@@ -193,6 +193,7 @@ tree/cactus: { files: [desert/cactus/cactus_01.glb, desert/cactus/cactus_02.glb,
 | `building/neutral_lifeguard_tower` | вышка спасателей 2×2: целая, занятая, повреждённая (и занятая), горящая, руины; этаж на клетку, сжатие 0,35 (скрипт `tools/blender/families/beach_lifeguard.py`, 2026-11-01) |
 | `building/neutral_lighthouse` | маяк 2×2 с домиком смотрителя: целый, занятый, повреждённый (и занятый), покинутый, руины; в размере игры, без сжатия, до 2,6 (скрипт `tools/blender/families/beach_lighthouse.py`, 2026-11-01) |
 | `object/buoy` | буй на воде, красный с белым поясом или белый с красным, узлы `body`, `light` (скрипт `tools/blender/families/beach_buoy.py`, 2026-11-01) |
+| `object/slipway`, `object/breakwater` | слип — бетонный пандус спуском к +Z (поворачивает клиент), волнолом — три груды гранитных блоков на всю клетку воды без поворота, цепочка — одна стена (скрипт `tools/blender/families/beach_shore_works.py`, 2026-11-02) |
 | `object/hedge` | живая изгородь: блок стриженого кустарника на всю клетку, края на одной высоте 0,56 — стыкуется с соседями со всех сторон; три вида (ровная, округлая, лохматая), без поворота (скрипт `tools/blender/families/farm_props.py`, 2026-11-01) |
 | `object/hay_bale` | сено: круглый тюк, штабель квадратных тюков или копна на рассыпанной соломе, с поворотом (скрипт `tools/blender/families/farm_props.py`, 2026-11-01) |
 | `object/well` | колодец: каменный сруб с водой, крыша на двух столбах, ворот с бадьёй; узлы `body`, `roof`, `winch` (скрипт `tools/blender/families/farm_props.py`, 2026-11-01) |

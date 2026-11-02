@@ -45,7 +45,7 @@ A concrete boat slipway: a wide ribbed concrete ramp about two units long that s
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `slipway.glb` | | | |
+| `slipway.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/beach_shore_works.py`) | 2026-11-02 | сделано, 388 треугольников |
 
 ## Открытые вопросы
 

@@ -495,6 +495,13 @@ models:
   object/reef_rocks:          { file: naval/reef_rocks/reef_rocks.glb, spin: true }
   # The buoy (docs/beach_elements/13_buoy): red with a white band or white with a red one, each cell picks one; its light a node of its own.
   object/buoy:                { files: [beach/buoy_red/buoy_red.glb, beach/buoy_white/buoy_white.glb], spin: true }
+  # The slipway of a beach (docs/beach_elements/15_slipway): a ramp of ribbed concrete down into the water, made running down to +Z;
+  # the client turns it to the water beside its cell (MapObjects.AddSlipways), so no spin.
+  object/slipway:             { file: beach/slipway/slipway.glb }
+  # The breakwater (docs/beach_elements/16_breakwater): a heap of granite blocks filling its cell of water to the edges, so a chain of
+  # them is one wall along x or y; three heaps, each cell picks one, not turned.
+  object/breakwater:          { files: [beach/breakwater_block_01/breakwater_block_01.glb, beach/breakwater_block_02/breakwater_block_02.glb,
+                                        beach/breakwater_block_03/breakwater_block_03.glb] }
   object/ice_floe:            { file: naval/ice_floe/ice_floe.glb, spin: true, jitter: 0.1 }
   # The street stall of the city (docs/city_elements/08_street_stall), made at the size it is drawn; its damaged and destroyed files
   # wait for the client to draw a map object's states.
