@@ -27,6 +27,7 @@
 | Скорость | 6 — быстрый |
 | Обзор | 9 |
 | Требования | Казармы + радар (`NAHAND,RADAR`); только Куба (`RequiredHouses=Confederation`) |
+| Чем стреляет | Ничем: взрывается сам |
 | Оружие | `TerrorBomb`: урон 225, дальность 1,5, самоподрыв (`Suicide=yes`). Боеголовка `TerrorBombWH`: радиус 2 клетки (на краю 50 %), против брони none 150 %, flak/plate 100 %, light 90 %, medium/heavy 50 %, wood 100 %, steel 150 %, concrete 30 % |
 | Давится танками | да (в rules нет `Crushable=no`) |
 | Гибель | взрывается тем же `TerrorBomb` (`Explodes=yes`, `DeathWeapon=TerrorBomb`) |
