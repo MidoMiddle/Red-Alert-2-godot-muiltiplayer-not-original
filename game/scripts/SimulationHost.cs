@@ -640,6 +640,7 @@ public partial class SimulationHost : Node
             }
         }
 
+        var sent = 0;
         foreach (var unit in units)
         {
             if (Simulation.World.TryGet(unit, out var one) && one is Unit trooper && !Controls.DeployGroup.Sends(DigsIn(trooper), trooper.Deployed, anyStanding))
@@ -660,8 +661,11 @@ public partial class SimulationHost : Node
                 })
             {
                 Issue(new DeployCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, unit));
+                sent++;
             }
         }
+
+        GD.Print($"[deploy] {sent} of {units.Count} selected told to deploy, tick {Simulation.CurrentTick}");
     }
 
     /// <summary>The units a move order goes to: not those dug in (the owner, 2026-11-02), which only D gets up.</summary>

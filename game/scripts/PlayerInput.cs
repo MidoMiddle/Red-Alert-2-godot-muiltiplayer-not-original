@@ -222,6 +222,12 @@ public partial class PlayerInput : Node
             case InputEventMouseMotion motion:
                 Apply(_interpreter.Move(ToScreen(motion.Position)));
                 break;
+            case InputEventKey { Pressed: true, Echo: false } key when key.Keycode == Key.D || key.PhysicalKeycode == Key.D || key.IsActionPressed("deploy", false, true):
+                // The owner, 2026-11-02: the first D after a selection seemed lost; the log tells whether the game got it and where it went
+                // (after it, [deploy] from SimulationHost.IssueDeploy).
+                GD.Print($"[key] D: keycode {key.Keycode}, physical {key.PhysicalKeycode}, deploy {key.IsActionPressed("deploy", false, true)}, "
+                    + $"selected {Selection.Units.Count}, tick {_host.Simulation.CurrentTick}");
+                break;
         }
     }
 
@@ -352,6 +358,7 @@ public partial class PlayerInput : Node
         }
         else if (key.IsActionPressed("deploy", false, true) && !_host.IsPlayback && OccupiedUnderPointer() is { } occupied)
         {
+            GD.Print("[deploy] D over an occupied building: its soldiers come out");
             // D over an own building with soldiers inside: they come out (stage 2e).
             _host.IssueEvacuate(occupied);
         }
