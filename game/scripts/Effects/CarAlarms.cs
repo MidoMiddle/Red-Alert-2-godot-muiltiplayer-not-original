@@ -111,6 +111,15 @@ public partial class CarAlarms : Node3D
         unit.Owner.IsNeutral && unit.Archetype.Category == UnitCategory.Vehicle && unit.Archetype.Has(UnitTalents.Civilian)
         && !CivilianSystem.IsWreck(unit);
 
+    // Where the headlights of each kind of car are on its model (front to -Z, the centre on the ground): half the gap between them,
+    // their height and how far forward.
+    private static (float Side, float Height, float Front) LampsOf(UnitType type) => type switch
+    {
+        UnitType.CivBus => (0.14f, 0.14f, -0.65f),
+        UnitType.CivTruck => (0.12f, 0.13f, -0.48f),
+        _ => (0.10f, 0.13f, -0.32f),
+    };
+
     // Two headlights at the front of the car, turned as it stands.
     private static Node3D Lights(Unit car)
     {
@@ -119,13 +128,14 @@ public partial class CarAlarms : Node3D
             Position = WorldCoords.ToGodotOnGround(car.Position),
             Rotation = new Vector3(0f, Units.UnitFacing.InterpolatedYaw(car.Facing, car.Facing, 0f), 0f),
         };
-        foreach (var side in (float[])[-0.1f, 0.1f])
+        var (side, height, front) = LampsOf(car.Type);
+        foreach (var x in (float[])[-side, side])
         {
             root.AddChild(new MeshInstance3D
             {
                 Mesh = new SphereMesh { Radius = 0.035f, Height = 0.07f },
                 MaterialOverride = LightMaterial,
-                Position = new Vector3(side, 0.14f, -0.26f),
+                Position = new Vector3(x, height, front),
                 CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             });
         }
