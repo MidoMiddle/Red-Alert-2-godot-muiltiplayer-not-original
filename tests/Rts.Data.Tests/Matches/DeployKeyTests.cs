@@ -70,6 +70,41 @@ public sealed class DeployKeyTests
         Assert.Equal(rules.Unit(UnitType.AllianceRifleman).Armor, rifleman.Archetype.Armor);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void A_dug_in_rifleman_ordered_to_attack_fires_from_its_sandbags_and_never_gets_up_to_chase(bool force)
+    {
+        // The owner, 2026-11-02: dug in, it fights from the trench, an attack with Ctrl or without; only D gets it up.
+        var simulation = Match();
+        var world = simulation.World;
+        var rifleman = world.SpawnUnit(Allied, UnitType.AllianceRifleman, new CellPos(30, 30).Center, snapToSubcell: true);
+        var near = world.SpawnUnit(Union, UnitType.Conscript, new CellPos(33, 30).Center, snapToSubcell: true);
+        var far = world.SpawnUnit(Union, UnitType.Conscript, new CellPos(45, 30).Center, snapToSubcell: true);
+        near.Stance = Stance.HoldPosition;
+        far.Stance = Stance.HoldPosition;
+        simulation.Enqueue(new DeployCommand(Allied, simulation.CurrentTick, 0, rifleman.Id));
+        Run(simulation, 2);
+        var at = rifleman.Position;
+
+        simulation.Enqueue(force
+            ? new ForceAttackCommand(Allied, simulation.CurrentTick, 1, [rifleman.Id], near.Id, near.Position)
+            : new AttackCommand(Allied, simulation.CurrentTick, 1, [rifleman.Id], near.Id));
+        Run(simulation, 60);
+        Assert.True(rifleman.Deployed);
+        Assert.Equal(at, rifleman.Position);
+        Assert.True(!near.IsAlive || near.Hp < near.MaxHp);
+
+        // Out of its reach the target is waited for, not chased.
+        simulation.Enqueue(force
+            ? new ForceAttackCommand(Allied, simulation.CurrentTick, 2, [rifleman.Id], far.Id, far.Position)
+            : new AttackCommand(Allied, simulation.CurrentTick, 2, [rifleman.Id], far.Id));
+        Run(simulation, 90);
+        Assert.True(rifleman.Deployed);
+        Assert.Equal(at, rifleman.Position);
+        Assert.Equal(far.MaxHp, far.Hp);
+    }
+
     [Fact]
     public void The_construction_yard_packs_up_into_its_mcv_with_its_share_of_hit_points()
     {

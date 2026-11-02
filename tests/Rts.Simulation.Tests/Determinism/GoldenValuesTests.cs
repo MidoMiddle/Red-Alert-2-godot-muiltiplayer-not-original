@@ -419,6 +419,7 @@ public sealed class GoldenValuesTests
         // Rules v124 (the pier, a low bridge out into the water; the slipway and the breakwater): the version only — none of them here.
         // Rules v125 (the civilians' wrecks, the dog, the sidewalks, the pier): the version only — no civilians here.
         // Rules v126 (the Grand Cannon turns its gun slowly; Yuri's pulse in the IFV): the version only — neither here.
-        Assert.Equal((22270, 5493749208966777810UL), (bytes.Length, hash.Value));
+        // Rules v127 (a soldier dug in fights from its sandbags, an attack order does not get it up): the version only — none dug in here.
+        Assert.Equal((22270, 3045695195295992415UL), (bytes.Length, hash.Value));
     }
 }

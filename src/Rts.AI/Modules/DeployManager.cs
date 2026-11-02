@@ -11,8 +11,9 @@ namespace Rts.AI.Modules;
 /// The deploying of a bot (M11 step 3, the bot that knows every weapon): its soldiers that fight better deployed (D) do it where it pays.
 /// <list type="bullet">
 /// <item><b>Digging in</b> (a weapon when deployed, <see cref="UnitDef.DeployedWeapon"/>: the GI behind sandbags): a unit standing or
-/// fighting — not on its way, on no errand — digs in when an armed enemy in sight its deployed weapon can hurt is within its reach. Any order of the
-/// squads gets it up again (the rules undeploy a unit given an order), so it moves on with them.</item>
+/// fighting — not on its way, on no errand — digs in when an armed enemy in sight its deployed weapon can hurt is within its reach. A move or an
+/// attack-move of the squads gets it up again (the rules undeploy a unit given a route), so it moves on with them; an attack order
+/// does not (rules v127): it fires from its sandbags.</item>
 /// <item><b>A blast when deployed</b> (<see cref="UnitDef.DeployWeapon"/>: the Desolator's poison, Yuri's psychic wave, once with
 /// <see cref="UnitDef.DeployOnce"/>): the unit deploys when at least <see cref="FewestVictims"/> enemy soldiers in sight stand within the
 /// reach of the blast — its weapon's range or its warhead's spread, the greater — and none of its own player's or its allies' soldiers,

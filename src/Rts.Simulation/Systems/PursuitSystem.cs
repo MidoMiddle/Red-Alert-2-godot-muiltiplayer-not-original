@@ -73,9 +73,10 @@ public static class PursuitSystem
                 continue;
             }
 
-            // A tesla trooper charging a coil (RA2) holds its place unless ordered.
+            // A tesla trooper charging a coil (RA2) holds its place unless ordered; a deployed unit — a soldier dug in — always: it
+            // fires from where it stands or not at all.
             var mayFollow = unit.TargetOrder != TargetOrder.None || unit.IsAttackMoving || (unit.Stance != Stance.HoldPosition && unit.Charging is null);
-            if (!mayFollow)
+            if (!mayFollow || unit.Deployed)
             {
                 continue;
             }

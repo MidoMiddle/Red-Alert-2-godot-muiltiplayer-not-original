@@ -327,7 +327,10 @@ public static class CommandProcessor
         return any;
     }
 
-    /// <summary>Gives the unit the target of an order; a unit that is not a harvester drops its route for it.</summary>
+    /// <summary>
+    /// Gives the unit the target of an order; a unit that is not a harvester drops its route for it. A soldier dug in behind its
+    /// sandbags stays there and fires from them (the owner, 2026-11-02): only D gets it up.
+    /// </summary>
     private static void Order(GameWorld world, Unit unit, TargetOrder order, EntityId? target, WorldPos? point)
     {
         if (unit.Harvester is null)
@@ -335,7 +338,9 @@ public static class CommandProcessor
             UnitOrders.Stop(world, unit);
         }
 
+        var dugIn = unit.Deployed && unit.Archetype.DeployedWeapon >= 0;
         UnitOrders.ForgetTarget(unit);
+        unit.Deployed = dugIn;
         unit.Target = target;
         unit.TargetOrder = order;
         unit.TargetPoint = point;
