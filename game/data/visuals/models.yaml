@@ -33,6 +33,15 @@ models:
   # a little bigger or smaller; made at the size the game draws a tree. Felled, it leaves the stump every tree leaves.
   tree/palm:                  { files: [beach/tree_palm_01/tree_palm_01.glb, beach/tree_palm_02/tree_palm_02.glb,
                                         beach/tree_palm_03/tree_palm_03.glb], spin: true, jitter: 0.15 }
+  # The cactus of the desert (docs/desert_elements/04_cactus): the desert draws half its trees as cacti (TreeShapes); three kinds, a
+  # tall one with two arms, a low cluster and one with a single arm, each cell picks one, turned any way; made at the size the game
+  # draws a tree. Felled, it leaves the stump every tree leaves.
+  tree/cactus:                { files: [desert/cactus_01/cactus_01.glb, desert/cactus_02/cactus_02.glb,
+                                        desert/cactus_03/cactus_03.glb], spin: true, jitter: 0.15 }
+  # The dry shrub of the desert (docs/desert_elements/05_dry_shrub): a tuft of dry twigs or a tumbleweed, everyone tramples it; each
+  # cell picks one, turned any way.
+  object/dry_shrub:           { files: [desert/desert_dry_shrub/desert_dry_shrub.glb, desert/tumbleweed/tumbleweed.glb], spin: true,
+                                jitter: 0.15 }
   # What the sea throws up on a beach (docs/beach_elements/03_driftwood): a bleached trunk, a forked branch or a heap of planks, a
   # canister and seaweed — the map object driftwood, which stops nobody; each cell picks one, turned any way.
   object/driftwood:           { files: [beach/prop_driftwood/prop_driftwood.glb, beach/prop_driftwood_branch/prop_driftwood_branch.glb,
@@ -113,6 +122,31 @@ models:
   # (fire_1..2) and burnt down.
   building/neutral_shed: { file: map/shed/shed.glb, height: 0.5, height_scale: 0.35, damaged: map/shed_damaged/shed_damaged.glb,
                            abandoned: map/shed_abandoned/shed_abandoned.glb, ruins: map/shed_ruins/shed_ruins.glb }
+
+  # The adobe house of the desert (docs/desert_elements/07_adobe_house): the same states as the house; the band of its parapet takes
+  # the owner's colour, three barrels out of its windows when occupied, fire_1..2 when abandoned.
+  building/neutral_adobe_house: { file: desert/desert_adobe_house/desert_adobe_house.glb, height: 0.72, height_scale: 0.35,
+                                  damaged: desert/desert_adobe_house_damaged/desert_adobe_house_damaged.glb,
+                                  damaged_occupied: desert/desert_adobe_house_damaged_occupied/desert_adobe_house_damaged_occupied.glb,
+                                  occupied: desert/desert_adobe_house_occupied/desert_adobe_house_occupied.glb,
+                                  abandoned: desert/desert_adobe_house_abandoned/desert_adobe_house_abandoned.glb,
+                                  ruins: desert/desert_adobe_house_ruins/desert_adobe_house_ruins.glb }
+  # The ancient ruins of the desert (docs/desert_elements/08_ancient_ruins): columns on a stepped platform, squashed as the houses;
+  # damaged (the architrave down, a column broken) also when critically damaged, and only the platform once it has fallen.
+  building/neutral_ancient_ruins: { file: desert/desert_ruins_stone/desert_ruins_stone.glb, height: 0.76, height_scale: 0.35,
+                                    damaged: desert/desert_ruins_stone_damaged/desert_ruins_stone_damaged.glb,
+                                    abandoned: desert/desert_ruins_stone_damaged/desert_ruins_stone_damaged.glb,
+                                    ruins: desert/desert_ruins_stone_ruins/desert_ruins_stone_ruins.glb }
+  # The rocks of the desert (docs/desert_elements/02_rock_mesa, 09_rock_arch): layered sandstone made at the size the game draws it,
+  # not squashed; cracked and chipped when damaged (and critically damaged), broken down once it has fallen.
+  building/neutral_rock_mesa: { file: desert/rock_mesa/rock_mesa.glb, height: 1.05,
+                                damaged: desert/rock_mesa_damaged/rock_mesa_damaged.glb,
+                                abandoned: desert/rock_mesa_damaged/rock_mesa_damaged.glb,
+                                ruins: desert/rock_mesa_ruins/rock_mesa_ruins.glb }
+  building/neutral_rock_arch: { file: desert/rock_arch/rock_arch.glb, height: 1.6,
+                                damaged: desert/rock_arch_damaged/rock_arch_damaged.glb,
+                                abandoned: desert/rock_arch_damaged/rock_arch_damaged.glb,
+                                ruins: desert/rock_arch_ruins/rock_arch_ruins.glb }
 
   building/neutral_house_a: { file: map/building_house_small/building_house_small.glb, height: 1.0, height_scale: 0.35,
                               damaged: map/building_house_small_damaged/building_house_small_damaged.glb,

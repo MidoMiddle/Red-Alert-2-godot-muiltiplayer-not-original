@@ -50,9 +50,9 @@ A tall green columnar desert cactus about one and a half units tall, dark spines
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `cactus_01.glb` | | | |
-| `cactus_02.glb` | | | |
-| `cactus_03.glb` | | | |
+| `cactus_01.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_plants.py`) | 2026-11-02 | сделано, 270 треугольников |
+| `cactus_02.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_plants.py`) | 2026-11-02 | сделано, 278 треугольников |
+| `cactus_03.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_plants.py`) | 2026-11-02 | сделано, 238 треугольников |
 
 ## Открытые вопросы
 

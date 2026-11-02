@@ -36,7 +36,7 @@
 
 ## 4. Данные
 
-Файл `game/data/neutral/`: размер 2x2, прочность класса «средняя», `garrisonable: true`, `garrison_capacity: 2`, `capturable: false`, не горит.
+Нейтральное здание карты `neutral_adobe_house` в `game/data/neutral/civilian.yaml`: футпринт 2×2, 600 HP, гарнизон 3, мирные жители прячутся в нём (`shelter`). Модель — `building/neutral_adobe_house` в `game/data/visuals/models.yaml` (2026-11-02): все шесть состояний, этаж на клетку, сжатие по высоте 0,35; полоса на парапете — цвет владельца (`team_mask`). Глина не горит, но клиент зажигает огонь у каждого здания при критическом уроне ([BuildingBlaze.cs](../../../game/scripts/Terrain/BuildingBlaze.cs)): узлы `fire_1..2` стоят на деревянных балках провалившейся крыши.
 
 ## 5. Взаимодействия
 

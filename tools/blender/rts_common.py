@@ -444,6 +444,7 @@ ROWS = (
     "12. Инфраструктура",
     "13. Море",
     "14. Пляж",
+    "15. Пустыня",
 )
 
 # Where each model stands: (row, place in the row). The key is the name of the model: its collection, its root and its file.
@@ -787,6 +788,26 @@ LAYOUT = {
     "beach_boat_shed_abandoned": (13, 49),
     "beach_boat_shed_ruins": (13, 50),
     "fishing_nets": (13, 51),
+    "cactus_01": (14, 0),
+    "cactus_02": (14, 1),
+    "cactus_03": (14, 2),
+    "desert_dry_shrub": (14, 3),
+    "tumbleweed": (14, 4),
+    "rock_mesa": (14, 5),
+    "rock_mesa_damaged": (14, 6),
+    "rock_mesa_ruins": (14, 7),
+    "rock_arch": (14, 8),
+    "rock_arch_damaged": (14, 9),
+    "rock_arch_ruins": (14, 10),
+    "desert_ruins_stone": (14, 11),
+    "desert_ruins_stone_damaged": (14, 12),
+    "desert_ruins_stone_ruins": (14, 13),
+    "desert_adobe_house": (14, 14),
+    "desert_adobe_house_occupied": (14, 15),
+    "desert_adobe_house_damaged": (14, 16),
+    "desert_adobe_house_damaged_occupied": (14, 17),
+    "desert_adobe_house_abandoned": (14, 18),
+    "desert_adobe_house_ruins": (14, 19),
 }
 
 

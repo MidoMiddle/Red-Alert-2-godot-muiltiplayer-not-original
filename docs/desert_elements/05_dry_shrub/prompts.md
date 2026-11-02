@@ -53,8 +53,8 @@ A tumbleweed: a round ball about six tenths of a unit across made of dry tangled
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `desert_dry_shrub.glb` | | | |
-| `tumbleweed.glb` | | | |
+| `desert_dry_shrub.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_plants.py`) | 2026-11-02 | сделано, 350 треугольников |
+| `tumbleweed.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_plants.py`) | 2026-11-02 | сделано, 456 треугольников |
 
 ## Открытые вопросы
 

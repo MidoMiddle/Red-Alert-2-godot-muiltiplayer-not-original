@@ -46,7 +46,9 @@ A natural sandstone arch about two units tall and two units long: two thick laye
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `rock_arch.glb` | | | |
+| `rock_arch.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_rocks.py`) | 2026-11-02 | сделано, 288 треугольников |
+| `rock_arch_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_rocks.py`) | 2026-11-02 | сделано, 336 треугольников |
+| `rock_arch_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_rocks.py`) | 2026-11-02 | сделано, 248 треугольников |
 
 ## Открытые вопросы
 

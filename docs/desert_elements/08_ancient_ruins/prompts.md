@@ -44,7 +44,9 @@ Ancient stone ruins about one and a half units tall: a few low weathered walls o
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `desert_ruins_stone.glb` | | | |
+| `desert_ruins_stone.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 644 треугольника |
+| `desert_ruins_stone_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 628 треугольников |
+| `desert_ruins_stone_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 328 треугольников |
 
 ## Открытые вопросы
 

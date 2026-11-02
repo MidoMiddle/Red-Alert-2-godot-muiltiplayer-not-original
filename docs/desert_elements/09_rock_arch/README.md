@@ -32,7 +32,7 @@
 
 ## 4. Данные
 
-Файл `game/data/climates/desert/map_objects.yaml`: блокирует всех наземных, прочность класса «высокая», не горит.
+Нейтральное здание карты `neutral_rock_arch` в `game/data/neutral/civilian.yaml`: футпринт 2×1, 3000 HP, никого не пропускает. Модель — `building/neutral_rock_arch` в `game/data/visuals/models.yaml` (2026-11-02): целая, повреждённая (она же при критическом уроне) и руины; в размере игры, без сжатия, до 1,6.
 
 ## 5. Взаимодействия
 

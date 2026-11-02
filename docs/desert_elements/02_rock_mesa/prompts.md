@@ -46,7 +46,9 @@ A tall layered sandstone pillar about two and a half units tall, with ochre, red
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `rock_mesa.glb` | | | |
+| `rock_mesa.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_rocks.py`) | 2026-11-02 | сделано, 272 треугольника |
+| `rock_mesa_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_rocks.py`) | 2026-11-02 | сделано, 284 треугольника |
+| `rock_mesa_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_rocks.py`) | 2026-11-02 | сделано, 256 треугольников |
 
 ## Открытые вопросы
 

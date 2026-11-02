@@ -46,8 +46,12 @@ A small mud-brick desert house about two units tall: sand-coloured walls with so
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `desert_adobe_house.glb` | | | |
-| `desert_adobe_house_damaged.glb` | | | |
+| `desert_adobe_house.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 552 треугольника |
+| `desert_adobe_house_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 588 треугольников |
+| `desert_adobe_house_damaged.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 480 треугольников |
+| `desert_adobe_house_damaged_occupied.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 516 треугольников |
+| `desert_adobe_house_abandoned.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 444 треугольника |
+| `desert_adobe_house_ruins.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/desert_buildings.py`) | 2026-11-02 | сделано, 168 треугольников |
 
 ## Открытые вопросы
 

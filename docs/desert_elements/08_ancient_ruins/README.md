@@ -32,7 +32,7 @@
 
 ## 4. Данные
 
-Файл `game/data/neutral/`: размер 2x2, прочность класса «высокая», `garrisonable: false`, `capturable: false`, не горит.
+Нейтральное здание карты `neutral_ancient_ruins` в `game/data/neutral/civilian.yaml`: футпринт 2×2, 2500 HP, без гарнизона и захвата. Модель — `building/neutral_ancient_ruins` в `game/data/visuals/models.yaml` (2026-11-02): стоят, повреждены (они же при критическом уроне) и руины; этаж на клетку, сжатие по высоте 0,35, колонны выходят 0,7.
 
 ## 5. Взаимодействия
 
