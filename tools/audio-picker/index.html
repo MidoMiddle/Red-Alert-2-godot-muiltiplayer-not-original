@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Звуки игры</title>
+<style>
+  :root {
+    --bg: #f5f8fc;
+    --card: #ffffff;
+    --text: #000a1b;
+    --muted: #5b6678;
+    --line: #dbe7f5;
+    --accent: #017dfb;
+    --accent-soft: #e7f3ff;
+    --keep: #16b47e;
+    --keep-soft: #e3f7ef;
+    --redo: #d25153;
+    --redo-soft: #fdeceb;
+    --plan: #b7791f;
+    --shadow: 0 1px 2px rgba(0, 10, 27, 0.06), 0 6px 18px rgba(0, 10, 27, 0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000a1b;
+      --card: #061229;
+      --text: #ffffff;
+      --muted: #9aa8bf;
+      --line: #193e69;
+      --accent: #3497fc;
+      --accent-soft: #0b2445;
+      --keep: #2bc98d;
+      --keep-soft: #0b2e24;
+      --redo: #ff7a7f;
+      --redo-soft: #3a1418;
+      --plan: #f5b84a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px 120px; }
+  header { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: baseline; margin-bottom: 14px; }
+  h1 { font-size: 22px; margin: 0; }
+  .built { color: var(--muted); font-size: 13px; flex: 1 1 auto; }
+  input, select, button, textarea { font: inherit; color: inherit; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .tab {
+    border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 7px 14px; cursor: pointer;
+  }
+  .tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 14px; }
+  .search {
+    flex: 1 1 240px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px;
+  }
+  .filter { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .chips-label { color: var(--muted); font-size: 13px; min-width: 64px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 4px 11px; cursor: pointer; font-size: 14px;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .chip .n { color: var(--muted); font-weight: 400; margin-left: 4px; }
+  #groups { margin-bottom: 8px; }
+  h2 { font-size: 17px; margin: 22px 0 10px; display: flex; gap: 10px; align-items: baseline; }
+  h2 .count { color: var(--muted); font-size: 13px; font-weight: 400; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 12px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 12px 14px;
+    min-width: 0;
+  }
+  .chead { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; margin-bottom: 6px; }
+  .ctitle { font-weight: 600; font-size: 16px; }
+  .cid { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); overflow-wrap: anywhere; }
+  .cnote { color: var(--plan); font-size: 13px; }
+  .slot { border-top: 1px solid var(--line); padding: 8px 0 6px; }
+  .slot.picked { background: var(--keep-soft); margin: 0 -8px; padding: 8px 8px 6px; border-radius: 10px; border-top-color: transparent; }
+  .slot.redo { background: var(--redo-soft); margin: 0 -8px; padding: 8px 8px 6px; border-radius: 10px; border-top-color: transparent; }
+  .shead { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+  .slabel { font-size: 14px; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+  .sname { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); overflow-wrap: anywhere; }
+  .badge { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+  .badge.game { color: var(--accent); }
+  .badge.plan { color: var(--plan); }
+  .badge.shared { color: var(--muted); }
+  .badge.take { color: var(--keep); }
+  .badge.draft { color: var(--plan); }
+  .files { display: grid; gap: 4px; margin-top: 6px; }
+  .file { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; align-items: center; }
+  .file input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--keep); cursor: pointer; }
+  .fmeta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; min-width: 0; }
+  .fname { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+  audio { grid-column: 2; width: 100%; min-width: 0; height: 32px; }
+  details { grid-column: 2; font-size: 13px; color: var(--muted); }
+  details summary { cursor: pointer; }
+  .empty-slot { color: var(--muted); font-size: 13px; margin-top: 4px; overflow-wrap: anywhere; }
+  .sactions { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-top: 6px; }
+  .redo-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--redo); cursor: pointer; }
+  .note-btn { border: 0; background: none; color: var(--accent); font-size: 13px; cursor: pointer; padding: 0; }
+  textarea {
+    width: 100%; margin-top: 6px; min-height: 34px; resize: vertical; padding: 6px 10px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+  }
+  .empty { color: var(--muted); padding: 24px 0; }
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 18px rgba(0, 10, 27, 0.08);
+  }
+  .bar .in { max-width: 980px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .summary { flex: 1 1 200px; color: var(--muted); font-size: 14px; }
+  .btn { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 14px; cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: var(--text); color: var(--bg);
+    padding: 8px 14px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Звуки игры</h1>
+    <span class="built" id="built"></span>
+  </header>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="tools">
+    <input class="search" id="search" type="search" placeholder="Поиск: юнит, здание, оружие, звук…" aria-label="Поиск">
+    <select class="filter" id="filter" aria-label="Показать">
+      <option value="all">Все места</option>
+      <option value="has">Есть звук</option>
+      <option value="none">Нет звука</option>
+      <option value="takes">Есть дубли</option>
+    </select>
+  </div>
+  <div id="groups"></div>
+  <main id="list"></main>
+</div>
+
+<div class="bar">
+  <div class="in">
+    <span class="summary" id="summary"></span>
+    <button class="btn" id="reset">Сбросить</button>
+    <button class="btn primary" id="copy">Скопировать выбор</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Список звуков собирает build.mjs: node tools/audio-picker/build.mjs -->
+<script src="manifest.js"></script>
+<script>
+  const manifest = window.SOUND_MANIFEST;
+  const $ = (id) => document.getElementById(id);
+  const listEl = $('list');
+  const STORAGE = 'rts-audio-picker';
+
+  let category = null;
+  // Фильтр по группам на каждой вкладке: сторона (Альянс, Союз…) и тип (пехота, техника…); пусто — все
+  let groups = {};
+  try {
+    groups = JSON.parse(localStorage.getItem(`${STORAGE}:groups`) || '{}');
+  } catch {}
+  const SIDES = ['Альянс', 'Союз', 'Мирные', 'Гражданские', 'Технологические'];
+  const TYPES = ['Пехота', 'Техника', 'Авиация', 'Флот', 'Оборона', 'Постройки'];
+  const order = (list) => (a, b) => (list.indexOf(a) + 1 || 99) - (list.indexOf(b) + 1 || 99);
+  let state = {picked: {}, redo: {}, notes: {}};
+  try {
+    state = {picked: {}, redo: {}, notes: {}, ...JSON.parse(localStorage.getItem(STORAGE) || '{}')};
+  } catch {}
+  try {
+    category = localStorage.getItem(`${STORAGE}:tab`);
+  } catch {}
+  const save = () => {
+    try {
+      localStorage.setItem(STORAGE, JSON.stringify(state));
+    } catch {}
+  };
+
+  const el = (tag, attrs = {}, children = []) => {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'class') node.className = v;
+      else if (k === 'text') node.textContent = v;
+      else node.setAttribute(k, v);
+    }
+    for (const c of [].concat(children)) if (c) node.append(c);
+    return node;
+  };
+
+  const plural = (n, one, few, many) => {
+    const m10 = n % 10, m100 = n % 100;
+    const w = m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? few : many;
+    return `${n} ${w}`;
+  };
+
+  const soundOf = (name) => manifest.sounds[name] || {defined: false, files: [], usedBy: 0};
+  const pickedIn = (name) => soundOf(name).files.filter((f) => state.picked[f.file]);
+
+  function slotMatches(card, slot, query, filter) {
+    const sound = soundOf(slot.sound);
+    if (filter === 'has' && !sound.files.length) return false;
+    if (filter === 'none' && sound.files.length) return false;
+    if (filter === 'takes' && !sound.files.some((f) => !f.current)) return false;
+    if (!query) return true;
+    return [card.title, card.id, slot.label, slot.sound || ''].some((t) => t.toLowerCase().includes(query));
+  }
+
+  function renderSlot(slot) {
+    const name = slot.sound;
+    const sound = soundOf(name);
+    const box = el('div', {class: 'slot'});
+    const refresh = () => {
+      box.classList.toggle('picked', !!name && pickedIn(name).length > 0);
+      box.classList.toggle('redo', !!name && !!state.redo[name]);
+      updateSummary();
+    };
+
+    const badges = [];
+    if (!name) badges.push(el('span', {class: 'badge plan', text: 'нет'}));
+    else if (sound.files.some((f) => f.current)) badges.push(el('span', {class: 'badge game', text: 'в игре'}));
+    else if (sound.defined) badges.push(el('span', {class: 'badge plan', text: 'файла нет'}));
+    else badges.push(el('span', {class: 'badge plan', text: 'запланирован'}));
+    const takes = sound.files.filter((f) => !f.current).length;
+    if (takes) badges.push(el('span', {class: 'badge take', text: plural(takes, 'дубль', 'дубля', 'дублей')}));
+    if (sound.usedBy > 1) badges.push(el('span', {class: 'badge shared', text: `общий · ${sound.usedBy}`}));
+
+    box.append(
+      el('div', {class: 'shead'}, [el('span', {class: 'slabel', text: slot.label}), ...badges]),
+      el('div', {class: 'sname', text: name || '—'}),
+    );
+    if (!name) return box;
+
+    if (sound.files.length) {
+      const files = el('div', {class: 'files'});
+      for (const f of sound.files) {
+        const check = el('input', {type: 'checkbox', 'aria-label': `Оставить ${f.file}`});
+        check.checked = !!state.picked[f.file];
+        check.addEventListener('change', () => {
+          if (check.checked) state.picked[f.file] = true;
+          else delete state.picked[f.file];
+          save();
+          refresh();
+        });
+        const meta = [el('span', {class: 'fname', text: f.file.split('/').pop()})];
+        if (!f.current) meta.push(el('span', {class: 'badge take', text: 'дубль'}));
+        if (f.tier && f.tier.toLowerCase() === 'free') meta.push(el('span', {class: 'badge draft', text: 'черновик · free'}));
+        const row = el('div', {class: 'file'}, [check, el('div', {class: 'fmeta'}, meta), el('audio', {controls: '', preload: 'none', src: f.src})]);
+        if (f.prompt) row.append(el('details', {}, [el('summary', {text: 'промпт'}), el('div', {text: f.prompt})]));
+        files.append(row);
+      }
+      box.append(files);
+    } else {
+      box.append(el('div', {class: 'empty-slot', text: 'Файлов пока нет: дубли из ElevenLabs лягут в assets_src/audio/takes/' + name + '/'}));
+    }
+
+    const redo = el('input', {type: 'checkbox'});
+    redo.checked = !!state.redo[name];
+    redo.addEventListener('change', () => {
+      if (redo.checked) state.redo[name] = true;
+      else delete state.redo[name];
+      save();
+      refresh();
+    });
+    const note = el('textarea', {rows: '1', placeholder: 'Что нужно: тяжелее, короче, с эхом…'});
+    note.value = state.notes[name] || '';
+    note.hidden = !note.value;
+    note.addEventListener('input', () => {
+      if (note.value.trim()) state.notes[name] = note.value;
+      else delete state.notes[name];
+      save();
+      updateSummary();
+    });
+    const noteBtn = el('button', {class: 'note-btn', type: 'button', text: note.value ? 'комментарий' : '+ комментарий'});
+    noteBtn.addEventListener('click', () => {
+      note.hidden = false;
+      note.focus();
+    });
+    box.append(el('div', {class: 'sactions'}, [el('label', {class: 'redo-toggle'}, [redo, sound.files.length ? 'переделать' : 'сделать']), noteBtn]), note);
+    refresh();
+    return box;
+  }
+
+  function render() {
+    const cat = manifest.categories.find((c) => c.id === category) || manifest.categories[0];
+    category = cat.id;
+    try {
+      localStorage.setItem(`${STORAGE}:tab`, category);
+    } catch {}
+    $('tabs').replaceChildren(
+      ...manifest.categories.map((c) => {
+        const slots = c.sections.flatMap((s) => s.cards.flatMap((card) => card.slots));
+        const has = slots.filter((s) => soundOf(s.sound).files.length).length;
+        const tab = el('button', {class: 'tab', role: 'tab', 'aria-selected': String(c.id === category), text: `${c.title} · ${has}/${slots.length}`});
+        tab.title = `Мест под звук: ${slots.length}, со звуком: ${has}`;
+        tab.addEventListener('click', () => {
+          category = c.id;
+          render();
+        });
+        return tab;
+      }),
+    );
+
+    renderGroups(cat);
+    const chosen = groups[cat.id] || {};
+    const query = $('search').value.trim().toLowerCase();
+    const filter = $('filter').value;
+    listEl.replaceChildren();
+    let shown = 0;
+    for (const section of cat.sections) {
+      const cards = [];
+      for (const card of section.cards) {
+        if ((chosen.side && card.side !== chosen.side) || (chosen.type && card.type !== chosen.type)) continue;
+        const cardHit = query && [card.title, card.id].some((t) => t.toLowerCase().includes(query));
+        const slots = card.slots.filter((s) => slotMatches(card, s, cardHit ? '' : query, filter));
+        if (!slots.length) continue;
+        const head = [el('span', {class: 'ctitle', text: card.title})];
+        if (card.id !== card.title) head.push(el('span', {class: 'cid', text: card.id}));
+        if (card.note) head.push(el('span', {class: 'cnote', text: card.note}));
+        cards.push(el('article', {class: 'card'}, [el('div', {class: 'chead'}, head), ...slots.map(renderSlot)]));
+      }
+      if (!cards.length) continue;
+      shown += cards.length;
+      listEl.append(
+        el('h2', {}, [section.title, el('span', {class: 'count', text: plural(cards.length, 'карточка', 'карточки', 'карточек')})]),
+        el('div', {class: 'grid'}, cards),
+      );
+    }
+    if (!shown) listEl.append(el('p', {class: 'empty', text: 'Ничего не нашлось.'}));
+    updateSummary();
+  }
+
+  // Ряды кнопок «Сторона» и «Тип» — только из того, что есть на вкладке; у событий, мира и меню их нет
+  function renderGroups(cat) {
+    const cards = cat.sections.flatMap((s) => s.cards);
+    const chosen = (groups[cat.id] ||= {});
+    const row = (key, title, values) => {
+      if (values.length < 2) return null;
+      const chip = (value, text, count) => {
+        const b = el('button', {class: 'chip', type: 'button', 'aria-pressed': String((chosen[key] || '') === value)}, [
+          text,
+          el('span', {class: 'n', text: String(count)}),
+        ]);
+        b.addEventListener('click', () => {
+          if (value) chosen[key] = value;
+          else delete chosen[key];
+          try {
+            localStorage.setItem(`${STORAGE}:groups`, JSON.stringify(groups));
+          } catch {}
+          render();
+        });
+        return b;
+      };
+      // Число у кнопки — сколько карточек с этим значением при выбранном значении другого ряда
+      const other = key === 'side' ? 'type' : 'side';
+      const pool = cards.filter((c) => !chosen[other] || c[other] === chosen[other]);
+      return el('div', {class: 'chips'}, [
+        el('span', {class: 'chips-label', text: title}),
+        chip('', 'Все', pool.length),
+        ...values.map((v) => chip(v, v, pool.filter((c) => c[key] === v).length)),
+      ]);
+    };
+    const values = (key, list) => [...new Set(cards.map((c) => c[key]).filter(Boolean))].sort(order(list));
+    $('groups').replaceChildren(...[row('side', 'Сторона', values('side', SIDES)), row('type', 'Тип', values('type', TYPES))].filter(Boolean));
+  }
+
+  function updateSummary() {
+    const names = Object.keys(manifest.sounds);
+    const picked = names.filter((n) => pickedIn(n).length).length;
+    const redo = names.filter((n) => state.redo[n]).length;
+    const notes = names.filter((n) => (state.notes[n] || '').trim()).length;
+    $('summary').textContent = `Отмечено: ${picked} · сделать или переделать: ${redo} · комментариев: ${notes}`;
+  }
+
+  // Текст для чата: по каждому отмеченному звуку — что оставить, что сделать, комментарий и где он звучит
+  function selectionText() {
+    const where = {};
+    for (const c of manifest.categories)
+      for (const s of c.sections)
+        for (const card of s.cards)
+          for (const slot of card.slots) if (slot.sound) (where[slot.sound] ||= []).push(`${card.title} — ${slot.label}`);
+    const lines = ['Звуки игры — выбор'];
+    for (const name of Object.keys(manifest.sounds)) {
+      const files = pickedIn(name).map((f) => f.file + (f.current ? ' (в игре)' : ''));
+      const note = (state.notes[name] || '').trim();
+      const parts = [];
+      if (files.length) parts.push(`оставить ${files.join(', ')}`);
+      if (state.redo[name]) parts.push(soundOf(name).files.length ? 'переделать' : 'сделать');
+      if (note) parts.push(`«${note}»`);
+      if (!parts.length) continue;
+      const used = where[name] || [];
+      const place = used.length > 3 ? `${used.slice(0, 3).join('; ')} и ещё ${used.length - 3}` : used.join('; ');
+      lines.push(`- ${name}: ${parts.join(' — ')} [${place}]`);
+    }
+    if (lines.length === 1) lines.push('(ничего не отмечено)');
+    return lines.join('\n');
+  }
+
+  async function copy(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Запасной путь, если буфер обмена недоступен (страница открыта как файл)
+      const area = el('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.append(area);
+      area.select();
+      const ok = document.execCommand('copy');
+      area.remove();
+      return ok;
+    }
+  }
+
+  function toast(message) {
+    const t = $('toast');
+    t.textContent = message;
+    t.style.bottom = `${document.querySelector('.bar').offsetHeight + 12}px`;
+    t.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  // Одновременно играет один файл
+  document.addEventListener('play', (e) => {
+    document.querySelectorAll('audio').forEach((a) => a !== e.target && a.pause());
+  }, true);
+
+  if (!manifest) {
+    document.querySelector('.tools').hidden = true;
+    listEl.append(
+      el('p', {class: 'empty'}, ['Список звуков не собран. Из корня репозитория: ', el('code', {text: 'node tools/audio-picker/build.mjs'})]),
+    );
+  } else {
+    $('built').textContent = `список собран ${new Date(manifest.built).toLocaleString('ru-RU')}`;
+    $('search').addEventListener('input', render);
+    $('filter').addEventListener('change', render);
+    $('copy').addEventListener('click', async () => {
+      toast((await copy(selectionText())) ? 'Скопировано — вставь в чат' : 'Не получилось скопировать');
+    });
+    $('reset').addEventListener('click', () => {
+      if (!confirm('Сбросить все отметки и комментарии?')) return;
+      state = {picked: {}, redo: {}, notes: {}};
+      save();
+      render();
+    });
+    render();
+  }
+</script>
+</body>
+</html>
