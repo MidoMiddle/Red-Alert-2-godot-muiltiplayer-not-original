@@ -17,8 +17,9 @@ public enum HumanMotion
 /// The clips of a person with the Mixamo skeleton (docs/art/mixamo.md): every look of tools/blender/units/civilians.py is skinned to the
 /// same bones, so the one library of <c>assets/models/unit/human_clips</c> plays on all of them. Standing, an idle now and then gives way
 /// to another (the calm <c>idle_0</c> most often); walking and running, the walk and the run the person was given at the start, played
-/// as fast as the feet must go to keep to the ground; in cover, a crouch, with the clips of getting down and up again. The clip is the
-/// look only: the simulation never hears of it.
+/// as fast as the feet must go to keep to the ground; in cover, a crouch, with the clips of getting down and up again. A soldier with
+/// the clips of a rifle (<c>rifle_*</c>, his only) plays those instead: he stands, walks and runs with it in both hands, kneels in
+/// cover (dug in) and shoots when his weapon fires. The clip is the look only: the simulation never hears of it.
 /// </summary>
 public sealed class HumanAnimator
 {
@@ -48,6 +49,10 @@ public sealed class HumanAnimator
     private HumanClip _run = null!;
     private HumanMotion _motion;
     private float _idleLeft;
+
+    // The clips of the person's kit: "" for the people's, "rifle_" for a soldier's; the cover's name, a crouch or kneeling with a rifle.
+    private string _kit = "";
+    private string _cover = "crouch";
 
     private HumanAnimator(AnimationPlayer player, string unitId)
     {
@@ -79,8 +84,11 @@ public sealed class HumanAnimator
     /// <summary>A new person in the view: its walk and its run picked again, standing.</summary>
     public void Restart()
     {
-        _walk = Pick("walk");
-        _run = Pick("run");
+        var soldier = !_table!.Family("rifle_idle", _unitId).IsEmpty;
+        _kit = soldier ? "rifle_" : "";
+        _cover = soldier ? "rifle_kneel" : "crouch";
+        _walk = Pick(_kit + "walk");
+        _run = Pick(_kit + "run");
         _motion = HumanMotion.Stand;
         PlayIdle(true);
     }
@@ -105,7 +113,7 @@ public sealed class HumanAnimator
             case HumanMotion.Stand:
                 _player.SpeedScale = 1f;
                 _idleLeft -= delta;
-                if (_idleLeft <= 0f && _player.CurrentAnimation.ToString().StartsWith("idle_", StringComparison.Ordinal))
+                if (_idleLeft <= 0f && _player.CurrentAnimation.ToString().StartsWith(_kit + "idle_", StringComparison.Ordinal))
                 {
                     PlayIdle(false);
                 }
@@ -120,7 +128,7 @@ public sealed class HumanAnimator
     /// <summary>Plays a fall; returns how long it takes.</summary>
     public float Die()
     {
-        var falls = _table!.Family("die", _unitId);
+        var falls = _table!.Family(_kit + "die", _unitId);
         if (falls.IsEmpty)
         {
             return 0f;
@@ -133,16 +141,38 @@ public sealed class HumanAnimator
         return fall.Length;
     }
 
+    /// <summary>
+    /// Plays a shot of a soldier standing or in cover, then he aims again; nothing for a person without a rifle's clips or on the move.
+    /// </summary>
+    public void Fire()
+    {
+        var covered = _motion == HumanMotion.Cover;
+        var shot = covered ? _cover + "_fire" : _kit + "fire_0";
+        if (_kit.Length == 0 || !Has(shot) || _motion is HumanMotion.Walk or HumanMotion.Run)
+        {
+            return;
+        }
+
+        // Aiming between the shots: kneeling in cover, the aiming idle standing.
+        var aim = covered ? _cover : Has(_kit + "idle_1") ? _kit + "idle_1" : Calm().Name;
+        _player.SpeedScale = 1f;
+        _player.ClearQueue();
+        _player.Play(shot, 0.05);
+        _player.Seek(0, true);
+        _player.Queue(aim);
+        _idleLeft = _table!.Clips[shot].Length + (2 * _table.Clips[aim].Length);
+    }
+
     private void Change(HumanMotion from, HumanMotion to)
     {
         _player.ClearQueue();
         switch (to)
         {
             case HumanMotion.Cover:
-                Then("crouch_down", "crouch", CoverPace);
+                Then(_cover + "_down", _cover, CoverPace);
                 break;
             case HumanMotion.Run when from == HumanMotion.Cover:
-                Then("crouch_sprint", _run.Name, 1f);
+                Then(_cover + "_sprint", _run.Name, 1f);
                 break;
             case HumanMotion.Run:
                 _player.Play(_run.Name, Blend);
@@ -151,13 +181,13 @@ public sealed class HumanAnimator
                 _player.Play(_walk.Name, Blend);
                 break;
             default:
-                if (from == HumanMotion.Cover && Has("crouch_up"))
+                if (from == HumanMotion.Cover && Has(_cover + "_up"))
                 {
                     // Up again, then the calm idle once through before another is picked.
                     var calm = Calm();
-                    _player.Play("crouch_up", Blend, CoverPace);
+                    _player.Play(_cover + "_up", Blend, CoverPace);
                     _player.Queue(calm.Name);
-                    _idleLeft = (_table!.Clips["crouch_up"].Length / CoverPace) + calm.Length;
+                    _idleLeft = (_table!.Clips[_cover + "_up"].Length / CoverPace) + calm.Length;
                 }
                 else
                 {
@@ -190,10 +220,10 @@ public sealed class HumanAnimator
         _idleLeft = idle.Length * (1 + _random.Next(2));
     }
 
-    // The calm idle, idle_0, half the time; another idle else.
-    private HumanClip Idle() => _random.Next(2) == 0 ? Calm() : Pick("idle");
+    // The calm idle, idle_0 (of the kit), half the time; another idle else.
+    private HumanClip Idle() => _random.Next(2) == 0 ? Calm() : Pick(_kit + "idle");
 
-    private HumanClip Calm() => _table!.Clips.TryGetValue("idle_0", out var calm) ? calm : Pick("idle");
+    private HumanClip Calm() => _table!.Clips.TryGetValue(_kit + "idle_0", out var calm) ? calm : Pick(_kit + "idle");
 
     private HumanClip Pick(string family)
     {

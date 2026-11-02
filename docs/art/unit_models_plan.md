@@ -3,7 +3,7 @@
 > Статус: черновик · Создан: 2026-10-28
 > Связанные документы: [стандарт моделей](model_standards.md), [справочник юнитов RA2](../ra2_units/README.md), [15_legal.md](../15_legal.md)
 
-Кто рисует какую модель юнита в Blender. В игре 54 юнита: 28 у Альянса и 26 у Союза (`game/data/factions/*/units*.yaml`). Готовы 3, осталось 51. Haiku 5.5 дешевле и быстрее, Opus 5.5 надёжнее там, где нет готового образца. Делим юниты по тому, есть ли образец.
+Кто рисует какую модель юнита в Blender. В игре 54 юнита: 28 у Альянса и 26 у Союза (`game/data/factions/*/units*.yaml`). Готовы 4, осталось 50. Haiku 5.5 дешевле и быстрее, Opus 5.5 надёжнее там, где нет готового образца. Делим юниты по тому, есть ли образец.
 
 Деление — прогноз. Первым проверяем его на «Носороге» (раздел 7) и после этого двигаем границу.
 
@@ -31,16 +31,16 @@
 | `alliance_light_tank` | «Гризли» | `alliance_light_tank.py`: гусеницы, башня, ствол, точка выстрела |
 | `alliance_harvester` | хроно-харвестер | `alliance_harvester.py`: гусеницы без башни, бункер, `spin_*` |
 | `harvester` | советский рудокоп | `harvester.py`: гусеницы, бункер, башня с двумя стволами |
+| `alliance_rifleman` | GI | `alliance_rifleman.py`: солдат на скелете Mixamo мирных жителей (`civilians.py`), клипы солдат `rifle_*`, оружие в двух руках, кольцо мешков `sandbags`. Образец пехоты |
 
 Общие части (лофты, цилиндры, сферы, развёртка, запись `.blend`) — в `tools/blender/units/parts.py`.
 
 ---
 
-## 3. Opus 5.5: образцы серий и сложные юниты (12)
+## 3. Opus 5.5: образцы серий и сложные юниты (11)
 
 | Юнит (id) | Аналог RA2 | Почему Opus |
 |---|---|---|
-| `conscript` | призывник | первая пехота: поза, пропорции, бюджет 1 500 треугольников. Образец для 15 солдат |
 | `attack_dog` | собака Союза | первое животное, живая форма. Собака Альянса — тот же образец |
 | `alliance_destroyer` | эсминец | первый корабль: ватерлиния, размер больше клетки. Образец флота |
 | `alliance_harrier` | «Харриер» | первый самолёт: модель без опоры на землю, высота полёта. Образец авиации |
@@ -78,9 +78,11 @@
 
 ## 5. Haiku 5.5 после образца от Opus (27)
 
+Образец пехоты уже есть: `alliance_rifleman.py` (2026-11-02). Солдаты ниже делаются по нему сразу.
+
 | Образец (Opus) | Юниты для Haiku |
 |---|---|
-| `conscript` (пехота) | `alliance_rifleman`, `rocketeer`, `engineer`, `alliance_engineer`, `tesla_trooper`, `crazy_ivan`, `terrorist`, `desolator`, `chrono_ivan`, `alliance_rocketeer`, `alliance_spy`, `alliance_chrono_legionnaire`, `alliance_sniper`, `alliance_chrono_commando`, `alliance_psi_commando` (15) |
+| `alliance_rifleman` (пехота) | `conscript`, `rocketeer`, `engineer`, `alliance_engineer`, `tesla_trooper`, `crazy_ivan`, `terrorist`, `desolator`, `chrono_ivan`, `alliance_rocketeer`, `alliance_spy`, `alliance_chrono_legionnaire`, `alliance_sniper`, `alliance_chrono_commando`, `alliance_psi_commando` (15) |
 | `yuri` | `yuri_prime` (1) |
 | `attack_dog` | `alliance_attack_dog` (1): та же модель, свои зоны цвета команды |
 | `alliance_destroyer` (флот) | `alliance_aegis_cruiser`, `alliance_aircraft_carrier`, `dreadnought`, `typhoon_sub`, `sea_scorpion` (5) |
@@ -119,7 +121,7 @@
 Это код игры, его делает Opus отдельной задачей:
 
 - вращение узлов `spin_*` (ядро, барабаны, винты, роторы): сейчас игра их не крутит;
-- скелет и анимации пехоты (ходьба, стрельба, смерть). Сейчас пехота — статичная модель, это решаем вместе с образцом `conscript`;
+- клипы пехоты, которой не хватает винтовочных (`rifle_*`, [mixamo.md](mixamo.md)): с ракетомётом на плече, с пистолетами, без оружия. Солдат с винтовкой или пулемётом берёт готовые: его id добавляют в `SOLDIERS` скрипта `civilians.py` и пересобирают клипы. Новые клипы скачивает владелец на mixamo.com;
 - развёртывание MCV, маскировка миража, смена башни БМП по пассажиру.
 
 **Первая проверка деления:** Haiku делает `heavy_tank` («Носорог») по `alliance_light_tank.py`. Если модель проходит проверку раздела 6 без переделок, остальные юниты раздела 4 тоже отдаём Haiku. Если нет — сдвигаем границу и правим этот документ.

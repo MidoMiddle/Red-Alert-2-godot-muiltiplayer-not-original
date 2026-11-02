@@ -66,11 +66,19 @@ CLIPS = {
     "crouch_down": (False, False), "crouch": (True, False), "crouch_up": (False, False), "crouch_sprint": (False, True),
     "die_0": (False, False), "die_1": (False, False),
     "prone": (True, False),
+    # The soldiers' (alliance_rifleman.py): with a rifle in both hands. Kneeling is their cover, dug in.
+    "rifle_idle_0": (True, False), "rifle_idle_1": (True, False), "rifle_walk_0": (True, True), "rifle_run_0": (True, True),
+    "rifle_fire_0": (False, False),
+    "rifle_kneel_down": (False, False), "rifle_kneel": (True, False), "rifle_kneel_fire": (False, False), "rifle_kneel_up": (False, False),
+    "rifle_die_0": (False, False), "rifle_die_1": (False, False), "rifle_die_2": (False, False), "rifle_die_3": (False, False),
+    "rifle_die_4": (False, False),
 }
 
-# The clips only some people take: the catwalk is the women's.
+# The clips only some people take: the catwalk is the women's, the rifle's the soldiers'.
+SOLDIERS = ["alliance_rifleman"]
 ONLY = {
     "walk_woman_0": ["civ_woman", "civ_winter_woman", "civ_desert_woman", "civ_beach_woman"],
+    **{name: SOLDIERS for name in CLIPS if name.startswith("rifle_")},
 }
 
 (SKIN, HAIR, TOP, BOTTOM, SHOE, ACCENT, DARK, WHITE) = (cc.part(i) for i in range(8))

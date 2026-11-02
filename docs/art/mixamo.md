@@ -52,6 +52,19 @@
 | `die_0`, `die_1` | Dying Backwards, Sword And Shield Death | убит; тело лежит ещё 2 с |
 | `prone` | Laying Idle | лежит (для отдыхающих, пока не играет) |
 
+Клипы солдат с оружием в двух руках (2026-11-02). Играют только у солдат из списка `SOLDIERS` скрипта (сейчас это `alliance_rifleman`), поэтому в таблице клипов они в `only`:
+
+| Имя | Клип Mixamo | Когда играет |
+|---|---|---|
+| `rifle_idle_0` | Rifle Idle | стоит, оружие опущено |
+| `rifle_idle_1` | Rifle Aiming Idle | стоит и целится; после выстрела. По этому клипу оружие посажено в руки |
+| `rifle_walk_0` | Rifle Walk | идёт |
+| `rifle_run_0` | Rifle Run | бежит |
+| `rifle_fire_0` | Firing Rifle | выстрел стоя |
+| `rifle_kneel_down`, `rifle_kneel`, `rifle_kneel_up` | Rifle Stand To Kneel, Idle Crouching Aiming, Rifle Kneel To Stand | окапывается: встал на колено, целится поверх мешков, встал |
+| `rifle_kneel_fire` | Crouch Rapid Fire | выстрел из окопа |
+| `rifle_die_0` … `rifle_die_4` | Death From The Front, Death From The Back, Death From Front Headshot, Death From Back Headshot, Death From Right | убит |
+
 Не используются: Walk In Circle (ходит по кругу) и Turn and Running (разворот на бегу): разворачивает и двигает юнита симуляция. Они лежат в той же папке как `unused_*`.
 
 ### 3.3. Как игра выбирает клип
@@ -63,6 +76,8 @@
 - бежит (`Flee`) — его бег, со скоростью по шагу; из укрытия — сначала `crouch_sprint`;
 - прячется (`Cover`) — `crouch_down`, затем `crouch`; встаёт — `crouch_up`;
 - убит — случайное падение.
+
+Солдат (у кого в таблице есть `rifle_idle_*`) берёт те же решения из клипов `rifle_*`: стоит, идёт, бежит; окопанный — на колене (`rifle_kneel_down`, затем `rifle_kneel`); убит — `rifle_die_*`. На каждый выстрел его оружия (`WeaponFired` симуляции) играет `rifle_fire_0`, в окопе — `rifle_kneel_fire`, потом снова целится.
 
 Клип — только картинка: симуляция о нём не знает, повторы и сетевая игра не меняются.
 

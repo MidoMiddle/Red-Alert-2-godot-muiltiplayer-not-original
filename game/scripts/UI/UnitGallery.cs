@@ -13,7 +13,9 @@ namespace Rts.Client.UI;
 /// unit and building of the data with its role colour and code. With <c>--buildings</c> every building of the players in its look
 /// (<see cref="Terrain.BuildingLooks"/>), the Allies' rows first, in the order of the sidebar. With <c>--models</c> every model of the
 /// table of models (docs/art/model_standards.md) on a plate of its footprint, to check its size against the cells. With
-/// <c>--props</c> the buildings and props of the map from the element documents in their placeholder looks.
+/// <c>--props</c> the buildings and props of the map from the element documents in their placeholder looks. With <c>--unit &lt;id&gt;</c>
+/// one unit up close, four times: standing, walking to and fro, firing now and then, and dug in firing (a soldier who digs in; the
+/// fourth stands otherwise).
 /// </summary>
 public partial class UnitGallery : Node3D
 {
@@ -74,6 +76,14 @@ public partial class UnitGallery : Node3D
         if (props)
         {
             ShowProps();
+            ScreenshotCapture.AttachIfRequested(this);
+            return;
+        }
+
+        var args = OS.GetCmdlineUserArgs();
+        if (System.Array.IndexOf(args, "--unit") is var unitArg && unitArg >= 0 && unitArg + 1 < args.Length)
+        {
+            ShowUnit(args[unitArg + 1]);
             ScreenshotCapture.AttachIfRequested(this);
             return;
         }
@@ -141,6 +151,66 @@ public partial class UnitGallery : Node3D
         AddChild(soldier);
         soldier.SetMaterial(new StandardMaterial3D { AlbedoColor = Matches.PlayerColors.Of(new PlayerId(1)) });
         soldier.SetPose(at + new Vector3(width / 2f + 0.3f, 0f, height / 2f + 0.1f), Mathf.DegToRad(-30f), Mathf.DegToRad(-30f));
+    }
+
+    // The views of --unit: standing, walking, shooting, dug in and shooting; the time along the walker's path and to the next shot.
+    private UnitView[]? _close;
+    private float _walked;
+    private float _nextShot;
+
+    /// <summary>One unit up close (--unit): its four views, played on in <see cref="_Process"/>.</summary>
+    private void ShowUnit(string id)
+    {
+        var rules = DataFiles.Current.Rules;
+        var type = System.Linq.Enumerable.First(UnitTypes.All, t => rules.Unit(t).Id == id);
+        var colour = new StandardMaterial3D { AlbedoColor = Matches.PlayerColors.Of(new PlayerId(1)) };
+        _close = new UnitView[4];
+        for (var i = 0; i < _close.Length; i++)
+        {
+            var view = new UnitView();
+            view.Build(rules.Unit(type));
+            AddChild(view);
+            view.SetMaterial(colour);
+            // Turned to the camera, a little to its right: up close the front is what is looked at.
+            view.SetPose(new Vector3((i - 1.5f) * 0.8f, 0f, 0f), Mathf.DegToRad(150f), Mathf.DegToRad(150f));
+            _close[i] = view;
+        }
+
+        AddChild(new Camera3D
+        {
+            Projection = Camera3D.ProjectionType.Orthogonal,
+            Size = 1.6f,
+            Position = new Vector3(0, 3f, 2.1f),
+            RotationDegrees = new Vector3(-55f, 0, 0),
+            Current = true,
+        });
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_close is null)
+        {
+            return;
+        }
+
+        // The walker goes to and fro across its place, turned the way it goes; the third and the fourth fire now and then.
+        _walked += (float)delta;
+        var phase = Mathf.PosMod(_walked, 4f);
+        var x = phase < 2f ? -0.6f + (phase * 0.2f) : -0.2f - ((phase - 2f) * 0.2f);
+        _close[1].SetPose(new Vector3(x, 0f, 0f), Mathf.DegToRad(phase < 2f ? -90f : 90f), 0f);
+        _close[3].SetSandbags(DataFiles.Current.Rules.Unit(_close[3].Type).DeployedWeapon >= 0);
+        foreach (var view in _close)
+        {
+            view.Animate(null, (float)delta);
+        }
+
+        _nextShot -= (float)delta;
+        if (_nextShot <= 0f && _walked > 1f)
+        {
+            _nextShot = 1.3f;
+            _close[2].Fire();
+            _close[3].Fire();
+        }
     }
 
     /// <summary>The buildings of the map with a look of the element documents, then the props, each on its plate with its id.</summary>

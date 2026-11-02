@@ -534,6 +534,9 @@ models:
   unit/alliance_light_tank:  { file: unit/alliance_light_tank/alliance_light_tank.glb, scale: 1.4 }
   unit/alliance_harvester:   { file: unit/alliance_harvester/alliance_harvester.glb, scale: 1.4 }
   unit/harvester:            { file: unit/harvester/harvester.glb, scale: 1.4 }
+  # The Rifleman on the civilians' Mixamo skeleton (tools/blender/units/alliance_rifleman.py): the soldiers' clips play on him, his gun
+  # in his hands; dug in he kneels inside his own ring of sandbags, the node sandbags the game shows only then.
+  unit/alliance_rifleman:    { file: unit/alliance_rifleman/alliance_rifleman.glb }
   # The civilians of the map with a skeleton (docs/map_elements/13_civilians, docs/art/mixamo.md): every look skinned to the Mixamo
   # skeleton, the clips of assets/models/unit/human_clips on all of them (Units/HumanAnimator.cs).
   unit/civ_man:              { file: unit/civ_man/civ_man.glb }

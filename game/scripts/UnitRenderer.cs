@@ -45,9 +45,16 @@ public partial class UnitRenderer : Node3D
 
     public override void _ExitTree() => _host.EventRaised -= OnEvent;
 
-    // A person or an animal with a skeleton killed: its view leaves the unit's and plays the fall where it stands.
+    // A person or an animal with a skeleton killed: its view leaves the unit's and plays the fall where it stands. A soldier who fires
+    // plays his shot.
     private void OnEvent(SimEvent simEvent)
     {
+        if (simEvent is WeaponFired fired && _views.TryGetValue(fired.Shooter, out var shooter))
+        {
+            shooter.Fire();
+            return;
+        }
+
         if (simEvent is UnitKilled killed && _views.TryGetValue(killed.Unit, out var view) && view.Visible && view.Fall() is { } fall)
         {
             _views.Remove(killed.Unit);

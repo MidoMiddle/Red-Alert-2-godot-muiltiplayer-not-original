@@ -22,6 +22,34 @@ clips:
   die_0: { loop: false, length: 4.600 }
   die_1: { loop: false, length: 3.900 }
   prone: { loop: true, length: 2.133 }
+  rifle_idle_0: { loop: true, length: 8.567 }
+  rifle_idle_1: { loop: true, length: 3.100 }
+  rifle_walk_0: { loop: true, length: 1.300, stride: 0.350 }
+  rifle_run_0: { loop: true, length: 0.667, stride: 1.269 }
+  rifle_fire_0: { loop: false, length: 0.267 }
+  rifle_kneel_down: { loop: false, length: 0.933 }
+  rifle_kneel: { loop: true, length: 2.100 }
+  rifle_kneel_fire: { loop: false, length: 0.767 }
+  rifle_kneel_up: { loop: false, length: 1.233 }
+  rifle_die_0: { loop: false, length: 3.433 }
+  rifle_die_1: { loop: false, length: 2.967 }
+  rifle_die_2: { loop: false, length: 2.833 }
+  rifle_die_3: { loop: false, length: 3.700 }
+  rifle_die_4: { loop: false, length: 3.300 }
 # The clips only these people take (unit ids); the others are everyone's.
 only:
   walk_woman_0: [civ_woman, civ_winter_woman, civ_desert_woman, civ_beach_woman]
+  rifle_idle_0: [alliance_rifleman]
+  rifle_idle_1: [alliance_rifleman]
+  rifle_walk_0: [alliance_rifleman]
+  rifle_run_0: [alliance_rifleman]
+  rifle_fire_0: [alliance_rifleman]
+  rifle_kneel_down: [alliance_rifleman]
+  rifle_kneel: [alliance_rifleman]
+  rifle_kneel_fire: [alliance_rifleman]
+  rifle_kneel_up: [alliance_rifleman]
+  rifle_die_0: [alliance_rifleman]
+  rifle_die_1: [alliance_rifleman]
+  rifle_die_2: [alliance_rifleman]
+  rifle_die_3: [alliance_rifleman]
+  rifle_die_4: [alliance_rifleman]

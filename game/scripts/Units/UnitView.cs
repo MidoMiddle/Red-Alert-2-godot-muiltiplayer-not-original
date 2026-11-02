@@ -43,6 +43,7 @@ public partial class UnitView : Node3D
     private List<MeshInstance3D>? _teamMeshes;
     private MeshInstance3D? _turretBody;
     private Node3D? _sandbags;
+    private bool _dugIn;
     private Vector3? _drawnAt;
     private float _speed;
     private Node3D? _blaze;
@@ -84,6 +85,9 @@ public partial class UnitView : Node3D
             _turret = model.FindChild("turret", true, false) as Node3D;
             _teamMeshes = [];
             CollectTeam(model, false, _teamMeshes);
+            // A soldier's own sandbags, shown only when he is dug in.
+            _sandbags = model.FindChild("sandbags", true, false) as Node3D;
+            _sandbags?.Hide();
             // An animal brings its own clips; the person's library is for the Mixamo skeleton only.
             Animal = AnimalAnimator.Attach(model);
             Human = Animal is null ? HumanAnimator.Attach(model, archetype.Id) : null;
@@ -122,6 +126,9 @@ public partial class UnitView : Node3D
 
     /// <summary>Plays the fall of a person or an animal killed; returns how long it takes, null for a view that has none.</summary>
     public float? Fall() => Human?.Die() ?? Animal?.Die();
+
+    /// <summary>Plays the shot of a soldier with a rifle's clips (<see cref="HumanAnimator.Fire"/>); nothing for every other view.</summary>
+    public void Fire() => Human?.Fire();
 
     /// <summary>
     /// Shows the burning wreck of a parked car (docs/map_elements/13_civilians, 4.6): the car charred, smoke and flames over it; or the
@@ -181,7 +188,7 @@ public partial class UnitView : Node3D
         _speed = Mathf.Lerp(_speed, seen, 1f - Mathf.Exp(-delta * 12f));
         var motion = _speed > MovingSpeed
             ? state == CivilianState.Flee ? HumanMotion.Run : HumanMotion.Walk
-            : state == CivilianState.Cover ? HumanMotion.Cover : HumanMotion.Stand;
+            : state == CivilianState.Cover || _dugIn ? HumanMotion.Cover : HumanMotion.Stand;
         Human?.Step(motion, _speed, delta);
         Animal?.Step(motion, delta);
     }
@@ -189,9 +196,13 @@ public partial class UnitView : Node3D
     /// <summary>How fast (units a second) a person is seen to go before it walks: below, it stands.</summary>
     private const float MovingSpeed = 0.08f;
 
-    /// <summary>Shows or hides the ring of sandbags of a soldier dug in; made the first time it is shown.</summary>
+    /// <summary>
+    /// Shows or hides the ring of sandbags of a soldier dug in: the model's own, or made the first time it is shown. A person with a
+    /// skeleton crouches behind them (<see cref="Animate"/>).
+    /// </summary>
     public void SetSandbags(bool shown)
     {
+        _dugIn = shown;
         if (_sandbags is null)
         {
             if (!shown)
