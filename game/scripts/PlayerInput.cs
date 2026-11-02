@@ -369,8 +369,9 @@ public partial class PlayerInput : Node
         }
         else if (key.IsActionPressed("deploy", false, true) && SelectedFactory is { } yard && IsYard(yard) && !_host.IsPlayback)
         {
-            // D on the selected construction yard: it packs up into its MCV (RA2).
+            // D on the selected construction yard: it packs up into its MCV (RA2), selected once it is out.
             _host.IssueDeploy([yard]);
+            _packing.Add(yard);
             ChangeSelection(Selection.Clear);
         }
         else if (key.IsActionPressed("deploy", false, true) && SelectedFactory is { } factory && !_host.IsPlayback)
@@ -769,6 +770,11 @@ public partial class PlayerInput : Node
                     break;
                 case DeployUnit deploy when !_host.IsPlayback:
                     _host.IssueDeploy([deploy.Unit]);
+                    if (IsYard(deploy.Unit))
+                    {
+                        _packing.Add(deploy.Unit);
+                    }
+
                     break;
                 case AimSuperweapon aim when !_host.IsPlayback:
                     // The Phase Gate takes two clicks: what to move, then where.
@@ -1056,6 +1062,9 @@ public partial class PlayerInput : Node
     // The building selected instead of units: one that produces (an order on the ground sets its rally point) or a defense.
     private EntityId? _building;
 
+    // The construction yards the player told to pack up: the MCV of each is selected when it is out.
+    private readonly HashSet<EntityId> _packing = new();
+
     // Where the last event of the radar happened (Space), and the unit N / M picked last.
     private WorldPos? _lastEvent;
     private EntityId _cycled;
@@ -1137,6 +1146,13 @@ public partial class PlayerInput : Node
     /// <summary>Remembers where an event of the radar for the local player happened, for Space.</summary>
     private void Remember(Rts.Simulation.Events.SimEvent simEvent)
     {
+        if (simEvent is Rts.Simulation.Events.Undeployed packed && _packing.Remove(packed.Building))
+        {
+            // The yard the player packed up is out as its MCV: it is selected, to be driven on (the owner, 2026-11-02).
+            ChangeSelection(() => Selection.Replace(packed.Unit));
+            _building = null;
+        }
+
         var world = _host.Simulation.World;
         var player = SimulationHost.LocalPlayer;
         WorldPos? point = simEvent switch
@@ -1246,6 +1262,7 @@ public partial class PlayerInput : Node
                 Voice("moving");
                 _markers?.Add(point, MarkerKind.Move);
                 _host.IssuePackAndGo(factory, point);
+                _packing.Add(factory);
                 _building = null;
             }
             else
