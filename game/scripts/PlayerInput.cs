@@ -1163,6 +1163,28 @@ public partial class PlayerInput : Node
             : null;
 
     /// <summary>
+    /// The player's own building selected whose units come out of it — the barracks, the war factory, a shipyard — and go to its rally
+    /// point; not the construction yard nor the air command, whose planes go to their pads (the owner, 2026-11-02).
+    /// </summary>
+    public EntityId? SelectedRally =>
+        SelectedFactory is { } id && _host.Simulation.World.TryGet(id, out var entity) && entity is Building { Def: { } def } && Rallies(def)
+            ? id
+            : null;
+
+    /// <summary>Whether units that come out of a building of <paramref name="def"/> go to a rally point: soldiers, vehicles, ships.</summary>
+    public static bool Rallies(Rts.Simulation.Rules.BuildingDef def) =>
+        def.Produces.Any(category => category is Rts.Simulation.Rules.ProductionCategory.Infantry or Rts.Simulation.Rules.ProductionCategory.Vehicle
+            or Rts.Simulation.Rules.ProductionCategory.Naval);
+
+    // Whether an MCV can drive onto the cell of the point: land a vehicle can enter.
+    private bool DrivesTo(WorldPos point) =>
+        _host.Simulation.World.Map.CanEnter(point.ToCell(), Rts.Simulation.Map.Locomotor.Track)
+        || _host.Simulation.World.Map.CanEnter(point.ToCell(), Rts.Simulation.Map.Locomotor.Wheel);
+
+    // Whether the yard may pack up into its MCV: unless the match turned «MCV Repacks» off.
+    private bool YardMayPack => _host.Simulation.World.Match is not { Options.McvRepacks: false };
+
+    /// <summary>
     /// The player's own ready building that fires — a defense, a garrisoned bunker — selected (RA2): its range shows and an order on what it
     /// can fire at is its target; null when none is, or it is gone or taken.
     /// </summary>
@@ -1213,6 +1235,30 @@ public partial class PlayerInput : Node
     {
         if (_host.IsPlayback || !_host.Simulation.World.Contains(point))
         {
+            return;
+        }
+
+        if (IsYard(factory))
+        {
+            // The construction yard has no rally point: it packs up into its MCV, which drives there (the owner, 2026-11-02).
+            if (YardMayPack && DrivesTo(point))
+            {
+                Voice("moving");
+                _markers?.Add(point, MarkerKind.Move);
+                _host.IssuePackAndGo(factory, point);
+                _building = null;
+            }
+            else
+            {
+                _markers?.Add(point, MarkerKind.Forbidden);
+            }
+
+            return;
+        }
+
+        if (_host.Simulation.World.TryGet(factory, out var entity) && entity is Building { Def: { } def } && !Rallies(def))
+        {
+            // The air command: its planes go to their pads.
             return;
         }
 
@@ -1294,9 +1340,10 @@ public partial class PlayerInput : Node
             Tool == PointerTool.Superweapon && world.TryGet(_superweapon, out var armed) && armed is Building weapon
                 ? weapon.Def?.Superweapon ?? (BuildingTypes.IsKnown(weapon.Kind) ? weapon.Type.Superweapon : Rts.Simulation.Rules.SuperweaponKind.None)
                 : Rts.Simulation.Rules.SuperweaponKind.None,
-            SelectedFactory is not null && Selection.IsEmpty,
+            SelectedRally is not null && Selection.IsEmpty,
             SelectedDefense is not null && Selection.IsEmpty,
-            SelectedDefense is { } defense && target is not null && CanFireAt(defense, target));
+            SelectedDefense is { } defense && target is not null && CanFireAt(defense, target),
+            SelectedFactory is { } packing && IsYard(packing) && Selection.IsEmpty && YardMayPack);
     }
 
     /// <summary>What the first selected unit of the player that can go into <paramref name="target"/> would do there.</summary>

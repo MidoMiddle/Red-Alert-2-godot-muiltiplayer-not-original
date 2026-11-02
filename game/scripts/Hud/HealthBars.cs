@@ -353,7 +353,7 @@ public partial class HealthBars : Control
     /// </summary>
     private void DrawRallyPoint(Camera3D camera, GameWorld world)
     {
-        if (_input?.SelectedFactory is not { } id || !world.TryGet(id, out var entity) || entity is not Building { RallyPoint: { } rally } factory)
+        if (_input?.SelectedRally is not { } id || !world.TryGet(id, out var entity) || entity is not Building { RallyPoint: { } rally } factory)
         {
             return;
         }
@@ -379,7 +379,7 @@ public partial class HealthBars : Control
     /// </summary>
     private void DrawRallyChoice(Camera3D camera, GameWorld world)
     {
-        if (_input is not { Selection.IsEmpty: true, Tool: PointerTool.None, PointerGround: { } ground, SelectedFactory: { } id }
+        if (_input is not { Selection.IsEmpty: true, Tool: PointerTool.None, PointerGround: { } ground, SelectedRally: { } id }
             || _input.Hovered is not null || !world.TryGet(id, out var entity) || entity is not Building factory
             || GetViewport().GuiGetHoveredControl() is not null)
         {

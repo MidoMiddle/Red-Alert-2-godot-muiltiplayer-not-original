@@ -95,9 +95,11 @@ public enum CursorKind
 /// <param name="Bomb">A selected unit plants a bomb on the target under the pointer (Ivan, the commando's C4).</param>
 /// <param name="Crush">A selected tank can crush the enemy soldier under the pointer.</param>
 /// <param name="Superweapon">The kind of the superweapon armed, for its sight.</param>
-/// <param name="Rally">A building that produces is selected (no units): an order on the ground sets its rally point.</param>
+/// <param name="Rally">A building its units come out of is selected (no units): an order on the ground sets its rally point.</param>
 /// <param name="Defense">A defense is selected (no units): an order on what it can fire at is its target (RA2).</param>
 /// <param name="DefenseHits">The selected defense can fire at the unit or building under the pointer from where it stands.</param>
+/// <param name="YardDrives">The construction yard is selected (no units) and may pack up: an order on the ground packs it into its MCV,
+/// which drives there (the owner, 2026-11-02).</param>
 public readonly record struct PointerSpot(
     bool OwnBuilding = false,
     bool Damaged = false,
@@ -113,7 +115,8 @@ public readonly record struct PointerSpot(
     Rts.Simulation.Rules.SuperweaponKind Superweapon = Rts.Simulation.Rules.SuperweaponKind.None,
     bool Rally = false,
     bool Defense = false,
-    bool DefenseHits = false);
+    bool DefenseHits = false,
+    bool YardDrives = false);
 
 /// <summary>Which cursor to show for what is under the pointer. Pure, tested in Rts.Simulation.Tests.</summary>
 public static class CursorChoice
@@ -151,13 +154,14 @@ public static class CursorChoice
             return CursorKind.Deploy;
         }
 
-        if (spot.Rally)
+        if (spot.Rally || spot.YardDrives)
         {
-            // An own unit or another of the buildings that produce is picked by a click; an enemy takes no order of a building.
+            // An own unit or another of the buildings that produce is picked by a click; an enemy takes no order of a building. On
+            // the ground the yard drives off, the others set their rally point.
             return context.Target.Kind == PointerTargetKind.OwnUnit || context.OwnFactory is not null ? CursorKind.Select
                 : context.Ground is null || context.Target.Kind is PointerTargetKind.OtherUnit or PointerTargetKind.OtherBuilding
                     ? CursorKind.Forbidden
-                    : CursorKind.Rally;
+                    : spot.YardDrives ? CursorKind.Move : CursorKind.Rally;
         }
 
         if (spot.Defense)

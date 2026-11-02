@@ -627,9 +627,28 @@ public partial class SimulationHost : Node
     public void IssueDamage(CellPos cell, int amount) =>
         Issue(new DamageMapObjectCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, cell, amount));
 
+    // The construction yards told to pack up and drive off, and where to (the owner, 2026-11-02): the MCV is sent there when it is out.
+    private readonly Dictionary<EntityId, WorldPos> _packTo = new();
+
+    /// <summary>
+    /// A click on the map with the construction yard selected: it packs up into its MCV, which drives to <paramref name="point"/>. The
+    /// MCV is a new unit, so its move goes when the simulation says it is out (<see cref="Undeployed"/>).
+    /// </summary>
+    public void IssuePackAndGo(EntityId yard, WorldPos point)
+    {
+        IssueDeploy([yard]);
+        _packTo[yard] = point;
+    }
+
     /// <summary>The selected units deploy; only the player's MCVs do (M3 step 7).</summary>
     public void IssueDeploy(IReadOnlyList<EntityId> units)
     {
+        // D on a yard is a plain pack: it forgets a drive asked before.
+        foreach (var unit in units)
+        {
+            _packTo.Remove(unit);
+        }
+
         // Of a group that digs in, while any stands only those standing dig in; all dug in, all stand up (RA2, DeployGroup).
         var anyStanding = false;
         foreach (var unit in units)
@@ -1335,6 +1354,11 @@ public partial class SimulationHost : Node
         foreach (var simEvent in Simulation.LastTickEvents)
         {
             GD.Print($"[sim] {simEvent}");
+            if (simEvent is Undeployed packed && _packTo.Remove(packed.Building, out var drive))
+            {
+                IssueMove([packed.Unit], drive);
+            }
+
             EventRaised?.Invoke(simEvent);
             if (_playback is null && _journals is not null)
             {

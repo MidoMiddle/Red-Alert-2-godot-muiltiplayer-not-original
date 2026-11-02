@@ -218,6 +218,20 @@ public sealed class CursorChoiceTests
     }
 
     [Fact]
+    public void The_selected_construction_yard_has_no_rally_flag_a_click_on_the_ground_drives_it_off()
+    {
+        // The owner, 2026-11-02: the yard packs up into its MCV and drives there; over the yard itself it packs, as before.
+        var ground = new PointerContext(new WorldPos(1000, 1000), new PointerTarget(PointerTargetKind.Ground), Shift: false, HasSelection: true);
+        var spot = new PointerSpot(YardDrives: true);
+        Assert.Equal(CursorKind.Move, CursorChoice.For(ground, anyCanEnter: false, spot: spot));
+        Assert.Equal(CursorKind.Forbidden, CursorChoice.For(ground with { Ground = null }, anyCanEnter: false, spot: spot));
+        Assert.Equal(CursorKind.Deploy, CursorChoice.For(ground with { OwnFactory = new EntityId(31), YardPacks = true }, false, spot: spot));
+
+        // The air command, or a yard that may not pack: no flag, no order on the ground.
+        Assert.NotEqual(CursorKind.Rally, CursorChoice.For(ground with { HasSelection = false }, anyCanEnter: false));
+    }
+
+    [Fact]
     public void A_selected_defense_aims_at_what_it_can_fire_at_and_never_moves()
     {
         var ground = new PointerContext(new WorldPos(1000, 1000), new PointerTarget(PointerTargetKind.Ground), Shift: false, HasSelection: true);
