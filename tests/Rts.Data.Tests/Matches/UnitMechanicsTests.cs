@@ -21,10 +21,10 @@ public sealed class UnitMechanicsTests
     private static readonly PlayerId Union = new(1);
     private static readonly PlayerId Allied = new(2);
 
-    private static GameSimulation Match()
+    private static GameSimulation Match(MapGrid? coast = null)
     {
         var land = Enumerable.Repeat((byte)LandType.Clear, Size * Size).ToArray();
-        var map = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, [], types: GameDataFiles.Rules.MapTypes);
+        var map = coast ?? MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null, null, [], types: GameDataFiles.Rules.MapTypes);
         var simulation = new GameSimulation(
             SimulationSettings.ForMatch(
                 new MatchSetup(
@@ -125,6 +125,37 @@ public sealed class UnitMechanicsTests
         Assert.DoesNotContain(world.Entities, entity => entity is Unit { IsAlive: true, Type: UnitType.Conscript });
         Assert.True(transport.Hp < transport.MaxHp);
         Assert.True(bystander.IsAlive);
+    }
+
+    [Fact]
+    public void A_transport_moored_by_a_pier_lets_its_passengers_out_onto_the_deck()
+    {
+        // The owner, 2026-11-02 (docs/beach_elements/14_pier): a pier is where a transport on the water lands its passengers — the deck is
+        // a road, so they come out on it and walk ashore. The sea east of column 20, a pier from (20, 10) out to (23, 10).
+        var land = Enumerable.Range(0, Size * Size).Select(i => (byte)(i % Size >= 20 ? LandType.Deep : LandType.Clear)).ToArray();
+        GameDataFiles.Rules.MapTypes.TryGetBridge("pier_wood", out var pier);
+        var coast = MapGrid.FromLayers(Size, Size, land, new byte[Size * Size], default, null,
+            [BridgeState.New(pier, new CellPos(20, 10), new CellPos(23, 10))], [], types: GameDataFiles.Rules.MapTypes);
+        var simulation = Match(coast);
+        var world = simulation.World;
+        var rules = world.Rules;
+        var transport = Spawn(world, Union, UnitType.HoverTransport, 22, 9);
+        transport.Passengers.Add(new Occupant(rules.Unit(UnitType.Conscript), 100));
+        transport.Passengers.Add(new Occupant(rules.Unit(UnitType.Conscript), 100));
+        transport.Passengers.Add(new Occupant(rules.Unit(UnitType.HeavyTank), 400));
+
+        simulation.Enqueue(new DeployCommand(Union, simulation.CurrentTick, 0, transport.Id));
+        Run(simulation, 4);
+
+        Assert.Empty(transport.Passengers);
+        var landed = world.Entities.OfType<Unit>().Where(unit => unit.IsAlive && unit != transport && unit.Owner == Union && unit.Type != UnitType.Mcv).ToList();
+        Assert.Equal(3, landed.Count);
+        Assert.All(landed, unit => Assert.NotNull(world.Map.BridgeAt(unit.Position.ToCell())));
+
+        var tank = landed.Single(unit => unit.Type == UnitType.HeavyTank);
+        simulation.Enqueue(new MoveCommand(Union, simulation.CurrentTick, 0, [tank.Id], new CellPos(15, 10).Center));
+        Run(simulation, 300, () => tank.Position.ToCell() == new CellPos(15, 10));
+        Assert.Equal(new CellPos(15, 10), tank.Position.ToCell());
     }
 
     [Fact]
