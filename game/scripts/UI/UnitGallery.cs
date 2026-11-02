@@ -199,6 +199,8 @@ public partial class UnitGallery : Node3D
         var x = phase < 2f ? -0.6f + (phase * 0.2f) : -0.2f - ((phase - 2f) * 0.2f);
         _close[1].SetPose(new Vector3(x, 0f, 0f), Mathf.DegToRad(phase < 2f ? -90f : 90f), 0f);
         _close[3].SetSandbags(DataFiles.Current.Rules.Unit(_close[3].Type).DeployedWeapon >= 0);
+        // The one dug in turns to and fro to his targets; his sandbags stay as they were laid.
+        _close[3].SetPose(new Vector3(1.2f, 0f, 0f), Mathf.DegToRad(150f + (60f * Mathf.Sin(_walked))), 0f);
         foreach (var view in _close)
         {
             view.Animate(null, (float)delta);

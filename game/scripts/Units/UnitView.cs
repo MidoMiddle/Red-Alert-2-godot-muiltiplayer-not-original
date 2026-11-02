@@ -44,6 +44,9 @@ public partial class UnitView : Node3D
     private MeshInstance3D? _turretBody;
     private Node3D? _sandbags;
     private bool _dugIn;
+
+    // The yaw the ring of sandbags was laid at, kept while the soldier turns inside it; null when he is not dug in.
+    private float? _bagsYaw;
     private Vector3? _drawnAt;
     private float _speed;
     private Node3D? _blaze;
@@ -210,11 +213,18 @@ public partial class UnitView : Node3D
 
     /// <summary>
     /// Shows or hides the ring of sandbags of a soldier dug in: the model's own, or made the first time it is shown. A person with a
-    /// skeleton crouches behind them (<see cref="Animate"/>).
+    /// skeleton crouches behind them (<see cref="Animate"/>). The ring stays as it was laid while he turns to his targets
+    /// (<see cref="SetPose"/>).
     /// </summary>
     public void SetSandbags(bool shown)
     {
         _dugIn = shown;
+        if (!shown)
+        {
+            _bagsYaw = null;
+            _sandbags?.Rotation = Vector3.Zero;
+        }
+
         if (_sandbags is null)
         {
             if (!shown)
@@ -268,6 +278,13 @@ public partial class UnitView : Node3D
         if (_turret is not null)
         {
             _turret.Rotation = new Vector3(0, turretYaw - hullYaw, 0);
+        }
+
+        // A soldier dug in turns inside his sandbags: they keep the yaw they were first drawn at.
+        if (_dugIn && _sandbags is not null)
+        {
+            _bagsYaw ??= _sandbags.GlobalRotation.Y;
+            _sandbags.GlobalRotation = new Vector3(0, _bagsYaw.Value, 0);
         }
     }
 

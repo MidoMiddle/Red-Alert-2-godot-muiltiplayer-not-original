@@ -11,7 +11,8 @@ Nodes (docs/art/model_standards.md, section 4):
                  crossed over the chest
       team_mask  the vest and the shoulder pads: the owner's colour (the blue of the reference)
       weapon     the machine gun, all on the right hand, so it goes with the hand as one piece
-    sandbags     the ring of sandbags of a soldier dug in, not on the skeleton: the game shows it only then
+    sandbags     the ring of sandbags of a soldier dug in, four courses high, not on the skeleton: the game shows it only
+                 then
 
 The look follows the owner's references (an RA2 screenshot of the soldiers dug in and on the move, two fan renders of the soldier):
 a helmet with goggles, a vest over a camouflage uniform, belts of ammunition across the chest, a machine gun with a long jacketed
@@ -121,8 +122,9 @@ def _weapon(p):
 
 
 def _sandbags(p):
-    """Two courses of bags round the soldier, the upper one over the joints of the lower."""
-    for course, (n, z, r) in enumerate(((9, 0.0, RING_R), (9, 0.044, RING_R - 0.006))):
+    """Four courses of bags round the soldier, each over the joints of the one below, each a little further in."""
+    for course in range(4):
+        n, z, r = 9, 0.044 * course, RING_R - 0.006 * course
         for i in range(n):
             a = 2 * math.pi * (i + 0.5 * course) / n
             cc.bag(p, (math.cos(a) * r, math.sin(a) * r, z), a + math.pi / 2, SAND, length=0.135, width=0.075, height=0.046)
