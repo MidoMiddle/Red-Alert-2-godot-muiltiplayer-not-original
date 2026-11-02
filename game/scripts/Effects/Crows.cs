@@ -16,7 +16,9 @@ namespace Rts.Client.Effects;
 /// </summary>
 public partial class Crows : Node3D
 {
-    private const int CellsPerFlock = 1600;
+    // Few of them (the owner, 2026-11-02: there were far too many): a flock of two or three to every 6400 cells, two on a map of
+    // 136 by 136.
+    private const int CellsPerFlock = 6400;
     private const int ShotCells = 4;
     private const float NearCells = 1.3f;
     private const float FlightSeconds = 7f;
@@ -144,7 +146,7 @@ public partial class Crows : Node3D
         }
 
         var map = world.Map;
-        var count = (map.Width * map.Height) / CellsPerFlock;
+        var count = System.Math.Max(1, (map.Width * map.Height) / CellsPerFlock);
         for (var tries = 0; _flocks.Count < count && tries < count * 40; tries++)
         {
             var cell = new CellPos(_random.Next(map.Width), _random.Next(map.Height));
@@ -168,7 +170,7 @@ public partial class Crows : Node3D
         var root = new Node3D { Position = at };
         AddChild(root);
         var crows = new List<Crow>();
-        var size = 4 + _random.Next(3);
+        var size = 2 + _random.Next(2);
         for (var i = 0; i < size; i++)
         {
             // Twice a crow's size, so it reads from the camera of the game.
