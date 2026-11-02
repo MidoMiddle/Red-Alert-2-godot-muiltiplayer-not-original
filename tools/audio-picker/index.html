@@ -317,6 +317,7 @@
       const cards = [];
       for (const card of section.cards) {
         if ((chosen.side && card.side !== chosen.side) || (chosen.type && card.type !== chosen.type)) continue;
+        if (chosen.side && chosen.type && chosen.card && card.id !== chosen.card) continue;
         const cardHit = query && [card.title, card.id].some((t) => t.toLowerCase().includes(query));
         const slots = card.slots.filter((s) => slotMatches(card, s, cardHit ? '' : query, filter));
         if (!slots.length) continue;
@@ -347,14 +348,7 @@
           text,
           el('span', {class: 'n', text: String(count)}),
         ]);
-        b.addEventListener('click', () => {
-          if (value) chosen[key] = value;
-          else delete chosen[key];
-          try {
-            localStorage.setItem(`${STORAGE}:groups`, JSON.stringify(groups));
-          } catch {}
-          render();
-        });
+        b.addEventListener('click', () => choose(key, value));
         return b;
       };
       // Число у кнопки — сколько карточек с этим значением при выбранном значении другого ряда
@@ -367,7 +361,42 @@
       ]);
     };
     const values = (key, list) => [...new Set(cards.map((c) => c[key]).filter(Boolean))].sort(order(list));
-    $('groups').replaceChildren(...[row('side', 'Сторона', values('side', SIDES)), row('type', 'Тип', values('type', TYPES))].filter(Boolean));
+    $('groups').replaceChildren(
+      ...[row('side', 'Сторона', values('side', SIDES)), row('type', 'Тип', values('type', TYPES)), cardRow(cat, cards, chosen)].filter(Boolean),
+    );
+  }
+
+  // Новая сторона или тип — выбор юнита сбрасывается: его в новой группе может не быть
+  function choose(key, value) {
+    const chosen = groups[category];
+    if (value) chosen[key] = value;
+    else delete chosen[key];
+    if (key !== 'card') delete chosen.card;
+    try {
+      localStorage.setItem(`${STORAGE}:groups`, JSON.stringify(groups));
+    } catch {}
+    render();
+  }
+
+  // Третий ряд — сами юниты (или здания) группы; появляется, когда выбраны и сторона, и тип. У кнопки — сколько мест уже со звуком
+  function cardRow(cat, cards, chosen) {
+    if (!chosen.side || !chosen.type) return null;
+    const group = cards.filter((c) => c.side === chosen.side && c.type === chosen.type);
+    if (!group.length) return null;
+    const chip = (id, text, count) => {
+      const b = el('button', {class: 'chip', type: 'button', 'aria-pressed': String((chosen.card || '') === id)}, [
+        text,
+        el('span', {class: 'n', text: count}),
+      ]);
+      b.addEventListener('click', () => choose('card', id));
+      return b;
+    };
+    const voiced = (c) => `${c.slots.filter((s) => soundOf(s.sound).files.length).length}/${c.slots.length}`;
+    return el('div', {class: 'chips'}, [
+      el('span', {class: 'chips-label', text: cat.id === 'buildings' ? 'Здание' : 'Юнит'}),
+      chip('', 'Все', String(group.length)),
+      ...group.map((c) => chip(c.id, c.title, voiced(c))),
+    ]);
   }
 
   function updateSummary() {
