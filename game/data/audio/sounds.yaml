@@ -134,7 +134,7 @@ sounds:
     cooldownMs: 40
     positional: true
   snd_rifle:
-    files: [sfx/rifle_01.wav, sfx/rifle_02.wav, sfx/rifle_03.wav]
+    files: [sfx/assault_rifle_01.wav]  # ElevenLabs (assets_src/audio/takes/snd_rifle, take 4): a short burst of an assault rifle
     bus: SFX
     volume: -8
     pitch: [0.95, 1.05]
@@ -143,7 +143,7 @@ sounds:
     cooldownMs: 30
     positional: true
   snd_rifle_burst:
-    files: [sfx/rifle_burst_01.wav]
+    files: [sfx/machine_gun_01.wav]  # ElevenLabs (assets_src/audio/takes/snd_rifle_burst, take 3)
     bus: SFX
     volume: -8
     pitch: [0.94, 1.06]
@@ -298,4 +298,72 @@ sounds:
     priority: 60
     maxConcurrent: 2
     cooldownMs: 200
+    positional: true
+  # The Rifleman, from ElevenLabs takes (assets_src/audio/takes, picked on tools/audio-picker): its footsteps as a loop
+  # (edit/loop_mode in the .import), played by MovementSounds.cs while it walks; the death of a soldier, for every man of the
+  # infantry (deaths of bindings.yaml); what it says when selected, sent to move, sent to attack (UnitVoices.cs), a line of
+  # each sound picked at random.
+  snd_move_alliance_rifleman:
+    files: [sfx/footsteps_rifleman_01.wav]
+    bus: SFX
+    volume: -14
+    pitch: [1.0, 1.0]
+    priority: 30
+    maxConcurrent: 3
+    cooldownMs: 0
+    positional: true
+  snd_infantry_death:
+    files: [sfx/infantry_death_01.wav]
+    bus: SFX
+    volume: -8
+    pitch: [0.92, 1.08]
+    priority: 60
+    maxConcurrent: 4
+    cooldownMs: 80
+    positional: true
+  vo_alliance_rifleman_select:
+    files: [voice/alliance_rifleman_select_01.wav]
+    bus: Voice
+    volume: -3
+    pitch: [1.0, 1.0]
+    priority: 80
+    maxConcurrent: 1
+    cooldownMs: 400
+    positional: false
+  vo_alliance_rifleman_move:
+    files: [voice/alliance_rifleman_move_01.wav, voice/alliance_rifleman_move_02.wav]
+    bus: Voice
+    volume: -3
+    pitch: [1.0, 1.0]
+    priority: 80
+    maxConcurrent: 1
+    cooldownMs: 400
+    positional: false
+  vo_alliance_rifleman_attack:
+    files: [voice/alliance_rifleman_attack_01.wav, voice/alliance_rifleman_attack_02.wav, voice/alliance_rifleman_attack_03.wav, voice/alliance_rifleman_attack_04.wav]
+    bus: Voice
+    volume: -3
+    pitch: [1.0, 1.0]
+    priority: 80
+    maxConcurrent: 1
+    cooldownMs: 400
+    positional: false
+  # The Rifleman digging in behind its sandbags and getting up again (UnitDeploys.cs, deploys of bindings.yaml), ElevenLabs.
+  snd_deploy_alliance_rifleman:
+    files: [sfx/rifleman_dig_in_01.wav]
+    bus: SFX
+    volume: -8
+    pitch: [0.97, 1.03]
+    priority: 50
+    maxConcurrent: 3
+    cooldownMs: 60
+    positional: true
+  snd_undeploy_alliance_rifleman:
+    files: [sfx/rifleman_get_up_01.wav]
+    bus: SFX
+    volume: -9
+    pitch: [0.97, 1.03]
+    priority: 50
+    maxConcurrent: 3
+    cooldownMs: 60
     positional: true

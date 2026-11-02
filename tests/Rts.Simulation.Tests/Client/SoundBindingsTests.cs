@@ -32,6 +32,9 @@ public sealed class SoundBindingsTests
 
         var named = bindings.Weapons.Values.Concat(bindings.Buildings.Values).Append(bindings.BuildingDefault)
             .Concat(bindings.Bridges.Values.SelectMany(bridge => new[] { bridge.Span, bridge.Whole })).Concat(bindings.Movement.Values)
+            .Concat(bindings.Deaths.Values).Append(bindings.DeathDefault)
+            .Concat(bindings.Voices.Values.SelectMany(voice => new[] { voice.Select, voice.Move, voice.Attack }).Where(line => line.Length > 0))
+            .Concat(bindings.Deploys.Values.SelectMany(deploy => new[] { deploy.On, deploy.Off }).Where(sound => sound.Length > 0))
             .Append(SoundBindings.ShotDefault);
         Assert.All(named, sound => Assert.Contains(sound, sounds.Keys));
     }
@@ -47,6 +50,9 @@ public sealed class SoundBindingsTests
         Assert.All(bindings.Bridges.Keys, id => Assert.True(BridgeTypes.TryGetKind(id, out _), id));
         Assert.All(bindings.Movement.Keys, id => Assert.True(kinds.TryGetValue(id, out var kind) && kind == "unit", id));
         Assert.NotEmpty(bindings.Movement);
+        Assert.All(bindings.Deaths.Keys, id => Assert.True(kinds.TryGetValue(id, out var kind) && kind == "unit", id));
+        Assert.All(bindings.Voices.Keys, id => Assert.True(kinds.TryGetValue(id, out var kind) && kind == "unit", id));
+        Assert.All(bindings.Deploys.Keys, id => Assert.True(kinds.TryGetValue(id, out var kind) && kind == "unit", id));
     }
 
     [Fact]
@@ -68,6 +74,28 @@ public sealed class SoundBindingsTests
         Assert.Equal("snd_building_brick", bindings.FallOf("some_house"));
         Assert.Equal("snd_building_concrete", bindings.FallOf("other_building"));
         Assert.DoesNotContain(SoundBindings.DefaultKey, bindings.Buildings.Keys);
+    }
+
+    [Fact]
+    public void A_unit_not_named_dies_with_the_default_and_says_only_what_it_has()
+    {
+        var bindings = SoundBindings.Parse(
+            """
+            deaths:
+              default: snd_unit_death
+              some_soldier: snd_infantry_death
+            voices:
+              some_soldier: {select: vo_select, attack: vo_attack}
+            deploys:
+              some_soldier: {on: snd_dig_in}
+            """,
+            "test.yaml",
+            []);
+
+        Assert.Equal("snd_infantry_death", bindings.DeathOf("some_soldier"));
+        Assert.Equal("snd_unit_death", bindings.DeathOf("some_tank"));
+        Assert.Equal(new VoiceSounds("vo_select", string.Empty, "vo_attack"), bindings.Voices["some_soldier"]);
+        Assert.Equal(new DeploySounds("snd_dig_in", string.Empty), bindings.Deploys["some_soldier"]);
     }
 
     [Fact]

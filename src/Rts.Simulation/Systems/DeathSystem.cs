@@ -23,7 +23,7 @@ public static class DeathSystem
     {
         world.SetHp(unit, 0, events);
         unit.MarkDead();
-        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, cause, weapon, killerOwner));
+        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, cause, weapon, killerOwner, unit.Archetype.Id));
         Veterancy.Credit(world, killer, unit, events);
         if (unit.Archetype.DeathWeapon >= 0 && cause != DeathCause.Defeat)
         {
@@ -57,7 +57,7 @@ public static class DeathSystem
         (unit.BombTicks, unit.BombWeapon, unit.BombShooter, unit.BombOwner) = (0, -1, EntityId.None, PlayerId.Neutral);
         world.SetHp(unit, 0, events);
         unit.MarkDead();
-        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, DeathCause.Weapon, weapon, killerOwner));
+        events?.Add(new EntityDestroyed(world.CurrentTick, unit.Id, killer, DeathCause.Weapon, weapon, killerOwner, unit.Archetype.Id));
         Veterancy.Credit(world, killer, unit, events);
     }
 

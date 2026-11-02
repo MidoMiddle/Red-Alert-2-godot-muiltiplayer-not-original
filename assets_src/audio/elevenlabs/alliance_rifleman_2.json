@@ -1,0 +1,21 @@
+[
+  {
+    "sound": "snd_rifle",
+    "kind": "sfx",
+    "prompt": "Short automatic burst of three to four rounds from an M16 assault rifle, rapid full-auto fire, sharp punchy cracks, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1.0,
+    "takes": 3
+  },
+  {
+    "sound": "vo_alliance_rifleman_move",
+    "kind": "voice",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "lines": ["Moving out!", "On my way.", "Roger, moving.", "Copy, going."]
+  },
+  {
+    "sound": "vo_alliance_rifleman_attack",
+    "kind": "voice",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "lines": ["Copy that!", "Roger, engaging!", "Got it!", "Understood, firing!"]
+  }
+]

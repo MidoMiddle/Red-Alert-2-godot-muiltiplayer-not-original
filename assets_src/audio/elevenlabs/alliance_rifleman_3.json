@@ -1,0 +1,16 @@
+[
+  {
+    "sound": "snd_deploy_alliance_rifleman",
+    "kind": "sfx",
+    "prompt": "Soldier quickly digging in: two or three heavy sandbags dropped and slapped into place on the ground, a short shovel scrape in dirt, gear and ammo pouches rattling, ending with a rifle set down on the sandbags, war game sound effect, no music, no voice, isolated",
+    "duration": 1.5,
+    "takes": 3
+  },
+  {
+    "sound": "snd_undeploy_alliance_rifleman",
+    "kind": "sfx",
+    "prompt": "Soldier quickly getting up from behind sandbags: a sandbag shoved aside, rifle lifted, gear and ammo pouches rattling as he stands, short and brisk, war game sound effect, no music, no voice, isolated",
+    "duration": 1.0,
+    "takes": 3
+  }
+]

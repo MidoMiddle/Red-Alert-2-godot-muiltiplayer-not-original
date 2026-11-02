@@ -71,10 +71,44 @@ bridges:
   bridge_wood_low: {span: snd_bridge_wood_span, whole: snd_bridge_wood_all}
   bridge_concrete_high: {span: snd_bridge_concrete, whole: snd_bridge_concrete}
 
-# The loop a flier plays while it flies, by the id of the unit (MovementSounds.cs): the rotor of the helicopter, the engine of the
-# jets. It dies away as the flier sets down and is silent on the ground.
+# The loop a unit plays on the move, by the id of the unit (MovementSounds.cs): a flier while it is in the air (the rotor of the
+# helicopter, the engine of the jets; it dies away as the flier sets down), any other while it walks or drives.
 movement:
   alliance_nighthawk: snd_rotor
   alliance_harrier: snd_jet
   alliance_black_eagle: snd_jet
   alliance_hornet: snd_jet
+  alliance_rifleman: snd_move_alliance_rifleman
+
+# The death of a unit, by its id: soldiers cry out and fall, every other (the vehicles, the ships, the planes) is `default`. The
+# dogs and the Elite Commando, a woman, are with the vehicles until they have their own.
+deaths:
+  default: snd_unit_death
+  alliance_rifleman: snd_infantry_death
+  alliance_engineer: snd_infantry_death
+  alliance_rocketeer: snd_infantry_death
+  alliance_spy: snd_infantry_death
+  alliance_chrono_legionnaire: snd_infantry_death
+  alliance_sniper: snd_infantry_death
+  alliance_chrono_commando: snd_infantry_death
+  alliance_psi_commando: snd_infantry_death
+  conscript: snd_infantry_death
+  rocketeer: snd_infantry_death
+  engineer: snd_infantry_death
+  tesla_trooper: snd_infantry_death
+  crazy_ivan: snd_infantry_death
+  terrorist: snd_infantry_death
+  desolator: snd_infantry_death
+  yuri: snd_infantry_death
+  chrono_ivan: snd_infantry_death
+  yuri_prime: snd_infantry_death
+
+# What a unit says, by its id (UnitVoices.cs): when the player selects it, sends it somewhere, sends it to attack. Each is one
+# sound with several lines, one picked at random; a key left out is silent.
+voices:
+  alliance_rifleman: {select: vo_alliance_rifleman_select, move: vo_alliance_rifleman_move, attack: vo_alliance_rifleman_attack}
+
+# The sound of a unit deploying where it stands (`on`) and getting up again (`off`), by its id (UnitDeploys.cs): the Rifleman digging
+# in behind its sandbags.
+deploys:
+  alliance_rifleman: {on: snd_deploy_alliance_rifleman, off: snd_undeploy_alliance_rifleman}

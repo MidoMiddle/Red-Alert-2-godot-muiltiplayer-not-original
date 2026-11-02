@@ -1,0 +1,72 @@
+[
+  {
+    "file": "vo_alliance_rifleman_move_1.mp3",
+    "prompt": "Legs are slow but willing.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_move_2.mp3",
+    "prompt": "Walking the long way, again.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_move_3.mp3",
+    "prompt": "Marching is my cardio, boss.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_move_4.mp3",
+    "prompt": "Moving out!",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_move_5.mp3",
+    "prompt": "On my way.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_move_6.mp3",
+    "prompt": "Roger, moving.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_move_7.mp3",
+    "prompt": "Copy, going.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

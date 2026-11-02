@@ -176,6 +176,9 @@ public partial class SimulationHost : Node
     /// <summary>A live session (re)started: R, or Play Again of the results (M5 step 12) — what showed the end of the last one goes.</summary>
     public event Action? SessionStarted;
 
+    /// <summary>The local player sent units to move (false) or to attack (true): what they say back (<c>UnitVoices</c>).</summary>
+    public event Action<IReadOnlyList<EntityId>, bool>? UnitsOrdered;
+
     public bool IsPlayback => _playback is not null;
 
     /// <summary>A match over the network (M9): the tick goes when everyone's commands are here; no pause, speed or replays by hand.</summary>
@@ -543,18 +546,29 @@ public partial class SimulationHost : Node
         {
             IssueTo(units, ordered => new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, queue));
         }
+
+        UnitsOrdered?.Invoke(harvesters.Concat(units).ToList(), false);
     }
 
-    public void IssueAttackMove(IReadOnlyList<EntityId> units, WorldPos target) =>
+    public void IssueAttackMove(IReadOnlyList<EntityId> units, WorldPos target)
+    {
         IssueTo(units, ordered => new AttackMoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+        UnitsOrdered?.Invoke(units, false);
+    }
 
     /// <summary>An attack on an enemy unit or building (M4 step 7).</summary>
-    public void IssueAttack(IReadOnlyList<EntityId> units, EntityId target) =>
+    public void IssueAttack(IReadOnlyList<EntityId> units, EntityId target)
+    {
         IssueTo(units, ordered => new AttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+        UnitsOrdered?.Invoke(units, true);
+    }
 
     /// <summary>A forced attack on <paramref name="target"/>, or on <paramref name="point"/> on the ground without one (M4 step 7).</summary>
-    public void IssueForceAttack(IReadOnlyList<EntityId> units, EntityId? target, WorldPos point) =>
+    public void IssueForceAttack(IReadOnlyList<EntityId> units, EntityId? target, WorldPos point)
+    {
         IssueTo(units, ordered => new ForceAttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, point));
+        UnitsOrdered?.Invoke(units, true);
+    }
 
     /// <summary>
     /// The units that can do something in the building go into it (stage 2e, 3b): soldiers into the player's bunker, engineers to take or

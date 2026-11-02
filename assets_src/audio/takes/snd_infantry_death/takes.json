@@ -1,0 +1,35 @@
+[
+  {
+    "file": "snd_infantry_death_1.mp3",
+    "prompt": "Soldier hit and falling, a short pained male grunt, then the body and gear dropping onto the ground, war game sound effect, no music, isolated",
+    "duration": 1.5,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_infantry_death_2.mp3",
+    "prompt": "Soldier hit and falling, a short pained male grunt, then the body and gear dropping onto the ground, war game sound effect, no music, isolated",
+    "duration": 1.5,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_infantry_death_3.mp3",
+    "prompt": "Soldier hit and falling, a short pained male grunt, then the body and gear dropping onto the ground, war game sound effect, no music, isolated",
+    "duration": 1.5,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "file": "snd_rifle_burst_1.mp3",
+    "prompt": "Short burst of about eight rounds from a light machine gun, fast steady automatic fire, punchy and mechanical, outdoor echo tail after the last shot, war game sound effect, no music, no voice, isolated",
+    "duration": 2,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_rifle_burst_2.mp3",
+    "prompt": "Short burst of about eight rounds from a light machine gun, fast steady automatic fire, punchy and mechanical, outdoor echo tail after the last shot, war game sound effect, no music, no voice, isolated",
+    "duration": 2,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_rifle_burst_3.mp3",
+    "prompt": "Short burst of about eight rounds from a light machine gun, fast steady automatic fire, punchy and mechanical, outdoor echo tail after the last shot, war game sound effect, no music, no voice, isolated",
+    "duration": 2,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

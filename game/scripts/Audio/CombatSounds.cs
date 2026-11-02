@@ -82,9 +82,9 @@ public partial class CombatSounds : Node
                 Play(warhead.Spread > Fixed.Zero ? ExplosionSound : ImpactSound, impact.Point);
                 break;
 
-            // A unit only: a building has the sound of its fall.
+            // A unit only: a building has the sound of its fall. A soldier cries out, a vehicle breaks (deaths of bindings.yaml).
             case EntityDestroyed destroyed when _host.TryGetPreviousPose(destroyed.Entity, out var pose) && Seen(world, pose.Position):
-                Play(DeathSound, pose.Position);
+                Play(_bindings.DeathOf(destroyed.Type) is { Length: > 0 } death ? death : DeathSound, pose.Position);
                 break;
 
             case BuildingDestroyed fallen when Seen(world, fallen.Centre) && _bindings.FallOf(fallen.Type) is { Length: > 0 } fall:

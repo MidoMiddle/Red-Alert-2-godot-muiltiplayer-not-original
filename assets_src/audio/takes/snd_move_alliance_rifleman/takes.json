@@ -1,0 +1,35 @@
+[
+  {
+    "file": "snd_move_alliance_rifleman_1.mp3",
+    "prompt": "Soldier walking in heavy combat boots on sand and gravel, steady marching pace, soft rattle of ammo pouches and a canteen, no metal clanking, no voice, no music, isolated, seamless loop",
+    "duration": 3,
+    "loop": true,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_move_alliance_rifleman_2.mp3",
+    "prompt": "Soldier walking in heavy combat boots on sand and gravel, steady marching pace, soft rattle of ammo pouches and a canteen, no metal clanking, no voice, no music, isolated, seamless loop",
+    "duration": 3,
+    "loop": true,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_move_alliance_rifleman_3.mp3",
+    "prompt": "Soldier walking in heavy combat boots on sand and gravel, steady marching pace, soft rattle of ammo pouches and a canteen, no metal clanking, no voice, no music, isolated, seamless loop",
+    "duration": 3,
+    "loop": true,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

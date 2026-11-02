@@ -399,16 +399,38 @@
     ]);
   }
 
+  // Выбран один юнит или здание (третий ряд фильтра) — сводка и «Скопировать» только про него; иначе про все звуки
+  function chosenCard() {
+    const cat = manifest.categories.find((c) => c.id === category);
+    const chosen = (cat && groups[cat.id]) || {};
+    if (!cat || !chosen.side || !chosen.type || !chosen.card) return null;
+    return cat.sections.flatMap((s) => s.cards).find((c) => c.id === chosen.card) || null;
+  }
+
+  const marksOf = (name) => {
+    const files = pickedIn(name).map((f) => f.file + (f.current ? ' (в игре)' : ''));
+    const note = (state.notes[name] || '').trim();
+    const parts = [];
+    if (files.length) parts.push(`оставить ${files.join(', ')}`);
+    if (state.redo[name]) parts.push(soundOf(name).files.length ? 'переделать' : 'сделать');
+    if (note) parts.push(`«${note}»`);
+    return parts;
+  };
+
   function updateSummary() {
-    const names = Object.keys(manifest.sounds);
+    const card = chosenCard();
+    const names = card ? [...new Set(card.slots.map((s) => s.sound).filter(Boolean))] : Object.keys(manifest.sounds);
     const picked = names.filter((n) => pickedIn(n).length).length;
     const redo = names.filter((n) => state.redo[n]).length;
     const notes = names.filter((n) => (state.notes[n] || '').trim()).length;
-    $('summary').textContent = `Отмечено: ${picked} · сделать или переделать: ${redo} · комментариев: ${notes}`;
+    $('summary').textContent = `${card ? card.title + ': о' : 'О'}тмечено: ${picked} · сделать или переделать: ${redo} · комментариев: ${notes}`;
+    $('copy').textContent = card ? `Скопировать: ${card.title}` : 'Скопировать выбор';
   }
 
   // Текст для чата: по каждому отмеченному звуку — что оставить, что сделать, комментарий и где он звучит
   function selectionText() {
+    const card = chosenCard();
+    if (card) return cardText(card);
     const where = {};
     for (const c of manifest.categories)
       for (const s of c.sections)
@@ -416,18 +438,31 @@
           for (const slot of card.slots) if (slot.sound) (where[slot.sound] ||= []).push(`${card.title} — ${slot.label}`);
     const lines = ['Звуки игры — выбор'];
     for (const name of Object.keys(manifest.sounds)) {
-      const files = pickedIn(name).map((f) => f.file + (f.current ? ' (в игре)' : ''));
-      const note = (state.notes[name] || '').trim();
-      const parts = [];
-      if (files.length) parts.push(`оставить ${files.join(', ')}`);
-      if (state.redo[name]) parts.push(soundOf(name).files.length ? 'переделать' : 'сделать');
-      if (note) parts.push(`«${note}»`);
+      const parts = marksOf(name);
       if (!parts.length) continue;
       const used = where[name] || [];
       const place = used.length > 3 ? `${used.slice(0, 3).join('; ')} и ещё ${used.length - 3}` : used.join('; ');
       lines.push(`- ${name}: ${parts.join(' — ')} [${place}]`);
     }
     if (lines.length === 1) lines.push('(ничего не отмечено)');
+    return lines.join('\n');
+  }
+
+  // Один юнит: его места по порядку; у общего звука — со сколькими местами он общий, ведь правка заденет и их
+  function cardText(card) {
+    const lines = [`Звуки игры — ${card.title} (${card.id})`];
+    const untouched = [];
+    for (const slot of card.slots) {
+      const parts = slot.sound ? marksOf(slot.sound) : [];
+      if (!parts.length) {
+        untouched.push(slot.label);
+        continue;
+      }
+      const shared = soundOf(slot.sound).usedBy > 1 ? `, общий ещё с ${soundOf(slot.sound).usedBy - 1}` : '';
+      lines.push(`- ${slot.label} — ${slot.sound}${shared}: ${parts.join(' — ')}`);
+    }
+    if (lines.length === 1) lines.push('(ничего не отмечено)');
+    if (untouched.length && lines.length > 1) lines.push(`Не отмечены: ${untouched.join(', ')}`);
     return lines.join('\n');
   }
 

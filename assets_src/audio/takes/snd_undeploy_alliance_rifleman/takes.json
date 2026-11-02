@@ -1,0 +1,35 @@
+[
+  {
+    "file": "snd_undeploy_alliance_rifleman_1.mp3",
+    "prompt": "Soldier quickly getting up from behind sandbags: a sandbag shoved aside, rifle lifted, gear and ammo pouches rattling as he stands, short and brisk, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_undeploy_alliance_rifleman_2.mp3",
+    "prompt": "Soldier quickly getting up from behind sandbags: a sandbag shoved aside, rifle lifted, gear and ammo pouches rattling as he stands, short and brisk, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_undeploy_alliance_rifleman_3.mp3",
+    "prompt": "Soldier quickly getting up from behind sandbags: a sandbag shoved aside, rifle lifted, gear and ammo pouches rattling as he stands, short and brisk, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

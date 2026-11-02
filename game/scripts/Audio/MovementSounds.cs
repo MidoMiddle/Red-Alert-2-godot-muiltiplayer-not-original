@@ -8,10 +8,11 @@ using Rts.Simulation.World;
 namespace Rts.Client.Audio;
 
 /// <summary>
-/// The loops of the fliers (<c>movement</c> of <c>bindings.yaml</c>): the rotor of the helicopter, the engine of a jet, playing as long
-/// as the flier is in the air and on the screen, and following it. As it sets down the loop dies away and runs slower, as a rotor
-/// spinning down; on the ground it is silent. Only fliers the local player sees sound, as with the shots (<see cref="CombatSounds"/>);
-/// of each sound only the loudest <see cref="SoundDefinition.MaxConcurrent"/> play. Placed in the main scene, next to the host.
+/// The loops of units on the move (<c>movement</c> of <c>bindings.yaml</c>), following them on the screen. A flier — the rotor of the
+/// helicopter, the engine of a jet — plays as long as it is in the air; as it sets down the loop dies away and runs slower, as a rotor
+/// spinning down, and on the ground it is silent. Any other unit — the footsteps of a soldier — plays while it moves. Only units the
+/// local player sees sound, as with the shots (<see cref="CombatSounds"/>); of each sound only the loudest
+/// <see cref="SoundDefinition.MaxConcurrent"/> play. Placed in the main scene, next to the host.
 /// </summary>
 public partial class MovementSounds : Node
 {
@@ -101,7 +102,8 @@ public partial class MovementSounds : Node
 
             var flying = UnitAltitude.Of(unit.Archetype);
             var height = UnitAltitude.Of(unit);
-            var level = flying > 0f ? Math.Clamp(height / flying, 0f, 1f) : 1f;
+            // A flier sounds by its height; any other while it moves, from one tick to the next (footsteps, an engine).
+            var level = flying > 0f ? Math.Clamp(height / flying, 0f, 1f) : Moves(unit) ? 1f : 0f;
             var point = WorldCoords.ToGodotOnUnit(unit, unit.Position, height);
             if (level < RunningShare || camera.IsPositionBehind(point))
             {
@@ -116,6 +118,8 @@ public partial class MovementSounds : Node
             }
         }
     }
+
+    private bool Moves(Unit unit) => _host!.TryGetPreviousPose(unit.Id, out var pose) && pose.Position != unit.Position;
 
     /// <summary>Starts or moves the loop of a flier; false when its sound already plays as often as it may, or cannot play.</summary>
     private bool Sound(Wanted wanted)

@@ -129,11 +129,19 @@ function unitCard(u, civilian = false) {
     const weapon = field(u, key);
     if (weapon) slots.push(slot(`${label} · ${weapon}`, shotOf(weapon)));
   }
+  // Кто разворачивается на месте (окоп Rifleman, извержение Toxin Trooper) — звук разворота и сворачивания
+  if (field(u, 'deployed_weapon') || field(u, 'deploy_weapon')) {
+    const deploy = bindings.deploys?.[u.id] ?? {};
+    const [on, off] = field(u, 'deployed_weapon') ? ['Окапывание', 'Подъём из окопа'] : ['Развёртывание', 'Свёртывание'];
+    slots.push(slot(on, deploy.on ?? `snd_deploy_${u.id}`), slot(off, deploy.off ?? `snd_undeploy_${u.id}`));
+  }
   slots.push(slot('Движение', bindings.movement?.[u.id] ?? `snd_move_${u.id}`));
-  slots.push(slot('Гибель', 'snd_unit_death'));
+  // Солдат гибнет не так, как машина: у пехоты свой звук гибели (пока запланирован), у техники — общий
+  slots.push(slot('Гибель', bindings.deaths?.[u.id] ?? (unitKind(u) === 'Пехота' && !civilian ? 'snd_infantry_death' : bindings.deaths?.default ?? 'snd_unit_death')));
   if (!civilian) {
-    slots.push(slot('Голос: выбор', `vo_${u.id}_select`), slot('Голос: приказ движения', `vo_${u.id}_move`));
-    slots.push(slot('Голос: приказ атаки', `vo_${u.id}_attack`));
+    const voice = bindings.voices?.[u.id] ?? {};
+    slots.push(slot('Голос: выбор', voice.select ?? `vo_${u.id}_select`), slot('Голос: приказ движения', voice.move ?? `vo_${u.id}_move`));
+    slots.push(slot('Голос: приказ атаки', voice.attack ?? `vo_${u.id}_attack`));
   }
   // Сторона и тип — для фильтров страницы
   return {id: u.id, title: nameOf(u), side: civilian ? 'Мирные' : FACTIONS[field(u, 'faction')] ?? field(u, 'faction'), type: unitKind(u), slots};

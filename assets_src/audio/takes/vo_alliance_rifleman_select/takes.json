@@ -1,0 +1,32 @@
+[
+  {
+    "file": "vo_alliance_rifleman_select_1.mp3",
+    "prompt": "Boots laced, rifle warm, boss.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_select_2.mp3",
+    "prompt": "Sandbags stacked, coffee's cold, sir.",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_select_3.mp3",
+    "prompt": "Grunt on duty, what's the mission?",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

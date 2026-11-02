@@ -1,0 +1,68 @@
+[
+  {
+    "file": "snd_rifle_1.mp3",
+    "prompt": "Single assault rifle gunshot, M16 style, sharp supersonic crack with a punchy low body, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_rifle_2.mp3",
+    "prompt": "Single assault rifle gunshot, M16 style, sharp supersonic crack with a punchy low body, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_rifle_3.mp3",
+    "prompt": "Single assault rifle gunshot, M16 style, sharp supersonic crack with a punchy low body, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_rifle_4.mp3",
+    "prompt": "Short automatic burst of three to four rounds from an M16 assault rifle, rapid full-auto fire, sharp punchy cracks, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_rifle_5.mp3",
+    "prompt": "Short automatic burst of three to four rounds from an M16 assault rifle, rapid full-auto fire, sharp punchy cracks, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "snd_rifle_6.mp3",
+    "prompt": "Short automatic burst of three to four rounds from an M16 assault rifle, rapid full-auto fire, sharp punchy cracks, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1,
+    "loop": false,
+    "model": "eleven_text_to_sound_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

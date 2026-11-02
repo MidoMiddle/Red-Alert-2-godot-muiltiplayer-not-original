@@ -1,0 +1,62 @@
+[
+  {
+    "file": "vo_alliance_rifleman_attack_1.mp3",
+    "prompt": "Pointing this thing downrange, boss!",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_attack_2.mp3",
+    "prompt": "Heavy metal, coming right up!",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_attack_3.mp3",
+    "prompt": "Copy that!",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_attack_4.mp3",
+    "prompt": "Roger, engaging!",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_attack_5.mp3",
+    "prompt": "Got it!",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  },
+  {
+    "file": "vo_alliance_rifleman_attack_6.mp3",
+    "prompt": "Understood, firing!",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "model": "eleven_multilingual_v2",
+    "seed": null,
+    "date": "2026-11-02",
+    "tier": "creator",
+    "format": "mp3_44100_192"
+  }
+]

@@ -1,0 +1,49 @@
+[
+  {
+    "sound": "snd_rifle",
+    "kind": "sfx",
+    "prompt": "Single assault rifle gunshot, M16 style, sharp supersonic crack with a punchy low body, short slap echo off nearby buildings, close perspective, war game sound effect, no music, no voice, isolated",
+    "duration": 1.0,
+    "takes": 3
+  },
+  {
+    "sound": "snd_rifle_burst",
+    "kind": "sfx",
+    "prompt": "Short burst of about eight rounds from a light machine gun, fast steady automatic fire, punchy and mechanical, outdoor echo tail after the last shot, war game sound effect, no music, no voice, isolated",
+    "duration": 2.0,
+    "takes": 3
+  },
+  {
+    "sound": "snd_move_alliance_rifleman",
+    "kind": "sfx",
+    "prompt": "Soldier walking in heavy combat boots on sand and gravel, steady marching pace, soft rattle of ammo pouches and a canteen, no metal clanking, no voice, no music, isolated, seamless loop",
+    "duration": 3.0,
+    "loop": true,
+    "takes": 3
+  },
+  {
+    "sound": "snd_infantry_death",
+    "kind": "sfx",
+    "prompt": "Soldier hit and falling, a short pained male grunt, then the body and gear dropping onto the ground, war game sound effect, no music, isolated",
+    "duration": 1.5,
+    "takes": 3
+  },
+  {
+    "sound": "vo_alliance_rifleman_select",
+    "kind": "voice",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "lines": ["Boots laced, rifle warm, boss.", "Sandbags stacked, coffee's cold, sir.", "Grunt on duty, what's the mission?"]
+  },
+  {
+    "sound": "vo_alliance_rifleman_move",
+    "kind": "voice",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "lines": ["Legs are slow but willing.", "Walking the long way, again.", "Marching is my cardio, boss."]
+  },
+  {
+    "sound": "vo_alliance_rifleman_attack",
+    "kind": "voice",
+    "voice": "SOYHLrjzK2X1ezoPC6cr",
+    "lines": ["Pointing this thing downrange, boss!", "Heavy metal, coming right up!"]
+  }
+]
