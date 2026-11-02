@@ -885,7 +885,9 @@ public partial class PlayerInput : Node
         var cell = ground.ToCell();
         foreach (var id in Selection.Units)
         {
+            // One dug in goes nowhere until D gets it up (the owner, 2026-11-02).
             if (world.TryGet(id, out var entity) && entity is Unit { IsAlive: true } unit
+                && Controls.DeployGroup.Moves(SimulationHost.DigsIn(unit), unit.Deployed)
                 && (unit.Archetype.Flies || world.Map.CanEnter(cell, unit.Archetype.Locomotor)
                     || Rts.Simulation.Map.Decks.CanStand(world.Map, cell, onDeck: true, unit.Archetype.Locomotor)))
             {

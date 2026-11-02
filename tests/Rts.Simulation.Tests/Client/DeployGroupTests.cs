@@ -19,6 +19,15 @@ public sealed class DeployGroupTests
     }
 
     [Fact]
+    public void A_move_order_leaves_the_dug_in_where_they_are()
+    {
+        // The owner, 2026-11-02: only D gets a dug-in soldier up; the standing ones and the other units go.
+        Assert.False(DeployGroup.Moves(digsIn: true, dugIn: true));
+        Assert.True(DeployGroup.Moves(digsIn: true, dugIn: false));
+        Assert.True(DeployGroup.Moves(digsIn: false, dugIn: false));
+    }
+
+    [Fact]
     public void Other_units_deploy_as_before()
     {
         // An MCV or a transport in the group: its deploy goes whatever the soldiers do.

@@ -544,7 +544,7 @@ public partial class SimulationHost : Node
 
         if (units.Count > 0)
         {
-            IssueTo(units, ordered => new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, queue));
+            IssueTo(Movers(units), ordered => new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, queue));
         }
 
         UnitsOrdered?.Invoke(harvesters.Concat(units).ToList(), false);
@@ -552,7 +552,7 @@ public partial class SimulationHost : Node
 
     public void IssueAttackMove(IReadOnlyList<EntityId> units, WorldPos target)
     {
-        IssueTo(units, ordered => new AttackMoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
+        IssueTo(Movers(units), ordered => new AttackMoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
         UnitsOrdered?.Invoke(units, false);
     }
 
@@ -613,7 +613,7 @@ public partial class SimulationHost : Node
     {
         if (!points.IsEmpty)
         {
-            IssueTo(units, ordered => new WaypointsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, points, loop));
+            IssueTo(Movers(units), ordered => new WaypointsCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, points, loop));
         }
     }
 
@@ -621,7 +621,7 @@ public partial class SimulationHost : Node
         IssueTo(units, ordered => new StopCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
 
     public void IssueScatter(IReadOnlyList<EntityId> units) =>
-        IssueTo(units, ordered => new ScatterCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
+        IssueTo(Movers(units), ordered => new ScatterCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
 
     /// <summary>Debug (M7 steps 5–7): takes <paramref name="amount"/> hit points off the map object, bridge segment or building on the cell.</summary>
     public void IssueDamage(CellPos cell, int amount) =>
@@ -664,8 +664,13 @@ public partial class SimulationHost : Node
         }
     }
 
+    /// <summary>The units a move order goes to: not those dug in (the owner, 2026-11-02), which only D gets up.</summary>
+    public List<EntityId> Movers(IReadOnlyList<EntityId> units) =>
+        units.Where(id => !Simulation.World.TryGet(id, out var entity) || entity is not Unit unit || Controls.DeployGroup.Moves(DigsIn(unit), unit.Deployed))
+            .ToList();
+
     // A unit that stays deployed until told otherwise: the GI behind sandbags, the Desolator; not one that fires once and stands up.
-    private static bool DigsIn(Unit unit) =>
+    public static bool DigsIn(Unit unit) =>
         unit.Archetype.DeployedWeapon >= 0 || (unit.Archetype.DeployWeapon >= 0 && !unit.Archetype.Has(UnitTalents.DeployOnce));
 
     /// <summary>

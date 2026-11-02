@@ -66,12 +66,19 @@ public partial class UnitView : Node3D
 
     /// <summary>
     /// How much bigger than they were drawn the placeholder shapes are shown (the owner, 2026-10-26, measured against RA2's buildings):
-    /// vehicles, ships and aircraft ×1.4, soldiers ×1.25. A model of the table is made at the size of the standard and shown as it is.
+    /// vehicles, ships and aircraft ×1.4, soldiers ×1.25. A model of the table is made at the size of the standard and shown as it is,
+    /// but a person's (<see cref="PersonGrowth"/>).
     /// </summary>
     public const float VehicleGrowth = 1.4f;
 
     /// <summary>See <see cref="VehicleGrowth"/>.</summary>
     public const float InfantryGrowth = 1.25f;
+
+    /// <summary>
+    /// How much bigger than the standard (0.6 of a cell) the model of a person — a soldier, a civilian — is shown: at that size they
+    /// were hardly seen from the camera of the game, smaller than the placeholders (the owner, 2026-11-02).
+    /// </summary>
+    public const float PersonGrowth = 1.5f;
 
     /// <summary>Builds the shapes for <paramref name="archetype"/>. Called once; pooled views keep their type.</summary>
     public void Build(UnitArchetype archetype)
@@ -91,6 +98,11 @@ public partial class UnitView : Node3D
             // An animal brings its own clips; the person's library is for the Mixamo skeleton only.
             Animal = AnimalAnimator.Attach(model);
             Human = Animal is null ? HumanAnimator.Attach(model, archetype.Id) : null;
+            if (Human is not null)
+            {
+                model.Scale *= PersonGrowth;
+            }
+
             return;
         }
 
