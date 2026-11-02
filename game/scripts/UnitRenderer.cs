@@ -11,7 +11,8 @@ namespace Rts.Client;
 /// 15 ticks per second still look smooth at 60+ frames per second: position along a line, hull and turret along the
 /// shorter arc. Views are pooled per unit type. Selected units glow; the unit under the pointer glows faintly (M2 step 13). A unit of
 /// another player is drawn only while the local player sees it (<see cref="Terrain.FogOfWar.Shows"/>, M4 step 12). A person with a
-/// skeleton (<see cref="UnitView.Human"/>) plays its clips, and falls when killed: its view stays a while after the unit is gone.
+/// skeleton (<see cref="UnitView.Human"/>) or an animal with its own (<see cref="UnitView.Animal"/>) plays its clips, and falls when
+/// killed: its view stays a while after the unit is gone.
 /// </summary>
 public partial class UnitRenderer : Node3D
 {
@@ -44,15 +45,15 @@ public partial class UnitRenderer : Node3D
 
     public override void _ExitTree() => _host.EventRaised -= OnEvent;
 
-    // A person with a skeleton killed: its view leaves the unit's and plays the fall where it stands.
+    // A person or an animal with a skeleton killed: its view leaves the unit's and plays the fall where it stands.
     private void OnEvent(SimEvent simEvent)
     {
-        if (simEvent is UnitKilled killed && _views.TryGetValue(killed.Unit, out var view) && view.Visible && view.Human is { } human)
+        if (simEvent is UnitKilled killed && _views.TryGetValue(killed.Unit, out var view) && view.Visible && view.Fall() is { } fall)
         {
             _views.Remove(killed.Unit);
             Units.UnitAltitude.Forget(killed.Unit);
             Units.SoldierSpots.Forget(killed.Unit);
-            _falling.Add((view, human.Die() + LyingSeconds));
+            _falling.Add((view, fall + LyingSeconds));
         }
     }
 

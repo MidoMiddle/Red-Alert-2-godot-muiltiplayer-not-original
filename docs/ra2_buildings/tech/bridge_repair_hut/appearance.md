@@ -62,6 +62,6 @@
 - [PPM Forums: туториал по ремонту мостов ИИ](https://ppmforums.org/topic-32894/tut-how-to-make-ai-repair-bridges/): фрагмент поиска, мод-туториал.
 - [Speedrun: гайд по кампании Союзников RA2](https://www.speedrun.com/cncra2/guide/pyc2l): фрагмент поиска.
 
-## Наша модель (2026-11-01)
+## Наша модель (2026-11-01, вид переделан 2026-11-02)
 
-`building/tech_bridge_repair_hut` в `game/data/visuals/models.yaml`, скрипт `tools/blender/families/map_bridge_hut.py`: будка из тёмно-зелёных досок под рифлёной стальной крышей, стальная дверь с полосой опасности, сигнальная лампа, инструменты; зимой со снегом. Одна модель: хижина неуязвима. Подробнее — [12_tech_buildings](../../../map_elements/12_tech_buildings/appearance.md).
+`building/tech_bridge_repair_hut` в `game/data/visuals/models.yaml`, скрипт `tools/blender/families/map_bridge_hut.py`: приземистая будка на всю клетку из тёмного бруса под жёлтой вальмовой крышей в тёмной стальной раме, стальная дверь с полосой опасности, сигнальная лампа на коньке; зимой со снегом. Первая версия (тёмно-зелёные доски, серая односкатная крыша) терялась у моста: владелец, 2026-11-02, — будку надо находить взглядом, как в RA2. Одна модель: хижина неуязвима. Подробнее — [12_tech_buildings](../../../map_elements/12_tech_buildings/appearance.md).

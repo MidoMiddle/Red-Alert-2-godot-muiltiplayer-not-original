@@ -445,6 +445,8 @@ ROWS = (
     "13. Море",
     "14. Пляж",
     "15. Пустыня",
+    "16. Лес",
+    "17. Мирные: машины и животные",
 )
 
 # Where each model stands: (row, place in the row). The key is the name of the model: its collection, its root and its file.
@@ -808,6 +810,21 @@ LAYOUT = {
     "desert_adobe_house_damaged_occupied": (14, 17),
     "desert_adobe_house_abandoned": (14, 18),
     "desert_adobe_house_ruins": (14, 19),
+    "tree_deciduous_01": (15, 0),
+    "tree_deciduous_02": (15, 1),
+    "tree_deciduous_03": (15, 2),
+    "tree_deciduous_04": (15, 3),
+    "civ_car_sedan": (16, 0),
+    "civ_car_sedan_red": (16, 1),
+    "civ_car_taxi": (16, 2),
+    "civ_car_police": (16, 3),
+    "civ_car_ambulance": (16, 4),
+    "civ_bus": (16, 5),
+    "civ_truck": (16, 6),
+    "civ_cow": (16, 7),
+    "civ_sheep": (16, 8),
+    "civ_camel": (16, 9),
+    "civ_dog": (16, 10),
 }
 
 

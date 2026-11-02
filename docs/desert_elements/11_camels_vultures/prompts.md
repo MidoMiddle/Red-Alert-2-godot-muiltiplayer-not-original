@@ -55,7 +55,7 @@ Flat side-view sprite of a soaring vulture with wings spread, dark brown plumage
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `civ_camel.glb` | | | |
+| `civ_camel.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_animals.py`), свой скелет и клипы | 2026-11-02 | сделано, 796 треугольников, анимирован |
 | `vulture_sprite.png` | | | |
 
 ## Открытые вопросы

@@ -99,7 +99,7 @@ A small wooden repair booth with a sloped roof covered in snow, one window, a to
 | `building_airport.glb` (в игре `tech_airfield.glb`, футпринт 3×3 по данным) | Blender 5.2.3, вручную (скрипт `tools/blender/families/tech_airfield.py`) | 2026-10-30 | сделано: целый, покинутый с огнём, руины |
 | `tech_outpost.glb` (аванпост, футпринт 4×3 по данным) | Blender 5.2.3, вручную (скрипт `tools/blender/families/tech_outpost.py`) | 2026-10-30 | сделано: целый (установка поворачивается, рука работает при ремонте), покинутый с огнём, руины |
 | `building_power_station.glb` | | | |
-| `bridge_repair_hut.glb` (вместо `building_bridge_booth`) | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_bridge_hut.py`) | 2026-11-01 | сделано, 426 треугольников; зимой `bridge_repair_hut_snow.glb`; цвета владельца нет — хижина ничья |
+| `bridge_repair_hut.glb` (вместо `building_bridge_booth`) | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_bridge_hut.py`) | 2026-11-02 | сделано, 362 треугольника (вид переделан: жёлтая крыша на всю клетку); зимой `bridge_repair_hut_snow.glb`; цвета владельца нет — хижина ничья |
 
 ## Открытые вопросы
 

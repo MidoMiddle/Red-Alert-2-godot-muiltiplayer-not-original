@@ -59,10 +59,11 @@ A cut broadleaf tree stump about half a unit tall, flat light cut surface with g
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `tree_deciduous_01.glb` | | | |
-| `tree_deciduous_02.glb` | | | |
-| `tree_deciduous_03.glb` | | | |
-| `tree_deciduous_stump.glb` | | | |
+| `tree_deciduous_01.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_broadleaf.py`) | 2026-11-02 | сделано, 212 треугольников |
+| `tree_deciduous_02.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_broadleaf.py`) | 2026-11-02 | сделано, 212 треугольников |
+| `tree_deciduous_03.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_broadleaf.py`) | 2026-11-02 | сделано, 256 треугольников |
+| `tree_deciduous_04.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/map_broadleaf.py`) | 2026-11-02 | сделано, 256 треугольников |
+| `tree_deciduous_stump.glb` | — | — | не сделано: пень у срубленного дерева клиент рисует один на все деревья (`MapObjects.AddStumps`), своего пня у формы дерева пока нет |
 
 ## Открытые вопросы
 

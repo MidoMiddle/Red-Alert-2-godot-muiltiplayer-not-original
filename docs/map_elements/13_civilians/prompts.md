@@ -160,10 +160,14 @@ A small dog with a thick coat, standing pose, realistic and game-ready. Realisti
 | `civ_desert_man.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 728 треугольников, анимирован |
 | `civ_desert_woman.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)) | 2026-11-01 | сделано, 728 треугольников, анимирован |
 | `civ_lifeguard.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/units/civilians.py`), скелет и клипы Mixamo ([mixamo.md](../../art/mixamo.md)); файл в `beach/` | 2026-11-01 | сделано, 708 треугольников, анимирован |
-| `civ_car_sedan.glb` | | | |
-| `civ_bus.glb` | | | |
-| `civ_truck.glb` | | | |
-| `civ_dog.glb` (по желанию) | | | |
+| `civ_car_sedan.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_vehicles.py`) | 2026-11-02 | сделано, 496 треугольников |
+| `civ_car_sedan_red.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_vehicles.py`) | 2026-11-02 | сделано, 496 треугольников |
+| `civ_car_taxi.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_vehicles.py`) | 2026-11-02 | сделано, 508 треугольников |
+| `civ_car_police.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_vehicles.py`) | 2026-11-02 | сделано, 544 треугольников |
+| `civ_car_ambulance.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_vehicles.py`) | 2026-11-02 | сделано, 544 треугольников |
+| `civ_bus.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_vehicles.py`) | 2026-11-02 | сделано, 472 треугольников |
+| `civ_truck.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_vehicles.py`) | 2026-11-02 | сделано, 560 треугольников |
+| `civ_dog.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_animals.py`), свой скелет и клипы | 2026-11-02 | сделано, 710 треугольников, анимирован |
 
 ## Открытые вопросы
 

@@ -55,8 +55,8 @@ A white woolly sheep about one unit long and half a unit tall, dark grey face, s
 
 | Файл | Сервис | Дата | Статус |
 |---|---|---|---|
-| `civ_cow.glb` | | | |
-| `civ_sheep.glb` | | | |
+| `civ_cow.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_animals.py`), свой скелет и клипы | 2026-11-02 | сделано, 792 треугольников, анимирован |
+| `civ_sheep.glb` | Blender 5.2.3, вручную (скрипт `tools/blender/families/civ_animals.py`), свой скелет и клипы | 2026-11-02 | сделано, 710 треугольников, анимирован |
 
 ## Открытые вопросы
 

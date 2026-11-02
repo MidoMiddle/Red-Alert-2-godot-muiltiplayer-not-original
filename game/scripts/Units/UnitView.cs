@@ -60,6 +60,9 @@ public partial class UnitView : Node3D
     /// <summary>The clips of a person with a skeleton (docs/art/mixamo.md); null for every other model and for the placeholders.</summary>
     public HumanAnimator? Human { get; private set; }
 
+    /// <summary>The clips of an animal with a skeleton of its own (<see cref="AnimalAnimator"/>); null for every other model.</summary>
+    public AnimalAnimator? Animal { get; private set; }
+
     /// <summary>
     /// How much bigger than they were drawn the placeholder shapes are shown (the owner, 2026-10-26, measured against RA2's buildings):
     /// vehicles, ships and aircraft ×1.4, soldiers ×1.25. A model of the table is made at the size of the standard and shown as it is.
@@ -81,7 +84,9 @@ public partial class UnitView : Node3D
             _turret = model.FindChild("turret", true, false) as Node3D;
             _teamMeshes = [];
             CollectTeam(model, false, _teamMeshes);
-            Human = HumanAnimator.Attach(model, archetype.Id);
+            // An animal brings its own clips; the person's library is for the Mixamo skeleton only.
+            Animal = AnimalAnimator.Attach(model);
+            Human = Animal is null ? HumanAnimator.Attach(model, archetype.Id) : null;
             return;
         }
 
@@ -111,8 +116,12 @@ public partial class UnitView : Node3D
         _drawnAt = null;
         _speed = 0f;
         Human?.Restart();
+        Animal?.Restart();
         SetWreck(false);
     }
+
+    /// <summary>Plays the fall of a person or an animal killed; returns how long it takes, null for a view that has none.</summary>
+    public float? Fall() => Human?.Die() ?? Animal?.Die();
 
     /// <summary>
     /// Shows the burning wreck of a parked car (docs/map_elements/13_civilians, 4.6): the car charred, smoke and flames over it; or the
@@ -161,7 +170,7 @@ public partial class UnitView : Node3D
     /// </summary>
     public void Animate(CivilianState? state, float delta)
     {
-        if (Human is null || delta <= 0f)
+        if ((Human is null && Animal is null) || delta <= 0f)
         {
             return;
         }
@@ -173,7 +182,8 @@ public partial class UnitView : Node3D
         var motion = _speed > MovingSpeed
             ? state == CivilianState.Flee ? HumanMotion.Run : HumanMotion.Walk
             : state == CivilianState.Cover ? HumanMotion.Cover : HumanMotion.Stand;
-        Human.Step(motion, _speed, delta);
+        Human?.Step(motion, _speed, delta);
+        Animal?.Step(motion, delta);
     }
 
     /// <summary>How fast (units a second) a person is seen to go before it walks: below, it stands.</summary>

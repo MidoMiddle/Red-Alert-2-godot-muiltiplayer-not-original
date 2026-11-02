@@ -29,6 +29,13 @@ models:
   # or smaller; made at the size the game draws a tree. Felled, it leaves the stump every tree leaves.
   tree/pine:                  { files: [map/tree_spruce_01/tree_spruce_01.glb, map/tree_spruce_02/tree_spruce_02.glb,
                                         map/tree_spruce_03/tree_spruce_03.glb, map/tree_spruce_04/tree_spruce_04.glb], spin: true, jitter: 0.15 }
+  # The broadleaf trees of the temperate and city maps, now and then by the sea (docs/temperate_elements/01_deciduous_tree): a small
+  # one — a lime or a birch — and a big one — an oak or a chestnut —, each cell picks one of its two, turned any way and a little bigger
+  # or smaller; made at the size the game draws a tree. Felled, it leaves the stump every tree leaves.
+  tree/broadleaf_small:       { files: [map/tree_deciduous_01/tree_deciduous_01.glb, map/tree_deciduous_02/tree_deciduous_02.glb],
+                                spin: true, jitter: 0.15 }
+  tree/broadleaf_big:         { files: [map/tree_deciduous_03/tree_deciduous_03.glb, map/tree_deciduous_04/tree_deciduous_04.glb],
+                                spin: true, jitter: 0.15 }
   # The palm of the coast and of the desert's oases (docs/beach_elements/02_palm): three kinds, each cell picks one, turned any way and
   # a little bigger or smaller; made at the size the game draws a tree. Felled, it leaves the stump every tree leaves.
   tree/palm:                  { files: [beach/tree_palm_01/tree_palm_01.glb, beach/tree_palm_02/tree_palm_02.glb,
@@ -534,3 +541,16 @@ models:
   unit/civ_beach_man:        { files: [beach/civ_beach_man/civ_beach_man.glb, beach/civ_beach_man_b/civ_beach_man_b.glb] }
   unit/civ_beach_woman:      { files: [beach/civ_beach_woman/civ_beach_woman.glb, beach/civ_beach_woman_b/civ_beach_woman_b.glb] }
   unit/civ_lifeguard:        { file: beach/civ_lifeguard/civ_lifeguard.glb }
+  # The animals of the map (docs/map_elements/13_civilians, 4): a four-legged skeleton of their own, their clips idle, graze, walk, run
+  # and die in their files (Units/AnimalAnimator.cs).
+  unit/civ_cow:              { file: unit/civ_cow/civ_cow.glb }
+  unit/civ_sheep:            { file: unit/civ_sheep/civ_sheep.glb }
+  unit/civ_camel:            { file: unit/civ_camel/civ_camel.glb }
+  unit/civ_dog:              { file: unit/civ_dog/civ_dog.glb }
+  # The civilians' vehicles (docs/map_elements/13_civilians, 3): a car is a plain sedan in two colours, a taxi, a police car or an
+  # ambulance (a unit picks one); the bus and the truck. The client chars a wreck and blinks the headlights of an alarm itself.
+  unit/civ_car:              { files: [unit/civ_car_sedan/civ_car_sedan.glb, unit/civ_car_sedan_red/civ_car_sedan_red.glb,
+                                       unit/civ_car_taxi/civ_car_taxi.glb, unit/civ_car_police/civ_car_police.glb,
+                                       unit/civ_car_ambulance/civ_car_ambulance.glb] }
+  unit/civ_bus:              { file: unit/civ_bus/civ_bus.glb }
+  unit/civ_truck:            { file: unit/civ_truck/civ_truck.glb }
