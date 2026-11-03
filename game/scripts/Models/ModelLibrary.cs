@@ -57,6 +57,29 @@ public static class ModelLibrary
     /// <summary>The path of the model's first file there, for the renderers that load meshes themselves; null without one.</summary>
     public static string? PathOf(string key) => Find(key) is { } entry ? ScenesOf(entry)[0].ResourcePath : null;
 
+    private const string SquashedGroup = "squashed_models";
+    private const string SquashedBasis = "squashed_basis";
+    private const string SquashedBy = "squashed_by";
+
+    /// <summary>Whether the models the table squashes (<see cref="ModelEntry.HeightScale"/>) stand at their full height: from the ground.</summary>
+    public static bool FullHeight { get; private set; }
+
+    /// <summary>
+    /// The squashed models at their full height (<paramref name="full"/>: the view from the ground, Possession) or squashed as the table
+    /// says: every one there is now, and those made after.
+    /// </summary>
+    public static void SetFullHeight(SceneTree tree, bool full)
+    {
+        FullHeight = full;
+        foreach (var node in tree.GetNodesInGroup(SquashedGroup))
+        {
+            if (node is Node3D holder && holder.GetMeta(SquashedBasis).AsBasis() is var squashed && holder.GetMeta(SquashedBy).AsSingle() is var by and > 0f)
+            {
+                holder.Basis = full ? squashed.Scaled(new Vector3(1f, 1f / by, 1f)) : squashed;
+            }
+        }
+    }
+
     /// <summary>
     /// The model of <paramref name="key"/> placed as the table says, its pivot at the origin of the node it is added to; of several
     /// files the one of <paramref name="cell"/> (the first without one); its <c>team_mask</c> in <paramref name="team"/> when given.
@@ -100,6 +123,18 @@ public static class ModelLibrary
         }
 
         var holder = new Node3D { Name = "Model", Transform = Placement(entry, pick) };
+        if (entry.HeightScale != 1f)
+        {
+            // Squashed for the camera of the map (the low houses of RA2); at their full height from the ground (Possession).
+            holder.SetMeta(SquashedBasis, holder.Basis);
+            holder.SetMeta(SquashedBy, entry.HeightScale);
+            holder.AddToGroup(SquashedGroup);
+            if (FullHeight)
+            {
+                holder.Basis = holder.Basis.Scaled(new Vector3(1f, 1f / entry.HeightScale, 1f));
+            }
+        }
+
         var model = scene.Instantiate<Node3D>();
         holder.AddChild(model);
         if (team is { } colour)

@@ -83,6 +83,28 @@ public partial class UnitView : Node3D
     /// </summary>
     public const float PersonGrowth = 1.5f;
 
+    private const string PeopleGroup = "person_models";
+    private const string PersonScale = "person_scale";
+
+    /// <summary>Whether people are drawn at their own size, not grown (<see cref="PersonGrowth"/>): while the camera is inside a unit.</summary>
+    public static bool RealSize { get; private set; }
+
+    /// <summary>
+    /// People at their own size (<paramref name="real"/>, the view from the ground: Possession) or grown for the camera of the map:
+    /// every model of a person there is now, and those made after.
+    /// </summary>
+    public static void SetRealSize(SceneTree tree, bool real)
+    {
+        RealSize = real;
+        foreach (var node in tree.GetNodesInGroup(PeopleGroup))
+        {
+            if (node is Node3D model && model.GetMeta(PersonScale).AsVector3() is var size)
+            {
+                model.Scale = size * (real ? 1f : PersonGrowth);
+            }
+        }
+    }
+
     /// <summary>Builds the shapes for <paramref name="archetype"/>. Called once; pooled views keep their type.</summary>
     public void Build(UnitArchetype archetype)
     {
@@ -103,7 +125,10 @@ public partial class UnitView : Node3D
             Human = Animal is null ? HumanAnimator.Attach(model, archetype.Id) : null;
             if (Human is not null)
             {
-                model.Scale *= PersonGrowth;
+                // A person: grown for the camera of the map, at its own size while the camera is inside a unit (Possession).
+                model.SetMeta(PersonScale, model.Scale);
+                model.AddToGroup(PeopleGroup);
+                model.Scale *= RealSize ? 1f : PersonGrowth;
             }
 
             return;

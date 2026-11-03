@@ -68,6 +68,7 @@ public sealed class KeyBindings
         new KeyAction("spawn", "UI_KEY_SPAWN", "B"),
         new KeyAction("guard", "UI_KEY_GUARD", "G"),
         new KeyAction("deploy", "UI_KEY_DEPLOY", "D"),
+        new KeyAction("possess", "UI_KEY_POSSESS", "F"),
         new KeyAction("debug_path", "UI_KEY_DEBUG_PATH", "F6"),
         new KeyAction("debug_cells", "UI_KEY_DEBUG_CELLS", "F7"),
         new KeyAction("debug_queue", "UI_KEY_DEBUG_QUEUE", "F8"),

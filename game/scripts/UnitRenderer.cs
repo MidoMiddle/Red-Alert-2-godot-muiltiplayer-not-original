@@ -17,6 +17,9 @@ namespace Rts.Client;
 public partial class UnitRenderer : Node3D
 {
     private readonly Dictionary<EntityId, UnitView> _views = new();
+
+    /// <summary>The view the unit is drawn by now, or null (not yet drawn, gone).</summary>
+    public UnitView? ViewOf(EntityId id) => _views.GetValueOrDefault(id);
     private readonly Dictionary<UnitType, Stack<UnitView>> _pool = new();
     private readonly HashSet<EntityId> _alive = new();
     private readonly List<EntityId> _gone = new();

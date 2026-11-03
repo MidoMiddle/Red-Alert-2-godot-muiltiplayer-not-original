@@ -64,6 +64,8 @@ public partial class Main : Node3D
         var bars = new CanvasLayer { Name = "Bars", Layer = 0 };
         bars.AddChild(new Hud.HealthBars { Name = "HealthBars" });
         AddChild(bars);
+        // Going into a unit (F): last, so its input comes before the field's.
+        AddChild(new Possession { Name = "Possession" });
 
         var args = OS.GetCmdlineUserArgs();
         var screenshotIndex = Array.IndexOf(args, "--screenshot");
