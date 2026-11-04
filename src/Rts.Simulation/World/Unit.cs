@@ -59,6 +59,12 @@ public sealed class Unit : Entity
     /// <summary>Deployed in place (stage 3b: the toxin trooper fires its deploy weapon); any order of the player undeploys it. State: hashed.</summary>
     public bool Deployed { get; internal set; }
 
+    /// <summary>
+    /// Under the player's hand (<see cref="Commands.TakeControlCommand"/>: the player inside the unit, 2026-11-04): it chooses no targets
+    /// and chases none by itself; it fires the player's aimed shots (<see cref="Systems.AimedShot"/>). State: hashed when set.
+    /// </summary>
+    public bool Manual { get; internal set; }
+
     /// <summary>The ticks the unit still phases in after a jump (stage 3b: the time trooper): it neither moves nor fires. State: hashed.</summary>
     public int WarpTicks { get; internal set; }
 

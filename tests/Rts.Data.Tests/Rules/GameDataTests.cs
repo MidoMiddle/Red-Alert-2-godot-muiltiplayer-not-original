@@ -122,7 +122,8 @@ public sealed class GameDataTests
         // The pier (a bridge with the key pier), the slipway and the breakwater (docs/beach_elements, 14–16).
         // The dog of the towns (civ_dog); the beachgoers gather by the pier too.
         // The Grand Cannon's slow gun (turret_turn_rate, RA2 ROT=1); Yuri's psychic pulse in the IFV (RA2 CRMindControl).
-        Assert.Equal(0x5dce494c388f0983UL, GameDataFiles.Current.Hash);
+        // The spread of an aimed shot (aim_spread) of the Marksman's rifles: going into a unit, 2026-11-04.
+        Assert.Equal(0x83dd3e58b1fb63dfUL, GameDataFiles.Current.Hash);
     }
 
     [Fact]

@@ -8,4 +8,8 @@ namespace Rts.Simulation.Combat;
 /// M4_combat.md, 4.9). <paramref name="Source"/> is the projectile, or the shooter for an instant shot: with the target and the point
 /// it orders the hits, whatever system found them first. <paramref name="BonusPercent"/> adds to the damage of the weapon (stage 2e).
 /// </summary>
-public readonly record struct Hit(EntityId Source, EntityId Shooter, PlayerId Owner, int Weapon, WorldPos Point, EntityId? Target, int BonusPercent = 0);
+public readonly record struct Hit(EntityId Source, EntityId Shooter, PlayerId Owner, int Weapon, WorldPos Point, EntityId? Target, int BonusPercent = 0)
+{
+    /// <summary>An aimed shot in a soldier's head (<see cref="Systems.AimedShot"/>): it takes all the hit points the weapon hurts.</summary>
+    public bool Lethal { get; init; }
+}

@@ -50,7 +50,7 @@ public static class TargetingSystem
             // map places for nobody, which fire at everybody (Hostility).
             if (!IsLookTick(world, entity.Id) || !entity.IsAlive || (entity.Owner.IsNeutral && !Hostility.IsHostileNeutral(entity))
                 || world.IsDefeated(entity.Owner) || entity.ErasedBy is not null
-                || entity is Unit { WarpTicks: > 0 } or Building { TargetOrder: not TargetOrder.None })
+                || entity is Unit { WarpTicks: > 0 } or Unit { Manual: true } or Building { TargetOrder: not TargetOrder.None })
             {
                 continue;
             }

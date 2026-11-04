@@ -4,6 +4,7 @@ using Rts.Net.Protocol;
 using Rts.Net.Protocol.Messages;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 using Rts.Simulation.Matches;
 using Rts.Simulation.World;
 
@@ -49,6 +50,8 @@ internal static class Samples
             new EvacuateCommand(player, tick, sequence++, new EntityId(21)),
             new SuperweaponCommand(player, tick, sequence++, new EntityId(22), cell, new CellPos(13, 34)),
             new SurrenderCommand(player, tick, sequence++),
+            new AimedShotCommand(player, tick, sequence++, new EntityId(23), new BAngle(40000), -1200),
+            new TakeControlCommand(player, tick, sequence++, new EntityId(23), true),
             new PlayerLeftCommand(player, tick, sequence),
         ];
     }

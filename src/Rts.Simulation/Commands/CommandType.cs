@@ -31,4 +31,6 @@ public enum CommandType : byte
     Superweapon = 24,
     PlayerLeft = 25,
     SetPrimary = 26,
+    AimedShot = 27,
+    TakeControl = 28,
 }

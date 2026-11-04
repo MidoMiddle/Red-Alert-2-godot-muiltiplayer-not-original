@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Math;
 using Rts.Simulation.World;
 using static Rts.Simulation.Tests.Commands.CommandFactory;
 
@@ -148,6 +149,10 @@ public sealed class CommandSerializerTests
         // An unknown stance still round-trips: the processor rejects it.
         new SetStanceCommand(new PlayerId(4), 6, 6, [], (Stance)9),
         new SurrenderCommand(new PlayerId(2), 7, 1),
+        new AimedShotCommand(new PlayerId(1), 9, 1, new EntityId(31), new BAngle(ushort.MaxValue), short.MinValue),
+        new AimedShotCommand(new PlayerId(1), 9, 2, new EntityId(-1), new BAngle(0), 16000),
+        new TakeControlCommand(new PlayerId(1), 9, 3, new EntityId(31), true),
+        new TakeControlCommand(new PlayerId(1), 9, 4, new EntityId(31), false),
         new EnterCommand(new PlayerId(5), 8, 1, [new EntityId(21), new EntityId(22)], new EntityId(40)),
         new EnterCommand(new PlayerId(5), 8, 2, [], new EntityId(-1)),
         new EvacuateCommand(new PlayerId(6), 8, 3, new EntityId(40)),

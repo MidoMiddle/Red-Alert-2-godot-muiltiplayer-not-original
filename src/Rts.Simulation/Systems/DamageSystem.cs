@@ -179,6 +179,12 @@ public static class DamageSystem
         if (hit.Target is { } targetId && world.TryGet(targetId, out var target) && target.IsAlive && Hurts(target, warhead))
         {
             var amount = DamageCalculator.Direct(damage, rules.Verses(warheadIndex, ArmorOf(rules, target)));
+            if (hit.Lethal && amount > 0)
+            {
+                // In the head (an aimed shot): the soldier falls at once.
+                amount = IntMath.Max(amount, target is Unit soldier ? soldier.Hp : amount);
+            }
+
             Damage(world, target, amount, hit, events);
         }
 

@@ -60,6 +60,8 @@ public static class CommandProcessor
             EnterCommand enter => EntrySystem.Order(world, OwnUnits(world, enter), enter.Building),
             EvacuateCommand evacuate => ApplyEvacuate(world, evacuate, events),
             SuperweaponCommand superweapon => SuperweaponSystem.Fire(world, superweapon, events),
+            AimedShotCommand shot => AimedShot.Fire(world, shot, events),
+            TakeControlCommand control => ApplyTakeControl(world, control),
             _ => throw new ArgumentException($"Unknown command type {command.GetType().Name}.", nameof(command)),
         };
         if (applied && command is UnitsCommand { Type: not (CommandType.Harvest or CommandType.Attack or CommandType.ForceAttack or CommandType.SetStance or CommandType.Enter) } order)
@@ -672,6 +674,31 @@ public static class CommandProcessor
         var building = world.CreateBuilding(command.Player, yard, cell, ready: false, events);
         events?.Add(new BuildingPlaced(world.CurrentTick, building.Id, command.Player, building.DefIndex, cell));
         events?.Add(new Deployed(world.CurrentTick, unit.Id, building.Id));
+        return true;
+    }
+
+    /// <summary>
+    /// The player goes into the unit or out of it (the owner, 2026-11-04). Going in, it forgets the target it chose or was given: from now
+    /// on it fires the player's aimed shots; a soldier dug in stays so.
+    /// </summary>
+    private static bool ApplyTakeControl(GameWorld world, TakeControlCommand command)
+    {
+        if (!world.TryGet(command.Unit, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Owner != command.Player
+            || unit.Manual == command.On)
+        {
+            return false;
+        }
+
+        unit.Manual = command.On;
+        if (command.On)
+        {
+            unit.Target = null;
+            unit.TargetOrder = TargetOrder.None;
+            unit.TargetPoint = null;
+            unit.Engaged = false;
+            unit.ChaseCell = null;
+        }
+
         return true;
     }
 

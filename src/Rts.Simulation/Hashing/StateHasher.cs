@@ -402,6 +402,12 @@ public static class StateHasher
                     }
                 }
 
+                // Rules v128: under the player's hand, only for such a unit, so every other match keeps its hashes.
+                if (unit.Manual)
+                {
+                    hash.Add(9);
+                }
+
                 // Rules v57 (loose ends, stage 1): the load of a paradrop plane.
                 hash.Add(unit.Drop is not null);
                 if (unit.Drop is { } drop)

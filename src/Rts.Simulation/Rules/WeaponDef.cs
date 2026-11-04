@@ -56,6 +56,15 @@ public sealed record WeaponDef : IDefinition
     /// <summary>The sound of a shot, for the client; the simulation does not use it.</summary>
     public string Report { get; init; } = "";
 
+    /// <summary>
+    /// How far an aimed shot of the player inside the unit may stray either way, in degrees, at random (<see cref="Systems.AimedShot"/>,
+    /// the owner, 2026-11-04); twice that on the move.
+    /// </summary>
+    public Fixed AimSpread { get; init; } = DefaultAimSpread;
+
+    /// <summary>The spread of a weapon that names none: a degree and a half.</summary>
+    public static readonly Fixed DefaultAimSpread = Fixed.FromRatio(3, 2);
+
     /// <summary>Firing it is its shooter's end (stage 3b, RA2 <c>Suicide</c>: the demolition trooper): the shooter dies at once.</summary>
     public bool Suicide { get; init; }
 

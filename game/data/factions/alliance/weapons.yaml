@@ -91,6 +91,7 @@ alliance_sniper_rifle:  # of the Marksman, RA2 AWP: reaches farther than it sees
   range: 14
   projectile: bullet
   warhead: hollow_point
+  aim_spread: 0.2  # the player inside the unit: a scope, it strays little (2026-11-04)
 
 alliance_jetpack_guns:  # of the Jetpack Trooper, RA2 20mm: at the ground and the air
   kind: weapon
@@ -207,6 +208,7 @@ ifv_sniper:  # what the Marksman gives the IFV, RA2 AWPE
   range: 14
   projectile: bullet
   warhead: hollow_point
+  aim_spread: 0.2  # the player inside the unit: a scope, it strays little (2026-11-04)
 
 ifv_psi_pulse:  # what Yuri gives the IFV, RA2 CRMindControl: no mind control, a psychic pulse of 200 at the soldiers within 3 cells of the target (PsiPulse), ROF 10
   kind: weapon

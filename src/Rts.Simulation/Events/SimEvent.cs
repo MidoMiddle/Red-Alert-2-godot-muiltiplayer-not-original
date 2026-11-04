@@ -62,6 +62,12 @@ public sealed record WeaponFired(int Tick, EntityId Shooter, EntityId? Target, i
 public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId Shooter, int Weapon, WorldPos Point, EntityId? Target)
     : SimEvent(Tick);
 
+/// <summary>
+/// The player inside a unit fired an aimed shot (<see cref="Systems.AimedShot"/>): it ended at <paramref name="Point"/>, in
+/// <paramref name="Target"/> or, with none, on the ground or at the end of its reach; <paramref name="Headshot"/> in a soldier's head.
+/// </summary>
+public sealed record AimedHit(int Tick, EntityId Shooter, EntityId? Target, WorldPos Point, bool Headshot) : SimEvent(Tick);
+
 /// <summary>A unit or a building lost <paramref name="Amount"/> hit points to a shot of <paramref name="Attacker"/> (M4, 4.9).</summary>
 public sealed record EntityDamaged(int Tick, EntityId Entity, EntityId Attacker, int Amount, int Hp) : SimEvent(Tick);
 

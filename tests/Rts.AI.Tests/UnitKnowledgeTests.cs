@@ -189,7 +189,7 @@ public sealed class UnitKnowledgeTests
         ["BurstDelay"] = "no need: inside the reload", ["Targets"] = "used", ["Report"] = "no need: the client",
         ["Suicide"] = "used", ["Fragments"] = "later: the worth leaves the splinters out",
         ["FragmentWeapon"] = "later: the worth leaves the splinters out", ["FragmentRange"] = "later: the worth leaves the splinters out",
-        ["LaunchesSpawns"] = "used",
+        ["LaunchesSpawns"] = "used", ["AimSpread"] = "no need: the player's aimed shots only",
     };
 
     public static TheoryData<string> Kinds => new() { nameof(UnitDef), nameof(WarheadDef), nameof(WeaponDef) };

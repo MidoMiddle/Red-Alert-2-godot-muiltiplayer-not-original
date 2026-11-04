@@ -38,7 +38,7 @@ public sealed class StateHasherTests
         "path pending", "path", "path index", "path request", "path search progress", "path budget",
         "wait ticks", "replans", "hold ticks", "resume target", "occupied cell", "path request avoid", "returning",
         "soldier spot", "subcell", "route", "route point", "attack-move", "order index", "loop",
-        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "primary", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "grounded", "climb ticks", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
+        "vision", "explored", "veil", "explore all", "credits", "under attack", "defeated", "building", "building ready", "production", "production progress", "rally point", "ore", "ore stage", "harvester load", "harvester mode", "repair", "primary", "enter target", "occupant", "occupant hp", "erased by", "erase weapon", "erase points", "bomb ticks", "bomb weapon", "bomb shooter", "bomb owner", "deployed", "manual", "warp ticks", "passenger", "passenger bomb", "parasite", "parasite ticks", "ammo", "rearm ticks", "mother", "spawns docked", "spawn regen", "drop", "cash timer", "experience", "crate upgrades", "controlled by", "controlling", "undeploy in", "charging", "grounded", "climb ticks", "veteran infantry", "veteran vehicles", "map revealed", "country weapon", "stolen tech", "invulnerable", "storm", "bridge bomb", "blackout", "radiation",
         "building hp", "building target", "building target order", "building reload",
     };
 
@@ -81,6 +81,7 @@ public sealed class StateHasherTests
             case "bomb shooter": moving.BombShooter = idle.Id; break;
             case "bomb owner": moving.BombOwner = new PlayerId(2); break;
             case "deployed": moving.Deployed = true; break;
+            case "manual": moving.Manual = true; break;
             case "passenger": moving.Passengers.Add(new Occupant(world.Rules.Unit(UnitType.Conscript), 125)); break;
             case "passenger bomb": moving.Passengers.Add(new Occupant(world.Rules.Unit(UnitType.Conscript), 125) { BombWeapon = 0 }); break;
             case "parasite": moving.Parasite = UnitType.Conscript; break;
@@ -308,7 +309,7 @@ public sealed class StateHasherTests
         "<Orders>k__BackingField", "<OrderIndex>k__BackingField", "<LoopOrders>k__BackingField", "<Hp>k__BackingField",
         "<Target>k__BackingField", "<Weapons>k__BackingField", "<Stance>k__BackingField", "<Anchor>k__BackingField",
         "<TargetOrder>k__BackingField", "<TargetPoint>k__BackingField", "<Engaged>k__BackingField", "<ChaseCell>k__BackingField", "<EnterTarget>k__BackingField",
-        "<Deployed>k__BackingField", "<WarpTicks>k__BackingField",
+        "<Deployed>k__BackingField", "<Manual>k__BackingField", "<WarpTicks>k__BackingField",
         "<Passengers>k__BackingField", "<Parasite>k__BackingField", "<ParasiteOwner>k__BackingField", "<ParasiteHp>k__BackingField",
         "<ParasiteWeapon>k__BackingField", "<ParasiteTicks>k__BackingField", "<Ammo>k__BackingField", "<RearmTicks>k__BackingField",
         "<Mother>k__BackingField", "<SpawnsDocked>k__BackingField", "<SpawnRegenTicks>k__BackingField", "<Drop>k__BackingField", "<Civilian>k__BackingField", "<Experience>k__BackingField",

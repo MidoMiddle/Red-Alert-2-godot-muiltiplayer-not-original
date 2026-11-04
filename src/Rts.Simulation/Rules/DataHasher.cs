@@ -57,6 +57,13 @@ public static class DataHasher
             Add(hash, weapon.FragmentWeapon);
             hash.Add(weapon.FragmentRange.Raw);
             hash.Add(weapon.LaunchesSpawns);
+
+            // Rules v128: the spread of an aimed shot, only when not the default.
+            if (weapon.AimSpread != WeaponDef.DefaultAimSpread)
+            {
+                hash.Add(1);
+                hash.Add(weapon.AimSpread.Raw);
+            }
         }
 
         hash.Add(rules.Units.Length);

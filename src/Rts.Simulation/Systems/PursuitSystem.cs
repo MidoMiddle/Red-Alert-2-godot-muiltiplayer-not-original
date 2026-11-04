@@ -39,7 +39,8 @@ public static class PursuitSystem
         var rules = world.Rules;
         foreach (var entity in world.Entities)
         {
-            if (entity is not Unit { IsAlive: true, Harvester: null } unit || unit.Weapons.Length == 0 || unit.Owner.IsNeutral
+            // Under the player's hand (going into a unit) it goes only where the player walks it.
+            if (entity is not Unit { IsAlive: true, Harvester: null, Manual: false } unit || unit.Weapons.Length == 0 || unit.Owner.IsNeutral
                 || TargetingSystem.IsMoving(unit))
             {
                 continue;

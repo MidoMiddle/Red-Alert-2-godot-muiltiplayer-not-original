@@ -44,11 +44,12 @@ namespace Rts.Simulation.Replays;
 /// of the match after its setup: u8 0, or u8 1 | u16 length + UTF-8 game version | u64 mapHash | u8 count, then u8 player | u16 length +
 /// UTF-8 name each; v28 (M6 step 8) adds u8 startingUnits after destroyableBridges; v29 (M11 a6) u8 crates after it; v30 command format v14 (SetPrimary);
 /// v31 (rules v110) a building of the start of kind 0 — a building of a faction's data — is followed by u8 width | u8 height | u8 length +
-/// ASCII id of its definition; v32 (rules v121) u8 civilians after crates, and u16 length + UTF-8 climate of the map after the starts.
+/// ASCII id of its definition; v32 (rules v121) u8 civilians after crates, and u16 length + UTF-8 climate of the map after the starts; v33 command format v15
+/// (AimedShot, TakeControl: going into a unit).
 /// </summary>
 public static class ReplayFormat
 {
-    public const ushort FormatVersion = 32;
+    public const ushort FormatVersion = 33;
     public const string FileExtension = ".rtsreplay";
 
     private static ReadOnlySpan<byte> Magic => "RTSR"u8;

@@ -36,7 +36,7 @@ internal static class DefinitionReader
 
     private static readonly string[] WeaponKeys =
     [
-        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report", "suicide", "fragments", "fragment_weapon", "fragment_range", "launches_spawns",
+        "name", "damage", "reload", "range", "min_range", "projectile", "warhead", "burst", "burst_delay", "targets", "report", "suicide", "fragments", "fragment_weapon", "fragment_range", "launches_spawns", "aim_spread",
     ];
 
     private static readonly string[] ArmorKeys = ["name"];
@@ -268,6 +268,7 @@ internal static class DefinitionReader
             FragmentWeapon = fields.Optional("fragment_weapon", Scalars.Id, ""),
             FragmentRange = fields.Optional("fragment_range", Scalars.FixedNumber, Fixed.Zero),
             LaunchesSpawns = fields.Optional("launches_spawns", Scalars.Flag, false),
+            AimSpread = fields.Optional("aim_spread", Scalars.FixedNumber, WeaponDef.DefaultAimSpread),
         };
     }
 

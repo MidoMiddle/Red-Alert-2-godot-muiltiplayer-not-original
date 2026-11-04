@@ -9,7 +9,7 @@ using Rts.Simulation.World;
 namespace Rts.Simulation.Commands;
 
 /// <summary>
-/// Binary command format v13, little-endian regardless of the CPU. The same bytes go to the network
+/// Binary command format v15, little-endian regardless of the CPU. The same bytes go to the network
 /// and into replays (docs/implementation/M0_foundation.md, 4.7; M2_unit_control.md, 4.10):
 /// <code>
 /// u8 type | i32 player | i32 executeTick | u32 sequence | payload
@@ -35,16 +35,18 @@ namespace Rts.Simulation.Commands;
 /// Enter:         units | i32 building
 /// Evacuate:      i32 building
 /// Superweapon:   i32 building | i32 x | i32 y | i32 x2 | i32 y2 (cells)
+/// AimedShot:     i32 unit | u16 yaw | i16 pitch
+/// TakeControl:   i32 unit | u8 on
 /// units = u16 count | i32 × count ids
 /// </code>
 /// A batch is <c>u32 count</c> followed by the commands.
 /// Version history: v1 (M0); v2 (M2 step 2) added the unit type to SpawnTestUnit; v3 (M2 step 12) added the queue flag,
 /// Stop, AttackMove, Waypoints and Scatter; v4 (M7 step 5) added DamageMapObject; v5 (M3 step 6) added PlaceBuilding and Deploy; v6 (M3 step 8) added Produce, PauseProduction,
-/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender; v11 (stage 2e of filling the game) added Enter (then named Garrison) and Evacuate; v12 (stage 2d) added Superweapon; v13 (M9 step 10) added PlayerLeft; v14 added SetPrimary (the primary factory, RA2).
+/// CancelProduction and SetRallyPoint; v7 (M3 step 10) added Harvest; v8 (M3 step 11) added Sell, ToggleRepair and PlaceWalls; v9 (M4 step 7) added Attack, ForceAttack and SetStance; v10 (M5 step 10) added Surrender; v11 (stage 2e of filling the game) added Enter (then named Garrison) and Evacuate; v12 (stage 2d) added Superweapon; v13 (M9 step 10) added PlayerLeft; v14 added SetPrimary (the primary factory, RA2); v15 added AimedShot and TakeControl (going into a unit).
 /// </summary>
 public static class CommandSerializer
 {
-    public const int FormatVersion = 14;
+    public const int FormatVersion = 15;
 
     private const int HeaderSize = 1 + 4 + 4 + 4;
     private const int PositionSize = 4 + 4;
@@ -77,6 +79,8 @@ public static class CommandSerializer
         EnterCommand garrison => HeaderSize + UnitsSize(garrison) + 4,
         EvacuateCommand => HeaderSize + 4,
         SuperweaponCommand => HeaderSize + 4 + PositionSize + PositionSize,
+        AimedShotCommand => HeaderSize + 4 + 2 + 2,
+        TakeControlCommand => HeaderSize + 4 + 1,
         _ => throw UnknownCommand(command),
     };
 
@@ -211,6 +215,15 @@ public static class CommandSerializer
                 BinaryPrimitives.WriteInt32LittleEndian(payload[8..], superweapon.Target.Y);
                 BinaryPrimitives.WriteInt32LittleEndian(payload[12..], superweapon.Second.X);
                 BinaryPrimitives.WriteInt32LittleEndian(payload[16..], superweapon.Second.Y);
+                break;
+            case AimedShotCommand shot:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, shot.Unit.Value);
+                BinaryPrimitives.WriteUInt16LittleEndian(payload[4..], shot.Yaw.Value);
+                BinaryPrimitives.WriteInt16LittleEndian(payload[6..], shot.Pitch);
+                break;
+            case TakeControlCommand control:
+                BinaryPrimitives.WriteInt32LittleEndian(payload, control.Unit.Value);
+                payload[4] = control.On ? (byte)1 : (byte)0;
                 break;
             case HarvestCommand harvest:
                 var unitsEnd = WriteUnits(payload, harvest);
@@ -444,6 +457,26 @@ public static class CommandSerializer
                 bytesRead = HeaderSize + 4 + PositionSize;
                 var building = new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload));
                 return new SetRallyPointCommand(player, tick, sequence, building, ReadPosition(payload[4..]));
+            }
+
+            case CommandType.AimedShot:
+            {
+                Require(payload, 8);
+                bytesRead = HeaderSize + 8;
+                return new AimedShotCommand(
+                    player,
+                    tick,
+                    sequence,
+                    new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload)),
+                    new Math.BAngle(BinaryPrimitives.ReadUInt16LittleEndian(payload[4..])),
+                    BinaryPrimitives.ReadInt16LittleEndian(payload[6..]));
+            }
+
+            case CommandType.TakeControl:
+            {
+                Require(payload, 5);
+                bytesRead = HeaderSize + 5;
+                return new TakeControlCommand(player, tick, sequence, new EntityId(BinaryPrimitives.ReadInt32LittleEndian(payload)), payload[4] != 0);
             }
 
             default:
