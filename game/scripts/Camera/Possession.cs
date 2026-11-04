@@ -6,10 +6,12 @@ using Rts.Simulation.World;
 namespace Rts.Client;
 
 /// <summary>
-/// Going into a unit (the owner, 2026-11-04: "play the strategy, then all at once be the sniper, in 3D, walking our map"): the view
-/// only, the first step. <c>possess</c> (F) with a unit of the player selected puts a perspective camera at its eyes; the mouse turns
-/// the look, the wheel draws the camera back over its shoulder. A left click sends the unit where the crosshair points on the ground,
-/// a right click has it attack the enemy under the crosshair — the plain orders of the game, the rules know nothing of it. While inside,
+/// Going into a unit (the owner, 2026-11-04: "play the strategy, then all at once be the sniper, in 3D, walking our map").
+/// <c>possess</c> (F) with a unit of the player selected puts a perspective camera at its eyes; the mouse turns the look, the wheel draws
+/// the camera back over its shoulder. W A S D walk it along the look (by the physical keys, whatever the layout), the left button held
+/// fires as in a shooter — at the enemy under the crosshair, else at the ground there — and the unit stands while it fires; a right
+/// click sends it where the crosshair points. All of it is the plain orders of the game, given many times a second and without the
+/// units' answers; the rules know nothing of it. While inside,
 /// the people stand at their own size and the low houses of the map at their full height (<see cref="Units.UnitView.SetRealSize"/>,
 /// <see cref="Models.ModelLibrary.SetFullHeight"/>): from the ground the proportions of RA2 read as a toy town. F or Esc goes back to
 /// the strategy, the camera of the map over the unit; so does its death.
@@ -23,6 +25,15 @@ public partial class Possession : Node
     private const float MaxBack = 2.4f;
     private const float BackStep = 0.4f;
     private const float ShadowDistance = 30f;
+
+    // How far ahead of the unit a step of W A S D sends it, in cells, and how near the end of it the next is given: a new order sends a
+    // soldier back to the middle of its cell first, so they are few — at the end of a step or when the look turns.
+    private const float StepAhead = 3f;
+    private const float StepRenew = 1.4f;
+    private const float StepTurn = 0.35f;
+
+    // How often the aim of the held fire is looked at again: a new target is a new order.
+    private const float AimSeconds = 0.2f;
 
     // The layer the possessed unit's own meshes go to while the camera is inside it: the camera does not draw it, the sun still does.
     private const uint OwnLayer = 1u << 19;
@@ -41,6 +52,13 @@ public partial class Possession : Node
     private float _back;
     private float _sunShadow;
     private readonly List<(VisualInstance3D Mesh, uint Layers)> _hidden = new();
+    private bool _walking;
+    private Vector3 _walkDirection;
+    private Vector3 _stepTo;
+    private bool _firing;
+    private float _aimLeft;
+    private EntityId? _shotAt;
+    private WorldPos? _shotPoint;
 
     /// <summary>Whether the camera is inside a unit now.</summary>
     public bool Active => _camera is not null;
@@ -97,8 +115,16 @@ public partial class Possession : Node
                 _pitch = Mathf.Clamp(_pitch - (motion.Relative.Y * Sensitivity), -MaxPitch, MaxPitch * 0.5f);
                 GetViewport().SetInputAsHandled();
                 break;
+            case InputEventKey { PhysicalKeycode: Key.W or Key.A or Key.S or Key.D }:
+                // Walking, read every frame (_Process): not the map's keys of the same letters.
+                GetViewport().SetInputAsHandled();
+                break;
             case InputEventMouseButton { Pressed: true } button:
                 Click(button.ButtonIndex);
+                GetViewport().SetInputAsHandled();
+                break;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left }:
+                CeaseFire();
                 GetViewport().SetInputAsHandled();
                 break;
             case InputEventMouseButton:
@@ -129,6 +155,102 @@ public partial class Possession : Node
 
         // The map camera keeps over the unit, so leaving finds the strategy where the unit is.
         _rig?.CenterOn(view.GlobalPosition);
+
+        var dt = (float)delta;
+        if (_firing)
+        {
+            _aimLeft -= dt;
+            if (_aimLeft <= 0f)
+            {
+                Fire(false);
+            }
+        }
+        else
+        {
+            Walk(view.GlobalPosition);
+        }
+    }
+
+    // W A S D: a step along the look — forward, back, to the sides — given anew near its end or when the look turns; let go, it stops.
+    private void Walk(Vector3 at)
+    {
+        var forward = (Input.IsPhysicalKeyPressed(Key.W) ? 1f : 0f) - (Input.IsPhysicalKeyPressed(Key.S) ? 1f : 0f);
+        var side = (Input.IsPhysicalKeyPressed(Key.D) ? 1f : 0f) - (Input.IsPhysicalKeyPressed(Key.A) ? 1f : 0f);
+        if (forward == 0f && side == 0f)
+        {
+            if (_walking)
+            {
+                _host!.IssueStop([_unit]);
+                _walking = false;
+            }
+
+            return;
+        }
+
+        var direction = (new Basis(Vector3.Up, _yaw) * new Vector3(side, 0f, -forward)).Normalized();
+        var left = new Vector2(_stepTo.X - at.X, _stepTo.Z - at.Z).Length();
+        if (_walking && left > StepRenew && direction.AngleTo(_walkDirection) < StepTurn)
+        {
+            return;
+        }
+
+        var ahead = at + (direction * StepAhead);
+        var to = WorldCoords.FromGodot(ahead);
+        if (_host!.Simulation.World.Contains(to))
+        {
+            _host.IssueMove([_unit], to, voice: !_walking);
+            _walking = true;
+            _walkDirection = direction;
+            _stepTo = ahead;
+        }
+    }
+
+    // The left button held: the enemy under the crosshair, else the ground there; a new order only when the aim changed.
+    private void Fire(bool first)
+    {
+        _aimLeft = AimSeconds;
+        if (_camera is null)
+        {
+            return;
+        }
+
+        _walking = false;
+        var origin = _camera.GlobalPosition;
+        var direction = -_camera.GlobalBasis.Z;
+        if (Aimed(origin, direction) is { } target)
+        {
+            if (first || target != _shotAt)
+            {
+                _host!.IssueAttack([_unit], target, voice: first);
+            }
+
+            _shotAt = target;
+            _shotPoint = null;
+        }
+        else if (Ground(origin, direction) is { } point && _host!.Simulation.World.Contains(point))
+        {
+            if (first || _shotPoint is not { } before || (before - point).LengthSquared > (long)WorldPos.LeptonsPerCell * WorldPos.LeptonsPerCell)
+            {
+                _host.IssueForceAttack([_unit], null, point, voice: first);
+                _shotPoint = point;
+            }
+
+            _shotAt = null;
+        }
+    }
+
+    // The left button let go: the unit holds its fire.
+    private void CeaseFire()
+    {
+        if (!_firing)
+        {
+            return;
+        }
+
+        _firing = false;
+        _shotAt = null;
+        _shotPoint = null;
+        _host?.IssueStop([_unit]);
     }
 
     private void Enter()
@@ -159,6 +281,10 @@ public partial class Possession : Node
         _yaw = Units.UnitFacing.InterpolatedYaw(chosen.Facing, chosen.Facing, 0f);
         _pitch = -0.12f;
         _back = 0f;
+        _walking = false;
+        _firing = false;
+        _shotAt = null;
+        _shotPoint = null;
         _camera = new Camera3D { Name = "PossessionCamera", Fov = 70f, Near = 0.02f, Far = 90f, CullMask = 0xFFFFF & ~OwnLayer };
         AddChild(_camera);
         _camera.MakeCurrent();
@@ -194,6 +320,14 @@ public partial class Possession : Node
 
     private void Leave()
     {
+        // Walking or firing, it stops: the keys and the button are the map's again.
+        if (_walking || _firing)
+        {
+            _host?.IssueStop([_unit]);
+            _walking = false;
+            _firing = false;
+        }
+
         Input.MouseMode = Input.MouseModeEnum.Visible;
         if (_units?.ViewOf(_unit) is { } view)
         {
@@ -269,7 +403,7 @@ public partial class Possession : Node
         }
     }
 
-    // Left: go where the crosshair points on the ground. Right: attack the enemy under it. The wheel: the camera in or out.
+    // Left: fire while held. Right: go where the crosshair points on the ground. The wheel: the camera in or out.
     private void Click(MouseButton button)
     {
         if (_host is null || _camera is null)
@@ -287,11 +421,12 @@ public partial class Possession : Node
             case MouseButton.WheelUp:
                 _back = Mathf.Max(0f, _back - BackStep);
                 break;
-            case MouseButton.Left when Ground(origin, direction) is { } point && _host.Simulation.World.Contains(point):
-                _host.IssueMove([_unit], point);
+            case MouseButton.Left:
+                _firing = true;
+                Fire(true);
                 break;
-            case MouseButton.Right when Aimed(origin, direction) is { } target:
-                _host.IssueAttack([_unit], target);
+            case MouseButton.Right when Ground(origin, direction) is { } point && _host.Simulation.World.Contains(point):
+                _host.IssueMove([_unit], point);
                 break;
         }
     }

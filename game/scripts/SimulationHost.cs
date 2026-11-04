@@ -529,7 +529,7 @@ public partial class SimulationHost : Node
     /// <summary>
     /// A move order. Onto ore (M3 step 10), the selected harvesters go to work that field instead, and the others move.
     /// </summary>
-    public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target, bool queue = false)
+    public void IssueMove(IReadOnlyList<EntityId> units, WorldPos target, bool queue = false, bool voice = true)
     {
         var world = Simulation.World;
         var cell = target.ToCell();
@@ -547,7 +547,10 @@ public partial class SimulationHost : Node
             IssueTo(Movers(units), ordered => new MoveCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, queue));
         }
 
-        UnitsOrdered?.Invoke(harvesters.Concat(units).ToList(), false);
+        if (voice)
+        {
+            UnitsOrdered?.Invoke(harvesters.Concat(units).ToList(), false);
+        }
     }
 
     public void IssueAttackMove(IReadOnlyList<EntityId> units, WorldPos target)
@@ -556,18 +559,27 @@ public partial class SimulationHost : Node
         UnitsOrdered?.Invoke(units, false);
     }
 
-    /// <summary>An attack on an enemy unit or building (M4 step 7).</summary>
-    public void IssueAttack(IReadOnlyList<EntityId> units, EntityId target)
+    /// <summary>
+    /// An attack on an enemy unit or building (M4 step 7). <paramref name="voice"/> false: no answer of the units — the orders given
+    /// many times a second while the player is inside a unit (Possession), here and in the moves.
+    /// </summary>
+    public void IssueAttack(IReadOnlyList<EntityId> units, EntityId target, bool voice = true)
     {
         IssueTo(units, ordered => new AttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target));
-        UnitsOrdered?.Invoke(units, true);
+        if (voice)
+        {
+            UnitsOrdered?.Invoke(units, true);
+        }
     }
 
     /// <summary>A forced attack on <paramref name="target"/>, or on <paramref name="point"/> on the ground without one (M4 step 7).</summary>
-    public void IssueForceAttack(IReadOnlyList<EntityId> units, EntityId? target, WorldPos point)
+    public void IssueForceAttack(IReadOnlyList<EntityId> units, EntityId? target, WorldPos point, bool voice = true)
     {
         IssueTo(units, ordered => new ForceAttackCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered, target, point));
-        UnitsOrdered?.Invoke(units, true);
+        if (voice)
+        {
+            UnitsOrdered?.Invoke(units, true);
+        }
     }
 
     /// <summary>

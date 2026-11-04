@@ -287,7 +287,7 @@ UI_KEY_SPAWN,Spawn a test unit (press, then click)
 UI_KEY_GUARD,Guard (with the stance of M4)
 UI_KEY_DEPLOY,Deploy the selected MCV
 UI_KEY_POSSESS,Go into the selected unit (3D view)
-UI_POSSESS_HINT,"Inside the unit: mouse - look, left click - go there, right click - attack, wheel - camera back, F or Esc - leave"
+UI_POSSESS_HINT,"Inside the unit: W A S D - walk, mouse - look, left button - fire, right click - go there, wheel - camera back, F or Esc - leave"
 UI_KEY_DEBUG_PATH,Show paths of the selected units
 UI_KEY_DEBUG_CELLS,Cell overlay (passability / reservations / buckets)
 UI_KEY_DEBUG_QUEUE,Path queue graph
