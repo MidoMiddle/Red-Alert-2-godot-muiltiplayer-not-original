@@ -48,6 +48,25 @@ public partial class FogOfWar : Node3D
     /// <summary>True while the whole map is shown (debug, and for a player who lost the match).</summary>
     public bool Revealed { get; private set; }
 
+    /// <summary>
+    /// Whether the shade of the fog is laid over the picture. Off while the camera is inside a unit (Possession, the owner, 2026-11-04):
+    /// from the ground the pass darkened the sky and all beyond the cells seen. The enemies stay hidden all the same: their units are
+    /// drawn only while seen, their buildings as they were last seen.
+    /// </summary>
+    public bool Shaded
+    {
+        get => _pass?.Visible ?? false;
+        set
+        {
+            if (_pass is not null)
+            {
+                _pass.Visible = value;
+            }
+        }
+    }
+
+    private MeshInstance3D? _pass;
+
     /// <summary>Shows the whole map from now on: a player who lost the match watches the rest of it (M5 step 10).</summary>
     public void Reveal() => Revealed = true;
 
@@ -69,14 +88,15 @@ public partial class FogOfWar : Node3D
         // First of the transparent things (M4 step 13): the pass redraws the opaque picture, so effects, markers and lines drawn after
         // it stay on top. They show only where the player sees anyway.
         _material = new ShaderMaterial { Shader = GD.Load<Shader>(FogShader), RenderPriority = (int)Material.RenderPriorityMin };
-        AddChild(new MeshInstance3D
+        _pass = new MeshInstance3D
         {
             Name = "FogPass",
             Mesh = new QuadMesh { Size = new Vector2(2, 2), FlipFaces = true },
             MaterialOverride = _material,
             ExtraCullMargin = 16384f,
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-        });
+        };
+        AddChild(_pass);
     }
 
     public override void _ExitTree()

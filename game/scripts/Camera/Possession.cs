@@ -180,6 +180,12 @@ public partial class Possession : Node
             _bars.Visible = false;
         }
 
+        // From the eyes the shade of the fog would black out the sky and the land beyond the cells seen.
+        if (Terrain.FogOfWar.Current is { } fog)
+        {
+            fog.Shaded = false;
+        }
+
         Units.UnitView.SetRealSize(GetTree(), true);
         Models.ModelLibrary.SetFullHeight(GetTree(), true);
         Input.MouseMode = Input.MouseModeEnum.Captured;
@@ -211,6 +217,11 @@ public partial class Possession : Node
         if (_bars is not null)
         {
             _bars.Visible = true;
+        }
+
+        if (Terrain.FogOfWar.Current is { } fog)
+        {
+            fog.Shaded = true;
         }
 
         _camera?.QueueFree();
