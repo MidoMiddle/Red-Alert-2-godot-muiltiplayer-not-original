@@ -629,6 +629,14 @@ public partial class SimulationHost : Node
         }
     }
 
+    /// <summary>The player goes into the unit or out of it (Possession): under the hand it fires only aimed shots.</summary>
+    public void IssueTakeControl(EntityId unit, bool on) =>
+        Issue(new TakeControlCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, unit, on));
+
+    /// <summary>An aimed shot of the unit the player is inside, along <paramref name="yaw"/> and <paramref name="pitch"/> (BAngle units).</summary>
+    public void IssueAimedShot(EntityId unit, ushort yaw, short pitch) =>
+        Issue(new AimedShotCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, unit, new Rts.Simulation.Math.BAngle(yaw), pitch));
+
     public void IssueStop(IReadOnlyList<EntityId> units) =>
         IssueTo(units, ordered => new StopCommand(LocalPlayer, Simulation.CurrentTick, _nextSequence++, ordered));
 
