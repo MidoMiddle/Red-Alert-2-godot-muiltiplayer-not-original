@@ -74,9 +74,29 @@ public partial class Possession : Node
     private Crosshair? _crosshair;
     private Label? _headshot;
     private float _headshotLeft;
+    private ViewModel? _viewModel;
 
     /// <summary>Whether the camera is inside a unit now.</summary>
     public bool Active => _camera is not null;
+
+    /// <summary>The possession of the scene, or null where there is none.</summary>
+    public static Possession? Current { get; private set; }
+
+    /// <summary>
+    /// Whether the player is inside <paramref name="unit"/> now, and where its shots leave from on screen: the muzzle of the weapon in
+    /// its hands, else just under the camera.
+    /// </summary>
+    public bool Holds(EntityId unit, out Vector3 muzzle)
+    {
+        muzzle = default;
+        if (!Active || unit != _unit)
+        {
+            return false;
+        }
+
+        muzzle = _viewModel is { Visible: true } held ? held.MuzzleAt : _camera!.GlobalTransform * new Vector3(0f, -0.08f, -0.3f);
+        return true;
+    }
 
     public override void _Ready()
     {
@@ -86,6 +106,7 @@ public partial class Possession : Node
         _rig = GetNodeOrNull<RtsCamera>("../CameraRig");
         _sun = GetNodeOrNull<DirectionalLight3D>("../Sun");
         _bars = GetNodeOrNull<CanvasLayer>("../Bars");
+        Current = this;
         if (_host is not null)
         {
             _host.EventRaised += OnEvent;
@@ -95,6 +116,11 @@ public partial class Possession : Node
     // A shot of the possessed unit in a head: the word for it a while.
     private void OnEvent(Rts.Simulation.Events.SimEvent simEvent)
     {
+        if (Active && simEvent is Rts.Simulation.Events.WeaponFired fired && fired.Shooter == _unit)
+        {
+            _viewModel?.Shot();
+        }
+
         if (Active && simEvent is Rts.Simulation.Events.AimedHit { Headshot: true } hit && hit.Shooter == _unit && _headshot is not null)
         {
             _headshot.Visible = true;
@@ -104,6 +130,11 @@ public partial class Possession : Node
 
     public override void _ExitTree()
     {
+        if (Current == this)
+        {
+            Current = null;
+        }
+
         if (_host is not null)
         {
             _host.EventRaised -= OnEvent;
@@ -189,16 +220,23 @@ public partial class Possession : Node
 
         // At the eyes of the unit as it is drawn, or behind and above them.
         var eyes = view.GlobalPosition + new Vector3(0f, unit.Archetype.Category == UnitCategory.Infantry ? EyeHeight : VehicleEyeHeight, 0f);
-        var look = new Basis(Vector3.Up, _yaw) * new Basis(Vector3.Right, _pitch);
+        var dt = (float)delta;
+        var look = new Basis(Vector3.Up, _yaw) * new Basis(Vector3.Right, _pitch + (_viewModel?.Lift ?? 0f));
         _camera!.GlobalTransform = new Transform3D(look, eyes + (look * new Vector3(0f, _back * 0.35f, _back)));
         Hide(view, _back < 0.3f);
+        if (_viewModel is not null)
+        {
+            // The weapon in the hands from the eyes only.
+            _viewModel.Visible = _back < 0.3f;
+            _viewModel.Follow(_camera.GlobalTransform, _walking, dt);
+        }
 
         // The map camera keeps over the unit, so leaving finds the strategy where the unit is.
         _rig?.CenterOn(view.GlobalPosition);
 
-        var dt = (float)delta;
-        var weapon = WeaponOf(unit);
-        var instant = weapon is not null && Instant(weapon);
+        var aimed = InstantOf(unit);
+        var weapon = aimed?.Weapon ?? WeaponOf(unit);
+        var instant = aimed is not null;
         var fov = !_sights ? PlainFov : weapon is not null && weapon.Range.ToIntFloor() > LongReach ? ScopeFov : SightsFov;
         _camera.Fov = Mathf.Lerp(_camera.Fov, fov, Mathf.Min(1f, dt * 14f));
         if (_firing && instant)
@@ -220,7 +258,7 @@ public partial class Possession : Node
             Walk(view.GlobalPosition);
         }
 
-        Mark(unit, weapon);
+        Mark(unit, weapon, aimed?.Slot ?? 0);
         if (_headshotLeft > 0f)
         {
             _headshotLeft -= dt;
@@ -240,12 +278,45 @@ public partial class Possession : Node
         _host!.Simulation.World.Rules.Database.TryGetProjectile(weapon.Projectile, out var projectile)
         && projectile.Motion == Rts.Simulation.Rules.ProjectileMotion.Instant;
 
+    // The first instant weapon of the unit as it is now, with its slot, or null: the one aimed shots are fired with (the rules take a
+    // later one when its ray meets something the first does not: a Flak Track's gun at a plane).
+    private (int Slot, Rts.Simulation.Rules.WeaponDef Weapon)? InstantOf(Unit unit)
+    {
+        var rules = _host!.Simulation.World.Rules;
+        var slots = rules.WeaponsOf(unit);
+        for (var slot = 0; slot < slots.Length && slot < unit.Weapons.Length; slot++)
+        {
+            if (slots[slot] >= 0 && Instant(rules.Database.Weapons[slots[slot]]))
+            {
+                return (slot, rules.Database.Weapons[slots[slot]]);
+            }
+        }
+
+        return null;
+    }
+
+    // Whether one of the instant weapons of the unit is loaded.
+    private bool Loaded(Unit unit)
+    {
+        var rules = _host!.Simulation.World.Rules;
+        var slots = rules.WeaponsOf(unit);
+        for (var slot = 0; slot < slots.Length && slot < unit.Weapons.Length; slot++)
+        {
+            if (slots[slot] >= 0 && unit.Weapons[slot].ReloadLeft == 0 && Instant(rules.Database.Weapons[slots[slot]]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // The left button held with an instant weapon: an aimed shot whenever it is loaded, once a tick at most, from the eyes to what the
     // crosshair is on.
     private void Shoot(Unit unit, Vector3 eyes)
     {
         var tick = _host!.Simulation.CurrentTick;
-        if (unit.Weapons.Length == 0 || unit.Weapons[0].ReloadLeft > 0 || tick == _shotTick || _camera is null)
+        if (!Loaded(unit) || tick == _shotTick || _camera is null)
         {
             return;
         }
@@ -266,7 +337,7 @@ public partial class Possession : Node
     }
 
     // The crosshair: its strokes as far apart as the shot may stray now, the reload under them.
-    private void Mark(Unit unit, Rts.Simulation.Rules.WeaponDef? weapon)
+    private void Mark(Unit unit, Rts.Simulation.Rules.WeaponDef? weapon, int slot)
     {
         if (_crosshair is null || _camera is null)
         {
@@ -276,8 +347,8 @@ public partial class Possession : Node
         var spread = weapon is null ? 0f : (float)weapon.AimSpread.Raw / 65536f * (unit.MoveTarget is null && !unit.PathPending ? 1f : 2f);
         var half = GetViewport().GetVisibleRect().Size.Y / 2f;
         _crosshair.Gap = Mathf.Max(3f, Mathf.Tan(Mathf.DegToRad(spread)) / Mathf.Tan(Mathf.DegToRad(_camera.Fov / 2f)) * half);
-        _crosshair.Reload = weapon is { Reload: > 0 } && unit.Weapons.Length > 0
-            ? Mathf.Clamp(unit.Weapons[0].ReloadLeft / (float)weapon.Reload, 0f, 1f)
+        _crosshair.Reload = weapon is { Reload: > 0 } && unit.Weapons.Length > slot
+            ? Mathf.Clamp(unit.Weapons[slot].ReloadLeft / (float)weapon.Reload, 0f, 1f)
             : 0f;
         _crosshair.QueueRedraw();
     }
@@ -409,6 +480,12 @@ public partial class Possession : Node
         AddChild(_camera);
         _camera.MakeCurrent();
         _overlay = Overlay();
+        if (chosen.Archetype.Category == UnitCategory.Infantry)
+        {
+            _viewModel = ViewModel.Of(chosen.Archetype);
+            AddChild(_viewModel);
+        }
+
         AddChild(_overlay);
         if (_rig is not null)
         {
@@ -484,6 +561,8 @@ public partial class Possession : Node
         _camera?.QueueFree();
         _camera = null;
         _overlay?.QueueFree();
+        _viewModel?.QueueFree();
+        _viewModel = null;
         _overlay = null;
         GD.Print("[possess] back to the map");
     }
@@ -546,7 +625,7 @@ public partial class Possession : Node
                 break;
             case MouseButton.Left:
                 _firing = true;
-                if (_host.Simulation.World.TryGet(_unit, out var entity) && entity is Unit unit && WeaponOf(unit) is { } weapon && !Instant(weapon))
+                if (_host.Simulation.World.TryGet(_unit, out var entity) && entity is Unit unit && WeaponOf(unit) is not null && InstantOf(unit) is null)
                 {
                     Fire(true);
                 }
@@ -593,23 +672,34 @@ public partial class Possession : Node
         return ground;
     }
 
-    // The enemy — a unit or a building the player sees — nearest along the ray of all those it passes close by.
+    // The enemy — a unit or a building the player sees, one the unit's weapons fire at — nearest along the ray of all those it passes
+    // close by; a flier where it is drawn.
     private EntityId? Aimed(Vector3 origin, Vector3 direction)
     {
         var world = _host!.Simulation.World;
+        var layers = Rts.Simulation.Rules.WeaponTargets.None;
+        if (world.TryGet(_unit, out var shooter) && shooter is Unit possessed)
+        {
+            foreach (var index in world.Rules.WeaponsOf(possessed))
+            {
+                layers |= index >= 0 ? world.Rules.Database.Weapons[index].Targets : Rts.Simulation.Rules.WeaponTargets.None;
+            }
+        }
+
         EntityId? best = null;
         var bestAlong = float.MaxValue;
         foreach (var entity in world.Entities)
         {
             if (!entity.IsAlive || entity.Id == _unit || entity.Owner == SimulationHost.LocalPlayer || entity.Owner.IsNeutral
-                || world.AreAllies(entity.Owner, SimulationHost.LocalPlayer) || !Terrain.FogOfWar.Shows(world, entity))
+                || world.AreAllies(entity.Owner, SimulationHost.LocalPlayer) || !Terrain.FogOfWar.Shows(world, entity)
+                || (Rts.Simulation.Systems.TargetingSystem.LayerOf(entity) & layers) == 0)
             {
                 continue;
             }
 
             var (centre, radius) = entity switch
             {
-                Unit unit => (WorldCoords.ToGodotOnUnit(unit, unit.Position, 0.3f), 0.35f),
+                Unit unit => (WorldCoords.ToGodotOnUnit(unit, unit.Position, 0.3f + Units.UnitAltitude.Of(unit)), 0.35f),
                 Building building => (WorldCoords.ToGodotOnGround(Rts.Simulation.Combat.Aim.CentreOf(building), 0.5f),
                     0.5f * Mathf.Max(building.Width, building.Height)),
                 _ => (Vector3.Zero, 0f),

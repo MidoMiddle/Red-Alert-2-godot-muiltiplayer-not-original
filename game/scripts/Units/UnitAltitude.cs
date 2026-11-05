@@ -8,8 +8,8 @@ namespace Rts.Client.Units;
 
 /// <summary>
 /// How high a unit is drawn above the ground, in cells (stage 2b): a flier flies at a height of its own — the airship higher than the
-/// jets, a soldier with a jet pack lower (stage 3a) — everything else stands on the ground. Only the look: the simulation keeps every
-/// unit at its ground point.
+/// jets, a soldier with a jet pack lower (stage 3a) — everything else stands on the ground. The heights are the simulation's
+/// (<see cref="Altitude"/>, rules v129: the aimed shot of the player inside a unit meets a flier where it is drawn), in cells here.
 /// <para>
 /// The helicopter (the Transport Helicopter, RA2's Night Hawk) sets down when it has nothing to do over open flat ground, and hangs
 /// in the air over water, a building, a slope, a bridge, a tree or anything else on its cell, or another unit (the owner,
@@ -20,35 +20,30 @@ namespace Rts.Client.Units;
 /// </summary>
 public static class UnitAltitude
 {
-    public const float Aircraft = 1.5f;
-    public const float Airship = 2f;
-    public const float Jumpjet = 1f;
+    private const float Cell = WorldPos.LeptonsPerCell;
+
+    public const float Aircraft = Altitude.Aircraft / Cell;
+    public const float Airship = Altitude.Airship / Cell;
+    public const float Jumpjet = Altitude.Jumpjet / Cell;
 
     /// <summary>Under the water (stage 3e): a little below its face.</summary>
-    public const float Submerged = -0.2f;
+    public const float Submerged = Altitude.Submerged / Cell;
 
     /// <summary>A soldier in the water (Tanya, RA2 SpeedType=Amphibious): sunk to the shoulders, the head and arms above it.</summary>
-    public const float Swimming = -0.25f;
+    public const float Swimming = Altitude.Swimming / Cell;
 
     /// <summary>Cells a second a helicopter goes down to land or up to take off.</summary>
     public const float ClimbRate = 1.2f;
 
     private static readonly Dictionary<EntityId, float> DrawnHeights = new();
 
-    public static float Of(UnitArchetype archetype) =>
-        archetype.Has(UnitTalents.Submerged) ? Submerged
-        : !archetype.Flies ? 0f : archetype.Jumpjet ? Jumpjet : archetype.Type == UnitType.KirovAirship ? Airship : Aircraft;
+    public static float Of(UnitArchetype archetype) => Altitude.Of(archetype) / Cell;
 
     /// <summary>The height the unit is drawn at now: a helicopter on its way down or up, else that of its kind.</summary>
     public static float Of(Unit unit) => DrawnHeights.TryGetValue(unit.Id, out var height) ? height : Of(unit.Archetype);
 
     /// <summary>How much lower than its kind a unit on the ground is drawn: a soldier on water swims (not on a high bridge over it), all else 0.</summary>
-    public static float Swim(GameWorld world, Unit unit)
-    {
-        var cell = unit.Position.ToCell();
-        return unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies && !unit.OnDeck && world.Map.Contains(cell)
-            && world.Map.SurfaceAt(cell) is LandType.Shallow or LandType.Deep ? Swimming : 0f;
-    }
+    public static float Swim(GameWorld world, Unit unit) => Altitude.Swim(world, unit) / Cell;
 
     /// <summary>
     /// Whether the unit's height changes in flight: one that lands (<see cref="FlightSystem.Lands"/>: the helicopter, a jet of an air force
@@ -58,26 +53,16 @@ public static class UnitAltitude
         FlightSystem.Lands(archetype) || (archetype.Flies && archetype.Has(UnitTalents.Spawned));
 
     /// <summary>How high a jet stands on its pad: on the pad's plate.</summary>
-    public const float OnPad = 0.1f;
+    public const float OnPad = Altitude.OnPad / Cell;
 
     /// <summary>How high a carrier's jet starts its climb: on the deck.</summary>
-    public const float Deck = 0.3f;
+    public const float Deck = Altitude.Deck / Cell;
 
     /// <summary>
     /// The height the unit goes to now, by the simulation (<see cref="FlightSystem"/>, rules v102): climbing, the share of the way up from
     /// the ground — the pad, the deck — its <see cref="Unit.ClimbTicks"/> say; set down, the ground or its pad; else its flying height.
     /// </summary>
-    public static float Target(GameWorld world, Unit unit)
-    {
-        var flying = Of(unit.Archetype);
-        var ground = unit.Archetype.Type == UnitType.AllianceNighthawk ? 0f : unit.Archetype.Has(UnitTalents.Spawned) ? Deck : OnPad;
-        if (unit.ClimbTicks > 0)
-        {
-            return ground + (flying - ground) * (FlightSystem.ClimbTicks - unit.ClimbTicks) / FlightSystem.ClimbTicks;
-        }
-
-        return unit.Grounded ? ground : flying;
-    }
+    public static float Target(GameWorld world, Unit unit) => Altitude.Target(unit) / Cell;
 
     /// <summary>
     /// The height a flier that lands is drawn at, moved towards <paramref name="target"/> by <see cref="ClimbRate"/> over

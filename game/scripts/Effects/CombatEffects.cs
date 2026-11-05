@@ -187,7 +187,12 @@ public partial class CombatEffects : Node3D
         switch (simEvent)
         {
             case WeaponFired fired when Know(fired.Shooter) is { } shooter && Seen(world, shooter.Centre):
-                AddBall(shooter.Gun, 0.15f, 0.3f, FlashLife, FlashColor);
+                // The player inside the unit sees the flash at the muzzle of the weapon in its hands (ViewModel), not this one.
+                if (Possession.Current?.Holds(fired.Shooter, out _) != true)
+                {
+                    AddBall(shooter.Gun, 0.15f, 0.3f, FlashLife, FlashColor);
+                }
+
                 break;
 
             case LightningStrike strike when Seen(world, strike.Point):
@@ -216,15 +221,17 @@ public partial class CombatEffects : Node3D
                 // A dog's bite (stage 3a) leaves no trace in the air.
                 if (impact.Projectile is null && projectile.Visual != "none" && Know(impact.Shooter) is { } from)
                 {
+                    // From the muzzle in the hands of the player inside the unit, else from its gun.
+                    var gun = Possession.Current is { } inside && inside.Holds(impact.Shooter, out var muzzle) ? muzzle : from.Gun;
                     _lineEffects.Add(projectile.Visual switch
                     {
-                        "electric_bolt" => new Line(Zigzag(from.Gun, point), BoltColor, BoltLife),
-                        "toxin_beam" => new Line([from.Gun, point], ToxinColor, BoltLife),
-                        "chrono_beam" => new Line([from.Gun, point], ChronoColor, BoltLife),
-                        "psi_beam" => new Line([from.Gun, point], PsiColor, BoltLife),
-                        "prism_ray" => new Line([from.Gun, point], PrismColor, BoltLife),
-                        "sonic" => new Line([from.Gun, point], SonicColor, BoltLife),
-                        _ => new Line([from.Gun, point], TracerColor, TracerLife),
+                        "electric_bolt" => new Line(Zigzag(gun, point), BoltColor, BoltLife),
+                        "toxin_beam" => new Line([gun, point], ToxinColor, BoltLife),
+                        "chrono_beam" => new Line([gun, point], ChronoColor, BoltLife),
+                        "psi_beam" => new Line([gun, point], PsiColor, BoltLife),
+                        "prism_ray" => new Line([gun, point], PrismColor, BoltLife),
+                        "sonic" => new Line([gun, point], SonicColor, BoltLife),
+                        _ => new Line([gun, point], TracerColor, TracerLife),
                     });
                 }
 
