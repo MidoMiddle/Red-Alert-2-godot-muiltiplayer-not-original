@@ -63,7 +63,8 @@ public enum MapObjectKind : byte
 /// What a kind of map object does (docs/implementation/M7_maps.md, 4.7; map_elements/07–09), as the data defines it
 /// (<see cref="Rules.MapObjectDef"/>, <c>game/data/map/objects.yaml</c>; M3 step 14a) and <see cref="MapTypes"/> holds it. Masks have one bit per
 /// <see cref="Locomotor"/> (bit = locomotor − 1): <see cref="BlockMask"/> are the movers it stops, <see cref="CrushMask"/>
-/// the ones that crush it by driving in. <see cref="MaxHp"/> 0 means it cannot be destroyed. A tree leaves a stump.
+/// the ones that crush it by driving in. <see cref="MaxHp"/> 0 means it cannot be destroyed. A tree leaves a stump. <see cref="CoverHeight"/>
+/// and <see cref="CoverWidth"/> (leptons) are the box in the middle of its cell that stops an aimed shot; none for a height of 0.
 /// </summary>
 public sealed record MapObjectType(
     MapObjectKind Kind,
@@ -73,7 +74,9 @@ public sealed record MapObjectType(
     byte CrushMask,
     bool LeavesStump,
     IReadOnlyDictionary<Locomotor, int>? Speeds = null,
-    bool OnWater = false)
+    bool OnWater = false,
+    int CoverHeight = 0,
+    int CoverWidth = 256)
 {
     public bool Destructible => MaxHp > 0;
 

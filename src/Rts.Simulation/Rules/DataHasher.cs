@@ -429,6 +429,15 @@ public static class DataHasher
             Add(hash, mapObject.CrushedBy);
             hash.Add(mapObject.Stump ? 1 : 0);
             hash.Add(mapObject.Water ? 1 : 0);
+
+            // Rules v129: the cover against an aimed shot, only for an object that gives some.
+            if (mapObject.Cover > Math.Fixed.Zero)
+            {
+                hash.Add(2);
+                hash.Add(mapObject.Cover.Raw);
+                hash.Add(mapObject.CoverWidth.Raw);
+            }
+
             hash.Add(mapObject.Speeds.Length);
             foreach (var speed in mapObject.Speeds)
             {

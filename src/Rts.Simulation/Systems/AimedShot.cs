@@ -3,6 +3,7 @@ using Rts.Simulation.Combat;
 using Rts.Simulation.Commands;
 using Rts.Simulation.Events;
 using Rts.Simulation.Geometry;
+using Rts.Simulation.Map;
 using Rts.Simulation.Math;
 using Rts.Simulation.Rules;
 using Rts.Simulation.World;
@@ -11,18 +12,27 @@ namespace Rts.Simulation.Systems;
 
 /// <summary>
 /// The shot of the player inside a unit (the owner, 2026-11-04: aiming as in a shooter; the ray and its spread, a shot in the head kills
-/// at once). From the unit's eyes — its place, the height of the ground there and <see cref="EyeHeight"/> — a ray goes along the
-/// direction of the command, turned a little at random within the <see cref="WeaponDef.AimSpread"/> of its weapon (twice that on the
-/// move), as far as the weapon reaches. Whatever it meets first takes the shot: a unit — an upright cylinder, a soldier's head the top of
-/// it —, a building — a box over its footprint —, or the ground; anyone's, the shooter's own and the civilians too. A hit in the head of
-/// a soldier kills it (<see cref="Hit.Lethal"/>); a shot that meets nobody falls on the ground where the ray does, or at its end.
-/// The damage is the weapon's own, through <see cref="DamageSystem"/>. Only a unit under the player's hand (<see cref="Unit.Manual"/>),
-/// whose first weapon is instant and loaded, fires; its weapon then reloads as after any shot. Integer leptons throughout: the same
+/// at once; 2026-11-05: cover, the sandbags, the aircraft). From the unit's eyes — its floor, its height (<see cref="Altitude"/>) and
+/// <see cref="EyeHeight"/> — a ray goes along the direction of the command, turned a little at random within the
+/// <see cref="WeaponDef.AimSpread"/> of its weapon (twice that on the move), as far as the weapon reaches. Whatever it meets first takes
+/// the shot:
+/// <list type="bullet">
+/// <item>a unit the weapon can fire at (<see cref="TargetingSystem.LayerOf"/>: a bullet for the ground goes through an aircraft, one
+/// for the air through a soldier) — an upright cylinder at its height, a soldier's head the top of it; a soldier dug in kneels lower
+/// behind a ring of sandbags, which stops the shot and takes nothing;</item>
+/// <item>a map object that gives cover (<see cref="MapObjectType.CoverHeight"/>: a wall, a fence, a boulder, a tree's trunk) — a box in
+/// the middle of its cell; it takes the weapon's damage (<see cref="GameWorld.DamageAtCell"/>);</item>
+/// <item>a building — a box over its footprint —, or the ground.</item>
+/// </list>
+/// Anyone's: the shooter's own and the civilians too. A hit in the head of a soldier kills it (<see cref="Hit.Lethal"/>); a shot that
+/// meets nobody falls on the ground where the ray does, or at its end. Of the unit's instant weapons that are loaded, the first whose
+/// ray hits something fires (a Flak Track's gun at a plane, its cannon at the rest), else the first of them. Only a unit under the
+/// player's hand (<see cref="Unit.Manual"/>) fires; its weapon then reloads as after any shot. Integer leptons throughout: the same
 /// on every machine.
 /// </summary>
 public static class AimedShot
 {
-    /// <summary>The eyes over the ground, in leptons: half a cell, where the camera of the client stands.</summary>
+    /// <summary>The eyes over what the unit stands on, in leptons: half a cell, where the camera of the client stands.</summary>
     public const int EyeHeight = 128;
 
     /// <summary>A soldier: the radius and the height of its cylinder and the top of it that is its head, in leptons.</summary>
@@ -32,7 +42,15 @@ public static class AimedShot
 
     public const int HeadHeight = 28;
 
-    /// <summary>A vehicle, a ship: the radius and the height of its cylinder, in leptons.</summary>
+    /// <summary>A soldier dug in kneels: its cylinder this high.</summary>
+    public const int KneelingHeight = 100;
+
+    /// <summary>The ring of sandbags around a soldier dug in: its radius and height, in leptons.</summary>
+    public const int SandbagRadius = 64;
+
+    public const int SandbagHeight = 48;
+
+    /// <summary>A vehicle, a ship, an aircraft: the radius and the height of its cylinder, in leptons.</summary>
     public const int VehicleRadius = 110;
 
     public const int VehicleHeight = 100;
@@ -40,7 +58,7 @@ public static class AimedShot
     /// <summary>A building stands this high over its footprint, in leptons: two cells, as it stands from the ground in the client.</summary>
     public const int BuildingHeight = 512;
 
-    // The step along the ray at which the ground is looked at, in leptons.
+    // The step along the ray at which the ground and the cover are looked at, in leptons.
     private const int GroundStep = 32;
 
     // A direction is kept in units of 1/65536, as Fixed is.
@@ -48,6 +66,14 @@ public static class AimedShot
 
     // How far up or down a shot may go: a little short of straight.
     private const int MaxPitch = 16000;
+
+    // The spread is drawn once a shot, as a share of 1024 either way, and scaled to the weapon that fires.
+    private const int SpreadShare = 1024;
+
+    private readonly record struct Trace(long Along, EntityId? Target, bool Head, CellPos? Cover, bool Bags)
+    {
+        public bool Meets => Target is not null || Cover is not null || Bags;
+    }
 
     /// <summary>Fires the unit of the command; false when it may not fire now.</summary>
     public static bool Fire(GameWorld world, AimedShotCommand command, List<SimEvent>? events)
@@ -60,36 +86,58 @@ public static class AimedShot
 
         var rules = world.Rules;
         var slots = rules.WeaponsOf(unit);
-        if (slots.Length == 0 || slots[0] < 0)
+        var loaded = new List<int>();
+        for (var slot = 0; slot < slots.Length && slot < unit.Weapons.Length; slot++)
+        {
+            if (slots[slot] >= 0 && unit.Weapons[slot].ReloadLeft == 0
+                && rules.Database.TryGetProjectile(rules.Database.Weapons[slots[slot]].Projectile, out var projectile)
+                && projectile.Motion == ProjectileMotion.Instant)
+            {
+                loaded.Add(slot);
+            }
+        }
+
+        if (loaded.Count == 0)
         {
             return false;
         }
 
-        var weaponIndex = slots[0];
-        var weapon = rules.Database.Weapons[weaponIndex];
-        var state = unit.Weapons[0];
-        if (state.ReloadLeft > 0 || !rules.Database.TryGetProjectile(weapon.Projectile, out var projectile)
-            || projectile.Motion != ProjectileMotion.Instant)
+        // The spread: a share either way, from the generator of the match, so every machine draws the same; twice on the move.
+        var shareYaw = world.Random.NextInt(-SpreadShare, SpreadShare + 1);
+        var sharePitch = world.Random.NextInt(-SpreadShare, SpreadShare + 1);
+        var moving = unit.MoveTarget is not null || unit.PathPending ? 2 : 1;
+        var origin = (X: (long)unit.Position.X, Y: (long)unit.Position.Y, Z: Altitude.Of(world, unit) + EyeHeight);
+
+        var chosen = -1;
+        var trace = default(Trace);
+        var yaw = command.Yaw;
+        var ray = (X: 0L, Y: 0L, Z: 0L);
+        foreach (var slot in loaded)
         {
-            return false;
+            var weapon = rules.Database.Weapons[slots[slot]];
+            var spread = (int)((weapon.AimSpread.Raw * BAngle.FullTurn / 360) >> 16) * moving;
+            var turned = new BAngle((ushort)(command.Yaw.Value + (shareYaw * spread / SpreadShare)));
+            var pitch = new BAngle((ushort)IntMath.Clamp(command.Pitch + (sharePitch * spread / SpreadShare), -MaxPitch, MaxPitch));
+            var cosPitch = FixedMath.Cos(pitch).Raw;
+            var (sinYaw, minusCosYaw) = FixedMath.Direction(turned);
+            var direction = (X: sinYaw.Raw * cosPitch / One, Y: minusCosYaw.Raw * cosPitch / One, Z: FixedMath.Sin(pitch).Raw);
+            var found = Cast(world, unit, weapon, origin, direction, Aim.Leptons(weapon.Range));
+            if (chosen < 0 || found.Meets)
+            {
+                (chosen, trace, yaw, ray) = (slot, found, turned, direction);
+                if (found.Meets)
+                {
+                    break;
+                }
+            }
         }
 
-        // The spread: a turn either way of up to the weapon's, twice that on the move; from the generator of the match, so every
-        // machine draws the same.
-        var spread = (int)((weapon.AimSpread.Raw * BAngle.FullTurn / 360) >> 16) * (unit.MoveTarget is null && !unit.PathPending ? 1 : 2);
-        var yaw = new BAngle((ushort)(command.Yaw.Value + Offset(world, spread)));
-        var pitch = new BAngle((ushort)IntMath.Clamp(command.Pitch + Offset(world, spread), -MaxPitch, MaxPitch));
+        var index = slots[chosen];
+        var fired = rules.Database.Weapons[index];
+        var point = new WorldPos((int)(origin.X + (ray.X * trace.Along / One)), (int)(origin.Y + (ray.Y * trace.Along / One)));
 
-        var cosPitch = FixedMath.Cos(pitch).Raw;
-        var (sinYaw, minusCosYaw) = FixedMath.Direction(yaw);
-        var direction = (X: sinYaw.Raw * cosPitch / One, Y: minusCosYaw.Raw * cosPitch / One, Z: FixedMath.Sin(pitch).Raw);
-        var origin = (X: (long)unit.Position.X, Y: (long)unit.Position.Y, Z: Ground(world, unit.Position) + EyeHeight);
-        long reach = Aim.Leptons(weapon.Range);
-
-        var (along, hit, head) = Trace(world, unit, origin, direction, reach);
-        var point = new WorldPos((int)(origin.X + (direction.X * along / One)), (int)(origin.Y + (direction.Y * along / One)));
-
-        state.ReloadLeft = Veterancy.Reload(world, unit.Id, weapon.Reload);
+        var state = unit.Weapons[chosen];
+        state.ReloadLeft = Veterancy.Reload(world, unit.Id, fired.Reload);
         state.BurstLeft = 0;
         if (unit.Archetype.HasTurret)
         {
@@ -100,29 +148,28 @@ public static class AimedShot
             unit.Facing = yaw;
         }
 
-        events?.Add(new WeaponFired(world.CurrentTick, unit.Id, hit, 0, weaponIndex));
-        events?.Add(new ProjectileImpact(world.CurrentTick, null, unit.Id, weaponIndex, point, hit));
-        events?.Add(new AimedHit(world.CurrentTick, unit.Id, hit, point, head));
-        world.Hits.Add(new Hit(unit.Id, unit.Id, unit.Owner, weaponIndex, point, hit) { Lethal = head });
+        events?.Add(new WeaponFired(world.CurrentTick, unit.Id, trace.Target, chosen, index));
+        events?.Add(new ProjectileImpact(world.CurrentTick, null, unit.Id, index, point, trace.Target));
+        events?.Add(new AimedHit(world.CurrentTick, unit.Id, trace.Target, point, trace.Head, trace.Cover is not null || trace.Bags));
+        if (trace.Cover is { } cover)
+        {
+            // The cover takes the shot: a fence goes to pieces, a wall holds longer, a boulder for ever.
+            world.DamageAtCell(cover, fired.Damage, events);
+        }
+
+        world.Hits.Add(new Hit(unit.Id, unit.Id, unit.Owner, index, point, trace.Target) { Lethal = trace.Head });
         return true;
     }
 
-    // A random turn of -spread…spread, none for a spread of 0 (no number drawn).
-    private static int Offset(GameWorld world, int spread) => spread > 0 ? world.Random.NextInt(-spread, spread + 1) : 0;
-
-    // The height of the ground at the point, in whole leptons.
-    private static long Ground(GameWorld world, WorldPos point) => world.Map.Heights.HeightAt(point).ToIntFloor();
-
     /// <summary>
-    /// How far along the ray the shot ends, what it hits there (null: the ground or the end of its reach) and whether in a soldier's
-    /// head: the nearest of the ground, the units and the buildings it meets.
+    /// How far along the ray of <paramref name="weapon"/> the shot ends, and what it meets there: the nearest of the ground, the cover,
+    /// the units it can fire at and the buildings.
     /// </summary>
-    private static (long Along, EntityId? Hit, bool Head) Trace(
-        GameWorld world, Unit shooter, (long X, long Y, long Z) origin, (long X, long Y, long Z) direction, long reach)
+    private static Trace Cast(
+        GameWorld world, Unit shooter, WeaponDef weapon, (long X, long Y, long Z) origin, (long X, long Y, long Z) direction, long reach)
     {
-        var best = Terrain(world, origin, direction, reach);
-        EntityId? hit = null;
-        var head = false;
+        var (best, cover) = Ground(world, origin, direction, reach);
+        var trace = new Trace(best, null, false, cover, false);
 
         var end = (X: origin.X + (direction.X * best / One), Y: origin.Y + (direction.Y * best / One));
         var margin = VehicleRadius + 1;
@@ -135,20 +182,28 @@ public static class AimedShot
         near.Sort();
         foreach (var id in near)
         {
-            if (id == shooter.Id || !world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit || unit.Archetype.Flies)
+            if (id == shooter.Id || !world.TryGet(id, out var entity) || entity is not Unit { IsAlive: true } unit
+                || (TargetingSystem.LayerOf(unit) & weapon.Targets) == 0)
             {
                 continue;
             }
 
-            var soldier = unit.Archetype.Category == UnitCategory.Infantry;
+            var soldier = unit.Archetype.Category == UnitCategory.Infantry && !unit.Archetype.Flies;
+            var dugIn = soldier && unit.Deployed && unit.Archetype.DeployedWeapon >= 0;
             var radius = soldier ? SoldierRadius : VehicleRadius;
-            var height = soldier ? SoldierHeight : VehicleHeight;
-            var bottom = Ground(world, unit.Position);
-            if (Cylinder(origin, direction, unit.Position, radius, bottom, bottom + height) is { } at && at < best)
+            var height = !soldier ? VehicleHeight : dugIn ? KneelingHeight : SoldierHeight;
+            var floor = Altitude.Floor(world, unit);
+            var bottom = unit.Archetype.Flies ? Altitude.Of(world, unit) - (VehicleHeight / 2) : floor + Altitude.Swim(world, unit);
+            if (Cylinder(origin, direction, unit.Position, radius, bottom, bottom + height) is { } at && at < trace.Along)
             {
-                best = at;
-                hit = unit.Id;
-                head = soldier && origin.Z + (direction.Z * at / One) >= bottom + height - HeadHeight;
+                trace = new Trace(at, unit.Id, soldier && origin.Z + (direction.Z * at / One) >= bottom + height - HeadHeight, null, false);
+            }
+
+            // The sandbags of one dug in: a shot that meets them before the soldier stops there.
+            if (dugIn && Cylinder(origin, direction, unit.Position, SandbagRadius, floor, floor + SandbagHeight) is { } bags
+                && bags < trace.Along)
+            {
+                trace = new Trace(bags, null, false, null, true);
             }
         }
 
@@ -159,39 +214,81 @@ public static class AimedShot
                 continue;
             }
 
-            var bottom = Ground(world, Aim.CentreOf(building));
+            var bottom = world.Map.Heights.HeightAt(Aim.CentreOf(building)).ToIntFloor();
             var low = (X: (long)building.Cell.X * WorldPos.LeptonsPerCell, Y: (long)building.Cell.Y * WorldPos.LeptonsPerCell, Z: bottom);
             var high = (X: low.X + ((long)building.Width * WorldPos.LeptonsPerCell), Y: low.Y + ((long)building.Height * WorldPos.LeptonsPerCell),
                 Z: bottom + BuildingHeight);
-            if (Box(origin, direction, low, high) is { } at && at < best)
+            if (Box(origin, direction, low, high) is { } at && at < trace.Along)
             {
-                best = at;
-                hit = building.Id;
-                head = false;
+                trace = new Trace(at, building.Id, false, null, false);
             }
         }
 
-        return (best, hit, head);
+        return trace;
     }
 
-    // Where along the ray it first goes under the ground, else its reach; off the map it ends there.
-    private static long Terrain(GameWorld world, (long X, long Y, long Z) origin, (long X, long Y, long Z) direction, long reach)
+    // Where along the ray it first goes under the ground or into the cover of a map object, else its reach; off the map it ends there.
+    private static (long Along, CellPos? Cover) Ground(GameWorld world, (long X, long Y, long Z) origin, (long X, long Y, long Z) direction, long reach)
     {
+        // The nearest cover of the cells passed so far: a box in the middle of a cell is met further along than its edge.
+        var looked = new CellPos(int.MinValue, int.MinValue);
+        var coverAt = long.MaxValue;
+        CellPos? coverCell = null;
         for (var along = (long)GroundStep; along <= reach; along += GroundStep)
         {
             var point = new WorldPos((int)(origin.X + (direction.X * along / One)), (int)(origin.Y + (direction.Y * along / One)));
             if (!world.Contains(point))
             {
-                return along;
+                return coverAt <= along ? (coverAt, coverCell) : (along, null);
             }
 
-            if (origin.Z + (direction.Z * along / One) <= Ground(world, point))
+            var cell = point.ToCell();
+            if (cell != looked)
             {
-                return along;
+                looked = cell;
+                if (Cover(world, cell, origin, direction) is { } covered && covered < coverAt)
+                {
+                    (coverAt, coverCell) = (covered, cell);
+                }
+            }
+
+            if (coverAt <= along)
+            {
+                return (coverAt, coverCell);
+            }
+
+            if (origin.Z + (direction.Z * along / One) <= world.Map.Heights.HeightAt(point).ToIntFloor())
+            {
+                return (along, null);
             }
         }
 
-        return reach;
+        return coverAt <= reach ? (coverAt, coverCell) : (reach, null);
+    }
+
+    // Where along the ray it meets the cover standing on the cell, or null.
+    private static long? Cover(GameWorld world, CellPos cell, (long X, long Y, long Z) origin, (long X, long Y, long Z) direction)
+    {
+        long? first = null;
+        foreach (var standing in world.Map.ObjectsAt(cell))
+        {
+            if (standing.Destroyed || standing.Type.CoverHeight <= 0)
+            {
+                continue;
+            }
+
+            var centre = cell.Center;
+            var half = standing.Type.CoverWidth / 2;
+            var bottom = world.Map.Heights.HeightAt(centre).ToIntFloor();
+            var low = (X: (long)centre.X - half, Y: (long)centre.Y - half, Z: bottom);
+            var high = (X: (long)centre.X + half, Y: (long)centre.Y + half, Z: bottom + standing.Type.CoverHeight);
+            if (Box(origin, direction, low, high) is { } at && (first is null || at < first))
+            {
+                first = at;
+            }
+        }
+
+        return first;
     }
 
     // Where along the ray it first meets the upright cylinder, or null.

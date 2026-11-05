@@ -7,6 +7,8 @@
 pine_tree:
   kind: map_object
   name: Pine tree
+  cover: 2  # stops an aimed shot this high, in cells (going into a unit, 2026-11-05)
+  cover_width: 0.2
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 400
   stump: true
@@ -14,12 +16,14 @@ pine_tree:
 boulder:
   kind: map_object
   name: Boulder
+  cover: 0.45
   blocks: [amphibious, foot, hover, naval, track, wheel]
 
 # A fence stops infantry and wheels (and the other light movers); tracks drive through and flatten it.
 fence_wood:
   kind: map_object
   name: Wooden fence
+  cover: 0.35
   blocks: [amphibious, foot, hover, naval, wheel]
   hp: 150
   crushed_by: [track]
@@ -27,6 +31,7 @@ fence_wood:
 wall_stone:
   kind: map_object
   name: Stone wall
+  cover: 0.5
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 1500
 
@@ -39,12 +44,14 @@ lamp_post:
 anti_tank_hedgehog:
   kind: map_object
   name: Anti-tank hedgehog
+  cover: 0.3
   blocks: [track, wheel]
   hp: 400
 
 pipeline:
   kind: map_object
   name: Pipeline
+  cover: 0.3
   blocks: [track, wheel]
   hp: 50
 
@@ -52,6 +59,7 @@ pipeline:
 snowdrift:
   kind: map_object
   name: Snowdrift
+  cover: 0.25
   crushed_by: [track]
   speed: { foot: 60%, track: 80%, wheel: 50% }
 
@@ -88,6 +96,8 @@ mailbox:
 phone_booth:
   kind: map_object
   name: Phone booth
+  cover: 0.85
+  cover_width: 0.5
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 100
   crushed_by: [track]
@@ -95,12 +105,14 @@ phone_booth:
 bus_stop:
   kind: map_object
   name: Bus stop
+  cover: 0.6
   hp: 100
   crushed_by: [track]
 
 billboard:
   kind: map_object
   name: Billboard
+  cover: 1.5
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 150
 
@@ -126,6 +138,7 @@ flowerbed:
 street_stall:
   kind: map_object
   name: Street stall
+  cover: 0.45
   blocks: [track, wheel]
   hp: 80
   crushed_by: [track]
@@ -169,6 +182,7 @@ driftwood:
 beached_boat:
   kind: map_object
   name: Beached boat
+  cover: 0.35
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 300
 
@@ -181,12 +195,14 @@ dry_shrub:
 hedge:
   kind: map_object
   name: Hedge
+  cover: 0.45
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 300
 
 hay_bale:
   kind: map_object
   name: Hay bale
+  cover: 0.3
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 100
   crushed_by: [track]
@@ -194,6 +210,7 @@ hay_bale:
 well:
   kind: map_object
   name: Well
+  cover: 0.4
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 1500
 
@@ -207,6 +224,7 @@ barbed_wire:
 farm_tractor:
   kind: map_object
   name: Farm tractor
+  cover: 0.45
   blocks: [amphibious, foot, hover, naval, track, wheel]
   hp: 400
 
@@ -215,6 +233,7 @@ farm_tractor:
 highway_guardrail:
   kind: map_object
   name: Highway guardrail
+  cover: 0.2
   blocks: [foot]
   hp: 120
   crushed_by: [track, wheel]

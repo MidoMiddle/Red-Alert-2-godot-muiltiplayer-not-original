@@ -64,9 +64,10 @@ public sealed record ProjectileImpact(int Tick, EntityId? Projectile, EntityId S
 
 /// <summary>
 /// The player inside a unit fired an aimed shot (<see cref="Systems.AimedShot"/>): it ended at <paramref name="Point"/>, in
-/// <paramref name="Target"/> or, with none, on the ground or at the end of its reach; <paramref name="Headshot"/> in a soldier's head.
+/// <paramref name="Target"/> or, with none, on the ground or at the end of its reach; <paramref name="Headshot"/> in a soldier's head;
+/// <paramref name="Cover"/> in the cover of a map object or the sandbags of one dug in.
 /// </summary>
-public sealed record AimedHit(int Tick, EntityId Shooter, EntityId? Target, WorldPos Point, bool Headshot) : SimEvent(Tick);
+public sealed record AimedHit(int Tick, EntityId Shooter, EntityId? Target, WorldPos Point, bool Headshot, bool Cover = false) : SimEvent(Tick);
 
 /// <summary>A unit or a building lost <paramref name="Amount"/> hit points to a shot of <paramref name="Attacker"/> (M4, 4.9).</summary>
 public sealed record EntityDamaged(int Tick, EntityId Entity, EntityId Attacker, int Amount, int Hp) : SimEvent(Tick);

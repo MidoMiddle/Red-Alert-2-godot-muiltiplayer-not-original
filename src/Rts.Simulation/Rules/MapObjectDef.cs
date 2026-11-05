@@ -30,4 +30,13 @@ public sealed record MapObjectDef : IDefinition
 
     /// <summary>It stands on the water (a reef, an ice floe: docs/naval_elements), and only there; the others only on land.</summary>
     public bool Water { get; init; }
+
+    /// <summary>
+    /// How high it stops an aimed shot (<see cref="Systems.AimedShot"/>, going into a unit, 2026-11-05), in cells; 0: a shot goes
+    /// through, over a lamp post or a wire.
+    /// </summary>
+    public Math.Fixed Cover { get; init; }
+
+    /// <summary>How wide the cover stands in the middle of its cell, in cells: a whole cell, a tree only its trunk.</summary>
+    public Math.Fixed CoverWidth { get; init; } = Math.Fixed.One;
 }

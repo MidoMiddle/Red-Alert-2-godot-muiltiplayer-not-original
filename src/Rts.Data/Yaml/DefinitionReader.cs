@@ -51,7 +51,7 @@ internal static class DefinitionReader
 
     private static readonly string[] CountryKeys = ["name", "faction"];
 
-    private static readonly string[] MapObjectKeys = ["name", "blocks", "hp", "crushed_by", "stump", "speed", "water"];
+    private static readonly string[] MapObjectKeys = ["name", "blocks", "hp", "crushed_by", "stump", "speed", "water", "cover", "cover_width"];
 
     private static readonly string[] BridgeKeys = ["name", "segment_hp", "width", "high", "pier"];
 
@@ -406,6 +406,8 @@ internal static class DefinitionReader
             Stump = fields.Optional("stump", Scalars.Flag, false),
             Speeds = fields.Optional("speed", Scalars.Speeds, ImmutableArray<LocomotorSpeed>.Empty),
             Water = fields.Optional("water", Scalars.Flag, false),
+            Cover = fields.Optional("cover", Scalars.FixedNumber, Fixed.Zero),
+            CoverWidth = fields.Optional("cover_width", Scalars.FixedNumber, Fixed.One),
         };
     }
 

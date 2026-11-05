@@ -81,7 +81,9 @@ public sealed class MapTypes
                     MaskOf(definition.CrushedBy),
                     definition.Stump,
                     SpeedsOf(definition.Speeds),
-                    definition.Water);
+                    definition.Water,
+                    (int)((Geometry.WorldPos.LeptonsPerCell * definition.Cover.Raw) >> 16),
+                    (int)((Geometry.WorldPos.LeptonsPerCell * definition.CoverWidth.Raw) >> 16));
             }
         }
 
